@@ -1,10 +1,128 @@
-export interface ServiceItem {
-  id: string;
-  title: string;
-  description: string;
-  iconName: string; // Mapping to Lucide icons string
-  imageUrl: string;
+
+import React from 'react';
+
+export enum TrabajoTipo {
+  SRI = 'sri',
+  GENERAL = 'general'
 }
+
+export enum TrabajoEstado {
+  PENDIENTE = 'Pendiente',
+  PROCESO = 'En Proceso',
+  VITRINA = 'Vitrina',
+  ENTREGADO = 'Entregado'
+}
+
+export enum Regimen {
+  NEGOCIO_POPULAR = 'Rimpe Negocio Popular',
+  EMPRENDEDOR = 'Rimpe Emprendedor',
+  GENERAL = 'General'
+}
+
+export interface Cliente {
+  id: string;
+  cedula: string;
+  ruc?: string;
+  nombre: string;
+  nombreComercial?: string;
+  direccion?: string;
+  notas?: string;
+  telefono: string[];
+  email?: string;
+  creadoEn: string;
+  regimen: Regimen;
+}
+
+export interface Trabajo {
+  id: string;
+  orden: number;
+  clienteId: string;
+  titular: string;
+  tipo: TrabajoTipo;
+  subtipo: string;
+  cantidad: number;
+  tamano: string;
+  total: number;
+  abono: number;
+  saldo: number;
+  estado: TrabajoEstado;
+  fechaEntrada: string;
+  fechaVencimiento?: string;
+  caduco: boolean;
+  fotoOriginalUrl?: string;
+  creadoPor?: string;
+  actualizadoPor?: string;
+  establecimiento?: string;
+  puntoEmision?: string;
+  claveAcceso?: string;
+  origen?: 'Web' | 'Interno';
+  esRenovacion?: boolean; // Nuevo campo
+}
+
+export interface Kpi {
+    title: string;
+    metric: string;
+    tag?: string;
+    icon: React.ComponentType<{ className?: string }>;
+    variant: 'blue' | 'green' | 'purple' | 'red' | 'gray' | 'orange';
+}
+
+export interface Producto {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  categoria: string;
+  esSRI?: boolean;
+  imagenUrl?: string;
+}
+
+export interface User {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: 'Admin' | 'Operador';
+  estado: 'Activo' | 'Inactivo';
+  ultimoAcceso: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  item: string;
+  cantidad: number;
+  unidad: string;
+  costoUnitario: number;
+  minimo: number;
+}
+
+export interface Proveedor {
+  id: string;
+  nombre: string;
+  categoria: string;
+  tipo: 'Producto' | 'Servicio';
+  productos?: string;
+  ciudad?: string;
+  website?: string;
+  contacto: string;
+  telefono: string;
+  email?: string;
+  direccion?: string;
+  notas?: string;
+  estado: 'Activo' | 'Inactivo';
+  creadoEn: string;
+}
+
+export interface TareaProveedor {
+  id: string;
+  proveedorId: string;
+  titulo: string;
+  tipo: 'General' | 'Mantenimiento';
+  descripcion: string;
+  fechaVencimiento: string;
+  completada: boolean;
+}
+
+// --- New Exports for Landing Page Components & Services ---
 
 export interface AIContentRequest {
   businessName: string;
@@ -12,11 +130,20 @@ export interface AIContentRequest {
   tone: string;
 }
 
+export interface ServiceItem {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  imageUrl: string;
+}
+
 export enum ToneType {
   PROFESSIONAL = 'Profesional',
+  FRIENDLY = 'Amigable',
   CREATIVE = 'Creativo',
-  URGENT = 'Urgente (Promoción)',
-  ELEGANT = 'Elegante'
+  URGENT = 'Urgente',
+  FORMAL = 'Formal'
 }
 
 export interface ContactFormState {
@@ -26,14 +153,14 @@ export interface ContactFormState {
   message: string;
 }
 
-export type ProductCategory = 'Todos' | 'Tarjetas' | 'Publicidad' | 'Gran Formato' | 'Oficina' | 'Merch';
+export type ProductCategory = string;
 
 export interface Product {
   id: string;
   name: string;
-  category: ProductCategory;
+  category: string;
   price: number;
-  unit: string; // e.g., "x 1000", "unidad", "m2"
+  unit: string;
   description: string;
   specs: string[];
   imageUrl: string;

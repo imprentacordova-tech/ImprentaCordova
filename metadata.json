@@ -1,5 +1,7 @@
 {
-  "name": "Imprenta Córdova - Pasaje | Soluciones Gráficas y SRI",
-  "description": "Imprenta Córdova en Pasaje, El Oro. Especialistas en Gigantografías, Facturación SRI, Volantes, Tablas de Bingo, Rifas y Declaraciones de Impuestos. El mejor servicio al menor tiempo.",
-  "requestFramePermissions": []
+  "name": "Imprenta Córdova 2025",
+  "description": "Una aplicación web profesional para la gestión de finanzas, clientes y producción (KDS) para Imprenta Córdova, optimizada para 2025.",
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
