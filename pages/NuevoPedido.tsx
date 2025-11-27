@@ -7,6 +7,9 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { CloseIcon, SearchIcon, CheckCircleIcon, UserPlusIcon, PrinterIcon, KdsIcon, TrashIcon, ShieldCheckIcon, DocumentIcon, FolderIcon, ArrowLeftIcon, ArrowRightIcon, ShoppingCartIcon, ExclamationTriangleIcon, ReceiptIcon, DocumentCheckIcon, ClientsIcon, BoxIcon, AddIcon, DollarIcon, ClockIcon } from '../components/Icons';
 import { getConfig } from '../services/configService';
 
+// Declare html2pdf for TypeScript
+declare const html2pdf: any;
+
 // Custom hook for debouncing
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -404,11 +407,15 @@ const NuevoPedidoPage: React.FC = () => {
     const [productSearchTerm, setProductSearchTerm] = useState('');
     const [tempRegimen, setTempRegimen] = useState<Regimen | null>(null);
 
+    // Auto PDF Generation Logic
+    const [pdfConfig, setPdfConfig] = useState<any>(null); // Config for PDF template
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             const [clientesData, productosData, sriKeysData] = await Promise.all([getClientes(), getProductos(), getSriKeys()]);
             const config = getConfig();
+            setPdfConfig(config); // Save config for PDF generation
             setClientes(clientesData);
             setAllProductos(productosData);
             setSriKeys(sriKeysData); // Set SRI keys
@@ -421,6 +428,31 @@ const NuevoPedidoPage: React.FC = () => {
         };
         fetchData();
     }, []);
+    
+    // Auto-generate PDF when order is created (General type only)
+    useEffect(() => {
+        if (createdTrabajo && createdTrabajo.tipo === TrabajoTipo.GENERAL && selectedCliente) {
+            // Give time for DOM to render the hidden receipt
+            const timer = setTimeout(() => {
+                generateReceiptPdf();
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [createdTrabajo, selectedCliente]);
+
+    const generateReceiptPdf = () => {
+        const element = document.getElementById('hidden-receipt-template');
+        if (element && createdTrabajo) {
+            const opt = {
+                margin: 0,
+                filename: `Recibo-${createdTrabajo.orden}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' } // Approx thermal size
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+    };
     
     useEffect(() => {
         if (selectedCliente) {
@@ -652,6 +684,78 @@ const NuevoPedidoPage: React.FC = () => {
 
     // ... (Render logic omitted for brevity, focusing on changes)
     
+    // --- Render Logic ---
+    if (isLoading && !createdTrabajo) return <div className="text-center p-10">Cargando...</div>;
+
+    if (createdTrabajo) {
+        return (
+            <div className="text-center p-8 bg-white rounded-xl shadow-lg animate-fade-in max-w-2xl mx-auto">
+                <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
+                <h2 className="text-3xl font-bold">¡Pedido Creado!</h2>
+                <p className="mt-2 text-lg">Se ha generado la orden de trabajo <span className="font-bold text-brand-blue">#{createdTrabajo.orden}</span>.</p>
+                <p className="text-sm text-gray-500 mt-1">El recibo PDF se está descargando automáticamente...</p>
+                
+                {createdTrabajo.abono > 0 && <button onClick={generateReceiptPdf} className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-brand-blue text-white font-bold rounded-lg"><PrinterIcon className="h-5 w-5" /> Descargar Recibo (Manual)</button>}
+                <div className="mt-8 flex justify-center gap-4">
+                     <button onClick={resetOrderState} className="px-6 py-2 bg-gray-200 text-gray-800 font-bold rounded-lg">Crear Nuevo Pedido</button>
+                    <button onClick={() => navigate('/kds')} className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white font-bold rounded-lg"><KdsIcon className="h-5 w-5" /> Ir al Taller</button>
+                </div>
+
+                {/* HIDDEN RECEIPT TEMPLATE FOR PDF GENERATION */}
+                <div style={{ position: 'absolute', top: -9999, left: -9999 }}>
+                    <div id="hidden-receipt-template" className="bg-white p-4" style={{ width: '80mm', fontFamily: "'Courier New', Courier, monospace", fontSize: '10px' }}>
+                        <div className="text-center border-b border-dashed border-black pb-2 mb-2">
+                            <h1 className="text-sm font-bold uppercase leading-tight mb-1">Imprenta Córdova</h1>
+                            <p className="text-[9px]">{pdfConfig?.emisorDireccionCompleta}</p>
+                            <p className="text-[9px]">RUC: {pdfConfig?.emisorRuc}</p>
+                            <p className="text-[9px]">Telf: {pdfConfig?.emisorTelefono}</p>
+                        </div>
+
+                        <div className="mb-2 text-[10px]">
+                            <div className="flex justify-between">
+                                <span>Fecha:</span>
+                                <span>{new Date(createdTrabajo.fechaEntrada).toLocaleDateString('es-EC')}</span>
+                            </div>
+                            <div className="flex justify-between font-bold">
+                                <span>Orden #:</span>
+                                <span>{String(createdTrabajo.orden).padStart(6, '0')}</span>
+                            </div>
+                        </div>
+
+                        <div className="border-b border-dashed border-black pb-2 mb-2 text-[10px]">
+                            <p><span className="font-bold">Cliente:</span> {selectedCliente?.nombre}</p>
+                            <p><span className="font-bold">CI/RUC:</span> {selectedCliente?.ruc || selectedCliente?.cedula}</p>
+                        </div>
+
+                        <div className="mb-2 text-[10px]">
+                            <p className="font-bold mb-1">DETALLE:</p>
+                            <p>{createdTrabajo.cantidad} x {createdTrabajo.subtipo}</p>
+                            
+                            <div className="flex justify-between font-bold mt-2 pt-2 border-t border-black">
+                                <span>TOTAL:</span>
+                                <span>{formatCurrency(createdTrabajo.total)}</span>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                                <span>Abono:</span>
+                                <span>{formatCurrency(createdTrabajo.abono)}</span>
+                            </div>
+                            <div className="flex justify-between font-bold mt-1">
+                                <span>SALDO:</span>
+                                <span>{formatCurrency(createdTrabajo.saldo)}</span>
+                            </div>
+                        </div>
+
+                        <div className="text-[8px] text-center border-t border-dashed border-black pt-2 mt-4">
+                            <p className="mb-4">Firma Cliente</p>
+                            <p className="font-bold">¡GRACIAS POR SU PREFERENCIA!</p>
+                            <p>Sin recibo no hay reclamo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const renderStepContent = () => {
         switch (step) {
             // ... (Case 'cliente' omitted)
@@ -1042,8 +1146,6 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
             </div>
             
-            {isSummaryOpen && <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={() => setIsSummaryOpen(false)}></div>}
-
             <CreateClientModal isOpen={isClientModalOpen} onClose={() => setIsClientModalOpen(false)} onClientCreated={handleClientCreated} initialName={newClientInitialData.name} initialCedulaRuc={newClientInitialData.cedulaRuc} />
             <CreateProductModal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} onProductCreated={handleProductCreated} initialName={productSearchTerm} />
             <ProductGroupModal group={viewingGroup} onClose={() => setViewingGroup(null)} onAddProduct={(p) => handleProductAction('add', p)} />
