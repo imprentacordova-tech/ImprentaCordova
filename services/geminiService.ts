@@ -1,11 +1,19 @@
 import { GoogleGenAI } from "@google/genai";
 import { AIContentRequest } from "../types";
 
-// Initialize the GoogleGenAI client with the API key from process.env.API_KEY
-// As per guidelines, we assume the environment variable is valid and accessible.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// FIX: Conformed to @google/genai guidelines using process.env.API_KEY
+// This assumes process.env.API_KEY is available in the environment (e.g. via Vite define or Next.js)
+const apiKey = process.env.API_KEY;
+
+// Initialize conditionally to prevent app crash if key is missing
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
+  if (!ai) {
+    console.warn("Gemini API Key is missing. Check your process.env.API_KEY environment variable.");
+    return "El sistema de IA está configurándose. Por favor contacta a la imprenta directamente para ideas creativas.";
+  }
+
   const modelId = "gemini-2.5-flash";
   
   const prompt = `
