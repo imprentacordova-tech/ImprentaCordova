@@ -1,64 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-    ShieldCheckIcon, ClockIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
+    ShieldCheckIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
     CloseIcon, TrashIcon, CheckCircleIcon, AddIcon, ArrowRightIcon, MapPinIcon, 
-    EnvelopeIcon, CordovaLogo, GlobeAltIcon, DocumentCheckIcon, StarIcon,
-    PrinterIcon
+    EnvelopeIcon, CordovaLogo, StarIcon, PrinterIcon, CheckBadgeIcon, ClockIcon
 } from '../components/Icons';
 import { getProductos, createPublicPedido } from '../services/mockApi';
 import { Producto } from '../types';
 import { formatCurrency } from '../utils';
 
-// --- COMPONENTES DE INTERFAZ Y 3D ---
-
-// Componente de Tarjeta 3D Interactiva (Tilt Effect)
-const TiltCard: React.FC<{ children: React.ReactNode; className?: string; intensity?: number }> = ({ children, className = "", intensity = 15 }) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const [rotation, setRotation] = useState({ x: 0, y: 0 });
-    const [isHovering, setIsHovering] = useState(false);
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!ref.current) return;
-        const rect = ref.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const xPct = x / rect.width;
-        const yPct = y / rect.height;
-
-        const xRot = (0.5 - yPct) * intensity; // Invertir eje Y para efecto natural
-        const yRot = (xPct - 0.5) * intensity;
-
-        setRotation({ x: xRot, y: yRot });
-    };
-
-    const handleMouseLeave = () => {
-        setIsHovering(false);
-        setRotation({ x: 0, y: 0 });
-    };
-
-    return (
-        <div 
-            className="perspective-1000" 
-            onMouseMove={(e) => { setIsHovering(true); handleMouseMove(e); }}
-            onMouseLeave={handleMouseLeave}
-        >
-            <div 
-                ref={ref}
-                className={`transition-transform duration-100 ease-out ${className}`}
-                style={{
-                    transform: isHovering 
-                        ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1.02, 1.02, 1.02)` 
-                        : 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-                    transformStyle: 'preserve-3d'
-                }}
-            >
-                {children}
-            </div>
-        </div>
-    );
-};
+// --- UTILIDADES DE INTERFAZ ---
 
 // Scroll Suave
 const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -91,7 +42,7 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
             <nav className="container mx-auto px-6 flex justify-between items-center">
                 <Link to="/" className="flex items-center gap-3 group">
                     <div className={`p-2 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-blue-50' : 'bg-white/10 backdrop-blur-sm'}`}>
-                        <PrinterIcon className={`h-8 w-8 ${scrolled ? 'text-brand-blue' : 'text-white'}`} />
+                        <CordovaLogo className={`h-10 w-10 ${scrolled ? 'text-brand-blue' : 'text-white'}`} />
                     </div>
                     <div className="flex flex-col leading-none">
                         <span className={`text-xs font-bold tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
@@ -150,97 +101,110 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
     );
 };
 
-const Hero3D: React.FC = () => (
-    <section className="relative bg-brand-blue overflow-hidden min-h-[95vh] flex items-center pt-20">
-        {/* Corporate Blue Gradient Background */}
+const HeroSection: React.FC = () => (
+    <section className="relative bg-brand-blue pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden min-h-[85vh] flex items-center">
+        {/* Background Gradients & Texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-brand-blue to-blue-800"></div>
-        
-        {/* Decorative Pattern */}
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         
-        {/* Dynamic Blobs */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[120px] animate-pulse-slow"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-red/20 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        {/* Decorative Shapes */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand-red/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
 
-        <div className="container mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            
-            {/* Text Content */}
-            <div className="space-y-8 text-center lg:text-left animate-fade-in-up">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-sm">
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-ping"></div>
-                    <span className="text-xs font-bold text-white tracking-widest uppercase">Líderes en Pasaje & El Oro</span>
-                </div>
+        <div className="container mx-auto px-6 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+                
+                {/* Left Column: Content */}
+                <div className="space-y-8 text-center lg:text-left animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-sm mx-auto lg:mx-0">
+                        <span className="flex h-2 w-2 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                        </span>
+                        <span className="text-xs font-bold text-white tracking-widest uppercase">Servicio Express en Pasaje</span>
+                    </div>
 
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-xl">
-                    TU IMAGEN <br/>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-brand-red">
-                        IMPRESA CON PASIÓN
-                    </span>
-                </h1>
+                    <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-xl">
+                        TU MARCA <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200">
+                            MERECE BRILLAR
+                        </span>
+                    </h1>
 
-                <p className="text-xl text-blue-100 font-light max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                    Gigantografías HD, Facturación SRI y Publicidad de alto impacto.
-                    <strong className="text-white font-bold block mt-2">Calidad Roland. Entrega Rápida.</strong>
-                </p>
+                    <p className="text-lg sm:text-xl text-blue-100 font-light max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        Desde gigantografías de alto impacto hasta facturación SRI. 
+                        Combinamos <span className="font-bold text-white">tecnología Roland</span> con acabados artesanales de primera.
+                    </p>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                    <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="group relative px-8 py-4 bg-brand-red overflow-hidden rounded-xl font-bold text-white tracking-wider shadow-lg shadow-red-900/30 transition-all hover:shadow-xl hover:scale-105 hover:bg-red-700">
-                        <span className="flex items-center justify-center gap-2">VER CATÁLOGO <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform"/></span>
-                    </a>
-                    <a href="https://wa.me/593993083943" className="px-8 py-4 bg-white text-brand-blue font-bold rounded-xl hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2">
-                        <PhoneIcon className="w-5 h-5"/> COTIZAR AHORA
-                    </a>
-                </div>
-            </div>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                        <a href="#contact" className="group relative px-8 py-4 bg-brand-red overflow-hidden rounded-xl font-bold text-white tracking-wider shadow-lg shadow-red-900/30 transition-all hover:shadow-xl hover:scale-105 hover:bg-red-700 flex items-center justify-center gap-3">
+                            <PhoneIcon className="w-5 h-5"/> COTIZAR AHORA
+                        </a>
+                        <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="px-8 py-4 bg-white/10 border border-white/30 text-white font-bold rounded-xl hover:bg-white hover:text-brand-blue transition-all shadow-lg flex items-center justify-center gap-2 backdrop-blur-sm">
+                            VER CATÁLOGO <ArrowRightIcon className="w-5 h-5"/>
+                        </a>
+                    </div>
 
-            {/* 3D Interactive Element - Refined Look */}
-            <div className="relative flex justify-center lg:justify-end perspective-1000 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <TiltCard className="relative w-80 h-[460px] sm:w-96 sm:h-[520px] rounded-3xl shadow-2xl transform rotate-y-12" intensity={15}>
-                    {/* Card Front */}
-                    <div className="absolute inset-0 bg-white rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.3)] overflow-hidden border-4 border-white/50">
-                        
-                        {/* Header of Card */}
-                        <div className="h-2/5 bg-gradient-to-br from-brand-blue to-blue-800 p-6 relative">
-                            <div className="absolute top-4 right-4 opacity-50">
-                                <CordovaLogo className="w-16 h-16 text-white" />
-                            </div>
-                            <div className="absolute bottom-6 left-6">
-                                <p className="text-white/80 text-xs font-bold uppercase tracking-widest">Tarjeta de Presentación</p>
-                                <h3 className="text-white text-2xl font-black uppercase">Juan Pérez</h3>
-                                <p className="text-white/90 text-sm">Gerente General</p>
-                            </div>
+                    <div className="pt-8 flex items-center justify-center lg:justify-start gap-8 opacity-80">
+                        <div className="flex items-center gap-2">
+                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-blue-100">Autorizado SRI</span>
                         </div>
-                        
-                        {/* Body of Card */}
-                        <div className="h-3/5 p-8 flex flex-col justify-center bg-slate-50 relative">
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-gray-600">
-                                    <div className="p-2 bg-blue-100 rounded-full text-brand-blue"><PhoneIcon className="w-4 h-4" /></div>
-                                    <div className="h-2 w-32 bg-gray-200 rounded animate-pulse"></div>
-                                </div>
-                                <div className="flex items-center gap-3 text-gray-600">
-                                    <div className="p-2 bg-blue-100 rounded-full text-brand-blue"><EnvelopeIcon className="w-4 h-4" /></div>
-                                    <div className="h-2 w-48 bg-gray-200 rounded animate-pulse"></div>
-                                </div>
-                                <div className="flex items-center gap-3 text-gray-600">
-                                    <div className="p-2 bg-blue-100 rounded-full text-brand-blue"><MapPinIcon className="w-4 h-4" /></div>
-                                    <div className="h-2 w-40 bg-gray-200 rounded animate-pulse"></div>
-                                </div>
-                            </div>
-                            
-                            {/* Decorative Elements */}
-                            <div className="absolute bottom-0 right-0 w-24 h-24 bg-brand-red/10 rounded-tl-full"></div>
-                            <div className="absolute bottom-6 right-6 text-right">
-                                <p className="text-brand-blue font-black text-xl tracking-tight">CÓRDOVA</p>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">Calidad Premium</p>
+                        <div className="flex items-center gap-2">
+                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-blue-100">Calidad HD</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-blue-100">Entrega Puntual</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Static Composition (NO JUAN PEREZ) */}
+                <div className="relative hidden lg:block h-[600px]">
+                    {/* Main Image (Large Format Printer / Workshop) */}
+                    <div className="absolute top-10 left-10 w-4/5 h-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 transform -rotate-2 hover:rotate-0 transition-all duration-700 z-10 bg-gray-800">
+                        <img 
+                            src="https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                            alt="Taller de Impresión" 
+                            className="w-full h-full object-cover opacity-90 hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent flex items-end p-8">
+                            <div>
+                                <p className="text-orange-400 font-bold uppercase tracking-wider text-sm mb-1">Tecnología Roland</p>
+                                <h3 className="text-white font-bold text-2xl">Gigantografías HD</h3>
                             </div>
                         </div>
                     </div>
-                    
-                    {/* Floating Elements behind */}
-                    <div className="absolute -top-6 -left-6 w-20 h-20 bg-brand-red rounded-2xl rotate-12 -z-10 opacity-80 shadow-lg animate-float"></div>
-                    <div className="absolute top-1/2 -right-10 w-16 h-16 bg-yellow-400 rounded-full blur-md opacity-60 animate-pulse"></div>
-                </TiltCard>
+
+                    {/* Secondary Image (Flyers/Stationery - Floating Top Right) */}
+                    <div className="absolute -top-4 right-4 w-64 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white transform rotate-6 hover:rotate-3 transition-all duration-500 z-20 bg-white animate-float">
+                        <img 
+                            src="https://images.unsplash.com/photo-1586717791821-3f44a5638d0f?auto=format&fit=crop&w=500&q=80" 
+                            alt="Papelería" 
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-2 left-2 bg-brand-red text-white text-[10px] font-bold px-2 py-1 rounded">
+                            OFFSET & DIGITAL
+                        </div>
+                    </div>
+
+                    {/* Tertiary Image (Merch - Floating Bottom Left) */}
+                    <div className="absolute bottom-8 -left-4 w-56 h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 transform hover:scale-105 transition-all duration-500 z-30">
+                        <img 
+                            src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=500&q=80" 
+                            alt="Merchandising" 
+                            className="w-full h-full object-cover"
+                        />
+                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <span className="text-white font-bold">Merch</span>
+                        </div>
+                    </div>
+
+                    {/* Decorative Elements */}
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
+                </div>
             </div>
         </div>
     </section>
@@ -607,7 +571,7 @@ const LandingPage: React.FC = () => {
         <div className="min-h-screen bg-white font-sans text-slate-900 scroll-smooth">
             <Header cartCount={cartCount} onOpenCart={() => setIsCartOpen(true)} />
             <main>
-                <Hero3D />
+                <HeroSection />
                 <ServicesSection />
                 <CatalogPreview onAddToCart={handleAddToCart} />
             </main>

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import { Layout } from './components/Layout';
@@ -9,6 +10,7 @@ import ClientesPage from './pages/Clientes';
 import NuevoPedidoPage from './pages/NuevoPedido';
 import InventarioPage from './pages/Inventario';
 import LandingPage from './pages/Landing';
+import VisualLanding from './pages/VisualLanding';
 import NotaDeVentaPage from './pages/NotaDeVenta';
 import ProductosPage from './pages/Productos';
 import SolicitudImpresionPage from './pages/SolicitudImpresion';
@@ -70,6 +72,7 @@ const App: React.FC = () => {
             <Routes>
                 {/* Rutas Públicas */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/landing" element={<VisualLanding />} />
                 <Route 
                     path="/login" 
                     element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} 

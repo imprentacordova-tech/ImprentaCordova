@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Printer } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { CordovaLogo } from './Icons';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,8 +32,8 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center cursor-pointer group" onClick={() => window.location.hash = '#home'}>
-              <div className="bg-blue-900 p-2 rounded-lg mr-3 group-hover:bg-blue-800 transition-colors shadow-sm">
-                <Printer className="h-6 w-6 text-white" />
+              <div className="p-1.5 mr-3 transition-colors shadow-sm">
+                <CordovaLogo className="h-10 w-auto object-contain" />
               </div>
               <div className="flex flex-col">
                 <span className="text-blue-900 font-black text-xl leading-none tracking-tight">IMPRENTA</span>
