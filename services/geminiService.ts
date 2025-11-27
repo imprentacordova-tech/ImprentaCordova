@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { AIContentRequest } from "../types";
 
+// Initialize the GoogleGenAI client with the API key from process.env.API_KEY
+// As per guidelines, we assume the environment variable is valid and accessible.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
@@ -30,6 +32,7 @@ export const generateMarketingCopy = async (request: AIContentRequest): Promise<
       }
     });
 
+    // Access the text property directly from the response object
     return response.text || "Lo sentimos, no pudimos generar ideas en este momento.";
   } catch (error) {
     console.error("Error generating content:", error);
