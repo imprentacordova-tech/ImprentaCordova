@@ -1,14 +1,20 @@
 import React, { useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { User } from './types';
+
+// --- PÁGINAS PÚBLICAS ---
+import LandingPage from './pages/Landing';
 import Login from './pages/Login';
+import ReciboAbonoPage from './pages/ReciboAbono';
+
+// --- PÁGINAS DEL SISTEMA (PRIVADAS) ---
 import DashboardPage from './pages/Dashboard';
 import KDSPage from './pages/KDS';
 import FinanzasPage from './pages/Finanzas';
 import ClientesPage from './pages/Clientes';
 import NuevoPedidoPage from './pages/NuevoPedido';
 import InventarioPage from './pages/Inventario';
-import LandingPage from './pages/Landing';
 import NotaDeVentaPage from './pages/NotaDeVenta';
 import ProductosPage from './pages/Productos';
 import SolicitudImpresionPage from './pages/SolicitudImpresion';
@@ -17,11 +23,9 @@ import TrabajosPage from './pages/Trabajos';
 import GestionUsuariosPage from './pages/GestionUsuarios';
 import RetirosPage from './pages/Retiros';
 import ConfiguracionPage from './pages/Configuracion';
-import ReciboAbonoPage from './pages/ReciboAbono';
 import ProveedoresPage from './pages/Proveedores';
 import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
 import DisenoPage from './pages/Diseno';
-import { User } from './types';
 
 // Componente para proteger las rutas de administrador
 const AdminRoutes: React.FC = () => {
@@ -81,28 +85,33 @@ const App: React.FC = () => {
     return (
         <HashRouter>
             <Routes>
-                {/* ==================================================================
-                    ZONA PÚBLICA (Acceso libre)
-                   ================================================================== */}
+                {/* 
+                   ==================================================================
+                   ZONA PÚBLICA (Acceso Libre)
+                   - Landing Page (Tienda Virtual)
+                   - Login (Acceso Personal)
+                   - Recibos Digitales (Para compartir con clientes)
+                   ==================================================================
+                */}
                 <Route path="/" element={<LandingPage />} />
                 
-                {/* Login: Redirige al Dashboard si ya está autenticado */}
                 <Route 
                     path="/login" 
                     element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} 
                 />
 
-                {/* Recibos digitales compartibles (Solo lectura, sin auth requerida para el cliente final) */}
                 <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
 
-
-                {/* ==================================================================
-                    ZONA PRIVADA (Requiere Autenticación)
-                   ================================================================== */}
+                {/* 
+                   ==================================================================
+                   ZONA PRIVADA (Sistema de Gestión)
+                   - Requiere Login
+                   ==================================================================
+                */}
                 <Route element={<ProtectedRoutes currentUser={currentUser} onLogout={handleLogout} />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
                     
-                    {/* -- Operaciones & Producción -- */}
+                    {/* Flujo de Producción */}
                     <Route path="/nuevo" element={<NuevoPedidoPage />} />
                     <Route path="/diseno" element={<DisenoPage />} />
                     <Route path="/kds" element={<KDSPage />} />
@@ -110,30 +119,30 @@ const App: React.FC = () => {
                     <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
                     <Route path="/retiros" element={<RetirosPage />} />
                     
-                    {/* -- Gestión de Recursos -- */}
+                    {/* Gestión de Recursos */}
                     <Route path="/clientes" element={<ClientesPage />} />
                     <Route path="/productos" element={<ProductosPage />} />
                     <Route path="/proveedores" element={<ProveedoresPage />} />
                     <Route path="/inventario" element={<InventarioPage />} />
                     
-                    {/* -- Herramientas -- */}
+                    {/* Herramientas */}
                     <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
                     
-                    {/* -- Finanzas & Reportes -- */}
+                    {/* Finanzas */}
                     <Route path="/finanzas" element={<FinanzasPage />} />
                     
-                    {/* -- Documentos Internos (Protegidos) -- */}
+                    {/* Documentos Internos (Vistas de Impresión) */}
                     <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
                     <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
 
-                    {/* -- Zona Admin (Solo Rol Admin) -- */}
+                    {/* Zona Admin */}
                     <Route element={<AdminRoutes />}>
                         <Route path="/usuarios" element={<GestionUsuariosPage />} />
                         <Route path="/configuracion" element={<ConfiguracionPage />} />
                     </Route>
                 </Route>
                 
-                {/* Fallback global: Cualquier ruta desconocida va al inicio */}
+                {/* Redirección por defecto */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </HashRouter>
