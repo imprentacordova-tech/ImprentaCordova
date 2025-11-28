@@ -27,7 +27,8 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, isExpiringSoo
             }}
             onDoubleClick={() => onCardDoubleClick(trabajo)}
             // The cursor is set to 'pointer' to indicate it's clickable, as requested.
-            className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 cursor-pointer border-l-4 ${borderColor} transition-all duration-200 hover:shadow-xl hover:-translate-y-1`}
+            // Added animate-bounce-in for visual feedback when added or moved
+            className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 cursor-pointer border-l-4 ${borderColor} transition-all duration-200 hover:shadow-xl hover:-translate-y-1 animate-bounce-in`}
         >
             <div className="flex justify-between items-start">
                 <Link to={`/trabajos/${trabajo.id}`} className="font-bold text-lg text-gray-800 dark:text-white hover:text-brand-blue dark:hover:text-blue-400 transition-colors">
