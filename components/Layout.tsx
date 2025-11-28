@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon } from './Icons';
-import { User } from '../types';
+import { User, TrabajoEstado } from '../types';
+import { getTrabajos } from '../services/mockApi';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -55,6 +57,21 @@ const navGroups = [
 
 const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     const location = useLocation();
+    const [vitrinaCount, setVitrinaCount] = useState(0);
+
+    // Fetch vitrina count for badges
+    useEffect(() => {
+        const fetchCount = async () => {
+            const trabajos = await getTrabajos();
+            const count = trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length;
+            setVitrinaCount(count);
+        };
+        
+        fetchCount();
+        // Set up a simple interval to refresh the badge count periodically
+        const interval = setInterval(fetchCount, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
       <aside className="w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col h-full border-r border-gray-200 dark:border-gray-700">
@@ -69,20 +86,29 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                     <div className="space-y-1">
                         {group.items.map(item => {
                             const isActive = location.pathname === item.path || (item.path === '/configuracion' && location.pathname.startsWith('/configuracion'));
+                            const showBadge = item.path === '/retiros' && vitrinaCount > 0;
+
                             return (
                                 <NavLink
                                     key={item.path}
                                     to={item.path}
                                     className={
-                                        `w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 transform hover:translate-x-1 ${
+                                        `group w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 transform hover:translate-x-1 ${
                                             isActive
                                                 ? 'bg-blue-50 text-brand-blue dark:bg-blue-900/50 shadow-sm'
                                                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                                         }`
                                     }
                                 >
-                                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                                    <span>{item.label}</span>
+                                    <div className="flex items-center space-x-3">
+                                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                                        <span>{item.label}</span>
+                                    </div>
+                                    {showBadge && (
+                                        <span className="bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                            {vitrinaCount}
+                                        </span>
+                                    )}
                                 </NavLink>
                             );
                         })}

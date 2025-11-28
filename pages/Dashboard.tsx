@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes } from '../services/mockApi';
 import { Kpi, Trabajo, TrabajoEstado, User } from '../types';
-import { SolidDollarIcon, SolidFinanceIcon, SolidClockIcon, SolidBoxIcon, KdsIcon, AddIcon } from '../components/Icons';
+import { SolidDollarIcon, SolidFinanceIcon, SolidClockIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
 interface KpiCardProps {
@@ -41,14 +41,26 @@ const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
 };
 
 // Tarjeta rediseñada para ser más compacta y visualmente atractiva en móviles y escritorio
-const QuickAccessCard: React.FC<{ to: string; icon: React.ComponentType<{className?: string}>; label: string; description: string; colorClass?: string }> = ({ to, icon: Icon, label, description, colorClass = "text-brand-blue" }) => {
+const QuickAccessCard: React.FC<{ 
+    to: string; 
+    icon: React.ComponentType<{className?: string}>; 
+    label: string; 
+    description: string; 
+    colorClass?: string;
+    badge?: number;
+}> = ({ to, icon: Icon, label, description, colorClass = "text-brand-blue", badge }) => {
     return (
          <NavLink 
             to={to} 
-            className="group bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col justify-between"
+            className="group relative bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col justify-between overflow-hidden"
         >
+            {badge !== undefined && badge > 0 && (
+                <div className="absolute top-2 right-2 bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse z-10">
+                    {badge} Pendientes
+                </div>
+            )}
             <div>
-                <div className={`p-3 bg-gray-50 dark:bg-gray-700/50 w-fit rounded-xl mb-3 group-hover:bg-brand-blue transition-colors duration-300`}>
+                <div className={`p-3 bg-gray-50 dark:bg-gray-700/50 w-fit rounded-xl mb-3 group-hover:bg-brand-blue transition-colors duration-300 relative`}>
                     <Icon className={`h-6 w-6 ${colorClass} group-hover:text-white transition-colors duration-300`} />
                 </div>
                 <h3 className="font-bold text-base text-gray-900 dark:text-white mb-1 leading-tight">{label}</h3>
@@ -63,6 +75,7 @@ const DashboardPage: React.FC = () => {
     const [kpis, setKpis] = useState<Kpi[]>([]);
     const [recentJobs, setRecentJobs] = useState<Trabajo[]>([]);
     const [clientes, setClientes] = useState<any>({});
+    const [vitrinaCount, setVitrinaCount] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -79,6 +92,9 @@ const DashboardPage: React.FC = () => {
             const saldosPendientes = trabajos
                 .filter(t => t.saldo > 0 && t.estado !== TrabajoEstado.ENTREGADO)
                 .reduce((sum, t) => sum + t.saldo, 0);
+            
+            const countVitrina = trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length;
+            setVitrinaCount(countVitrina);
 
             setKpis([
                 { title: 'Ingresos de Hoy', metric: formatCurrency(ingresosHoy), icon: SolidDollarIcon, variant: 'blue' },
@@ -164,6 +180,14 @@ const DashboardPage: React.FC = () => {
                             label="Nuevo Pedido" 
                             description="Crear orden de trabajo" 
                             colorClass="text-brand-blue"
+                        />
+                        <QuickAccessCard 
+                            to="/retiros" 
+                            icon={ReceiptIcon} 
+                            label="Entregar Trabajos" 
+                            description={vitrinaCount > 0 ? `${vitrinaCount} trabajos listos` : "Entregar al cliente"}
+                            colorClass={vitrinaCount > 0 ? "text-brand-red" : "text-purple-600"}
+                            badge={vitrinaCount}
                         />
                         <QuickAccessCard 
                             to="/kds" 

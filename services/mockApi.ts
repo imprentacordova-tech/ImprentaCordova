@@ -246,8 +246,8 @@ const defaultProductos: Producto[] = [
   },
   {
     id: 'p_gf_5',
-    nombre: 'Señalética de Seguridad',
-    descripcion: 'Sintra + Vinil (Ruta de evacuación, Extintor, Baños).',
+    nombre: 'Señalética Sintra (Unidad)',
+    descripcion: 'Base Sintra 3mm + Vinil. Para seguridad o informativa (A4/A3).',
     precio: 5.00,
     categoria: 'Gran Formato',
     imagenUrl: 'https://images.unsplash.com/photo-1574359411659-15573a21bc2c?auto=format&fit=crop&q=80&w=400'
@@ -281,7 +281,7 @@ const defaultProductos: Producto[] = [
   {
     id: 'p_sub_4',
     nombre: 'Tomatodo de Aluminio 600ml',
-    descripcion: 'Botella deportiva personalizada, incluye gancho.',
+    descripcion: 'Botella deportiva personalizada, incluye gancho. Ideal escuelas.',
     precio: 9.00,
     categoria: 'Sublimación',
     imagenUrl: 'https://images.unsplash.com/photo-1602143407151-01114195bc51?auto=format&fit=crop&q=80&w=400'
