@@ -4,7 +4,7 @@ import { getClientes, createCliente, createTrabajo, getProductos, createProducto
 import { Cliente, Trabajo, TrabajoEstado, TrabajoTipo, Regimen, Producto, User } from '../types';
 import { formatCurrency } from '../utils';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { CloseIcon, SearchIcon, CheckCircleIcon, UserPlusIcon, PrinterIcon, KdsIcon, TrashIcon, ShieldCheckIcon, DocumentIcon, FolderIcon, ArrowLeftIcon, ArrowRightIcon, ShoppingCartIcon, ExclamationTriangleIcon, ReceiptIcon, DocumentCheckIcon, ClientsIcon, BoxIcon, AddIcon, DollarIcon, ClockIcon, StarIcon, MapPinIcon } from '../components/Icons';
+import { CloseIcon, SearchIcon, CheckCircleIcon, UserPlusIcon, PrinterIcon, KdsIcon, TrashIcon, ShieldCheckIcon, DocumentIcon, FolderIcon, ArrowLeftIcon, ArrowRightIcon, ShoppingCartIcon, ExclamationTriangleIcon, ReceiptIcon, DocumentCheckIcon, ClientsIcon, BoxIcon, AddIcon, DollarIcon, ClockIcon, StarIcon, MapPinIcon, Loader2Icon } from '../components/Icons';
 import { getConfig } from '../services/configService';
 
 // Declare html2pdf for TypeScript
@@ -62,6 +62,10 @@ const CreateClientModal: React.FC<{
     const [telefonos, setTelefonos] = useState<string[]>([]);
     const [currentTelefono, setCurrentTelefono] = useState('');
     const [errors, setErrors] = useState<{ nombre?: string; cedulaRuc?: string; telefono?: string }>({});
+    
+    // UI States for interaction
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Refs for managing focus
     const nombreRef = useRef<HTMLInputElement>(null);
@@ -87,6 +91,8 @@ const CreateClientModal: React.FC<{
             setTelefonos([]);
             setCurrentTelefono('');
             setErrors({});
+            setIsSaving(false);
+            setSaveSuccess(false);
             setTimeout(() => nombreRef.current?.focus(), 100);
         }
     }, [isOpen, initialName, initialCedulaRuc]);
@@ -158,21 +164,36 @@ const CreateClientModal: React.FC<{
         e.preventDefault();
         if (!validateForm()) return;
 
+        setIsSaving(true);
+
         const { nombre, cedulaRuc, email, regimen, nombreComercial, direccion, notas } = newClienteData;
         const finalTelefonos = [...telefonos];
         if (currentTelefono.trim().length === 10 && /^\d+$/.test(currentTelefono.trim()) && !finalTelefonos.includes(currentTelefono.trim())) {
             finalTelefonos.push(currentTelefono.trim());
         }
 
+        // Simular pequeño delay para UX
+        await new Promise(resolve => setTimeout(resolve, 600));
+
         const newCliente = await createCliente({ 
             nombre, cedula: cedulaRuc, ruc: cedulaRuc.length === 13 ? cedulaRuc : undefined, telefono: finalTelefonos, email: email || undefined, regimen, nombreComercial: nombreComercial || undefined, direccion: direccion || undefined, notas: notas || undefined
         });
-        onClientCreated(newCliente);
+
+        setIsSaving(false);
+        setSaveSuccess(true);
+
+        // Cerrar automáticamente después de mostrar el éxito
+        setTimeout(() => {
+            onClientCreated(newCliente);
+        }, 1200);
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
+            {/* Quitamos el onClick del div principal para evitar cierres accidentales */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-100 relative">
+                
+                {/* Header */}
                 <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 rounded-t-2xl">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <div className="bg-brand-blue text-white p-1.5 rounded-lg"><UserPlusIcon className="h-5 w-5" /></div>
@@ -180,6 +201,7 @@ const CreateClientModal: React.FC<{
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors"><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                 </div>
+
                 <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
@@ -220,8 +242,26 @@ const CreateClientModal: React.FC<{
                         <textarea ref={notasRef} name="notas" id="notas" value={newClienteData.notas} onChange={handleChange} onKeyDown={(e) => handleEnterNavigation(e, saveButtonRef)} rows={2} className="w-full p-2.5 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm" placeholder="Preferencias..."></textarea>
                     </div>
                     <div className="flex justify-end pt-4 gap-3 border-t dark:border-gray-700">
-                        <button type="button" onClick={onClose} className="px-5 py-2.5 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</button>
-                        <button ref={saveButtonRef} type="submit" className="px-6 py-2.5 bg-brand-blue text-white font-bold rounded-lg shadow-lg hover:bg-blue-800 hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0">Guardar Cliente</button>
+                        <button type="button" onClick={onClose} disabled={isSaving || saveSuccess} className="px-5 py-2.5 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50">Cancelar</button>
+                        
+                        <button 
+                            ref={saveButtonRef} 
+                            type="submit" 
+                            disabled={isSaving || saveSuccess}
+                            className={`px-6 py-2.5 text-white font-bold rounded-lg shadow-lg transition-all transform flex items-center gap-2 min-w-[140px] justify-center ${
+                                saveSuccess 
+                                    ? 'bg-green-500 hover:bg-green-600 scale-105' 
+                                    : 'bg-brand-blue hover:bg-blue-800 hover:-translate-y-0.5 active:translate-y-0'
+                            }`}
+                        >
+                            {isSaving ? (
+                                <><Loader2Icon className="animate-spin w-5 h-5"/> Guardando...</>
+                            ) : saveSuccess ? (
+                                <><CheckCircleIcon className="w-5 h-5"/> ¡Guardado!</>
+                            ) : (
+                                "Guardar Cliente"
+                            )}
+                        </button>
                     </div>
                 </form>
             </div>

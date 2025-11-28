@@ -5,7 +5,7 @@ import { getClientes, getTrabajos, updateCliente } from '../services/mockApi';
 import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
 import { UI_TEXT } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
-import { CloseIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ClockIcon, PencilIcon } from '../components/Icons';
+import { CloseIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ClockIcon, PencilIcon, ExclamationTriangleIcon, Loader2Icon, CheckCircleIcon } from '../components/Icons';
 
 interface ClientKpiCardProps {
     title: string;
@@ -47,11 +47,17 @@ const ClientFormModal: React.FC<{
 }> = ({ isOpen, onClose, onSave, clientToEdit }) => {
     const [formData, setFormData] = useState<Partial<Cliente>>({});
     const [telefonosStr, setTelefonosStr] = useState('');
+    
+    // UI States
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     useEffect(() => {
         if (clientToEdit) {
             setFormData({ ...clientToEdit });
             setTelefonosStr(clientToEdit.telefono.join(', '));
+            setIsSaving(false);
+            setSaveSuccess(false);
         }
     }, [clientToEdit, isOpen]);
 
@@ -61,19 +67,31 @@ const ClientFormModal: React.FC<{
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
+
         const updatedClient = {
             ...clientToEdit,
             ...formData,
             telefono: telefonosStr.split(',').map(t => t.trim()).filter(t => t.length > 0)
         } as Cliente;
-        onSave(updatedClient);
+
+        // Simular un pequeño delay para mejorar la sensación de proceso
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        setIsSaving(false);
+        setSaveSuccess(true);
+
+        setTimeout(() => {
+            onSave(updatedClient);
+        }, 1000);
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center p-4 animate-fade-in">
+            {/* Quitamos onClick={onClose} del div padre para evitar cierres accidentales */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg relative" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">Editar Cliente</h2>
                     <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500" /></button>
@@ -99,9 +117,26 @@ const ClientFormModal: React.FC<{
 
                     <InputField label="Notas" name="notas" value={formData.notas || ''} onChange={handleChange} as="textarea" rows={3} />
 
-                    <div className="flex justify-end pt-4 gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancelar</button>
-                        <button type="submit" className="px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg hover:bg-blue-700">Guardar Cambios</button>
+                    <div className="flex justify-end pt-4 gap-3 border-t dark:border-gray-700">
+                        <button type="button" onClick={onClose} disabled={isSaving || saveSuccess} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
+                        
+                        <button 
+                            type="submit" 
+                            disabled={isSaving || saveSuccess}
+                            className={`px-4 py-2 text-white font-semibold rounded-lg transition-all transform flex items-center justify-center gap-2 min-w-[140px] ${
+                                saveSuccess 
+                                    ? 'bg-green-600 hover:bg-green-700 scale-105' 
+                                    : 'bg-brand-blue hover:bg-blue-700'
+                            }`}
+                        >
+                            {isSaving ? (
+                                <><Loader2Icon className="animate-spin w-5 h-5"/> Guardando...</>
+                            ) : saveSuccess ? (
+                                <><CheckCircleIcon className="w-5 h-5"/> ¡Guardado!</>
+                            ) : (
+                                "Guardar Cambios"
+                            )}
+                        </button>
                     </div>
                 </form>
             </div>

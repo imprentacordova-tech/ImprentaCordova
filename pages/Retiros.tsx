@@ -4,7 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes, registerRetiro } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
 import { formatCurrency } from '../utils';
-import { SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ExclamationTriangleIcon, ClockIcon, UserPlusIcon, CalendarDaysIcon, CordovaLogo } from '../components/Icons';
+import { SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ExclamationTriangleIcon, ClockIcon, UserPlusIcon, CalendarDaysIcon, CordovaLogo, WhatsAppIcon } from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
 // Declare html2pdf for TypeScript
@@ -13,6 +13,90 @@ declare const html2pdf: any;
 // --- Helper para formatear hora ---
 const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', hour12: true });
+};
+
+// --- Helper para WhatsApp y Lógica de Urgencia ---
+const getUrgencyConfig = (trabajo: Trabajo) => {
+    const fechaEntrada = new Date(trabajo.fechaEntrada);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - fechaEntrada.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    // Simulación: Asumimos que si entró hace X días, lleva ese tiempo en vitrina 
+    // (en un sistema real usaríamos fechaCambioEstado)
+    
+    const isOld = diffDays > 3;
+    const isVeryOld = diffDays > 7;
+    const hasSaldo = trabajo.saldo > 0;
+
+    if (hasSaldo && isVeryOld) {
+        return {
+            borderColor: 'border-l-4 border-l-red-500',
+            bg: 'bg-red-50 dark:bg-red-900/10',
+            textColor: 'text-red-700 dark:text-red-300',
+            label: `¡Urgente! ${diffDays} días sin retirar`,
+            iconColor: 'text-red-500'
+        };
+    } else if (hasSaldo && isOld) {
+        return {
+            borderColor: 'border-l-4 border-l-orange-400',
+            bg: 'bg-orange-50 dark:bg-orange-900/10',
+            textColor: 'text-orange-700 dark:text-orange-300',
+            label: `${diffDays} días en espera`,
+            iconColor: 'text-orange-500'
+        };
+    } else if (isVeryOld) {
+        return {
+            borderColor: 'border-l-4 border-l-gray-400',
+            bg: 'bg-gray-50 dark:bg-gray-800',
+            textColor: 'text-gray-600 dark:text-gray-400',
+            label: 'Olvidadado (>1 sem)',
+            iconColor: 'text-gray-400'
+        };
+    }
+    
+    return {
+        borderColor: 'border-l-4 border-l-brand-blue', // Normal
+        bg: 'hover:bg-blue-50 dark:hover:bg-gray-700/50',
+        textColor: 'text-gray-500',
+        label: 'Reciente',
+        iconColor: 'text-brand-blue'
+    };
+};
+
+const generateWhatsAppLink = (trabajo: Trabajo, cliente: Cliente) => {
+    const telefono = cliente.telefono[0]?.replace(/\D/g, '');
+    if (!telefono) return null;
+    
+    const formattedPhone = telefono.startsWith('0') ? '593' + telefono.substring(1) : telefono;
+    
+    const now = new Date();
+    const hour = now.getHours();
+    const saludo = hour < 12 ? "Buen día" : "Buenas tardes";
+    
+    const fechaEntrada = new Date(trabajo.fechaEntrada);
+    const diffTime = Math.abs(now.getTime() - fechaEntrada.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    let mensaje = `${saludo} estimado/a *${cliente.nombre}*, le saludamos de *Imprenta Córdova*. 🖨️\n\n`;
+    
+    if (diffDays <= 1) {
+        mensaje += `Le informamos con gusto que su pedido de *${trabajo.subtipo}* acaba de ser finalizado y está *listo para su retiro*. ✅\n`;
+    } else if (diffDays > 3) {
+        mensaje += `Le recordamos amablemente que su pedido de *${trabajo.subtipo}* se encuentra listo en nuestras oficinas desde hace unos días. 🗓️\n`;
+    } else {
+        mensaje += `Le comunicamos que su pedido de *${trabajo.subtipo}* ya está listo para retirar. 👍\n`;
+    }
+    
+    if (trabajo.saldo > 0) {
+        mensaje += `\nRecuerde que tiene un saldo pendiente de *$${formatCurrency(trabajo.saldo).replace('$','')}* al momento de la entrega. 💰\n`;
+    } else {
+        mensaje += `\nSu pedido ya se encuentra cancelado en su totalidad. ✨\n`;
+    }
+    
+    mensaje += `\nLos esperamos! 📍`;
+    
+    return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(mensaje)}`;
 };
 
 // --- MODAL DE VISTA PREVIA DEL COMPROBANTE (NOTA DE VENTA A5) ---
@@ -454,32 +538,50 @@ const RetirosPage: React.FC = () => {
                         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                            {trabajosEnVitrina.map(trabajo => {
                                 const cliente = clientes.find(c => c.id === trabajo.clienteId);
+                                const urgency = getUrgencyConfig(trabajo);
+                                const waLink = cliente ? generateWhatsAppLink(trabajo, cliente) : null;
+
                                 return (
-                                     <li key={trabajo.id} className="p-5 hover:bg-blue-50 dark:hover:bg-gray-700/50 flex flex-wrap justify-between items-center gap-4 transition-colors group">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <span className="bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded">#{trabajo.orden}</span>
-                                                <p className="font-bold text-gray-900 dark:text-white text-lg">{cliente?.nombre}</p>
+                                     <li key={trabajo.id} className={`p-5 transition-colors group ${urgency.borderColor} ${urgency.bg}`}>
+                                        <div className="flex flex-wrap justify-between items-center gap-4">
+                                            <div className="flex-1 min-w-[200px]">
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <span className="bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded">#{trabajo.orden}</span>
+                                                    <p className="font-bold text-gray-900 dark:text-white text-lg">{cliente?.nombre}</p>
+                                                    
+                                                    {/* Urgency Badge */}
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border border-current ${urgency.textColor}`}>
+                                                        {urgency.label}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{trabajo.subtipo}</p>
+                                                <div className="flex items-center gap-4 mt-1">
+                                                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                                                        <CalendarDaysIcon className="w-3 h-3"/> {new Date(trabajo.fechaEntrada).toLocaleDateString()}
+                                                    </p>
+                                                    {waLink && (
+                                                        <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-bold text-green-600 hover:text-green-700 hover:underline">
+                                                            <WhatsAppIcon className="w-3 h-3"/> Avisar por WhatsApp
+                                                        </a>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{trabajo.subtipo}</p>
-                                            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                                                <CalendarDaysIcon className="w-3 h-3"/> {new Date(trabajo.fechaEntrada).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <div className="text-right flex items-center gap-6">
-                                            <div className="text-right">
-                                                {trabajo.saldo === 0 ? (
-                                                    <p className="font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm">Pagado</p>
-                                                ) : (
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase font-bold">Pendiente</p>
-                                                        <p className="font-black text-brand-red text-xl">{formatCurrency(trabajo.saldo)}</p>
-                                                    </div>
-                                                )}
+                                            
+                                            <div className="flex items-center gap-6">
+                                                <div className="text-right">
+                                                    {trabajo.saldo === 0 ? (
+                                                        <p className="font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm">Pagado</p>
+                                                    ) : (
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 uppercase font-bold">Pendiente</p>
+                                                            <p className={`font-black text-xl ${urgency.textColor}`}>{formatCurrency(trabajo.saldo)}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <button onClick={() => setSelectedTrabajo(trabajo)} className="px-5 py-2.5 bg-white border-2 border-brand-blue text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm">
+                                                    Entregar
+                                                </button>
                                             </div>
-                                            <button onClick={() => setSelectedTrabajo(trabajo)} className="px-5 py-2.5 bg-white border-2 border-brand-blue text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm">
-                                                Entregar
-                                            </button>
                                         </div>
                                     </li>
                                 );
