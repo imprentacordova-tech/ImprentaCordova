@@ -1,35 +1,49 @@
-import { Client, Task, AnalysisType } from "../types";
+import { GoogleGenAI } from "@google/genai";
+import { AIContentRequest } from "../types";
 
-// Mock service to replace AI functionality and prevent build errors
+// FIX: Conformed to @google/genai guidelines using process.env.API_KEY
+// This assumes process.env.API_KEY is available in the environment (e.g. via Vite define or Next.js)
+const apiKey = process.env.API_KEY;
 
-export const summarizeTextWithGemini = async (text: string): Promise<string> => {
-  if (!text) return "";
-  console.log("AI Summary disabled: Returning mock summary");
-  return text.length > 50 ? text.substring(0, 50) + "..." : text;
-};
+// Initialize conditionally to prevent app crash if key is missing
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
-export const analyzeClientPhoto = async (base64Image: string, mimeType: string): Promise<Partial<Client> & { phone?: string }> => {
-  console.log("AI Photo Analysis disabled");
-  // Simulate a delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  // Return a mock success or error depending on needs, here throwing to indicate it's disabled in UI
-  throw new Error("La funcionalidad de análisis de imagen por IA está desactivada temporalmente para asegurar la estabilidad del despliegue.");
-};
+export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
+  if (!ai) {
+    console.warn("Gemini API Key is missing. Check your process.env.API_KEY environment variable.");
+    return "El sistema de IA está configurándose. Por favor contacta a la imprenta directamente para ideas creativas.";
+  }
 
-export const runStrategicAnalysis = async (clients: Client[], tasks: Task[], type: AnalysisType): Promise<string> => {
-    console.log("AI Strategic Analysis disabled");
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  const modelId = "gemini-2.5-flash";
+  
+  const prompt = `
+    Actúa como un experto redactor publicitario para una imprenta en Ecuador.
+    El cliente necesita texto para un diseño impreso.
     
-    const clientsCount = clients.length;
-    const tasksCount = tasks.length;
+    Negocio: ${request.businessName}
+    Producto a imprimir: ${request.productType}
+    Tono deseado: ${request.tone}
+    
+    Genera 3 opciones distintas, cortas y atractivas para poner en este producto impreso.
+    Usa un formato de lista simple.
+    Si es una tarjeta, incluye slogan.
+    Si es volante, incluye un 'Call to Action' claro.
+    Responde solo con el texto sugerido, sin introducciones largas.
+  `;
 
-    return `
-        <h3>Análisis Simplificado (Modo Seguro)</h3>
-        <p>La conexión con IA avanzada está desactivada. Aquí tienes un resumen básico:</p>
-        <ul>
-            <li><strong>Total Clientes:</strong> ${clientsCount}</li>
-            <li><strong>Total Tareas:</strong> ${tasksCount}</li>
-        </ul>
-        <p>Para habilitar el análisis profundo, verifique la configuración de la API en futuras actualizaciones.</p>
-    `;
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        thinkingConfig: { thinkingBudget: 0 } // Speed over deep reasoning for simple copy
+      }
+    });
+
+    // Access the text property directly from the response object
+    return response.text || "Lo sentimos, no pudimos generar ideas en este momento.";
+  } catch (error) {
+    console.error("Error generating content:", error);
+    return "Ocurrió un error al conectar con el asistente inteligente. Por favor intente más tarde.";
+  }
 };

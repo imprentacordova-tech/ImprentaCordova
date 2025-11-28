@@ -1,160 +1,172 @@
 
-export type Screen = 'home' | 'clients' | 'tasks' | 'reports' | 'settings' | 'cobranza' | 'calendar' | 'web_orders';
-export type Theme = 'light' | 'dark' | 'midnight';
+import React from 'react';
 
-export interface ChatMessage {
+export enum TrabajoTipo {
+  SRI = 'sri',
+  GENERAL = 'general'
+}
+
+export enum TrabajoEstado {
+  PENDIENTE = 'Pendiente',
+  EN_DISENO = 'En Diseño', // Nuevo estado
+  PROCESO = 'En Proceso',
+  VITRINA = 'Vitrina',
+  ENTREGADO = 'Entregado'
+}
+
+export enum Regimen {
+  NEGOCIO_POPULAR = 'Rimpe Negocio Popular',
+  EMPRENDEDOR = 'Rimpe Emprendedor',
+  GENERAL = 'General'
+}
+
+export interface Cliente {
   id: string;
-  role: 'user' | 'model';
-  text: string;
-}
-
-export interface Message {
-  id: string;
-  role: 'user' | 'model';
-  text: string;
-  isError?: boolean;
-  sources?: { uri: string; title: string }[];
-}
-
-export enum DeclarationStatus {
-  Pendiente = 'Pendiente',
-  Enviada = 'Enviada',
-  Pagada = 'Pagada',
-  Cancelada = 'Cancelada',
-}
-
-export enum TaxRegime {
-  General = 'Régimen General',
-  RimpeNegocioPopular = 'RIMPE Negocio Popular',
-  RimpeEmprendedor = 'RIMPE Emprendedor',
-}
-
-export enum ClientCategory {
-  SuscripcionMensual = 'Suscripción Mensual IVA',
-  InternoMensual = 'Interno Mensual',
-  SuscripcionSemestral = 'Suscripción Semestral',
-  InternoSemestral = 'Interno Semestral',
-  ImpuestoRentaNegocioPopular = 'Impuesto a la Renta (Negocio Popular)',
-  DevolucionIvaTerceraEdad = 'Devolución IVA 3ra Edad (Mensual)',
-}
-
-export enum RentaCategory {
-  Suscripcion = 'Suscripción Renta',
-  Interno = 'Interno Renta',
-}
-
-export interface ServiceFeesConfig {
-  ivaMensual: number;
-  ivaSemestral: number;
-  rentaNP: number;
-  rentaGeneral: number;
-  devolucionIva: number;
-  devolucionRenta: number;
-  anexoGastosPersonales: number;
-  customPunctualServices?: Array<{ id: string; name: string; price: number }>;
-}
-
-export interface ReminderConfig {
-  isEnabled: boolean;
-  daysBefore: number;
-  onDueDate: boolean;
-  overdueInterval: number;
-  template: string;
-}
-
-export type ReminderType = 'upcoming' | 'due_date' | 'overdue';
-
-export interface Declaration {
-  period: string; // e.g., '2024-07', '2024-S1', or '2024'
-  status: DeclarationStatus;
-  updatedAt: string; // ISO string
-  declaredAt?: string; // ISO string for when it was marked 'Enviada'
-  paidAt?: string; // ISO string for when it was marked 'Pagada'
-  transactionId?: string; // For advance payment receipts
-  amount?: number; // Fee paid for this period
-  reminders?: Array<{ date: string; channel: 'email' | 'whatsapp', type: ReminderType }>;
-}
-
-export interface Client {
-  id: string;
-  ruc: string;
-  name: string;
-  sriPassword: string;
-  phones?: string[];
+  cedula: string;
+  ruc?: string;
+  nombre: string;
+  nombreComercial?: string;
+  direccion?: string;
+  notas?: string;
+  telefono: string[];
   email?: string;
-  notes?: string;
-  regime: TaxRegime;
-  category: ClientCategory;
-  rentaCategory?: RentaCategory;
-  declarationHistory: Declaration[];
-  isDeleted?: boolean;
-  isActive?: boolean;
-  customServiceFee?: number;
-  annualRentaStatus?: DeclarationStatus;
+  creadoEn: string;
+  regimen: Regimen;
 }
 
-export enum TaskStatus {
-  Pendiente = 'Pendiente',
-  EnProceso = 'En Proceso',
-  Completada = 'Completada',
-  Abono = 'Abono',
-  Pagada = 'Pagada',
+export interface Trabajo {
+  id: string;
+  orden: number;
+  clienteId: string;
+  titular: string;
+  tipo: TrabajoTipo;
+  subtipo: string;
+  cantidad: number;
+  tamano: string;
+  total: number;
+  abono: number;
+  saldo: number;
+  estado: TrabajoEstado;
+  fechaEntrada: string;
+  fechaVencimiento?: string;
+  caduco: boolean;
+  fotoOriginalUrl?: string;
+  creadoPor?: string;
+  actualizadoPor?: string;
+  establecimiento?: string;
+  puntoEmision?: string;
+  claveAcceso?: string;
+  origen?: 'Web' | 'Interno';
+  esRenovacion?: boolean;
 }
 
-export interface Task {
+export interface Kpi {
+    title: string;
+    metric: string;
+    tag?: string;
+    icon: React.ComponentType<{ className?: string }>;
+    variant: 'blue' | 'green' | 'purple' | 'red' | 'gray' | 'orange';
+}
+
+export interface Producto {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  categoria: string;
+  esSRI?: boolean;
+  imagenUrl?: string;
+}
+
+export interface User {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: 'Admin' | 'Operador' | 'Diseñador'; // Added Diseñador role hint
+  estado: 'Activo' | 'Inactivo';
+  ultimoAcceso: string;
+  // Security fields
+  password?: string;
+  requirePassword?: boolean;
+}
+
+export interface InventoryItem {
+  id: string;
+  item: string;
+  cantidad: number;
+  unidad: string;
+  costoUnitario: number;
+  minimo: number;
+}
+
+export interface Proveedor {
+  id: string;
+  nombre: string;
+  categoria: string;
+  tipo: 'Producto' | 'Servicio';
+  productos?: string;
+  ciudad?: string;
+  website?: string;
+  contacto: string;
+  telefono: string;
+  email?: string;
+  direccion?: string;
+  notas?: string;
+  estado: 'Activo' | 'Inactivo';
+  creadoEn: string;
+}
+
+export interface TareaProveedor {
+  id: string;
+  proveedorId: string;
+  titulo: string;
+  tipo: 'General' | 'Mantenimiento';
+  descripcion: string;
+  fechaVencimiento: string;
+  completada: boolean;
+}
+
+// --- New Exports for Landing Page Components & Services ---
+
+export interface AIContentRequest {
+  businessName: string;
+  productType: string;
+  tone: string;
+}
+
+export interface ServiceItem {
   id: string;
   title: string;
   description: string;
-  clientId?: string;
-  nonClientName?: string;
-  nonClientRuc?: string;
-  sriPassword?: string;
-  dueDate: string; // ISO string
-  status: TaskStatus;
-  attachments?: File[];
-  cost?: number;
-  advancePayment?: number;
+  iconName: string;
+  imageUrl: string;
 }
 
-export type ClientFilter = { 
-  category?: ClientCategory; 
-  regimes?: TaxRegime[]; 
-  title?: string 
-};
-
-export type TranscribableField = 'ruc' | 'name' | 'sriPassword' | 'email' | 'phone' | 'notes';
-
-export type AnalysisType = 'cashflow' | 'riskMatrix' | 'optimization' | 'efficiency';
-
-export interface AdvancePaymentResult {
-    updatedClient: Client;
-    paidPeriods: { period: string; amount: number }[];
-    transactionId: string;
-    newRentaTask?: Task;
+export enum ToneType {
+  PROFESSIONAL = 'Profesional',
+  FRIENDLY = 'Amigable',
+  CREATIVE = 'Creativo',
+  URGENT = 'Urgente',
+  FORMAL = 'Formal'
 }
 
-// New Types for Web Orders
-export interface OrderItem {
-    id: string;
-    title: string;
-    price: number;
-    quantity: number;
+export interface ContactFormState {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
 }
 
-export interface WebOrder {
-    id: string;
-    clientName: string;
-    clientEmail: string;
-    clientPhone: string;
-    clientRuc: string;
-    items: OrderItem[];
-    total: number;
-    status: 'pending' | 'contacted' | 'completed' | 'rejected';
-    createdAt: string;
-}
+export type ProductCategory = string;
 
-export interface PublicUser {
-    name: string;
-    email: string;
-    photoUrl?: string;
+export interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  unit: string;
+  description: string;
+  specs: string[];
+  imageUrl: string;
+  isPopular?: boolean;
 }

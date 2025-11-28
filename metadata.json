@@ -1,8 +1,7 @@
 {
-  "name": "Gestiones Tributarias",
-  "description": "Plataforma profesional de Gestiones Tributarias liderada por Santiago Cordova, Asesor Tributario. Soluciones expertos para SRI, IESS y Supercias.",
+  "name": "Imprenta Córdova 2025",
+  "description": "Una aplicación web profesional para la gestión de finanzas, clientes y producción (KDS) para Imprenta Córdova, optimizada para 2025.",
   "requestFramePermissions": [
-    "camera",
-    "microphone"
+    "camera"
   ]
 }
