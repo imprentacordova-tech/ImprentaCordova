@@ -1,17 +1,19 @@
 
 import React, { useState } from 'react';
-import { APP_NAME, UI_TEXT } from '../constants';
+import { Link } from 'react-router-dom';
+import { APP_NAME } from '../constants';
 import { User } from '../types';
 import { getUsers } from '../services/mockApi';
-import { CordovaLogo, UsersIcon, CheckCircleIcon, ArrowRightIcon, ShieldCheckIcon } from '../components/Icons';
+import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon } from '../components/Icons';
 
 interface LoginProps {
-  onLoginSuccess: (user: User) => void;
+  onLoginSuccess: (user: User, remember: boolean) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [key, setKey] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,14 +31,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     if (validUser) {
       if (validUser.requirePassword) {
           if (validUser.password === password) {
-              onLoginSuccess(validUser);
+              onLoginSuccess(validUser, remember);
           } else {
               setError("Contraseña incorrecta");
               setLoading(false);
           }
       } else {
           // No password required for this user
-          onLoginSuccess(validUser);
+          onLoginSuccess(validUser, remember);
       }
     } else {
       setError("Usuario no encontrado o inactivo");
@@ -72,7 +74,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                         {APP_NAME}
                     </h1>
                     <p className="text-blue-200 text-sm font-medium tracking-wide uppercase opacity-80">
-                        Sistema de Gestión Interna
+                        Gestión Interna
                     </p>
                 </div>
 
@@ -94,16 +96,16 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
                                     className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
-                                    placeholder="Ej. Pedro"
+                                    placeholder="Ej. Ezequiel"
                                     autoFocus
-                                    autoComplete="off"
+                                    autoComplete="username"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1">
                             <label htmlFor="password" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
-                                Contraseña <span className="text-[10px] normal-case opacity-60 font-normal">(Si aplica)</span>
+                                Contraseña
                             </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -117,8 +119,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
                                     placeholder="••••••"
+                                    autoComplete="current-password"
                                 />
                             </div>
+                        </div>
+
+                        {/* Remember Me Checkbox */}
+                        <div className="flex items-center ml-1">
+                            <input
+                                id="remember-me"
+                                name="remember-me"
+                                type="checkbox"
+                                checked={remember}
+                                onChange={(e) => setRemember(e.target.checked)}
+                                className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-500 rounded bg-slate-800/50 cursor-pointer"
+                            />
+                            <label htmlFor="remember-me" className="ml-2 block text-sm text-blue-100 cursor-pointer select-none">
+                                Mantener sesión iniciada
+                            </label>
                         </div>
 
                         {error && (
@@ -166,9 +184,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </div>
             
             <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                 <a href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-medium opacity-70 hover:opacity-100 group">
-                    <span className="group-hover:-translate-x-1 transition-transform">&larr;</span> Volver a la Tienda Virtual
-                </a>
+                 <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all font-medium text-sm border border-white/10 group backdrop-blur-sm shadow-lg">
+                    <span className="group-hover:-translate-x-1 transition-transform"><ArrowLeftIcon className="w-4 h-4" /></span> Volver a la Tienda Virtual
+                </Link>
             </div>
         </div>
     </div>

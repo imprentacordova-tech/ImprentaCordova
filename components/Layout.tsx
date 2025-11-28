@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon } from './Icons';
+import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
 
@@ -17,6 +17,7 @@ const navGroups = [
     title: 'INICIO',
     items: [
       { path: "/dashboard", label: "Panel", icon: DashboardIcon },
+      { path: "/", label: "Ver Tienda", icon: GlobeAltIcon },
     ]
   },
   {

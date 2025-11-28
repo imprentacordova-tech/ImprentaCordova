@@ -48,22 +48,35 @@ const ProtectedRoutes: React.FC<{ currentUser: User | null; onLogout: () => void
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(() => {
-        const userJson = localStorage.getItem('currentUser');
+        // Intentar recuperar de localStorage (Persistente) o sessionStorage (Sesión actual)
+        const localUser = localStorage.getItem('currentUser');
+        const sessionUser = sessionStorage.getItem('currentUser');
+        
         try {
-            return userJson ? JSON.parse(userJson) : null;
+            if (localUser) return JSON.parse(localUser);
+            if (sessionUser) return JSON.parse(sessionUser);
+            return null;
         } catch {
             localStorage.removeItem('currentUser');
+            sessionStorage.removeItem('currentUser');
             return null;
         }
     });
 
-    const handleLogin = useCallback((user: User) => {
-        localStorage.setItem('currentUser', JSON.stringify(user));
+    const handleLogin = useCallback((user: User, remember: boolean) => {
+        if (remember) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            sessionStorage.removeItem('currentUser'); // Limpiar session si existe para evitar duplicidad lógica
+        } else {
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.removeItem('currentUser'); // Limpiar local si existe
+        }
         setCurrentUser(user);
     }, []);
 
     const handleLogout = useCallback(() => {
         localStorage.removeItem('currentUser');
+        sessionStorage.removeItem('currentUser');
         setCurrentUser(null);
     }, []);
 

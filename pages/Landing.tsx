@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -95,7 +96,7 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                                 ? 'text-slate-700 hover:bg-slate-100 hover:text-brand-blue' 
                                 : 'text-white hover:bg-white/20'
                             }`}
-                            aria-label="Ingresar a Intranet"
+                            aria-label="Ingresar a Gestión Interna"
                         >
                             <UsersIcon className="w-6 h-6" />
                         </Link>
@@ -110,7 +111,7 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                             }`}
                         >
                             <UsersIcon className="w-4 h-4" />
-                            <span>Intranet</span>
+                            <span>Gestión Interna</span>
                         </Link>
                     </div>
                 </div>
@@ -330,8 +331,8 @@ const Footer: React.FC = () => (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                 <div className="col-span-1 md:col-span-2">
                     <Link to="/" className="flex items-center gap-2 mb-6">
-                        <div className="bg-white p-1.5 rounded-lg">
-                            <CordovaLogo className="h-8 w-8 text-brand-blue" />
+                        <div className="bg-white p-1 rounded-lg">
+                            <CordovaLogo className="h-10 w-auto object-contain" />
                         </div>
                         <span className="text-2xl font-black uppercase tracking-tighter">Imprenta Córdova</span>
                     </Link>

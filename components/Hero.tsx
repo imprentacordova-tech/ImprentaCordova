@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { MapPin, Clock } from 'lucide-react';
+import { WhatsAppIcon, ArrowRightIcon } from './Icons';
 
 const Hero: React.FC = () => {
   return (
@@ -46,11 +48,19 @@ const Hero: React.FC = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
-          <a href="#contact" className="px-8 py-4 bg-orange-600 text-white rounded-xl font-bold text-lg hover:bg-orange-500 transition-all shadow-lg shadow-orange-600/30 transform hover:-translate-y-1 flex items-center justify-center">
+          <a 
+            href="#contact" 
+            className="group px-8 py-4 bg-orange-600 text-white rounded-xl font-bold text-lg hover:bg-orange-500 transition-all duration-300 shadow-lg shadow-orange-600/30 transform hover:-translate-y-1 hover:scale-105 hover:shadow-orange-500/50 flex items-center justify-center active:scale-95"
+          >
+            <WhatsAppIcon className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
             Cotizar por WhatsApp
           </a>
-          <a href="#catalog" className="px-8 py-4 bg-white/10 border border-white/20 text-white rounded-xl font-bold text-lg hover:bg-white hover:text-blue-900 transition-all backdrop-blur-sm flex items-center justify-center">
+          <a 
+            href="#catalog" 
+            className="group px-8 py-4 bg-white/10 border border-white/20 text-white rounded-xl font-bold text-lg hover:bg-white hover:text-blue-900 transition-all duration-300 backdrop-blur-sm flex items-center justify-center transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg active:scale-95"
+          >
             Ver Catálogo
+            <ArrowRightIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
           </a>
         </div>
       </div>

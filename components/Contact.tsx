@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
 import { ContactFormState } from '../types';
@@ -90,20 +91,30 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            {/* Map Placeholder - Visual representation since we can't embed real iframe without API key or external URL constraints */}
-            <div className="h-64 bg-slate-200 rounded-2xl overflow-hidden relative group border-2 border-white shadow-lg">
-              <img 
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                alt="Mapa de Pasaje" 
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-500 scale-100 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-blue-900/30 group-hover:bg-blue-900/10 transition-colors"></div>
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <div className="bg-white px-4 py-2 rounded-lg shadow-xl flex items-center animate-bounce">
-                    <MapPin className="text-red-600 w-5 h-5 mr-2" />
-                    <span className="font-bold text-slate-900 text-sm">Estamos Aquí</span>
-                 </div>
-              </div>
+            {/* Interactive Map Embed */}
+            <div className="h-80 bg-slate-200 rounded-2xl overflow-hidden relative group border-2 border-white shadow-lg hover:shadow-xl transition-shadow">
+                <iframe 
+                    title="Ubicación Imprenta Córdova"
+                    src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=es&amp;q=Calle%20Col%C3%B3n%20e%2F%20Sucre%20y%20Rocafuerte,%20Pasaje,%20El%20Oro,%20Ecuador+(Imprenta%20C%C3%B3rdova)&amp;t=&amp;z=17&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen={true} 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full transition-all duration-700"
+                ></iframe>
+                
+                {/* Floating Badge */}
+                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-lg shadow-md border border-slate-200 flex items-center pointer-events-none animate-fade-in">
+                    <div className="bg-brand-red p-1.5 rounded-full mr-3 shadow-sm">
+                        <MapPin className="text-white w-3 h-3" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-slate-900 text-xs uppercase leading-tight">Imprenta Córdova</p>
+                        <p className="text-[10px] text-slate-500">Pasaje, El Oro</p>
+                    </div>
+                </div>
             </div>
           </div>
 
