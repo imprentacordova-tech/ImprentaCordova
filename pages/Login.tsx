@@ -90,7 +90,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 </div>
 
                 <div className="px-8 pb-10">
-                    <form onSubmit={handleLogin} className="space-y-5">
+                    <form onSubmit={handleLogin} className="space-y-5" autoComplete="off">
                         <div className="space-y-1">
                             <label htmlFor="username" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
                                 Usuario
@@ -130,6 +130,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
                                     placeholder="••••••"
+                                    autoComplete="new-password"
                                 />
                             </div>
                         </div>
