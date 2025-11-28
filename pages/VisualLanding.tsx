@@ -93,7 +93,7 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                             }`}
                         >
                             <UsersIcon className="w-4 h-4" />
-                            Gestión Interna
+                            Intranet
                         </Link>
                     </div>
                 </div>

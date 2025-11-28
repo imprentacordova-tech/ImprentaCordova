@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { APP_NAME, UI_TEXT } from '../constants';
 import { User } from '../types';
 import { getUsers } from '../services/mockApi';
@@ -14,15 +14,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-
-  useEffect(() => {
-      const savedUser = localStorage.getItem('rememberedUser');
-      if (savedUser) {
-          setKey(savedUser);
-          setRememberMe(true);
-      }
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +29,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     if (validUser) {
       if (validUser.requirePassword) {
           if (validUser.password === password) {
-              if (rememberMe) localStorage.setItem('rememberedUser', key);
-              else localStorage.removeItem('rememberedUser');
               onLoginSuccess(validUser);
           } else {
               setError("Contraseña incorrecta");
@@ -47,8 +36,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           }
       } else {
           // No password required for this user
-          if (rememberMe) localStorage.setItem('rememberedUser', key);
-          else localStorage.removeItem('rememberedUser');
           onLoginSuccess(validUser);
       }
     } else {
@@ -109,14 +96,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
                                     placeholder="Ej. Pedro"
                                     autoFocus
-                                    autoComplete="username"
+                                    autoComplete="off"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1">
                             <label htmlFor="password" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
-                                Contraseña
+                                Contraseña <span className="text-[10px] normal-case opacity-60 font-normal">(Si aplica)</span>
                             </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -130,23 +117,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
                                     placeholder="••••••"
-                                    autoComplete="current-password"
                                 />
                             </div>
-                        </div>
-
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                checked={rememberMe}
-                                onChange={(e) => setRememberMe(e.target.checked)}
-                                className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-300 rounded bg-slate-800/50 border-slate-600 cursor-pointer"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-xs text-blue-200 cursor-pointer select-none">
-                                Recordarme en este dispositivo
-                            </label>
                         </div>
 
                         {error && (
