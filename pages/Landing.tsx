@@ -95,7 +95,7 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                                 ? 'text-slate-700 hover:bg-slate-100 hover:text-brand-blue' 
                                 : 'text-white hover:bg-white/20'
                             }`}
-                            aria-label="Ingresar a Gestión Interna"
+                            aria-label="Gestión Interna"
                         >
                             <UsersIcon className="w-6 h-6" />
                         </Link>
