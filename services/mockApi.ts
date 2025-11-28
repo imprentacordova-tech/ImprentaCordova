@@ -120,18 +120,78 @@ const daysAgo = (days: number) => {
 }
 const getRandomUser = () => VALID_USERS[Math.floor(Math.random() * VALID_USERS.length)];
 
-const defaultTrabajos: Trabajo[] = [
-  { id: '1', orden: 1001, clienteId: 'c1', titular: 'Restaurante Sazón', tipo: TrabajoTipo.SRI, subtipo: 'Facturas', cantidad: 10, tamano: '1/2', total: 150.00, abono: 100.00, saldo: 50.00, estado: TrabajoEstado.PENDIENTE, fechaEntrada: daysAgo(1), fechaVencimiento: '2025-07-20T10:00:00Z', caduco: false, creadoPor: getRandomUser(), origen: 'Interno' },
-  { id: '2', orden: 1002, clienteId: 'c2', titular: 'Ana Pérez', tipo: TrabajoTipo.GENERAL, subtipo: 'Tarjetas de Presentación', cantidad: 500, tamano: 'Estándar', total: 45.00, abono: 45.00, saldo: 0.00, estado: TrabajoEstado.ENTREGADO, fechaEntrada: new Date().toISOString(), caduco: false, creadoPor: getRandomUser(), origen: 'Interno' },
-];
-const defaultClientes: Cliente[] = [
-  { id: 'c1', cedula: '1792233445001', ruc: '1792233445001', nombre: 'Restaurante Sazón', telefono: ['0987654321'], creadoEn: '2023-01-15T00:00:00Z', regimen: Regimen.NEGOCIO_POPULAR },
-  { id: 'c2', cedula: '1712345678', nombre: 'Ana Pérez', telefono: ['0998765432'], creadoEn: '2023-02-20T00:00:00Z', regimen: Regimen.GENERAL },
-];
 const defaultProductos: Producto[] = [
-  { id: 'p3', nombre: 'Facturas 1/4 Oficio (25H)', descripcion: 'Talonario de 25 hojas, tamaño 1/4 de oficio.', precio: 10.00, categoria: 'SRI', esSRI: true },
-  { id: 'pi1', nombre: 'Volantes / flyers', descripcion: 'Impresión de volantes en diferentes tamaños y tipos de papel.', precio: 30.00, categoria: 'Publicidad Impresa' },
+  // --- SRI ---
+  { id: 'p_sri_1', nombre: 'Notas de Venta 1/4 Oficio (25H)', descripcion: 'Block de 25 juegos, papel químico. Exclusivo RIMPE Negocio Popular.', precio: 8.00, categoria: 'SRI', esSRI: true },
+  { id: 'p_sri_2', nombre: 'Notas de Venta 1/4 Oficio (50H)', descripcion: 'Block de 50 juegos, papel bond o químico.', precio: 12.00, categoria: 'SRI', esSRI: true },
+  { id: 'p_sri_3', nombre: 'Facturas 1/4 Oficio (25H)', descripcion: 'Block de 25 facturas autocopiativas. Pequeños contribuyentes.', precio: 8.00, categoria: 'SRI', esSRI: true },
+  { id: 'p_sri_4', nombre: 'Facturas A5 (Media Carta) (50H)', descripcion: 'Block de 50 facturas tamaño medio oficio.', precio: 15.00, categoria: 'SRI', esSRI: true },
+  { id: 'p_sri_5', nombre: 'Facturas A4 (50H)', descripcion: 'Block de 50 facturas tamaño completo.', precio: 18.00, categoria: 'SRI', esSRI: true },
+  { id: 'p_sri_6', nombre: 'Retenciones A5 (50H)', descripcion: 'Documentos de retención para agentes.', precio: 12.00, categoria: 'SRI', esSRI: true },
+  { id: 'p_sri_7', nombre: 'Guías de Remisión (50H)', descripcion: 'Para transporte de mercadería.', precio: 14.00, categoria: 'SRI', esSRI: true },
+  
+  // --- PUBLICIDAD ---
+  { id: 'p_pub_1', nombre: 'Mil Volantes A6 (10x14cm)', descripcion: 'Papel couché brillante 115g, impresión full color anverso.', precio: 30.00, categoria: 'Publicidad' },
+  { id: 'p_pub_2', nombre: 'Mil Volantes A5 (14x21cm)', descripcion: 'Papel couché brillante 115g, ideal para menús o promociones.', precio: 55.00, categoria: 'Publicidad' },
+  { id: 'p_pub_3', nombre: 'Mil Tarjetas de Presentación', descripcion: 'Couché 300g, laminado mate + brillo UV localizado.', precio: 35.00, categoria: 'Publicidad' },
+  { id: 'p_pub_4', nombre: 'Trípticos Informativos (Ciento)', descripcion: 'Papel bond o couché, doblados.', precio: 45.00, categoria: 'Publicidad' },
+  
+  // --- GRAN FORMATO ---
+  { id: 'p_gf_1', nombre: 'Gigantografía Lona (m²)', descripcion: 'Impresión 1440dpi, incluye ojales.', precio: 10.00, categoria: 'Gran Formato' },
+  { id: 'p_gf_2', nombre: 'Vinil Adhesivo (m²)', descripcion: 'Vinil brillante o mate para superficies lisas.', precio: 12.00, categoria: 'Gran Formato' },
+  { id: 'p_gf_3', nombre: 'Roll Up Banner 80x200', descripcion: 'Estructura de aluminio + impresión en lona.', precio: 65.00, categoria: 'Gran Formato' },
+  { id: 'p_gf_4', nombre: 'Microperforado (m²)', descripcion: 'Para vidrios, permite visión desde adentro.', precio: 15.00, categoria: 'Gran Formato' },
+
+  // --- OFICINA Y VARIOS ---
+  { id: 'p_var_1', nombre: 'Recibos de Caja (100H)', descripcion: 'Talonario de recibos genéricos.', precio: 5.00, categoria: 'Oficina' },
+  { id: 'p_var_2', nombre: 'Sellos Automáticos (Pequeño)', descripcion: 'Marca Trodat o Shiny, ideal para firmas.', precio: 15.00, categoria: 'Oficina' },
+  { id: 'p_var_3', nombre: 'Sellos Automáticos (Grande)', descripcion: 'Para RUC completo o logotipos.', precio: 22.00, categoria: 'Oficina' },
+  { id: 'p_var_4', nombre: 'Rifas Numeradas (Ciento)', descripcion: 'Papel bond, numeradas y talonadas.', precio: 12.00, categoria: 'Oficina' },
+  { id: 'p_var_5', nombre: 'Tablas de Bingo (Unidad)', descripcion: 'Impresión B/N o color en cartulina.', precio: 0.10, categoria: 'Oficina' },
 ];
+
+const defaultClientes: Cliente[] = [
+  { id: 'c1', cedula: '1792233445001', ruc: '1792233445001', nombre: 'Comercial La Ganga', nombreComercial: 'La Ganga Pasaje', telefono: ['0991234567'], email: 'ventas@laganga.com', direccion: 'Av. Jubones y Sucre', creadoEn: '2023-01-15T00:00:00Z', regimen: Regimen.GENERAL },
+  { id: 'c2', cedula: '0702345678', nombre: 'Juan Pérez', telefono: ['0987654321'], email: 'juan.perez@email.com', direccion: 'Barrio La Peaña', creadoEn: '2023-02-20T00:00:00Z', regimen: Regimen.NEGOCIO_POPULAR },
+  { id: 'c3', cedula: '0705566778001', ruc: '0705566778001', nombre: 'Restaurante El Buen Sabor', telefono: ['0998877665'], direccion: 'Rocafuerte y Colón', creadoEn: '2023-03-10T00:00:00Z', regimen: Regimen.EMPRENDEDOR },
+  { id: 'c4', cedula: '0701122334', nombre: 'María González', telefono: ['0991122334'], direccion: 'Centro de Pasaje', creadoEn: daysAgo(2), regimen: Regimen.GENERAL },
+];
+
+const defaultTrabajos: Trabajo[] = [
+  { 
+    id: 't1', orden: 1050, clienteId: 'c1', titular: 'Comercial La Ganga', 
+    tipo: TrabajoTipo.SRI, subtipo: 'Facturas A4', cantidad: 10, tamano: 'A4', 
+    total: 180.00, abono: 100.00, saldo: 80.00, estado: TrabajoEstado.PENDIENTE, 
+    fechaEntrada: daysAgo(0), fechaVencimiento: '2025-08-15T12:00:00Z', caduco: false, 
+    creadoPor: 'Pedro', origen: 'Interno', establecimiento: '001', puntoEmision: '002' 
+  },
+  { 
+    id: 't2', orden: 1049, clienteId: 'c2', titular: 'Juan Pérez', 
+    tipo: TrabajoTipo.GENERAL, subtipo: 'Tarjetas de Presentación', cantidad: 1000, tamano: 'Estándar', 
+    total: 35.00, abono: 35.00, saldo: 0.00, estado: TrabajoEstado.ENTREGADO, 
+    fechaEntrada: daysAgo(5), caduco: false, creadoPor: 'Aleida', origen: 'Interno' 
+  },
+  { 
+    id: 't3', orden: 1048, clienteId: 'c3', titular: 'Restaurante El Buen Sabor', 
+    tipo: TrabajoTipo.SRI, subtipo: 'Notas de Venta 1/4', cantidad: 5, tamano: '1/4 Oficio', 
+    total: 40.00, abono: 20.00, saldo: 20.00, estado: TrabajoEstado.PROCESO, 
+    fechaEntrada: daysAgo(2), fechaVencimiento: '2025-07-20T10:00:00Z', caduco: false, 
+    creadoPor: 'Roberto', origen: 'Interno', establecimiento: '001', puntoEmision: '001' 
+  },
+  { 
+    id: 't4', orden: 1047, clienteId: 'c4', titular: 'María González', 
+    tipo: TrabajoTipo.GENERAL, subtipo: 'Gigantografía Cumpleaños', cantidad: 1, tamano: '2x1.5m', 
+    total: 30.00, abono: 15.00, saldo: 15.00, estado: TrabajoEstado.VITRINA, 
+    fechaEntrada: daysAgo(4), caduco: false, creadoPor: 'Pedro', origen: 'Interno' 
+  },
+  {
+    id: 't5', orden: 1046, clienteId: 'c1', titular: 'Comercial La Ganga',
+    tipo: TrabajoTipo.GENERAL, subtipo: 'Mil Volantes A6', cantidad: 2000, tamano: 'A6',
+    total: 60.00, abono: 30.00, saldo: 30.00, estado: TrabajoEstado.PENDIENTE,
+    fechaEntrada: daysAgo(1), caduco: false, creadoPor: 'Aleida', origen: 'Interno'
+  }
+];
+
 const defaultUsers: User[] = [
   { id: 'u1', nombre: 'Pedro', email: 'pedro@imprenta.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: daysAgo(0) },
   { id: 'u2', nombre: 'Aleida', email: 'aleida@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(1) },
@@ -140,9 +200,15 @@ const defaultUsers: User[] = [
   { id: 'u5', nombre: 'Dante', email: 'dante@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(2) },
   { id: 'u6', nombre: 'Santiago', email: 'santiago@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(3) },
 ];
-const defaultSriKeys: string[] = ["1234567890"];
-const defaultInventario: InventoryItem[] = [];
-const defaultProveedores: Proveedor[] = [];
+const defaultSriKeys: string[] = ["1234567890", "0987654321"];
+const defaultInventario: InventoryItem[] = [
+    { id: 'i1', item: 'Papel Químico Original', cantidad: 5, unidad: 'Resmas', costoUnitario: 12.50, minimo: 2 },
+    { id: 'i2', item: 'Tinta Negra Offset', cantidad: 2, unidad: 'Latas', costoUnitario: 18.00, minimo: 1 },
+];
+const defaultProveedores: Proveedor[] = [
+    { id: 'pr1', nombre: 'Papelesa', categoria: 'Papel y Cartulinas', tipo: 'Producto', contacto: 'Carlos V.', telefono: '0991112222', email: 'ventas@papelesa.com', ciudad: 'Guayaquil', estado: 'Activo', creadoEn: daysAgo(10), productos: 'Bond, Químico, Couché' },
+    { id: 'pr2', nombre: 'Tintas & Gráficos', categoria: 'Insumos Imprenta', tipo: 'Producto', contacto: 'María L.', telefono: '0988889999', ciudad: 'Machala', estado: 'Activo', creadoEn: daysAgo(12), productos: 'Tintas Offset, Placas' }
+];
 const defaultTareasProveedor: TareaProveedor[] = [];
 
 // --- API FUNCTIONS ---
@@ -175,7 +241,7 @@ export const createTrabajo = async (trabajoData: Omit<Trabajo, 'id' | 'orden' | 
     const trabajos = await getStoredData(TRABAJOS_KEY, defaultTrabajos);
     const newTrabajo: Trabajo = {
         id: String(Date.now()),
-        orden: Math.max(...trabajos.map(t => t.orden), 0) + 1,
+        orden: Math.max(...trabajos.map(t => t.orden), 1000) + 1,
         clienteId: trabajoData.clienteId,
         titular: trabajoData.titular,
         tipo: trabajoData.tipo,
@@ -234,7 +300,7 @@ export const createPublicPedido = async (
 
     const newTrabajo: Trabajo = {
         id: `web${Date.now()}`,
-        orden: Math.max(...trabajos.map(t => t.orden), 0) + 1,
+        orden: Math.max(...trabajos.map(t => t.orden), 1000) + 1,
         clienteId: cliente.id,
         titular: `${clienteInfo.nombre} (WEB)`,
         tipo: clienteInfo.tipoDocumento === 'SRI' ? TrabajoTipo.SRI : TrabajoTipo.GENERAL,
