@@ -1,46 +1,24 @@
-import { TrabajoEstado } from './types';
+import { Client, Task, DeclarationStatus, ClientCategory, TaskStatus, Declaration, TaxRegime, RentaCategory } from './types';
+import { v4 as uuidv4 } from 'uuid';
 
-export const APP_NAME = "Imprenta Córdova";
-export const VALID_USERS = ['Pedro', 'Aleida', 'Roberto', 'Daniel', 'Dante'];
-
-export const KANBAN_COLUMNS: TrabajoEstado[] = [
-  TrabajoEstado.PENDIENTE,
-  TrabajoEstado.EN_DISENO,
-  TrabajoEstado.PROCESO,
-  TrabajoEstado.VITRINA,
-  TrabajoEstado.ENTREGADO
-];
-
-export const UI_TEXT = {
-    LOGIN_TITLE: "Acceso Profesional",
-    LOGIN_SUBTITLE: "Ingrese su nombre de usuario para continuar",
-    LOGIN_BUTTON: "Ingresar",
-    INVALID_PIN: "Usuario incorrecto. Intente de nuevo.",
-    DASHBOARD: "Dashboard",
-    KDS: "KDS",
-    FINANZAS: "Finanzas",
-    CLIENTES: "Clientes",
-    NUEVO_PEDIDO: "Nuevo Pedido",
-    CONFIGURACION: "Configuración",
-    CERRAR_SESION: "Cerrar Sesión",
-    BIENVENIDO: "Bienvenido",
-    RESUMEN_DIARIO: "Resumen Diario",
-    INGRESOS_HOY: "Ingresos (Hoy)",
-    PEDIDOS_NUEVOS: "Pedidos Nuevos",
-    SALDOS_PENDIENTES: "Saldos Pendientes",
-    TOTAL_CLIENTES: "Total Clientes",
-    INGRESOS_ULTIMOS_30_DIAS: "Ingresos en los últimos 30 días",
-    TRABAJOS_POR_TIPO: "Trabajos por Tipo",
-    CLIENTES_MAS_VALIOSOS: "Clientes Más Valiosos (LTV)",
-    PASO_1_TITLE: "Paso 1: Buscar o Crear Cliente",
-    PASO_2_TITLE: "Paso 2: Detalles del Trabajo",
-    BUSCAR_CLIENTE: "Buscar por cédula o nombre...",
-    CREAR_CLIENTE_BTN: "Crear Nuevo Cliente",
-    SIGUIENTE_PASO: "Siguiente",
-    PASO_ANTERIOR: "Anterior",
-    TIPO_TRABAJO_SRI: "¿Documento autorizado SRI?",
-    CANTIDAD: "Cantidad",
-    ABONO: "Abono",
-    SALDO: "Saldo",
-    FINALIZAR_PEDIDO: "Finalizar Pedido",
+export const SRI_DUE_DATES: { [key: number]: number } = {
+  1: 10,
+  2: 12,
+  3: 14,
+  4: 16,
+  5: 18,
+  6: 20,
+  7: 22,
+  8: 24,
+  9: 26,
+  0: 28,
 };
+
+// Months for annual income tax declarations (0-indexed)
+export const SRI_RENTA_GENERAL_MARCH = 2; // March
+export const SRI_RENTA_NP_MAY = 4;        // May
+
+
+export const mockClients: Client[] = [];
+
+export const mockTasks: Task[] = [];

@@ -1,117 +1,117 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Imprenta Córdova 2025</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              'brand-blue': '#0B42A7',
-              'brand-red': '#D90000',
-              'neutral-light': '#F3F5F7',
-              'neutral-dark': '#111827',
-              'neutral-text': '#1F2937',
-
-              // KPI Card Colors
-              'kpi-blue-bg': '#EBF5FF',
-              'kpi-green-bg': '#E6FBF0',
-              'kpi-purple-bg': '#F4EFFF',
-              'kpi-red-bg': '#FFEBEB',
-              'kpi-gray-bg': '#F3F4F6',
-              'kpi-orange-bg': '#FFFBEB',
-
-              'kpi-blue-text-tag': '#4C82E5',
-              'kpi-blue-bg-tag': '#D8E6FF',
-
-              'kpi-green-text-tag': '#00B88A',
-              'kpi-green-bg-tag': '#C2F5E9',
-
-              'kpi-purple-text-tag': '#8A63F0',
-              'kpi-purple-bg-tag': '#E5D9FF',
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Gestiones Tributarias | Santiago Cordova</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg viewBox='0 0 108 108' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='108' height='108' rx='24' fill='%231A1A1A'/%3E%3Cg stroke='%23D4AF37' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M36 88 H 72'/%3E%3Cpath d='M54 88 V 32'/%3E%3Cpath d='M24 38 H 84'/%3E%3Ccircle cx='54' cy='30' r='3.5' fill='%23D4AF37'/%3E%3Cpath d='M34 38 V 48'/%3E%3Cpath d='M22 62 C 28 72, 40 72, 46 62' fill='none'/%3E%3Cpath d='M74 38 V 48'/%3E%3Cpath d='M62 62 C 68 72, 80 72, 86 62' fill='none'/%3E%3C/g%3E%3C/svg%3E" type="image/svg+xml" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .midnight body {
+      background-color: #020617;
+      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230f172a' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1f2937; 
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d4af37; 
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #b8860b; 
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            'display': ['Playfair Display', 'serif'],
+            'body': ['Roboto', 'sans-serif'],
+          },
+          colors: {
+            gold: {
+              light: '#FFD700',
+              DEFAULT: '#D4AF37',
+              dark: '#B8860B',
             },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: 0, transform: 'translateY(-10px)' },
-                '100%': { opacity: 1, transform: 'translateY(0)' },
-              },
-              slideInUp: {
-                '0%': { opacity: 0, transform: 'translateY(30px)' },
-                '100%': { opacity: 1, transform: 'translateY(0)' },
-              },
-              pulse: {
-                '0%, 100%': { transform: 'scale(1)' },
-                '50%': { transform: 'scale(1.05)' },
-              },
-              heroZoom: {
-                '0%': { transform: 'scale(1.1)' },
-                '100%': { transform: 'scale(1)' },
-              },
-              blob: {
-                "0%": {
-                  transform: "translate(0px, 0px) scale(1)",
-                },
-                "33%": {
-                  transform: "translate(30px, -50px) scale(1.1)",
-                },
-                "66%": {
-                  transform: "translate(-20px, 20px) scale(0.9)",
-                },
-                "100%": {
-                  transform: "translate(0px, 0px) scale(1)",
-                },
-              },
-              float: {
-                  '0%, 100%': { transform: 'translateY(0) rotate(6deg)' },
-                  '50%': { transform: 'translateY(-10px) rotate(6deg)' },
-              },
-              bounceIn: {
-                '0%': { opacity: 0, transform: 'scale(0.9)' },
-                '70%': { opacity: 1, transform: 'scale(1.02)' },
-                '100%': { transform: 'scale(1)' },
-              }
+            gray: {
+              950: '#111827'
             },
-            animation: {
-              'fade-in': 'fadeIn 0.5s ease-out forwards',
-              'slide-in-up': 'slideInUp 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both',
-              'pulse-slow': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'hero-zoom': 'heroZoom 15s ease-out forwards',
-              blob: "blob 7s infinite",
-              float: "float 6s ease-in-out infinite",
-              'bounce-in': 'bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+            slate: {
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617',
+            }
+          },
+          keyframes: {
+            'fade-in-down': {
+                '0%': { opacity: '0', transform: 'translateY(-20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
             },
+            'fade-in-up': {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            'fade-in': {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+            },
+            'slide-up-fade': {
+                '0%': { opacity: '0', transform: 'translateY(15px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+             'pulse-slow': {
+                '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                '50%': { transform: 'scale(1.05)', opacity: .9 },
+            },
+          },
+          animation: {
+              'fade-in-down': 'fade-in-down 0.6s ease-out forwards',
+              'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
+              'fade-in': 'fade-in 1s ease-out forwards',
+              'slide-up-fade': 'slide-up-fade 0.4s ease-out forwards',
+              'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
           }
-        }
-      }
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        },
+      },
+    }
+  </script>
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@18.3.1",
-    "react-dom": "https://esm.sh/react-dom@18.3.1",
-    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
-    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.23.0?external=react,react-dom",
-    "@google/genai": "https://esm.sh/@google/genai@0.1.2",
-    "lucide-react": "https://esm.sh/lucide-react@0.378.0?external=react,react-dom",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
     "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "date-fns/": "https://aistudiocdn.com/date-fns@^4.1.0/",
+    "date-fns": "https://aistudiocdn.com/date-fns@^4.1.0"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-neutral-light dark:bg-neutral-dark text-neutral-text dark:text-neutral-light font-sans antialiased">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+<body class="bg-gray-950 text-gray-100 dark">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
