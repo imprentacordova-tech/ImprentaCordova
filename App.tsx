@@ -32,7 +32,6 @@ const AdminRoutes: React.FC = () => {
     return <Outlet context={{ currentUser }} />;
 };
 
-
 // Componente para proteger las rutas que requieren autenticación
 const ProtectedRoutes: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ currentUser, onLogout }) => {
     if (!currentUser) {
@@ -47,7 +46,7 @@ const ProtectedRoutes: React.FC<{ currentUser: User | null; onLogout: () => void
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(() => {
-        // Intentar recuperar de localStorage (Persistente) o sessionStorage (Sesión actual)
+        // Estrategia de recuperación de sesión: Persistente (Local) vs Temporal (Session)
         const localUser = localStorage.getItem('currentUser');
         const sessionUser = sessionStorage.getItem('currentUser');
         
@@ -65,10 +64,10 @@ const App: React.FC = () => {
     const handleLogin = useCallback((user: User, remember: boolean) => {
         if (remember) {
             localStorage.setItem('currentUser', JSON.stringify(user));
-            sessionStorage.removeItem('currentUser'); // Limpiar session si existe para evitar duplicidad lógica
+            sessionStorage.removeItem('currentUser');
         } else {
             sessionStorage.setItem('currentUser', JSON.stringify(user));
-            localStorage.removeItem('currentUser'); // Limpiar local si existe
+            localStorage.removeItem('currentUser');
         }
         setCurrentUser(user);
     }, []);
@@ -82,24 +81,28 @@ const App: React.FC = () => {
     return (
         <HashRouter>
             <Routes>
-                {/* === ZONA PÚBLICA === */}
+                {/* ==================================================================
+                    ZONA PÚBLICA (Acceso libre)
+                   ================================================================== */}
                 <Route path="/" element={<LandingPage />} />
                 
-                {/* Rutas de Autenticación */}
+                {/* Login: Redirige al Dashboard si ya está autenticado */}
                 <Route 
                     path="/login" 
                     element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} 
                 />
 
-                {/* Documentos Públicos (Recibos compartibles por link) */}
+                {/* Recibos digitales compartibles (Solo lectura, sin auth requerida para el cliente final) */}
                 <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
 
 
-                {/* === ZONA PRIVADA (SISTEMA INTERNO) === */}
+                {/* ==================================================================
+                    ZONA PRIVADA (Requiere Autenticación)
+                   ================================================================== */}
                 <Route element={<ProtectedRoutes currentUser={currentUser} onLogout={handleLogout} />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
                     
-                    {/* Operaciones Diarias */}
+                    {/* -- Operaciones & Producción -- */}
                     <Route path="/nuevo" element={<NuevoPedidoPage />} />
                     <Route path="/diseno" element={<DisenoPage />} />
                     <Route path="/kds" element={<KDSPage />} />
@@ -107,28 +110,30 @@ const App: React.FC = () => {
                     <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
                     <Route path="/retiros" element={<RetirosPage />} />
                     
-                    {/* Gestión de Recursos */}
+                    {/* -- Gestión de Recursos -- */}
                     <Route path="/clientes" element={<ClientesPage />} />
                     <Route path="/productos" element={<ProductosPage />} />
                     <Route path="/proveedores" element={<ProveedoresPage />} />
                     <Route path="/inventario" element={<InventarioPage />} />
                     
-                    {/* Herramientas y Reportes */}
+                    {/* -- Herramientas -- */}
                     <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
+                    
+                    {/* -- Finanzas & Reportes -- */}
                     <Route path="/finanzas" element={<FinanzasPage />} />
                     
-                    {/* Documentos Internos (Protegidos) */}
+                    {/* -- Documentos Internos (Protegidos) -- */}
                     <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
                     <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
 
-                    {/* Administración (Solo Admin) */}
+                    {/* -- Zona Admin (Solo Rol Admin) -- */}
                     <Route element={<AdminRoutes />}>
                         <Route path="/usuarios" element={<GestionUsuariosPage />} />
                         <Route path="/configuracion" element={<ConfiguracionPage />} />
                     </Route>
                 </Route>
                 
-                {/* Fallback para rutas desconocidas */}
+                {/* Fallback global: Cualquier ruta desconocida va al inicio */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </HashRouter>
