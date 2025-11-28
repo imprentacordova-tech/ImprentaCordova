@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, CordovaLogo } from './Icons';
+import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, CordovaLogo, SparklesIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
 
@@ -39,9 +39,10 @@ const navGroups = [
     ]
   },
   {
-    title: 'ANÁLISIS',
+    title: 'HERRAMIENTAS',
     items: [
-      { path: "/finanzas", label: "Reportes", icon: FinanceIcon },
+        { path: "/ia-tools", label: "Estudio IA", icon: SparklesIcon },
+        { path: "/finanzas", label: "Reportes", icon: FinanceIcon },
     ]
   },
   {

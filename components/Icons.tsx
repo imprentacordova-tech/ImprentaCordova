@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Menu,
@@ -46,7 +47,13 @@ import {
   Globe,
   Wrench,
   CreditCard,
-  Building
+  Building,
+  Wand2,
+  ScanEye,
+  Diff,
+  Sparkles,
+  UploadCloud,
+  FileSearch
 } from 'lucide-react';
 
 // Re-exporting Lucide icons with mapped names to match App usage
@@ -99,6 +106,12 @@ export const CalendarDaysIcon = CalendarDays;
 export const CheckBadgeIcon = BadgeCheck;
 export const GlobeAltIcon = Globe;
 export const WrenchScrewdriverIcon = Wrench;
+export const Wand2Icon = Wand2;
+export const ScanEyeIcon = ScanEye;
+export const DiffIcon = Diff;
+export const SparklesIcon = Sparkles;
+export const UploadCloudIcon = UploadCloud;
+export const FileSearchIcon = FileSearch;
 
 // Custom Icons
 

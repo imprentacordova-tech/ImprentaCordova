@@ -22,6 +22,7 @@ import ConfiguracionPage from './pages/Configuracion';
 import ReciboAbonoPage from './pages/ReciboAbono';
 import ProveedoresPage from './pages/Proveedores';
 import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
+import HerramientasIA from './pages/HerramientasIA';
 import { User } from './types';
 
 // Componente para proteger las rutas de administrador
@@ -93,6 +94,7 @@ const App: React.FC = () => {
                     <Route path="/inventario" element={<InventarioPage />} />
                     <Route path="/productos" element={<ProductosPage />} />
                     <Route path="/retiros" element={<RetirosPage />} />
+                    <Route path="/ia-tools" element={<HerramientasIA />} />
                     <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
                     <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
                     <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
