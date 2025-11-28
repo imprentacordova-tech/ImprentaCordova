@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import { Layout } from './components/Layout';
@@ -10,7 +9,6 @@ import ClientesPage from './pages/Clientes';
 import NuevoPedidoPage from './pages/NuevoPedido';
 import InventarioPage from './pages/Inventario';
 import LandingPage from './pages/Landing';
-import VisualLanding from './pages/VisualLanding';
 import NotaDeVentaPage from './pages/NotaDeVenta';
 import ProductosPage from './pages/Productos';
 import SolicitudImpresionPage from './pages/SolicitudImpresion';
@@ -22,6 +20,7 @@ import ConfiguracionPage from './pages/Configuracion';
 import ReciboAbonoPage from './pages/ReciboAbono';
 import ProveedoresPage from './pages/Proveedores';
 import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
+import DisenoPage from './pages/Diseno';
 import { User } from './types';
 
 // Componente para proteger las rutas de administrador
@@ -83,41 +82,53 @@ const App: React.FC = () => {
     return (
         <HashRouter>
             <Routes>
-                {/* Rutas Públicas */}
+                {/* === ZONA PÚBLICA === */}
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/landing" element={<VisualLanding />} />
+                
+                {/* Rutas de Autenticación */}
                 <Route 
                     path="/login" 
                     element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} 
                 />
-                 <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
+
+                {/* Documentos Públicos (Recibos compartibles por link) */}
+                <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
 
 
-                {/* Grupo de Rutas Protegidas */}
+                {/* === ZONA PRIVADA (SISTEMA INTERNO) === */}
                 <Route element={<ProtectedRoutes currentUser={currentUser} onLogout={handleLogout} />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/trabajos" element={<TrabajosPage />} />
-                    <Route path="/kds" element={<KDSPage />} />
-                    <Route path="/finanzas" element={<FinanzasPage />} />
-                    <Route path="/clientes" element={<ClientesPage />} />
-                    <Route path="/proveedores" element={<ProveedoresPage />} />
+                    
+                    {/* Operaciones Diarias */}
                     <Route path="/nuevo" element={<NuevoPedidoPage />} />
-                    <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
-                    <Route path="/inventario" element={<InventarioPage />} />
-                    <Route path="/productos" element={<ProductosPage />} />
+                    <Route path="/diseno" element={<DisenoPage />} />
+                    <Route path="/kds" element={<KDSPage />} />
+                    <Route path="/trabajos" element={<TrabajosPage />} />
+                    <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
                     <Route path="/retiros" element={<RetirosPage />} />
+                    
+                    {/* Gestión de Recursos */}
+                    <Route path="/clientes" element={<ClientesPage />} />
+                    <Route path="/productos" element={<ProductosPage />} />
+                    <Route path="/proveedores" element={<ProveedoresPage />} />
+                    <Route path="/inventario" element={<InventarioPage />} />
+                    
+                    {/* Herramientas y Reportes */}
+                    <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
+                    <Route path="/finanzas" element={<FinanzasPage />} />
+                    
+                    {/* Documentos Internos (Protegidos) */}
                     <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
                     <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
-                    <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
 
-                    {/* Rutas solo para Admin */}
+                    {/* Administración (Solo Admin) */}
                     <Route element={<AdminRoutes />}>
                         <Route path="/usuarios" element={<GestionUsuariosPage />} />
                         <Route path="/configuracion" element={<ConfiguracionPage />} />
                     </Route>
                 </Route>
                 
-                {/* Redirección para cualquier otra ruta no encontrada */}
+                {/* Fallback para rutas desconocidas */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </HashRouter>

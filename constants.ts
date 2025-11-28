@@ -5,6 +5,7 @@ export const VALID_USERS = ['Pedro', 'Aleida', 'Roberto', 'Daniel', 'Dante'];
 
 export const KANBAN_COLUMNS: TrabajoEstado[] = [
   TrabajoEstado.PENDIENTE,
+  TrabajoEstado.EN_DISENO,
   TrabajoEstado.PROCESO,
   TrabajoEstado.VITRINA,
   TrabajoEstado.ENTREGADO

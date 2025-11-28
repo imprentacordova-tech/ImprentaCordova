@@ -8,6 +8,7 @@ export enum TrabajoTipo {
 
 export enum TrabajoEstado {
   PENDIENTE = 'Pendiente',
+  EN_DISENO = 'En Diseño', // Nuevo estado
   PROCESO = 'En Proceso',
   VITRINA = 'Vitrina',
   ENTREGADO = 'Entregado'
@@ -56,7 +57,7 @@ export interface Trabajo {
   puntoEmision?: string;
   claveAcceso?: string;
   origen?: 'Web' | 'Interno';
-  esRenovacion?: boolean; // Nuevo campo
+  esRenovacion?: boolean;
 }
 
 export interface Kpi {
@@ -81,7 +82,7 @@ export interface User {
   id: string;
   nombre: string;
   email: string;
-  rol: 'Admin' | 'Operador';
+  rol: 'Admin' | 'Operador' | 'Diseñador'; // Added Diseñador role hint
   estado: 'Activo' | 'Inactivo';
   ultimoAcceso: string;
   // Security fields

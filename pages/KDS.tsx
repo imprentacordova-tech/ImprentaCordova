@@ -283,6 +283,7 @@ const KDSPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const [trabajos, setTrabajos] = useState<Record<TrabajoEstado, Trabajo[]>>({
         [TrabajoEstado.PENDIENTE]: [],
+        [TrabajoEstado.EN_DISENO]: [],
         [TrabajoEstado.PROCESO]: [],
         [TrabajoEstado.VITRINA]: [],
         [TrabajoEstado.ENTREGADO]: [],
@@ -338,6 +339,7 @@ const KDSPage: React.FC = () => {
     const processedTrabajos = useMemo(() => {
         const newProcessedTrabajos: Record<TrabajoEstado, Trabajo[]> = {
             [TrabajoEstado.PENDIENTE]: [],
+            [TrabajoEstado.EN_DISENO]: [],
             [TrabajoEstado.PROCESO]: [],
             [TrabajoEstado.VITRINA]: [],
             [TrabajoEstado.ENTREGADO]: [],

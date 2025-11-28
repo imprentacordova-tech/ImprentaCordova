@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon } from './Icons';
+import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
 
@@ -24,10 +24,16 @@ const navGroups = [
     title: 'OPERACIONES',
     items: [
       { path: "/nuevo", label: "Nuevo Pedido", icon: AddIcon },
-      { path: "/calculadora", label: "Calculadora", icon: CalculatorIcon },
-      { path: "/trabajos", label: "Trabajos", icon: DocumentIcon },
-      { path: "/kds", label: "Taller", icon: KdsIcon },
-      { path: "/retiros", label: "Nuevo Retiro", icon: ReceiptIcon },
+      { path: "/diseno", label: "Estudio Diseño", icon: PaletteIcon }, // Added Design Link
+      { path: "/kds", label: "Taller Producción", icon: KdsIcon },
+      { path: "/trabajos", label: "Historial Trabajos", icon: DocumentIcon },
+      { path: "/retiros", label: "Entregas", icon: ReceiptIcon },
+    ]
+  },
+  {
+    title: 'HERRAMIENTAS',
+    items: [
+      { path: "/calculadora", label: "Calculadora Offset", icon: CalculatorIcon },
     ]
   },
   {
@@ -59,17 +65,17 @@ const navGroups = [
 const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     const location = useLocation();
     const [vitrinaCount, setVitrinaCount] = useState(0);
+    const [designCount, setDesignCount] = useState(0);
 
-    // Fetch vitrina count for badges
+    // Fetch counts for badges
     useEffect(() => {
         const fetchCount = async () => {
             const trabajos = await getTrabajos();
-            const count = trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length;
-            setVitrinaCount(count);
+            setVitrinaCount(trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length);
+            setDesignCount(trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length);
         };
         
         fetchCount();
-        // Set up a simple interval to refresh the badge count periodically
         const interval = setInterval(fetchCount, 10000);
         return () => clearInterval(interval);
     }, []);
@@ -87,7 +93,8 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                     <div className="space-y-1">
                         {group.items.map(item => {
                             const isActive = location.pathname === item.path || (item.path === '/configuracion' && location.pathname.startsWith('/configuracion'));
-                            const showBadge = item.path === '/retiros' && vitrinaCount > 0;
+                            const showVitrinaBadge = item.path === '/retiros' && vitrinaCount > 0;
+                            const showDesignBadge = item.path === '/diseno' && designCount > 0;
 
                             return (
                                 <NavLink
@@ -105,9 +112,14 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                                         <item.icon className="h-5 w-5 flex-shrink-0" />
                                         <span>{item.label}</span>
                                     </div>
-                                    {showBadge && (
-                                        <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
+                                    {showVitrinaBadge && (
+                                        <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                                             {vitrinaCount}
+                                        </span>
+                                    )}
+                                    {showDesignBadge && (
+                                        <span className="bg-blue-100 text-brand-blue text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                            {designCount}
                                         </span>
                                     )}
                                 </NavLink>

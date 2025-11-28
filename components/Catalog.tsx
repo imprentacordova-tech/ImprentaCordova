@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Search, ShoppingCart, CheckCircle, Star, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, ShoppingCart, CheckCircle, Star, Filter, HeartIcon } from './Icons';
 import { Product, ProductCategory } from '../types';
 
 const products: Product[] = [
@@ -212,14 +212,39 @@ const products: Product[] = [
   }
 ];
 
-const categories: ProductCategory[] = ['Todos', 'Oficina', 'Gran Formato', 'Merch', 'Publicidad', 'Tarjetas', 'Sublimación', 'Etiquetas'];
+const categories: ProductCategory[] = ['Todos', 'Favoritos', 'Oficina', 'Gran Formato', 'Merch', 'Publicidad', 'Tarjetas', 'Sublimación', 'Etiquetas'];
 
 const Catalog: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('Todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Load favorites from local storage on component mount
+    const savedFavorites = localStorage.getItem('imprenta_favorites');
+    if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  const toggleFavorite = (e: React.MouseEvent, productId: string) => {
+    e.stopPropagation(); // Prevent opening product details or other actions
+    e.preventDefault();
+    
+    let updatedFavorites;
+    if (favorites.includes(productId)) {
+        updatedFavorites = favorites.filter(id => id !== productId);
+    } else {
+        updatedFavorites = [...favorites, productId];
+    }
+    
+    setFavorites(updatedFavorites);
+    localStorage.setItem('imprenta_favorites', JSON.stringify(updatedFavorites));
+  };
 
   const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'Todos' || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'Todos' || 
+                            (selectedCategory === 'Favoritos' ? favorites.includes(product.id) : product.category === selectedCategory);
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -236,7 +261,7 @@ const Catalog: React.FC = () => {
             Todo lo que necesitas imprimir
           </p>
           <p className="mt-4 max-w-2xl text-base text-slate-500 mx-auto">
-            Desde gigantografías hasta sellos. Revisa nuestros precios referenciales y solicita tu cotización hoy mismo.
+            Desde gigantografías hasta sellos. Revisa nuestros precios referenciales y marca tus favoritos.
           </p>
         </div>
 
@@ -255,7 +280,7 @@ const Catalog: React.FC = () => {
                     : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
                 }`}
               >
-                {cat}
+                {cat === 'Favoritos' ? <span className="flex items-center gap-1"><HeartIcon className="w-3 h-3"/> Favoritos</span> : cat}
               </button>
             ))}
           </div>
@@ -278,16 +303,30 @@ const Catalog: React.FC = () => {
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+            filteredProducts.map((product) => {
+              const isFavorite = favorites.includes(product.id);
+              return (
               <div key={product.id} className="group relative bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl hover:border-orange-200 transition-all duration-300 flex flex-col h-full overflow-hidden">
                 
-                {/* Popular Badge */}
-                {product.isPopular && (
-                  <div className="absolute top-4 right-4 z-10 bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center shadow-lg uppercase tracking-wider">
-                    <Star className="w-3 h-3 mr-1 fill-current" />
-                    Destacado
-                  </div>
-                )}
+                {/* Badges Container */}
+                <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+                    {/* Favorite Button */}
+                    <button 
+                        onClick={(e) => toggleFavorite(e, product.id)}
+                        className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md hover:scale-110 transition-transform group/heart"
+                        aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+                    >
+                        <HeartIcon className={`w-5 h-5 transition-colors ${isFavorite ? 'text-red-500 fill-red-500' : 'text-slate-400 group-hover/heart:text-red-400'}`} />
+                    </button>
+
+                    {/* Popular Badge */}
+                    {product.isPopular && (
+                    <div className="bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center shadow-lg uppercase tracking-wider">
+                        <Star className="w-3 h-3 mr-1 fill-current" />
+                        Destacado
+                    </div>
+                    )}
+                </div>
 
                 {/* Image */}
                 <div className="h-56 bg-slate-100 overflow-hidden relative">
@@ -340,19 +379,23 @@ const Catalog: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))
+            )})
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-16 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
               <div className="p-4 bg-white rounded-full shadow-sm mb-4">
                 <Filter className="h-8 w-8 text-slate-300" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">No encontramos ese producto</h3>
-              <p className="text-slate-500 mb-4">Intenta con otra categoría o término de búsqueda.</p>
+              <h3 className="text-lg font-bold text-slate-900">
+                  {selectedCategory === 'Favoritos' ? 'Aún no tienes favoritos' : 'No encontramos ese producto'}
+              </h3>
+              <p className="text-slate-500 mb-4">
+                  {selectedCategory === 'Favoritos' ? 'Marca productos con el corazón para verlos aquí.' : 'Intenta con otra categoría o término de búsqueda.'}
+              </p>
               <button 
                 onClick={() => {setSearchTerm(''); setSelectedCategory('Todos');}}
                 className="text-orange-600 hover:text-orange-700 font-bold text-sm underline decoration-2 underline-offset-2"
               >
-                Limpiar filtros
+                Ver todos los productos
               </button>
             </div>
           )}

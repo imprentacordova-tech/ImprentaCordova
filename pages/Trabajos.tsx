@@ -7,6 +7,7 @@ import { AddIcon } from '../components/Icons';
 
 const statusStyles: { [key in TrabajoEstado]: { text: string; classes: string } } = {
     [TrabajoEstado.PENDIENTE]: { text: 'Pendiente', classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' },
+    [TrabajoEstado.EN_DISENO]: { text: 'En Diseño', classes: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300' },
     [TrabajoEstado.PROCESO]: { text: 'En Proceso', classes: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
     [TrabajoEstado.VITRINA]: { text: 'Vitrina', classes: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
     [TrabajoEstado.ENTREGADO]: { text: 'Entregado', classes: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
