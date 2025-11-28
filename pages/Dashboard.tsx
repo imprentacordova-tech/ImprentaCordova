@@ -55,8 +55,8 @@ const QuickAccessCard: React.FC<{
             className="group relative bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col justify-between overflow-hidden"
         >
             {badge !== undefined && badge > 0 && (
-                <div className="absolute top-2 right-2 bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse z-10">
-                    {badge} Pendientes
+                <div className="absolute top-2 right-2 bg-gray-100 dark:bg-gray-700 text-brand-blue dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 z-10">
+                    {badge} Listos
                 </div>
             )}
             <div>
@@ -186,7 +186,7 @@ const DashboardPage: React.FC = () => {
                             icon={ReceiptIcon} 
                             label="Entregar Trabajos" 
                             description={vitrinaCount > 0 ? `${vitrinaCount} trabajos listos` : "Entregar al cliente"}
-                            colorClass={vitrinaCount > 0 ? "text-brand-red" : "text-purple-600"}
+                            colorClass={vitrinaCount > 0 ? "text-brand-blue" : "text-purple-600"}
                             badge={vitrinaCount}
                         />
                         <QuickAccessCard 

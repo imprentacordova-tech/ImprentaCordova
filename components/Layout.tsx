@@ -105,7 +105,7 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                                         <span>{item.label}</span>
                                     </div>
                                     {showBadge && (
-                                        <span className="bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                        <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
                                             {vitrinaCount}
                                         </span>
                                     )}
