@@ -58,6 +58,7 @@ export interface Trabajo {
   claveAcceso?: string;
   origen?: 'Web' | 'Interno';
   esRenovacion?: boolean;
+  prioridad?: boolean;
 }
 
 export interface Kpi {
