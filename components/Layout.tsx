@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon } from './Icons';
+import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, CordovaLogo } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
 
@@ -128,9 +128,14 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void }> = ({ o
                 <button onClick={onMenuClick} className="lg:hidden p-2 -ml-2 mr-4 text-gray-600 dark:text-gray-300">
                     <MenuIcon className="h-6 w-6" />
                 </button>
-                 <Link to="/dashboard" className="text-2xl font-bold">
-                    <span className="text-brand-blue">Imprenta</span>
-                    <span className="text-brand-red"> Córdova</span>
+                 <Link to="/dashboard" className="flex items-center gap-3 group">
+                    <div className="p-1 rounded-lg bg-blue-50 dark:bg-gray-700/50 group-hover:bg-blue-100 dark:group-hover:bg-gray-700 transition-colors">
+                        <CordovaLogo className="h-8 w-8" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase leading-none tracking-widest">Imprenta</span>
+                        <span className="text-xl font-bold text-gray-900 dark:text-white leading-none">Córdova</span>
+                    </div>
                 </Link>
             </div>
             <div className="flex items-center space-x-4">
