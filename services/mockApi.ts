@@ -121,33 +121,268 @@ const daysAgo = (days: number) => {
 const getRandomUser = () => VALID_USERS[Math.floor(Math.random() * VALID_USERS.length)];
 
 const defaultProductos: Producto[] = [
-  // --- SRI ---
-  { id: 'p_sri_1', nombre: 'Notas de Venta 1/4 Oficio (25H)', descripcion: 'Block de 25 juegos, papel químico. Exclusivo RIMPE Negocio Popular.', precio: 8.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_2', nombre: 'Notas de Venta 1/4 Oficio (50H)', descripcion: 'Block de 50 juegos, papel bond o químico.', precio: 12.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_3', nombre: 'Facturas 1/4 Oficio (25H)', descripcion: 'Block de 25 facturas autocopiativas. Pequeños contribuyentes.', precio: 8.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_4', nombre: 'Facturas A5 (Media Carta) (50H)', descripcion: 'Block de 50 facturas tamaño medio oficio.', precio: 15.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_5', nombre: 'Facturas A4 (50H)', descripcion: 'Block de 50 facturas tamaño completo.', precio: 18.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_6', nombre: 'Retenciones A5 (50H)', descripcion: 'Documentos de retención para agentes.', precio: 12.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_7', nombre: 'Guías de Remisión (50H)', descripcion: 'Para transporte de mercadería.', precio: 14.00, categoria: 'SRI', esSRI: true },
-  
-  // --- PUBLICIDAD ---
-  { id: 'p_pub_1', nombre: 'Mil Volantes A6 (10x14cm)', descripcion: 'Papel couché brillante 115g, impresión full color anverso.', precio: 30.00, categoria: 'Publicidad' },
-  { id: 'p_pub_2', nombre: 'Mil Volantes A5 (14x21cm)', descripcion: 'Papel couché brillante 115g, ideal para menús o promociones.', precio: 55.00, categoria: 'Publicidad' },
-  { id: 'p_pub_3', nombre: 'Mil Tarjetas de Presentación', descripcion: 'Couché 300g, laminado mate + brillo UV localizado.', precio: 35.00, categoria: 'Publicidad' },
-  { id: 'p_pub_4', nombre: 'Trípticos Informativos (Ciento)', descripcion: 'Papel bond o couché, doblados.', precio: 45.00, categoria: 'Publicidad' },
-  
+  // --- SRI (Documentos Autorizados) ---
+  { 
+    id: 'p_sri_1', 
+    nombre: 'Notas de Venta 1/4 Oficio (Block 100h)', 
+    descripcion: 'Para RIMPE Negocio Popular. Original y Copia. Papel químico o bond.', 
+    precio: 8.00, 
+    categoria: 'SRI', 
+    esSRI: true,
+    imagenUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_sri_2', 
+    nombre: 'Facturas A5 (Media Carta) (Block 100h)', 
+    descripcion: 'Para RIMPE Emprendedor o General. Tamaño medio oficio.', 
+    precio: 15.00, 
+    categoria: 'SRI', 
+    esSRI: true,
+    imagenUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_sri_3', 
+    nombre: 'Facturas A4 (Tamaño Completo) (Block 100h)', 
+    descripcion: 'Ideal para detalles extensos o ferreterías.', 
+    precio: 25.00, 
+    categoria: 'SRI', 
+    esSRI: true 
+  },
+  { 
+    id: 'p_sri_4', 
+    nombre: 'Retenciones A5 (Block 50 juegos)', 
+    descripcion: 'Comprobantes de retención para agentes.', 
+    precio: 12.00, 
+    categoria: 'SRI', 
+    esSRI: true 
+  },
+  { 
+    id: 'p_sri_5', 
+    nombre: 'Guías de Remisión 1/2 Oficio (Block 100h)', 
+    descripcion: 'Documento para traslado de mercadería.', 
+    precio: 14.00, 
+    categoria: 'SRI', 
+    esSRI: true 
+  },
+  { 
+    id: 'p_sri_6', 
+    nombre: 'Liquidación de Compras A4', 
+    descripcion: 'Para reembolso de gastos o compras sin factura.', 
+    precio: 25.00, 
+    categoria: 'SRI', 
+    esSRI: true 
+  },
+
+  // --- PUBLICIDAD IMPRESA ---
+  { 
+    id: 'p_pub_1', 
+    nombre: '1000 Volantes A6 (10x14cm)', 
+    descripcion: 'Papel couché brillante 115g. Full color un lado.', 
+    precio: 30.00, 
+    categoria: 'Publicidad',
+    imagenUrl: 'https://images.unsplash.com/photo-1586717791821-3f44a5638d0f?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_pub_2', 
+    nombre: '1000 Volantes A5 (14x21cm)', 
+    descripcion: 'Papel couché brillante 115g. Doble tamaño, mayor impacto.', 
+    precio: 60.00, 
+    categoria: 'Publicidad' 
+  },
+  { 
+    id: 'p_pub_3', 
+    nombre: '1000 Tarjetas de Presentación', 
+    descripcion: 'Cartulina Couché 300g. Laminado Mate + Brillo UV Localizado. Dos lados.', 
+    precio: 35.00, 
+    categoria: 'Tarjetas',
+    imagenUrl: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_pub_4', 
+    nombre: 'Trípticos Informativos (Ciento)', 
+    descripcion: 'Papel bond o couché, tamaño A4 abierto, doblado en 3.', 
+    precio: 45.00, 
+    categoria: 'Publicidad' 
+  },
+  {
+    id: 'p_pub_5',
+    nombre: 'Menú Restaurante Plastificado',
+    descripcion: 'Impresión A4/A3 rígida lavable y duradera.',
+    precio: 3.50,
+    categoria: 'Publicidad',
+    imagenUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400'
+  },
+
   // --- GRAN FORMATO ---
-  { id: 'p_gf_1', nombre: 'Gigantografía Lona (m²)', descripcion: 'Impresión 1440dpi, incluye ojales.', precio: 10.00, categoria: 'Gran Formato' },
-  { id: 'p_gf_2', nombre: 'Vinil Adhesivo (m²)', descripcion: 'Vinil brillante o mate para superficies lisas.', precio: 12.00, categoria: 'Gran Formato' },
-  { id: 'p_gf_3', nombre: 'Roll Up Banner 80x200', descripcion: 'Estructura de aluminio + impresión en lona.', precio: 65.00, categoria: 'Gran Formato' },
-  { id: 'p_gf_4', nombre: 'Microperforado (m²)', descripcion: 'Para vidrios, permite visión desde adentro.', precio: 15.00, categoria: 'Gran Formato' },
+  { 
+    id: 'p_gf_1', 
+    nombre: 'Gigantografía Lona (m²)', 
+    descripcion: 'Lona 13oz de alta resistencia. Impresión 1440dpi. Incluye ojales.', 
+    precio: 10.00, 
+    categoria: 'Gran Formato',
+    imagenUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_gf_2', 
+    nombre: 'Vinil Adhesivo (m²)', 
+    descripcion: 'Vinil brillante o mate para superficies lisas, etiquetas o decoración.', 
+    precio: 12.00, 
+    categoria: 'Gran Formato' 
+  },
+  { 
+    id: 'p_gf_3', 
+    nombre: 'Microperforado (m²)', 
+    descripcion: 'Para vidrios de vehículos o locales. Permite visión desde adentro.', 
+    precio: 15.00, 
+    categoria: 'Gran Formato' 
+  },
+  { 
+    id: 'p_gf_4', 
+    nombre: 'Roll Up Banner (80x200cm)', 
+    descripcion: 'Estructura de aluminio portátil + Lona impresa. Incluye bolso.', 
+    precio: 65.00, 
+    categoria: 'Gran Formato',
+    imagenUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: 'p_gf_5',
+    nombre: 'Señalética de Seguridad',
+    descripcion: 'Sintra + Vinil (Ruta de evacuación, Extintor, Baños).',
+    precio: 5.00,
+    categoria: 'Gran Formato',
+    imagenUrl: 'https://images.unsplash.com/photo-1574359411659-15573a21bc2c?auto=format&fit=crop&q=80&w=400'
+  },
+
+  // --- SUBLIMACIÓN Y TEXTIL (NUEVOS) ---
+  { 
+    id: 'p_sub_1', 
+    nombre: 'Taza Personalizada 11oz', 
+    descripcion: 'Taza de cerámica blanca clase AAA. Impresión full color duradera.', 
+    precio: 6.00, 
+    categoria: 'Sublimación',
+    imagenUrl: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_sub_2', 
+    nombre: 'Gorra Tipo Camionero', 
+    descripcion: 'Gorra con malla trasera y frente acolchado. Varios colores disponibles.', 
+    precio: 7.00, 
+    categoria: 'Sublimación',
+    imagenUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: 'p_sub_3',
+    nombre: 'Jarro Mágico (Cambia de color)',
+    descripcion: 'Taza negra que revela el diseño con agua caliente.',
+    precio: 8.00,
+    categoria: 'Sublimación',
+    imagenUrl: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: 'p_sub_4',
+    nombre: 'Tomatodo de Aluminio 600ml',
+    descripcion: 'Botella deportiva personalizada, incluye gancho.',
+    precio: 9.00,
+    categoria: 'Sublimación',
+    imagenUrl: 'https://images.unsplash.com/photo-1602143407151-01114195bc51?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_text_1', 
+    nombre: 'Camiseta Estampada DTF', 
+    descripcion: 'Camiseta de algodón peinado o poliéster. Estampado tacto cero.', 
+    precio: 12.00, 
+    categoria: 'Textil',
+    imagenUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_text_2', 
+    nombre: 'Uniforme Deportivo (Juego)', 
+    descripcion: 'Camiseta + Pantaloneta en tela DryFit con numeración y nombre.', 
+    precio: 18.00, 
+    categoria: 'Textil'
+  },
+
+  // --- ETIQUETAS Y VARIOS (NUEVOS) ---
+  { 
+    id: 'p_etq_1', 
+    nombre: '100 Etiquetas Adhesivas 5x5cm', 
+    descripcion: 'Vinil troquelado resistente al agua o papel adhesivo. Forma personalizada.', 
+    precio: 15.00, 
+    categoria: 'Etiquetas',
+    imagenUrl: 'https://images.unsplash.com/photo-1616406432452-07bc5921752d?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_id_1', 
+    nombre: 'Credencial PVC', 
+    descripcion: 'Tarjeta plástica tipo crédito. Full color ambas caras. Incluye cordón.', 
+    precio: 3.50, 
+    categoria: 'Identificación',
+    imagenUrl: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&q=80&w=400'
+  },
 
   // --- OFICINA Y VARIOS ---
-  { id: 'p_var_1', nombre: 'Recibos de Caja (100H)', descripcion: 'Talonario de recibos genéricos.', precio: 5.00, categoria: 'Oficina' },
-  { id: 'p_var_2', nombre: 'Sellos Automáticos (Pequeño)', descripcion: 'Marca Trodat o Shiny, ideal para firmas.', precio: 15.00, categoria: 'Oficina' },
-  { id: 'p_var_3', nombre: 'Sellos Automáticos (Grande)', descripcion: 'Para RUC completo o logotipos.', precio: 22.00, categoria: 'Oficina' },
-  { id: 'p_var_4', nombre: 'Rifas Numeradas (Ciento)', descripcion: 'Papel bond, numeradas y talonadas.', precio: 12.00, categoria: 'Oficina' },
-  { id: 'p_var_5', nombre: 'Tablas de Bingo (Unidad)', descripcion: 'Impresión B/N o color en cartulina.', precio: 0.10, categoria: 'Oficina' },
+  { 
+    id: 'p_var_1', 
+    nombre: 'Recibos de Caja (Block 100h)', 
+    descripcion: 'Talonario genérico para control interno de pagos.', 
+    precio: 5.00, 
+    categoria: 'Oficina' 
+  },
+  { 
+    id: 'p_var_2', 
+    nombre: 'Sello Automático Pequeño', 
+    descripcion: 'Marca Trodat/Shiny 3911 (38x14mm). Ideal para nombres y cargos.', 
+    precio: 15.00, 
+    categoria: 'Oficina',
+    imagenUrl: 'https://images.unsplash.com/photo-1563200055-e7eb77b8b200?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_var_3', 
+    nombre: 'Sello Automático Grande', 
+    descripcion: 'Marca Trodat/Shiny 3912 o 3913. Para RUC completo o logos.', 
+    precio: 22.00, 
+    categoria: 'Oficina' 
+  },
+  { 
+    id: 'p_var_4', 
+    nombre: 'Millar de Rifas', 
+    descripcion: 'Numeradas, talonadas y engomadas. Papel bond color.', 
+    precio: 35.00, 
+    categoria: 'Merch',
+    imagenUrl: 'https://images.unsplash.com/photo-1541560052-77ec1bbc09f7?auto=format&fit=crop&q=80&w=400'
+  },
+  { 
+    id: 'p_var_5', 
+    nombre: 'Tablas de Bingo (Unidad)', 
+    descripcion: 'Impresión B/N en cartulina bristol o bond.', 
+    precio: 0.15, 
+    categoria: 'Merch',
+    imagenUrl: 'https://images.unsplash.com/photo-1516132006923-e97e23c20242?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: 'p_merch_1',
+    nombre: 'Llaveros Publicitarios (Ciento)',
+    descripcion: 'Llaveros de acrílico o metal con logo empresarial.',
+    precio: 45.00,
+    categoria: 'Merch',
+    imagenUrl: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: 'p_var_6',
+    nombre: 'Empastado de Tesis',
+    descripcion: 'Tapa dura con letras doradas (Pan de Oro).',
+    precio: 25.00, 
+    categoria: 'Oficina',
+    imagenUrl: 'https://images.unsplash.com/photo-1519682577862-22b62b24e491?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: 'p_corp_1',
+    nombre: 'Carpeta Corporativa',
+    descripcion: 'Carpeta impresa full color con bolsillo interno para documentos.',
+    precio: 1.50,
+    categoria: 'Oficina',
+    imagenUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400'
+  }
 ];
 
 const defaultClientes: Cliente[] = [
@@ -160,45 +395,46 @@ const defaultClientes: Cliente[] = [
 const defaultTrabajos: Trabajo[] = [
   { 
     id: 't1', orden: 1050, clienteId: 'c1', titular: 'Comercial La Ganga', 
-    tipo: TrabajoTipo.SRI, subtipo: 'Facturas A4', cantidad: 10, tamano: 'A4', 
-    total: 180.00, abono: 100.00, saldo: 80.00, estado: TrabajoEstado.PENDIENTE, 
+    tipo: TrabajoTipo.SRI, subtipo: 'Facturas A4 (Tamaño Completo)', cantidad: 10, tamano: 'A4', 
+    total: 250.00, abono: 150.00, saldo: 100.00, estado: TrabajoEstado.PENDIENTE, 
     fechaEntrada: daysAgo(0), fechaVencimiento: '2025-08-15T12:00:00Z', caduco: false, 
     creadoPor: 'Pedro', origen: 'Interno', establecimiento: '001', puntoEmision: '002' 
   },
   { 
     id: 't2', orden: 1049, clienteId: 'c2', titular: 'Juan Pérez', 
-    tipo: TrabajoTipo.GENERAL, subtipo: 'Tarjetas de Presentación', cantidad: 1000, tamano: 'Estándar', 
+    tipo: TrabajoTipo.GENERAL, subtipo: '1000 Tarjetas de Presentación', cantidad: 1000, tamano: 'Estándar', 
     total: 35.00, abono: 35.00, saldo: 0.00, estado: TrabajoEstado.ENTREGADO, 
     fechaEntrada: daysAgo(5), caduco: false, creadoPor: 'Aleida', origen: 'Interno' 
   },
   { 
     id: 't3', orden: 1048, clienteId: 'c3', titular: 'Restaurante El Buen Sabor', 
-    tipo: TrabajoTipo.SRI, subtipo: 'Notas de Venta 1/4', cantidad: 5, tamano: '1/4 Oficio', 
+    tipo: TrabajoTipo.SRI, subtipo: 'Notas de Venta 1/4 Oficio', cantidad: 5, tamano: '1/4 Oficio', 
     total: 40.00, abono: 20.00, saldo: 20.00, estado: TrabajoEstado.PROCESO, 
     fechaEntrada: daysAgo(2), fechaVencimiento: '2025-07-20T10:00:00Z', caduco: false, 
     creadoPor: 'Roberto', origen: 'Interno', establecimiento: '001', puntoEmision: '001' 
   },
   { 
     id: 't4', orden: 1047, clienteId: 'c4', titular: 'María González', 
-    tipo: TrabajoTipo.GENERAL, subtipo: 'Gigantografía Cumpleaños', cantidad: 1, tamano: '2x1.5m', 
+    tipo: TrabajoTipo.GENERAL, subtipo: 'Gigantografía Lona 2x1.5m', cantidad: 3, tamano: '3m2', 
     total: 30.00, abono: 15.00, saldo: 15.00, estado: TrabajoEstado.VITRINA, 
     fechaEntrada: daysAgo(4), caduco: false, creadoPor: 'Pedro', origen: 'Interno' 
   },
   {
     id: 't5', orden: 1046, clienteId: 'c1', titular: 'Comercial La Ganga',
-    tipo: TrabajoTipo.GENERAL, subtipo: 'Mil Volantes A6', cantidad: 2000, tamano: 'A6',
+    tipo: TrabajoTipo.GENERAL, subtipo: '2000 Volantes A6', cantidad: 2000, tamano: 'A6',
     total: 60.00, abono: 30.00, saldo: 30.00, estado: TrabajoEstado.PENDIENTE,
     fechaEntrada: daysAgo(1), caduco: false, creadoPor: 'Aleida', origen: 'Interno'
   }
 ];
 
+// Update default users with security fields
 const defaultUsers: User[] = [
-  { id: 'u1', nombre: 'Pedro', email: 'pedro@imprenta.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: daysAgo(0) },
-  { id: 'u2', nombre: 'Aleida', email: 'aleida@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(1) },
-  { id: 'u3', nombre: 'Roberto', email: 'roberto@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(0) },
-  { id: 'u4', nombre: 'Daniel', email: 'daniel@imprenta.com', rol: 'Operador', estado: 'Inactivo', ultimoAcceso: daysAgo(5) },
-  { id: 'u5', nombre: 'Dante', email: 'dante@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(2) },
-  { id: 'u6', nombre: 'Santiago', email: 'santiago@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(3) },
+  { id: 'u1', nombre: 'Pedro', email: 'pedro@imprenta.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: daysAgo(0), requirePassword: true, password: 'admin' },
+  { id: 'u2', nombre: 'Aleida', email: 'aleida@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(1), requirePassword: false },
+  { id: 'u3', nombre: 'Roberto', email: 'roberto@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(0), requirePassword: false },
+  { id: 'u4', nombre: 'Daniel', email: 'daniel@imprenta.com', rol: 'Operador', estado: 'Inactivo', ultimoAcceso: daysAgo(5), requirePassword: false },
+  { id: 'u5', nombre: 'Dante', email: 'dante@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(2), requirePassword: false },
+  { id: 'u6', nombre: 'Santiago', email: 'santiago@imprenta.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: daysAgo(3), requirePassword: false },
 ];
 const defaultSriKeys: string[] = ["1234567890", "0987654321"];
 const defaultInventario: InventoryItem[] = [

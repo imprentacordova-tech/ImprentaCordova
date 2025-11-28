@@ -4,7 +4,7 @@ import { NavLink, useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes } from '../services/mockApi';
 import { Kpi, Trabajo, TrabajoEstado, User } from '../types';
 import { SolidDollarIcon, SolidFinanceIcon, SolidClockIcon, SolidBoxIcon, KdsIcon, AddIcon } from '../components/Icons';
-import { formatCurrency, formatDate } from '../utils';
+import { formatCurrency } from '../utils';
 
 interface KpiCardProps {
   kpi: Kpi;
@@ -40,15 +40,20 @@ const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
     );
 };
 
-const QuickAccessCard: React.FC<{ to: string; icon: React.ComponentType<{className?: string}>; label: string; description: string; }> = ({ to, icon: Icon, label, description }) => {
+// Tarjeta rediseñada para ser más compacta y visualmente atractiva en móviles y escritorio
+const QuickAccessCard: React.FC<{ to: string; icon: React.ComponentType<{className?: string}>; label: string; description: string; colorClass?: string }> = ({ to, icon: Icon, label, description, colorClass = "text-brand-blue" }) => {
     return (
          <NavLink 
             to={to} 
-            className="group bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+            className="group bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col justify-between"
         >
-            <Icon className="h-10 w-10 mb-4 text-brand-blue transition-transform duration-300 group-hover:scale-110" />
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1">{label}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+            <div>
+                <div className={`p-3 bg-gray-50 dark:bg-gray-700/50 w-fit rounded-xl mb-3 group-hover:bg-brand-blue transition-colors duration-300`}>
+                    <Icon className={`h-6 w-6 ${colorClass} group-hover:text-white transition-colors duration-300`} />
+                </div>
+                <h3 className="font-bold text-base text-gray-900 dark:text-white mb-1 leading-tight">{label}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">{description}</p>
+            </div>
         </NavLink>
     )
 }
@@ -104,42 +109,77 @@ const DashboardPage: React.FC = () => {
     }
 
     return (
-        <div className="space-y-10 animate-fade-in">
+        <div className="space-y-8 animate-fade-in pb-10">
+            {/* Header */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bienvenido de nuevo, {currentUser.nombre} 👋</h1>
-                <p className="mt-1 text-gray-500 dark:text-gray-400">Aquí tienes un resumen de la actividad de tu imprenta.</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Bienvenido, {currentUser.nombre} 👋</h1>
+                <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm md:text-base">Resumen de actividad de Imprenta Córdova.</p>
             </div>
             
+            {/* KPI Cards */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {kpis.map(kpi => <KpiCard key={kpi.title} kpi={kpi} />)}
             </div>
             
+            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-5">Actividad Reciente</h2>
-                    <div className="space-y-4">
+                
+                {/* Recent Activity (Takes 2 columns on desktop) */}
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 h-fit">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Actividad Reciente</h2>
+                        <NavLink to="/trabajos" className="text-sm font-semibold text-brand-blue hover:underline">Ver todo</NavLink>
+                    </div>
+                    <div className="space-y-3">
                         {recentJobs.length > 0 ? recentJobs.map(job => (
-                            <NavLink to={`/trabajos/${job.id}`} key={job.id} className="block hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-colors">
+                            <NavLink to={`/trabajos/${job.id}`} key={job.id} className="block hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-xl transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
                                 <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-bold text-gray-800 dark:text-white">#{job.orden} - {clientes[job.clienteId] || 'N/A'}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{job.subtipo}</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-brand-blue font-bold text-xs">
+                                            #{job.orden}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-800 dark:text-white text-sm">{clientes[job.clienteId] || 'Cliente'}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{job.subtipo}</p>
+                                        </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold text-lg text-gray-900 dark:text-white">{formatCurrency(job.total)}</p>
+                                        <p className="font-bold text-sm text-gray-900 dark:text-white">{formatCurrency(job.total)}</p>
                                         {getStatusBadge(job.estado)}
                                     </div>
                                 </div>
                             </NavLink>
-                        )) : <p className="text-center text-gray-500 py-8">No hay trabajos recientes.</p>}
+                        )) : <p className="text-center text-gray-500 py-8 text-sm">No hay trabajos recientes.</p>}
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">Accesos Rápidos</h2>
-                    <QuickAccessCard to="/nuevo" icon={AddIcon} label="Nuevo Pedido" description="Crea una nueva orden de trabajo."/>
-                    <QuickAccessCard to="/kds" icon={KdsIcon} label="Taller (KDS)" description="Visualiza el flujo de producción."/>
-                    <QuickAccessCard to="/finanzas" icon={SolidFinanceIcon} label="Reportes" description="Analiza tus finanzas."/>
+                {/* Quick Access (Takes 1 column on desktop, but adjusts on mobile) */}
+                <div className="flex flex-col gap-4">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white px-1">Accesos Rápidos</h2>
+                    {/* Grid de 2 columnas en móvil, 1 columna en desktop */}
+                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+                        <QuickAccessCard 
+                            to="/nuevo" 
+                            icon={AddIcon} 
+                            label="Nuevo Pedido" 
+                            description="Crear orden de trabajo" 
+                            colorClass="text-brand-blue"
+                        />
+                        <QuickAccessCard 
+                            to="/kds" 
+                            icon={KdsIcon} 
+                            label="Taller (KDS)" 
+                            description="Ver flujo de producción"
+                            colorClass="text-orange-500"
+                        />
+                        <QuickAccessCard 
+                            to="/finanzas" 
+                            icon={SolidFinanceIcon} 
+                            label="Reportes" 
+                            description="Ver resumen financiero"
+                            colorClass="text-green-600"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { getUsers, updateUser, createUser } from '../services/mockApi';
 import { User } from '../types';
-import { UsersIcon, UserPlusIcon, ExclamationTriangleIcon, PencilIcon, SearchIcon, CloseIcon, ArrowUpIcon, ArrowDownIcon } from '../components/Icons';
+import { UsersIcon, UserPlusIcon, ExclamationTriangleIcon, PencilIcon, SearchIcon, CloseIcon, ArrowUpIcon, ArrowDownIcon, ShieldCheckIcon } from '../components/Icons';
 import { formatDate } from '../utils';
 
 type SortKey = keyof User;
@@ -59,13 +60,18 @@ const UserFormModal: React.FC<{
 }> = ({ user, onClose, onSave }) => {
     const [formData, setFormData] = useState<Partial<User>>({});
     useEffect(() => {
-        setFormData(user || { nombre: '', email: '', rol: 'Operador', estado: 'Activo' });
+        setFormData(user || { nombre: '', email: '', rol: 'Operador', estado: 'Activo', requirePassword: false, password: '' });
     }, [user]);
 
     if (!user) return null;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value, type } = e.target;
+        if (type === 'checkbox') {
+             setFormData({ ...formData, [name]: (e.target as HTMLInputElement).checked });
+        } else {
+             setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -75,30 +81,67 @@ const UserFormModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold">{user.id ? 'Editar Usuario' : 'Crear Usuario'}</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">{formData.id ? 'Editar Usuario' : 'Crear Usuario'}</h2>
                     <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500" /></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre</label>
-                        <input type="text" name="nombre" value={formData.nombre || ''} onChange={handleChange} required className="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" />
+                        <input type="text" name="nombre" value={formData.nombre || ''} onChange={handleChange} required className="mt-1 w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-blue" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                        <input type="email" name="email" value={formData.email || ''} onChange={handleChange} required className="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" />
+                        <input type="email" name="email" value={formData.email || ''} onChange={handleChange} required className="mt-1 w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-blue" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol</label>
-                        <select name="rol" value={formData.rol || 'Operador'} onChange={handleChange} className="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                        <select name="rol" value={formData.rol || 'Operador'} onChange={handleChange} className="mt-1 w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-blue">
                             <option value="Admin">Admin</option>
                             <option value="Operador">Operador</option>
                         </select>
                     </div>
+
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                <ShieldCheckIcon className="w-4 h-4"/> Seguridad
+                            </h3>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    name="requirePassword" 
+                                    checked={formData.requirePassword || false} 
+                                    onChange={handleChange} 
+                                    className="sr-only peer" 
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Habilitar Contraseña</span>
+                            </label>
+                        </div>
+
+                        {formData.requirePassword && (
+                            <div className="animate-fade-in bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                                <label className="block text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">Contraseña de Acceso</label>
+                                <input 
+                                    type="text" // Visible for admin convenience as requested in typical small ERPs, can be password type
+                                    name="password" 
+                                    value={formData.password || ''} 
+                                    onChange={handleChange} 
+                                    placeholder="Establecer contraseña"
+                                    className="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500" 
+                                />
+                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                    Este usuario deberá ingresar esta contraseña al iniciar sesión.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="flex justify-end pt-4 gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancelar</button>
-                        <button type="submit" className="px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg hover:bg-blue-700">Guardar</button>
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
+                        <button type="submit" className="px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -196,8 +239,8 @@ const GestionUsuariosPage: React.FC = () => {
     return (
         <div className="space-y-8">
             <div className="flex flex-wrap justify-between items-center gap-4">
-                <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-                <button onClick={() => setEditingUser({})} className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Usuarios</h1>
+                <button onClick={() => setEditingUser({})} className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                     <UserPlusIcon className="h-5 w-5" />
                     <span>Nuevo Usuario</span>
                 </button>
@@ -209,20 +252,21 @@ const GestionUsuariosPage: React.FC = () => {
                 <KpiCard title="Usuarios Inactivos" value={kpis.inactivos} icon={UsersIcon} color="red" />
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <div className="relative max-w-md">
                         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input type="text" placeholder="Buscar por nombre o email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" />
+                        <input type="text" placeholder="Buscar por nombre o email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-blue transition-shadow" />
                     </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                              <tr>
                                 <SortableHeader column="nombre" label="Nombre" sortConfig={sortConfig} requestSort={requestSort} />
                                 <SortableHeader column="email" label="Email" sortConfig={sortConfig} requestSort={requestSort} />
                                 <SortableHeader column="rol" label="Rol" sortConfig={sortConfig} requestSort={requestSort} />
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Seguridad</th>
                                 <SortableHeader column="ultimoAcceso" label="Último Acceso" sortConfig={sortConfig} requestSort={requestSort} />
                                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
                                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
@@ -230,12 +274,23 @@ const GestionUsuariosPage: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {loading ? (
-                                <tr><td colSpan={6} className="text-center py-10">Cargando usuarios...</td></tr>
+                                <tr><td colSpan={7} className="text-center py-10 text-gray-500">Cargando usuarios...</td></tr>
                             ) : filteredAndSortedUsers.map(user => (
-                                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{user.nombre}</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{user.email}</td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{user.rol}</td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm">
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.rol === 'Admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>{user.rol}</span>
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm">
+                                        {user.requirePassword ? (
+                                            <span className="flex items-center gap-1 text-green-600 font-medium">
+                                                <ShieldCheckIcon className="w-4 h-4"/> Protegido
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 italic">Sin contraseña</span>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{formatDate(user.ultimoAcceso)}</td>
                                     <td className="px-4 py-4 whitespace-nowrap">
                                         <label className="relative inline-flex items-center cursor-pointer">
@@ -244,7 +299,7 @@ const GestionUsuariosPage: React.FC = () => {
                                         </label>
                                     </td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm">
-                                        <button onClick={() => setEditingUser(user)} className="p-1 text-brand-blue hover:text-blue-700"><PencilIcon className="h-5 w-5" /></button>
+                                        <button onClick={() => setEditingUser(user)} className="p-2 text-brand-blue hover:bg-blue-50 rounded-full transition-colors"><PencilIcon className="h-5 w-5" /></button>
                                     </td>
                                 </tr>
                             ))}

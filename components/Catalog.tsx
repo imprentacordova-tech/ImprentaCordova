@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, ShoppingCart, CheckCircle, Star, Filter } from 'lucide-react';
 import { Product, ProductCategory } from '../types';
@@ -95,10 +96,123 @@ const products: Product[] = [
     description: 'Empastado de lujo con letras doradas para trabajos de grado.',
     specs: ['Tapa dura', 'Grabado en Pan de Oro', 'Colores variados', 'Acabado profesional'],
     imageUrl: 'https://images.unsplash.com/photo-1519682577862-22b62b24e491?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '10',
+    name: 'Taza Personalizada',
+    category: 'Sublimación',
+    price: 6.00,
+    unit: 'unidad',
+    description: 'Taza de cerámica blanca sublimada con tu diseño o foto.',
+    specs: ['Cerámica AAA', 'Resistente a microondas', 'Impresión Full Color', 'Caja individual'],
+    imageUrl: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&q=80&w=400',
+    isPopular: true
+  },
+  {
+    id: '11',
+    name: 'Gorra Tipo Camionero',
+    category: 'Sublimación',
+    price: 7.00,
+    unit: 'unidad',
+    description: 'Gorra con malla trasera y frente acolchado personalizado.',
+    specs: ['Varios colores', 'Estampado Sublimación/Vinil', 'Talla ajustable', 'Entrega rápida'],
+    imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '12',
+    name: 'Camiseta Estampada',
+    category: 'Sublimación',
+    price: 12.00,
+    unit: 'unidad',
+    description: 'Camisetas personalizadas para eventos, empresas o uso diario.',
+    specs: ['Telas Algodón/Poliéster', 'Técnica DTF o Sublimación', 'Tallas S-XL', 'Diseño a medida'],
+    imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=400',
+    isPopular: true
+  },
+  {
+    id: '13',
+    name: 'Etiquetas Adhesivas',
+    category: 'Etiquetas',
+    price: 15.00,
+    unit: 'x 100',
+    description: 'Stickers troquelados para productos, frascos o packaging.',
+    specs: ['Vinil resistente al agua', 'Corte personalizado', 'Full Color', 'Entrega en pliego'],
+    imageUrl: 'https://images.unsplash.com/photo-1616406432452-07bc5921752d?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '14',
+    name: 'Credencial PVC',
+    category: 'Oficina',
+    price: 3.50,
+    unit: 'unidad',
+    description: 'Identificación plástica duradera tipo tarjeta de crédito.',
+    specs: ['Material PVC rígido', 'Impresión ambas caras', 'Incluye cordón', 'Alta durabilidad'],
+    imageUrl: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '15',
+    name: 'Carpeta Corporativa',
+    category: 'Oficina',
+    price: 1.50,
+    unit: 'unidad',
+    description: 'Carpeta de presentación con bolsillo interno para documentos.',
+    specs: ['Cartulina Couché 300g', 'Bolsillo troquelado', 'Laminado opcional', 'Ideal para cotizaciones'],
+    imageUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '16',
+    name: 'Jarro Mágico',
+    category: 'Sublimación',
+    price: 8.00,
+    unit: 'unidad',
+    description: 'Taza negra que revela tu foto al poner agua caliente. ¡Sorprendente!',
+    specs: ['Cerámica Termosensible', 'Negro a Color', 'Caja Individual', 'Diseño Personalizado'],
+    imageUrl: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&q=80&w=400',
+    isPopular: true
+  },
+  {
+    id: '17',
+    name: 'Tomatodo Deportivo',
+    category: 'Sublimación',
+    price: 9.00,
+    unit: 'unidad',
+    description: 'Botella de aluminio con gancho, ideal para escuelas y deporte.',
+    specs: ['600ml / 750ml', 'Aluminio inoxidable', 'Tapa rosca segura', 'Full Color'],
+    imageUrl: 'https://images.unsplash.com/photo-1602143407151-01114195bc51?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '18',
+    name: 'Menú Plastificado',
+    category: 'Publicidad',
+    price: 3.50,
+    unit: 'unidad',
+    description: 'Carta para restaurante rígida, lavable y de alta durabilidad.',
+    specs: ['Tamaño A4 o A3', 'Laminado Grueso (175 mic)', 'Bordes Redondeados', 'Resistente al agua'],
+    imageUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '19',
+    name: 'Señalética Sintra',
+    category: 'Gran Formato',
+    price: 5.00,
+    unit: 'unidad',
+    description: 'Letreros rígidos para seguridad, baños u oficinas.',
+    specs: ['Base Sintra 3mm', 'Vinil Laminado', 'Medida A4/A3', 'Incluye cinta doble faz'],
+    imageUrl: 'https://images.unsplash.com/photo-1574359411659-15573a21bc2c?auto=format&fit=crop&q=80&w=400'
+  },
+  {
+    id: '20',
+    name: 'Llaveros Personalizados',
+    category: 'Merch',
+    price: 45.00,
+    unit: 'ciento',
+    description: 'Recuerdos económicos para campañas o eventos.',
+    specs: ['Acrílico o Metal', 'Impresión ambos lados', 'Pedido mínimo 50', 'Formas variadas'],
+    imageUrl: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&q=80&w=400'
   }
 ];
 
-const categories: ProductCategory[] = ['Todos', 'Oficina', 'Gran Formato', 'Merch', 'Publicidad', 'Tarjetas'];
+const categories: ProductCategory[] = ['Todos', 'Oficina', 'Gran Formato', 'Merch', 'Publicidad', 'Tarjetas', 'Sublimación', 'Etiquetas'];
 
 const Catalog: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('Todos');

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { APP_NAME, UI_TEXT } from '../constants';
 import { User } from '../types';
 import { getUsers } from '../services/mockApi';
-import { CordovaLogo, UsersIcon, CheckCircleIcon, ArrowRightIcon } from '../components/Icons';
+import { CordovaLogo, UsersIcon, CheckCircleIcon, ArrowRightIcon, ShieldCheckIcon } from '../components/Icons';
 
 interface LoginProps {
   onLoginSuccess: (user: User) => void;
@@ -11,6 +11,7 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [key, setKey] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,10 +27,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     const validUser = users.find(u => u.nombre.toLowerCase() === key.toLowerCase() && u.estado === 'Activo');
 
     if (validUser) {
-      onLoginSuccess(validUser);
+      if (validUser.requirePassword) {
+          if (validUser.password === password) {
+              onLoginSuccess(validUser);
+          } else {
+              setError("Contraseña incorrecta");
+              setLoading(false);
+          }
+      } else {
+          // No password required for this user
+          onLoginSuccess(validUser);
+      }
     } else {
       setError("Usuario no encontrado o inactivo");
       setKey('');
+      setPassword('');
       setLoading(false);
     }
   };
@@ -65,10 +77,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 </div>
 
                 <div className="px-8 pb-10">
-                    <form onSubmit={handleLogin} className="space-y-6">
-                        <div className="space-y-2">
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        <div className="space-y-1">
                             <label htmlFor="username" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
-                                Identificación de Usuario
+                                Usuario
                             </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -85,6 +97,26 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     placeholder="Ej. Pedro"
                                     autoFocus
                                     autoComplete="off"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <label htmlFor="password" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
+                                Contraseña <span className="text-[10px] normal-case opacity-60 font-normal">(Si aplica)</span>
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <ShieldCheckIcon className="h-5 w-5 text-blue-300 group-focus-within:text-white transition-colors" />
+                                </div>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
+                                    placeholder="••••••"
                                 />
                             </div>
                         </div>

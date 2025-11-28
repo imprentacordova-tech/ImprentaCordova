@@ -84,6 +84,9 @@ export interface User {
   rol: 'Admin' | 'Operador';
   estado: 'Activo' | 'Inactivo';
   ultimoAcceso: string;
+  // Security fields
+  password?: string;
+  requirePassword?: boolean;
 }
 
 export interface InventoryItem {

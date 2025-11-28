@@ -36,25 +36,25 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
                 scrolled 
                 ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-100 py-2' 
-                : 'bg-transparent py-6'
+                : 'bg-transparent py-4 sm:py-6'
             }`}
         >
-            <nav className="container mx-auto px-6 flex justify-between items-center">
-                <Link to="/" className="flex items-center gap-3 group">
-                    <div className={`p-2 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-blue-50' : 'bg-white/10 backdrop-blur-sm'}`}>
-                        <CordovaLogo className={`h-10 w-10 ${scrolled ? 'text-brand-blue' : 'text-white'}`} />
+            <nav className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+                <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+                    <div className={`p-1.5 sm:p-2 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-blue-50' : 'bg-white/10 backdrop-blur-sm'}`}>
+                        <CordovaLogo className={`h-8 w-8 sm:h-10 sm:w-10 ${scrolled ? 'text-brand-blue' : 'text-white'}`} />
                     </div>
                     <div className="flex flex-col leading-none">
-                        <span className={`text-xs font-bold tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
+                        <span className={`text-[10px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
                             Imprenta
                         </span>
-                        <span className={`text-2xl font-black tracking-tighter uppercase ${scrolled ? 'text-brand-blue' : 'text-white'}`}>
+                        <span className={`text-xl sm:text-2xl font-black tracking-tighter uppercase ${scrolled ? 'text-brand-blue' : 'text-white'}`}>
                             CÓRDOVA
                         </span>
                     </div>
                 </Link>
                 
-                <div className="flex items-center gap-8">
+                <div className="flex items-center gap-2 sm:gap-8">
                     <nav className="hidden md:flex gap-8 text-sm font-bold uppercase tracking-wide">
                         <a 
                             href="#servicios" 
@@ -74,25 +74,43 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                         </a>
                     </nav>
 
-                    <div className="flex items-center gap-4">
-                        <button onClick={onOpenCart} className="relative group p-2">
+                    <div className="flex items-center gap-1 sm:gap-4">
+                        <button onClick={onOpenCart} className="relative group p-2 rounded-full hover:bg-white/10 transition-colors">
                             <ShoppingCartIcon className={`w-6 h-6 transition-colors ${scrolled ? 'text-slate-700 group-hover:text-brand-blue' : 'text-white group-hover:text-brand-blue'}`} />
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-brand-red text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm animate-pulse">
+                                <span className="absolute top-0 right-0 bg-brand-red text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shadow-sm animate-pulse border-2 border-transparent">
                                     {cartCount}
                                 </span>
                             )}
                         </button>
+                        
+                        {/* Separador Vertical Móvil */}
+                        <div className={`h-6 w-px mx-1 sm:hidden ${scrolled ? 'bg-slate-300' : 'bg-white/30'}`}></div>
+
+                        {/* Botón Login - MÓVIL (Icono) */}
+                        <Link 
+                            to="/login"
+                            className={`sm:hidden p-2 rounded-full transition-all duration-300 ${
+                                scrolled 
+                                ? 'text-slate-700 hover:bg-slate-100 hover:text-brand-blue' 
+                                : 'text-white hover:bg-white/20'
+                            }`}
+                            aria-label="Ingresar a Intranet"
+                        >
+                            <UsersIcon className="w-6 h-6" />
+                        </Link>
+
+                        {/* Botón Login - DESKTOP (Texto completo) */}
                         <Link 
                             to="/login" 
-                            className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                            className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 border ${
                                 scrolled 
-                                ? 'bg-brand-blue text-white hover:bg-blue-800' 
-                                : 'bg-white text-brand-blue hover:bg-blue-50'
+                                ? 'bg-brand-blue text-white border-transparent hover:bg-blue-800' 
+                                : 'bg-white/10 text-white border-white/20 backdrop-blur-md hover:bg-white hover:text-brand-blue'
                             }`}
                         >
                             <UsersIcon className="w-4 h-4" />
-                            Intranet
+                            <span>Intranet</span>
                         </Link>
                     </div>
                 </div>

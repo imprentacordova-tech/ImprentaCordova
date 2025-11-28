@@ -4,7 +4,7 @@ import { getClientes, createCliente, createTrabajo, getProductos, createProducto
 import { Cliente, Trabajo, TrabajoEstado, TrabajoTipo, Regimen, Producto, User } from '../types';
 import { formatCurrency } from '../utils';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { CloseIcon, SearchIcon, CheckCircleIcon, UserPlusIcon, PrinterIcon, KdsIcon, TrashIcon, ShieldCheckIcon, DocumentIcon, FolderIcon, ArrowLeftIcon, ArrowRightIcon, ShoppingCartIcon, ExclamationTriangleIcon, ReceiptIcon, DocumentCheckIcon, ClientsIcon, BoxIcon, AddIcon, DollarIcon, ClockIcon } from '../components/Icons';
+import { CloseIcon, SearchIcon, CheckCircleIcon, UserPlusIcon, PrinterIcon, KdsIcon, TrashIcon, ShieldCheckIcon, DocumentIcon, FolderIcon, ArrowLeftIcon, ArrowRightIcon, ShoppingCartIcon, ExclamationTriangleIcon, ReceiptIcon, DocumentCheckIcon, ClientsIcon, BoxIcon, AddIcon, DollarIcon, ClockIcon, StarIcon, MapPinIcon } from '../components/Icons';
 import { getConfig } from '../services/configService';
 
 // Declare html2pdf for TypeScript
@@ -25,6 +25,17 @@ interface ProductVariation { id: string; variationName: string; price: number; p
 interface ProductGroup { groupName: string; categoria: string; esSRI: boolean; variations: ProductVariation[]; isGroup: true; imagenUrl?: string; }
 type DisplayableProduct = ProductGroup | (Producto & { isGroup?: false });
 type Step = 'cliente' | 'productos' | 'resumen';
+
+// Estructura Inteligente de Categorías
+const SMART_CATEGORIES: Record<string, string[]> = {
+    'SRI': ['Facturas', 'Notas de Venta', 'Retenciones', 'Guías de Remisión', 'Liquidaciones de Compra', 'Notas de Crédito'],
+    'Publicidad': ['Volantes / Flyers', 'Trípticos', 'Dípticos', 'Afiches', 'Carpetas Corporativas'],
+    'Tarjetería': ['Tarjetas de Presentación', 'Invitación Matrimonio', 'Invitación 15 Años', 'Invitación Bautizo', 'Tarjetas de Agradecimiento'],
+    'Calendarios': ['Calendario de Pared', 'Calendario de Escritorio', 'Calendario de Bolsillo', 'Almanaque Bristol'],
+    'Gran Formato': ['Lona Front', 'Vinil Adhesivo', 'Vinil Microperforado', 'Roll Up', 'Banner'],
+    'Oficina': ['Recibos de Caja', 'Sellos Automáticos', 'Sellos de Madera', 'Sobres Membretados', 'Hojas Membretadas', 'Etiquetas Adhesivas'],
+    'Acabados': ['Empastado de Tesis', 'Anillado', 'Laminado', 'Troquelado']
+};
 
 // Componente de Input reutilizable
 const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
@@ -233,6 +244,7 @@ const CreateProductModal: React.FC<{
         esSRI: false,
         descripcion: ''
     });
+    const [selectedMainCategory, setSelectedMainCategory] = useState<string>('');
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -245,6 +257,7 @@ const CreateProductModal: React.FC<{
                 esSRI: false,
                 descripcion: ''
             });
+            setSelectedMainCategory(defaultCategory || '');
             setTimeout(() => inputRef.current?.focus(), 100);
         }
     }, [isOpen, initialName, defaultCategory]);
@@ -254,6 +267,21 @@ const CreateProductModal: React.FC<{
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
         setNewProductData(prev => ({ ...prev, [e.target.name]: value }));
+    };
+
+    const handleMainCategorySelect = (category: string) => {
+        setSelectedMainCategory(category);
+        setNewProductData(prev => ({ ...prev, categoria: category }));
+    };
+
+    const handleSubCategorySelect = (subCategory: string) => {
+        const mainCat = selectedMainCategory || newProductData.categoria;
+        setNewProductData(prev => ({ 
+            ...prev, 
+            nombre: `${subCategory} `, // Add space for user to type variant
+            esSRI: mainCat === 'SRI' // Auto-check if SRI
+        }));
+        inputRef.current?.focus();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -272,28 +300,82 @@ const CreateProductModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-100 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 rounded-t-2xl">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <div className="bg-green-600 text-white p-1.5 rounded-lg"><BoxIcon className="h-5 w-5" /></div>
-                        Crear Producto Rápido
+                        Crear Producto
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors"><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    <InputField ref={inputRef} label="Nombre del Producto" name="nombre" value={newProductData.nombre} onChange={handleChange} required placeholder="Ej: Recibos 1/4" />
+                
+                <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
+                    
+                    {/* Smart Category Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">1. Seleccione Categoría</label>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {Object.keys(SMART_CATEGORIES).map(cat => (
+                                <button
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => handleMainCategorySelect(cat)}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${
+                                        selectedMainCategory === cat
+                                            ? 'bg-brand-blue text-white border-brand-blue shadow-md'
+                                            : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-brand-blue'
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => handleMainCategorySelect('General')}
+                                className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${
+                                    selectedMainCategory === 'General'
+                                        ? 'bg-gray-600 text-white border-gray-600'
+                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-400'
+                                }`}
+                            >
+                                General
+                            </button>
+                        </div>
+
+                        {selectedMainCategory && SMART_CATEGORIES[selectedMainCategory] && (
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 animate-fade-in">
+                                <p className="text-xs font-bold text-brand-blue mb-2 uppercase tracking-wide">Sugerencias para {selectedMainCategory}:</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {SMART_CATEGORIES[selectedMainCategory].map(sub => (
+                                        <button
+                                            key={sub}
+                                            type="button"
+                                            onClick={() => handleSubCategorySelect(sub)}
+                                            className="px-2 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs rounded border border-blue-200 dark:border-blue-700 hover:bg-blue-100 hover:text-brand-blue transition-colors shadow-sm"
+                                        >
+                                            {sub}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="border-t border-gray-100 dark:border-gray-700 my-2"></div>
+
+                    <InputField ref={inputRef} label="2. Nombre del Producto (o variante)" name="nombre" value={newProductData.nombre} onChange={handleChange} required placeholder="Ej: Calendario de Pared Modelo B" />
                     
                     <div className="grid grid-cols-2 gap-4">
                         <InputField label="Precio Unitario" name="precio" type="number" step="0.01" value={newProductData.precio} onChange={handleChange} required />
                         <div>
-                            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
-                            <select name="categoria" value={newProductData.categoria} onChange={handleChange} className="w-full p-2.5 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent">
-                                <option value="General">General</option>
-                                <option value="SRI">SRI</option>
-                                <option value="Publicidad Impresa">Publicidad Impresa</option>
-                                <option value="Papelería Corporativa">Papelería Corporativa</option>
-                                <option value="Acabados y Servicios">Acabados</option>
-                            </select>
+                            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría Guardada</label>
+                            <input 
+                                type="text" 
+                                name="categoria" 
+                                value={newProductData.categoria} 
+                                onChange={handleChange} 
+                                className="w-full p-2.5 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent bg-gray-50 dark:bg-gray-800"
+                            />
                         </div>
                     </div>
 
@@ -682,8 +764,6 @@ const NuevoPedidoPage: React.FC = () => {
         setIsLoading(false);
     };
 
-    // ... (Render logic omitted for brevity, focusing on changes)
-    
     // --- Render Logic ---
     if (isLoading && !createdTrabajo) return <div className="text-center p-10">Cargando...</div>;
 
@@ -758,11 +838,9 @@ const NuevoPedidoPage: React.FC = () => {
 
     const renderStepContent = () => {
         switch (step) {
-            // ... (Case 'cliente' omitted)
             case 'cliente':
                  return (
                     <div className="animate-fade-in max-w-3xl mx-auto">
-                        {/* ... existing code for client search */}
                         <div className="text-center mb-8">
                             <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-3">¿Quién es el cliente?</h2>
                             <p className="text-gray-500 dark:text-gray-400 text-lg">Busca por nombre, cédula o RUC para comenzar.</p>
@@ -782,7 +860,6 @@ const NuevoPedidoPage: React.FC = () => {
                                 autoFocus
                             />
                         </div>
-                        {/* ... existing search results */}
                          <div className="mt-6">
                             {debouncedClientSearchTerm ? (
                                 filteredClientes.length > 0 ? (
