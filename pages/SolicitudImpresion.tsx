@@ -107,11 +107,11 @@ const SolicitudImpresionPage: React.FC = () => {
         if (!trabajo) return;
         const element = document.getElementById('solicitud-impresion-content');
         const opt = {
-          margin:       0,
-          filename:     `Solicitud-SRI-${trabajo.orden}.pdf`,
+          margin:       0, // We control margins via CSS padding for exact A5 fit
+          filename:     `Orden-SRI-${trabajo.orden}.pdf`,
           image:        { type: 'jpeg', quality: 0.98 },
           html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
         };
         html2pdf().from(element).set(opt).save();
     };
@@ -159,188 +159,186 @@ const SolicitudImpresionPage: React.FC = () => {
         <>
             <style>{`
                 @media print {
-                    @page { size: A4; margin: 0; }
+                    @page { size: A5; margin: 0; }
                     body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     body * { visibility: hidden; }
                     #solicitud-impresion-content, #solicitud-impresion-content * { visibility: visible; }
-                    #solicitud-impresion-content { position: absolute; left: 0; top: 0; width: 100%; height: auto; margin: 0; padding: 0; border: none; box-shadow: none; }
+                    #solicitud-impresion-content { 
+                        position: absolute; left: 0; top: 0; 
+                        width: 148mm !important; height: 210mm !important; 
+                        margin: 0; padding: 8mm !important; 
+                        border: none; box-shadow: none; box-sizing: border-box;
+                    }
                     .no-print { display: none !important; }
                     input, select, textarea { border: none; background: transparent; appearance: none; -webkit-appearance: none; padding: 0; margin: 0; font-family: inherit; font-size: inherit; color: inherit; width: auto; resize: none; }
                     select { background-image: none; }
                 }
             `}</style>
             <div className="bg-gray-100 dark:bg-gray-900 p-4 font-sans min-h-screen flex flex-col items-center">
-                <div className="w-full max-w-[210mm] flex justify-end mb-6 no-print gap-4">
-                    <button onClick={handleAddItem} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-full shadow-lg hover:bg-green-700 transition-all hover:-translate-y-0.5">
-                        <AddIcon className="h-5 w-5" />
-                        <span>Añadir Ítem</span>
+                <div className="w-full max-w-[148mm] flex justify-end mb-6 no-print gap-4">
+                    <button onClick={handleAddItem} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-full shadow-lg hover:bg-green-700 transition-all hover:-translate-y-0.5">
+                        <AddIcon className="h-4 w-4" />
+                        <span>Ítem</span>
                     </button>
-                    <button onClick={handleGeneratePdf} className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-all hover:-translate-y-0.5">
-                        <ArrowDownTrayIcon className="h-5 w-5" />
-                        <span>Guardar PDF</span>
+                    <button onClick={handleGeneratePdf} className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 text-white text-sm font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-all hover:-translate-y-0.5">
+                        <ArrowDownTrayIcon className="h-4 w-4" />
+                        <span>PDF A5</span>
                     </button>
-                     <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition-all hover:-translate-y-0.5">
-                        <PrinterIcon className="h-5 w-5" />
+                     <button onClick={handlePrint} className="flex items-center gap-2 px-3 py-1.5 bg-brand-blue text-white text-sm font-semibold rounded-full shadow-lg hover:bg-blue-700 transition-all hover:-translate-y-0.5">
+                        <PrinterIcon className="h-4 w-4" />
                         <span>Imprimir</span>
                     </button>
                 </div>
 
-                <div id="solicitud-impresion-content" className="bg-white shadow-2xl text-black relative overflow-hidden" style={{ width: '210mm', minHeight: '297mm', padding: '12mm' }}>
+                {/* A5 Container: 148mm Width x 210mm Height */}
+                <div id="solicitud-impresion-content" className="bg-white shadow-2xl text-black relative overflow-hidden flex flex-col" style={{ width: '148mm', minHeight: '210mm', padding: '8mm' }}>
+                    
                     {/* Background Pattern */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-bl-full -z-0 opacity-50"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-bl-full -z-0 opacity-40"></div>
                     
                     <div className="relative z-10 h-full flex flex-col">
                         
                         {/* Header Section */}
-                        <div className="flex justify-between items-start mb-10 border-b border-gray-200 pb-6">
-                            <div className="w-2/3">
-                                <h1 className="text-4xl font-black text-brand-blue tracking-tight mb-2">IMPRENTA CÓRDOVA</h1>
-                                <div className="text-xs text-gray-500 font-medium space-y-1">
-                                    <p className="flex items-center gap-2"><MapPinIcon className="w-3 h-3 text-brand-red"/> {config.emisorDireccionCompleta}</p>
-                                    <p className="flex items-center gap-2"><PhoneIcon className="w-3 h-3 text-brand-red"/> {config.emisorTelefono} <span className="text-gray-300">|</span> <EnvelopeIcon className="w-3 h-3 text-brand-red"/> {config.emisorEmail}</p>
-                                    <p className="font-bold text-gray-700 mt-1">RUC: {config.emisorRuc} <span className="text-brand-red mx-1">•</span> AUT SRI: {config.reciboCodAuto}</p>
+                        <div className="flex justify-between items-start mb-4 border-b-2 border-brand-blue pb-2">
+                            <div className="w-3/5">
+                                <h1 className="text-2xl font-black text-brand-blue tracking-tighter leading-none mb-1">IMPRENTA CÓRDOVA</h1>
+                                <div className="text-[9px] text-gray-600 font-medium leading-tight space-y-0.5">
+                                    <p className="flex items-center gap-1"><MapPinIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorDireccionCompleta}</p>
+                                    <div className="flex gap-2">
+                                        <p className="flex items-center gap-1"><PhoneIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorTelefono}</p>
+                                        <p className="flex items-center gap-1"><EnvelopeIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorEmail}</p>
+                                    </div>
+                                    <p className="font-bold text-gray-800">RUC: {config.emisorRuc} • AUT SRI: {config.reciboCodAuto}</p>
                                 </div>
                             </div>
-                            <div className="w-1/3 flex flex-col items-end">
-                                <div className="bg-brand-blue text-white px-4 py-1 rounded-t-lg text-xs font-bold uppercase tracking-widest shadow-sm">
-                                    Orden de Trabajo
+                            <div className="w-2/5 flex flex-col items-end">
+                                <div className="border-2 border-brand-blue rounded-lg overflow-hidden text-center shadow-sm">
+                                    <div className="bg-brand-blue text-white px-4 py-0.5 text-[9px] font-bold uppercase tracking-widest">
+                                        Orden de Trabajo
+                                    </div>
+                                    <div className="bg-white px-4 py-1">
+                                        <span className="font-mono text-2xl font-black text-red-600 tracking-widest">
+                                            {String(trabajo.orden).padStart(6, '0')}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="border-2 border-brand-blue rounded-b-lg rounded-tl-lg px-6 py-2 bg-white shadow-sm">
-                                    <span className="font-mono text-3xl font-black text-red-600 tracking-widest">
-                                        {String(trabajo.orden).padStart(6, '0')}
-                                    </span>
-                                </div>
-                                <div className="mt-2 text-right">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Fecha de Emisión</p>
-                                    <p className="font-medium text-gray-800">{emissionDate.toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                <div className="mt-1 text-right flex flex-col">
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wide">Fecha de Emisión</span>
+                                    <span className="text-xs font-bold text-gray-800">{emissionDate.toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-center mb-8 relative">
-                            <h2 className="text-center text-lg font-bold text-gray-800 uppercase tracking-[0.2em] bg-white px-4 z-10">
-                                Solicitud de Autorización SRI
-                            </h2>
+                        <div className="flex items-center justify-center mb-3 relative">
                             <div className="absolute inset-0 flex items-center z-0">
-                                <div className="w-full h-px bg-gray-200"></div>
+                                <div className="w-full h-px bg-gray-300"></div>
                             </div>
+                            <span className="bg-white px-3 z-10 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                Solicitud de Autorización SRI
+                            </span>
                             {trabajo.esRenovacion && (
-                                <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1">
+                                <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-purple-100 text-purple-700 text-[9px] font-bold px-2 py-0.5 rounded border border-purple-200 flex items-center gap-1 z-20">
                                     <ClockIcon className="w-3 h-3" /> RENOVACIÓN
                                 </div>
                             )}
                         </div>
 
                         {/* Client Info Card */}
-                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 mb-8 relative overflow-hidden">
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-blue"></div>
-                            <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                                <div className="col-span-2 sm:col-span-1">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Razón Social / Nombres</p>
-                                    <p className="font-bold text-gray-900 text-base">{cliente.nombreComercial || cliente.nombre}</p>
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-4 relative">
+                            <div className="grid grid-cols-12 gap-y-2 gap-x-4 text-xs">
+                                <div className="col-span-8">
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase">Razón Social</p>
+                                    <p className="font-bold text-gray-900 uppercase truncate">{cliente.nombreComercial || cliente.nombre}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">RUC / CI</p>
-                                    <p className="font-mono font-bold text-gray-800 text-base">{cliente.ruc || cliente.cedula}</p>
+                                <div className="col-span-4 text-right">
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase">RUC / CI</p>
+                                    <p className="font-mono font-bold text-gray-900">{cliente.ruc || cliente.cedula}</p>
                                 </div>
                                 
-                                <div className="col-span-2">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Actividad Económica</p>
-                                    <div className="flex gap-2 items-center">
+                                <div className="col-span-12 flex gap-4">
+                                     <div className="flex-grow">
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase">Actividad Económica</p>
                                         <select 
                                             value={actividadEconomica} 
                                             onChange={e => setActividadEconomica(e.target.value)}
-                                            className="bg-transparent outline-none w-full font-medium text-gray-800"
+                                            className="bg-transparent border-b border-gray-300 w-full font-medium text-gray-800 text-[11px] py-0.5 focus:border-brand-blue outline-none"
                                         >
-                                            <option value="">Seleccione...</option>
+                                            <option value="">Seleccione actividad...</option>
                                             {ECONOMIC_ACTIVITIES.map(act => <option key={act} value={act}>{act}</option>)}
-                                            <option value="otra">Otra (Escribir)</option>
+                                            <option value="otra">Otra especifica...</option>
                                         </select>
                                         {actividadEconomica === 'otra' && (
                                             <input 
                                                 type="text" 
                                                 value={customActividad} 
                                                 onChange={e => setCustomActividad(e.target.value)} 
-                                                className="bg-white border-b border-gray-300 px-2 py-0.5 w-full font-medium" 
+                                                className="w-full bg-white border border-gray-300 rounded px-1 py-0.5 text-[10px] mt-1" 
                                                 placeholder="Especifique..."
                                             />
                                         )}
-                                    </div>
-                                </div>
-
-                                <div className="col-span-2 sm:col-span-1">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Email</p>
-                                    <p className="font-medium text-gray-800">{cliente.email || 'No registrado'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Teléfono</p>
-                                    <p className="font-medium text-gray-800">{cliente.telefono.join(' / ')}</p>
+                                     </div>
+                                     <div className="w-1/3 text-right">
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase">Teléfono</p>
+                                        <p className="font-medium text-gray-800">{cliente.telefono[0]}</p>
+                                     </div>
                                 </div>
 
                                 {trabajo.claveAcceso && (
-                                    <div className="col-span-2 mt-2 pt-2 border-t border-gray-200">
-                                        <p className="text-[10px] font-bold text-brand-blue uppercase tracking-wider mb-0.5">Clave de Acceso / Autorización</p>
-                                        <p className="font-mono font-bold text-gray-900 tracking-widest">{trabajo.claveAcceso}</p>
+                                    <div className="col-span-12 pt-1 border-t border-gray-200 mt-1">
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase">Clave de Acceso / Autorización</p>
+                                        <p className="font-mono font-bold text-gray-800 text-[10px] break-all">{trabajo.claveAcceso}</p>
                                     </div>
                                 )}
                             </div>
                         </div>
-                        
-                        {/* Renovacion Banner Alert */}
-                        {trabajo.esRenovacion && (
-                            <div className="mb-6 bg-purple-50 border border-purple-100 p-3 rounded-lg flex items-center justify-center text-purple-800 font-bold text-xs uppercase tracking-wider shadow-sm">
-                                <ShieldCheckIcon className="w-4 h-4 mr-2" />
-                                Archivo Existente - Renovación de Documentos
-                            </div>
-                        )}
 
                         {/* Items Table */}
-                        <div className="mb-8">
-                            <table className="w-full text-sm">
+                        <div className="flex-grow">
+                            <table className="w-full text-xs border-collapse">
                                 <thead>
-                                    <tr className="border-b-2 border-gray-800 text-left">
-                                        <th className="py-3 px-2 font-bold text-xs uppercase tracking-wider w-[12%]">Tamaño</th>
-                                        <th className="py-3 px-2 font-bold text-xs uppercase tracking-wider w-[30%]">Descripción</th>
-                                        <th className="py-3 px-2 font-bold text-[10px] uppercase tracking-wider w-[10%] text-center">Químico</th>
-                                        <th className="py-3 px-2 font-bold text-xs uppercase tracking-wider w-[10%] text-center">Estab.</th>
-                                        <th className="py-3 px-2 font-bold text-xs uppercase tracking-wider w-[10%] text-center">Pto. Emi</th>
-                                        <th className="py-3 px-2 font-bold text-xs uppercase tracking-wider w-[15%] text-center">Cant.</th>
-                                        <th className="py-3 px-2 font-bold text-xs uppercase tracking-wider w-[13%] text-right">Total</th>
-                                        <th className="w-[5px] no-print"></th>
+                                    <tr className="border-b-2 border-brand-blue text-left">
+                                        <th className="py-1 px-1 font-black text-[10px] uppercase text-brand-blue w-[15%]">Tamaño</th>
+                                        <th className="py-1 px-1 font-black text-[10px] uppercase text-brand-blue w-[35%]">Tipo Documento</th>
+                                        <th className="py-1 px-1 font-black text-[10px] uppercase text-brand-blue w-[10%] text-center">Quim.</th>
+                                        <th className="py-1 px-1 font-black text-[10px] uppercase text-brand-blue w-[15%] text-center">Num. (Est-Pto)</th>
+                                        <th className="py-1 px-1 font-black text-[10px] uppercase text-brand-blue w-[12%] text-center">Cant.</th>
+                                        <th className="py-1 px-1 font-black text-[10px] uppercase text-brand-blue w-[13%] text-right">Total</th>
+                                        <th className="w-[1px] no-print"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-gray-200">
                                     {items.map((item, index) => (
-                                        <tr key={index} className="group">
-                                            <td className="py-3 px-2">
-                                                <select value={item.tamano} onChange={e => updateItem(index, 'tamano', e.target.value)} className="w-full font-medium text-gray-700">
+                                        <tr key={index}>
+                                            <td className="py-2 px-1 align-top">
+                                                <select value={item.tamano} onChange={e => updateItem(index, 'tamano', e.target.value)} className="w-full text-xs font-medium text-gray-700 bg-transparent">
                                                     {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </select>
                                             </td>
-                                            <td className="py-3 px-2">
-                                                <select value={item.tipo} onChange={e => updateItem(index, 'tipo', e.target.value)} className="w-full font-bold text-gray-900 uppercase text-xs">
+                                            <td className="py-2 px-1 align-top">
+                                                <select value={item.tipo} onChange={e => updateItem(index, 'tipo', e.target.value)} className="w-full text-[10px] font-bold text-gray-900 uppercase bg-transparent leading-tight">
                                                     {DOCUMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                                 </select>
                                             </td>
-                                            <td className="py-3 px-2 text-center">
-                                                <input type="checkbox" checked={item.papelQuimico} onChange={e => updateItem(index, 'papelQuimico', e.target.checked)} className="accent-brand-blue"/>
+                                            <td className="py-2 px-1 text-center align-top">
+                                                <input type="checkbox" checked={item.papelQuimico} onChange={e => updateItem(index, 'papelQuimico', e.target.checked)} className="accent-brand-blue w-3.5 h-3.5"/>
                                             </td>
-                                            <td className="py-3 px-2 text-center">
-                                                <input type="text" value={item.establecimiento} onChange={e => updateItem(index, 'establecimiento', e.target.value)} className="w-full text-center font-mono" maxLength={3}/>
+                                            <td className="py-2 px-1 text-center align-top">
+                                                <div className="flex items-center justify-center gap-1 font-mono text-[10px]">
+                                                    <input type="text" value={item.establecimiento} onChange={e => updateItem(index, 'establecimiento', e.target.value)} className="w-8 text-center border-b border-gray-300" maxLength={3}/>
+                                                    <span>-</span>
+                                                    <input type="text" value={item.puntoEmision} onChange={e => updateItem(index, 'puntoEmision', e.target.value)} className="w-8 text-center border-b border-gray-300" maxLength={3}/>
+                                                </div>
                                             </td>
-                                            <td className="py-3 px-2 text-center">
-                                                <input type="text" value={item.puntoEmision} onChange={e => updateItem(index, 'puntoEmision', e.target.value)} className="w-full text-center font-mono" maxLength={3}/>
-                                            </td>
-                                            <td className="py-3 px-2 text-center">
-                                                 <select value={item.cantidadTexto} onChange={e => updateItem(index, 'cantidadTexto', e.target.value)} className="w-full text-center text-xs font-medium">
+                                            <td className="py-2 px-1 align-top">
+                                                 <select value={item.cantidadTexto} onChange={e => updateItem(index, 'cantidadTexto', e.target.value)} className="w-full text-[10px] text-center font-medium bg-transparent">
                                                     {QUANTITIES.map(q => <option key={q} value={q}>{q}</option>)}
                                                 </select>
                                             </td>
-                                            <td className="py-3 px-2 text-right font-bold">
-                                                <input type="number" value={item.precio} onChange={e => updateItem(index, 'precio', parseFloat(e.target.value) || 0)} className="w-full text-right" step="0.01"/>
+                                            <td className="py-2 px-1 text-right font-bold align-top">
+                                                <input type="number" value={item.precio} onChange={e => updateItem(index, 'precio', parseFloat(e.target.value) || 0)} className="w-full text-right bg-transparent" step="0.01"/>
                                             </td>
-                                            <td className="no-print pl-2">
-                                                {items.length > 1 && <button onClick={() => handleRemoveItem(index)} className="text-red-400 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>}
+                                            <td className="no-print pl-1 align-top">
+                                                <button onClick={() => handleRemoveItem(index)} className="text-red-400 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>
                                             </td>
                                         </tr>
                                     ))}
@@ -348,38 +346,38 @@ const SolicitudImpresionPage: React.FC = () => {
                             </table>
                         </div>
                         
-                        <div className="mb-8">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Notas Adicionales</p>
-                            <textarea className="w-full bg-gray-50 rounded-lg p-3 text-sm text-gray-700 resize-none border-none" rows={2} placeholder="Instrucciones especiales..."></textarea>
+                        <div className="mb-4 bg-yellow-50 p-2 rounded border border-yellow-200">
+                            <p className="text-[10px] font-bold text-yellow-700 uppercase mb-1">Notas Internas</p>
+                            <textarea className="w-full bg-transparent text-xs text-gray-700 resize-none outline-none" rows={2} placeholder="Escriba observaciones aquí..."></textarea>
                         </div>
                         
                         {/* Footer & Totals */}
-                        <div className="mt-auto grid grid-cols-12 gap-8 items-end">
-                            <div className="col-span-7 text-xs text-gray-500 space-y-4">
-                                <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-800 text-[10px] leading-relaxed text-justify">
-                                    <strong>NOTA IMPORTANTE:</strong> PASADO EL MES DE NO HABER RETIRADO SUS DOCUMENTOS NO NOS HACEMOS RESPONSABLES DE SU ABONO. SIN RECIBO PIERDE EL DERECHO A RETIRAR SU TRABAJO.
+                        <div className="mt-auto">
+                            <div className="flex items-end justify-between gap-6">
+                                <div className="w-2/3">
+                                    <div className="border-t border-gray-400 pt-1">
+                                        <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase">
+                                            <span>Firma Cliente (Autorización)</span>
+                                            <span>C.I. ____________________</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] text-gray-400 mt-2 text-justify leading-tight">
+                                        Nota: Al firmar este documento, el cliente autoriza la impresión según los datos consignados y se responsabiliza por la veracidad de la información tributaria proporcionada. Pasados 30 días laborables no se aceptan reclamos ni devoluciones de anticipos.
+                                    </p>
                                 </div>
-                                <div className="flex items-center gap-2 pt-4">
-                                    <div className="h-px bg-gray-300 flex-grow"></div>
-                                    <span className="font-bold text-gray-400 uppercase text-[10px]">Firma Cliente</span>
-                                    <div className="h-px bg-gray-300 flex-grow"></div>
-                                </div>
-                                <p className="text-center text-[10px] text-gray-400">C.I.: ...................................</p>
-                            </div>
 
-                            <div className="col-span-5">
-                                <div className="bg-brand-blue text-white rounded-xl p-6 shadow-lg">
-                                    <div className="flex justify-between items-center mb-3 text-blue-100 text-sm">
-                                        <span>Subtotal</span>
-                                        <span className="font-mono font-bold text-white">{formatCurrency(totalCalculado)}</span>
+                                <div className="w-1/3 bg-gray-100 rounded-lg p-3 border border-gray-200 shadow-sm">
+                                    <div className="flex justify-between items-center text-xs mb-1">
+                                        <span className="text-gray-500 font-bold">SUBTOTAL</span>
+                                        <span className="font-mono font-bold text-gray-900">{formatCurrency(totalCalculado)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center mb-4 text-blue-100 text-sm border-b border-blue-700 pb-3">
-                                        <span>Abono</span>
-                                        <span className="font-mono font-bold text-white">{formatCurrency(abonoCalculado)}</span>
+                                    <div className="flex justify-between items-center text-xs mb-2 pb-2 border-b border-gray-300">
+                                        <span className="text-gray-500 font-bold">ABONO</span>
+                                        <span className="font-mono font-bold text-green-600">{formatCurrency(abonoCalculado)}</span>
                                     </div>
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-xs font-bold uppercase tracking-widest text-yellow-400">Saldo Pendiente</span>
-                                        <span className="font-mono text-3xl font-black text-white leading-none">{formatCurrency(saldoCalculado)}</span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-black text-brand-blue uppercase">Saldo</span>
+                                        <span className="text-xl font-black text-brand-red">{formatCurrency(saldoCalculado)}</span>
                                     </div>
                                 </div>
                             </div>

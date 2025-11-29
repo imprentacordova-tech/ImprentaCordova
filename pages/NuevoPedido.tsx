@@ -262,8 +262,6 @@ const CreateClientModal: React.FC<{
     );
 };
 
-// --- Create Product Modal Omitted for brevity ---
-
 const ProductGroupModal: React.FC<{ group: ProductGroup | null; onClose: () => void; onAddProduct: (product: Producto) => void; }> = ({ group, onClose, onAddProduct }) => {
     if (!group) return null;
     return (
@@ -306,6 +304,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [isSummaryOpen, setIsSummaryOpen] = useState(false);
     const [activeClientIndex, setActiveClientIndex] = useState(-1);
     const [foundSriCredential, setFoundSriCredential] = useState<SriCredential | null>(null);
+    const [keyAutoFilled, setKeyAutoFilled] = useState(false);
 
     // Order State
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
@@ -347,20 +346,26 @@ const NuevoPedidoPage: React.FC = () => {
         fetchData();
     }, []);
 
-    // Logic to check for SRI Credential when client is selected
+    // MAGIC: Check for SRI Credential when client is selected and AUTO-FILL
     useEffect(() => {
         if (selectedCliente) {
             const ruc = selectedCliente.ruc || selectedCliente.cedula;
+            // Try exact match or RUC (CEDULA + 001)
             const cred = sriCredentials.find(c => c.ruc === ruc || (ruc.length === 10 && c.ruc === ruc + '001'));
             setFoundSriCredential(cred || null);
             
             if (cred && cred.password) {
-                // Optional: Auto-fill or just notify. 
-                // The prompt implies "Alimenta el autocompletado... Se dirá clave encontrada."
-                // We won't auto-fill the input unless requested, but will show the found key.
+                setClaveAcceso(cred.password);
+                setKeyAutoFilled(true);
+                // Reset visual flash effect after 2s
+                setTimeout(() => setKeyAutoFilled(false), 2000);
+            } else {
+                setKeyAutoFilled(false);
+                setClaveAcceso('');
             }
         } else {
             setFoundSriCredential(null);
+            setKeyAutoFilled(false);
         }
     }, [selectedCliente, sriCredentials]);
     
@@ -598,16 +603,11 @@ const NuevoPedidoPage: React.FC = () => {
         );
     };
 
-    // ... (Rest of render logic)
-    // Step: Productos needs the SRI Key Integration
-
     const renderStepContent = () => {
         switch (step) {
             case 'cliente':
-                // ... (Existing cliente selection logic)
-                 return (
+                return (
                     <div className="animate-fade-in max-w-3xl mx-auto">
-                        {/* ... same as before */}
                         <div className="text-center mb-8">
                             <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-3">¿Quién es el cliente?</h2>
                             <p className="text-gray-500 dark:text-gray-400 text-lg">Busca por nombre, cédula o RUC para comenzar.</p>
@@ -660,7 +660,7 @@ const NuevoPedidoPage: React.FC = () => {
                                 ) : (
                                     <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
                                         <p className="text-gray-500 text-lg mb-4">No encontramos a nadie con esos datos.</p>
-                                        <button onClick={handleOpenCreateClientModal} className="inline-flex items-center gap-2 px-8 py-3 bg-brand-blue text-white font-bold rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all transform hover:-translate-y-1">
+                                        <button onClick={handleOpenCreateClientModal} className="inline-flex items-center gap-2 mx-auto px-8 py-3 bg-brand-blue text-white font-bold rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all transform hover:-translate-y-1">
                                             <UserPlusIcon className="h-5 w-5"/> Crear Cliente Nuevo
                                         </button>
                                     </div>
@@ -717,31 +717,38 @@ const NuevoPedidoPage: React.FC = () => {
                                         
                                         <div className="relative">
                                             <input 
-                                                className={`w-48 p-1 text-sm bg-white border rounded ml-2 pr-8`}
+                                                className={`w-48 p-1 text-sm border rounded ml-2 pr-8 transition-all duration-500 ${keyAutoFilled ? 'bg-green-100 border-green-400 ring-2 ring-green-400' : 'bg-white'}`}
                                                 value={claveAcceso} 
                                                 onChange={e => setClaveAcceso(e.target.value)} 
                                                 placeholder="Autorización"
                                             />
                                             {/* Key Status Indicator */}
-                                            {foundSriCredential && (
+                                            {foundSriCredential ? (
                                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 group cursor-pointer">
-                                                    <KeyIcon className="w-4 h-4 text-green-500 animate-pulse" />
-                                                    <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-xl rounded-lg p-2 border border-green-200 dark:border-green-800 z-50 hidden group-hover:block">
-                                                        <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Clave Encontrada</p>
-                                                        <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-1.5 rounded">
+                                                    <KeyIcon className={`w-4 h-4 ${keyAutoFilled ? 'text-green-600 scale-110' : 'text-green-500'}`} />
+                                                    <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-gray-800 shadow-xl rounded-lg p-3 border border-green-200 dark:border-green-800 z-50 hidden group-hover:block">
+                                                        <p className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1"><CheckCircleIcon className="w-3 h-3 text-green-500"/> Clave Encontrada</p>
+                                                        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-100 dark:border-green-800">
                                                             <span className="font-mono text-xs font-bold text-gray-800 dark:text-white truncate">{foundSriCredential.password}</span>
                                                             <button 
                                                                 onClick={() => {
                                                                     navigator.clipboard.writeText(foundSriCredential.password || '');
-                                                                    alert("Clave copiada");
+                                                                    setKeyAutoFilled(true);
+                                                                    setTimeout(() => setKeyAutoFilled(false), 1000);
                                                                 }}
                                                                 className="ml-2 text-blue-600 hover:text-blue-800"
+                                                                title="Copiar"
                                                             >
                                                                 <CopyIcon className="w-3 h-3" />
                                                             </button>
                                                         </div>
+                                                        <p className="text-[9px] text-gray-400 mt-1">Origen: {foundSriCredential.origen || 'Manual'}</p>
                                                     </div>
                                                 </div>
+                                            ) : (
+                                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300">
+                                                    <KeyIcon className="w-4 h-4" />
+                                                 </div>
                                             )}
                                         </div>
 
@@ -800,7 +807,6 @@ const NuevoPedidoPage: React.FC = () => {
                     </div>
                 );
             case 'resumen':
-                // ... (Same as before)
                 return (
                     <div className="animate-fade-in max-w-2xl mx-auto">
                         <h2 className="text-2xl font-bold mb-4 text-center">Paso 3: Resumen y Finalización</h2>
@@ -876,7 +882,7 @@ const NuevoPedidoPage: React.FC = () => {
             )}
 
             <div className={`fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 z-50 ${isSummaryOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                <div className="flex flex-col h-full">
+                <div className="p-6 flex flex-col h-full">
                     <div className="p-5 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
                         <h2 className="text-xl font-bold flex items-center gap-2"><ShoppingCartIcon className="h-6 w-6 text-brand-blue"/> Tu Carrito</h2>
                         <button onClick={() => setIsSummaryOpen(false)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"><CloseIcon className="w-6 h-6"/></button>
