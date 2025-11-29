@@ -8,7 +8,7 @@ export enum TrabajoTipo {
 
 export enum TrabajoEstado {
   PENDIENTE = 'Pendiente',
-  EN_DISENO = 'En Diseño', // Nuevo estado
+  EN_DISENO = 'En Diseño',
   PROCESO = 'En Proceso',
   VITRINA = 'Vitrina',
   ENTREGADO = 'Entregado'
@@ -18,6 +18,13 @@ export enum Regimen {
   NEGOCIO_POPULAR = 'Rimpe Negocio Popular',
   EMPRENDEDOR = 'Rimpe Emprendedor',
   GENERAL = 'General'
+}
+
+export interface SriCredential {
+  ruc: string;
+  password?: string;
+  origen?: string; // 'Manual', 'Chrome', etc.
+  updatedAt?: string;
 }
 
 export interface Cliente {
@@ -83,10 +90,9 @@ export interface User {
   id: string;
   nombre: string;
   email: string;
-  rol: 'Admin' | 'Operador' | 'Diseñador'; // Added Diseñador role hint
+  rol: 'Admin' | 'Operador' | 'Diseñador';
   estado: 'Activo' | 'Inactivo';
   ultimoAcceso: string;
-  // Security fields
   password?: string;
   requirePassword?: boolean;
 }
@@ -126,8 +132,6 @@ export interface TareaProveedor {
   fechaVencimiento: string;
   completada: boolean;
 }
-
-// --- New Exports for Landing Page Components & Services ---
 
 export interface AIContentRequest {
   businessName: string;
