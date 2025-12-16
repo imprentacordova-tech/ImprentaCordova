@@ -126,12 +126,12 @@ const HeroSection: React.FC = () => (
                     </div>
 
                     <div>
-                        <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-white leading-none tracking-tighter drop-shadow-2xl mb-4">
+                        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white leading-none tracking-tight drop-shadow-2xl mb-4">
                             IMPRENTA <br className="hidden md:block" />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">CÓRDOVA</span>
                         </h1>
                         
-                        <p className="text-2xl md:text-3xl font-bold text-blue-200 tracking-wide">
+                        <p className="text-2xl md:text-3xl font-bold text-blue-200 tracking-wide border-l-4 border-orange-500 pl-4">
                             TU MARCA MERECE BRILLAR
                         </p>
                     </div>
@@ -236,7 +236,7 @@ const ServicesSection: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {services.map((s, i) => (
-                        <div key={i} className="group bg-white border border-slate-100 p-8 rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-1">
+                        <div key={i} className="group bg-white border border-slate-100 p-8 rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-1">
                             <div className={`${s.bg} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transform group-hover:rotate-6 transition-transform duration-300`}>
                                 {s.icon}
                             </div>
@@ -265,7 +265,7 @@ const CatalogPreview: React.FC<{ onAddToCart: (p: Producto) => void }> = ({ onAd
                         <h2 className="text-3xl md:text-4xl font-black text-slate-900">CATÁLOGO ONLINE</h2>
                         <p className="text-slate-500 mt-2">Precios directos de imprenta. Haz tu pedido ahora.</p>
                     </div>
-                    <a href="#" className="px-6 py-3 bg-white border border-slate-200 text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm flex items-center gap-2">
+                    <a href="#catalog" className="px-6 py-3 bg-white border border-slate-200 text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm flex items-center gap-2">
                         VER TODO <ArrowRightIcon className="w-4 h-4"/>
                     </a>
                 </div>

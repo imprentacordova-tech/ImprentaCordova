@@ -11,10 +11,15 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+    };
+  }
+
+  public state: State;
 
   public static getDerivedStateFromError(error: Error): State {
     // Actualiza el estado para que el siguiente renderizado muestre la interfaz de repuesto
