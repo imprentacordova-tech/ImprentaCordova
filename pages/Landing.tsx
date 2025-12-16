@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { 
     ShieldCheckIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
     CloseIcon, TrashIcon, AddIcon, ArrowRightIcon, MapPinIcon, 
-    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, CheckCircleIcon
+    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, CheckCircleIcon, SparklesIcon
 } from '../components/Icons';
 import { getProductos, createPublicPedido } from '../services/mockApi';
 import { Producto } from '../types';
 import { formatCurrency } from '../utils';
+import AIHelper from '../components/AIHelper';
 
 // --- UTILIDADES DE INTERFAZ ---
 
@@ -63,6 +64,15 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                         >
                             Servicios
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-red transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <a 
+                            href="#ai-helper" 
+                            onClick={(e) => scrollToSection(e, 'ai-helper')} 
+                            className={`transition-all duration-300 relative group flex items-center gap-1 ${scrolled ? 'text-purple-600 hover:text-purple-800' : 'text-purple-200 hover:text-white'}`}
+                        >
+                            <SparklesIcon className="w-3 h-3" />
+                            IA Creativa
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full"></span>
                         </a>
                         <a 
                             href="#catalog" 
@@ -577,6 +587,7 @@ const LandingPage: React.FC = () => {
             <main>
                 <HeroSection />
                 <ServicesSection />
+                <AIHelper />
                 <CatalogPreview onAddToCart={handleAddToCart} />
             </main>
             <Footer />
