@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
             <h1 className="text-3xl font-black mb-3 text-slate-900 dark:text-white tracking-tight">¡Ups! Algo salió mal.</h1>
             <p className="text-slate-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
-              La aplicación ha encontrado un error inesperado.
+              La aplicación ha encontrado un error inesperado. Por favor recarga la página.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-blue text-white font-bold rounded-xl hover:bg-blue-800 transition-all shadow-lg">

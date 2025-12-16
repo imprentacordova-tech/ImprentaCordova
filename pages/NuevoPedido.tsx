@@ -5,7 +5,7 @@ import { useOrder, CartItem } from '../hooks/useOrder';
 import ClientSelector from '../components/orders/ClientSelector';
 import ProductGrid from '../components/orders/ProductGrid';
 import OrderSummary from '../components/orders/OrderSummary';
-import { User, Cliente, Producto } from '../types';
+import { User, Producto } from '../types';
 import { CloseIcon, ShoppingCartIcon } from '../components/Icons';
 
 const NuevoPedidoPage: React.FC = () => {
@@ -30,7 +30,6 @@ const NuevoPedidoPage: React.FC = () => {
     const handleFinalize = async () => {
         const newJob = await finalizeOrder();
         if (newJob) {
-            // Navegar según el tipo de trabajo
             if (newJob.tipo === 'sri') {
                 navigate(`/solicitud-impresion/${newJob.id}`);
             } else {
@@ -41,13 +40,13 @@ const NuevoPedidoPage: React.FC = () => {
 
     return (
         <div className="flex h-full gap-6 overflow-hidden">
-            {/* Main Content Area */}
+            {/* Area Principal: Selección de Cliente y Productos */}
             <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-2 pb-24">
                 
-                {/* Block 1: Client Selection */}
+                {/* Bloque 1: Selector de Cliente */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                     {selectedCliente ? (
-                        <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 animate-fade-in">
                             <div>
                                 <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">Cliente Seleccionado</p>
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedCliente.nombre}</h2>
@@ -62,9 +61,9 @@ const NuevoPedidoPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Block 2: Products */}
+                {/* Bloque 2: Grilla de Productos */}
                 {selectedCliente && (
-                    <div className="flex-grow bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col min-h-[500px]">
+                    <div className="flex-grow bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col min-h-[500px] animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Catálogo de Productos</h2>
                         <ProductGrid 
                             onProductAction={handleProductAction} 
@@ -77,20 +76,20 @@ const NuevoPedidoPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Sidebar / Floating Summary */}
+            {/* Sidebar / Resumen Flotante */}
             {selectedCliente && (
                 <>
-                    <div className="hidden lg:block w-[350px] flex-shrink-0">
+                    {/* Desktop Sidebar */}
+                    <div className="hidden lg:block w-[350px] flex-shrink-0 animate-slide-in-up">
                         <div className="bg-white dark:bg-gray-800 h-full rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden">
                             <div className="p-5 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                <h3 className="font-bold text-lg flex items-center gap-2 text-gray-900 dark:text-white">
                                     <ShoppingCartIcon className="w-5 h-5 text-brand-blue"/> Resumen
                                 </h3>
                             </div>
-                            {/* Reusing OrderSummary logic but inline */}
                             <OrderSummary 
-                                isOpen={true} // Always open in desktop sidebar
-                                onClose={() => {}} // No close needed
+                                isOpen={true} 
+                                onClose={() => {}} 
                                 cartItems={cartItems}
                                 orderTotal={orderTotal}
                                 client={selectedCliente}
@@ -104,7 +103,7 @@ const NuevoPedidoPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Mobile Floating Button */}
+                    {/* Mobile Floating Button & Modal */}
                     <div className="lg:hidden">
                         <OrderSummary 
                             isOpen={isSummaryOpen} 
@@ -119,6 +118,17 @@ const NuevoPedidoPage: React.FC = () => {
                             onFinalize={handleFinalize}
                             isLoading={isLoading}
                         />
+                        {!isSummaryOpen && cartItems.length > 0 && (
+                            <button 
+                                onClick={() => setIsSummaryOpen(true)} 
+                                className="fixed bottom-20 right-6 bg-brand-red text-white p-4 rounded-full shadow-2xl z-50 animate-bounce-in"
+                            >
+                                <ShoppingCartIcon className="w-6 h-6" />
+                                <span className="absolute -top-2 -right-2 bg-white text-brand-red text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border border-red-100">
+                                    {cartItems.reduce((acc, i: CartItem) => acc + i.cantidad, 0)}
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </>
             )}
