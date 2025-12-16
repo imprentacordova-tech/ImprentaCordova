@@ -1,618 +1,451 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes, updateTrabajoStatus, updateTrabajoPhoto } from '../services/mockApi';
 import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
-import { DocumentIcon, CloseIcon, CameraIcon, ArrowUpIcon, ArrowDownIcon, ReceiptIcon, ClockIcon } from '../components/Icons';
+import { DocumentIcon, CloseIcon, CameraIcon, ArrowUpIcon, ArrowDownIcon, ReceiptIcon, ClockIcon, FilterIcon, PhotoIcon, SearchIcon } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
+
+// --- HELPERS ---
+
+type UrgencyLevel = 'critical' | 'warning' | 'safe';
+
+const getUrgencyLevel = (dateStr?: string): UrgencyLevel => {
+    if (!dateStr) return 'safe';
+    const now = new Date().getTime();
+    const target = new Date(dateStr).getTime();
+    const diffDays = (target - now) / (1000 * 3600 * 24);
+
+    if (diffDays < 2) return 'critical';
+    if (diffDays < 5) return 'warning';
+    return 'safe';
+};
+
+const urgencyConfig = {
+    critical: { border: 'border-l-red-500', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-600', label: 'Urgente' },
+    warning: { border: 'border-l-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20', text: 'text-yellow-600', label: 'Atención' },
+    safe: { border: 'border-l-green-500', bg: 'bg-white dark:bg-gray-800', text: 'text-gray-500', label: 'A tiempo' },
+};
+
+// --- COMPONENTS ---
 
 interface KanbanCardProps {
   trabajo: Trabajo;
   cliente?: Cliente;
-  isExpiringSoon: boolean;
   onCardDoubleClick: (trabajo: Trabajo) => void;
   onTakePhotoClick: (trabajo: Trabajo) => void;
 }
 
-const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, isExpiringSoon, onCardDoubleClick, onTakePhotoClick }) => {
-    // A thick left border is used to highlight urgent jobs with a red color.
-    // This provides a clear, modern visual indicator for status.
-    const borderColor = isExpiringSoon ? 'border-brand-red' : 'border-brand-blue';
+const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleClick, onTakePhotoClick }) => {
+    const urgency = getUrgencyLevel(trabajo.fechaVencimiento);
+    const style = urgencyConfig[urgency];
+    
+    // Calculate progress if dates exist
+    const getProgress = () => {
+        if(!trabajo.fechaVencimiento) return 0;
+        const start = new Date(trabajo.fechaEntrada).getTime();
+        const end = new Date(trabajo.fechaVencimiento).getTime();
+        const now = new Date().getTime();
+        const total = end - start;
+        const elapsed = now - start;
+        return Math.min(100, Math.max(0, (elapsed / total) * 100));
+    };
 
     return (
         <div
             draggable
             onDragStart={(e) => {
                 e.dataTransfer.setData("trabajoId", trabajo.id);
+                e.currentTarget.classList.add('opacity-50', 'scale-95');
+            }}
+            onDragEnd={(e) => {
+                e.currentTarget.classList.remove('opacity-50', 'scale-95');
             }}
             onDoubleClick={() => onCardDoubleClick(trabajo)}
-            // The cursor is set to 'pointer' to indicate it's clickable, as requested.
-            // Added animate-bounce-in for visual feedback when added or moved
-            className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 cursor-pointer border-l-4 ${borderColor} transition-all duration-200 hover:shadow-xl hover:-translate-y-1 animate-bounce-in`}
+            className={`
+                relative group bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-3 cursor-grab active:cursor-grabbing 
+                border-l-4 ${style.border} border-t border-r border-b border-gray-100 dark:border-gray-700
+                transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-600
+                overflow-hidden
+            `}
         >
-            <div className="flex justify-between items-start">
-                <Link to={`/trabajos/${trabajo.id}`} className="font-bold text-lg text-gray-800 dark:text-white hover:text-brand-blue dark:hover:text-blue-400 transition-colors">
-                    #{trabajo.orden}
-                </Link>
-                <DocumentIcon className="h-6 w-6 text-gray-400"/>
-            </div>
-            <p className="font-semibold text-gray-700 dark:text-gray-300 mt-2 truncate">{trabajo.titular}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{trabajo.cantidad} x {trabajo.subtipo}</p>
-            {cliente && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{cliente.nombre}</p>}
-            
-            {trabajo.creadoPor && <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Creado por: {trabajo.creadoPor}</p>}
-
-            {/* The delivery date is displayed prominently on the card. */}
-            {trabajo.fechaVencimiento && (
-                <div className={`mt-2 flex items-center text-sm ${isExpiringSoon ? 'text-brand-red font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>
-                    <ClockIcon className="h-4 w-4 mr-1.5" />
-                    <span>Entrega: {formatDate(trabajo.fechaVencimiento)}</span>
+            {/* Urgency Badge (Only if critical or warning) */}
+            {urgency !== 'safe' && (
+                <div className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}>
+                    {style.label}
                 </div>
             )}
 
-            <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm">
-                 <div>
-                    <span className="text-green-600 font-semibold">{formatCurrency(trabajo.total)}</span>
-                    <span className="text-red-500 font-semibold ml-2">{formatCurrency(trabajo.saldo)}</span>
-                </div>
-                 <div className="flex items-center space-x-1">
-                    {trabajo.estado === TrabajoEstado.ENTREGADO && (
-                        <Link
-                            to={`/nota-de-venta/${trabajo.id}`}
-                            target="_blank"
-                            className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-green-600 transition-colors"
-                            aria-label="Generar Nota de Venta"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <ReceiptIcon className="h-5 w-5" />
-                        </Link>
-                    )}
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onTakePhotoClick(trabajo); }}
-                        className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-blue transition-colors"
-                        aria-label="Tomar foto del trabajo"
-                    >
-                        <CameraIcon className="h-5 w-5" />
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const isJobExpiringSoon = (trabajo: Trabajo): boolean => {
-    if (!trabajo.fechaVencimiento) return false;
-    const diff = new Date(trabajo.fechaVencimiento).getTime() - new Date().getTime();
-    const daysLeft = diff / (1000 * 3600 * 24);
-    return daysLeft < 15;
-};
-
-interface TrabajoDetalleModalProps {
-    trabajo: Trabajo;
-    cliente?: Cliente;
-    onClose: () => void;
-}
-
-const TrabajoDetalleModal: React.FC<TrabajoDetalleModalProps> = ({ trabajo, cliente, onClose }) => {
-    const [currentAbono, setCurrentAbono] = useState(trabajo.abono);
-
-    const handleAbonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.target.value);
-        if (!isNaN(value) && value <= trabajo.total && value >= 0) {
-            setCurrentAbono(value);
-        } else if (e.target.value === '') {
-            setCurrentAbono(0);
-        }
-    }
-
-    const handleSave = () => {
-        // En una aplicación real, aquí se llamaría a la API para guardar los cambios.
-        // Por ejemplo: await updateTrabajoDetails(trabajo.id, { abono: currentAbono, notas: ... });
-        console.log(`Guardando nuevo abono: ${currentAbono} para el trabajo #${trabajo.orden}`);
-        onClose();
-    }
-
-    const saldoActual = trabajo.total - currentAbono;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 id="modal-title" className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Detalle del Trabajo #{trabajo.orden}
-                    </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Cerrar modal">
-                        <CloseIcon className="w-6 h-6" />
-                    </button>
+            <div className="p-4">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-2">
+                    <span className="font-mono text-xs font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                        #{trabajo.orden}
+                    </span>
                 </div>
 
-                <div className="p-6 overflow-y-auto space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm text-gray-700 dark:text-gray-300">
-                        <div><span className="font-semibold text-gray-500 dark:text-gray-400">Cliente: </span>{cliente?.nombre}</div>
-                        <div><span className="font-semibold text-gray-500 dark:text-gray-400">Titular: </span>{trabajo.titular}</div>
-                        <div><span className="font-semibold text-gray-500 dark:text-gray-400">Producto: </span>{trabajo.subtipo}</div>
-                        <div><span className="font-semibold text-gray-500 dark:text-gray-400">Cantidad: </span>{trabajo.cantidad}</div>
-                        <div><span className="font-semibold text-gray-500 dark:text-gray-400">Fecha Entrada: </span>{formatDate(trabajo.fechaEntrada)}</div>
-                         {trabajo.fechaVencimiento && (
-                            <div>
-                               <span className="font-semibold text-gray-500 dark:text-gray-400">Vencimiento SRI: </span>
-                               <span className={isJobExpiringSoon(trabajo) ? 'text-red-500 font-bold' : ''}>
-                                   {formatDate(trabajo.fechaVencimiento)}
-                               </span>
-                           </div>
-                        )}
-                        {trabajo.creadoPor && <div><span className="font-semibold text-gray-500 dark:text-gray-400">Creado por: </span>{trabajo.creadoPor}</div>}
-                        {trabajo.actualizadoPor && <div><span className="font-semibold text-gray-500 dark:text-gray-400">Actualizado por: </span>{trabajo.actualizadoPor}</div>}
-                    </div>
-
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg space-y-4">
-                        <div className="flex justify-between items-center text-lg">
-                            <span className="font-semibold text-gray-800 dark:text-white">Total:</span>
-                            <span className="font-bold text-gray-800 dark:text-white">{formatCurrency(trabajo.total)}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <label htmlFor="abono-modal" className="font-semibold text-gray-600 dark:text-gray-300">Abono:</label>
-                            <input
-                                id="abono-modal"
-                                type="number"
-                                value={currentAbono}
-                                onChange={handleAbonoChange}
-                                className="w-32 p-2 text-right font-semibold border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 focus:ring-brand-blue focus:border-brand-blue"
-                            />
-                        </div>
-                        <div className="border-t border-gray-200 dark:border-gray-600 my-2"></div>
-                        <div className="flex justify-between items-center text-xl text-brand-red">
-                            <span className="font-bold">Saldo Pendiente:</span>
-                            <span className="font-extrabold">{formatCurrency(saldoActual)}</span>
+                {/* Content */}
+                <div className="flex gap-3">
+                    <div className="flex-grow">
+                        <h4 className="font-bold text-gray-800 dark:text-white leading-tight mb-1">{cliente?.nombre || 'Cliente Desconocido'}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">{trabajo.subtipo}</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span className="font-bold bg-blue-50 dark:bg-blue-900/30 text-brand-blue px-2 py-0.5 rounded-md">
+                                {trabajo.cantidad} uds
+                            </span>
+                            {trabajo.fechaVencimiento && (
+                                <span className={`flex items-center gap-1 ${style.text}`}>
+                                    <ClockIcon className="w-3 h-3" />
+                                    {formatDate(trabajo.fechaVencimiento)}
+                                </span>
+                            )}
                         </div>
                     </div>
                     
-                    <div>
-                        <label htmlFor="notas-modal" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notas Internas:</label>
-                        <textarea
-                            id="notas-modal"
-                            rows={3}
-                            placeholder="Añadir notas sobre el trabajo..."
-                            className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-brand-blue focus:border-brand-blue"
-                        ></textarea>
-                    </div>
-                </div>
-
-                <div className="flex justify-end items-center p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-xl mt-auto">
-                    <button onClick={onClose} className="px-4 py-2 mr-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-colors">
-                        Cancelar
-                    </button>
-                    <button onClick={handleSave} className="px-6 py-2 bg-brand-blue text-white font-bold rounded-lg shadow-md hover:bg-blue-800 transition-colors">
-                        Guardar
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-interface CameraModalProps {
-    trabajo: Trabajo;
-    onClose: () => void;
-    onCapture: (photoDataUrl: string) => void;
-}
-
-const CameraModal: React.FC<CameraModalProps> = ({ trabajo, onClose, onCapture }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [stream, setStream] = useState<MediaStream | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let mediaStream: MediaStream;
-        const startCamera = async () => {
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                setStream(mediaStream);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = mediaStream;
-                }
-            } catch (err) {
-                console.error("Error accessing camera:", err);
-                setError("No se pudo acceder a la cámara. Verifique los permisos en su navegador.");
-            }
-        };
-
-        startCamera();
-
-        return () => {
-            if (mediaStream) {
-                mediaStream.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, []);
-
-    const handleCapture = () => {
-        if (videoRef.current && canvasRef.current) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            if (context) {
-                context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-                const dataUrl = canvas.toDataURL('image/jpeg');
-                onCapture(dataUrl);
-            }
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                        Foto para Trabajo #{trabajo.orden}
-                    </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <CloseIcon className="w-6 h-6" />
-                    </button>
-                </div>
-
-                <div className="p-6">
-                    {error ? (
-                        <p className="text-center text-red-500">{error}</p>
-                    ) : (
-                        <div className="relative">
-                            <video ref={videoRef} autoPlay playsInline className="w-full h-auto rounded-lg bg-gray-900"></video>
-                            <canvas ref={canvasRef} className="hidden"></canvas>
+                    {/* Thumbnail Preview */}
+                    {trabajo.fotoOriginalUrl && (
+                        <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 relative group/img">
+                            <img 
+                                src={trabajo.fotoOriginalUrl} 
+                                alt="Referencia" 
+                                className="w-full h-full object-cover transition-transform group-hover/img:scale-110" 
+                            />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                <PhotoIcon className="w-6 h-6 text-white drop-shadow-md" />
+                            </div>
                         </div>
                     )}
                 </div>
 
-                <div className="flex justify-center p-5 border-t border-gray-200 dark:border-gray-700">
-                    {!error && (
-                         <button onClick={handleCapture} className="flex items-center gap-2 px-6 py-3 bg-brand-blue text-white font-bold rounded-lg shadow-md hover:bg-blue-800 transition-colors">
-                            <CameraIcon className="w-6 h-6"/>
-                            <span>Capturar Foto</span>
-                        </button>
-                    )}
+                {/* Footer Actions */}
+                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2">
+                        {trabajo.estado === TrabajoEstado.ENTREGADO ? (
+                            <Link to={`/nota-de-venta/${trabajo.id}`} target="_blank" className="p-1.5 hover:bg-green-100 rounded-full text-green-600 transition-colors" title="Ver Nota">
+                                <ReceiptIcon className="w-4 h-4" />
+                            </Link>
+                        ) : (
+                            <button onClick={(e) => { e.stopPropagation(); onTakePhotoClick(trabajo); }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 transition-colors" title="Adjuntar Foto">
+                                <CameraIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    
+                    {/* Financial Status */}
+                    <div className="text-right">
+                        {trabajo.saldo > 0 ? (
+                            <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                                Pend: {formatCurrency(trabajo.saldo)}
+                            </span>
+                        ) : (
+                            <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <ReceiptIcon className="w-3 h-3" /> Pagado
+                            </span>
+                        )}
+                    </div>
                 </div>
+            </div>
+            
+            {/* Progress Bar (Visual Indicator of Time Elapsed) */}
+            {trabajo.fechaVencimiento && (
+                <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
+                    <div 
+                        className={`h-full ${urgency === 'critical' ? 'bg-red-500' : urgency === 'warning' ? 'bg-yellow-500' : 'bg-green-500'}`} 
+                        style={{ width: `${getProgress()}%` }}
+                    ></div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// --- MODALS (Kept minimal for this file context) ---
+
+const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClose: () => void }> = ({ trabajo, cliente, onClose }) => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Orden #{trabajo.orden}</h2>
+                <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500"/></button>
+            </div>
+            <div className="p-6 space-y-4">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-xl">
+                        {cliente?.nombre.charAt(0)}
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-lg">{cliente?.nombre}</h3>
+                        <p className="text-gray-500 text-sm">{cliente?.ruc || cliente?.cedula}</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl">
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Producto</p>
+                        <p className="font-medium">{trabajo.subtipo}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Cantidad</p>
+                        <p className="font-medium">{trabajo.cantidad}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Total</p>
+                        <p className="font-bold text-brand-blue">{formatCurrency(trabajo.total)}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Saldo</p>
+                        <p className={`font-bold ${trabajo.saldo > 0 ? 'text-red-500' : 'text-green-500'}`}>{formatCurrency(trabajo.saldo)}</p>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Notas de Producción</label>
+                    <textarea className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:border-gray-700 resize-none text-sm" rows={3} placeholder="Instrucciones para taller..."></textarea>
+                </div>
+            </div>
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 flex justify-end">
+                <button onClick={onClose} className="px-6 py-2 bg-brand-blue text-white font-bold rounded-lg shadow hover:bg-blue-700 transition-colors">Cerrar</button>
+            </div>
+        </div>
+    </div>
+);
+
+const CameraModal: React.FC<{ trabajo: Trabajo; onClose: () => void; onCapture: (data: string) => void }> = ({ trabajo, onClose, onCapture }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    useEffect(() => {
+        navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+            setStream(s);
+            if (videoRef.current) videoRef.current.srcObject = s;
+        }).catch(console.error);
+        return () => { stream?.getTracks().forEach(t => t.stop()); };
+    }, []);
+
+    const capture = () => {
+        if (!videoRef.current) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+        onCapture(canvas.toDataURL('image/jpeg'));
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black z-[60] flex flex-col justify-center items-center">
+            <video ref={videoRef} autoPlay playsInline className="w-full max-w-lg h-auto rounded-lg mb-4" />
+            <div className="flex gap-4">
+                <button onClick={capture} className="px-8 py-4 bg-white rounded-full font-bold shadow-lg">Capturar</button>
+                <button onClick={onClose} className="px-8 py-4 bg-gray-800 text-white rounded-full font-bold">Cancelar</button>
             </div>
         </div>
     );
 };
 
+// --- MAIN PAGE ---
+
+type FilterTag = 'Todos' | 'Urgentes' | 'Diseño' | 'Impresión';
 
 const KDSPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const [trabajos, setTrabajos] = useState<Record<TrabajoEstado, Trabajo[]>>({
-        [TrabajoEstado.PENDIENTE]: [],
-        [TrabajoEstado.EN_DISENO]: [],
-        [TrabajoEstado.PROCESO]: [],
-        [TrabajoEstado.VITRINA]: [],
-        [TrabajoEstado.ENTREGADO]: [],
-    });
+    const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
-    const [trabajoForPhoto, setTrabajoForPhoto] = useState<Trabajo | null>(null);
     const [filterTerm, setFilterTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<TrabajoEstado | 'Todos'>('Todos');
-    const [sortConfig, setSortConfig] = useState<{ key: 'fechaEntrada' | 'fechaVencimiento'; direction: 'asc' | 'desc' }>({
-        key: 'fechaEntrada',
-        direction: 'asc',
-    });
+    const [activeTag, setActiveTag] = useState<FilterTag>('Todos');
     const [draggedOverColumn, setDraggedOverColumn] = useState<TrabajoEstado | null>(null);
-    const [vitrinaCurrentPage, setVitrinaCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 5;
+    
+    // Modal States
+    const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
+    const [cameraTarget, setCameraTarget] = useState<Trabajo | null>(null);
 
+    // Initial Load
     useEffect(() => {
-        const fetchData = async () => {
-            const [trabajosData, clientesData] = await Promise.all([getTrabajos(), getClientes()]);
-            setClientes(clientesData);
-            const groupedTrabajos = trabajosData.reduce((acc, trabajo) => {
-                (acc[trabajo.estado] = acc[trabajo.estado] || []).push(trabajo);
-                return acc;
-            }, {} as Record<TrabajoEstado, Trabajo[]>);
-
-            const initialColumns = KANBAN_COLUMNS.reduce((acc, col) => {
-                acc[col] = groupedTrabajos[col] || [];
-                return acc;
-            }, {} as Record<TrabajoEstado, Trabajo[]>);
-
-            setTrabajos(initialColumns);
+        const load = async () => {
+            const [t, c] = await Promise.all([getTrabajos(), getClientes()]);
+            setTrabajos(t);
+            setClientes(c);
         };
-        fetchData();
+        load();
+        const interval = setInterval(load, 30000); // Auto-refresh 30s
+        return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        setVitrinaCurrentPage(1);
-    }, [filterTerm, statusFilter]);
-    
-    const getClientById = (id: string) => clientes.find(c => c.id === id);
-    
-    const handleSort = (key: 'fechaEntrada' | 'fechaVencimiento') => {
-        setSortConfig(prevConfig => {
-            if (prevConfig.key === key) {
-                return { key, direction: prevConfig.direction === 'asc' ? 'desc' : 'asc' };
-            }
-            return { key, direction: 'asc' };
-        });
-    };
-
-    const processedTrabajos = useMemo(() => {
-        const newProcessedTrabajos: Record<TrabajoEstado, Trabajo[]> = {
-            [TrabajoEstado.PENDIENTE]: [],
-            [TrabajoEstado.EN_DISENO]: [],
-            [TrabajoEstado.PROCESO]: [],
-            [TrabajoEstado.VITRINA]: [],
-            [TrabajoEstado.ENTREGADO]: [],
-        };
-        const lowercasedFilter = filterTerm.toLowerCase();
-    
-        for (const status of KANBAN_COLUMNS) {
-            let columnTrabajos = [...(trabajos[status] || [])];
-
-            if (lowercasedFilter) {
-                columnTrabajos = columnTrabajos.filter(trabajo => {
-                    const cliente = getClientById(trabajo.clienteId);
-                    const matchesCliente = cliente?.nombre.toLowerCase().includes(lowercasedFilter);
-                    const matchesSubtipo = trabajo.subtipo.toLowerCase().includes(lowercasedFilter);
-                    const matchesOrden = String(trabajo.orden).includes(lowercasedFilter);
-                    return matchesCliente || matchesSubtipo || matchesOrden;
-                });
-            }
-
-            columnTrabajos.sort((a, b) => {
-                let valA, valB;
-    
-                if (sortConfig.key === 'fechaVencimiento') {
-                    if (!a.fechaVencimiento && !b.fechaVencimiento) return 0;
-                    if (!a.fechaVencimiento) return 1;
-                    if (!b.fechaVencimiento) return -1;
-                    valA = new Date(a.fechaVencimiento).getTime();
-                    valB = new Date(b.fechaVencimiento).getTime();
-                } else {
-                    valA = new Date(a.fechaEntrada).getTime();
-                    valB = new Date(b.fechaEntrada).getTime();
-                }
-    
-                return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
-            });
-            newProcessedTrabajos[status] = columnTrabajos;
-        }
-        return newProcessedTrabajos;
-    }, [trabajos, sortConfig, filterTerm, clientes]);
-
-    const vitrinaJobs = processedTrabajos[TrabajoEstado.VITRINA] || [];
-    const totalVitrinaPages = Math.ceil(vitrinaJobs.length / ITEMS_PER_PAGE);
-    const paginatedVitrinaJobs = vitrinaJobs.slice(
-        (vitrinaCurrentPage - 1) * ITEMS_PER_PAGE,
-        vitrinaCurrentPage * ITEMS_PER_PAGE
-    );
-
-    const handleOpenModal = (trabajo: Trabajo) => {
-        setSelectedTrabajo(trabajo);
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedTrabajo(null);
-    };
-
-    const handleTakePhotoClick = (trabajo: Trabajo) => {
-        setTrabajoForPhoto(trabajo);
-    };
-
-    const handleCloseCameraModal = () => {
-        setTrabajoForPhoto(null);
-    };
-
-    const handleCapturePhoto = async (photoDataUrl: string) => {
-        if (!trabajoForPhoto) return;
-
-        try {
-            const updatedTrabajo = await updateTrabajoPhoto(trabajoForPhoto.id, photoDataUrl);
-            const updatedTrabajos = { ...trabajos };
-            const status = updatedTrabajo.estado;
-            const index = updatedTrabajos[status].findIndex(t => t.id === updatedTrabajo.id);
-            if (index > -1) {
-                updatedTrabajos[status][index] = updatedTrabajo;
-                setTrabajos(updatedTrabajos);
-            }
-        } catch (error) {
-            console.error("Error saving photo:", error);
-        } finally {
-            handleCloseCameraModal();
-        }
-    };
-
-    const handleDrop = async (e: React.DragEvent<HTMLDivElement>, newStatus: TrabajoEstado) => {
-        e.preventDefault();
-        setDraggedOverColumn(null);
-        const trabajoId = e.dataTransfer.getData("trabajoId");
-        if (!trabajoId) return;
-
-        let originalTrabajo: Trabajo | null = null;
-        let oldStatus: TrabajoEstado | null = null;
+    // Filter Logic
+    const filteredTrabajos = useMemo(() => {
+        let filtered = trabajos.filter(t => t.estado !== TrabajoEstado.ENTREGADO); // Archive delivered
         
-        for (const status of KANBAN_COLUMNS) {
-            const foundTrabajo = trabajos[status]?.find(t => t.id === trabajoId);
-            if (foundTrabajo) {
-                originalTrabajo = foundTrabajo;
-                oldStatus = status;
+        // Text Filter
+        if (filterTerm) {
+            const lower = filterTerm.toLowerCase();
+            filtered = filtered.filter(t => 
+                t.subtipo.toLowerCase().includes(lower) || 
+                String(t.orden).includes(lower) || 
+                clientes.find(c => c.id === t.clienteId)?.nombre.toLowerCase().includes(lower)
+            );
+        }
+
+        // Tag Filter
+        switch (activeTag) {
+            case 'Urgentes':
+                filtered = filtered.filter(t => getUrgencyLevel(t.fechaVencimiento) !== 'safe');
                 break;
+            case 'Diseño':
+                filtered = filtered.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado));
+                break;
+            case 'Impresión':
+                filtered = filtered.filter(t => [TrabajoEstado.PROCESO, TrabajoEstado.VITRINA].includes(t.estado));
+                break;
+        }
+
+        return filtered;
+    }, [trabajos, filterTerm, activeTag, clientes]);
+
+    // Group by Columns
+    const columns = useMemo(() => {
+        const cols: Record<string, Trabajo[]> = {};
+        KANBAN_COLUMNS.forEach(col => {
+            if (col !== TrabajoEstado.ENTREGADO) { // Hide delivered from main board
+                cols[col] = filteredTrabajos.filter(t => t.estado === col);
             }
-        }
-        
-        if (!originalTrabajo || !oldStatus || oldStatus === newStatus) {
-            return;
-        }
+        });
+        return cols;
+    }, [filteredTrabajos]);
 
-        const previousTrabajosState = trabajos;
-
-        const newTrabajosState = {
-            ...previousTrabajosState,
-            [oldStatus]: previousTrabajosState[oldStatus].filter(t => t.id !== trabajoId),
-            [newStatus]: [...previousTrabajosState[newStatus], { ...originalTrabajo, estado: newStatus, actualizadoPor: currentUser.nombre }]
-        };
-        setTrabajos(newTrabajosState);
-        
-        try {
-            await updateTrabajoStatus(trabajoId, newStatus, currentUser.nombre);
-        } catch (error) {
-            console.error("Failed to update status, reverting change:", error);
-            setTrabajos(previousTrabajosState); 
-        }
-    };
-    
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-    };
-    
-    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, status: TrabajoEstado) => {
-        e.preventDefault();
-        setDraggedOverColumn(status);
-    };
-
-    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    // Drag & Drop Handlers
+    const handleDrop = async (e: React.DragEvent, newStatus: TrabajoEstado) => {
         e.preventDefault();
         setDraggedOverColumn(null);
+        const id = e.dataTransfer.getData("trabajoId");
+        if (!id) return;
+
+        // Optimistic Update
+        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: newStatus, actualizadoPor: currentUser.nombre } : t));
+        
+        // API Call
+        await updateTrabajoStatus(id, newStatus, currentUser.nombre);
     };
 
-    const displayedColumns = statusFilter === 'Todos'
-        ? KANBAN_COLUMNS
-        : KANBAN_COLUMNS.filter(col => col === statusFilter);
-
+    const handlePhotoSave = async (data: string) => {
+        if (!cameraTarget) return;
+        await updateTrabajoPhoto(cameraTarget.id, data);
+        setTrabajos(prev => prev.map(t => t.id === cameraTarget.id ? { ...t, fotoOriginalUrl: data } : t));
+        setCameraTarget(null);
+    };
 
     return (
-        <div className="w-full h-full flex flex-col">
-            <div className="flex flex-wrap items-center justify-between mb-4 px-1 gap-4">
-                <div className="flex-grow min-w-[250px] flex items-center gap-4">
-                    <input
-                        type="text"
-                        placeholder="Buscar por cliente, producto u orden..."
-                        value={filterTerm}
-                        onChange={(e) => setFilterTerm(e.target.value)}
-                        className="w-full px-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-brand-blue focus:border-brand-blue"
-                    />
-                    <div className="relative">
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as TrabajoEstado | 'Todos')}
-                            className="appearance-none w-full sm:w-48 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-brand-blue focus:border-brand-blue"
-                        >
-                            <option value="Todos">Todos los Estados</option>
-                            {KANBAN_COLUMNS.map(status => (
-                                <option key={status} value={status}>{status}</option>
-                            ))}
-                        </select>
+        <div className="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-gray-900/50">
+            {/* --- HEADER & FILTERS --- */}
+            <div className="flex-shrink-0 p-4 sm:p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                    
+                    {/* Title & Search */}
+                    <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                        <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                            <span className="text-brand-blue">KDS</span> Producción
+                        </h1>
+                        <div className="relative flex-grow sm:w-64">
+                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input 
+                                type="text" 
+                                value={filterTerm}
+                                onChange={e => setFilterTerm(e.target.value)}
+                                placeholder="Buscar orden, cliente..." 
+                                className="w-full pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-transparent focus:bg-white dark:focus:bg-gray-600 border focus:border-brand-blue rounded-lg transition-all text-sm"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Quick Filters (Tags) */}
+                    <div className="flex gap-2 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-hide">
+                        {(['Todos', 'Urgentes', 'Diseño', 'Impresión'] as FilterTag[]).map(tag => (
+                            <button
+                                key={tag}
+                                onClick={() => setActiveTag(tag)}
+                                className={`
+                                    px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all
+                                    ${activeTag === tag 
+                                        ? 'bg-brand-blue text-white shadow-md transform scale-105' 
+                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50'}
+                                `}
+                            >
+                                {tag === 'Urgentes' && '🔥 '}
+                                {tag === 'Diseño' && '🎨 '}
+                                {tag === 'Impresión' && '🖨️ '}
+                                {tag}
+                            </button>
+                        ))}
                     </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 hidden sm:inline">Ordenar:</span>
-                    <button
-                        onClick={() => handleSort('fechaEntrada')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
-                            sortConfig.key === 'fechaEntrada'
-                                ? 'bg-brand-blue text-white shadow'
-                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                        }`}
-                    >
-                        <span>Entrada</span>
-                        {sortConfig.key === 'fechaEntrada' && (
-                            sortConfig.direction === 'asc' ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                    </button>
-                    <button
-                        onClick={() => handleSort('fechaVencimiento')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
-                            sortConfig.key === 'fechaVencimiento'
-                                ? 'bg-brand-blue text-white shadow'
-                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                        }`}
-                    >
-                        <span>Vencimiento</span>
-                        {sortConfig.key === 'fechaVencimiento' && (
-                            sortConfig.direction === 'asc' ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                    </button>
-                </div>
             </div>
-            <div className="flex-1 overflow-x-auto">
-                <div className="flex space-x-4 min-w-max h-full pb-4">
-                    {displayedColumns.map((status) => {
-                        const isVitrina = status === TrabajoEstado.VITRINA;
-                        const jobsToDisplay = isVitrina ? paginatedVitrinaJobs : processedTrabajos[status];
+
+            {/* --- KANBAN BOARD --- */}
+            <div className="flex-grow overflow-x-auto overflow-y-hidden p-4 sm:p-6">
+                <div className="flex h-full gap-6 min-w-[1000px]">
+                    {Object.keys(columns).map((status) => {
+                        const colStatus = status as TrabajoEstado;
+                        const isDragOver = draggedOverColumn === colStatus;
                         
                         return (
-                            <div
+                            <div 
                                 key={status}
-                                className={`w-80 rounded-lg flex flex-col transition-colors duration-200 ${
-                                    draggedOverColumn === status
-                                        ? 'bg-blue-100 dark:bg-blue-900/50'
-                                        : 'bg-gray-100 dark:bg-gray-900'
-                                }`}
-                                onDrop={(e) => handleDrop(e, status)}
-                                onDragOver={handleDragOver}
-                                onDragEnter={(e) => handleDragEnter(e, status)}
-                                onDragLeave={handleDragLeave}
+                                className={`
+                                    flex-1 min-w-[280px] flex flex-col rounded-2xl transition-colors duration-300
+                                    ${isDragOver ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-brand-blue' : 'bg-gray-100 dark:bg-gray-800/50'}
+                                `}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDragEnter={() => setDraggedOverColumn(colStatus)}
+                                onDrop={(e) => handleDrop(e, colStatus)}
                             >
-                                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                                    <h2 className="font-bold text-lg text-gray-800 dark:text-white flex items-center">
+                                {/* Column Header */}
+                                <div className="p-4 flex justify-between items-center border-b border-gray-200/50 dark:border-gray-700/50">
+                                    <h3 className="font-bold text-gray-700 dark:text-white uppercase tracking-wider text-sm flex items-center gap-2">
+                                        <div className={`w-3 h-3 rounded-full ${
+                                            status === 'Pendiente' ? 'bg-yellow-400' :
+                                            status === 'En Diseño' ? 'bg-purple-400' :
+                                            status === 'En Proceso' ? 'bg-blue-500' : 'bg-green-500'
+                                        }`}></div>
                                         {status}
-                                        <span className="ml-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-2 py-0.5">
-                                            {processedTrabajos[status]?.length || 0}
-                                        </span>
-                                    </h2>
+                                    </h3>
+                                    <span className="bg-white dark:bg-gray-700 px-2 py-0.5 rounded-md text-xs font-bold text-gray-500 dark:text-gray-300 shadow-sm">
+                                        {columns[status].length}
+                                    </span>
                                 </div>
-                                <div className="p-2 flex-1 overflow-y-auto">
-                                    {jobsToDisplay?.map((trabajo) => (
-                                        <KanbanCard
-                                            key={trabajo.id}
-                                            trabajo={trabajo}
-                                            cliente={getClientById(trabajo.clienteId)}
-                                            isExpiringSoon={isJobExpiringSoon(trabajo)}
-                                            onCardDoubleClick={handleOpenModal}
-                                            onTakePhotoClick={handleTakePhotoClick}
+
+                                {/* Cards Container */}
+                                <div className="flex-grow overflow-y-auto p-3 custom-scrollbar">
+                                    {columns[status].map(trabajo => (
+                                        <KanbanCard 
+                                            key={trabajo.id} 
+                                            trabajo={trabajo} 
+                                            cliente={clientes.find(c => c.id === trabajo.clienteId)}
+                                            onCardDoubleClick={setSelectedTrabajo}
+                                            onTakePhotoClick={setCameraTarget}
                                         />
                                     ))}
+                                    {columns[status].length === 0 && (
+                                        <div className="h-32 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl m-2">
+                                            <p className="text-gray-400 text-sm font-medium">Sin trabajos</p>
+                                        </div>
+                                    )}
                                 </div>
-                                {isVitrina && totalVitrinaPages > 1 && (
-                                    <div className="p-2 mt-auto border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                                        <button
-                                            onClick={() => setVitrinaCurrentPage(p => Math.max(p - 1, 1))}
-                                            disabled={vitrinaCurrentPage === 1}
-                                            className="px-3 py-1 rounded-md bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Anterior
-                                        </button>
-                                        <span>
-                                            Página {vitrinaCurrentPage} de {totalVitrinaPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setVitrinaCurrentPage(p => Math.min(p + 1, totalVitrinaPages))}
-                                            disabled={vitrinaCurrentPage >= totalVitrinaPages}
-                                            className="px-3 py-1 rounded-md bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Siguiente
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         );
                     })}
                 </div>
             </div>
-            {isModalOpen && selectedTrabajo && (
+
+            {/* --- MODALS --- */}
+            {selectedTrabajo && (
                 <TrabajoDetalleModal 
-                    trabajo={selectedTrabajo}
-                    cliente={getClientById(selectedTrabajo.clienteId)}
-                    onClose={handleCloseModal}
+                    trabajo={selectedTrabajo} 
+                    cliente={clientes.find(c => c.id === selectedTrabajo.clienteId)} 
+                    onClose={() => setSelectedTrabajo(null)} 
                 />
             )}
-            {trabajoForPhoto && (
-                <CameraModal
-                    trabajo={trabajoForPhoto}
-                    onClose={handleCloseCameraModal}
-                    onCapture={handleCapturePhoto}
+            {cameraTarget && (
+                <CameraModal 
+                    trabajo={cameraTarget} 
+                    onClose={() => setCameraTarget(null)} 
+                    onCapture={handlePhotoSave} 
                 />
             )}
         </div>

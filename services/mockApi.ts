@@ -153,6 +153,22 @@ export const addSriCredential = async (cred: SriCredential): Promise<SriCredenti
     return creds;
 };
 
+export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
+    const currentCreds = await getSriCredentials();
+    const credMap = new Map(currentCreds.map(c => [c.ruc, c]));
+    
+    newCreds.forEach(cred => {
+        credMap.set(cred.ruc, { 
+            ...cred, 
+            updatedAt: new Date().toISOString() 
+        });
+    });
+    
+    const updatedList = Array.from(credMap.values());
+    await setStoredData(SRI_KEYS_KEY, updatedList);
+    return updatedList;
+};
+
 export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]> => {
     let creds = await getSriCredentials();
     creds = creds.filter(c => c.ruc !== ruc);

@@ -93,7 +93,7 @@ const NotaDeVentaPage: React.FC = () => {
                     #nota-de-venta-imprimible { 
                         position: absolute; left: 0; top: 0; 
                         width: 148mm !important; height: 210mm !important; 
-                        margin: 0; padding: 8mm !important; 
+                        margin: 0; padding: 10mm !important; 
                         border: none; box-shadow: none; box-sizing: border-box;
                     }
                     .no-print { display: none !important; }
@@ -111,19 +111,20 @@ const NotaDeVentaPage: React.FC = () => {
                     </button>
                 </div>
 
-                <div id="nota-de-venta-imprimible" className="bg-white p-6 shadow-xl border border-gray-200" style={{width: '148mm', minHeight: '210mm', padding: '8mm', fontFamily: 'Arial, sans-serif'}}>
-                    <div className="border border-gray-800 p-3 h-full flex flex-col rounded-sm">
+                {/* A5 Container optimized */}
+                <div id="nota-de-venta-imprimible" className="bg-white p-6 shadow-xl border border-gray-200" style={{width: '148mm', minHeight: '210mm', padding: '10mm', fontFamily: 'Arial, sans-serif'}}>
+                    <div className="border border-gray-800 p-3 h-full flex flex-col rounded-sm relative">
                         
                         {/* Top Section: Issuer & SRI Box */}
-                        <div className="flex justify-between gap-4 mb-4">
+                        <div className="flex justify-between gap-3 mb-3">
                             {/* Left: Issuer Info */}
-                            <div className="w-3/5 pt-2">
-                                <div className="text-left mb-3">
-                                    <h1 className="font-black text-xl text-gray-900 uppercase tracking-tight leading-none mb-1">{issuer.nombreComercial}</h1>
-                                    <p className="text-xs font-bold text-gray-600 uppercase mb-2">{issuer.razonSocial}</p>
+                            <div className="w-3/5 pt-1">
+                                <div className="text-left mb-2">
+                                    <h1 className="font-black text-lg text-gray-900 uppercase tracking-tight leading-none mb-1">{issuer.nombreComercial}</h1>
+                                    <p className="text-[10px] font-bold text-gray-600 uppercase leading-tight">{issuer.razonSocial}</p>
                                 </div>
-                                <div className="text-[10px] space-y-0.5 text-gray-600 leading-tight">
-                                    <p className="font-bold text-brand-blue text-xs uppercase">{issuer.tipoContribuyente}</p>
+                                <div className="text-[8px] space-y-0.5 text-gray-600 leading-tight">
+                                    <p className="font-bold text-brand-blue text-[9px] uppercase">{issuer.tipoContribuyente}</p>
                                     <p><strong>Matriz:</strong> {issuer.direccionMatriz}</p>
                                     {issuer.direccionSucursal && <p><strong>Sucursal:</strong> {issuer.direccionSucursal}</p>}
                                     <p><strong>Tel:</strong> {config.emisorTelefono} <strong>Email:</strong> {config.emisorEmail}</p>
@@ -133,15 +134,15 @@ const NotaDeVentaPage: React.FC = () => {
                             {/* Right: SRI Info Box */}
                             <div className="w-2/5">
                                 <div className="border border-gray-800 rounded-md p-2 bg-gray-50/50">
-                                    <p className="text-sm font-bold text-gray-800">R.U.C. {issuer.ruc}</p>
-                                    <div className="bg-brand-blue text-white text-center text-sm font-bold py-1 my-2 rounded-sm shadow-sm">
+                                    <p className="text-xs font-bold text-gray-800">R.U.C. {issuer.ruc}</p>
+                                    <div className="bg-brand-blue text-white text-center text-xs font-bold py-1 my-1 rounded-sm shadow-sm">
                                         NOTA DE VENTA
                                     </div>
                                     <div className="flex justify-between items-baseline mb-1">
-                                        <span className="text-[10px] font-bold text-gray-500">No.</span>
-                                        <span className="font-mono text-lg font-bold text-red-600">{issuer.notaNro}</span>
+                                        <span className="text-[9px] font-bold text-gray-500">No.</span>
+                                        <span className="font-mono text-base font-bold text-red-600">{issuer.notaNro}</span>
                                     </div>
-                                    <div className="text-[9px] text-gray-500 border-t border-gray-300 pt-1 mt-1 leading-tight">
+                                    <div className="text-[8px] text-gray-500 border-t border-gray-300 pt-1 mt-1 leading-tight">
                                         <p><strong>AUT. SRI:</strong> {issuer.autorizacionSRI}</p>
                                         <p><strong>FECHA AUT.:</strong> {issuer.fechaAutorizacion}</p>
                                     </div>
@@ -150,22 +151,22 @@ const NotaDeVentaPage: React.FC = () => {
                         </div>
                         
                         {/* Client Section */}
-                        <div className="bg-gray-100 rounded-md p-2 mb-4 border border-gray-200">
-                            <div className="flex flex-wrap gap-y-1 text-[11px]">
+                        <div className="bg-gray-100 rounded-md p-2 mb-2 border border-gray-200">
+                            <div className="flex flex-wrap gap-y-1 text-[10px]">
                                 <div className="w-2/3">
-                                    <span className="font-bold text-gray-500 mr-2">CLIENTE:</span>
+                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">CLIENTE:</span>
                                     <span className="font-bold text-gray-900 uppercase">{cliente.nombre}</span>
                                 </div>
                                 <div className="w-1/3 text-right">
-                                    <span className="font-bold text-gray-500 mr-2">RUC/CI:</span>
+                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">RUC/CI:</span>
                                     <span className="font-mono text-gray-900">{cliente.ruc || cliente.cedula}</span>
                                 </div>
                                 <div className="w-2/3">
-                                    <span className="font-bold text-gray-500 mr-2">DIR:</span>
-                                    <span className="text-gray-900 uppercase">{cliente.direccion || 'Ciudad'}</span>
+                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">DIR:</span>
+                                    <span className="text-gray-900 uppercase text-[9px]">{cliente.direccion || 'Ciudad'}</span>
                                 </div>
                                 <div className="w-1/3 text-right">
-                                    <span className="font-bold text-gray-500 mr-2">FECHA:</span>
+                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">FECHA:</span>
                                     <span className="font-mono text-gray-900">{emissionDate}</span>
                                 </div>
                             </div>
@@ -173,59 +174,59 @@ const NotaDeVentaPage: React.FC = () => {
 
                         {/* Table Section */}
                         <div className="flex-grow">
-                            <table className="w-full border-collapse text-[11px]">
+                            <table className="w-full border-collapse text-[10px]">
                                 <thead>
                                     <tr className="bg-brand-blue text-white">
                                         <th className="border border-brand-blue py-1 w-[10%] font-bold">CANT.</th>
                                         <th className="border border-brand-blue py-1 w-[60%] font-bold text-left px-2">DESCRIPCIÓN</th>
-                                        <th className="border border-brand-blue py-1 w-[15%] font-bold">P. UNIT.</th>
-                                        <th className="border border-brand-blue py-1 w-[15%] font-bold">TOTAL</th>
+                                        <th className="border border-brand-blue py-1 w-[15%] font-bold text-right px-1">P. UNIT.</th>
+                                        <th className="border border-brand-blue py-1 w-[15%] font-bold text-right px-1">TOTAL</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-gray-800">
                                     <tr>
-                                        <td className="border-x border-gray-300 py-2 text-center align-top font-bold">{trabajo.cantidad}</td>
-                                        <td className="border-x border-gray-300 py-2 px-2 align-top uppercase">{trabajo.subtipo}</td>
-                                        <td className="border-x border-gray-300 py-2 text-right px-2 align-top">{formatCurrency(unitPrice).replace('$','')}</td>
-                                        <td className="border-x border-gray-300 py-2 text-right px-2 align-top font-bold">{formatCurrency(trabajo.total).replace('$','')}</td>
+                                        <td className="border-x border-gray-300 py-1 text-center align-top font-bold">{trabajo.cantidad}</td>
+                                        <td className="border-x border-gray-300 py-1 px-2 align-top uppercase leading-tight">{trabajo.subtipo}</td>
+                                        <td className="border-x border-gray-300 py-1 text-right px-2 align-top">{formatCurrency(unitPrice).replace('$','')}</td>
+                                        <td className="border-x border-gray-300 py-1 text-right px-2 align-top font-bold">{formatCurrency(trabajo.total).replace('$','')}</td>
                                     </tr>
-                                    {/* Fillers */}
-                                    {[...Array(12)].map((_, i) => (
+                                    {/* Fillers to maintain height */}
+                                    {[...Array(10)].map((_, i) => (
                                          <tr key={i}><td className="border-x border-gray-300 h-5"></td><td className="border-x border-gray-300"></td><td className="border-x border-gray-300"></td><td className="border-x border-gray-300"></td></tr>
                                     ))}
                                     <tr className="border-t border-gray-300">
-                                        <td colSpan={2} className="p-2 align-bottom">
-                                             <div className="text-[9px] text-gray-500 border border-gray-200 rounded p-1">
+                                        <td colSpan={2} className="p-1 align-bottom">
+                                             <div className="text-[8px] text-gray-500 border border-gray-200 rounded p-1">
                                                 <span className="font-bold">FORMA DE PAGO:</span> Efectivo [ x ] &nbsp; Dinero Elec. [ &nbsp; ] &nbsp; Tarjeta [ &nbsp; ] &nbsp; Otros [ &nbsp; ]
                                              </div>
                                         </td>
-                                        <td className="border border-gray-300 p-1 font-bold bg-gray-100 text-right pr-2 text-xs">TOTAL $</td>
-                                        <td className="border border-gray-300 p-1 font-bold text-right pr-2 text-sm">{formatCurrency(trabajo.total).replace('$','')}</td>
+                                        <td className="border border-gray-300 p-1 font-bold bg-gray-100 text-right pr-2 text-[9px]">TOTAL $</td>
+                                        <td className="border border-gray-300 p-1 font-bold text-right pr-2 text-xs">{formatCurrency(trabajo.total).replace('$','')}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         {/* Footer Section */}
-                        <div className="mt-4 pt-2 border-t border-gray-800 flex items-end justify-between text-[10px] text-gray-600 px-2">
-                            <div className="w-5/12">
+                        <div className="mt-2 pt-2 border-t border-gray-800 flex items-end justify-between text-[9px] text-gray-600 px-1">
+                            <div className="w-5/12 leading-tight">
                                 <p className="font-bold text-gray-800">{printer.nombre}</p>
                                 <p>RUC: {printer.ruc} • Aut. {printer.autorizacion}</p>
-                                <p className="mt-1 font-medium">Válido hasta: <span className="font-bold text-gray-900">{fechaCaducidad}</span></p>
+                                <p className="mt-0.5">Válido hasta: <span className="font-bold text-gray-900">{fechaCaducidad}</span></p>
                             </div>
                             <div className="w-6/12 flex gap-4 justify-end">
-                                <div className="text-center w-28">
+                                <div className="text-center w-24">
                                     <div className="border-t border-gray-400 mb-1"></div>
-                                    <span className="font-bold text-gray-500 uppercase text-[9px]">Firma Autorizada</span>
+                                    <span className="font-bold text-gray-500 uppercase text-[8px]">Firma Autorizada</span>
                                 </div>
-                                <div className="text-center w-28">
+                                <div className="text-center w-24">
                                     <div className="border-t border-gray-400 mb-1"></div>
-                                    <span className="font-bold text-gray-500 uppercase text-[9px]">Recibí Conforme</span>
+                                    <span className="font-bold text-gray-500 uppercase text-[8px]">Recibí Conforme</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <div className="text-center text-[8px] text-gray-400 mt-2">
+                        <div className="text-center text-[7px] text-gray-400 mt-1">
                             Original: Adquirente / Copia: Emisor
                         </div>
                     </div>

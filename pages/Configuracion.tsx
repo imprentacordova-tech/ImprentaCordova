@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getConfig, saveConfig, NotaDeVentaConfig } from '../services/configService';
-import { getSriCredentials, addSriCredential, deleteSriCredential } from '../services/mockApi';
-import { Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon } from '../components/Icons';
+import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential } from '../services/mockApi';
+import { Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, ArrowLeftIcon, ArrowRightIcon } from '../components/Icons';
 import { SriCredential } from '../types';
 
 const InputField: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, [key: string]: any}> = ({ label, name, value, onChange, ...props }) => (
@@ -25,6 +25,8 @@ const ConfiguracionPage: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [sriCredentials, setSriCredentials] = useState<SriCredential[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const itemsPerPage = 10;
     
     // Manual Add State
     const [newRuc, setNewRuc] = useState('');
@@ -90,65 +92,89 @@ const ConfiguracionPage: React.FC = () => {
 
         try {
             const text = await file.text();
-            const lines = text.split('\n');
+            const lines = text.split(/\r?\n/); // Handle CR LF
             let importedCount = 0;
+            const credsToAdd: SriCredential[] = [];
             
-            // FORMATO CHROME: name,url,username,password,note
-            // El objetivo es filtrar solo las que tienen URL del SRI
+            // Regex to parse CSV line handling quotes
+            // Matches quoted string OR non-comma sequence, followed by comma or end of line
+            const parseLine = (line: string) => {
+                const result = [];
+                let current = '';
+                let inQuote = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuote = !inQuote;
+                    } else if (char === ',' && !inQuote) {
+                        result.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current);
+                return result.map(s => s.replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+            };
             
-            for (let i = 1; i < lines.length; i++) { // Saltar header
+            for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // CSV parsing simple pero efectivo para el formato estándar de Chrome
-                // Maneja comillas básicas si existen
-                const parts = line.split(',');
+                const parts = parseLine(line);
                 
-                // En el CSV de Chrome:
-                // index 0: name
-                // index 1: url
-                // index 2: username (RUC)
-                // index 3: password
-                
+                // Chrome CSV structure: name, url, username, password, note
                 if (parts.length >= 4) {
                     const url = parts[1] || '';
                     const username = parts[2] || '';
                     const password = parts[3] || '';
 
-                    // Lógica de filtrado: Solo URLs que contengan sri.gob.ec
-                    if (url.includes('sri.gob.ec') && username && password) {
-                        // Limpieza de datos (eliminar comillas si existen, espacios)
-                        const cleanRuc = username.replace(/["']/g, '').trim();
-                        const cleanPass = password.replace(/["']/g, '').trim();
-
-                        if (cleanRuc && cleanPass) {
-                            await addSriCredential({
-                                ruc: cleanRuc,
-                                password: cleanPass,
-                                origen: 'Chrome CSV'
+                    // Filter for SRI or EcuaFact URLs
+                    if ((url.includes('sri.gob.ec') || url.includes('ecuafact')) && username && password) {
+                         // Basic Validation for RUC/CI length to ensure quality data
+                         const cleanUser = username.replace(/\D/g, ''); // Digits only
+                         if (cleanUser.length >= 10) {
+                            credsToAdd.push({
+                                ruc: username, 
+                                password: password,
+                                origen: 'Chrome/Archivo'
                             });
                             importedCount++;
-                        }
+                         }
                     }
                 }
             }
 
-            const updatedCreds = await getSriCredentials();
-            setSriCredentials(updatedCreds);
-            alert(`✅ Éxito: Se importaron ${importedCount} claves del SRI.`);
+            if (credsToAdd.length > 0) {
+                const updatedCreds = await bulkAddSriCredentials(credsToAdd);
+                setSriCredentials(updatedCreds);
+                alert(`✅ Éxito: Se procesaron ${lines.length} líneas y se importaron ${importedCount} claves válidas del SRI/Facturación.`);
+            } else {
+                alert("⚠️ No se encontraron credenciales válidas del SRI en el archivo.");
+            }
 
         } catch (error) {
             console.error("Error al importar:", error);
-            alert("Error al leer el archivo. Asegúrate de que sea el CSV exportado de Chrome.");
+            alert("Error al leer el archivo. Asegúrate de que sea un archivo CSV válido.");
         } finally {
             setIsImporting(false);
             if (e.target) e.target.value = '';
         }
     };
 
-    const filteredCredentials = sriCredentials.filter(c => 
-        c.ruc.includes(searchTerm) || c.origen?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredCredentials = useMemo(() => {
+        return sriCredentials.filter(c => 
+            c.ruc.includes(searchTerm) || c.origen?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [sriCredentials, searchTerm]);
+
+    const paginatedCredentials = useMemo(() => {
+        const start = (page - 1) * itemsPerPage;
+        return filteredCredentials.slice(start, start + itemsPerPage);
+    }, [filteredCredentials, page]);
+
+    const totalPages = Math.ceil(filteredCredentials.length / itemsPerPage);
 
     return (
         <div className="space-y-8 max-w-6xl mx-auto animate-fade-in pb-10">
@@ -234,12 +260,12 @@ const ConfiguracionPage: React.FC = () => {
                                     type="text" 
                                     placeholder="Buscar clave registrada..." 
                                     value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
+                                    onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
                                     className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-brand-blue outline-none dark:bg-gray-800 dark:border-gray-600"
                                 />
                             </div>
 
-                            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden max-h-[400px] overflow-y-auto">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                                 <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
                                         <tr>
@@ -250,8 +276,8 @@ const ConfiguracionPage: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                        {filteredCredentials.length > 0 ? (
-                                            filteredCredentials.map((cred) => (
+                                        {paginatedCredentials.length > 0 ? (
+                                            paginatedCredentials.map((cred) => (
                                                 <tr key={cred.ruc} className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group">
                                                     <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                                                         <KeyIcon className="w-4 h-4 text-gray-300 group-hover:text-brand-blue transition-colors" />
@@ -285,6 +311,32 @@ const ConfiguracionPage: React.FC = () => {
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-between items-center pt-2">
+                                    <p className="text-xs text-gray-500">
+                                        Mostrando {paginatedCredentials.length} de {filteredCredentials.length}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                                            disabled={page === 1}
+                                            className="p-1 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <ArrowLeftIcon className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                        <span className="text-sm font-bold text-gray-700">{page} / {totalPages}</span>
+                                        <button 
+                                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={page === totalPages}
+                                            className="p-1 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <ArrowRightIcon className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

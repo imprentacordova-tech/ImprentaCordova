@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -166,7 +167,7 @@ const HeroSection: React.FC = () => (
                     {/* Main Image (Large Format Printer / Workshop) */}
                     <div className="absolute top-10 left-10 w-4/5 h-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 transform -rotate-2 hover:rotate-0 transition-all duration-700 z-10 bg-gray-800">
                         <img 
-                            src="https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                            src="https://i.imgur.com/AUvl1wF.png" 
                             alt="Taller de Impresión" 
                             className="w-full h-full object-cover opacity-90 hover:scale-110 transition-transform duration-700"
                         />
@@ -181,7 +182,7 @@ const HeroSection: React.FC = () => (
                     {/* Secondary Image (Flyers/Stationery - Floating Top Right) */}
                     <div className="absolute -top-4 right-4 w-64 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white transform rotate-6 hover:rotate-3 transition-all duration-500 z-20 bg-white animate-float">
                         <img 
-                            src="https://images.unsplash.com/photo-1586717791821-3f44a5638d0f?auto=format&fit=crop&w=500&q=80" 
+                            src="https://i.imgur.com/cKqbnJj.jpeg" 
                             alt="Papelería" 
                             className="w-full h-full object-cover"
                         />
@@ -193,7 +194,7 @@ const HeroSection: React.FC = () => (
                     {/* Tertiary Image (Merch - Floating Bottom Left) */}
                     <div className="absolute bottom-8 -left-4 w-56 h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 transform hover:scale-105 transition-all duration-500 z-30">
                         <img 
-                            src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=500&q=80" 
+                            src="https://i.imgur.com/TnsNdTS.png" 
                             alt="Merchandising" 
                             className="w-full h-full object-cover"
                         />

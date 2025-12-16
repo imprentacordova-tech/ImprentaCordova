@@ -1,0 +1,85 @@
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { ExclamationTriangleIcon, Loader2Icon, DashboardIcon } from "./Icons";
+
+interface Props {
+  children?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false,
+    error: null,
+  };
+
+  public static getDerivedStateFromError(error: Error): State {
+    // Actualiza el estado para que el siguiente renderizado muestre la interfaz de repuesto
+    return { hasError: true, error };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // También puedes registrar el error en un servicio de reporte de errores
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white p-6 text-center font-sans">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-lg w-full border border-gray-200 dark:border-gray-700 relative overflow-hidden">
+            {/* Decorative Background Element */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-blue via-brand-red to-orange-500"></div>
+            
+            <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <ExclamationTriangleIcon className="w-10 h-10 text-red-500" />
+            </div>
+            
+            <h1 className="text-3xl font-black mb-3 text-slate-900 dark:text-white tracking-tight">
+              ¡Ups! Algo salió mal.
+            </h1>
+            
+            <p className="text-slate-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+              La aplicación ha encontrado un error inesperado. Esto suele ocurrir por cambios en los datos o interrupciones momentáneas.
+            </p>
+            
+            {/* Error Details Box (For debugging) */}
+            {this.state.error && (
+                <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl text-left mb-8 overflow-auto max-h-32 border border-slate-200 dark:border-slate-700 shadow-inner">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Detalle del Error:</p>
+                    <code className="text-xs font-mono text-red-500 break-words block">
+                        {this.state.error.toString()}
+                    </code>
+                </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-blue text-white font-bold rounded-xl hover:bg-blue-800 transition-all shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <Loader2Icon className="w-4 h-4" /> Recargar Página
+              </button>
+              <button
+                onClick={() => {
+                    window.location.href = '/'; 
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm"
+              >
+                <DashboardIcon className="w-4 h-4" /> Ir al Inicio
+              </button>
+            </div>
+          </div>
+          <p className="mt-8 text-xs text-slate-400">
+            Si el problema persiste, contacta al soporte técnico.
+          </p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}

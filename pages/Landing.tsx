@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -36,25 +37,25 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
                 scrolled 
                 ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-100 py-2' 
-                : 'bg-transparent py-4 sm:py-6'
+                : 'bg-transparent py-6'
             }`}
         >
-            <nav className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
-                <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-                    <div className={`p-1.5 sm:p-2 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-blue-50' : 'bg-white/10 backdrop-blur-sm'}`}>
-                        <CordovaLogo className={`h-8 w-8 sm:h-10 sm:w-10 ${scrolled ? 'text-brand-blue' : 'text-white'}`} />
+            <nav className="container mx-auto px-6 flex justify-between items-center">
+                <Link to="/" className="flex items-center gap-3 group">
+                    <div className={`p-1 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-transparent' : 'bg-white/20 backdrop-blur-sm'}`}>
+                        <CordovaLogo className="h-12 w-auto object-contain" />
                     </div>
                     <div className="flex flex-col leading-none">
-                        <span className={`text-[10px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
+                        <span className={`text-xs font-bold tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
                             Imprenta
                         </span>
-                        <span className={`text-xl sm:text-2xl font-black tracking-tighter uppercase ${scrolled ? 'text-brand-blue' : 'text-white'}`}>
+                        <span className={`text-2xl font-black tracking-tighter uppercase ${scrolled ? 'text-brand-blue' : 'text-white'}`}>
                             CÓRDOVA
                         </span>
                     </div>
                 </Link>
                 
-                <div className="flex items-center gap-2 sm:gap-8">
+                <div className="flex items-center gap-8">
                     <nav className="hidden md:flex gap-8 text-sm font-bold uppercase tracking-wide">
                         <a 
                             href="#servicios" 
@@ -74,43 +75,25 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartC
                         </a>
                     </nav>
 
-                    <div className="flex items-center gap-1 sm:gap-4">
-                        <button onClick={onOpenCart} className="relative group p-2 rounded-full hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-4">
+                        <button onClick={onOpenCart} className="relative group p-2">
                             <ShoppingCartIcon className={`w-6 h-6 transition-colors ${scrolled ? 'text-slate-700 group-hover:text-brand-blue' : 'text-white group-hover:text-brand-blue'}`} />
                             {cartCount > 0 && (
-                                <span className="absolute top-0 right-0 bg-brand-red text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shadow-sm animate-pulse border-2 border-transparent">
+                                <span className="absolute -top-1 -right-1 bg-brand-red text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm animate-pulse">
                                     {cartCount}
                                 </span>
                             )}
                         </button>
-                        
-                        {/* Separador Vertical Móvil */}
-                        <div className={`h-6 w-px mx-1 sm:hidden ${scrolled ? 'bg-slate-300' : 'bg-white/30'}`}></div>
-
-                        {/* Botón Login - MÓVIL (Icono) */}
-                        <Link 
-                            to="/login"
-                            className={`sm:hidden p-2 rounded-full transition-all duration-300 ${
-                                scrolled 
-                                ? 'text-slate-700 hover:bg-slate-100 hover:text-brand-blue' 
-                                : 'text-white hover:bg-white/20'
-                            }`}
-                            aria-label="Gestión Interna"
-                        >
-                            <UsersIcon className="w-6 h-6" />
-                        </Link>
-
-                        {/* Botón Login - DESKTOP (Texto completo) */}
                         <Link 
                             to="/login" 
-                            className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 border ${
+                            className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
                                 scrolled 
-                                ? 'bg-brand-blue text-white border-transparent hover:bg-blue-800' 
-                                : 'bg-white/10 text-white border-white/20 backdrop-blur-md hover:bg-white hover:text-brand-blue'
+                                ? 'bg-brand-blue text-white hover:bg-blue-800' 
+                                : 'bg-white text-brand-blue hover:bg-blue-50'
                             }`}
                         >
                             <UsersIcon className="w-4 h-4" />
-                            <span>Gestión Interna</span>
+                            Gestión Interna
                         </Link>
                     </div>
                 </div>
@@ -142,12 +125,16 @@ const HeroSection: React.FC = () => (
                         <span className="text-xs font-bold text-white tracking-widest uppercase">Servicio Express en Pasaje</span>
                     </div>
 
-                    <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-xl">
-                        TU MARCA <br/>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200">
-                            MERECE BRILLAR
-                        </span>
-                    </h1>
+                    <div>
+                        <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-white leading-none tracking-tighter drop-shadow-2xl mb-4">
+                            IMPRENTA <br className="hidden md:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">CÓRDOVA</span>
+                        </h1>
+                        
+                        <p className="text-2xl md:text-3xl font-bold text-blue-200 tracking-wide">
+                            TU MARCA MERECE BRILLAR
+                        </p>
+                    </div>
 
                     <p className="text-lg sm:text-xl text-blue-100 font-light max-w-xl mx-auto lg:mx-0 leading-relaxed">
                         Desde gigantografías de alto impacto hasta facturación SRI. 
@@ -179,12 +166,12 @@ const HeroSection: React.FC = () => (
                     </div>
                 </div>
 
-                {/* Right Column: Static Composition (NO JUAN PEREZ) */}
+                {/* Right Column: Static Composition */}
                 <div className="relative hidden lg:block h-[600px]">
                     {/* Main Image (Large Format Printer / Workshop) */}
                     <div className="absolute top-10 left-10 w-4/5 h-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 transform -rotate-2 hover:rotate-0 transition-all duration-700 z-10 bg-gray-800">
                         <img 
-                            src="https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                            src="https://i.imgur.com/AUvl1wF.png" 
                             alt="Taller de Impresión" 
                             className="w-full h-full object-cover opacity-90 hover:scale-110 transition-transform duration-700"
                         />
@@ -199,7 +186,7 @@ const HeroSection: React.FC = () => (
                     {/* Secondary Image (Flyers/Stationery - Floating Top Right) */}
                     <div className="absolute -top-4 right-4 w-64 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white transform rotate-6 hover:rotate-3 transition-all duration-500 z-20 bg-white animate-float">
                         <img 
-                            src="https://images.unsplash.com/photo-1586717791821-3f44a5638d0f?auto=format&fit=crop&w=500&q=80" 
+                            src="https://i.imgur.com/cKqbnJj.jpeg" 
                             alt="Papelería" 
                             className="w-full h-full object-cover"
                         />
@@ -211,7 +198,7 @@ const HeroSection: React.FC = () => (
                     {/* Tertiary Image (Merch - Floating Bottom Left) */}
                     <div className="absolute bottom-8 -left-4 w-56 h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 transform hover:scale-105 transition-all duration-500 z-30">
                         <img 
-                            src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=500&q=80" 
+                            src="https://i.imgur.com/TnsNdTS.png" 
                             alt="Merchandising" 
                             className="w-full h-full object-cover"
                         />

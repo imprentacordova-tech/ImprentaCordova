@@ -41,6 +41,21 @@ export interface Cliente {
   regimen: Regimen;
 }
 
+export interface TrabajoSpecs {
+  producto?: string;
+  material?: string;
+  medidas?: string; // "10x15 cm"
+  impresion?: string; // "4/0", "4/4"
+  acabados?: string[]; // ["Laminado", "Troquelado"]
+}
+
+export interface TrabajoDiseno {
+  estado: 'Cliente Provee' | 'Requiere Diseño';
+  archivoUrl?: string;
+  designerId?: string;
+  driveLink?: string;
+}
+
 export interface Trabajo {
   id: string;
   orden: number;
@@ -55,7 +70,8 @@ export interface Trabajo {
   saldo: number;
   estado: TrabajoEstado;
   fechaEntrada: string;
-  fechaVencimiento?: string;
+  fechaEntrega?: string; // Fecha PACTADA
+  fechaVencimiento?: string; // Legacy support (alias for fechaEntrega)
   caduco: boolean;
   fotoOriginalUrl?: string;
   creadoPor?: string;
@@ -65,7 +81,15 @@ export interface Trabajo {
   claveAcceso?: string;
   origen?: 'Web' | 'Interno';
   esRenovacion?: boolean;
-  prioridad?: boolean;
+  
+  // New Fields for Enhanced Order Management
+  prioridad?: 'Normal' | 'Urgente';
+  specs?: TrabajoSpecs;
+  diseno?: TrabajoDiseno;
+  metodoPago?: 'Efectivo' | 'Transferencia' | 'Tarjeta';
+  descuento?: number;
+  costoDiseno?: number;
+  iva?: boolean;
 }
 
 export interface Kpi {

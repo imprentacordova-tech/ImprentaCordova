@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { User } from '../types';
 import { getUsers } from '../services/mockApi';
-import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon } from '../components/Icons';
+import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon, Loader2Icon, EyeIcon, EyeSlashIcon, ExclamationTriangleIcon } from '../components/Icons';
 
 interface LoginProps {
   onLoginSuccess: (user: User, remember: boolean) => void;
@@ -12,6 +13,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [key, setKey] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,44 +50,36 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 relative overflow-hidden font-sans">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-            <img 
-                src="https://images.unsplash.com/photo-1562564055-71e051d33c19?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                alt="Imprenta Background" 
-                className="w-full h-full object-cover opacity-20 filter blur-sm scale-105 animate-pulse-slow"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/90 via-slate-900/95 to-slate-900/90"></div>
-        </div>
-        
-        {/* Content */}
-        <div className="w-full max-w-md p-6 z-10 relative">
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/10 animate-slide-in-up">
-                
+    <div className="min-h-screen flex bg-white dark:bg-slate-900 font-sans selection:bg-brand-blue selection:text-white">
+        {/* --- LEFT COLUMN: FORM --- */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 sm:p-12 lg:p-16 xl:p-24 relative">
+            
+            <div className="w-full max-w-sm mx-auto space-y-8">
                 {/* Header */}
-                <div className="p-8 pb-6 text-center">
-                    <div className="bg-white p-4 rounded-2xl shadow-lg inline-block mb-6 transform hover:scale-105 transition-transform duration-300">
-                        <CordovaLogo className="h-16 w-16 text-brand-blue" />
+                <div className="text-center lg:text-left">
+                    <div className="inline-block p-3 rounded-2xl bg-blue-50 dark:bg-blue-900/20 mb-6">
+                        <CordovaLogo className="h-10 w-10 object-contain" />
                     </div>
-                    
-                    <h1 className="text-3xl font-black text-white uppercase tracking-tight mb-2 drop-shadow-md">
-                        {APP_NAME}
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+                        Bienvenido
                     </h1>
-                    <p className="text-blue-200 text-sm font-medium tracking-wide uppercase opacity-80">
-                        Gestión Interna
+                    <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Ingresa tus credenciales para acceder al panel de control de <span className="font-semibold text-brand-blue">{APP_NAME}</span>.
                     </p>
                 </div>
 
-                <div className="px-8 pb-10">
-                    <form onSubmit={handleLogin} className="space-y-5">
-                        <div className="space-y-1">
-                            <label htmlFor="username" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
+                {/* Form */}
+                <form onSubmit={handleLogin} className="space-y-6">
+                    
+                    <div className="space-y-5">
+                        {/* Username */}
+                        <div className="group">
+                            <label htmlFor="username" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 transition-colors group-focus-within:text-brand-blue">
                                 Usuario
                             </label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <UsersIcon className="h-5 w-5 text-blue-300 group-focus-within:text-white transition-colors" />
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <UsersIcon className="h-5 w-5 text-slate-400 group-focus-within:text-brand-blue transition-colors" />
                                 </div>
                                 <input
                                     id="username"
@@ -94,98 +88,139 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     required
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
-                                    className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
-                                    placeholder="Ej. Ezequiel"
+                                    className="block w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm"
+                                    placeholder="Ej. Pedro"
                                     autoFocus
                                     autoComplete="username"
                                 />
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label htmlFor="password" className="block text-xs font-bold text-white uppercase tracking-wider ml-1 opacity-90">
+                        {/* Password */}
+                        <div className="group">
+                            <label htmlFor="password" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 transition-colors group-focus-within:text-brand-blue">
                                 Contraseña
                             </label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <ShieldCheckIcon className="h-5 w-5 text-blue-300 group-focus-within:text-white transition-colors" />
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <ShieldCheckIcon className="h-5 w-5 text-slate-400 group-focus-within:text-brand-blue transition-colors" />
                                 </div>
                                 <input
                                     id="password"
                                     name="password"
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent focus:bg-slate-800 transition-all duration-300 shadow-inner"
+                                    className="block w-full pl-11 pr-12 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm"
                                     placeholder="••••••"
                                     autoComplete="current-password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none"
+                                >
+                                    {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Remember Me Checkbox */}
-                        <div className="flex items-center ml-1">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                checked={remember}
-                                onChange={(e) => setRemember(e.target.checked)}
-                                className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-500 rounded bg-slate-800/50 cursor-pointer"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-blue-100 cursor-pointer select-none">
-                                Mantener sesión iniciada
+                    {/* Options & Error */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center cursor-pointer group">
+                                <div className="relative">
+                                    <input
+                                        id="remember-me"
+                                        name="remember-me"
+                                        type="checkbox"
+                                        checked={remember}
+                                        onChange={(e) => setRemember(e.target.checked)}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-brand-blue"></div>
+                                </div>
+                                <span className="ml-3 text-sm text-slate-600 dark:text-slate-400 font-medium group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors">
+                                    Recordarme
+                                </span>
                             </label>
                         </div>
 
                         {error && (
-                            <div className="bg-red-500/20 border border-red-500/50 p-4 rounded-xl flex items-center animate-fade-in backdrop-blur-sm">
-                                <div className="bg-red-500 rounded-full p-1 mr-3 flex-shrink-0">
-                                    <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </div>
-                                <p className="text-sm text-red-200 font-medium">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-center animate-bounce-in">
+                                <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
+                                <p className="text-sm text-red-600 dark:text-red-300 font-semibold">
                                     {error}
                                 </p>
                             </div>
                         )}
+                    </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading || !key}
-                            className={`w-full group relative flex justify-center py-4 px-4 border border-transparent rounded-xl text-sm font-bold text-white bg-brand-blue hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-brand-blue transition-all duration-300 uppercase tracking-widest shadow-lg shadow-blue-900/50 overflow-hidden ${loading ? 'cursor-wait opacity-90' : 'hover:-translate-y-1 hover:shadow-xl'}`}
-                        >
-                            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
-                            {loading ? (
-                                <span className="flex items-center gap-2">
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Verificando...
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-2">
-                                    Acceder al Sistema <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                </span>
-                            )}
-                        </button>
-                    </form>
-                </div>
-                
-                {/* Footer */}
-                <div className="px-8 py-5 bg-slate-950/30 border-t border-white/5 text-center backdrop-blur-sm">
-                    <p className="text-xs text-slate-400 font-medium">
-                        &copy; 2025 Imprenta Córdova v3.0
-                    </p>
+                    <button
+                        type="submit"
+                        disabled={loading || !key}
+                        className={`w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl text-base font-bold text-white bg-brand-blue hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${loading ? 'cursor-not-allowed opacity-80' : ''}`}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2Icon className="animate-spin h-5 w-5 mr-2" />
+                                Iniciando sesión...
+                            </>
+                        ) : (
+                            <>
+                                Ingresar
+                                <ArrowRightIcon className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </>
+                        )}
+                    </button>
+                </form>
+
+                {/* Footer Link */}
+                <div className="text-center lg:text-left mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+                    <Link 
+                        to="/" 
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-brand-blue transition-colors group"
+                    >
+                        <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+                        Volver a la Tienda
+                    </Link>
                 </div>
             </div>
+        </div>
+
+        {/* --- RIGHT COLUMN: VISUAL --- */}
+        <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-slate-900">
+            <div className="absolute inset-0 z-0">
+                <img 
+                    src="https://images.unsplash.com/photo-1562564055-71e051d33c19?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                    alt="Offset Printing Press" 
+                    className="w-full h-full object-cover opacity-60 mix-blend-overlay"
+                />
+            </div>
+            {/* Artistic Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-blue via-blue-900 to-slate-900 opacity-90 mix-blend-multiply"></div>
             
-            <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                 <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all font-medium text-sm border border-white/10 group backdrop-blur-sm shadow-lg">
-                    <span className="group-hover:-translate-x-1 transition-transform"><ArrowLeftIcon className="w-4 h-4" /></span> Volver a la Tienda Virtual
-                </Link>
+            {/* Decorative Elements */}
+            <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-brand-blue/30 rounded-full blur-3xl animate-blob"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+
+            {/* Text Overlay */}
+            <div className="absolute bottom-0 left-0 p-16 z-10 w-full">
+                <div className="h-1 w-20 bg-brand-red mb-6 rounded-full"></div>
+                <h2 className="text-4xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
+                    Excelencia en cada impresión.
+                </h2>
+                <p className="text-lg text-blue-100 font-light max-w-lg leading-relaxed mb-8">
+                    Gestiona tu producción, clientes y finanzas con la tecnología más avanzada del mercado gráfico.
+                </p>
+                <div className="flex items-center gap-4 text-sm font-bold text-white/60 uppercase tracking-widest">
+                    <span>Producción</span>
+                    <span className="w-1 h-1 bg-white/40 rounded-full"></span>
+                    <span>Diseño</span>
+                    <span className="w-1 h-1 bg-white/40 rounded-full"></span>
+                    <span>Logística</span>
+                </div>
             </div>
         </div>
     </div>

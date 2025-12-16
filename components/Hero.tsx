@@ -7,7 +7,7 @@ const Hero: React.FC = () => {
   return (
     <section id="home" className="relative bg-blue-900 overflow-hidden min-h-[90vh] flex items-center">
       {/* Background Image Overlay */}
-      <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center animate-pulse-slow"></div>
+      <div className="absolute inset-0 opacity-20 bg-[url('https://i.imgur.com/AUvl1wF.png')] bg-cover bg-center animate-pulse-slow"></div>
       
       {/* Gradient Overlay - Optimized for readability */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-900/95 to-indigo-900/90"></div>
@@ -50,7 +50,7 @@ const Hero: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
           <a 
             href="#contact" 
-            className="group px-8 py-4 bg-orange-600 text-white rounded-xl font-bold text-lg hover:bg-orange-500 transition-all duration-300 shadow-lg shadow-orange-600/30 transform hover:-translate-y-1 hover:scale-105 hover:shadow-orange-500/50 flex items-center justify-center active:scale-95"
+            className="group px-8 py-4 bg-orange-600 text-white rounded-xl font-bold text-lg hover:bg-orange-50 transition-all duration-300 shadow-lg shadow-orange-600/30 transform hover:-translate-y-1 hover:scale-105 hover:shadow-orange-500/50 flex items-center justify-center active:scale-95"
           >
             <WhatsAppIcon className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
             Cotizar por WhatsApp

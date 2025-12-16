@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { NavLink, useOutletContext } from 'react-router-dom';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Kpi, Trabajo, TrabajoEstado, User } from '../types';
-import { SolidDollarIcon, SolidFinanceIcon, SolidClockIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon } from '../components/Icons';
+import { SolidDollarIcon, SolidFinanceIcon, SolidClockIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon, Loader2Icon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
 interface KpiCardProps {
@@ -23,7 +23,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
     const style = variants[kpi.variant];
 
     return (
-        <div className={`p-6 rounded-2xl shadow-sm ${style.bg} flex items-start justify-between`}>
+        <div className={`p-6 rounded-2xl shadow-sm ${style.bg} flex items-start justify-between transform transition-all hover:scale-[1.02]`}>
             <div>
                 <p className={`text-sm font-bold ${style.text}`}>{kpi.title}</p>
                 <p className="text-4xl font-bold text-gray-900 dark:text-white mt-2">{kpi.metric}</p>
@@ -55,7 +55,7 @@ const QuickAccessCard: React.FC<{
             className="group relative bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col justify-between overflow-hidden"
         >
             {badge !== undefined && badge > 0 && (
-                <div className="absolute top-2 right-2 bg-gray-100 dark:bg-gray-700 text-brand-blue dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 z-10">
+                <div className="absolute top-2 right-2 bg-gray-100 dark:bg-gray-700 text-brand-blue dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 z-10 animate-pulse">
                     {badge} Listos
                 </div>
             )}
@@ -72,64 +72,84 @@ const QuickAccessCard: React.FC<{
 
 const DashboardPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const { trabajos, clientes, loading, refreshData } = useData(); // Hook del nuevo DataContext
+    
     const [kpis, setKpis] = useState<Kpi[]>([]);
     const [recentJobs, setRecentJobs] = useState<Trabajo[]>([]);
-    const [clientes, setClientes] = useState<any>({});
+    const [clientesMap, setClientesMap] = useState<Record<string, string>>({});
     const [vitrinaCount, setVitrinaCount] = useState(0);
 
+    // Efecto para calcular KPIs cuando la data del contexto cambie
     useEffect(() => {
-        const fetchData = async () => {
-            const [trabajos, clientesData] = await Promise.all([getTrabajos(), getClientes()]);
-            
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
-            const trabajosHoy = trabajos.filter(t => new Date(t.fechaEntrada) >= today);
+        if (loading) return;
 
-            const ingresosHoy = trabajosHoy.reduce((sum, t) => sum + t.abono, 0);
-            const pedidosHoy = trabajosHoy.length;
-            
-            const saldosPendientes = trabajos
-                .filter(t => t.saldo > 0 && t.estado !== TrabajoEstado.ENTREGADO)
-                .reduce((sum, t) => sum + t.saldo, 0);
-            
-            const countVitrina = trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length;
-            setVitrinaCount(countVitrina);
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        const trabajosHoy = trabajos.filter(t => new Date(t.fechaEntrada) >= today);
 
-            setKpis([
-                { title: 'Ingresos de Hoy', metric: formatCurrency(ingresosHoy), icon: SolidDollarIcon, variant: 'blue' },
-                { title: 'Pedidos de Hoy', metric: String(pedidosHoy), icon: SolidBoxIcon, variant: 'green' },
-                { title: 'Saldos Pendientes', metric: formatCurrency(saldosPendientes), icon: SolidClockIcon, variant: 'red' },
-            ]);
+        const ingresosHoy = trabajosHoy.reduce((sum, t) => sum + t.abono, 0);
+        const pedidosHoy = trabajosHoy.length;
+        
+        const saldosPendientes = trabajos
+            .filter(t => t.saldo > 0 && t.estado !== TrabajoEstado.ENTREGADO)
+            .reduce((sum, t) => sum + t.saldo, 0);
+        
+        const countVitrina = trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length;
+        setVitrinaCount(countVitrina);
 
-            const clientesMap = clientesData.reduce((acc, cliente) => {
-                acc[cliente.id] = cliente.nombre;
-                return acc;
-            }, {} as Record<string, string>);
-            setClientes(clientesMap);
+        setKpis([
+            { title: 'Ingresos de Hoy', metric: formatCurrency(ingresosHoy), icon: SolidDollarIcon, variant: 'blue' },
+            { title: 'Pedidos de Hoy', metric: String(pedidosHoy), icon: SolidBoxIcon, variant: 'green' },
+            { title: 'Saldos Pendientes', metric: formatCurrency(saldosPendientes), icon: SolidClockIcon, variant: 'red' },
+        ]);
 
-            const sortedJobs = [...trabajos].sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime());
-            setRecentJobs(sortedJobs.slice(0, 5));
-        };
-        fetchData();
-    }, []);
+        const cMap = clientes.reduce((acc, cliente) => {
+            acc[cliente.id] = cliente.nombre;
+            return acc;
+        }, {} as Record<string, string>);
+        setClientesMap(cMap);
+
+        const sortedJobs = [...trabajos].sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime());
+        setRecentJobs(sortedJobs.slice(0, 5));
+
+    }, [trabajos, clientes, loading]);
     
     const getStatusBadge = (status: TrabajoEstado) => {
         const styles = {
             [TrabajoEstado.PENDIENTE]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800",
+            [TrabajoEstado.EN_DISENO]: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800",
             [TrabajoEstado.PROCESO]: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
-            [TrabajoEstado.VITRINA]: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800",
+            [TrabajoEstado.VITRINA]: "bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300 border border-teal-200 dark:border-teal-800",
             [TrabajoEstado.ENTREGADO]: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800",
         };
         return <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>{status}</span>
     }
 
+    if (loading) {
+        return (
+            <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
+                <Loader2Icon className="h-12 w-12 text-brand-blue animate-spin" />
+                <p className="text-gray-500 font-medium animate-pulse">Sincronizando datos...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 animate-fade-in pb-10">
             {/* Header */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Bienvenido, {currentUser.nombre} 👋</h1>
-                <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm md:text-base">Resumen de actividad de Imprenta Córdova.</p>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Bienvenido, {currentUser.nombre} 👋</h1>
+                    <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm md:text-base">Resumen de actividad de Imprenta Córdova.</p>
+                </div>
+                <button 
+                    onClick={() => refreshData()}
+                    className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-brand-blue hover:text-white dark:hover:bg-brand-blue transition-all"
+                    title="Actualizar datos"
+                >
+                    <Loader2Icon className="w-5 h-5" />
+                </button>
             </div>
             
             {/* KPI Cards */}
@@ -148,14 +168,14 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="space-y-3">
                         {recentJobs.length > 0 ? recentJobs.map(job => (
-                            <NavLink to={`/trabajos/${job.id}`} key={job.id} className="block hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-xl transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
+                            <NavLink to={`/trabajos/${job.id}`} key={job.id} className="block hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-xl transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600 group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-brand-blue font-bold text-xs">
+                                        <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-brand-blue font-bold text-xs group-hover:scale-110 transition-transform">
                                             #{job.orden}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-gray-800 dark:text-white text-sm">{clientes[job.clienteId] || 'Cliente'}</p>
+                                            <p className="font-bold text-gray-800 dark:text-white text-sm">{clientesMap[job.clienteId] || 'Cliente'}</p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">{job.subtipo}</p>
                                         </div>
                                     </div>

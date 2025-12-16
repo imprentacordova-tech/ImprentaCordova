@@ -91,11 +91,11 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            {/* Interactive Map Embed */}
+            {/* Interactive Map Embed with Specific Coordinates */}
             <div className="h-80 bg-slate-200 rounded-2xl overflow-hidden relative group border-2 border-white shadow-lg hover:shadow-xl transition-shadow">
                 <iframe 
                     title="Ubicación Imprenta Córdova"
-                    src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=es&amp;q=Calle%20Col%C3%B3n%20e%2F%20Sucre%20y%20Rocafuerte,%20Pasaje,%20El%20Oro,%20Ecuador+(Imprenta%20C%C3%B3rdova)&amp;t=&amp;z=17&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
+                    src="https://maps.google.com/maps?q=-3.3281355388981613,-79.80962191989809&hl=es&z=18&output=embed"
                     width="100%" 
                     height="100%" 
                     style={{ border: 0 }} 
