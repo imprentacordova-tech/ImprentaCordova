@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
     ShieldCheckIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
-    CloseIcon, TrashIcon, CheckCircleIcon, AddIcon, ArrowRightIcon, MapPinIcon, 
-    EnvelopeIcon, CordovaLogo, StarIcon, PrinterIcon, CheckBadgeIcon, ClockIcon
+    CloseIcon, TrashIcon, AddIcon, ArrowRightIcon, MapPinIcon, 
+    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, CheckCircleIcon
 } from '../components/Icons';
 import { getProductos, createPublicPedido } from '../services/mockApi';
 import { Producto } from '../types';
