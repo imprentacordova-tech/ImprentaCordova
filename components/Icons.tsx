@@ -37,7 +37,7 @@ export const FinanceIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 export const ClientsIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.67c.12-.318.239-.636.354-.966M15 19.128v-3.848m0-5.712a9.349 9.349 0 00-5.516-1.543 9.349 9.349 0 00-5.516 1.543m11.032 0a9.349 9.349 0 013.498 1.543m-3.498-1.543a9.333 9.333 0 01-3.498-1.543m0 0a9.349 9.349 0 00-5.516 1.543m5.516 0a9.349 9.349 0 013.498 1.543m0 0A4.5 4.5 0 0115 11.128v2.253M15 11.128a4.5 4.5 0 01-4.5 4.5m4.5-4.5a4.5 4.5 0 00-4.5 4.5M15 11.128V9a4.5 4.5 0 00-4.5-4.5m4.5 4.5a4.5 4.5 0 01-4.5 4.5m-4.5 4.5a4.5 4.5 0 01-4.5-4.5M8.624 13.5a4.5 4.5 0 014.5-4.5m4.5 4.5a4.5 4.5 0 01-4.5 4.5m0 0a4.5 4.5 0 01-4.5-4.5m0 0a4.5 4.5 0 014.5-4.5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.67c.12-.318.239-.636.354-.966M15 19.128v-3.848m0-5.712a9.349 9.349 0 00-5.516-1.543 9.349 9.349 0 00-5.516 1.543m11.032 0a9.349 9.349 0 013.498 1.543m-3.498-1.543a9.333 9.333 0 01-3.498-1.543m0 0a9.349 9.349 0 00-5.516 1.543m5.516 0a9.349 9.349 0 013.498 1.543m0 0A4.5 4.5 0 0115 11.128v2.253M15 11.128a4.5 4.5 0 01-4.5 4.5m4.5-4.5a4.5 4.5 0 00-4.5 4.5M15 11.128V9a4.5 4.5 0 00-4.5-4.5m4.5 4.5a4.5 4.5 0 01-4.5 4.5m-4.5 4.5a4.5 4.5 0 01-4.5-4.5M8.624 13.5a4.5 4.5 0 014.5-4.5m4.5 4.5a4.5 4.5 0 01-4.5 4.5m0 0a4.5 4.5 0 01-4.5-4.5m0 0a4.5 4.5 0 01-4.5-4.5" />
     </svg>
 );
 export const AddIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -414,6 +414,11 @@ export const FileTextLucideIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export const ShoppingCartLucideIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
 )
+export const WalletIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+    </svg>
+);
 
 export { 
     MenuLucideIcon as Menu, 
