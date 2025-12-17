@@ -199,3 +199,14 @@ export interface Product {
   imageUrl: string;
   isPopular?: boolean;
 }
+
+export interface DailySales {
+    date: string; // YYYY-MM-DD
+    sales: number;
+}
+
+export interface FinancialProjection {
+    forecast: DailySales[];
+    lowTrafficDays: string[];
+    suggestion: string;
+}

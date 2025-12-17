@@ -1,5 +1,5 @@
 
-import { Cliente, Producto, Regimen, Trabajo, TrabajoEstado, TrabajoTipo, User, InventoryItem, Proveedor, TareaProveedor, SriCredential } from '../types';
+import { Cliente, Producto, Regimen, Trabajo, TrabajoEstado, TrabajoTipo, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, TrabajoDiseno } from '../types';
 import { VALID_USERS } from '../constants';
 
 // ============================================================================
@@ -84,7 +84,7 @@ const PROVEEDORES_KEY = 'mockProveedoresData';
 const TAREAS_PROVEEDOR_KEY = 'mockTareasProveedorData';
 const SRI_KEYS_KEY = 'mockSriKeysData';
 
-// --- DATOS POR DEFECTO (CATÁLOGO MEJORADO IMPRENTA CÓRDOVA) ---
+// --- DATOS POR DEFECTO (CATÁLOGO MEJORADO IMPRENTA CÓDOVA) ---
 const daysAgo = (days: number) => {
   const date = new Date();
   date.setDate(date.getDate() - days);
@@ -226,6 +226,17 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
     throw new Error("Trabajo no encontrado");
 };
 
+export const updateTrabajoDiseno = async (trabajoId: string, disenoData: Partial<TrabajoDiseno>): Promise<Trabajo> => {
+    const trabajos = await getStoredData(TRABAJOS_KEY, defaultTrabajos);
+    const index = trabajos.findIndex(t => t.id === trabajoId);
+    if (index > -1) {
+        trabajos[index].diseno = { ...trabajos[index].diseno, ...disenoData } as TrabajoDiseno;
+        await setStoredData(TRABAJOS_KEY, trabajos);
+        return trabajos[index];
+    }
+    throw new Error("Trabajo no encontrado");
+};
+
 export const createTrabajo = async (trabajoData: any, usuario: string): Promise<Trabajo> => {
     const trabajos = await getStoredData(TRABAJOS_KEY, defaultTrabajos);
     const newTrabajo: Trabajo = {
@@ -236,7 +247,8 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
         caduco: false,
         creadoPor: usuario,
         origen: 'Interno',
-        saldo: trabajoData.total - trabajoData.abono
+        saldo: trabajoData.total - trabajoData.abono,
+        diseno: { estado: 'Requiere Diseño' } // Default state
     };
     trabajos.unshift(newTrabajo);
     await setStoredData(TRABAJOS_KEY, trabajos);
@@ -287,7 +299,8 @@ export const createPublicPedido = async (clienteInfo: any, productos: any): Prom
         fechaEntrada: new Date().toISOString(),
         caduco: false,
         creadoPor: 'Cliente Web',
-        origen: 'Web'
+        origen: 'Web',
+        diseno: { estado: 'Requiere Diseño' }
     };
     
     trabajos.unshift(newTrabajo);

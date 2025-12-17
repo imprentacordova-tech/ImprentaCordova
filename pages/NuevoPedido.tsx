@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useOrder, CartItem } from '../hooks/useOrder';
@@ -160,7 +159,7 @@ const NuevoPedidoPage: React.FC = () => {
 
             {/* Mobile Cart Button */}
             <div className="xl:hidden">
-                {!isSummaryOpen && totalItems > 0 && (
+                {!isSummaryOpen && (totalItems as number) > 0 && (
                     <button 
                         onClick={() => setIsSummaryOpen(true)}
                         className="fixed bottom-6 right-6 z-50 bg-brand-red text-white p-4 rounded-full shadow-2xl shadow-red-600/40 hover:scale-110 transition-transform animate-bounce-in flex items-center gap-2 pr-6"

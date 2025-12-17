@@ -29,7 +29,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
     return (
         <div className="flex flex-col h-full">
-            {/* Body: Item List */}
             <div className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar">
                 {cartItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 space-y-4 opacity-60">
@@ -43,43 +42,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     <div className="space-y-3">
                         {cartItems.map(({ producto, cantidad }) => (
                             <div key={producto.id} className="group flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                                {/* Quantity Controls */}
                                 <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg p-1 border border-gray-200 dark:border-gray-600 h-full">
-                                    <button 
-                                        onClick={() => onUpdateQuantity(producto.id, cantidad + 1)} 
-                                        className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-brand-blue hover:bg-white rounded text-xs transition-colors"
-                                    >
-                                        ▲
-                                    </button>
+                                    <button onClick={() => onUpdateQuantity(producto.id, cantidad + 1)} className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-brand-blue hover:bg-white rounded text-xs transition-colors">▲</button>
                                     <span className="font-bold text-sm text-gray-800 dark:text-white py-1">{cantidad}</span>
-                                    <button 
-                                        onClick={() => onUpdateQuantity(producto.id, cantidad - 1)} 
-                                        className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white rounded text-xs transition-colors"
-                                    >
-                                        ▼
-                                    </button>
+                                    <button onClick={() => onUpdateQuantity(producto.id, cantidad - 1)} className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white rounded text-xs transition-colors">▼</button>
                                 </div>
 
                                 <div className="flex-grow min-w-0 py-1">
-                                    <p className="font-bold text-sm text-gray-800 dark:text-white leading-tight mb-1 line-clamp-2">
-                                        {producto.nombre}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {formatCurrency(producto.precio)} unit.
-                                    </p>
+                                    <p className="font-bold text-sm text-gray-800 dark:text-white leading-tight mb-1 line-clamp-2">{producto.nombre}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{formatCurrency(producto.precio)} unit.</p>
                                 </div>
 
                                 <div className="flex flex-col items-end justify-between h-full py-1">
-                                    <p className="text-sm font-black text-brand-blue">
-                                        {formatCurrency(producto.precio * cantidad)}
-                                    </p>
-                                    <button 
-                                        onClick={() => onRemoveItem(producto.id)} 
-                                        className="text-gray-300 hover:text-red-500 transition-colors p-1"
-                                        title="Eliminar"
-                                    >
-                                        <TrashIcon className="w-4 h-4"/>
-                                    </button>
+                                    <p className="text-sm font-black text-brand-blue">{formatCurrency(producto.precio * cantidad)}</p>
+                                    <button onClick={() => onRemoveItem(producto.id)} className="text-gray-300 hover:text-red-500 transition-colors p-1" title="Eliminar"><TrashIcon className="w-4 h-4"/></button>
                                 </div>
                             </div>
                         ))}
@@ -87,16 +63,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 )}
             </div>
 
-            {/* Footer: Financials & Action */}
             <div className="p-6 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] relative z-20">
                 <div className="space-y-4 mb-6">
-                    {/* Total Row */}
                     <div className="flex justify-between items-end">
                         <span className="text-gray-500 dark:text-gray-400 font-medium text-sm">Total a Pagar</span>
                         <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{formatCurrency(orderTotal)}</span>
                     </div>
 
-                    {/* Deposit Input */}
                     <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex justify-between items-center group focus-within:ring-2 focus-within:ring-brand-blue focus-within:border-transparent transition-all">
                         <label htmlFor="abonoInput" className="font-bold text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2 cursor-pointer">
                             <WalletIcon className="w-5 h-5 text-gray-400 group-focus-within:text-brand-blue" />
@@ -116,7 +89,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         </div>
                     </div>
 
-                    {/* Balance Row */}
                     <div className="flex justify-between items-center pt-2">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Saldo Pendiente</span>
                         {isFullyPaid ? (
@@ -124,9 +96,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 <CheckCircleIcon className="w-4 h-4" /> Pagado
                             </span>
                         ) : (
-                            <span className="text-xl font-black text-brand-red">
-                                {formatCurrency(saldo)}
-                            </span>
+                            <span className="text-xl font-black text-brand-red">{formatCurrency(saldo)}</span>
                         )}
                     </div>
                 </div>
@@ -136,20 +106,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     disabled={isLoading || cartItems.length === 0} 
                     className={`
                         w-full py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all transform active:scale-95
-                        ${isLoading || cartItems.length === 0 
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' 
-                            : 'bg-gradient-to-r from-brand-blue to-blue-700 text-white hover:shadow-blue-500/30 hover:-translate-y-1'}
+                        ${isLoading || cartItems.length === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-brand-blue to-blue-700 text-white hover:shadow-blue-500/30 hover:-translate-y-1'}
                     `}
                 >
-                    {isLoading ? (
-                        <>
-                            <Loader2Icon className="animate-spin w-6 h-6"/> Procesando...
-                        </>
-                    ) : (
-                        <>
-                            <CheckCircleIcon className="w-6 h-6"/> Confirmar Pedido
-                        </>
-                    )}
+                    {isLoading ? <><Loader2Icon className="animate-spin w-6 h-6"/> Procesando...</> : <><CheckCircleIcon className="w-6 h-6"/> Confirmar Pedido</>}
                 </button>
             </div>
         </div>

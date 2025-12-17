@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { CordovaLogo } from './Icons';
+import { CordovaLogo, SearchIcon } from './Icons';
+import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,11 +20,11 @@ const Navbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Inicio', href: '#home' },
-    { name: 'Servicios', href: '#services' },
-    { name: 'Catálogo', href: '#catalog' },
-    { name: 'Asistente IA', href: '#ai-helper' },
-    { name: 'Contacto', href: '#contact' },
+    { name: 'Inicio', href: '/#home' },
+    { name: 'Servicios', href: '/#services' },
+    { name: 'Catálogo', href: '/#catalog' },
+    { name: 'Asistente IA', href: '/#ai-helper' },
+    { name: 'Contacto', href: '/#contact' },
   ];
 
   return (
@@ -31,7 +32,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center cursor-pointer group" onClick={() => window.location.hash = '#home'}>
+            <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer group">
               <div className="p-1.5 mr-3 transition-colors shadow-sm">
                 <CordovaLogo className="h-10 w-auto object-contain" />
               </div>
@@ -39,7 +40,7 @@ const Navbar: React.FC = () => {
                 <span className="text-blue-900 font-black text-xl leading-none tracking-tight">IMPRENTA</span>
                 <span className="text-orange-600 font-bold text-sm tracking-widest">CÓRDOVA</span>
               </div>
-            </div>
+            </Link>
           </div>
           
           {/* Desktop Menu */}
@@ -53,6 +54,14 @@ const Navbar: React.FC = () => {
                 {link.name}
               </a>
             ))}
+            
+            <Link 
+              to="/tracking" 
+              className="text-slate-600 hover:text-brand-blue font-bold text-sm uppercase tracking-wide flex items-center gap-1 group"
+            >
+              <SearchIcon className="w-4 h-4 group-hover:scale-110 transition-transform"/> Rastreo
+            </Link>
+
             <a href="#contact" className="bg-orange-500 text-white px-5 py-2.5 rounded-full hover:bg-orange-600 transition-all font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm flex items-center">
               Cotizar Ahora
             </a>
@@ -85,6 +94,13 @@ const Navbar: React.FC = () => {
                 {link.name}
               </a>
             ))}
+            <Link 
+              to="/tracking"
+              onClick={() => setIsOpen(false)}
+              className="block px-3 py-2 rounded-md text-base font-bold text-brand-blue hover:bg-slate-50 flex items-center gap-2"
+            >
+              <SearchIcon className="w-4 h-4" /> Rastrear Pedido
+            </Link>
             <a 
               href="#contact"
               onClick={() => setIsOpen(false)}

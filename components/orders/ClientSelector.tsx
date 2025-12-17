@@ -1,21 +1,11 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { createCliente } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
-import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, ExclamationTriangleIcon, CheckCircleIcon } from '../Icons';
+import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, CheckCircleIcon } from '../Icons';
 
-// Custom hook local para debounce
-function useDebounce<T>(value: T, delay: number): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value);
-    useEffect(() => {
-        const handler = setTimeout(() => setDebouncedValue(value), delay);
-        return () => clearTimeout(handler);
-    }, [value, delay]);
-    return debouncedValue;
-}
-
-// --- SUB-COMPONENT: InputField Reutilizable ---
+// Helper para Inputs
 const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
     <div className="group">
         <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors group-focus-within:text-brand-blue">{label}</label>
@@ -23,7 +13,7 @@ const InputField: React.FC<{ label: string; name: string; value: any; onChange: 
     </div>
 );
 
-// --- SUB-COMPONENT: Modal de Creación ---
+// Modal Interno de Creación
 const CreateClientModal: React.FC<{
     isOpen: boolean; onClose: () => void; onClientCreated: (client: Cliente) => void; initialName?: string; initialCedulaRuc?: string;
 }> = ({ isOpen, onClose, onClientCreated, initialName, initialCedulaRuc }) => {
@@ -59,7 +49,7 @@ const CreateClientModal: React.FC<{
         if (e.key === 'Enter') {
             e.preventDefault();
             const val = currentTelefono.trim().replace(/\D/g, '');
-            if (val.length === 10) {
+            if (val.length >= 7) {
                 if (!telefonos.includes(val)) setTelefonos(prev => [...prev, val]);
                 setCurrentTelefono('');
             }
@@ -69,20 +59,19 @@ const CreateClientModal: React.FC<{
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        // Add current typing phone if valid
         const finalTelefonos = [...telefonos];
         const val = currentTelefono.trim().replace(/\D/g, '');
-        if (val.length === 10 && !finalTelefonos.includes(val)) finalTelefonos.push(val);
+        if (val.length >= 7 && !finalTelefonos.includes(val)) finalTelefonos.push(val);
 
-        if (!newClienteData.nombre || !newClienteData.cedulaRuc || finalTelefonos.length === 0) {
-            setIsSaving(false); return; // Add validation UI later
+        if (!newClienteData.nombre || !newClienteData.cedulaRuc) {
+            setIsSaving(false); return;
         }
 
         const newCliente = await createCliente({ 
             nombre: newClienteData.nombre, 
             cedula: newClienteData.cedulaRuc, 
             ruc: newClienteData.cedulaRuc.length === 13 ? newClienteData.cedulaRuc : undefined, 
-            telefono: finalTelefonos,
+            telefono: finalTelefonos.length > 0 ? finalTelefonos : ['9999999999'],
             email: newClienteData.email || undefined, 
             regimen: newClienteData.regimen,
             nombreComercial: newClienteData.nombreComercial || undefined,
@@ -91,11 +80,11 @@ const CreateClientModal: React.FC<{
         });
         
         setSaveSuccess(true);
-        setTimeout(() => onClientCreated(newCliente), 1000);
+        setTimeout(() => onClientCreated(newCliente), 800);
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex justify-center items-center p-4 animate-fade-in" onClick={e => e.stopPropagation()}>
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-100 relative">
                 <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-2xl">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
@@ -121,11 +110,11 @@ const CreateClientModal: React.FC<{
                             {telefonos.map((t, i) => (
                                 <span key={i} className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">{t} <button type="button" onClick={() => setTelefonos(prev => prev.filter((_, idx) => idx !== i))}>&times;</button></span>
                             ))}
-                            <input type="tel" value={currentTelefono} onChange={e => setCurrentTelefono(e.target.value)} onKeyDown={handleTelefonoKeyDown} placeholder="099..." className="bg-transparent outline-none flex-grow min-w-[100px]" maxLength={10} />
+                            <input type="tel" value={currentTelefono} onChange={e => setCurrentTelefono(e.target.value)} onKeyDown={handleTelefonoKeyDown} placeholder="Escribir y Enter..." className="bg-transparent outline-none flex-grow min-w-[100px] text-sm" />
                         </div>
                     </div>
                     <div className="flex justify-end pt-4 gap-3 border-t dark:border-gray-700">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                        <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</button>
                         <button type="submit" disabled={isSaving || saveSuccess} className={`px-6 py-2 text-white font-bold rounded-lg shadow-lg flex items-center gap-2 ${saveSuccess ? 'bg-green-500' : 'bg-brand-blue hover:bg-blue-800'}`}>
                             {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Guardar"}
                         </button>
@@ -136,7 +125,6 @@ const CreateClientModal: React.FC<{
     );
 };
 
-// --- MAIN COMPONENT ---
 interface ClientSelectorProps {
     onSelectClient: (cliente: Cliente) => void;
 }
@@ -144,65 +132,57 @@ interface ClientSelectorProps {
 const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
     const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
-    const debouncedTerm = useDebounce(searchTerm, 300);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [activeIndex, setActiveIndex] = useState(-1);
-
-    const filteredClients = clientes.filter(c => {
-        const lower = debouncedTerm.toLowerCase();
-        return c.nombre.toLowerCase().includes(lower) || c.cedula.includes(lower) || (c.ruc && c.ruc.includes(lower));
-    }).slice(0, 5); // Limit results
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'ArrowDown') setActiveIndex(prev => (prev < filteredClients.length - 1 ? prev + 1 : prev));
-        if (e.key === 'ArrowUp') setActiveIndex(prev => (prev > 0 ? prev - 1 : 0));
-        if (e.key === 'Enter') {
-            if (activeIndex >= 0 && filteredClients[activeIndex]) onSelectClient(filteredClients[activeIndex]);
-            else if (debouncedTerm && filteredClients.length === 0) setIsCreateModalOpen(true);
-        }
-    };
+    
+    // Simple filter
+    const filteredClients = searchTerm.length > 1 
+        ? clientes.filter(c => 
+            c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            c.cedula.includes(searchTerm) || 
+            (c.ruc && c.ruc.includes(searchTerm))
+          ).slice(0, 5)
+        : [];
 
     return (
-        <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold mb-4 text-center">Paso 1: Seleccionar Cliente</h2>
-            <div className="relative max-w-2xl mx-auto">
+        <div className="animate-fade-in w-full max-w-2xl mx-auto">
+            <div className="relative">
                 <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input 
                     type="text" 
                     value={searchTerm} 
                     onChange={e => setSearchTerm(e.target.value)} 
-                    onKeyDown={handleKeyDown} 
                     placeholder="Buscar por cédula, RUC o nombre..." 
-                    className="w-full pl-12 p-4 border rounded-2xl dark:bg-gray-800 dark:border-gray-700 text-lg shadow-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all" 
+                    className="w-full pl-12 p-4 border border-gray-200 dark:border-gray-700 rounded-2xl dark:bg-gray-800 text-lg shadow-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all" 
                     autoFocus
                 />
             </div>
 
-            {debouncedTerm && (
-                <div className="mt-4 max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+            {searchTerm.length > 1 && (
+                <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
                     {filteredClients.length > 0 ? (
-                        filteredClients.map((c, idx) => (
+                        filteredClients.map((c) => (
                             <div 
                                 key={c.id} 
                                 onClick={() => onSelectClient(c)}
-                                onMouseEnter={() => setActiveIndex(idx)}
-                                className={`p-4 cursor-pointer flex justify-between items-center transition-colors ${activeIndex === idx ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                className="p-4 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 flex justify-between items-center transition-colors group"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">
+                                    <div className="h-10 w-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm group-hover:scale-110 transition-transform">
                                         {c.nombre.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 dark:text-white">{c.nombre}</p>
+                                        <p className="font-bold text-gray-900 dark:text-white leading-tight">{c.nombre}</p>
                                         <p className="text-sm text-gray-500 flex items-center gap-1"><ShieldCheckIcon className="w-3 h-3"/> {c.cedula}</p>
                                     </div>
                                 </div>
-                                <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300">{c.regimen}</span>
+                                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                    {c.regimen}
+                                </span>
                             </div>
                         ))
                     ) : (
-                        <div className="p-8 text-center">
-                            <p className="text-gray-500 mb-4">No se encontraron resultados para "{searchTerm}"</p>
+                        <div className="p-6 text-center">
+                            <p className="text-gray-500 mb-4">No se encontraron clientes.</p>
                             <button onClick={() => setIsCreateModalOpen(true)} className="inline-flex items-center gap-2 px-6 py-2 bg-brand-blue text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform hover:-translate-y-1">
                                 <UserPlusIcon className="h-5 w-5"/> Crear Nuevo Cliente
                             </button>
@@ -215,8 +195,8 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
                 isOpen={isCreateModalOpen} 
                 onClose={() => setIsCreateModalOpen(false)} 
                 onClientCreated={(c) => { setIsCreateModalOpen(false); onSelectClient(c); }}
-                initialName={!/^\d+$/.test(debouncedTerm) ? debouncedTerm : ''}
-                initialCedulaRuc={/^\d+$/.test(debouncedTerm) ? debouncedTerm : ''}
+                initialName={!/^\d+$/.test(searchTerm) ? searchTerm : ''}
+                initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
             />
         </div>
     );

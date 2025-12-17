@@ -13,7 +13,6 @@ interface ProductGridProps {
     onSetJobType: (type: TrabajoTipo) => void;
 }
 
-// Interfaces Locales
 interface ProductVariation { id: string; variationName: string; price: number; producto: Producto; }
 interface ProductGroup { groupName: string; categoria: string; esSRI: boolean; variations: ProductVariation[]; isGroup: true; imagenUrl?: string; }
 type DisplayableProduct = ProductGroup | (Producto & { isGroup?: false });
@@ -21,7 +20,7 @@ type DisplayableProduct = ProductGroup | (Producto & { isGroup?: false });
 const ProductGroupModal: React.FC<{ group: ProductGroup | null; onClose: () => void; onAddProduct: (product: Producto) => void; }> = ({ group, onClose, onAddProduct }) => {
     if (!group) return null;
     return (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/60 z-[70] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-100 transition-all" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -51,11 +50,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
     const [selectedCategory, setSelectedCategory] = useState('Todas');
     const [viewingGroup, setViewingGroup] = useState<ProductGroup | null>(null);
 
-    // 1. Agrupar Productos
     const productGroupsAndItems = useMemo((): DisplayableProduct[] => {
         const groups = new Map<string, ProductGroup>();
         const singleItems: DisplayableProduct[] = [];
-        const regex = /^(.*?) \((.*?)\)$/; // Detecta "Nombre (Variante)"
+        const regex = /^(.*?) \((.*?)\)$/;
         
         for (const p of productos) {
             const match = p.nombre.match(regex);
@@ -73,7 +71,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
 
     const categories = useMemo(() => ['Todas', ...new Set(productGroupsAndItems.filter(p => (jobType === TrabajoTipo.SRI ? p.esSRI : !p.esSRI)).map(p => p.categoria))], [productGroupsAndItems, jobType]);
 
-    // 2. Filtrado Inteligente y Bloqueo por Régimen
     const filteredItems = useMemo(() => {
         let items = productGroupsAndItems.filter(p =>
             (jobType === TrabajoTipo.SRI ? !!p.esSRI : !p.esSRI) &&
@@ -81,30 +78,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             ('groupName' in p ? p.groupName : p.nombre).toLowerCase().includes(searchTerm.toLowerCase())
         );
 
-        // Lógica de Bloqueo por Régimen
         if (jobType === TrabajoTipo.SRI && clientRegimen) {
             items = items.map(item => {
-                let currentItem: any = { ...item }; // Clone shallow
+                let currentItem: any = { ...item };
                 const name = 'groupName' in item ? item.groupName : item.nombre;
                 const nameLower = name.toLowerCase();
                 
-                const isNotaVenta = nameLower.includes('nota de venta') || nameLower.includes('notas de venta');
                 const isFactura = nameLower.includes('factura');
                 
-                if (clientRegimen === Regimen.NEGOCIO_POPULAR) {
-                    // Popular NO puede Facturas
-                    if (isFactura) {
-                        currentItem.blocked = true; 
-                        currentItem.reason = "Negocio Popular NO emite Facturas";
-                    }
+                if (clientRegimen === Regimen.NEGOCIO_POPULAR && isFactura) {
+                    currentItem.blocked = true; 
+                    currentItem.reason = "Popular NO emite Facturas";
                 } 
-                else { // Régimen General o Emprendedor
-                    // General NO emite Notas de Venta (regla de negocio del usuario, aunque técnicamente hay excepciones, seguimos el prompt)
-                    if (isNotaVenta) {
-                        currentItem.blocked = true;
-                        currentItem.reason = "Régimen General NO emite Notas de Venta";
-                    }
-                }
                 return currentItem;
             });
         }
@@ -113,7 +98,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
 
     return (
         <div className="flex flex-col h-full animate-fade-in">
-            {/* Header Controls */}
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <div className="flex-grow relative">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -125,7 +109,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                 </div>
             </div>
 
-            {/* Categories */}
             <div className="flex flex-wrap gap-2 mb-4 pb-2 border-b dark:border-gray-700 overflow-x-auto no-scrollbar">
                 {categories.map(cat => (
                     <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${selectedCategory === cat ? 'bg-brand-blue text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}`}>
@@ -134,7 +117,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                 ))}
             </div>
 
-            {/* Grid */}
             <div className="flex-grow overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-24 pr-2">
                 {filteredItems.map((item: any) => {
                     const isGroup = 'groupName' in item;
@@ -152,7 +134,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                             `}
                         >
                             {qty > 0 && <span className="absolute top-2 right-2 bg-brand-blue text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md z-10">{qty}</span>}
-                            {item.blocked && <div className="absolute inset-0 z-20 flex items-center justify-center"><span className="bg-black/70 text-white text-[10px] px-2 py-1 rounded font-bold text-center mx-2">{item.reason}</span></div>}
+                            {item.blocked && <div className="absolute inset-0 z-20 flex items-center justify-center"><span className="bg-black/80 text-white text-[10px] px-2 py-1 rounded font-bold text-center mx-2">{item.reason}</span></div>}
                             
                             <div className="mb-3 self-center p-3 bg-gray-50 dark:bg-gray-700 rounded-full group-hover:scale-110 transition-transform">
                                 {isGroup ? <FolderIcon className="w-8 h-8 text-brand-blue"/> : <DocumentIcon className="w-8 h-8 text-gray-400"/>}

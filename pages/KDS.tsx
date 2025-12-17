@@ -4,8 +4,10 @@ import { Link, useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes, updateTrabajoStatus, updateTrabajoPhoto } from '../services/mockApi';
 import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
-import { DocumentIcon, CloseIcon, CameraIcon, ArrowUpIcon, ArrowDownIcon, ReceiptIcon, ClockIcon, FilterIcon, PhotoIcon, SearchIcon } from '../components/Icons';
+import { DocumentIcon, CloseIcon, CameraIcon, ReceiptIcon, ClockIcon, PhotoIcon, SearchIcon, MenuIcon } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
+import { useToast } from '../contexts/ToastContext';
+import QRScannerModal from '../components/QRScannerModal';
 
 // --- HELPERS ---
 
@@ -33,11 +35,11 @@ const urgencyConfig = {
 interface KanbanCardProps {
   trabajo: Trabajo;
   cliente?: Cliente;
-  onCardDoubleClick: (trabajo: Trabajo) => void;
+  onCardClick: (trabajo: Trabajo) => void;
   onTakePhotoClick: (trabajo: Trabajo) => void;
 }
 
-const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleClick, onTakePhotoClick }) => {
+const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, onTakePhotoClick }) => {
     const targetDate = trabajo.fechaEntrega || trabajo.fechaVencimiento;
     const urgency = getUrgencyLevel(targetDate);
     const style = urgencyConfig[urgency];
@@ -63,12 +65,12 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
             onDragEnd={(e) => {
                 e.currentTarget.classList.remove('opacity-50', 'scale-95');
             }}
-            onDoubleClick={() => onCardDoubleClick(trabajo)}
+            onClick={() => onCardClick(trabajo)}
             className={`
                 relative group bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-3 cursor-grab active:cursor-grabbing 
                 border-l-4 ${style.border} border-t border-r border-b border-gray-100 dark:border-gray-700
                 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-600
-                overflow-hidden
+                overflow-hidden select-none touch-manipulation
             `}
         >
             {/* Urgency Badge (Only if critical or warning) */}
@@ -120,10 +122,10 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
                 </div>
 
                 {/* Footer Actions */}
-                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center opacity-80 group-hover:opacity-100 transition-opacity">
+                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         {trabajo.estado === TrabajoEstado.ENTREGADO ? (
-                            <Link to={`/nota-de-venta/${trabajo.id}`} target="_blank" className="p-1.5 hover:bg-green-100 rounded-full text-green-600 transition-colors" title="Ver Nota">
+                            <Link to={`/nota-de-venta/${trabajo.id}`} target="_blank" className="p-1.5 hover:bg-green-100 rounded-full text-green-600 transition-colors" title="Ver Nota" onClick={e => e.stopPropagation()}>
                                 <ReceiptIcon className="w-4 h-4" />
                             </Link>
                         ) : (
@@ -131,16 +133,19 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
                                 <CameraIcon className="w-4 h-4" />
                             </button>
                         )}
+                        <button className="md:hidden p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-400">
+                            <MenuIcon className="w-4 h-4" />
+                        </button>
                     </div>
                     
                     {/* Financial Status */}
                     <div className="text-right">
                         {trabajo.saldo > 0 ? (
-                            <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                            <span className="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-full">
                                 Pend: {formatCurrency(trabajo.saldo)}
                             </span>
                         ) : (
-                            <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <ReceiptIcon className="w-3 h-3" /> Pagado
                             </span>
                         )}
@@ -150,7 +155,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
             
             {/* Progress Bar (Visual Indicator of Time Elapsed) */}
             {targetDate && (
-                <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
+                <div className="absolute bottom-0 left-0 h-1 bg-gray-100 dark:bg-gray-700 w-full">
                     <div 
                         className={`h-full ${urgency === 'critical' ? 'bg-red-500' : urgency === 'warning' ? 'bg-yellow-500' : 'bg-green-500'}`} 
                         style={{ width: `${getProgress()}%` }}
@@ -161,33 +166,39 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
     );
 };
 
-// --- MODALS (Kept minimal for this file context) ---
+// --- MODALS ---
 
-const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClose: () => void }> = ({ trabajo, cliente, onClose }) => (
+const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClose: () => void; onStatusChange: (status: TrabajoEstado) => void }> = ({ trabajo, cliente, onClose, onStatusChange }) => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Orden #{trabajo.orden}</h2>
                 <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500"/></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-6 overflow-y-auto">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-xl">
+                    <div className="w-12 h-12 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-xl shadow-lg">
                         {cliente?.nombre.charAt(0)}
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg">{cliente?.nombre}</h3>
+                        <h3 className="font-bold text-lg dark:text-white">{cliente?.nombre}</h3>
                         <p className="text-gray-500 text-sm">{cliente?.ruc || cliente?.cedula}</p>
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl">
-                    <div>
+                    <div className="col-span-2">
                         <p className="text-xs text-gray-500 uppercase font-bold">Producto</p>
-                        <p className="font-medium">{trabajo.subtipo}</p>
+                        <p className="font-medium dark:text-gray-200">{trabajo.subtipo}</p>
                     </div>
                     <div>
                         <p className="text-xs text-gray-500 uppercase font-bold">Cantidad</p>
-                        <p className="font-medium">{trabajo.cantidad}</p>
+                        <p className="font-medium dark:text-gray-200">{trabajo.cantidad}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Estado</p>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {trabajo.estado}
+                        </span>
                     </div>
                     <div>
                         <p className="text-xs text-gray-500 uppercase font-bold">Total</p>
@@ -198,12 +209,32 @@ const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClo
                         <p className={`font-bold ${trabajo.saldo > 0 ? 'text-red-500' : 'text-green-500'}`}>{formatCurrency(trabajo.saldo)}</p>
                     </div>
                 </div>
+                
+                {/* Mobile Quick Moves */}
+                <div className="space-y-2">
+                    <p className="text-xs font-bold text-gray-500 uppercase">Mover a:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                        {KANBAN_COLUMNS.filter(c => c !== TrabajoEstado.ENTREGADO && c !== trabajo.estado).map(status => (
+                            <button
+                                key={status}
+                                onClick={() => onStatusChange(status)}
+                                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-brand-blue hover:text-white rounded-lg text-sm font-medium transition-colors"
+                            >
+                                {status}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Notas de Producción</label>
-                    <textarea className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:border-gray-700 resize-none text-sm" rows={3} placeholder="Instrucciones para taller..."></textarea>
+                    <textarea className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:border-gray-700 resize-none text-sm dark:text-white" rows={3} placeholder="Instrucciones para taller..."></textarea>
                 </div>
             </div>
-            <div className="p-4 bg-gray-50 dark:bg-gray-900 flex justify-end">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 flex justify-end gap-3">
+                <Link to={`/nota-de-venta/${trabajo.id}`} target="_blank" className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+                    <DocumentIcon className="w-4 h-4"/> Nota
+                </Link>
                 <button onClick={onClose} className="px-6 py-2 bg-brand-blue text-white font-bold rounded-lg shadow hover:bg-blue-700 transition-colors">Cerrar</button>
             </div>
         </div>
@@ -212,14 +243,19 @@ const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClo
 
 const CameraModal: React.FC<{ trabajo: Trabajo; onClose: () => void; onCapture: (data: string) => void }> = ({ trabajo, onClose, onCapture }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [stream, setStream] = useState<MediaStream | null>(null);
-
+    
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
-            setStream(s);
+        let currentStream: MediaStream | null = null;
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(s => {
+            currentStream = s;
             if (videoRef.current) videoRef.current.srcObject = s;
         }).catch(console.error);
-        return () => { stream?.getTracks().forEach(t => t.stop()); };
+        
+        return () => { 
+            if (currentStream) {
+                currentStream.getTracks().forEach(t => t.stop()); 
+            }
+        };
     }, []);
 
     const capture = () => {
@@ -232,12 +268,19 @@ const CameraModal: React.FC<{ trabajo: Trabajo; onClose: () => void; onCapture: 
     };
 
     return (
-        <div className="fixed inset-0 bg-black z-[60] flex flex-col justify-center items-center">
-            <video ref={videoRef} autoPlay playsInline className="w-full max-w-lg h-auto rounded-lg mb-4" />
-            <div className="flex gap-4">
-                <button onClick={capture} className="px-8 py-4 bg-white rounded-full font-bold shadow-lg">Capturar</button>
-                <button onClick={onClose} className="px-8 py-4 bg-gray-800 text-white rounded-full font-bold">Cancelar</button>
+        <div className="fixed inset-0 bg-black z-[60] flex flex-col justify-center items-center p-4">
+            <div className="relative w-full max-w-lg aspect-[3/4] bg-black rounded-2xl overflow-hidden mb-6 shadow-2xl">
+                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
             </div>
+            <div className="flex gap-6">
+                <button onClick={onClose} className="w-16 h-16 rounded-full bg-gray-800 text-white flex items-center justify-center border border-gray-700">
+                    <CloseIcon className="w-8 h-8" />
+                </button>
+                <button onClick={capture} className="w-20 h-20 bg-white rounded-full border-4 border-gray-300 shadow-lg active:scale-95 transition-transform flex items-center justify-center">
+                    <div className="w-16 h-16 bg-white rounded-full border-2 border-black"></div>
+                </button>
+            </div>
+            <p className="text-white mt-4 text-sm opacity-70">Tomar foto de prueba de {trabajo.subtipo}</p>
         </div>
     );
 };
@@ -248,6 +291,7 @@ type FilterTag = 'Todos' | 'Urgentes' | 'Diseño' | 'Impresión';
 
 const KDSPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const { addToast } = useToast();
     const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [filterTerm, setFilterTerm] = useState('');
@@ -257,6 +301,7 @@ const KDSPage: React.FC = () => {
     // Modal States
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
     const [cameraTarget, setCameraTarget] = useState<Trabajo | null>(null);
+    const [showScanner, setShowScanner] = useState(false);
 
     // Initial Load
     useEffect(() => {
@@ -311,18 +356,28 @@ const KDSPage: React.FC = () => {
         return cols;
     }, [filteredTrabajos]);
 
+    // Update Helpers
+    const updateJobStatus = async (id: string, newStatus: TrabajoEstado) => {
+        // Optimistic Update
+        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: newStatus, actualizadoPor: currentUser.nombre } : t));
+        addToast(`Trabajo movido a ${newStatus}`, 'success');
+        
+        // API Call
+        try {
+            await updateTrabajoStatus(id, newStatus, currentUser.nombre);
+        } catch (error) {
+            addToast('Error al actualizar estado', 'error');
+            // Revert changes could happen here if real API fails
+        }
+    };
+
     // Drag & Drop Handlers
     const handleDrop = async (e: React.DragEvent, newStatus: TrabajoEstado) => {
         e.preventDefault();
         setDraggedOverColumn(null);
         const id = e.dataTransfer.getData("trabajoId");
         if (!id) return;
-
-        // Optimistic Update
-        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: newStatus, actualizadoPor: currentUser.nombre } : t));
-        
-        // API Call
-        await updateTrabajoStatus(id, newStatus, currentUser.nombre);
+        updateJobStatus(id, newStatus);
     };
 
     const handlePhotoSave = async (data: string) => {
@@ -330,6 +385,28 @@ const KDSPage: React.FC = () => {
         await updateTrabajoPhoto(cameraTarget.id, data);
         setTrabajos(prev => prev.map(t => t.id === cameraTarget.id ? { ...t, fotoOriginalUrl: data } : t));
         setCameraTarget(null);
+        addToast('Foto adjuntada correctamente', 'success');
+    };
+
+    const handleScanResult = (decodedText: string) => {
+        // Extract ID from URL if valid URL, otherwise check if text matches an ID or Order #
+        let idToSearch = decodedText;
+        try {
+            const url = new URL(decodedText);
+            const idParam = url.searchParams.get('id') || url.hash.split('?id=')[1];
+            if (idParam) idToSearch = idParam;
+        } catch (e) {
+            // Not a URL, assume direct ID/Order#
+        }
+
+        const foundJob = trabajos.find(t => t.id === idToSearch || String(t.orden) === idToSearch);
+        
+        if (foundJob) {
+            setSelectedTrabajo(foundJob);
+            addToast(`Orden #${foundJob.orden} encontrada`, 'success');
+        } else {
+            addToast('Trabajo no encontrado', 'error');
+        }
     };
 
     return (
@@ -343,6 +420,15 @@ const KDSPage: React.FC = () => {
                         <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
                             <span className="text-brand-blue">KDS</span> Producción
                         </h1>
+                        <button 
+                            onClick={() => setShowScanner(true)}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 transition-colors"
+                        >
+                            <div className="w-5 h-5 flex items-center justify-center border-2 border-current rounded-sm">
+                                <div className="w-2 h-2 bg-current rounded-full"></div>
+                            </div>
+                            Escanear QR
+                        </button>
                         <div className="relative flex-grow sm:w-64">
                             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input 
@@ -418,12 +504,12 @@ const KDSPage: React.FC = () => {
                                             key={trabajo.id} 
                                             trabajo={trabajo} 
                                             cliente={clientes.find(c => c.id === trabajo.clienteId)}
-                                            onCardDoubleClick={setSelectedTrabajo}
+                                            onCardClick={setSelectedTrabajo}
                                             onTakePhotoClick={setCameraTarget}
                                         />
                                     ))}
                                     {columns[status].length === 0 && (
-                                        <div className="h-32 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl m-2">
+                                        <div className="h-32 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl m-2 opacity-50 hover:opacity-100 transition-opacity">
                                             <p className="text-gray-400 text-sm font-medium">Sin trabajos</p>
                                         </div>
                                     )}
@@ -439,7 +525,11 @@ const KDSPage: React.FC = () => {
                 <TrabajoDetalleModal 
                     trabajo={selectedTrabajo} 
                     cliente={clientes.find(c => c.id === selectedTrabajo.clienteId)} 
-                    onClose={() => setSelectedTrabajo(null)} 
+                    onClose={() => setSelectedTrabajo(null)}
+                    onStatusChange={(status) => {
+                        updateJobStatus(selectedTrabajo.id, status);
+                        setSelectedTrabajo(null);
+                    }} 
                 />
             )}
             {cameraTarget && (
@@ -447,6 +537,13 @@ const KDSPage: React.FC = () => {
                     trabajo={cameraTarget} 
                     onClose={() => setCameraTarget(null)} 
                     onCapture={handlePhotoSave} 
+                />
+            )}
+            {showScanner && (
+                <QRScannerModal 
+                    onClose={() => setShowScanner(false)} 
+                    onScan={handleScanResult} 
+                    title="Escanear Hoja de Ruta"
                 />
             )}
         </div>

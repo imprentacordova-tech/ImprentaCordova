@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { DataProvider } from './contexts/DataContext';
+import { ToastProvider } from './contexts/ToastContext';
 import Login from './pages/Login';
 import DashboardPage from './pages/Dashboard';
 import KDSPage from './pages/KDS';
@@ -23,6 +24,7 @@ import ReciboAbonoPage from './pages/ReciboAbono';
 import ProveedoresPage from './pages/Proveedores';
 import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
 import DisenoPage from './pages/Diseno';
+import TrackingPage from './pages/Tracking';
 import { User } from './types';
 
 // Componente para proteger las rutas de administrador
@@ -83,64 +85,67 @@ const App: React.FC = () => {
 
     return (
         <HashRouter>
-            {/* DataProvider envuelve toda la app para que el estado esté disponible globalmente */}
+            {/* Providers Wrap */}
             <DataProvider>
-                <Routes>
-                    {/* ==================================================================
-                        ZONA PÚBLICA (Acceso libre)
-                       ================================================================== */}
-                    <Route path="/" element={<LandingPage />} />
-                    
-                    {/* Login: Redirige al Dashboard si ya está autenticado */}
-                    <Route 
-                        path="/login" 
-                        element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} 
-                    />
+                <ToastProvider>
+                    <Routes>
+                        {/* ==================================================================
+                            ZONA PÚBLICA (Acceso libre)
+                           ================================================================== */}
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/tracking" element={<TrackingPage />} />
+                        
+                        {/* Login: Redirige al Dashboard si ya está autenticado */}
+                        <Route 
+                            path="/login" 
+                            element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} 
+                        />
 
-                    {/* Recibos digitales compartibles (Solo lectura, sin auth requerida para el cliente final) */}
-                    <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
+                        {/* Recibos digitales compartibles (Solo lectura, sin auth requerida para el cliente final) */}
+                        <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
 
 
-                    {/* ==================================================================
-                        ZONA PRIVADA (Requiere Autenticación)
-                       ================================================================== */}
-                    <Route element={<ProtectedRoutes currentUser={currentUser} onLogout={handleLogout} />}>
-                        <Route path="/dashboard" element={<DashboardPage />} />
-                        
-                        {/* -- Operaciones & Producción -- */}
-                        <Route path="/nuevo" element={<NuevoPedidoPage />} />
-                        <Route path="/diseno" element={<DisenoPage />} />
-                        <Route path="/kds" element={<KDSPage />} />
-                        <Route path="/trabajos" element={<TrabajosPage />} />
-                        <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
-                        <Route path="/retiros" element={<RetirosPage />} />
-                        
-                        {/* -- Gestión de Recursos -- */}
-                        <Route path="/clientes" element={<ClientesPage />} />
-                        <Route path="/productos" element={<ProductosPage />} />
-                        <Route path="/proveedores" element={<ProveedoresPage />} />
-                        <Route path="/inventario" element={<InventarioPage />} />
-                        
-                        {/* -- Herramientas -- */}
-                        <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
-                        
-                        {/* -- Finanzas & Reportes -- */}
-                        <Route path="/finanzas" element={<FinanzasPage />} />
-                        
-                        {/* -- Documentos Internos (Protegidos) -- */}
-                        <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
-                        <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
+                        {/* ==================================================================
+                            ZONA PRIVADA (Requiere Autenticación)
+                           ================================================================== */}
+                        <Route element={<ProtectedRoutes currentUser={currentUser} onLogout={handleLogout} />}>
+                            <Route path="/dashboard" element={<DashboardPage />} />
+                            
+                            {/* -- Operaciones & Producción -- */}
+                            <Route path="/nuevo" element={<NuevoPedidoPage />} />
+                            <Route path="/diseno" element={<DisenoPage />} />
+                            <Route path="/kds" element={<KDSPage />} />
+                            <Route path="/trabajos" element={<TrabajosPage />} />
+                            <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
+                            <Route path="/retiros" element={<RetirosPage />} />
+                            
+                            {/* -- Gestión de Recursos -- */}
+                            <Route path="/clientes" element={<ClientesPage />} />
+                            <Route path="/productos" element={<ProductosPage />} />
+                            <Route path="/proveedores" element={<ProveedoresPage />} />
+                            <Route path="/inventario" element={<InventarioPage />} />
+                            
+                            {/* -- Herramientas -- */}
+                            <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
+                            
+                            {/* -- Finanzas & Reportes -- */}
+                            <Route path="/finanzas" element={<FinanzasPage />} />
+                            
+                            {/* -- Documentos Internos (Protegidos) -- */}
+                            <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
+                            <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
 
-                        {/* -- Zona Admin (Solo Rol Admin) -- */}
-                        <Route element={<AdminRoutes />}>
-                            <Route path="/usuarios" element={<GestionUsuariosPage />} />
-                            <Route path="/configuracion" element={<ConfiguracionPage />} />
+                            {/* -- Zona Admin (Solo Rol Admin) -- */}
+                            <Route element={<AdminRoutes />}>
+                                <Route path="/usuarios" element={<GestionUsuariosPage />} />
+                                <Route path="/configuracion" element={<ConfiguracionPage />} />
+                            </Route>
                         </Route>
-                    </Route>
-                    
-                    {/* Fallback global: Cualquier ruta desconocida va al inicio */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                        
+                        {/* Fallback global: Cualquier ruta desconocida va al inicio */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </ToastProvider>
             </DataProvider>
         </HashRouter>
     );
