@@ -39,11 +39,11 @@ interface CostConfig {
 }
 
 const DEFAULT_COSTS: CostConfig = {
-    // Datos del usuario
+    // Datos del usuario (Actualizados según prompt)
     COSTO_RESMA_QUIMICO_ORIG: 47.00,
     COSTO_RESMA_QUIMICO_COPIA: 46.00,
     COSTO_RESMA_BOND: 4.50,
-    COSTO_PLIEGO_COUCHE_300: 0.51, // $51 el paquete de 100
+    COSTO_PLIEGO_COUCHE_300: 0.51, // $51 el paquete de 100 pliegos
     COSTO_PLIEGO_ADHESIVO: 1.10,
     
     COSTO_DISENO_SRI: 5.00,
@@ -80,6 +80,55 @@ const SOURCE_PAPERS: SourcePaper[] = [
     { id: 'ADHESIVO', nombre: 'Adhesivo Brillante', tipo: 'PLIEGO', ancho: 70, alto: 100, costoBaseKey: 'COSTO_PLIEGO_ADHESIVO' },
 ];
 
+// --- COMPONENTE VISUAL STEP ---
+const VisualStep: React.FC<{
+    title: string;
+    image: string;
+    subtitle: string;
+    detail: string;
+    cost?: number;
+    isLast?: boolean;
+}> = ({ title, image, subtitle, detail, cost, isLast }) => (
+    <div className="flex-1 relative group w-full md:w-auto">
+        {/* Connector Line (Desktop) */}
+        {!isLast && (
+            <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-1 bg-gray-200 dark:bg-gray-700 z-0"></div>
+        )}
+        
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 relative z-10 h-full flex flex-col">
+            {/* Image Area */}
+            <div className="h-28 w-full relative overflow-hidden bg-gray-100">
+                <img src={image} alt={title} className="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
+                    <span className="text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                        <span className="bg-brand-blue w-4 h-4 rounded-full flex items-center justify-center text-[8px]">{title.split('.')[0]}</span>
+                        {title.split('. ')[1]}
+                    </span>
+                </div>
+            </div>
+            
+            {/* Content Area */}
+            <div className="p-3 flex flex-col flex-grow">
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1 leading-tight">{subtitle}</h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 flex-grow">{detail}</p>
+                {cost !== undefined && (
+                    <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-2 mt-auto">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Costo</span>
+                        <span className="font-mono font-bold text-sm text-brand-blue">{formatCurrency(cost)}</span>
+                    </div>
+                )}
+            </div>
+        </div>
+        
+        {/* Connector Arrow (Mobile) */}
+        {!isLast && (
+            <div className="md:hidden flex justify-center py-2">
+                <ArrowRightIcon className="w-5 h-5 text-gray-300 transform rotate-90" />
+            </div>
+        )}
+    </div>
+);
+
 // --- COMPONENTE VISUAL DE PROCESO (PIPELINE) ---
 const ProductionPipeline: React.FC<{ 
     sourceName: string; 
@@ -91,62 +140,46 @@ const ProductionPipeline: React.FC<{
     materialCost: number;
     printCost: number;
 }> = ({ sourceName, sourceType, sourceSize, cutSize, cutsPerUnit, prePressCost, materialCost, printCost }) => {
+    
+    // URLs de imágenes visuales para cada paso
+    const images = {
+        input: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=400", // Resma de papel
+        prepress: "https://images.unsplash.com/photo-1626785774573-4b7993143a2d?auto=format&fit=crop&q=80&w=400", // Placas/Diseño
+        print: "https://i.imgur.com/AUvl1wF.png", // Máquina Offset (Roland)
+        finish: "https://i.imgur.com/cKqbnJj.jpeg" // Producto Terminado (Papelería)
+    };
+
     return (
-        <div className="w-full py-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative">
-                {/* Linea conectora (Fondo) */}
-                <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -z-10 rounded"></div>
-
-                {/* 1. Entrada / Materia Prima */}
-                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-blue-100 dark:border-blue-900 w-full md:w-1/4 relative z-10">
-                    <div className="bg-blue-100 p-3 rounded-full mb-2">
-                        <BoxIcon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">1. Entrada</span>
-                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">{sourceName}</h4>
-                    <p className="text-xs text-gray-500">{sourceType === 'RESMA' ? 'Paquete 500h' : 'Pliego'}</p>
-                    <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded mt-1 font-mono">{sourceSize}</span>
-                    <div className="mt-2 text-xs font-bold text-green-600">{formatCurrency(materialCost)} <span className="text-[9px] text-gray-400 font-normal">mat.</span></div>
-                </div>
-
-                <ArrowRightIcon className="w-6 h-6 text-gray-300 md:hidden" />
-
-                {/* 2. Pre-Prensa */}
-                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-purple-100 dark:border-purple-900 w-full md:w-1/4 relative z-10">
-                    <div className="bg-purple-100 p-3 rounded-full mb-2">
-                        <MonitorIcon className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">2. Proceso</span>
-                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">Diseño & Placas</h4>
-                    <p className="text-xs text-gray-500">Autorización SRI + Master</p>
-                    <div className="mt-2 text-xs font-bold text-purple-600">{formatCurrency(prePressCost)}</div>
-                </div>
-
-                <ArrowRightIcon className="w-6 h-6 text-gray-300 md:hidden" />
-
-                {/* 3. Impresión & Corte */}
-                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-orange-100 dark:border-orange-900 w-full md:w-1/4 relative z-10">
-                    <div className="bg-orange-100 p-3 rounded-full mb-2">
-                        <PrinterIcon className="w-6 h-6 text-orange-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">3. Ejecución</span>
-                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">Offset + Refile</h4>
-                    <p className="text-xs text-gray-500">Tiraje de Máquina</p>
-                    <div className="mt-2 text-xs font-bold text-orange-600">{formatCurrency(printCost)}</div>
-                </div>
-
-                <ArrowRightIcon className="w-6 h-6 text-gray-300 md:hidden" />
-
-                {/* 4. Salida / Producto */}
-                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-green-100 dark:border-green-900 w-full md:w-1/4 relative z-10">
-                    <div className="bg-green-100 p-3 rounded-full mb-2">
-                        <CheckCircleIcon className="w-6 h-6 text-green-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">4. Salida</span>
-                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">Producto Final</h4>
-                    <p className="text-xs text-gray-500">Cortes: {cutsPerUnit} por {sourceType === 'RESMA' ? 'hoja' : 'pliego'}</p>
-                    <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded mt-1 font-mono">{cutSize}</span>
-                </div>
+        <div className="w-full py-4">
+            <div className="flex flex-col md:flex-row gap-4 justify-between">
+                <VisualStep 
+                    title="1. Entrada" 
+                    image={images.input} 
+                    subtitle={sourceName} 
+                    detail={`${sourceType === 'RESMA' ? 'Resma (500h)' : 'Pliego'} • ${sourceSize}`}
+                    cost={materialCost}
+                />
+                <VisualStep 
+                    title="2. Pre-Prensa" 
+                    image={images.prepress} 
+                    subtitle="Diseño & Placas" 
+                    detail="Autorización SRI + Placa Poliéster/CTP"
+                    cost={prePressCost}
+                />
+                <VisualStep 
+                    title="3. Ejecución" 
+                    image={images.print} 
+                    subtitle="Impresión Offset" 
+                    detail="Tiraje en máquina + Puesta a punto"
+                    cost={printCost}
+                />
+                <VisualStep 
+                    title="4. Salida" 
+                    image={images.finish} 
+                    subtitle="Producto Final" 
+                    detail={`Formato ${cutSize} (${cutsPerUnit} cortes p/${sourceType === 'RESMA' ? 'hoja' : 'pliego'})`}
+                    isLast
+                />
             </div>
         </div>
     );
@@ -263,12 +296,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             const merma = Math.ceil(bajadas * 0.10) + 5; // Menos merma en pliego grande proporcionalmente
             const totalPliegos = bajadas + merma;
             
-            const costoPliego = costs[paper.costoBaseKey]; // Precio unitario del pliego directo o calculado
-            // Si el precio configurado es por paquete de 100 (como el couché $51), dividir.
-            // Asumimos que la config guarda precio unitario o ajustamos aquí:
-            const unitPrice = paper.id === 'COUCHE_300' ? (costs.COSTO_PLIEGO_COUCHE_300 / 100) * 100 : costs[paper.costoBaseKey]; 
             // CORRECCION: El usuario dijo "$51 el paquete de 100". Entonces unitario es 0.51.
-            
             costPapelTotal = totalPliegos * costs[paper.costoBaseKey];
             totalSheetsNeeded = totalPliegos;
         }

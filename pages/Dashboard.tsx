@@ -1,85 +1,184 @@
 
 import React, { useState, useEffect } from 'react';
-import { NavLink, useOutletContext } from 'react-router-dom';
+import { NavLink, useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Kpi, Trabajo, TrabajoEstado, User } from '../types';
-import { SolidDollarIcon, SolidFinanceIcon, SolidClockIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon, Loader2Icon } from '../components/Icons';
+import { Trabajo, TrabajoEstado, User } from '../types';
+import { 
+    SolidDollarIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon, Loader2Icon, 
+    ArrowRightIcon, PaletteIcon, PrinterIcon, CheckCircleIcon, DocumentIcon,
+    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon
+} from '../components/Icons';
 import { formatCurrency } from '../utils';
 
-interface KpiCardProps {
-  kpi: Kpi;
-}
+// --- Components ---
 
-const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
-    const variants = {
-        blue: { bg: 'bg-blue-100 dark:bg-blue-900/50', text: 'text-blue-800 dark:text-blue-300' },
-        green: { bg: 'bg-green-100 dark:bg-green-900/50', text: 'text-green-800 dark:text-green-300' },
-        purple: { bg: 'bg-purple-100 dark:bg-purple-900/50', text: 'text-purple-800 dark:text-purple-300' },
-        red: { bg: 'bg-red-100 dark:bg-red-900/50', text: 'text-red-800 dark:text-red-300' },
-        gray: { bg: 'bg-gray-100 dark:bg-gray-700/50', text: 'text-gray-800 dark:text-gray-300' },
-        orange: { bg: 'bg-orange-100 dark:bg-orange-900/50', text: 'text-orange-800 dark:text-orange-300' },
+const StatCard: React.FC<{ 
+    title: string; 
+    value: string; 
+    icon: React.ComponentType<{ className?: string }>; 
+    trend?: string;
+    variant: 'blue' | 'green' | 'red';
+    to: string;
+}> = ({ title, value, icon: Icon, trend, variant, to }) => {
+    const styles = {
+        blue: { 
+            bg: 'bg-white dark:bg-gray-800', 
+            iconBg: 'bg-blue-50 dark:bg-blue-900/30', 
+            iconColor: 'text-brand-blue',
+            border: 'hover:border-blue-300 dark:hover:border-blue-700'
+        },
+        green: { 
+            bg: 'bg-white dark:bg-gray-800', 
+            iconBg: 'bg-emerald-50 dark:bg-emerald-900/30', 
+            iconColor: 'text-emerald-600',
+            border: 'hover:border-emerald-300 dark:hover:border-emerald-700'
+        },
+        red: { 
+            bg: 'bg-white dark:bg-gray-800', 
+            iconBg: 'bg-rose-50 dark:bg-rose-900/30', 
+            iconColor: 'text-rose-600',
+            border: 'hover:border-rose-300 dark:hover:border-rose-700'
+        },
     };
-
-    const style = variants[kpi.variant];
+    const s = styles[variant];
 
     return (
-        <div className={`p-6 rounded-2xl shadow-sm ${style.bg} flex items-start justify-between transform transition-all hover:scale-[1.02]`}>
-            <div>
-                <p className={`text-sm font-bold ${style.text}`}>{kpi.title}</p>
-                <p className="text-4xl font-bold text-gray-900 dark:text-white mt-2">{kpi.metric}</p>
-                {kpi.tag && (
-                    <span className={`mt-3 inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-white/50`}>
-                        {kpi.tag}
-                    </span>
-                )}
+        <NavLink 
+            to={to}
+            className={`
+                relative overflow-hidden rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 
+                transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group cursor-pointer
+                ${s.bg} ${s.border}
+            `}
+        >
+            <div className="flex justify-between items-start z-10 relative">
+                <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{title}</p>
+                    <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{value}</h3>
+                    {trend && (
+                        <div className="flex items-center mt-2 text-xs font-medium text-gray-400 gap-1">
+                            <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-300">Info</span>
+                            {trend}
+                        </div>
+                    )}
+                </div>
+                <div className={`p-3 rounded-xl ${s.iconBg} transition-transform group-hover:scale-110 duration-300`}>
+                    <Icon className={`w-6 h-6 ${s.iconColor}`} />
+                </div>
             </div>
-            <div className={`p-3 rounded-full bg-white/60`}>
-                <kpi.icon className={`h-6 w-6 ${style.text}`} />
-            </div>
-        </div>
+            {/* Decorative background blur */}
+            <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${s.iconBg.replace('bg-', 'bg-')}`}></div>
+        </NavLink>
     );
 };
 
-// Tarjeta rediseñada para ser más compacta y visualmente atractiva en móviles y escritorio
-const QuickAccessCard: React.FC<{ 
-    to: string; 
-    icon: React.ComponentType<{className?: string}>; 
-    label: string; 
-    description: string; 
-    colorClass?: string;
-    badge?: number;
-}> = ({ to, icon: Icon, label, description, colorClass = "text-brand-blue", badge }) => {
+const ActionButton: React.FC<{
+    to: string;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    desc: string;
+    color: 'blue' | 'orange' | 'green' | 'purple';
+}> = ({ to, icon: Icon, label, desc, color }) => {
+    
+    const gradients = {
+        blue: 'from-blue-500 to-blue-600 shadow-blue-200 dark:shadow-none',
+        orange: 'from-orange-400 to-orange-600 shadow-orange-200 dark:shadow-none',
+        green: 'from-emerald-400 to-emerald-600 shadow-emerald-200 dark:shadow-none',
+        purple: 'from-purple-500 to-purple-600 shadow-purple-200 dark:shadow-none',
+    };
+
     return (
-         <NavLink 
+        <NavLink 
             to={to} 
-            className="group relative bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-blue hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col justify-between overflow-hidden"
+            className="group relative flex items-center p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-transparent transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden"
         >
-            {badge !== undefined && badge > 0 && (
-                <div className="absolute top-2 right-2 bg-gray-100 dark:bg-gray-700 text-brand-blue dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 z-10 animate-pulse">
-                    {badge} Listos
-                </div>
-            )}
-            <div>
-                <div className={`p-3 bg-gray-50 dark:bg-gray-700/50 w-fit rounded-xl mb-3 group-hover:bg-brand-blue transition-colors duration-300 relative`}>
-                    <Icon className={`h-6 w-6 ${colorClass} group-hover:text-white transition-colors duration-300`} />
-                </div>
-                <h3 className="font-bold text-base text-gray-900 dark:text-white mb-1 leading-tight">{label}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">{description}</p>
+            {/* Hover Gradient Background */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${gradients[color]} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+            
+            <div className={`
+                w-12 h-12 rounded-xl flex items-center justify-center mr-4 shadow-sm transition-all duration-300
+                bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300
+                group-hover:text-white group-hover:scale-110 group-hover:shadow-md
+                ${color === 'blue' ? 'group-hover:bg-blue-500' : ''}
+                ${color === 'orange' ? 'group-hover:bg-orange-500' : ''}
+                ${color === 'green' ? 'group-hover:bg-emerald-500' : ''}
+                ${color === 'purple' ? 'group-hover:bg-purple-500' : ''}
+            `}>
+                <Icon className="w-6 h-6" />
+            </div>
+            
+            <div className="flex-1">
+                <h3 className="font-bold text-gray-900 dark:text-white text-base group-hover:text-brand-blue dark:group-hover:text-blue-300 transition-colors">{label}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{desc}</p>
+            </div>
+            
+            <div className="opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                <ArrowRightIcon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             </div>
         </NavLink>
-    )
-}
+    );
+};
+
+const ProductionStatusCard: React.FC<{
+    label: string;
+    count: number;
+    icon: React.ComponentType<{ className?: string }>;
+    color: 'indigo' | 'blue' | 'emerald';
+    to: string;
+}> = ({ label, count, icon: Icon, color, to }) => {
+    const colors = {
+        indigo: { bg: 'bg-indigo-500', text: 'text-indigo-600', border: 'border-indigo-100 hover:border-indigo-300' },
+        blue: { bg: 'bg-blue-500', text: 'text-blue-600', border: 'border-blue-100 hover:border-blue-300' },
+        emerald: { bg: 'bg-emerald-500', text: 'text-emerald-600', border: 'border-emerald-100 hover:border-emerald-300' },
+    };
+    const s = colors[color];
+
+    return (
+        <NavLink 
+            to={to}
+            className={`
+                flex flex-col p-4 rounded-2xl bg-white dark:bg-gray-800 border dark:border-gray-700 shadow-sm
+                transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-pointer group
+                ${s.border}
+            `}
+        >
+            <div className="flex justify-between items-start mb-2">
+                <div className={`p-2 rounded-lg ${s.bg} bg-opacity-10 text-${color}-600 dark:text-${color}-400 group-hover:bg-opacity-20 transition-all`}>
+                    <Icon className={`w-5 h-5 ${s.text} dark:text-white`} />
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-0.5">
+                    <ArrowRightIcon className="w-3 h-3 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors" />
+                </div>
+            </div>
+            
+            <div>
+                <p className="text-3xl font-black text-gray-900 dark:text-white mb-1 group-hover:scale-105 transition-transform origin-left">{count}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{label}</p>
+            </div>
+            
+            {/* Progress bar visual */}
+            <div className="w-full h-1 bg-gray-100 dark:bg-gray-700 mt-3 rounded-full overflow-hidden">
+                <div className={`h-full ${s.bg} opacity-60 w-1/3 group-hover:w-2/3 transition-all duration-700 ease-out`}></div>
+            </div>
+        </NavLink>
+    );
+};
 
 const DashboardPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { trabajos, clientes, loading, refreshData } = useData(); // Hook del nuevo DataContext
+    const { trabajos, loading, refreshData } = useData();
+    const navigate = useNavigate();
     
-    const [kpis, setKpis] = useState<Kpi[]>([]);
+    const [stats, setStats] = useState({
+        ingresosHoy: 0,
+        pedidosHoy: 0,
+        saldosPendientes: 0,
+        diseno: 0,
+        produccion: 0,
+        vitrina: 0
+    });
     const [recentJobs, setRecentJobs] = useState<Trabajo[]>([]);
-    const [clientesMap, setClientesMap] = useState<Record<string, string>>({});
-    const [vitrinaCount, setVitrinaCount] = useState(0);
 
-    // Efecto para calcular KPIs cuando la data del contexto cambie
     useEffect(() => {
         if (loading) return;
 
@@ -87,141 +186,221 @@ const DashboardPage: React.FC = () => {
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
         const trabajosHoy = trabajos.filter(t => new Date(t.fechaEntrada) >= today);
-
         const ingresosHoy = trabajosHoy.reduce((sum, t) => sum + t.abono, 0);
-        const pedidosHoy = trabajosHoy.length;
         
-        const saldosPendientes = trabajos
+        // Calcular saldo total pendiente de todos los trabajos activos (no entregados) + entregados con deuda (raro pero posible)
+        const saldos = trabajos
             .filter(t => t.saldo > 0 && t.estado !== TrabajoEstado.ENTREGADO)
             .reduce((sum, t) => sum + t.saldo, 0);
-        
-        const countVitrina = trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length;
-        setVitrinaCount(countVitrina);
 
-        setKpis([
-            { title: 'Ingresos de Hoy', metric: formatCurrency(ingresosHoy), icon: SolidDollarIcon, variant: 'blue' },
-            { title: 'Pedidos de Hoy', metric: String(pedidosHoy), icon: SolidBoxIcon, variant: 'green' },
-            { title: 'Saldos Pendientes', metric: formatCurrency(saldosPendientes), icon: SolidClockIcon, variant: 'red' },
-        ]);
+        setStats({
+            ingresosHoy,
+            pedidosHoy: trabajosHoy.length,
+            saldosPendientes: saldos,
+            diseno: trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length,
+            produccion: trabajos.filter(t => t.estado === TrabajoEstado.PROCESO).length,
+            vitrina: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length
+        });
 
-        const cMap = clientes.reduce((acc, cliente) => {
-            acc[cliente.id] = cliente.nombre;
-            return acc;
-        }, {} as Record<string, string>);
-        setClientesMap(cMap);
+        setRecentJobs(
+            [...trabajos]
+                .sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime())
+                .slice(0, 5)
+        );
 
-        const sortedJobs = [...trabajos].sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime());
-        setRecentJobs(sortedJobs.slice(0, 5));
+    }, [trabajos, loading]);
 
-    }, [trabajos, clientes, loading]);
-    
-    const getStatusBadge = (status: TrabajoEstado) => {
-        const styles = {
-            [TrabajoEstado.PENDIENTE]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800",
-            [TrabajoEstado.EN_DISENO]: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800",
-            [TrabajoEstado.PROCESO]: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
-            [TrabajoEstado.VITRINA]: "bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300 border border-teal-200 dark:border-teal-800",
-            [TrabajoEstado.ENTREGADO]: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800",
-        };
-        return <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>{status}</span>
-    }
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Buenos días';
+        if (hour < 18) return 'Buenas tardes';
+        return 'Buenas noches';
+    };
 
     if (loading) {
         return (
             <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
                 <Loader2Icon className="h-12 w-12 text-brand-blue animate-spin" />
-                <p className="text-gray-500 font-medium animate-pulse">Sincronizando datos...</p>
+                <p className="text-gray-500 font-medium animate-pulse">Sincronizando panel...</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 animate-fade-in pb-10">
-            {/* Header */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Bienvenido, {currentUser.nombre} 👋</h1>
-                    <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm md:text-base">Resumen de actividad de Imprenta Córdova.</p>
-                </div>
-                <button 
-                    onClick={() => refreshData()}
-                    className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-brand-blue hover:text-white dark:hover:bg-brand-blue transition-all"
-                    title="Actualizar datos"
-                >
-                    <Loader2Icon className="w-5 h-5" />
-                </button>
-            </div>
+        <div className="space-y-8 animate-fade-in pb-12 max-w-7xl mx-auto px-2">
             
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {kpis.map(kpi => <KpiCard key={kpi.title} kpi={kpi} />)}
-            </div>
-            
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Recent Activity (Takes 2 columns on desktop) */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 h-fit">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Actividad Reciente</h2>
-                        <NavLink to="/trabajos" className="text-sm font-semibold text-brand-blue hover:underline">Ver todo</NavLink>
+            {/* Header Section Premium */}
+            <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-2xl p-8 sm:p-10">
+                {/* Background Effects */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-brand-blue rounded-full opacity-20 blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-48 h-48 bg-purple-600 rounded-full opacity-20 blur-3xl"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div>
+                        <div className="flex items-center gap-2 text-blue-300 font-bold text-xs uppercase tracking-widest mb-2">
+                            <CalendarDaysIcon className="w-4 h-4" />
+                            {new Date().toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </div>
+                        <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2">
+                            {getGreeting()}, <br className="hidden md:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">{currentUser.nombre}</span>
+                        </h1>
+                        <p className="text-slate-400 max-w-lg text-sm md:text-base leading-relaxed">
+                            Resumen operativo en tiempo real. Tienes <strong className="text-white">{stats.diseno} trabajos</strong> esperando diseño.
+                        </p>
                     </div>
-                    <div className="space-y-3">
-                        {recentJobs.length > 0 ? recentJobs.map(job => (
-                            <NavLink to={`/trabajos/${job.id}`} key={job.id} className="block hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-xl transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600 group">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-brand-blue font-bold text-xs group-hover:scale-110 transition-transform">
-                                            #{job.orden}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-800 dark:text-white text-sm">{clientesMap[job.clienteId] || 'Cliente'}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{job.subtipo}</p>
-                                        </div>
+                    
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <button 
+                            onClick={() => refreshData()} 
+                            className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl backdrop-blur-md transition-all text-white border border-white/10 hover:border-white/20 group"
+                            title="Actualizar Datos"
+                        >
+                            <Loader2Icon className="w-6 h-6 group-hover:rotate-180 transition-transform duration-700" />
+                        </button>
+                        <NavLink 
+                            to="/nuevo"
+                            className="flex-1 md:flex-none px-8 py-4 bg-gradient-to-r from-brand-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-1 hover:shadow-blue-500/30 flex items-center justify-center gap-3"
+                        >
+                            <div className="bg-white/20 p-1 rounded-full"><AddIcon className="w-4 h-4" /></div>
+                            Nuevo Pedido
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+
+            {/* Production Status Pulse (Interactive) */}
+            <div>
+                <div className="flex items-center gap-2 mb-4 px-1">
+                    <WrenchScrewdriverIcon className="w-5 h-5 text-gray-400" />
+                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Flujo de Trabajo</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <ProductionStatusCard label="En Diseño" count={stats.diseno} icon={PaletteIcon} color="indigo" to="/diseno" />
+                    <ProductionStatusCard label="En Producción" count={stats.produccion} icon={PrinterIcon} color="blue" to="/kds" />
+                    <ProductionStatusCard label="Listos / Vitrina" count={stats.vitrina} icon={CheckCircleIcon} color="emerald" to="/retiros" />
+                </div>
+            </div>
+
+            {/* Main Stats Row (Interactive) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatCard 
+                    title="Ingresos (Hoy)" 
+                    value={formatCurrency(stats.ingresosHoy)} 
+                    icon={SolidDollarIcon} 
+                    variant="blue" 
+                    trend="Ver reporte financiero"
+                    to="/finanzas"
+                />
+                <StatCard 
+                    title="Pedidos Nuevos" 
+                    value={String(stats.pedidosHoy)} 
+                    icon={SolidBoxIcon} 
+                    variant="green"
+                    trend="Ir al historial"
+                    to="/trabajos"
+                />
+                <StatCard 
+                    title="Saldo por Cobrar" 
+                    value={formatCurrency(stats.saldosPendientes)} 
+                    icon={SolidClockIcon} 
+                    variant="red"
+                    trend="Gestionar cobros"
+                    to="/retiros"
+                />
+            </div>
+
+            {/* Split Content */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                
+                {/* Left: Recent Activity List */}
+                <div className="xl:col-span-2 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-full">
+                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <SolidClockIcon className="w-5 h-5 text-gray-400" />
+                            Últimos Movimientos
+                        </h2>
+                        <NavLink to="/trabajos" className="text-xs font-bold text-brand-blue hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full transition-colors">
+                            Ver historial completo
+                        </NavLink>
+                    </div>
+                    <div className="divide-y divide-gray-50 dark:divide-gray-700/50 flex-grow">
+                        {recentJobs.length > 0 ? recentJobs.map((job) => (
+                            <div 
+                                key={job.id} 
+                                onClick={() => navigate(`/trabajos/${job.id}`)}
+                                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-all cursor-pointer group flex items-center justify-between"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className={`
+                                        w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm text-white shadow-sm transition-transform group-hover:scale-110
+                                        ${job.estado === TrabajoEstado.ENTREGADO ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-600'}
+                                    `}>
+                                        {job.titular.charAt(0).toUpperCase()}
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-sm text-gray-900 dark:text-white">{formatCurrency(job.total)}</p>
-                                        {getStatusBadge(job.estado)}
+                                    <div>
+                                        <p className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-brand-blue transition-colors mb-0.5">
+                                            {job.titular}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                            <span className="font-mono font-medium text-gray-400">#{job.orden}</span>
+                                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                            <span className="truncate max-w-[150px] sm:max-w-[200px]">{job.subtipo}</span>
+                                        </p>
                                     </div>
                                 </div>
-                            </NavLink>
-                        )) : <p className="text-center text-gray-500 py-8 text-sm">No hay trabajos recientes.</p>}
+                                <div className="text-right">
+                                    <p className="font-bold text-gray-900 dark:text-white text-sm">{formatCurrency(job.total)}</p>
+                                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full mt-1 inline-block 
+                                        ${job.estado === TrabajoEstado.PENDIENTE ? 'bg-yellow-100 text-yellow-700' : 
+                                          job.estado === TrabajoEstado.VITRINA ? 'bg-purple-100 text-purple-700' :
+                                          job.estado === TrabajoEstado.ENTREGADO ? 'bg-green-100 text-green-700' : 
+                                          'bg-blue-100 text-blue-700'}`}>
+                                        {job.estado}
+                                    </span>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="p-12 text-center text-gray-400 flex flex-col items-center">
+                                <DocumentIcon className="w-16 h-16 mb-4 opacity-10" />
+                                <p>No hay actividad reciente registrada.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Quick Access (Takes 1 column on desktop, but adjusts on mobile) */}
+                {/* Right: Quick Actions Grid */}
                 <div className="flex flex-col gap-4">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white px-1">Accesos Rápidos</h2>
-                    {/* Grid de 2 columnas en móvil, 1 columna en desktop */}
-                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
-                        <QuickAccessCard 
+                    <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1">Accesos Directos</h2>
+                    <div className="flex flex-col gap-3">
+                        <ActionButton 
                             to="/nuevo" 
                             icon={AddIcon} 
-                            label="Nuevo Pedido" 
-                            description="Crear orden de trabajo" 
-                            colorClass="text-brand-blue"
+                            label="Crear Pedido" 
+                            desc="Nueva orden de trabajo."
+                            color="blue"
                         />
-                        <QuickAccessCard 
-                            to="/retiros" 
-                            icon={ReceiptIcon} 
-                            label="Entregar Trabajos" 
-                            description={vitrinaCount > 0 ? `${vitrinaCount} trabajos listos` : "Entregar al cliente"}
-                            colorClass={vitrinaCount > 0 ? "text-brand-blue" : "text-purple-600"}
-                            badge={vitrinaCount}
-                        />
-                        <QuickAccessCard 
+                        <ActionButton 
                             to="/kds" 
                             icon={KdsIcon} 
-                            label="Taller (KDS)" 
-                            description="Ver flujo de producción"
-                            colorClass="text-orange-500"
+                            label="Producción KDS" 
+                            desc="Gestión de taller."
+                            color="orange"
                         />
-                        <QuickAccessCard 
+                        <ActionButton 
+                            to="/retiros" 
+                            icon={ReceiptIcon} 
+                            label="Caja y Entregas" 
+                            desc="Cobros y despachos."
+                            color="green"
+                        />
+                        <ActionButton 
                             to="/finanzas" 
                             icon={SolidFinanceIcon} 
                             label="Reportes" 
-                            description="Ver resumen financiero"
-                            colorClass="text-green-600"
+                            desc="Métricas financieras."
+                            color="purple"
                         />
                     </div>
                 </div>

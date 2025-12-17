@@ -1,4 +1,3 @@
-
 import React, { ErrorInfo, ReactNode } from "react";
 import { ExclamationTriangleIcon, Loader2Icon, DashboardIcon } from "./Icons";
 
@@ -16,10 +15,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
     hasError: false,
     error: null,
   };
-
-  constructor(props: Props) {
-    super(props);
-  }
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
