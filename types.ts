@@ -110,11 +110,14 @@ export interface Producto {
   imagenUrl?: string;
 }
 
+// Updated Role Definition
+export type UserRole = 'Admin' | 'Operador' | 'Diseñador' | 'Atención al Cliente' | 'Prensista' | 'Encuadernador' | 'Instalador';
+
 export interface User {
   id: string;
   nombre: string;
   email: string;
-  rol: 'Admin' | 'Operador' | 'Diseñador';
+  rol: UserRole;
   estado: 'Activo' | 'Inactivo';
   ultimoAcceso: string;
   password?: string;

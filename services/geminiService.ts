@@ -205,3 +205,77 @@ export const analyzeDesignWithSupervisor = async (
         return null;
     }
 };
+
+export const remixColorsWithAI = async (originalImageBase64: string, suggestion: string): Promise<string | null> => {
+    if (!ai) return null;
+    const modelId = 'gemini-2.5-flash-image'; // Model capable of image editing
+
+    const prompt = `Aplica la siguiente corrección de color a la imagen: "${suggestion}". Mantén la estructura y el contenido intactos, solo ajusta la paleta de colores para mejorar el diseño o legibilidad.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: modelId,
+            contents: {
+                parts: [
+                    {
+                        inlineData: {
+                            data: originalImageBase64.split(',')[1],
+                            mimeType: 'image/jpeg'
+                        }
+                    },
+                    { text: prompt }
+                ]
+            }
+        });
+
+        // Loop through parts to find the image
+        for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+                return `data:image/png;base64,${part.inlineData.data}`;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error("Error remixing colors:", error);
+        return null;
+    }
+};
+
+export const rewriteCopyWithAI = async (currentContext: string, issueDescription: string): Promise<string[]> => {
+    if (!ai) return [];
+    const modelId = 'gemini-2.5-flash';
+
+    const prompt = `
+        Actúa como un experto en copywriting para impresión.
+        
+        CONTEXTO DEL DISEÑO:
+        ${currentContext}
+
+        PROBLEMA DETECTADO:
+        ${issueDescription}
+
+        Genera 3 alternativas de texto (Copy) que solucionen este problema y sean más "vendedoras" o apropiadas.
+        Devuelve SOLO las 3 opciones en un arreglo JSON de strings.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: modelId,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                }
+            }
+        });
+
+        const jsonText = response.text;
+        if (!jsonText) return [];
+        return JSON.parse(jsonText) as string[];
+    } catch (error) {
+        console.error("Error rewriting copy:", error);
+        return [];
+    }
+};

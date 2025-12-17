@@ -1,8 +1,8 @@
 
 import React, { useState, useRef } from 'react';
-import { EyeIcon, UploadIcon, Loader2Icon, SparklesIcon, PaletteIcon, DocumentTextIcon, WrenchScrewdriverIcon, DollarIcon, TrashIcon } from '../components/Icons';
-import { analyzeDesignWithSupervisor } from '../services/geminiService';
-import { SupervisorAnalysis } from '../types';
+import { EyeIcon, UploadIcon, Loader2Icon, SparklesIcon, PaletteIcon, DocumentTextIcon, WrenchScrewdriverIcon, DollarIcon, TrashIcon, CopyIcon, PhotoIcon } from '../components/Icons';
+import { analyzeDesignWithSupervisor, remixColorsWithAI, rewriteCopyWithAI } from '../services/geminiService';
+import { SupervisorAnalysis, SupervisorDetail } from '../types';
 import { useToast } from '../contexts/ToastContext';
 
 // Helper to read file as Base64
@@ -13,17 +13,90 @@ const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) 
     reader.onerror = error => reject(error);
 });
 
-const AnalysisResult: React.FC<{ result: SupervisorAnalysis }> = ({ result }) => {
-    const [expanded, setExpanded] = useState(false);
+// --- SUB-COMPONENTS FOR ACTIONS ---
 
-    const statusConfig = {
-        VERDE: { color: 'text-green-600', bg: 'bg-green-100 border-green-200', icon: '🟢', label: 'IMPRIMIBLE' },
-        AMARILLO: { color: 'text-yellow-600', bg: 'bg-yellow-100 border-yellow-200', icon: '🟡', label: 'REVISAR' },
-        ROJO: { color: 'text-red-600', bg: 'bg-red-100 border-red-200', icon: '🔴', label: 'CRÍTICO' },
+const RemixColorAction: React.FC<{ originalImage: string, suggestion: string }> = ({ originalImage, suggestion }) => {
+    const [loading, setLoading] = useState(false);
+    const [newImage, setNewImage] = useState<string | null>(null);
+
+    const handleRemix = async () => {
+        setLoading(true);
+        const result = await remixColorsWithAI(originalImage, suggestion);
+        setNewImage(result);
+        setLoading(false);
     };
 
-    const config = statusConfig[result.estado];
+    return (
+        <div className="mt-2">
+            {!newImage ? (
+                <button 
+                    onClick={handleRemix}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+                >
+                    {loading ? <Loader2Icon className="w-3 h-3 animate-spin"/> : <SparklesIcon className="w-3 h-3 text-yellow-300"/>}
+                    {loading ? 'Generando...' : 'Remezclar Colores (IA)'}
+                </button>
+            ) : (
+                <div className="mt-3 animate-fade-in border border-purple-200 rounded-lg p-2 bg-purple-50">
+                    <p className="text-xs font-bold text-purple-700 mb-2 flex items-center gap-1">
+                        <PhotoIcon className="w-3 h-3"/> Propuesta IA:
+                    </p>
+                    <img src={newImage} alt="Remix" className="w-full h-auto rounded-md shadow-sm border border-white" />
+                    <a href={newImage} download="propuesta_color_ia.png" className="block text-center mt-2 text-xs text-purple-600 hover:underline">Descargar Propuesta</a>
+                </div>
+            )}
+        </div>
+    );
+};
 
+const RewriteCopyAction: React.FC<{ context: string, suggestion: string }> = ({ context, suggestion }) => {
+    const { addToast } = useToast();
+    const [loading, setLoading] = useState(false);
+    const [options, setOptions] = useState<string[]>([]);
+
+    const handleRewrite = async () => {
+        setLoading(true);
+        const results = await rewriteCopyWithAI(context, suggestion);
+        setOptions(results);
+        setLoading(false);
+    };
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        addToast("Texto copiado", "success");
+    };
+
+    return (
+        <div className="mt-2">
+            {options.length === 0 ? (
+                <button 
+                    onClick={handleRewrite}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+                >
+                    {loading ? <Loader2Icon className="w-3 h-3 animate-spin"/> : <DocumentTextIcon className="w-3 h-3 text-white"/>}
+                    {loading ? 'Pensando...' : 'Reescribir Copy (IA)'}
+                </button>
+            ) : (
+                <div className="mt-3 space-y-2 animate-fade-in">
+                    <p className="text-xs font-bold text-blue-700 mb-1">Opciones Sugeridas:</p>
+                    {options.map((opt, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 bg-blue-50 border border-blue-100 rounded-md text-xs text-blue-900 group">
+                            <span>{opt}</span>
+                            <button onClick={() => copyToClipboard(opt)} className="ml-2 text-blue-400 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <CopyIcon className="w-3 h-3"/>
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const DetailItem: React.FC<{ detalle: SupervisorDetail, imageContext: string | null, textContext: string }> = ({ detalle, imageContext, textContext }) => {
+    
     const getCategoryIcon = (tipo: string) => {
         switch(tipo) {
             case 'TECNICA': return <WrenchScrewdriverIcon className="w-4 h-4" />;
@@ -33,6 +106,45 @@ const AnalysisResult: React.FC<{ result: SupervisorAnalysis }> = ({ result }) =>
             default: return <DocumentTextIcon className="w-4 h-4" />;
         }
     };
+
+    return (
+        <div className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+            <div className="p-2 rounded-full bg-blue-50 text-blue-600 h-fit">
+                {getCategoryIcon(detalle.tipo)}
+            </div>
+            <div className="flex-grow">
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold bg-gray-200 text-gray-600 px-2 py-0.5 rounded uppercase">
+                        {detalle.tipo}
+                    </span>
+                </div>
+                <p className="text-gray-800 font-medium text-sm mb-1">{detalle.descripcion}</p>
+                <div className="bg-blue-50/50 p-2 rounded-md border border-blue-100">
+                    <p className="text-blue-600 text-xs font-bold mb-1">💡 Sugerencia: {detalle.sugerencia}</p>
+                    
+                    {/* --- PRO ACTIONS --- */}
+                    {detalle.tipo === 'COLOR' && imageContext && (
+                        <RemixColorAction originalImage={imageContext} suggestion={detalle.sugerencia} />
+                    )}
+                    {(detalle.tipo === 'COMERCIAL' || detalle.tipo === 'TECNICA') && (
+                        <RewriteCopyAction context={textContext || "Diseño publicitario"} suggestion={detalle.sugerencia} />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AnalysisResult: React.FC<{ result: SupervisorAnalysis, imageBase64: string | null, contextText: string }> = ({ result, imageBase64, contextText }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    const statusConfig = {
+        VERDE: { color: 'text-green-600', bg: 'bg-green-100 border-green-200', icon: '🟢', label: 'IMPRIMIBLE' },
+        AMARILLO: { color: 'text-yellow-600', bg: 'bg-yellow-100 border-yellow-200', icon: '🟡', label: 'REVISAR' },
+        ROJO: { color: 'text-red-600', bg: 'bg-red-100 border-red-200', icon: '🔴', label: 'CRÍTICO' },
+    };
+
+    const config = statusConfig[result.estado];
 
     return (
         <div className={`rounded-xl border-2 transition-all overflow-hidden ${config.bg} ${expanded ? 'shadow-lg' : 'shadow-sm'}`}>
@@ -64,22 +176,12 @@ const AnalysisResult: React.FC<{ result: SupervisorAnalysis }> = ({ result }) =>
                             <p className="text-gray-500 italic">No se encontraron problemas significativos. ¡Buen trabajo!</p>
                         ) : (
                             result.detalles.map((detalle, idx) => (
-                                <div key={idx} className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-                                    <div className="p-2 rounded-full bg-blue-50 text-blue-600 h-fit">
-                                        {getCategoryIcon(detalle.tipo)}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-[10px] font-bold bg-gray-200 text-gray-600 px-2 py-0.5 rounded uppercase">
-                                                {detalle.tipo}
-                                            </span>
-                                        </div>
-                                        <p className="text-gray-800 font-medium text-sm mb-1">{detalle.descripcion}</p>
-                                        <p className="text-blue-600 text-xs font-bold bg-blue-50/50 p-2 rounded-md border border-blue-100 inline-block">
-                                            💡 Sugerencia: {detalle.sugerencia}
-                                        </p>
-                                    </div>
-                                </div>
+                                <DetailItem 
+                                    key={idx} 
+                                    detalle={detalle} 
+                                    imageContext={imageBase64} 
+                                    textContext={contextText} 
+                                />
                             ))
                         )}
                     </div>
@@ -285,7 +387,11 @@ const CorregidorPage: React.FC = () => {
                             <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                                 Resultado del Análisis
                             </h2>
-                            <AnalysisResult result={analysis} />
+                            <AnalysisResult 
+                                result={analysis} 
+                                imageBase64={newDesignImage} 
+                                contextText={context}
+                            />
                         </div>
                     )}
                 </div>
