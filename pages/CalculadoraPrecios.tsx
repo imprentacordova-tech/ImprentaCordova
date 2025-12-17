@@ -1,229 +1,151 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon } from '../components/Icons';
+import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon, ArrowRightIcon, BoxIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
 // --- TIPOS Y ESTADOS ---
 
-type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG'; // Simplificado para enfoque Offset vs Digital
+type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG';
 
-// --- 1. CONFIGURACIÓN BASE (MANUAL) ---
+// --- 1. CONFIGURACIÓN DE COSTOS (PERSONALIZADA ECUADOR) ---
 interface CostConfig {
-    // Papeles (Costo por unidad de pliego)
-    PLIEGO_QUIMICO: number; 
-    PLIEGO_BOND: number;    
-    PLIEGO_COUCHE: number;  
-    PLIEGO_ADHESIVO: number;
-    PLIEGO_CARTULINA: number;
+    // Materia Prima (Papeles)
+    COSTO_RESMA_QUIMICO_ORIG: number; // Paquete 500h Oficio
+    COSTO_RESMA_QUIMICO_COPIA: number; // Paquete 500h Oficio
+    COSTO_RESMA_BOND: number;         // Paquete 500h Oficio
+    COSTO_PLIEGO_COUCHE_300: number;  // Precio por unidad (de paquete de 100)
+    COSTO_PLIEGO_ADHESIVO: number;    // Precio por unidad
     
-    // Insumos Offset
-    PLACA_CTP: number; // Costo por unidad (chapa)
-    ARRANQUE_MAQUINA: number; // Costo fijo por puesta a punto
-    IMPRESION_MILLAR_OFFSET: number; // Costo variable por millar
+    // Pre-Prensa
+    COSTO_DISENO_SRI: number;         // Costo fijo servicio
+    COSTO_PLACA_POLIESTER: number;    // Costo por placa (master)
+    COSTO_PLACA_CTP: number;          // Costo por chapa metalica
     
-    // Insumos Digital
-    IMPRESION_DIGITAL_A3: number; // Click color
-    IMPRESION_DIGITAL_BN: number;
+    // Impresión
+    COSTO_ARRANQUE: number;           // Puesta a punto
+    COSTO_MILLAR_IMPRESION: number;   // Mano de obra x 1000
+    
+    // Digital
+    CLICK_DIGITAL_A3: number;
+    CLICK_DIGITAL_BN: number;
     
     // Acabados
-    NUMERACION_MILLAR: number;
-    ENCOLADO_BLOCK: number;
-    CORTE_REFILE: number;
+    COSTO_NUMERACION: number;         // Por millar
+    COSTO_BLOCK_ENCOLADO: number;     // Por unidad de block
+    COSTO_CORTE: number;              // Fijo
     
-    // Factores
-    FACTOR_RIESGO: number; // 0.05 = 5%
-    MARGEN_GANANCIA: number; // 0.40 = 40%
+    // Rentabilidad
+    MARGEN_GANANCIA: number;          // 0.30 - 1.00
 }
 
 const DEFAULT_COSTS: CostConfig = {
-    PLIEGO_QUIMICO: 0.15,
-    PLIEGO_BOND: 0.12,
-    PLIEGO_COUCHE: 0.40,
-    PLIEGO_ADHESIVO: 0.80,
-    PLIEGO_CARTULINA: 0.50,
-    PLACA_CTP: 6.00, // Precio por chapa individual
-    ARRANQUE_MAQUINA: 15.00,
-    IMPRESION_MILLAR_OFFSET: 5.00, // Adicional después del arranque
-    IMPRESION_DIGITAL_A3: 0.40,
-    IMPRESION_DIGITAL_BN: 0.10,
-    NUMERACION_MILLAR: 5.00,
-    ENCOLADO_BLOCK: 0.25,
-    CORTE_REFILE: 2.00,
-    FACTOR_RIESGO: 0.10, // 10% merma/riesgo
-    MARGEN_GANANCIA: 0.50 // 50% margen
+    // Datos del usuario
+    COSTO_RESMA_QUIMICO_ORIG: 47.00,
+    COSTO_RESMA_QUIMICO_COPIA: 46.00,
+    COSTO_RESMA_BOND: 4.50,
+    COSTO_PLIEGO_COUCHE_300: 0.51, // $51 el paquete de 100
+    COSTO_PLIEGO_ADHESIVO: 1.10,
+    
+    COSTO_DISENO_SRI: 5.00,
+    COSTO_PLACA_POLIESTER: 3.00,
+    COSTO_PLACA_CTP: 6.00,
+    
+    COSTO_ARRANQUE: 10.00,
+    COSTO_MILLAR_IMPRESION: 4.00,
+    
+    CLICK_DIGITAL_A3: 0.40,
+    CLICK_DIGITAL_BN: 0.10,
+    
+    COSTO_NUMERACION: 4.00,
+    COSTO_BLOCK_ENCOLADO: 0.15,
+    COSTO_CORTE: 1.50,
+    
+    MARGEN_GANANCIA: 0.40 // 40% ganancia neta objetivo
 };
 
-// --- 2. BASE DE DATOS PAPELES ---
-interface PaperType {
+// --- 2. MODELO DE PAPELES (FUENTE) ---
+interface SourcePaper {
     id: string;
     nombre: string;
-    gramajes: string;
-    usos: string;
-    width: number;
-    height: number;
+    tipo: 'RESMA' | 'PLIEGO';
+    ancho: number;
+    alto: number;
+    costoBaseKey: keyof CostConfig;
 }
 
-const PAPERS_DB: PaperType[] = [
-    { id: 'BOND_STD', nombre: 'Bond Estándar', gramajes: '75g', usos: 'Hojas, Libros', width: 61, height: 86 },
-    { id: 'QUIMICO', nombre: 'Químico (Autocopiativo)', gramajes: '55g', usos: 'Facturas', width: 61, height: 86 },
-    { id: 'COUCHE_STD', nombre: 'Couché Estándar', gramajes: '115g, 150g', usos: 'Volantes', width: 70, height: 100 },
-    { id: 'CARTULINA', nombre: 'Cartulina', gramajes: '200g+', usos: 'Tarjetas', width: 70, height: 100 },
-    { id: 'ADHESIVO', nombre: 'Adhesivo', gramajes: '80g', usos: 'Etiquetas', width: 70, height: 100 },
+const SOURCE_PAPERS: SourcePaper[] = [
+    { id: 'QUIMICO', nombre: 'Papel Químico (Autocopiativo)', tipo: 'RESMA', ancho: 21.6, alto: 33, costoBaseKey: 'COSTO_RESMA_QUIMICO_ORIG' },
+    { id: 'BOND', nombre: 'Papel Bond 75g', tipo: 'RESMA', ancho: 21.6, alto: 33, costoBaseKey: 'COSTO_RESMA_BOND' },
+    { id: 'COUCHE_300', nombre: 'Couché 300g (Glosy)', tipo: 'PLIEGO', ancho: 90, alto: 130, costoBaseKey: 'COSTO_PLIEGO_COUCHE_300' },
+    { id: 'ADHESIVO', nombre: 'Adhesivo Brillante', tipo: 'PLIEGO', ancho: 70, alto: 100, costoBaseKey: 'COSTO_PLIEGO_ADHESIVO' },
 ];
 
-// --- COMPONENTE VISUALIZADOR DE PLIEGO MEJORADO ---
-const PliegoVisualizer: React.FC<{
-    sheetW: number;
-    sheetH: number;
-    cutW: number;
-    cutH: number;
-    cuts: number;
-    rotated: boolean;
-    margin: number; // Pinza
-}> = ({ sheetW, sheetH, cutW, cutH, cuts, rotated, margin }) => {
-    // Escala para dibujar en pantalla (px por cm)
-    const scale = 4; 
-    
-    // Dimensiones visuales
-    const svgW = sheetW * scale;
-    const svgH = sheetH * scale;
-
-    // Área imprimible (restar pinza)
-    const printableY = margin * scale;
-
-    // Calcular grid
-    const effCutW = rotated ? cutH : cutW;
-    const effCutH = rotated ? cutW : cutH;
-    
-    // Recalcular lógica visual exacta
-    const cols = Math.floor(sheetW / effCutW);
-    const rows = Math.floor((sheetH - margin) / effCutH);
-    
-    const items = [];
-    let count = 0;
-    
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            if (count >= cuts) break;
-            const x = c * effCutW * scale;
-            const y = printableY + (r * effCutH * scale);
-            
-            items.push(
-                <g key={`${r}-${c}`}>
-                    <rect
-                        x={x}
-                        y={y}
-                        width={effCutW * scale}
-                        height={effCutH * scale}
-                        fill="#dbeafe" // blue-100
-                        stroke="#2563eb" // blue-600
-                        strokeWidth="1"
-                        className="transition-all duration-300 hover:fill-blue-200"
-                    />
-                    {/* Solo mostrar medidas en el primero para no saturar */}
-                    {r === 0 && c === 0 && (
-                        <text x={x + 5} y={y + 15} fontSize="10" fill="#1e40af" fontWeight="bold">
-                            {effCutW}x{effCutH}
-                        </text>
-                    )}
-                    <text x={x + (effCutW*scale)/2} y={y + (effCutH*scale)/2} fontSize="12" fill="#2563eb" textAnchor="middle" dy=".3em" opacity="0.5">
-                        {count + 1}
-                    </text>
-                </g>
-            );
-            count++;
-        }
-    }
-
-    const usedAreaCm = cuts * (cutW * cutH);
-    const totalAreaCm = sheetW * sheetH;
-    const efficiency = (usedAreaCm / totalAreaCm) * 100;
-
+// --- COMPONENTE VISUAL DE PROCESO (PIPELINE) ---
+const ProductionPipeline: React.FC<{ 
+    sourceName: string; 
+    sourceType: string;
+    sourceSize: string;
+    cutSize: string;
+    cutsPerUnit: number;
+    prePressCost: number;
+    materialCost: number;
+    printCost: number;
+}> = ({ sourceName, sourceType, sourceSize, cutSize, cutsPerUnit, prePressCost, materialCost, printCost }) => {
     return (
-        <div className="flex flex-col items-center select-none">
-            <div className="bg-gray-800 text-white text-[10px] px-2 py-1 rounded mb-2 font-mono">
-                PLIEGO: {sheetW}cm x {sheetH}cm
-            </div>
-            
-            <div className="relative bg-gray-200 shadow-xl border-4 border-white overflow-hidden transition-all duration-500 ease-in-out" style={{ width: svgW + 8, height: svgH + 8 }}>
-                <svg width={svgW} height={svgH} className="bg-gray-300 block m-[2px]">
-                    {/* Fondo Merma */}
-                    <rect x="0" y="0" width="100%" height="100%" fill="#e5e7eb" />
-                    
-                    {/* Zona de Pinza (Gripper) */}
-                    <rect x="0" y="0" width="100%" height={margin * scale} fill="url(#diagonalHatch)" stroke="none" />
-                    <defs>
-                        <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="0" y2="10" style={{stroke:'#fca5a5', strokeWidth:2}} />
-                        </pattern>
-                    </defs>
-                    <text x="5" y={(margin * scale) - 5} fontSize="10" fill="#991b1b" fontWeight="bold" letterSpacing="1">
-                        ZONA PINZA ({margin}cm) - NO IMPRIMIBLE
-                    </text>
+        <div className="w-full py-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative">
+                {/* Linea conectora (Fondo) */}
+                <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -z-10 rounded"></div>
 
-                    {/* Cortes */}
-                    {items}
-                </svg>
-            </div>
+                {/* 1. Entrada / Materia Prima */}
+                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-blue-100 dark:border-blue-900 w-full md:w-1/4 relative z-10">
+                    <div className="bg-blue-100 p-3 rounded-full mb-2">
+                        <BoxIcon className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">1. Entrada</span>
+                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">{sourceName}</h4>
+                    <p className="text-xs text-gray-500">{sourceType === 'RESMA' ? 'Paquete 500h' : 'Pliego'}</p>
+                    <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded mt-1 font-mono">{sourceSize}</span>
+                    <div className="mt-2 text-xs font-bold text-green-600">{formatCurrency(materialCost)} <span className="text-[9px] text-gray-400 font-normal">mat.</span></div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4 w-full text-sm">
-                <div className="bg-blue-50 p-2 rounded border border-blue-200 text-center">
-                    <span className="block text-xs text-blue-500 font-bold uppercase">Bajadas (Cortes)</span>
-                    <span className="text-xl font-black text-blue-700">{cuts} u.</span>
-                </div>
-                <div className="bg-gray-50 p-2 rounded border border-gray-200 text-center">
-                    <span className="block text-xs text-gray-500 font-bold uppercase">Eficiencia Papel</span>
-                    <span className={`text-xl font-black ${efficiency > 80 ? 'text-green-600' : efficiency > 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {efficiency.toFixed(1)}%
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
-};
+                <ArrowRightIcon className="w-6 h-6 text-gray-300 md:hidden" />
 
-// --- COMPONENTE TABLA MAESTRA ---
-const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <TableIcon className="w-6 h-6 text-brand-blue" />
-                        Tabla Maestra de Papeles
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-500">
-                        <CloseIcon className="w-6 h-6" />
-                    </button>
+                {/* 2. Pre-Prensa */}
+                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-purple-100 dark:border-purple-900 w-full md:w-1/4 relative z-10">
+                    <div className="bg-purple-100 p-3 rounded-full mb-2">
+                        <MonitorIcon className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">2. Proceso</span>
+                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">Diseño & Placas</h4>
+                    <p className="text-xs text-gray-500">Autorización SRI + Master</p>
+                    <div className="mt-2 text-xs font-bold text-purple-600">{formatCurrency(prePressCost)}</div>
                 </div>
-                
-                <div className="p-6 overflow-y-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Papel / Material</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Gramajes</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Formato Pliego</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Usos Recomendados</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                            {PAPERS_DB.map((paper) => (
-                                <tr key={paper.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                                    <td className="px-6 py-4 font-bold text-brand-blue">{paper.nombre}</td>
-                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{paper.gramajes}</td>
-                                    <td className="px-6 py-4 font-mono text-gray-800 dark:text-gray-200">{paper.width} x {paper.height} cm</td>
-                                    <td className="px-6 py-4 text-gray-500 italic">{paper.usos}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+                <ArrowRightIcon className="w-6 h-6 text-gray-300 md:hidden" />
+
+                {/* 3. Impresión & Corte */}
+                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-orange-100 dark:border-orange-900 w-full md:w-1/4 relative z-10">
+                    <div className="bg-orange-100 p-3 rounded-full mb-2">
+                        <PrinterIcon className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">3. Ejecución</span>
+                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">Offset + Refile</h4>
+                    <p className="text-xs text-gray-500">Tiraje de Máquina</p>
+                    <div className="mt-2 text-xs font-bold text-orange-600">{formatCurrency(printCost)}</div>
                 </div>
-                
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-xl flex justify-end">
-                    <button onClick={onClose} className="px-6 py-2 bg-brand-blue text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-md">
-                        Entendido
-                    </button>
+
+                <ArrowRightIcon className="w-6 h-6 text-gray-300 md:hidden" />
+
+                {/* 4. Salida / Producto */}
+                <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-2 border-green-100 dark:border-green-900 w-full md:w-1/4 relative z-10">
+                    <div className="bg-green-100 p-3 rounded-full mb-2">
+                        <CheckCircleIcon className="w-6 h-6 text-green-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">4. Salida</span>
+                    <h4 className="font-bold text-sm text-center text-gray-800 dark:text-white">Producto Final</h4>
+                    <p className="text-xs text-gray-500">Cortes: {cutsPerUnit} por {sourceType === 'RESMA' ? 'hoja' : 'pliego'}</p>
+                    <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded mt-1 font-mono">{cutSize}</span>
                 </div>
             </div>
         </div>
@@ -233,181 +155,272 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 // --- CALCULADORA OFFSET ---
 const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     // Inputs
-    const [paperId, setPaperId] = useState('COUCHE_STD');
-    const [finalW, setFinalW] = useState(10);
-    const [finalH, setFinalH] = useState(15);
-    const [quantity, setQuantity] = useState(1000);
-    const [colorsFront, setColorsFront] = useState(4); // CMYK
-    const [colorsBack, setColorsBack] = useState(0); // 0 = 1 lado
-    const [parts, setParts] = useState(1); // Juegos (solo quimico)
-    const [finishing, setFinishing] = useState({ numerado: false, encolado: false, perforado: false });
+    const [paperId, setPaperId] = useState('QUIMICO');
     
-    // Calculations
+    // Tamaños Predefinidos para selección rápida
+    const [selectedSizePreset, setSelectedSizePreset] = useState('1/4_OFICIO');
+    const [finalW, setFinalW] = useState(10.5);
+    const [finalH, setFinalH] = useState(14.8);
+    
+    const [quantity, setQuantity] = useState(100); // Blocks o Unidades
+    const [cantidadHojasBlock, setCantidadHojasBlock] = useState(100); // 100, 50, 25
+    const [colorsFront, setColorsFront] = useState(1); 
+    const [colorsBack, setColorsBack] = useState(0);
+    const [parts, setParts] = useState(2); // 1 Original + 1 Copia
+    const [hasDesign, setHasDesign] = useState(false); // Ya tiene diseño?
+    const [requiresSRI, setRequiresSRI] = useState(true);
+
+    // Manejo de tamaños predefinidos
+    const handlePresetChange = (val: string) => {
+        setSelectedSizePreset(val);
+        const currentPaper = SOURCE_PAPERS.find(p => p.id === paperId);
+        
+        if (currentPaper?.tipo === 'RESMA') {
+            // Base Oficio (21.6 x 33)
+            switch(val) {
+                case 'OFICIO': setFinalW(21.6); setFinalH(33); break;
+                case '1/2_OFICIO': setFinalW(21.6); setFinalH(16.5); break;
+                case '1/4_OFICIO': setFinalW(10.8); setFinalH(16.5); break; // Aprox notas venta
+                case '1/8_OFICIO': setFinalW(10.8); setFinalH(8.25); break;
+            }
+        } else {
+            // Base Pliego o A4 Standard
+            switch(val) {
+                case 'A3': setFinalW(29.7); setFinalH(42); break;
+                case 'A4': setFinalW(21); setFinalH(29.7); break;
+                case 'A5': setFinalW(14.8); setFinalH(21); break;
+                case 'A6': setFinalW(10.5); setFinalH(14.8); break;
+            }
+        }
+    };
+
+    // --- MOTOR DE CÁLCULO ---
     const result = useMemo(() => {
-        const paper = PAPERS_DB.find(p => p.id === paperId) || PAPERS_DB[0];
+        const paper = SOURCE_PAPERS.find(p => p.id === paperId) || SOURCE_PAPERS[0];
         
-        // 1. Cálculo de Cortes (Best Fit)
-        const margin = 1.5; // Pinza
-        const printableH = paper.height - margin;
+        // 1. Cálculo de Cortes (Imposición)
+        // Margen técnico de pinza y refile
+        const marginY = 1.0; 
+        const marginX = 0.5;
         
+        const usableW = paper.ancho - marginX;
+        const usableH = paper.alto - marginY;
+
         // Opción A: Normal
-        const colsA = Math.floor(paper.width / finalW);
-        const rowsA = Math.floor(printableH / finalH);
+        const colsA = Math.floor(usableW / finalW);
+        const rowsA = Math.floor(usableH / finalH);
         const cutsA = colsA * rowsA;
 
         // Opción B: Rotado
-        const colsB = Math.floor(paper.width / finalH);
-        const rowsB = Math.floor(printableH / finalW);
+        const colsB = Math.floor(usableW / finalH);
+        const rowsB = Math.floor(usableH / finalW);
         const cutsB = colsB * rowsB;
 
-        const bestCuts = Math.max(cutsA, cutsB);
-        const isRotated = cutsB > cutsA;
+        const cutsPerUnit = Math.max(cutsA, cutsB);
         
-        if (bestCuts === 0) return null;
+        if (cutsPerUnit === 0) return null;
 
-        // 2. Cálculo de Papel Requerido
-        const totalUnidades = quantity * parts; // Si son facturas, son juegos
-        const pliegosNetos = totalUnidades / bestCuts;
-        const merma = Math.ceil(pliegosNetos * costs.FACTOR_RIESGO) + 10; // Merma base + 10 hojas arranque
-        const pliegosTotales = Math.ceil(pliegosNetos + merma);
-        
-        let precioPliego = 0;
-        switch(paper.id) {
-            case 'QUIMICO': precioPliego = costs.PLIEGO_QUIMICO; break;
-            case 'BOND_STD': precioPliego = costs.PLIEGO_BOND; break;
-            case 'COUCHE_STD': precioPliego = costs.PLIEGO_COUCHE; break;
-            case 'ADHESIVO': precioPliego = costs.PLIEGO_ADHESIVO; break;
-            case 'CARTULINA': precioPliego = costs.PLIEGO_CARTULINA; break;
+        // 2. Cálculo de Material (Papel)
+        let totalSheetsNeeded = 0;
+        let costPapelTotal = 0;
+
+        if (paper.id === 'QUIMICO') {
+            // Lógica Especial: Resmas separadas (Original + Copias)
+            // blocks * hojas_por_block = total juegos
+            const totalJuegos = quantity * cantidadHojasBlock; 
+            const bajadasNecesarias = Math.ceil(totalJuegos / cutsPerUnit);
+            
+            // Merma (10% + 20 hojas base para arranque)
+            const merma = Math.ceil(bajadasNecesarias * 0.10) + 20; 
+            const totalBajadasConMerma = bajadasNecesarias + merma;
+
+            // Precio por hoja individual (sacado del precio de resma de 500)
+            const costoHojaOriginal = costs.COSTO_RESMA_QUIMICO_ORIG / 500;
+            const costoHojaCopia = costs.COSTO_RESMA_QUIMICO_COPIA / 500;
+            
+            // Costo Material = (Hojas Orig * Costo) + (Hojas Copia * Num Copias * Costo)
+            const costoTotalOrig = totalBajadasConMerma * costoHojaOriginal;
+            const costoTotalCopia = totalBajadasConMerma * (parts - 1) * costoHojaCopia;
+            
+            costPapelTotal = costoTotalOrig + costoTotalCopia;
+            totalSheetsNeeded = totalBajadasConMerma * parts; // Total hojas físicas pasadas por máquina
+
+        } else if (paper.tipo === 'RESMA') {
+            // Bond, etc. Venta por millar o resma
+            const totalUnidades = quantity; // Volantes
+            const bajadas = Math.ceil(totalUnidades / cutsPerUnit);
+            const merma = Math.ceil(bajadas * 0.10) + 30;
+            const totalHojas = bajadas + merma;
+            
+            const costoHoja = costs[paper.costoBaseKey] / 500;
+            costPapelTotal = totalHojas * costoHoja;
+            totalSheetsNeeded = totalHojas;
+
+        } else {
+            // Pliego (Couché, Adhesivo)
+            const totalUnidades = quantity;
+            const bajadas = Math.ceil(totalUnidades / cutsPerUnit);
+            const merma = Math.ceil(bajadas * 0.10) + 5; // Menos merma en pliego grande proporcionalmente
+            const totalPliegos = bajadas + merma;
+            
+            const costoPliego = costs[paper.costoBaseKey]; // Precio unitario del pliego directo o calculado
+            // Si el precio configurado es por paquete de 100 (como el couché $51), dividir.
+            // Asumimos que la config guarda precio unitario o ajustamos aquí:
+            const unitPrice = paper.id === 'COUCHE_300' ? (costs.COSTO_PLIEGO_COUCHE_300 / 100) * 100 : costs[paper.costoBaseKey]; 
+            // CORRECCION: El usuario dijo "$51 el paquete de 100". Entonces unitario es 0.51.
+            
+            costPapelTotal = totalPliegos * costs[paper.costoBaseKey];
+            totalSheetsNeeded = totalPliegos;
         }
-        const costoPapel = pliegosTotales * precioPliego;
 
-        // 3. Cálculo de Impresión (Offset)
+        // 3. Pre-Prensa
+        let costPrePrensa = 0;
+        if (!hasDesign) {
+            costPrePrensa += requiresSRI ? costs.COSTO_DISENO_SRI : 5.00; // Diseño básico
+        }
+        
+        // Placas: Poliester para tirajes cortos (< 2000), CTP para largos o alta calidad
+        // Lógica simple: Si es químico o bond corto tiraje -> Poliester.
         const numPlacas = colorsFront + colorsBack;
-        const costoPlacas = numPlacas * costs.PLACA_CTP;
+        const costoPlacaUnit = (quantity > 2000 || paper.id === 'COUCHE_300') ? costs.COSTO_PLACA_CTP : costs.COSTO_PLACA_POLIESTER;
         
-        const millaresReales = Math.ceil(quantity / 1000);
-        
-        const tirosTotales = millaresReales * (colorsFront + colorsBack);
-        const costoImpresion = costs.ARRANQUE_MAQUINA + (tirosTotales * costs.IMPRESION_MILLAR_OFFSET);
+        const costPlacas = numPlacas * costoPlacaUnit;
+        costPrePrensa += costPlacas;
 
-        // 4. Acabados
-        let costoAcabados = costs.CORTE_REFILE;
-        if (finishing.numerado) costoAcabados += (millaresReales * costs.NUMERACION_MILLAR);
-        if (finishing.encolado) costoAcabados += ((quantity / 100) * costs.ENCOLADO_BLOCK); // Asumiendo blocks de 100
+        // 4. Impresión
+        const millares = Math.ceil(totalSheetsNeeded / 1000);
+        const tiros = millares * (colorsFront + colorsBack); // Aproximación simple de tiros
+        // En offset pequeño, se cobra a veces por "quemado" o "arranque" mas millar.
+        // Aquí simplificamos: Arranque + (Millares * Costo)
+        const costImpresion = costs.COSTO_ARRANQUE + (tiros * costs.COSTO_MILLAR_IMPRESION);
+
+        // 5. Acabados
+        let costAcabados = costs.COSTO_CORTE; // Siempre hay refile
+        if (paper.id === 'QUIMICO') {
+            costAcabados += (quantity * costs.COSTO_BLOCK_ENCOLADO); // Encolado de blocks
+            costAcabados += (millares * costs.COSTO_NUMERACION); // Numeración
+        }
+
+        // 6. Totales
+        const costoTotalProduccion = costPapelTotal + costPrePrensa + costImpresion + costAcabados;
+        const utilidadEsperada = costoTotalProduccion * costs.MARGEN_GANANCIA;
+        // Ajuste de mercado: Si es muy bajo, subir al mínimo.
+        let pvp = costoTotalProduccion + utilidadEsperada;
         
-        // 5. Totales
-        const costoProduccion = costoPapel + costoPlacas + costoImpresion + costoAcabados;
-        const utilidad = costoProduccion * (costs.MARGEN_GANANCIA / (1 - costs.MARGEN_GANANCIA));
-        const pvp = costoProduccion + utilidad;
+        // Regla de mínimos (ej. un ciento de facturas no baja de $15-$18)
+        if (paper.id === 'QUIMICO' && quantity === 1 && pvp < 15) pvp = 15;
 
         return {
             paper,
-            bestCuts,
-            isRotated,
-            pliegosTotales,
-            costoPapel,
-            costoPlacas,
-            costoImpresion,
-            costoAcabados,
-            costoProduccion,
+            cutsPerUnit,
+            costPapelTotal,
+            costPrePrensa,
+            costImpresion,
+            costAcabados,
+            costoTotalProduccion,
             pvp,
             unitario: pvp / quantity
         };
 
-    }, [paperId, finalW, finalH, quantity, colorsFront, colorsBack, parts, finishing, costs]);
+    }, [paperId, finalW, finalH, quantity, colorsFront, colorsBack, parts, costs, hasDesign, requiresSRI, cantidadHojasBlock]);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in">
             {/* Input Panel */}
-            <div className="lg:col-span-5 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-3 mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
-                    <div className="bg-brand-blue/10 p-2 rounded-lg text-brand-blue">
-                        <PrinterIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Especificaciones Offset</h2>
-                        <p className="text-xs text-gray-500">Configura tu trabajo de imprenta</p>
-                    </div>
-                </div>
-
-                <div className="space-y-5">
-                    {/* Material */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">1. Material</label>
-                        <select value={paperId} onChange={e => setPaperId(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-blue outline-none transition-all">
-                            {PAPERS_DB.map(p => <option key={p.id} value={p.id}>{p.nombre} ({p.width}x{p.height})</option>)}
-                        </select>
+            <div className="lg:col-span-4 space-y-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div className="bg-brand-blue p-2 rounded-lg text-white">
+                            <WrenchScrewdriverIcon className="w-5 h-5" />
+                        </div>
+                        <h2 className="font-bold text-gray-900 dark:text-white">Configurar Trabajo</h2>
                     </div>
 
-                    {/* Tamaño y Cantidad */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2 sm:col-span-1">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">2. Tamaño Final (cm)</label>
-                            <div className="flex items-center gap-2">
-                                <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-2 text-center border rounded-lg dark:bg-gray-700 font-mono" placeholder="Ancho" />
-                                <span className="text-gray-400">x</span>
-                                <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-2 text-center border rounded-lg dark:bg-gray-700 font-mono" placeholder="Alto" />
+                    <div className="space-y-5">
+                        {/* Tipo de Papel */}
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Material (Fuente)</label>
+                            <select value={paperId} onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-brand-blue">
+                                {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id}>{p.nombre} ({p.ancho}x{p.alto}cm)</option>)}
+                            </select>
+                        </div>
+
+                        {/* Tamaño de Corte */}
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Tamaño Final (Corte)</label>
+                            <div className="grid grid-cols-2 gap-2 mb-2">
+                                {SOURCE_PAPERS.find(p=>p.id===paperId)?.tipo === 'RESMA' ? (
+                                    <>
+                                        <button onClick={() => handlePresetChange('OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='OFICIO' ? 'bg-brand-blue text-white' : ''}`}>Oficio</button>
+                                        <button onClick={() => handlePresetChange('1/2_OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='1/2_OFICIO' ? 'bg-brand-blue text-white' : ''}`}>1/2 Of.</button>
+                                        <button onClick={() => handlePresetChange('1/4_OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='1/4_OFICIO' ? 'bg-brand-blue text-white' : ''}`}>1/4 Of.</button>
+                                        <button onClick={() => handlePresetChange('1/8_OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='1/8_OFICIO' ? 'bg-brand-blue text-white' : ''}`}>1/8 Of.</button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => handlePresetChange('A3')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A3' ? 'bg-brand-blue text-white' : ''}`}>A3</button>
+                                        <button onClick={() => handlePresetChange('A4')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A4' ? 'bg-brand-blue text-white' : ''}`}>A4</button>
+                                        <button onClick={() => handlePresetChange('A5')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A5' ? 'bg-brand-blue text-white' : ''}`}>A5</button>
+                                        <button onClick={() => handlePresetChange('A6')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A6' ? 'bg-brand-blue text-white' : ''}`}>A6</button>
+                                    </>
+                                )}
                             </div>
-                            <div className="flex gap-1 mt-2 justify-center">
-                                <button onClick={() => {setFinalW(21); setFinalH(29.7)}} className="text-[10px] px-2 py-0.5 bg-gray-100 rounded hover:bg-gray-200">A4</button>
-                                <button onClick={() => {setFinalW(14.8); setFinalH(21)}} className="text-[10px] px-2 py-0.5 bg-gray-100 rounded hover:bg-gray-200">A5</button>
-                                <button onClick={() => {setFinalW(10.5); setFinalH(14.8)}} className="text-[10px] px-2 py-0.5 bg-gray-100 rounded hover:bg-gray-200">A6</button>
+                            <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-2 pl-6 border rounded-lg text-sm bg-gray-50" />
+                                    <span className="absolute left-2 top-2 text-xs text-gray-400">W</span>
+                                </div>
+                                <span className="text-gray-400">x</span>
+                                <div className="relative flex-1">
+                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-2 pl-6 border rounded-lg text-sm bg-gray-50" />
+                                    <span className="absolute left-2 top-2 text-xs text-gray-400">H</span>
+                                </div>
+                                <span className="text-xs text-gray-500">cm</span>
                             </div>
                         </div>
-                        <div className="col-span-2 sm:col-span-1">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">3. Cantidad</label>
-                            <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 font-bold text-brand-blue" />
+
+                        {/* Cantidad */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Cantidad ({paperId === 'QUIMICO' ? 'Blocks' : 'Unidades'})</label>
+                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-2.5 font-bold text-brand-blue border border-brand-blue/30 rounded-xl focus:ring-2 focus:ring-brand-blue outline-none" />
+                            </div>
                             {paperId === 'QUIMICO' && (
-                                <div className="mt-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase">Partes (Copias)</label>
-                                    <select value={parts} onChange={e => setParts(parseInt(e.target.value))} className="w-full p-1 text-sm border rounded">
-                                        <option value={1}>Solo Original</option>
-                                        <option value={2}>Original + 1 Copia</option>
-                                        <option value={3}>Original + 2 Copias</option>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Hojas/Block</label>
+                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-full p-2.5 border rounded-xl text-sm">
+                                        <option value={100}>100 (Estándar)</option>
+                                        <option value={50}>50 (Medio)</option>
+                                        <option value={25}>25 (Mini)</option>
                                     </select>
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    {/* Colores */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
-                        <label className="block text-xs font-bold text-blue-800 dark:text-blue-300 uppercase mb-3">4. Impresión (Tintas)</label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <span className="text-xs text-gray-500 block mb-1">Frente</span>
-                                <select value={colorsFront} onChange={e => setColorsFront(parseInt(e.target.value))} className="w-full p-2 rounded border text-sm">
-                                    <option value={1}>1 Color (Negro/Spot)</option>
-                                    <option value={2}>2 Colores</option>
-                                    <option value={4}>Full Color (CMYK)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <span className="text-xs text-gray-500 block mb-1">Reverso</span>
-                                <select value={colorsBack} onChange={e => setColorsBack(parseInt(e.target.value))} className="w-full p-2 rounded border text-sm">
-                                    <option value={0}>Sin impresión (Blanco)</option>
-                                    <option value={1}>1 Color</option>
-                                    <option value={4}>Full Color</option>
-                                </select>
+                        {/* Tintas */}
+                        <div className="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl border border-gray-200 dark:border-gray-600">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tintas (Colores)</label>
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <span className="text-[10px] text-gray-400 block mb-1">Frente</span>
+                                    <input type="number" min={1} max={4} value={colorsFront} onChange={e => setColorsFront(parseInt(e.target.value))} className="w-full p-1.5 border rounded text-center text-sm" />
+                                </div>
+                                <div className="flex-1">
+                                    <span className="text-[10px] text-gray-400 block mb-1">Reverso</span>
+                                    <input type="number" min={0} max={4} value={colorsBack} onChange={e => setColorsBack(parseInt(e.target.value))} className="w-full p-1.5 border rounded text-center text-sm" />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Acabados */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">5. Acabados</label>
-                        <div className="flex flex-wrap gap-3">
-                            <label className="flex items-center gap-2 text-sm cursor-pointer select-none px-3 py-1.5 border rounded-full hover:bg-gray-50 transition-colors">
-                                <input type="checkbox" checked={finishing.numerado} onChange={e => setFinishing({...finishing, numerado: e.target.checked})} className="rounded text-brand-blue" />
-                                Numeración
+                        {/* Opciones Extra */}
+                        <div>
+                            <label className="flex items-center gap-2 text-sm text-gray-700 mb-2">
+                                <input type="checkbox" checked={hasDesign} onChange={e => setHasDesign(e.target.checked)} className="rounded text-brand-blue" />
+                                Cliente entrega diseño listo
                             </label>
-                            <label className="flex items-center gap-2 text-sm cursor-pointer select-none px-3 py-1.5 border rounded-full hover:bg-gray-50 transition-colors">
-                                <input type="checkbox" checked={finishing.encolado} onChange={e => setFinishing({...finishing, encolado: e.target.checked})} className="rounded text-brand-blue" />
-                                Encolado (Block)
-                            </label>
-                            <label className="flex items-center gap-2 text-sm cursor-pointer select-none px-3 py-1.5 border rounded-full hover:bg-gray-50 transition-colors">
-                                <input type="checkbox" checked={finishing.perforado} onChange={e => setFinishing({...finishing, perforado: e.target.checked})} className="rounded text-brand-blue" />
-                                Perforado
+                            <label className="flex items-center gap-2 text-sm text-gray-700">
+                                <input type="checkbox" checked={requiresSRI} onChange={e => setRequiresSRI(e.target.checked)} disabled={paperId !== 'QUIMICO'} className="rounded text-brand-blue disabled:opacity-50" />
+                                Requiere Autorización SRI
                             </label>
                         </div>
                     </div>
@@ -415,53 +428,59 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             </div>
 
             {/* Results Panel */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-8 space-y-6">
                 {result ? (
                     <>
-                        {/* Visualizer */}
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col items-center">
-                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 w-full border-b pb-2">Distribución en Pliego</h3>
-                            <PliegoVisualizer 
-                                sheetW={result.paper.width}
-                                sheetH={result.paper.height}
-                                cutW={finalW}
-                                cutH={finalH}
-                                cuts={result.bestCuts}
-                                rotated={result.isRotated}
-                                margin={1.5}
-                            />
+                        {/* Visual Process Pipeline */}
+                        <ProductionPipeline 
+                            sourceName={result.paper.nombre}
+                            sourceType={result.paper.tipo}
+                            sourceSize={`${result.paper.ancho}x${result.paper.alto} cm`}
+                            cutSize={`${finalW}x${finalH} cm`}
+                            cutsPerUnit={result.cutsPerUnit}
+                            prePressCost={result.costPrePrensa}
+                            materialCost={result.costPapelTotal}
+                            printCost={result.costImpresion}
+                        />
+
+                        {/* Cost Breakdown Cards */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                                <p className="text-xs font-bold text-blue-400 uppercase">Papel + Merma</p>
+                                <p className="text-xl font-black text-blue-700 dark:text-blue-300">{formatCurrency(result.costPapelTotal)}</p>
+                            </div>
+                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800">
+                                <p className="text-xs font-bold text-purple-400 uppercase">Pre-Prensa</p>
+                                <p className="text-xl font-black text-purple-700 dark:text-purple-300">{formatCurrency(result.costPrePrensa)}</p>
+                            </div>
+                            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800">
+                                <p className="text-xs font-bold text-orange-400 uppercase">Impresión</p>
+                                <p className="text-xl font-black text-orange-700 dark:text-orange-300">{formatCurrency(result.costImpresion)}</p>
+                            </div>
+                            <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-200 dark:border-gray-600">
+                                <p className="text-xs font-bold text-gray-400 uppercase">Acabados</p>
+                                <p className="text-xl font-black text-gray-700 dark:text-gray-300">{formatCurrency(result.costAcabados)}</p>
+                            </div>
                         </div>
 
-                        {/* Cost Breakdown */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                            <div className="bg-gray-900 p-6 text-white flex justify-between items-center">
-                                <div>
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Costo Total Producción</p>
-                                    <h2 className="text-3xl font-black text-white">{formatCurrency(result.costoProduccion)}</h2>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Precio Venta Sugerido</p>
-                                    <h2 className="text-4xl font-black text-green-400">{formatCurrency(result.pvp)}</h2>
-                                    <p className="text-xs text-gray-400 mt-1 font-mono">Unitario: {formatCurrency(result.unitario)}</p>
-                                </div>
+                        {/* Final Price Big Card */}
+                        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl shadow-xl overflow-hidden text-white p-8 flex flex-col md:flex-row items-center justify-between">
+                            <div>
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Costo de Producción</p>
+                                <p className="text-2xl font-bold text-gray-300">{formatCurrency(result.costoTotalProduccion)}</p>
+                                <p className="text-xs text-gray-500 mt-2">* Incluye materiales, mano de obra y desgaste</p>
                             </div>
+                            
+                            <div className="h-16 w-px bg-gray-700 hidden md:block"></div>
 
-                            <div className="p-6 grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                                <div className="flex justify-between border-b border-dashed border-gray-200 pb-1">
-                                    <span className="text-gray-500">Papel ({result.pliegosTotales} pliegos)</span>
-                                    <span className="font-bold text-gray-800 dark:text-white">{formatCurrency(result.costoPapel)}</span>
+                            <div className="text-center md:text-right mt-6 md:mt-0">
+                                <p className="text-sm font-bold text-green-400 uppercase tracking-widest mb-1">Precio de Venta Sugerido</p>
+                                <div className="flex items-baseline gap-2 justify-center md:justify-end">
+                                    <span className="text-5xl font-black tracking-tighter text-white">{formatCurrency(result.pvp)}</span>
+                                    <span className="text-lg text-gray-400 font-medium">+ IVA</span>
                                 </div>
-                                <div className="flex justify-between border-b border-dashed border-gray-200 pb-1">
-                                    <span className="text-gray-500">Placas CTP</span>
-                                    <span className="font-bold text-gray-800 dark:text-white">{formatCurrency(result.costoPlacas)}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-dashed border-gray-200 pb-1">
-                                    <span className="text-gray-500">Impresión Offset</span>
-                                    <span className="font-bold text-gray-800 dark:text-white">{formatCurrency(result.costoImpresion)}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-dashed border-gray-200 pb-1">
-                                    <span className="text-gray-500">Acabados</span>
-                                    <span className="font-bold text-gray-800 dark:text-white">{formatCurrency(result.costoAcabados)}</span>
+                                <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-full text-xs font-mono">
+                                    Unitario: {formatCurrency(result.unitario)}
                                 </div>
                             </div>
                         </div>
@@ -469,7 +488,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300">
                         <ExclamationTriangleIcon className="w-16 h-16 text-gray-300 mb-4" />
-                        <p className="text-gray-500 font-medium">El tamaño de corte es mayor al pliego.</p>
+                        <p className="text-gray-500 font-medium">El tamaño de corte es mayor al material base.</p>
                         <p className="text-sm text-gray-400">Verifica las medidas ingresadas.</p>
                     </div>
                 )}
@@ -489,29 +508,27 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
     const calculation = useMemo(() => {
         // Factors
-        let clickCost = colorMode === 'COLOR' ? costs.IMPRESION_DIGITAL_A3 : costs.IMPRESION_DIGITAL_BN;
+        let clickCost = colorMode === 'COLOR' ? costs.CLICK_DIGITAL_A3 : costs.CLICK_DIGITAL_BN;
         
         // A4 is roughly half the cost of A3 in terms of master clicks, typically charged as A3/2 or separate counter
-        // Simplifying logic based on print shop standards (A3 click is master)
-        if (format === 'A4') clickCost = clickCost * 0.6; // Slightly more than half due to handling
+        if (format === 'A4') clickCost = clickCost * 0.6; 
         
-        // Paper Cost Factors (Relative to config baselines)
+        // Paper Cost Factors
         let sheetCost = 0;
         switch (paperType) {
-            case 'BOND': sheetCost = costs.PLIEGO_BOND / 4; break; // A3 is ~1/4 of pliego 61x86 roughly
-            case 'COUCHE_115': sheetCost = costs.PLIEGO_COUCHE / 4; break;
-            case 'COUCHE_300': sheetCost = (costs.PLIEGO_COUCHE * 1.5) / 4; break;
-            case 'ADHESIVO': sheetCost = costs.PLIEGO_ADHESIVO / 4; break;
+            case 'BOND': sheetCost = costs.COSTO_RESMA_BOND / 500; break; 
+            case 'COUCHE_115': sheetCost = (costs.COSTO_PLIEGO_COUCHE_300 / 4) * 0.8; break; // Estimado vs 300g
+            case 'COUCHE_300': sheetCost = costs.COSTO_PLIEGO_COUCHE_300 / 4; break; // 1 pliego = 4 A3 aprox
+            case 'ADHESIVO': sheetCost = costs.COSTO_PLIEGO_ADHESIVO / 4; break;
             default: sheetCost = 0.10;
         }
 
         // Calculation
         const totalClicks = quantity * sides;
-        const totalPaper = quantity; // 1 sheet per unit regardless of sides
+        const totalPaper = quantity; 
         
         const productionCost = (totalClicks * clickCost) + (totalPaper * sheetCost);
-        const margin = costs.MARGEN_GANANCIA; // e.g., 0.5
-        const pvp = productionCost * (1 + margin);
+        const pvp = productionCost * (1 + costs.MARGEN_GANANCIA);
         
         return {
             unitCost: productionCost / quantity,
@@ -614,6 +631,41 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                         {formatCurrency(calculation.totalPvp)}
                         <span className="text-lg font-normal text-purple-300">+ IVA</span>
                     </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tabla Maestra de Papeles</h2>
+                    <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" /></button>
+                </div>
+                <div className="p-6 overflow-y-auto">
+                    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th className="px-6 py-3">Código</th>
+                                <th className="px-6 py-3">Nombre</th>
+                                <th className="px-6 py-3">Tipo</th>
+                                <th className="px-6 py-3">Formato</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {SOURCE_PAPERS.map((paper) => (
+                                <tr key={paper.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{paper.id}</td>
+                                    <td className="px-6 py-4">{paper.nombre}</td>
+                                    <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-xs font-bold ${paper.tipo === 'RESMA' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>{paper.tipo}</span></td>
+                                    <td className="px-6 py-4">{paper.ancho} x {paper.alto} cm</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
