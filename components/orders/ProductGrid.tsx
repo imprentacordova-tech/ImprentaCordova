@@ -73,7 +73,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
 
     const categories = useMemo(() => ['Todas', ...new Set(productGroupsAndItems.filter(p => (jobType === TrabajoTipo.SRI ? p.esSRI : !p.esSRI)).map(p => p.categoria))], [productGroupsAndItems, jobType]);
 
-    // 2. Filtrado Inteligente
+    // 2. Filtrado Inteligente y Bloqueo por Régimen
     const filteredItems = useMemo(() => {
         let items = productGroupsAndItems.filter(p =>
             (jobType === TrabajoTipo.SRI ? !!p.esSRI : !p.esSRI) &&
@@ -86,18 +86,24 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             items = items.map(item => {
                 let currentItem: any = { ...item }; // Clone shallow
                 const name = 'groupName' in item ? item.groupName : item.nombre;
-                const isFactura = name.toLowerCase().includes('factura');
-                const isNotaVenta = name.toLowerCase().includes('nota de venta');
-
-                // Negocio Popular NO puede emitir facturas
-                if (clientRegimen === Regimen.NEGOCIO_POPULAR && isFactura) {
-                    currentItem.blocked = true; 
-                    currentItem.reason = "Negocio Popular no emite Facturas";
-                }
-                // General/Emprendedor NO emite Notas de Venta (usualmente)
-                if (clientRegimen !== Regimen.NEGOCIO_POPULAR && isNotaVenta) {
-                    currentItem.blocked = true;
-                    currentItem.reason = "Este régimen usa Facturas";
+                const nameLower = name.toLowerCase();
+                
+                const isNotaVenta = nameLower.includes('nota de venta') || nameLower.includes('notas de venta');
+                const isFactura = nameLower.includes('factura');
+                
+                if (clientRegimen === Regimen.NEGOCIO_POPULAR) {
+                    // Popular NO puede Facturas
+                    if (isFactura) {
+                        currentItem.blocked = true; 
+                        currentItem.reason = "Negocio Popular NO emite Facturas";
+                    }
+                } 
+                else { // Régimen General o Emprendedor
+                    // General NO emite Notas de Venta (regla de negocio del usuario, aunque técnicamente hay excepciones, seguimos el prompt)
+                    if (isNotaVenta) {
+                        currentItem.blocked = true;
+                        currentItem.reason = "Régimen General NO emite Notas de Venta";
+                    }
                 }
                 return currentItem;
             });
@@ -134,7 +140,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                     const isGroup = 'groupName' in item;
                     const name = isGroup ? item.groupName : item.nombre;
                     const price = isGroup && item.variations[0] ? item.variations[0].price : item.precio;
-                    const qty = !isGroup ? productsInCart.get(item.id)?.cantidad : 0; // Simple check
+                    const qty = !isGroup ? productsInCart.get(item.id)?.cantidad : 0; 
                     
                     return (
                         <div 
@@ -146,7 +152,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                             `}
                         >
                             {qty > 0 && <span className="absolute top-2 right-2 bg-brand-blue text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md z-10">{qty}</span>}
-                            {item.blocked && <div className="absolute inset-0 z-20 flex items-center justify-center"><span className="bg-black/70 text-white text-[10px] px-2 py-1 rounded font-bold">{item.reason}</span></div>}
+                            {item.blocked && <div className="absolute inset-0 z-20 flex items-center justify-center"><span className="bg-black/70 text-white text-[10px] px-2 py-1 rounded font-bold text-center mx-2">{item.reason}</span></div>}
                             
                             <div className="mb-3 self-center p-3 bg-gray-50 dark:bg-gray-700 rounded-full group-hover:scale-110 transition-transform">
                                 {isGroup ? <FolderIcon className="w-8 h-8 text-brand-blue"/> : <DocumentIcon className="w-8 h-8 text-gray-400"/>}

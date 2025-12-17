@@ -82,9 +82,9 @@ const USERS_KEY = 'mockUsersData';
 const INVENTARIO_KEY = 'mockInventarioData';
 const PROVEEDORES_KEY = 'mockProveedoresData';
 const TAREAS_PROVEEDOR_KEY = 'mockTareasProveedorData';
-const SRI_KEYS_KEY = 'mockSriKeysData'; // Now stores SriCredential[]
+const SRI_KEYS_KEY = 'mockSriKeysData';
 
-// --- DATOS POR DEFECTO ---
+// --- DATOS POR DEFECTO (CATÁLOGO MEJORADO IMPRENTA CÓRDOVA) ---
 const daysAgo = (days: number) => {
   const date = new Date();
   date.setDate(date.getDate() - days);
@@ -92,9 +92,57 @@ const daysAgo = (days: number) => {
 }
 
 const defaultProductos: Producto[] = [
-  { id: 'p_sri_1', nombre: 'Notas de Venta 1/4 Oficio (Block 100h)', descripcion: 'Para RIMPE Negocio Popular.', precio: 8.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_sri_2', nombre: 'Facturas A4 (Block 100h)', descripcion: 'Facturas grandes.', precio: 25.00, categoria: 'SRI', esSRI: true },
-  { id: 'p_pub_1', nombre: '1000 Volantes A6', descripcion: 'Couché 115g.', precio: 30.00, categoria: 'Publicidad' },
+  // --- SRI: FACTURAS (Solo Régimen General / Emprendedor) ---
+  { id: 'sri_fac_1', nombre: 'Facturas (1/4 Oficio - 1 Block 100h)', descripcion: 'Autocopiativo Original y Copia', precio: 18.00, categoria: 'SRI - Facturación', esSRI: true },
+  { id: 'sri_fac_2', nombre: 'Facturas (1/2 Oficio - 1 Block 100h)', descripcion: 'Autocopiativo Original y Copia', precio: 25.00, categoria: 'SRI - Facturación', esSRI: true },
+  { id: 'sri_fac_3', nombre: 'Facturas (A4 - 1 Block 100h)', descripcion: 'Autocopiativo Original y Copia', precio: 35.00, categoria: 'SRI - Facturación', esSRI: true },
+  { id: 'sri_fac_4', nombre: 'Facturas (Oficio - 1 Block 100h)', descripcion: 'Autocopiativo Original y Copia', precio: 38.00, categoria: 'SRI - Facturación', esSRI: true },
+
+  // --- SRI: NOTAS DE VENTA (Solo RIMPE Popular) ---
+  { id: 'sri_nv_1', nombre: 'Notas de Venta (1/4 Oficio - 1 Block 100h)', descripcion: 'Autocopiativo. Exclusivo RIMPE Popular', precio: 18.00, categoria: 'SRI - Notas Venta', esSRI: true },
+  { id: 'sri_nv_2', nombre: 'Notas de Venta (1/2 Oficio - 1 Block 100h)', descripcion: 'Autocopiativo. Exclusivo RIMPE Popular', precio: 25.00, categoria: 'SRI - Notas Venta', esSRI: true },
+
+  // --- SRI: OTROS DOCUMENTOS ---
+  { id: 'sri_ret_1', nombre: 'Retenciones (A5 - 1 Block 100h)', descripcion: 'Autocopiativo', precio: 22.00, categoria: 'SRI - Otros', esSRI: true },
+  { id: 'sri_guia_1', nombre: 'Guías de Remisión (1/2 Oficio - 1 Block)', descripcion: 'Autocopiativo', precio: 25.00, categoria: 'SRI - Otros', esSRI: true },
+  { id: 'sri_liq_1', nombre: 'Liquidación de Compra (A4 - 1 Block)', descripcion: 'Autocopiativo', precio: 35.00, categoria: 'SRI - Otros', esSRI: true },
+
+  // --- TARJETERÍA ---
+  { id: 'tar_1', nombre: 'Tarjetas de Presentación (1000 u. Couché Brillante)', descripcion: 'Impresión ambos lados, UV Total', precio: 35.00, categoria: 'Tarjetería', esSRI: false },
+  { id: 'tar_2', nombre: 'Tarjetas de Presentación (1000 u. Mate + UV)', descripcion: 'Laminado mate con reserva UV', precio: 45.00, categoria: 'Tarjetería', esSRI: false },
+  { id: 'tar_3', nombre: 'Tarjetas de Presentación (100 u. Digital Express)', descripcion: 'Entrega mismo día. Cartulina 300g', precio: 15.00, categoria: 'Tarjetería', esSRI: false },
+  { id: 'tar_4', nombre: 'Tarjetas de Invitación (Boda/Evento - Lujo)', descripcion: 'Papel fino, relieve, sobre personalizado', precio: 1.50, categoria: 'Tarjetería', esSRI: false },
+  
+  // --- PUBLICIDAD Y PROMOCIÓN ---
+  { id: 'pub_1', nombre: 'Volantes (A6 1000 u. Couché 115g)', descripcion: 'Full color ambos lados', precio: 30.00, categoria: 'Publicidad', esSRI: false },
+  { id: 'pub_2', nombre: 'Volantes (A5 1000 u. Couché 115g)', descripcion: 'Full color ambos lados', precio: 55.00, categoria: 'Publicidad', esSRI: false },
+  { id: 'pub_3', nombre: 'Trípticos (1000 u. A4 Abierto)', descripcion: 'Couché 150g, doblados', precio: 120.00, categoria: 'Publicidad', esSRI: false },
+  { id: 'pub_4', nombre: 'Etiquetas Adhesivas (Pliego A3)', descripcion: 'Troqueladas listas para usar', precio: 1.50, categoria: 'Publicidad', esSRI: false },
+
+  // --- GRAN FORMATO ---
+  { id: 'gf_1', nombre: 'Lona Publicitaria (Metro Cuadrado)', descripcion: 'Impresión Roland 1440dpi', precio: 10.00, categoria: 'Gran Formato', esSRI: false },
+  { id: 'gf_2', nombre: 'Roll Up Banner (85x200cm)', descripcion: 'Estructura aluminio + Lona instalada', precio: 65.00, categoria: 'Gran Formato', esSRI: false },
+  { id: 'gf_3', nombre: 'Vinil Adhesivo (Metro Cuadrado)', descripcion: 'Laminado Mate o Brillo opcional', precio: 12.00, categoria: 'Gran Formato', esSRI: false },
+  { id: 'gf_4', nombre: 'Microperforado (Metro Cuadrado)', descripcion: 'Para vidrios y vehículos', precio: 15.00, categoria: 'Gran Formato', esSRI: false },
+
+  // --- SUBLIMACIÓN Y TEXTIL ---
+  { id: 'sub_1', nombre: 'Taza (Blanca Personalizada)', descripcion: 'Cerámica AAA', precio: 6.00, categoria: 'Sublimación', esSRI: false },
+  { id: 'sub_2', nombre: 'Taza (Mágica Negra a Color)', descripcion: 'Revela imagen con calor', precio: 8.00, categoria: 'Sublimación', esSRI: false },
+  { id: 'sub_3', nombre: 'Gorra (Camionera Logo Full Color)', descripcion: 'Varios colores disponibles', precio: 7.00, categoria: 'Sublimación', esSRI: false },
+  { id: 'sub_4', nombre: 'Camiseta (Publicitaria Poliester)', descripcion: 'Blanca, tacto algodón', precio: 9.00, categoria: 'Sublimación', esSRI: false },
+
+  // --- OFICINA Y VARIOS ---
+  { id: 'ofi_1', nombre: 'Recibos de Caja (Block 100h)', descripcion: 'Papel bond, 1 color', precio: 4.50, categoria: 'Oficina', esSRI: false },
+  { id: 'ofi_2', nombre: 'Sellos (Automáticos Trodat/Shiny)', descripcion: 'Personalizado con logo', precio: 15.00, categoria: 'Oficina', esSRI: false },
+  { id: 'ofi_3', nombre: 'Empastado Tesis (Tapa Dura)', descripcion: 'Letras doradas/plateadas', precio: 25.00, categoria: 'Oficina', esSRI: false },
+  { id: 'ofi_4', nombre: 'Sobres Membretados (Oficio - 100 u.)', descripcion: 'Papel bond 90g full color', precio: 25.00, categoria: 'Oficina', esSRI: false },
+  
+  // --- JUEGOS Y EVENTOS ---
+  { id: 'ev_1', nombre: 'Tablas de Bingo (Ciento)', descripcion: 'Papel bond color o cartulina', precio: 8.00, categoria: 'Eventos', esSRI: false },
+  { id: 'ev_2', nombre: 'Rifas Numeradas (Millar)', descripcion: 'Talonario con numeración y troquel', precio: 35.00, categoria: 'Eventos', esSRI: false },
+  { id: 'ev_3', nombre: 'Tickets Evento (Millar)', descripcion: 'Papel seguridad o couché', precio: 40.00, categoria: 'Eventos', esSRI: false },
+  { id: 'ev_4', nombre: 'Calendarios (Pared 30x40cm)', descripcion: 'Varilla metálica, Full Color', precio: 1.50, categoria: 'Eventos', esSRI: false },
+  { id: 'ev_5', nombre: 'Calendarios (Mesa Triangular)', descripcion: 'Base dura, anillado', precio: 3.50, categoria: 'Eventos', esSRI: false },
 ];
 
 const defaultClientes: Cliente[] = [
@@ -127,7 +175,6 @@ export const getTareasProveedor = async (): Promise<TareaProveedor[]> => getStor
 
 // SRI CREDENTIALS FUNCTIONS
 export const getSriCredentials = async (): Promise<SriCredential[]> => {
-    // Legacy migration check: if stored data is string[], convert to object
     const rawData = await getStoredData(SRI_KEYS_KEY, defaultSriCredentials);
     if (rawData.length > 0 && typeof rawData[0] === 'string') {
         const migrated = (rawData as unknown as string[]).map(k => ({ ruc: k, password: '', origen: 'Legacy' }));
@@ -140,15 +187,11 @@ export const getSriCredentials = async (): Promise<SriCredential[]> => {
 export const addSriCredential = async (cred: SriCredential): Promise<SriCredential[]> => {
     const creds = await getSriCredentials();
     const index = creds.findIndex(c => c.ruc === cred.ruc);
-    
     if (index > -1) {
-        // Update existing
         creds[index] = { ...creds[index], ...cred, updatedAt: new Date().toISOString() };
     } else {
-        // Add new
         creds.push({ ...cred, updatedAt: new Date().toISOString() });
     }
-    
     await setStoredData(SRI_KEYS_KEY, creds);
     return creds;
 };
@@ -156,14 +199,9 @@ export const addSriCredential = async (cred: SriCredential): Promise<SriCredenti
 export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
     const currentCreds = await getSriCredentials();
     const credMap = new Map(currentCreds.map(c => [c.ruc, c]));
-    
     newCreds.forEach(cred => {
-        credMap.set(cred.ruc, { 
-            ...cred, 
-            updatedAt: new Date().toISOString() 
-        });
+        credMap.set(cred.ruc, { ...cred, updatedAt: new Date().toISOString() });
     });
-    
     const updatedList = Array.from(credMap.values());
     await setStoredData(SRI_KEYS_KEY, updatedList);
     return updatedList;
@@ -175,8 +213,6 @@ export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]>
     await setStoredData(SRI_KEYS_KEY, creds);
     return creds;
 };
-
-// ... (Rest of create/update functions remain similar to original but omitted for brevity in this diff, they are unchanged) ...
 
 export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoEstado, usuario: string): Promise<Trabajo> => {
     const trabajos = await getStoredData(TRABAJOS_KEY, defaultTrabajos);
