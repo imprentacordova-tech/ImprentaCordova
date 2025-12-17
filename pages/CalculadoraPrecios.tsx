@@ -89,8 +89,6 @@ const PliegoVisualizer: React.FC<{
     const svgH = sheetH * scale;
 
     // Área imprimible (restar pinza)
-    // Asumimos pinza siempre en el lado largo para máquinas grandes, o lado corto según máquina.
-    // Para simplificar visualización: Pinza arriba.
     const printableY = margin * scale;
 
     // Calcular grid
@@ -288,10 +286,6 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
         const costoPlacas = numPlacas * costs.PLACA_CTP;
         
         const millaresReales = Math.ceil(quantity / 1000);
-        // Costo impresión: Arranque + (Millares extra * costo millar * numero de colores/pasadas)
-        // Simplificado: Costo millar incluye tinta y operario
-        // Pasadas = Colores totales (si es máquina 1 color) o Tiros (si es máquina 4 colores)
-        // Asumimos máquina 1 color típica: Costo por millar por color.
         
         const tirosTotales = millaresReales * (colorsFront + colorsBack);
         const costoImpresion = costs.ARRANQUE_MAQUINA + (tirosTotales * costs.IMPRESION_MILLAR_OFFSET);
@@ -484,6 +478,148 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     );
 };
 
+// --- CALCULADORA DIGITAL (NUEVA IMPLEMENTACIÓN) ---
+const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
+    // Inputs
+    const [format, setFormat] = useState<'A4' | 'A3' | 'SRA3'>('A3');
+    const [paperType, setPaperType] = useState('COUCHE_150');
+    const [colorMode, setColorMode] = useState<'COLOR' | 'BW'>('COLOR');
+    const [sides, setSides] = useState<1 | 2>(1);
+    const [quantity, setQuantity] = useState(10);
+
+    const calculation = useMemo(() => {
+        // Factors
+        let clickCost = colorMode === 'COLOR' ? costs.IMPRESION_DIGITAL_A3 : costs.IMPRESION_DIGITAL_BN;
+        
+        // A4 is roughly half the cost of A3 in terms of master clicks, typically charged as A3/2 or separate counter
+        // Simplifying logic based on print shop standards (A3 click is master)
+        if (format === 'A4') clickCost = clickCost * 0.6; // Slightly more than half due to handling
+        
+        // Paper Cost Factors (Relative to config baselines)
+        let sheetCost = 0;
+        switch (paperType) {
+            case 'BOND': sheetCost = costs.PLIEGO_BOND / 4; break; // A3 is ~1/4 of pliego 61x86 roughly
+            case 'COUCHE_115': sheetCost = costs.PLIEGO_COUCHE / 4; break;
+            case 'COUCHE_300': sheetCost = (costs.PLIEGO_COUCHE * 1.5) / 4; break;
+            case 'ADHESIVO': sheetCost = costs.PLIEGO_ADHESIVO / 4; break;
+            default: sheetCost = 0.10;
+        }
+
+        // Calculation
+        const totalClicks = quantity * sides;
+        const totalPaper = quantity; // 1 sheet per unit regardless of sides
+        
+        const productionCost = (totalClicks * clickCost) + (totalPaper * sheetCost);
+        const margin = costs.MARGEN_GANANCIA; // e.g., 0.5
+        const pvp = productionCost * (1 + margin);
+        
+        return {
+            unitCost: productionCost / quantity,
+            totalCost: productionCost,
+            unitPvp: pvp / quantity,
+            totalPvp: pvp
+        };
+    }, [format, paperType, colorMode, sides, quantity, costs]);
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+            {/* Controls */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6 border-b border-purple-100 dark:border-gray-700 pb-4">
+                    <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
+                        <Sparkles className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Impresión Digital</h2>
+                        <p className="text-xs text-gray-500">Láser / Inkjet de Alta Producción</p>
+                    </div>
+                </div>
+
+                <div className="space-y-5">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Formato</label>
+                        <div className="flex gap-2">
+                            {['A4', 'A3', 'SRA3'].map((f) => (
+                                <button 
+                                    key={f} 
+                                    onClick={() => setFormat(f as any)} 
+                                    className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${format === f ? 'bg-purple-600 text-white border-purple-600 shadow-md' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+                                >
+                                    {f}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Papel</label>
+                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="BOND">Bond 75g</option>
+                                <option value="COUCHE_115">Couché 115g</option>
+                                <option value="COUCHE_300">Couché 300g</option>
+                                <option value="ADHESIVO">Adhesivo Papel</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Cantidad</label>
+                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500" />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Color</label>
+                            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${colorMode === 'COLOR' ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>Color</button>
+                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${colorMode === 'BW' ? 'bg-white shadow text-gray-800' : 'text-gray-500'}`}>B/N</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Caras</label>
+                            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                                <button onClick={() => setSides(1)} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${sides === 1 ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>1 Lado</button>
+                                <button onClick={() => setSides(2)} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${sides === 2 ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>2 Lados</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Results */}
+            <div className="bg-gradient-to-br from-purple-700 to-indigo-800 rounded-2xl shadow-xl text-white p-8 flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                
+                <div>
+                    <h3 className="text-purple-200 font-bold uppercase tracking-wider text-sm mb-6">Cotización Estimada</h3>
+                    
+                    <div className="space-y-4 mb-8">
+                        <div className="flex justify-between items-center border-b border-white/20 pb-2">
+                            <span className="text-sm text-purple-100">Costo Unitario</span>
+                            <span className="font-mono">{formatCurrency(calculation.unitPvp)}</span>
+                        </div>
+                        <div className="flex justify-between items-center border-b border-white/20 pb-2">
+                            <span className="text-sm text-purple-100">Cantidad</span>
+                            <span className="font-mono">{quantity}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-purple-300 italic pt-2">
+                            <span>* Incluye papel y corte básico</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <p className="text-xs uppercase font-bold text-purple-300 mb-1">Total a Cobrar</p>
+                    <div className="text-5xl font-black tracking-tight flex items-baseline gap-2">
+                        {formatCurrency(calculation.totalPvp)}
+                        <span className="text-lg font-normal text-purple-300">+ IVA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- MAIN PAGE ---
 const CalculadoraPreciosPage: React.FC = () => {
     const [mode, setMode] = useState<Mode>('OFFSET');
@@ -542,13 +678,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                 {/* Content Area */}
                 {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
                 
-                {mode === 'DIGITAL' && (
-                    <div className="bg-white dark:bg-gray-800 p-12 text-center rounded-2xl shadow-lg border border-dashed border-gray-300">
-                        <Sparkles className="w-16 h-16 text-purple-200 mx-auto mb-4" />
-                        <h2 className="text-xl font-bold text-gray-400">Módulo Digital en Construcción</h2>
-                        <p className="text-gray-400 mt-2">Próximamente cálculo por click Xerox/Konica.</p>
-                    </div>
-                )}
+                {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
 
                 {/* Configuration Panel */}
                 {mode === 'CONFIG' && (

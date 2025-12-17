@@ -17,14 +17,14 @@ const getUrgencyLevel = (dateStr?: string): UrgencyLevel => {
     const target = new Date(dateStr).getTime();
     const diffDays = (target - now) / (1000 * 3600 * 24);
 
-    if (diffDays < 2) return 'critical';
-    if (diffDays < 5) return 'warning';
+    if (diffDays < 1) return 'critical'; // Less than 24h or passed
+    if (diffDays < 3) return 'warning';
     return 'safe';
 };
 
 const urgencyConfig = {
     critical: { border: 'border-l-red-500', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-600', label: 'Urgente' },
-    warning: { border: 'border-l-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20', text: 'text-yellow-600', label: 'Atención' },
+    warning: { border: 'border-l-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20', text: 'text-yellow-600', label: 'Próximo' },
     safe: { border: 'border-l-green-500', bg: 'bg-white dark:bg-gray-800', text: 'text-gray-500', label: 'A tiempo' },
 };
 
@@ -38,14 +38,15 @@ interface KanbanCardProps {
 }
 
 const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleClick, onTakePhotoClick }) => {
-    const urgency = getUrgencyLevel(trabajo.fechaVencimiento);
+    const targetDate = trabajo.fechaEntrega || trabajo.fechaVencimiento;
+    const urgency = getUrgencyLevel(targetDate);
     const style = urgencyConfig[urgency];
     
     // Calculate progress if dates exist
     const getProgress = () => {
-        if(!trabajo.fechaVencimiento) return 0;
+        if(!targetDate) return 0;
         const start = new Date(trabajo.fechaEntrada).getTime();
-        const end = new Date(trabajo.fechaVencimiento).getTime();
+        const end = new Date(targetDate).getTime();
         const now = new Date().getTime();
         const total = end - start;
         const elapsed = now - start;
@@ -94,10 +95,10 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
                             <span className="font-bold bg-blue-50 dark:bg-blue-900/30 text-brand-blue px-2 py-0.5 rounded-md">
                                 {trabajo.cantidad} uds
                             </span>
-                            {trabajo.fechaVencimiento && (
+                            {targetDate && (
                                 <span className={`flex items-center gap-1 ${style.text}`}>
                                     <ClockIcon className="w-3 h-3" />
-                                    {formatDate(trabajo.fechaVencimiento)}
+                                    {formatDate(targetDate)}
                                 </span>
                             )}
                         </div>
@@ -148,7 +149,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
             </div>
             
             {/* Progress Bar (Visual Indicator of Time Elapsed) */}
-            {trabajo.fechaVencimiento && (
+            {targetDate && (
                 <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
                     <div 
                         className={`h-full ${urgency === 'critical' ? 'bg-red-500' : urgency === 'warning' ? 'bg-yellow-500' : 'bg-green-500'}`} 
@@ -286,7 +287,7 @@ const KDSPage: React.FC = () => {
         // Tag Filter
         switch (activeTag) {
             case 'Urgentes':
-                filtered = filtered.filter(t => getUrgencyLevel(t.fechaVencimiento) !== 'safe');
+                filtered = filtered.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) !== 'safe');
                 break;
             case 'Diseño':
                 filtered = filtered.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado));
