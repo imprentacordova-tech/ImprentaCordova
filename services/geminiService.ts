@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { AIContentRequest, DailySales, FinancialProjection } from "../types";
+import { AIContentRequest, DailySales, FinancialProjection, SupervisorAnalysis } from "../types";
 
 // FIX: Conformed to @google/genai guidelines using process.env.API_KEY
 // This assumes process.env.API_KEY is available in the environment (e.g. via Vite define or Next.js)
@@ -113,6 +113,95 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
 
     } catch (error) {
         console.error("Error generating financial projection:", error);
+        return null;
+    }
+};
+
+export const analyzeDesignWithSupervisor = async (
+    designBase64: string, 
+    originalBase64?: string, 
+    context?: string
+): Promise<SupervisorAnalysis | null> => {
+    if (!ai) {
+        console.warn("Gemini API Key is missing.");
+        return null;
+    }
+
+    const modelId = "gemini-2.5-flash"; // Capable of vision and structured output
+
+    const systemInstruction = `
+        Eres el "Supervisor Maestro de Imprenta": una fusión entre un corrector de estilo de la RAE, un diseñador gráfico senior y un técnico experto en preimpresión.
+        Tu trabajo es analizar los archivos que recibas y proporcionar un diagnóstico inmediato, preciso y constructivo para asegurar la máxima calidad antes de imprimir.
+        
+        Debes escanear el contenido en cuatro capas de profundidad:
+        1. CAPA TÉCNICA (El "Corrector de Antaño"): Detecta erratas ortográficas, gramaticales y de sintaxis. Verifica la legibilidad de las fuentes.
+        2. CAPA DE DISEÑO (El "Director de Arte"): Analiza el equilibrio visual, los espacios en blanco (aire) y la jerarquía visual. Sugiere mejoras en la alineación.
+        3. CAPA DE COLOR (El "Colorista"): Analiza la paleta. ¿Evoca la emoción correcta? Alerta sobre problemas de contraste o conversión RGB a CMYK.
+        4. CAPA COMERCIAL (El "Marketer"): ¿El mensaje es claro? ¿Hay un "Call to Action" visible? Sugiere cambios para impacto de venta.
+
+        TONO: Profesional, conciso, útil y directo. No uses relleno. Habla como un experto viejo pero actualizado.
+    `;
+
+    const parts: any[] = [];
+    
+    // Add Design Image (Required)
+    parts.push({
+        inlineData: {
+            mimeType: "image/jpeg",
+            data: designBase64.split(',')[1] // Remove data:image/jpeg;base64, prefix if present
+        }
+    });
+
+    // Add Original/Reference Image (Optional)
+    if (originalBase64) {
+        parts.push({
+            inlineData: {
+                mimeType: "image/jpeg",
+                data: originalBase64.split(',')[1]
+            }
+        });
+        parts.push({ text: "La segunda imagen es la referencia u original." });
+    }
+
+    parts.push({ text: `Contexto adicional del trabajo: ${context || "Ninguno"}` });
+    parts.push({ text: "Analiza el diseño y dame el diagnóstico." });
+
+    try {
+        const response = await ai.models.generateContent({
+            model: modelId,
+            contents: { parts: parts },
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        estado: { type: Type.STRING, enum: ["VERDE", "AMARILLO", "ROJO"] },
+                        resumen: { type: Type.STRING, description: "Una frase de máximo 15 palabras." },
+                        detalles: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    tipo: { type: Type.STRING, enum: ["TECNICA", "DISENO", "COLOR", "COMERCIAL"] },
+                                    descripcion: { type: Type.STRING },
+                                    sugerencia: { type: Type.STRING }
+                                },
+                                required: ["tipo", "descripcion", "sugerencia"]
+                            }
+                        }
+                    },
+                    required: ["estado", "resumen", "detalles"]
+                }
+            }
+        });
+
+        const jsonText = response.text;
+        if (!jsonText) return null;
+        return JSON.parse(jsonText) as SupervisorAnalysis;
+
+    } catch (error) {
+        console.error("Error analyzing design:", error);
         return null;
     }
 };

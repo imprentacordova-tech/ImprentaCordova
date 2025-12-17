@@ -210,3 +210,15 @@ export interface FinancialProjection {
     lowTrafficDays: string[];
     suggestion: string;
 }
+
+export interface SupervisorDetail {
+    tipo: 'TECNICA' | 'DISENO' | 'COLOR' | 'COMERCIAL';
+    descripcion: string;
+    sugerencia: string;
+}
+
+export interface SupervisorAnalysis {
+    estado: 'VERDE' | 'AMARILLO' | 'ROJO';
+    resumen: string;
+    detalles: SupervisorDetail[];
+}

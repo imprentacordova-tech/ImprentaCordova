@@ -1,66 +1,88 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon, ArrowRightIcon, BoxIcon } from '../components/Icons';
+import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon, ArrowRightIcon, BoxIcon, PhotoIcon, StarIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
 // --- TIPOS Y ESTADOS ---
 
-type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG';
+type Mode = 'OFFSET' | 'DIGITAL' | 'PUBLICIDAD' | 'SUBLIMACION' | 'CONFIG';
 
 // --- 1. CONFIGURACIÓN DE COSTOS (PERSONALIZADA ECUADOR) ---
 interface CostConfig {
-    // Materia Prima (Papeles)
-    COSTO_RESMA_QUIMICO_ORIG: number; // Paquete 500h Oficio
-    COSTO_RESMA_QUIMICO_COPIA: number; // Paquete 500h Oficio
-    COSTO_RESMA_BOND: number;         // Paquete 500h Oficio
-    COSTO_PLIEGO_COUCHE_300: number;  // Precio por unidad (de paquete de 100)
-    COSTO_PLIEGO_ADHESIVO: number;    // Precio por unidad
+    // Materia Prima (Papeles - Offset)
+    COSTO_RESMA_QUIMICO_ORIG: number;
+    COSTO_RESMA_QUIMICO_COPIA: number;
+    COSTO_RESMA_BOND: number;
+    COSTO_PLIEGO_COUCHE_300: number;
+    COSTO_PLIEGO_ADHESIVO: number;
     
-    // Pre-Prensa
-    COSTO_DISENO_SRI: number;         // Costo fijo servicio
-    COSTO_PLACA_POLIESTER: number;    // Costo por placa (master)
-    COSTO_PLACA_CTP: number;          // Costo por chapa metalica
+    // Pre-Prensa Offset
+    COSTO_DISENO_SRI: number;
+    COSTO_PLACA_POLIESTER: number;
+    COSTO_PLACA_CTP: number;
     
-    // Impresión
-    COSTO_ARRANQUE: number;           // Puesta a punto
-    COSTO_MILLAR_IMPRESION: number;   // Mano de obra x 1000
+    // Impresión Offset
+    COSTO_ARRANQUE: number;
+    COSTO_MILLAR_IMPRESION: number;
     
     // Digital
     CLICK_DIGITAL_A3: number;
     CLICK_DIGITAL_BN: number;
     
-    // Acabados
-    COSTO_NUMERACION: number;         // Por millar
-    COSTO_BLOCK_ENCOLADO: number;     // Por unidad de block
-    COSTO_CORTE: number;              // Fijo
+    // Gran Formato (Publicidad)
+    COSTO_M2_LONA: number;
+    COSTO_M2_VINIL: number;
+    COSTO_TINTA_M2: number; // Costo tinta por m2
+    COSTO_ESTRUCTURA_ROLLUP: number;
+
+    // Sublimación
+    COSTO_TAZA: number;
+    COSTO_GORRA: number;
+    COSTO_CAMISETA: number;
+    COSTO_INSUMOS_SUB: number; // Costo hoja + tinta + luz por unidad
+
+    // Acabados Generales
+    COSTO_NUMERACION: number;
+    COSTO_BLOCK_ENCOLADO: number;
+    COSTO_CORTE: number;
     
     // Rentabilidad
-    MARGEN_GANANCIA: number;          // 0.30 - 1.00
+    MARGEN_GANANCIA: number;
 }
 
 const DEFAULT_COSTS: CostConfig = {
-    // Datos del usuario (Actualizados según prompt)
+    // Offset
     COSTO_RESMA_QUIMICO_ORIG: 47.00,
     COSTO_RESMA_QUIMICO_COPIA: 46.00,
     COSTO_RESMA_BOND: 4.50,
-    COSTO_PLIEGO_COUCHE_300: 0.51, // $51 el paquete de 100 pliegos
+    COSTO_PLIEGO_COUCHE_300: 0.51,
     COSTO_PLIEGO_ADHESIVO: 1.10,
-    
     COSTO_DISENO_SRI: 5.00,
     COSTO_PLACA_POLIESTER: 3.00,
     COSTO_PLACA_CTP: 6.00,
-    
     COSTO_ARRANQUE: 10.00,
     COSTO_MILLAR_IMPRESION: 4.00,
-    
-    CLICK_DIGITAL_A3: 0.40,
-    CLICK_DIGITAL_BN: 0.10,
-    
     COSTO_NUMERACION: 4.00,
     COSTO_BLOCK_ENCOLADO: 0.15,
     COSTO_CORTE: 1.50,
     
-    MARGEN_GANANCIA: 0.40 // 40% ganancia neta objetivo
+    // Digital
+    CLICK_DIGITAL_A3: 0.40,
+    CLICK_DIGITAL_BN: 0.10,
+
+    // Publicidad
+    COSTO_M2_LONA: 1.80,
+    COSTO_M2_VINIL: 2.50,
+    COSTO_TINTA_M2: 1.50,
+    COSTO_ESTRUCTURA_ROLLUP: 22.00,
+
+    // Sublimación
+    COSTO_TAZA: 1.10,
+    COSTO_GORRA: 1.50,
+    COSTO_CAMISETA: 3.50,
+    COSTO_INSUMOS_SUB: 0.40,
+    
+    MARGEN_GANANCIA: 0.40 
 };
 
 // --- 2. MODELO DE PAPELES (FUENTE) ---
@@ -80,55 +102,6 @@ const SOURCE_PAPERS: SourcePaper[] = [
     { id: 'ADHESIVO', nombre: 'Adhesivo Brillante', tipo: 'PLIEGO', ancho: 70, alto: 100, costoBaseKey: 'COSTO_PLIEGO_ADHESIVO' },
 ];
 
-// --- COMPONENTE VISUAL STEP ---
-const VisualStep: React.FC<{
-    title: string;
-    image: string;
-    subtitle: string;
-    detail: string;
-    cost?: number;
-    isLast?: boolean;
-}> = ({ title, image, subtitle, detail, cost, isLast }) => (
-    <div className="flex-1 relative group w-full md:w-auto">
-        {/* Connector Line (Desktop) */}
-        {!isLast && (
-            <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-1 bg-gray-200 dark:bg-gray-700 z-0"></div>
-        )}
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 relative z-10 h-full flex flex-col">
-            {/* Image Area */}
-            <div className="h-28 w-full relative overflow-hidden bg-gray-100">
-                <img src={image} alt={title} className="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
-                    <span className="text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-                        <span className="bg-brand-blue w-4 h-4 rounded-full flex items-center justify-center text-[8px]">{title.split('.')[0]}</span>
-                        {title.split('. ')[1]}
-                    </span>
-                </div>
-            </div>
-            
-            {/* Content Area */}
-            <div className="p-3 flex flex-col flex-grow">
-                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1 leading-tight">{subtitle}</h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 flex-grow">{detail}</p>
-                {cost !== undefined && (
-                    <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-2 mt-auto">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Costo</span>
-                        <span className="font-mono font-bold text-sm text-brand-blue">{formatCurrency(cost)}</span>
-                    </div>
-                )}
-            </div>
-        </div>
-        
-        {/* Connector Arrow (Mobile) */}
-        {!isLast && (
-            <div className="md:hidden flex justify-center py-2">
-                <ArrowRightIcon className="w-5 h-5 text-gray-300 transform rotate-90" />
-            </div>
-        )}
-    </div>
-);
-
 // --- COMPONENTE VISUAL DE PROCESO (PIPELINE) ---
 const ProductionPipeline: React.FC<{ 
     sourceName: string; 
@@ -141,46 +114,32 @@ const ProductionPipeline: React.FC<{
     printCost: number;
 }> = ({ sourceName, sourceType, sourceSize, cutSize, cutsPerUnit, prePressCost, materialCost, printCost }) => {
     
-    // URLs de imágenes visuales para cada paso
-    const images = {
-        input: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=400", // Resma de papel
-        prepress: "https://images.unsplash.com/photo-1626785774573-4b7993143a2d?auto=format&fit=crop&q=80&w=400", // Placas/Diseño
-        print: "https://i.imgur.com/AUvl1wF.png", // Máquina Offset (Roland)
-        finish: "https://i.imgur.com/cKqbnJj.jpeg" // Producto Terminado (Papelería)
-    };
-
     return (
-        <div className="w-full py-4">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-                <VisualStep 
-                    title="1. Entrada" 
-                    image={images.input} 
-                    subtitle={sourceName} 
-                    detail={`${sourceType === 'RESMA' ? 'Resma (500h)' : 'Pliego'} • ${sourceSize}`}
-                    cost={materialCost}
-                />
-                <VisualStep 
-                    title="2. Pre-Prensa" 
-                    image={images.prepress} 
-                    subtitle="Diseño & Placas" 
-                    detail="Autorización SRI + Placa Poliéster/CTP"
-                    cost={prePressCost}
-                />
-                <VisualStep 
-                    title="3. Ejecución" 
-                    image={images.print} 
-                    subtitle="Impresión Offset" 
-                    detail="Tiraje en máquina + Puesta a punto"
-                    cost={printCost}
-                />
-                <VisualStep 
-                    title="4. Salida" 
-                    image={images.finish} 
-                    subtitle="Producto Final" 
-                    detail={`Formato ${cutSize} (${cutsPerUnit} cortes p/${sourceType === 'RESMA' ? 'hoja' : 'pliego'})`}
-                    isLast
-                />
-            </div>
+        <div className="w-full py-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm relative">
+                <div className="absolute top-2 right-2 bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">ENTRADA</div>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm">{sourceName}</h4>
+                <p className="text-xs text-gray-500 mt-1">{sourceSize}</p>
+                <p className="text-xs font-mono text-brand-blue mt-2 font-bold">{formatCurrency(materialCost)}</p>
+             </div>
+             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm relative">
+                <div className="absolute top-2 right-2 bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded">PRE-PRENSA</div>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm">Placas / Diseño</h4>
+                <p className="text-xs text-gray-500 mt-1">Matriz & Ajustes</p>
+                <p className="text-xs font-mono text-brand-blue mt-2 font-bold">{formatCurrency(prePressCost)}</p>
+             </div>
+             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm relative">
+                <div className="absolute top-2 right-2 bg-orange-100 text-orange-800 text-[10px] font-bold px-2 py-0.5 rounded">PROCESO</div>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm">Impresión</h4>
+                <p className="text-xs text-gray-500 mt-1">Tiraje & Tinta</p>
+                <p className="text-xs font-mono text-brand-blue mt-2 font-bold">{formatCurrency(printCost)}</p>
+             </div>
+             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm relative">
+                <div className="absolute top-2 right-2 bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded">SALIDA</div>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm">Producto Final</h4>
+                <p className="text-xs text-gray-500 mt-1">{cutSize}</p>
+                <p className="text-xs text-gray-500">{cutsPerUnit} cortes / un.</p>
+             </div>
         </div>
     );
 };
@@ -231,56 +190,42 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     const result = useMemo(() => {
         const paper = SOURCE_PAPERS.find(p => p.id === paperId) || SOURCE_PAPERS[0];
         
-        // 1. Cálculo de Cortes (Imposición)
-        // Margen técnico de pinza y refile
         const marginY = 1.0; 
         const marginX = 0.5;
-        
         const usableW = paper.ancho - marginX;
         const usableH = paper.alto - marginY;
 
-        // Opción A: Normal
         const colsA = Math.floor(usableW / finalW);
         const rowsA = Math.floor(usableH / finalH);
         const cutsA = colsA * rowsA;
 
-        // Opción B: Rotado
         const colsB = Math.floor(usableW / finalH);
         const rowsB = Math.floor(usableH / finalW);
         const cutsB = colsB * rowsB;
 
         const cutsPerUnit = Math.max(cutsA, cutsB);
-        
         if (cutsPerUnit === 0) return null;
 
-        // 2. Cálculo de Material (Papel)
         let totalSheetsNeeded = 0;
         let costPapelTotal = 0;
 
         if (paper.id === 'QUIMICO') {
-            // Lógica Especial: Resmas separadas (Original + Copias)
-            // blocks * hojas_por_block = total juegos
             const totalJuegos = quantity * cantidadHojasBlock; 
             const bajadasNecesarias = Math.ceil(totalJuegos / cutsPerUnit);
-            
-            // Merma (10% + 20 hojas base para arranque)
             const merma = Math.ceil(bajadasNecesarias * 0.10) + 20; 
             const totalBajadasConMerma = bajadasNecesarias + merma;
 
-            // Precio por hoja individual (sacado del precio de resma de 500)
             const costoHojaOriginal = costs.COSTO_RESMA_QUIMICO_ORIG / 500;
             const costoHojaCopia = costs.COSTO_RESMA_QUIMICO_COPIA / 500;
             
-            // Costo Material = (Hojas Orig * Costo) + (Hojas Copia * Num Copias * Costo)
             const costoTotalOrig = totalBajadasConMerma * costoHojaOriginal;
             const costoTotalCopia = totalBajadasConMerma * (parts - 1) * costoHojaCopia;
             
             costPapelTotal = costoTotalOrig + costoTotalCopia;
-            totalSheetsNeeded = totalBajadasConMerma * parts; // Total hojas físicas pasadas por máquina
+            totalSheetsNeeded = totalBajadasConMerma * parts; 
 
         } else if (paper.tipo === 'RESMA') {
-            // Bond, etc. Venta por millar o resma
-            const totalUnidades = quantity; // Volantes
+            const totalUnidades = quantity; 
             const bajadas = Math.ceil(totalUnidades / cutsPerUnit);
             const merma = Math.ceil(bajadas * 0.10) + 30;
             const totalHojas = bajadas + merma;
@@ -290,52 +235,40 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             totalSheetsNeeded = totalHojas;
 
         } else {
-            // Pliego (Couché, Adhesivo)
             const totalUnidades = quantity;
             const bajadas = Math.ceil(totalUnidades / cutsPerUnit);
-            const merma = Math.ceil(bajadas * 0.10) + 5; // Menos merma en pliego grande proporcionalmente
+            const merma = Math.ceil(bajadas * 0.10) + 5;
             const totalPliegos = bajadas + merma;
             
-            // CORRECCION: El usuario dijo "$51 el paquete de 100". Entonces unitario es 0.51.
             costPapelTotal = totalPliegos * costs[paper.costoBaseKey];
             totalSheetsNeeded = totalPliegos;
         }
 
-        // 3. Pre-Prensa
         let costPrePrensa = 0;
         if (!hasDesign) {
-            costPrePrensa += requiresSRI ? costs.COSTO_DISENO_SRI : 5.00; // Diseño básico
+            costPrePrensa += requiresSRI ? costs.COSTO_DISENO_SRI : 5.00;
         }
         
-        // Placas: Poliester para tirajes cortos (< 2000), CTP para largos o alta calidad
-        // Lógica simple: Si es químico o bond corto tiraje -> Poliester.
         const numPlacas = colorsFront + colorsBack;
         const costoPlacaUnit = (quantity > 2000 || paper.id === 'COUCHE_300') ? costs.COSTO_PLACA_CTP : costs.COSTO_PLACA_POLIESTER;
         
         const costPlacas = numPlacas * costoPlacaUnit;
         costPrePrensa += costPlacas;
 
-        // 4. Impresión
         const millares = Math.ceil(totalSheetsNeeded / 1000);
-        const tiros = millares * (colorsFront + colorsBack); // Aproximación simple de tiros
-        // En offset pequeño, se cobra a veces por "quemado" o "arranque" mas millar.
-        // Aquí simplificamos: Arranque + (Millares * Costo)
+        const tiros = millares * (colorsFront + colorsBack); 
         const costImpresion = costs.COSTO_ARRANQUE + (tiros * costs.COSTO_MILLAR_IMPRESION);
 
-        // 5. Acabados
-        let costAcabados = costs.COSTO_CORTE; // Siempre hay refile
+        let costAcabados = costs.COSTO_CORTE; 
         if (paper.id === 'QUIMICO') {
-            costAcabados += (quantity * costs.COSTO_BLOCK_ENCOLADO); // Encolado de blocks
-            costAcabados += (millares * costs.COSTO_NUMERACION); // Numeración
+            costAcabados += (quantity * costs.COSTO_BLOCK_ENCOLADO); 
+            costAcabados += (millares * costs.COSTO_NUMERACION); 
         }
 
-        // 6. Totales
         const costoTotalProduccion = costPapelTotal + costPrePrensa + costImpresion + costAcabados;
         const utilidadEsperada = costoTotalProduccion * costs.MARGEN_GANANCIA;
-        // Ajuste de mercado: Si es muy bajo, subir al mínimo.
         let pvp = costoTotalProduccion + utilidadEsperada;
         
-        // Regla de mínimos (ej. un ciento de facturas no baja de $15-$18)
         if (paper.id === 'QUIMICO' && quantity === 1 && pvp < 15) pvp = 15;
 
         return {
@@ -459,7 +392,6 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             <div className="lg:col-span-8 space-y-6">
                 {result ? (
                     <>
-                        {/* Visual Process Pipeline */}
                         <ProductionPipeline 
                             sourceName={result.paper.nombre}
                             sourceType={result.paper.tipo}
@@ -470,26 +402,6 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             materialCost={result.costPapelTotal}
                             printCost={result.costImpresion}
                         />
-
-                        {/* Cost Breakdown Cards */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
-                                <p className="text-xs font-bold text-blue-400 uppercase">Papel + Merma</p>
-                                <p className="text-xl font-black text-blue-700 dark:text-blue-300">{formatCurrency(result.costPapelTotal)}</p>
-                            </div>
-                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800">
-                                <p className="text-xs font-bold text-purple-400 uppercase">Pre-Prensa</p>
-                                <p className="text-xl font-black text-purple-700 dark:text-purple-300">{formatCurrency(result.costPrePrensa)}</p>
-                            </div>
-                            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800">
-                                <p className="text-xs font-bold text-orange-400 uppercase">Impresión</p>
-                                <p className="text-xl font-black text-orange-700 dark:text-orange-300">{formatCurrency(result.costImpresion)}</p>
-                            </div>
-                            <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <p className="text-xs font-bold text-gray-400 uppercase">Acabados</p>
-                                <p className="text-xl font-black text-gray-700 dark:text-gray-300">{formatCurrency(result.costAcabados)}</p>
-                            </div>
-                        </div>
 
                         {/* Final Price Big Card */}
                         <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl shadow-xl overflow-hidden text-white p-8 flex flex-col md:flex-row items-center justify-between">
@@ -525,7 +437,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     );
 };
 
-// --- CALCULADORA DIGITAL (NUEVA IMPLEMENTACIÓN) ---
+// --- CALCULADORA DIGITAL ---
 const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     // Inputs
     const [format, setFormat] = useState<'A4' | 'A3' | 'SRA3'>('A3');
@@ -537,21 +449,18 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     const calculation = useMemo(() => {
         // Factors
         let clickCost = colorMode === 'COLOR' ? costs.CLICK_DIGITAL_A3 : costs.CLICK_DIGITAL_BN;
-        
-        // A4 is roughly half the cost of A3 in terms of master clicks, typically charged as A3/2 or separate counter
         if (format === 'A4') clickCost = clickCost * 0.6; 
         
         // Paper Cost Factors
         let sheetCost = 0;
         switch (paperType) {
             case 'BOND': sheetCost = costs.COSTO_RESMA_BOND / 500; break; 
-            case 'COUCHE_115': sheetCost = (costs.COSTO_PLIEGO_COUCHE_300 / 4) * 0.8; break; // Estimado vs 300g
-            case 'COUCHE_300': sheetCost = costs.COSTO_PLIEGO_COUCHE_300 / 4; break; // 1 pliego = 4 A3 aprox
+            case 'COUCHE_115': sheetCost = (costs.COSTO_PLIEGO_COUCHE_300 / 4) * 0.8; break; 
+            case 'COUCHE_300': sheetCost = costs.COSTO_PLIEGO_COUCHE_300 / 4; break; 
             case 'ADHESIVO': sheetCost = costs.COSTO_PLIEGO_ADHESIVO / 4; break;
             default: sheetCost = 0.10;
         }
 
-        // Calculation
         const totalClicks = quantity * sides;
         const totalPaper = quantity; 
         
@@ -568,7 +477,6 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
-            {/* Controls */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-6 border-b border-purple-100 dark:border-gray-700 pb-4">
                     <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
@@ -631,13 +539,11 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                 </div>
             </div>
 
-            {/* Results */}
             <div className="bg-gradient-to-br from-purple-700 to-indigo-800 rounded-2xl shadow-xl text-white p-8 flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                 
                 <div>
                     <h3 className="text-purple-200 font-bold uppercase tracking-wider text-sm mb-6">Cotización Estimada</h3>
-                    
                     <div className="space-y-4 mb-8">
                         <div className="flex justify-between items-center border-b border-white/20 pb-2">
                             <span className="text-sm text-purple-100">Costo Unitario</span>
@@ -647,9 +553,6 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             <span className="text-sm text-purple-100">Cantidad</span>
                             <span className="font-mono">{quantity}</span>
                         </div>
-                        <div className="flex justify-between items-center text-xs text-purple-300 italic pt-2">
-                            <span>* Incluye papel y corte básico</span>
-                        </div>
                     </div>
                 </div>
 
@@ -658,6 +561,196 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                     <div className="text-5xl font-black tracking-tight flex items-baseline gap-2">
                         {formatCurrency(calculation.totalPvp)}
                         <span className="text-lg font-normal text-purple-300">+ IVA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- CALCULADORA PUBLICIDAD (GRAN FORMATO) ---
+const AdvertisingCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
+    const [material, setMaterial] = useState<'LONA' | 'VINIL'>('LONA');
+    const [width, setWidth] = useState(1); // Metros
+    const [height, setHeight] = useState(1); // Metros
+    const [quantity, setQuantity] = useState(1);
+    const [finishing, setFinishing] = useState<'NINGUNO' | 'OJALES' | 'ROLLUP'>('NINGUNO');
+
+    const result = useMemo(() => {
+        const area = width * height;
+        const totalArea = area * quantity;
+        
+        let materialCostM2 = material === 'LONA' ? costs.COSTO_M2_LONA : costs.COSTO_M2_VINIL;
+        const inkCost = costs.COSTO_TINTA_M2 * totalArea;
+        const baseCost = (materialCostM2 * totalArea) + inkCost;
+        
+        let finishingCost = 0;
+        if (finishing === 'ROLLUP') {
+            finishingCost = costs.COSTO_ESTRUCTURA_ROLLUP * quantity;
+        } else if (finishing === 'OJALES') {
+            // Estimado ojales: cada 50cm
+            const perimeter = (width + height) * 2;
+            const ojalesCount = Math.ceil(perimeter / 0.5) * quantity;
+            finishingCost = ojalesCount * 0.10; // $0.10 por ojal aprox
+        }
+
+        const productionCost = baseCost + finishingCost;
+        const pvp = productionCost * (1 + costs.MARGEN_GANANCIA);
+
+        return { totalArea, productionCost, pvp, unitPvp: pvp / quantity };
+    }, [material, width, height, quantity, finishing, costs]);
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-blue-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6 border-b border-blue-100 dark:border-gray-700 pb-4">
+                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                        <PhotoIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Gran Formato</h2>
+                        <p className="text-xs text-gray-500">Gigantografías y Señalética</p>
+                    </div>
+                </div>
+
+                <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Material</label>
+                            <select value={material} onChange={e => setMaterial(e.target.value as any)} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none">
+                                <option value="LONA">Lona Front</option>
+                                <option value="VINIL">Vinil Adhesivo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Cantidad</label>
+                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value)))} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold outline-none" />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 items-center">
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Ancho (m)</label>
+                            <input type="number" step="0.1" value={width} onChange={e => setWidth(parseFloat(e.target.value))} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold outline-none" />
+                        </div>
+                        <span className="text-gray-400 mt-6">x</span>
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Alto (m)</label>
+                            <input type="number" step="0.1" value={height} onChange={e => setHeight(parseFloat(e.target.value))} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold outline-none" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Acabado</label>
+                        <div className="flex gap-2">
+                            {['NINGUNO', 'OJALES', 'ROLLUP'].map((f) => (
+                                <button 
+                                    key={f} 
+                                    onClick={() => setFinishing(f as any)} 
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-bold border transition-all ${finishing === f ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
+                                >
+                                    {f}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-700 to-cyan-800 rounded-2xl shadow-xl text-white p-8 flex flex-col justify-between">
+                <div>
+                    <h3 className="text-blue-200 font-bold uppercase tracking-wider text-sm mb-6">Detalle</h3>
+                    <div className="space-y-4 mb-8">
+                        <div className="flex justify-between items-center border-b border-white/20 pb-2">
+                            <span className="text-sm text-blue-100">Área Total</span>
+                            <span className="font-mono">{result.totalArea.toFixed(2)} m²</span>
+                        </div>
+                        <div className="flex justify-between items-center border-b border-white/20 pb-2">
+                            <span className="text-sm text-blue-100">Precio Unitario</span>
+                            <span className="font-mono">{formatCurrency(result.unitPvp)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p className="text-xs uppercase font-bold text-blue-300 mb-1">Total a Cobrar</p>
+                    <div className="text-5xl font-black tracking-tight flex items-baseline gap-2">
+                        {formatCurrency(result.pvp)}
+                        <span className="text-lg font-normal text-blue-300">+ IVA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- CALCULADORA SUBLIMACION ---
+const SublimationCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
+    const [productType, setProductType] = useState<'TAZA' | 'GORRA' | 'CAMISETA'>('TAZA');
+    const [quantity, setQuantity] = useState(1);
+
+    const result = useMemo(() => {
+        let baseCost = 0;
+        switch (productType) {
+            case 'TAZA': baseCost = costs.COSTO_TAZA; break;
+            case 'GORRA': baseCost = costs.COSTO_GORRA; break;
+            case 'CAMISETA': baseCost = costs.COSTO_CAMISETA; break;
+        }
+        
+        const productionCost = (baseCost + costs.COSTO_INSUMOS_SUB) * quantity;
+        const pvp = productionCost * (1 + costs.MARGEN_GANANCIA);
+        
+        return { productionCost, pvp, unitPvp: pvp / quantity };
+    }, [productType, quantity, costs]);
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6 border-b border-orange-100 dark:border-gray-700 pb-4">
+                    <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
+                        <StarIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Sublimación</h2>
+                        <p className="text-xs text-gray-500">Artículos Promocionales</p>
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Producto</label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {['TAZA', 'GORRA', 'CAMISETA'].map((p) => (
+                                <button 
+                                    key={p} 
+                                    onClick={() => setProductType(p as any)} 
+                                    className={`py-3 rounded-xl text-xs font-bold border transition-all flex flex-col items-center justify-center gap-2 ${productType === p ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+                                >
+                                    <BoxIcon className="w-5 h-5"/>
+                                    {p}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Cantidad</label>
+                        <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value)))} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-600 to-red-700 rounded-2xl shadow-xl text-white p-8 flex flex-col justify-between">
+                <div>
+                    <h3 className="text-orange-200 font-bold uppercase tracking-wider text-sm mb-6">Cotización</h3>
+                    <div className="flex justify-between items-center border-b border-white/20 pb-2">
+                        <span className="text-sm text-orange-100">Costo Unitario</span>
+                        <span className="font-mono">{formatCurrency(result.unitPvp)}</span>
+                    </div>
+                </div>
+                <div>
+                    <p className="text-xs uppercase font-bold text-orange-300 mb-1">Total a Cobrar</p>
+                    <div className="text-5xl font-black tracking-tight flex items-baseline gap-2">
+                        {formatCurrency(result.pvp)}
+                        <span className="text-lg font-normal text-orange-300">+ IVA</span>
                     </div>
                 </div>
             </div>
@@ -745,12 +838,18 @@ const CalculadoraPreciosPage: React.FC = () => {
 
                 {/* Mode Selector (Tabs) */}
                 {mode !== 'CONFIG' && (
-                    <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl mb-8 max-w-md">
-                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${mode === 'OFFSET' ? 'bg-white text-brand-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                            <PrinterIcon className="w-4 h-4"/> Offset / Imprenta
+                    <div className="flex overflow-x-auto p-1 bg-gray-200 dark:bg-gray-800 rounded-xl mb-8 max-w-2xl gap-1">
+                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${mode === 'OFFSET' ? 'bg-white text-brand-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                            <PrinterIcon className="w-4 h-4"/> Offset
                         </button>
-                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${mode === 'DIGITAL' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                            <Sparkles className="w-4 h-4"/> Digital / Rápido
+                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${mode === 'DIGITAL' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                            <Sparkles className="w-4 h-4"/> Digital
+                        </button>
+                        <button onClick={() => setMode('PUBLICIDAD')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${mode === 'PUBLICIDAD' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                            <PhotoIcon className="w-4 h-4"/> Publicidad
+                        </button>
+                        <button onClick={() => setMode('SUBLIMACION')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${mode === 'SUBLIMACION' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                            <StarIcon className="w-4 h-4"/> Sublimación
                         </button>
                     </div>
                 )}
@@ -759,6 +858,10 @@ const CalculadoraPreciosPage: React.FC = () => {
                 {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
                 
                 {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
+
+                {mode === 'PUBLICIDAD' && <AdvertisingCalculator costs={costs} />}
+
+                {mode === 'SUBLIMACION' && <SublimationCalculator costs={costs} />}
 
                 {/* Configuration Panel */}
                 {mode === 'CONFIG' && (

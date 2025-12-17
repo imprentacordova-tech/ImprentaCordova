@@ -26,6 +26,7 @@ import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
 import DisenoPage from './pages/Diseno';
 import TrackingPage from './pages/Tracking';
 import QuioscoPage from './pages/Quiosco';
+import CorregidorPage from './pages/Corregidor';
 import { User } from './types';
 
 // Componente para proteger las rutas de administrador
@@ -129,6 +130,7 @@ const App: React.FC = () => {
                             
                             {/* -- Herramientas -- */}
                             <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
+                            <Route path="/corregidor" element={<CorregidorPage />} />
                             
                             {/* -- Finanzas & Reportes -- */}
                             <Route path="/finanzas" element={<FinanzasPage />} />
