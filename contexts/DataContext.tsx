@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential } from '../types';
 import * as api from '../services/mockApi';
 
@@ -14,25 +14,26 @@ interface DataContextType {
     tareas: TareaProveedor[];
     sriCredentials: SriCredential[];
     
-    // Loading States
+    // Meta State
     loading: boolean;
     syncing: boolean;
     error: string | null;
+    lastUpdated: Date;
 
     // Actions
-    refreshData: () => Promise<void>;
+    refreshData: (fullReload?: boolean) => Promise<void>;
     addCliente: (c: any) => Promise<Cliente>;
     updateCliente: (id: string, c: any) => Promise<void>;
     addTrabajo: (t: any, user: string) => Promise<Trabajo>;
     updateTrabajoStatus: (id: string, status: any, user: string) => Promise<void>;
     addProducto: (p: any) => Promise<any>;
     updateProducto: (id: string, p: any) => Promise<void>;
-    // ... se pueden añadir más acciones específicas según necesidad
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    // --- State Definitions ---
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
     const [productos, setProductos] = useState<Producto[]>([]);
@@ -45,58 +46,91 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-    const refreshData = useCallback(async () => {
+    // Ref to avoid closure stale state in intervals if needed, though simpler approach used here
+    const isFirstLoad = useRef(true);
+
+    // --- Core Data Fetching Logic ---
+
+    const refreshData = useCallback(async (fullReload = false) => {
         setSyncing(true);
         try {
-            // Carga paralela para eficiencia
-            const [
-                cData, tData, pData, uData, iData, provData, taskData, sriData
-            ] = await Promise.all([
-                api.getClientes(),
-                api.getTrabajos(),
-                api.getProductos(),
-                api.getUsers(),
-                api.getInventario(),
-                api.getProveedores(),
-                api.getTareasProveedor(),
-                api.getSriCredentials()
-            ]);
-
-            setClientes(cData);
+            // High frequency data (Always fetch)
+            const tData = await api.getTrabajos();
             setTrabajos(tData);
-            setProductos(pData);
-            setUsers(uData);
-            setInventario(iData);
-            setProveedores(provData);
-            setTareas(taskData);
-            setSriCredentials(sriData);
+
+            // Low frequency data (Fetch only on full reload or first load)
+            if (fullReload || isFirstLoad.current) {
+                const [
+                    cData, pData, uData, iData, provData, taskData, sriData
+                ] = await Promise.all([
+                    api.getClientes(),
+                    api.getProductos(),
+                    api.getUsers(),
+                    api.getInventario(),
+                    api.getProveedores(),
+                    api.getTareasProveedor(),
+                    api.getSriCredentials()
+                ]);
+
+                setClientes(cData);
+                setProductos(pData);
+                setUsers(uData);
+                setInventario(iData);
+                setProveedores(provData);
+                setTareas(taskData);
+                setSriCredentials(sriData);
+                isFirstLoad.current = false;
+            }
+            
+            setLastUpdated(new Date());
             setError(null);
         } catch (err) {
             console.error("Error cargando datos:", err);
-            setError("Error de sincronización con la base de datos.");
+            // Don't set global error on background sync failure to avoid UI disruption
+            if (isFirstLoad.current) {
+                setError("Error de sincronización con la base de datos.");
+            }
         } finally {
             setLoading(false);
             setSyncing(false);
         }
     }, []);
 
-    // Carga inicial
+    // --- Lifecycle Effects ---
+
+    // 1. Initial Load
     useEffect(() => {
-        refreshData();
+        refreshData(true);
     }, [refreshData]);
 
-    // --- Wrappers para acciones que actualizan el estado local optimísticamente o recargan ---
+    // 2. Smart Polling (Heartbeat) - Sync only high-frequency data (Trabajos) every 30s
+    useEffect(() => {
+        const heartbeat = setInterval(() => {
+            if (!document.hidden) { // Only sync if tab is active
+                refreshData(false);
+            }
+        }, 30000); 
+
+        return () => clearInterval(heartbeat);
+    }, [refreshData]);
+
+    // --- Optimistic Actions Wrappers ---
 
     const addCliente = async (clienteData: any) => {
+        // Optimistic UI could be applied here, but for creation IDs usually come from backend/service logic
+        // For now, we wait for service but update local state immediately after
         const newCliente = await api.createCliente(clienteData);
         setClientes(prev => [newCliente, ...prev]);
         return newCliente;
     };
 
     const updateClienteState = async (id: string, data: any) => {
-        await api.updateCliente(id, data);
+        // Optimistic
         setClientes(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+        // Background Sync
+        await api.updateCliente(id, data);
     };
 
     const addTrabajo = async (trabajoData: any, user: string) => {
@@ -106,8 +140,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const updateTrabajoStatusState = async (id: string, status: any, user: string) => {
-        await api.updateTrabajoStatus(id, status, user);
+        // Optimistic Update
         setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizadoPor: user } : t));
+        // Background API Call
+        await api.updateTrabajoStatus(id, status, user);
     };
 
     const addProducto = async (p: any) => {
@@ -117,13 +153,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const updateProductoState = async (id: string, p: any) => {
-        await api.updateProducto(id, p);
         setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));
+        await api.updateProducto(id, p);
     };
 
     const value = {
         clientes, trabajos, productos, users, inventario, proveedores, tareas, sriCredentials,
-        loading, syncing, error,
+        loading, syncing, error, lastUpdated,
         refreshData,
         addCliente,
         updateCliente: updateClienteState,

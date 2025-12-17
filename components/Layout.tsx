@@ -4,7 +4,7 @@ import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
-import { getTrabajos } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,7 +24,7 @@ const navGroups = [
     title: 'OPERACIONES',
     items: [
       { path: "/nuevo", label: "Nuevo Pedido", icon: AddIcon },
-      { path: "/diseno", label: "Estudio Diseño", icon: PaletteIcon }, // Added Design Link
+      { path: "/diseno", label: "Estudio Diseño", icon: PaletteIcon },
       { path: "/kds", label: "Taller Producción", icon: KdsIcon },
       { path: "/trabajos", label: "Historial Trabajos", icon: DocumentIcon },
       { path: "/retiros", label: "Entregas", icon: ReceiptIcon },
@@ -64,21 +64,15 @@ const navGroups = [
 
 const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     const location = useLocation();
+    const { trabajos } = useData(); // Use Context directly
     const [vitrinaCount, setVitrinaCount] = useState(0);
     const [designCount, setDesignCount] = useState(0);
 
-    // Fetch counts for badges
+    // Calculate badges based on reactive context data
     useEffect(() => {
-        const fetchCount = async () => {
-            const trabajos = await getTrabajos();
-            setVitrinaCount(trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length);
-            setDesignCount(trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length);
-        };
-        
-        fetchCount();
-        const interval = setInterval(fetchCount, 10000);
-        return () => clearInterval(interval);
-    }, []);
+        setVitrinaCount(trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length);
+        setDesignCount(trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length);
+    }, [trabajos]);
 
     return (
       <aside className="w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col h-full border-r border-gray-200 dark:border-gray-700">

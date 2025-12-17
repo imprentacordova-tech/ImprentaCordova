@@ -6,7 +6,7 @@ import { Trabajo, TrabajoEstado, User } from '../types';
 import { 
     SolidDollarIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon, Loader2Icon, 
     ArrowRightIcon, PaletteIcon, PrinterIcon, CheckCircleIcon, DocumentIcon,
-    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon
+    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon, ArrowDownIcon, ArrowUpIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
@@ -17,9 +17,11 @@ const StatCard: React.FC<{
     value: string; 
     icon: React.ComponentType<{ className?: string }>; 
     trend?: string;
-    variant: 'blue' | 'green' | 'red';
+    trendValue?: number; // Porcentaje o diferencia
+    inverseTrend?: boolean; // True si "bajar" es bueno (ej: tiempo), False si "subir" es bueno (ej: dinero)
+    variant: 'blue' | 'green' | 'red' | 'indigo';
     to: string;
-}> = ({ title, value, icon: Icon, trend, variant, to }) => {
+}> = ({ title, value, icon: Icon, trend, trendValue, inverseTrend, variant, to }) => {
     const styles = {
         blue: { 
             bg: 'bg-white dark:bg-gray-800', 
@@ -39,8 +41,28 @@ const StatCard: React.FC<{
             iconColor: 'text-rose-600',
             border: 'hover:border-rose-300 dark:hover:border-rose-700'
         },
+        indigo: { 
+            bg: 'bg-white dark:bg-gray-800', 
+            iconBg: 'bg-indigo-50 dark:bg-indigo-900/30', 
+            iconColor: 'text-indigo-600',
+            border: 'hover:border-indigo-300 dark:hover:border-indigo-700'
+        },
     };
     const s = styles[variant];
+
+    // Lógica de color para la tendencia
+    let trendColor = 'text-gray-400';
+    let TrendIcon = null;
+
+    if (trendValue !== undefined && trendValue !== 0) {
+        const isPositiveChange = trendValue > 0;
+        // Si inverseTrend es true (ej: tiempo), subir es malo (rojo), bajar es bueno (verde)
+        // Si inverseTrend es false (ej: dinero), subir es bueno (verde), bajar es malo (rojo)
+        const isGood = inverseTrend ? !isPositiveChange : isPositiveChange;
+        
+        trendColor = isGood ? 'text-emerald-500' : 'text-red-500';
+        TrendIcon = isPositiveChange ? ArrowUpIcon : ArrowDownIcon;
+    }
 
     return (
         <NavLink 
@@ -55,12 +77,15 @@ const StatCard: React.FC<{
                 <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{title}</p>
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{value}</h3>
-                    {trend && (
-                        <div className="flex items-center mt-2 text-xs font-medium text-gray-400 gap-1">
-                            <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-300">Info</span>
-                            {trend}
-                        </div>
-                    )}
+                    <div className="flex items-center mt-2 text-xs font-medium gap-2">
+                        {TrendIcon && (
+                            <span className={`flex items-center ${trendColor} bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded`}>
+                                <TrendIcon className="w-3 h-3 mr-1" />
+                                {Math.abs(trendValue || 0).toFixed(1)}%
+                            </span>
+                        )}
+                        <span className="text-gray-400">{trend || 'vs mes anterior'}</span>
+                    </div>
                 </div>
                 <div className={`p-3 rounded-xl ${s.iconBg} transition-transform group-hover:scale-110 duration-300`}>
                     <Icon className={`w-6 h-6 ${s.iconColor}`} />
@@ -175,7 +200,9 @@ const DashboardPage: React.FC = () => {
         saldosPendientes: 0,
         diseno: 0,
         produccion: 0,
-        vitrina: 0
+        vitrina: 0,
+        velocidadPromedio: 0, // En días
+        velocidadDiff: 0 // Diferencia porcentual vs mes anterior
     });
     const [recentJobs, setRecentJobs] = useState<Trabajo[]>([]);
 
@@ -184,14 +211,53 @@ const DashboardPage: React.FC = () => {
 
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
         
+        // 1. Ingresos Hoy
         const trabajosHoy = trabajos.filter(t => new Date(t.fechaEntrada) >= today);
         const ingresosHoy = trabajosHoy.reduce((sum, t) => sum + t.abono, 0);
         
-        // Calcular saldo total pendiente de todos los trabajos activos (no entregados) + entregados con deuda (raro pero posible)
+        // 2. Saldos Pendientes
         const saldos = trabajos
             .filter(t => t.saldo > 0 && t.estado !== TrabajoEstado.ENTREGADO)
             .reduce((sum, t) => sum + t.saldo, 0);
+
+        // 3. Velocidad de Servicio (Lead Time)
+        // Función auxiliar para calcular promedio de horas
+        const calculateAvgHours = (startDate: Date, endDate: Date) => {
+            const completedJobs = trabajos.filter(t => {
+                const entryDate = new Date(t.fechaEntrada);
+                return entryDate >= startDate && 
+                       entryDate <= endDate && 
+                       (t.estado === TrabajoEstado.VITRINA || t.estado === TrabajoEstado.ENTREGADO) &&
+                       t.fechaEntrega; // Usamos fechaEntrega como proxy de finalización
+            });
+
+            if (completedJobs.length === 0) return 0;
+
+            const totalHours = completedJobs.reduce((acc, t) => {
+                const start = new Date(t.fechaEntrada).getTime();
+                const end = new Date(t.fechaEntrega!).getTime();
+                const diffHours = (end - start) / (1000 * 60 * 60);
+                return acc + Math.max(0, diffHours); // Evitar negativos
+            }, 0);
+
+            return totalHours / completedJobs.length;
+        };
+
+        const avgHoursCurrentMonth = calculateAvgHours(startOfMonth, now);
+        const avgHoursLastMonth = calculateAvgHours(startOfLastMonth, endOfLastMonth);
+        
+        // Convertir a días para visualización si es > 24h
+        const avgDaysDisplay = avgHoursCurrentMonth / 24;
+        
+        // Calcular diferencia porcentual (trend)
+        let speedDiff = 0;
+        if (avgHoursLastMonth > 0) {
+            speedDiff = ((avgHoursCurrentMonth - avgHoursLastMonth) / avgHoursLastMonth) * 100;
+        }
 
         setStats({
             ingresosHoy,
@@ -199,7 +265,9 @@ const DashboardPage: React.FC = () => {
             saldosPendientes: saldos,
             diseno: trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length,
             produccion: trabajos.filter(t => t.estado === TrabajoEstado.PROCESO).length,
-            vitrina: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length
+            vitrina: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length,
+            velocidadPromedio: avgDaysDisplay,
+            velocidadDiff: speedDiff
         });
 
         setRecentJobs(
@@ -215,6 +283,11 @@ const DashboardPage: React.FC = () => {
         if (hour < 12) return 'Buenos días';
         if (hour < 18) return 'Buenas tardes';
         return 'Buenas noches';
+    };
+
+    const formatSpeed = (days: number) => {
+        if (days < 1) return `${(days * 24).toFixed(1)} Horas`;
+        return `${days.toFixed(1)} Días`;
     };
 
     if (loading) {
@@ -284,7 +357,7 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* Main Stats Row (Interactive) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 <StatCard 
                     title="Ingresos (Hoy)" 
                     value={formatCurrency(stats.ingresosHoy)} 
@@ -308,6 +381,16 @@ const DashboardPage: React.FC = () => {
                     variant="red"
                     trend="Gestionar cobros"
                     to="/retiros"
+                />
+                <StatCard 
+                    title="Velocidad de Servicio" 
+                    value={formatSpeed(stats.velocidadPromedio)} 
+                    icon={SolidClockIcon} // Using clock icon for time metric
+                    variant="indigo"
+                    trend="vs mes anterior"
+                    trendValue={stats.velocidadDiff}
+                    inverseTrend={true} // Bajar es bueno (verde)
+                    to="/kds"
                 />
             </div>
 

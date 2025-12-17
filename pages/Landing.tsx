@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -9,6 +10,7 @@ import { getProductos, createPublicPedido } from '../services/mockApi';
 import { Producto } from '../types';
 import { formatCurrency } from '../utils';
 import AIHelper from '../components/AIHelper';
+import QuickQuoteCalculator from '../components/QuickQuoteCalculator';
 
 // --- UTILIDADES DE INTERFAZ ---
 
@@ -175,49 +177,13 @@ const HeroSection: React.FC = () => (
                     </div>
                 </div>
 
-                {/* Right Column: Static Composition */}
-                <div className="relative hidden lg:block h-[600px]">
-                    {/* Main Image (Large Format Printer / Workshop) */}
-                    <div className="absolute top-10 left-10 w-4/5 h-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 transform -rotate-2 hover:rotate-0 transition-all duration-700 z-10 bg-gray-800">
-                        <img 
-                            src="https://i.imgur.com/AUvl1wF.png" 
-                            alt="Taller de Impresión" 
-                            className="w-full h-full object-cover opacity-90 hover:scale-110 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent flex items-end p-8">
-                            <div>
-                                <p className="text-orange-400 font-bold uppercase tracking-wider text-sm mb-1">Tecnología Roland</p>
-                                <h3 className="text-white font-bold text-2xl">Gigantografías HD</h3>
-                            </div>
-                        </div>
+                {/* Right Column: Calculator (Replacing static image for better conversion) */}
+                <div className="relative hidden lg:block">
+                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-500">
+                        <QuickQuoteCalculator />
                     </div>
-
-                    {/* Secondary Image (Flyers/Stationery - Floating Top Right) */}
-                    <div className="absolute -top-4 right-4 w-64 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white transform rotate-6 hover:rotate-3 transition-all duration-500 z-20 bg-white animate-float">
-                        <img 
-                            src="https://i.imgur.com/cKqbnJj.jpeg" 
-                            alt="Papelería" 
-                            className="w-full h-full object-cover"
-                        />
-                        <div className="absolute bottom-2 left-2 bg-brand-red text-white text-[10px] font-bold px-2 py-1 rounded">
-                            OFFSET & DIGITAL
-                        </div>
-                    </div>
-
-                    {/* Tertiary Image (Merch - Floating Bottom Left) */}
-                    <div className="absolute bottom-8 -left-4 w-56 h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 transform hover:scale-105 transition-all duration-500 z-30">
-                        <img 
-                            src="https://i.imgur.com/TnsNdTS.png" 
-                            alt="Merchandising" 
-                            className="w-full h-full object-cover"
-                        />
-                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                            <span className="text-white font-bold">Merch</span>
-                        </div>
-                    </div>
-
-                    {/* Decorative Elements */}
-                    <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
+                    {/* Decorative Blob behind calculator */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-white/5 rounded-full blur-3xl -z-0"></div>
                 </div>
             </div>
         </div>
@@ -587,6 +553,14 @@ const LandingPage: React.FC = () => {
             <main>
                 <HeroSection />
                 <ServicesSection />
+                {/* Adding Quick Quote Calculator here */}
+                <div className="relative py-16 bg-slate-50">
+                    <div className="container mx-auto px-6 relative z-10 flex justify-center">
+                        <div className="w-full max-w-4xl transform hover:scale-[1.01] transition-transform duration-500">
+                            <QuickQuoteCalculator />
+                        </div>
+                    </div>
+                </div>
                 <AIHelper />
                 <CatalogPreview onAddToCart={handleAddToCart} />
             </main>

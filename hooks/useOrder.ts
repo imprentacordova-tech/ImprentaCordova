@@ -1,8 +1,9 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential } from '../types';
-import { createTrabajo, getSriCredentials } from '../services/mockApi';
+import { createTrabajo } from '../services/mockApi';
 import { getConfig } from '../services/configService';
+import { useData } from '../contexts/DataContext';
 
 export interface CartItem {
     producto: Producto;
@@ -10,6 +11,8 @@ export interface CartItem {
 }
 
 export const useOrder = (user: string) => {
+    const { sriCredentials, trabajos } = useData(); // Consume trabajos for LTV calculation
+    
     // Estado del Pedido
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
     const [selectedProductos, setSelectedProductos] = useState<Map<string, CartItem>>(new Map());
@@ -17,6 +20,7 @@ export const useOrder = (user: string) => {
     const [titular, setTitular] = useState('');
     const [abono, setAbono] = useState(0);
     const [esRenovacion, setEsRenovacion] = useState(false);
+    const [discount, setDiscount] = useState(0); // 0 to 1 (e.g. 0.05 for 5%)
     
     // Estado SRI
     const [sriData, setSriData] = useState({
@@ -37,11 +41,34 @@ export const useOrder = (user: string) => {
         setSriData(prev => ({ ...prev, establecimiento: estab, puntoEmision: pto }));
     }, []);
 
+    // --- VIP & LTV LOGIC ---
+    const { ltv, isVip } = useMemo(() => {
+        if (!selectedCliente) return { ltv: 0, isVip: false };
+        
+        const totalHistorico = trabajos
+            .filter(t => t.clienteId === selectedCliente.id)
+            .reduce((sum, t) => sum + t.total, 0);
+            
+        return { 
+            ltv: totalHistorico, 
+            isVip: totalHistorico > 500 // Threshold for VIP
+        };
+    }, [selectedCliente, trabajos]);
+
+    // Auto-apply discount for VIPs
+    useEffect(() => {
+        if (isVip) {
+            setDiscount(0.05); // 5% Discount
+        } else {
+            setDiscount(0);
+        }
+    }, [isVip]);
+
     // Lógica Inteligente SRI al seleccionar cliente
     useEffect(() => {
-        const checkCredentials = async () => {
+        const checkCredentials = () => {
             if (selectedCliente) {
-                const creds = await getSriCredentials();
+                const creds = sriCredentials; 
                 const ruc = selectedCliente.ruc || selectedCliente.cedula;
                 const cred = creds.find(c => c.ruc === ruc || (ruc.length === 10 && c.ruc === ruc + '001'));
                 
@@ -52,7 +79,6 @@ export const useOrder = (user: string) => {
                         foundCredential: cred,
                         autoFilled: true 
                     }));
-                    // Resetear el efecto visual de "auto-fill"
                     setTimeout(() => setSriData(prev => ({ ...prev, autoFilled: false })), 2000);
                 } else {
                     setSriData(prev => ({ ...prev, claveAcceso: '', foundCredential: null }));
@@ -64,12 +90,15 @@ export const useOrder = (user: string) => {
             }
         };
         checkCredentials();
-    }, [selectedCliente]);
+    }, [selectedCliente, sriCredentials]);
 
-    // Cálculos
-    const orderTotal = useMemo(() => {
+    // Cálculos Financieros
+    const subtotal = useMemo(() => {
         return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => total + (item.producto.precio * item.cantidad), 0);
     }, [selectedProductos]);
+
+    const discountAmount = subtotal * discount;
+    const orderTotal = subtotal - discountAmount;
 
     const totalItems = useMemo(() => {
         return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => total + item.cantidad, 0);
@@ -121,6 +150,7 @@ export const useOrder = (user: string) => {
                 cantidad: items.reduce((sum: number, i: CartItem) => sum + i.cantidad, 0),
                 tamano: 'Varios',
                 total: orderTotal,
+                descuento: discountAmount, // Save discount info
                 abono,
                 estado: TrabajoEstado.PENDIENTE,
                 establecimiento: jobType === TrabajoTipo.SRI ? sriData.establecimiento : undefined,
@@ -144,6 +174,7 @@ export const useOrder = (user: string) => {
         setSelectedProductos(new Map());
         setTitular('');
         setAbono(0);
+        setDiscount(0);
         setCreatedTrabajo(null);
         setJobType(TrabajoTipo.GENERAL);
         setEsRenovacion(false);
@@ -153,15 +184,23 @@ export const useOrder = (user: string) => {
     return {
         // State
         selectedCliente,
-        cartItems: Array.from(selectedProductos.values()), // Exportar como array para facilitar renderizado
+        cartItems: Array.from(selectedProductos.values()),
         jobType,
         titular,
         abono,
         esRenovacion,
         sriData,
+        // Financials
+        subtotal,
+        discount,
+        discountAmount,
         orderTotal,
         totalItems,
         saldo,
+        // VIP Info
+        isVip,
+        ltv,
+        // UI State
         isLoading,
         createdTrabajo,
 
@@ -170,6 +209,7 @@ export const useOrder = (user: string) => {
         setJobType,
         setTitular,
         setAbono,
+        setDiscount,
         setEsRenovacion,
         setSriData,
 

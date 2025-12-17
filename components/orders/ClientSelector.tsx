@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { createCliente } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
-import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, CheckCircleIcon } from '../Icons';
+import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, CheckCircleIcon, StarIcon, DollarIcon } from '../Icons';
+import { formatCurrency } from '../../utils';
 
 // Helper para Inputs
 const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
@@ -130,11 +131,18 @@ interface ClientSelectorProps {
 }
 
 const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
-    const { clientes } = useData();
+    const { clientes, trabajos } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     
-    // Simple filter
+    // Helper to calculate LTV dynamically
+    const getClientLtv = (clientId: string) => {
+        return trabajos
+            .filter(t => t.clienteId === clientId)
+            .reduce((sum, t) => sum + t.total, 0);
+    };
+
+    // Filter
     const filteredClients = searchTerm.length > 1 
         ? clientes.filter(c => 
             c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -160,26 +168,47 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
             {searchTerm.length > 1 && (
                 <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
                     {filteredClients.length > 0 ? (
-                        filteredClients.map((c) => (
-                            <div 
-                                key={c.id} 
-                                onClick={() => onSelectClient(c)}
-                                className="p-4 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 flex justify-between items-center transition-colors group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm group-hover:scale-110 transition-transform">
-                                        {c.nombre.charAt(0).toUpperCase()}
+                        filteredClients.map((c) => {
+                            const ltv = getClientLtv(c.id);
+                            const isVip = ltv > 500;
+
+                            return (
+                                <div 
+                                    key={c.id} 
+                                    onClick={() => onSelectClient(c)}
+                                    className="p-4 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 flex justify-between items-center transition-colors group relative overflow-hidden"
+                                >
+                                    {isVip && <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-400"></div>}
+                                    
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative">
+                                            <div className="h-10 w-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm group-hover:scale-110 transition-transform">
+                                                {c.nombre.charAt(0).toUpperCase()}
+                                            </div>
+                                            {isVip && <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-0.5"><StarIcon className="w-3 h-3 text-yellow-900 fill-current" /></div>}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-bold text-gray-900 dark:text-white leading-tight">{c.nombre}</p>
+                                                {isVip && <span className="text-[10px] bg-yellow-100 text-yellow-800 border border-yellow-200 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">VIP 🌟</span>}
+                                            </div>
+                                            <p className="text-sm text-gray-500 flex items-center gap-1"><ShieldCheckIcon className="w-3 h-3"/> {c.cedula}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white leading-tight">{c.nombre}</p>
-                                        <p className="text-sm text-gray-500 flex items-center gap-1"><ShieldCheckIcon className="w-3 h-3"/> {c.cedula}</p>
+                                    
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                            {c.regimen}
+                                        </span>
+                                        {ltv > 0 && (
+                                            <span className="text-[10px] text-green-600 font-semibold flex items-center gap-0.5">
+                                                <DollarIcon className="w-3 h-3"/> Hist: {formatCurrency(ltv)}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                                    {c.regimen}
-                                </span>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <div className="p-6 text-center">
                             <p className="text-gray-500 mb-4">No se encontraron clientes.</p>

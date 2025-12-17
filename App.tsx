@@ -25,6 +25,7 @@ import ProveedoresPage from './pages/Proveedores';
 import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
 import DisenoPage from './pages/Diseno';
 import TrackingPage from './pages/Tracking';
+import QuioscoPage from './pages/Quiosco';
 import { User } from './types';
 
 // Componente para proteger las rutas de administrador
@@ -94,6 +95,7 @@ const App: React.FC = () => {
                            ================================================================== */}
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/tracking" element={<TrackingPage />} />
+                        <Route path="/quiosco" element={<QuioscoPage />} />
                         
                         {/* Login: Redirige al Dashboard si ya está autenticado */}
                         <Route 
