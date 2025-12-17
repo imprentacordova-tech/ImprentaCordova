@@ -1,12 +1,9 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { Bar, BarChart, CartesianGrid, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line, Area, ComposedChart } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line } from 'recharts';
 import { getTrabajos, getClientes } from '../services/mockApi';
-import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo, FinancialProjection, DailySales } from '../types';
+import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo } from '../types';
 import { formatCurrency } from '../utils';
-import { DollarIcon, FinanceIcon, ClockIcon, ArrowDownTrayIcon, BoxIcon, SolidFinanceIcon, SparklesIcon, Loader2Icon } from '../components/Icons';
-import { generateFinancialProjection } from '../services/geminiService';
-import { useToast } from '../contexts/ToastContext';
+import { DollarIcon, FinanceIcon, ClockIcon, ArrowDownTrayIcon, BoxIcon, SolidFinanceIcon } from '../components/Icons';
 
 // KPI Card Component
 interface KpiCardProps {
@@ -78,15 +75,10 @@ const toISODateString = (date: Date) => {
 };
 
 const FinanzasPage: React.FC = () => {
-    const { addToast } = useToast();
     const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [loading, setLoading] = useState(true);
     
-    // AI Projection State
-    const [projection, setProjection] = useState<FinancialProjection | null>(null);
-    const [isProjecting, setIsProjecting] = useState(false);
-
     const getStartOfMonth = () => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -106,92 +98,30 @@ const FinanzasPage: React.FC = () => {
         fetchData();
     }, []);
 
-    // 90-day history for AI Context
-    const dailySalesHistory = useMemo(() => {
-        const history: DailySales[] = [];
+    const monthlyTrendData = useMemo(() => {
+        const last30Days = new Map<string, number>();
         const today = new Date();
-        const startHistory = new Date();
-        startHistory.setDate(today.getDate() - 90);
-
-        const salesMap = new Map<string, number>();
-        
-        // Init map with 0
-        for (let d = new Date(startHistory); d <= today; d.setDate(d.getDate() + 1)) {
-            salesMap.set(toISODateString(d), 0);
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const dateString = date.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' });
+            last30Days.set(dateString, 0);
         }
 
         trabajos.forEach(t => {
             const entryDate = new Date(t.fechaEntrada);
-            if (entryDate >= startHistory && entryDate <= today) {
-                const dateStr = toISODateString(entryDate);
-                if (salesMap.has(dateStr)) {
-                    salesMap.set(dateStr, salesMap.get(dateStr)! + t.total); // Using total, not just abono, for sales projection
+            const diffDays = (today.getTime() - entryDate.getTime()) / (1000 * 3600 * 24);
+            if (diffDays >= 0 && diffDays < 30) {
+                const dateString = entryDate.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' });
+                if (last30Days.has(dateString)) {
+                    last30Days.set(dateString, last30Days.get(dateString)! + t.abono);
                 }
             }
         });
 
-        // Convert map to sorted array
-        Array.from(salesMap.entries())
-            .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-            .forEach(([date, sales]) => history.push({ date, sales }));
-
-        return history;
+        return Array.from(last30Days.entries()).map(([name, Ingresos]) => ({ name, Ingresos }));
     }, [trabajos]);
-
-    // Data for the Chart (last 30 days + projection if available)
-    const combinedChartData = useMemo(() => {
-        // 1. Get last 30 days of actual data
-        const chartData: any[] = [];
-        const today = new Date();
-        const startDisplay = new Date();
-        startDisplay.setDate(today.getDate() - 30);
-
-        // Filter history for display
-        const recentHistory = dailySalesHistory.filter(d => new Date(d.date) >= startDisplay);
-        
-        recentHistory.forEach(d => {
-            chartData.push({
-                name: new Date(d.date).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' }),
-                dateISO: d.date,
-                Ventas: d.sales,
-                Proyeccion: null
-            });
-        });
-
-        // 2. Append Projection if available
-        if (projection) {
-            // Add a connection point (last actual data point as start of projection)
-            if (chartData.length > 0) {
-                const lastPoint = chartData[chartData.length - 1];
-                // Update last point to have projection start point same as actual to connect lines
-                lastPoint.Proyeccion = lastPoint.Ventas;
-            }
-
-            projection.forecast.forEach(d => {
-                chartData.push({
-                    name: new Date(d.date).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' }),
-                    dateISO: d.date,
-                    Ventas: null,
-                    Proyeccion: d.sales
-                });
-            });
-        }
-
-        return chartData;
-    }, [dailySalesHistory, projection]);
     
-    const handleGenerateProjection = async () => {
-        setIsProjecting(true);
-        const result = await generateFinancialProjection(dailySalesHistory);
-        if (result) {
-            setProjection(result);
-            addToast("Proyección generada con éxito", "success");
-        } else {
-            addToast("No se pudo generar la proyección. Intenta luego.", "error");
-        }
-        setIsProjecting(false);
-    };
-
     const ticketPromedio = useMemo(() => {
         if (trabajos.length === 0) return 0;
         const totalIngresos = trabajos.reduce((sum, t) => sum + t.total, 0);
@@ -201,6 +131,9 @@ const FinanzasPage: React.FC = () => {
     const financialData = useMemo(() => {
         if (loading) return null;
 
+        // Robust date parsing to avoid timezone issues.
+        // new Date('YYYY-MM-DD') parses as UTC midnight, which can cause off-by-one-day errors in some timezones.
+        // This method ensures the date is parsed in the user's local timezone.
         const [startY, startM, startD] = startDate.split('-').map(Number);
         const start = new Date(startY, startM - 1, startD, 0, 0, 0, 0);
         
@@ -325,88 +258,18 @@ const FinanzasPage: React.FC = () => {
                 <KpiCard title="Saldos Pendientes (Total)" value={formatCurrency(financialData.saldosPendientes)} icon={ClockIcon} variant="red" />
             </div>
 
-            {/* --- AI PROJECTION CHART SECTION --- */}
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            Tendencia & Proyección
-                            {projection && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full uppercase font-bold border border-purple-200">AI Powered</span>}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Análisis histórico y predicción de ventas futuras.</p>
-                    </div>
-                    <button 
-                        onClick={handleGenerateProjection} 
-                        disabled={isProjecting}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95 ${isProjecting ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-purple-500/30'}`}
-                    >
-                        {isProjecting ? <Loader2Icon className="w-4 h-4 animate-spin"/> : <SparklesIcon className="w-4 h-4 text-yellow-300"/>}
-                        {projection ? 'Regenerar Proyección' : 'Generar Proyección IA'}
-                    </button>
-                </div>
-
-                <div className="h-[350px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={combinedChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#0B42A7" stopOpacity={0.2}/>
-                                    <stop offset="95%" stopColor="#0B42A7" stopOpacity={0}/>
-                                </linearGradient>
-                                <linearGradient id="colorProyeccion" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#9333ea" stopOpacity={0.1}/>
-                                    <stop offset="95%" stopColor="#9333ea" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                            <XAxis dataKey="name" tick={{ fill: '#6B7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                            <YAxis tickFormatter={(value) => `$${value}`} tick={{ fill: '#6B7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                            <Tooltip 
-                                formatter={(value: number, name: string) => [formatCurrency(value), name]} 
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                            />
-                            <Legend iconType="circle" />
-                            
-                            {/* Actual Sales */}
-                            <Area type="monotone" dataKey="Ventas" stroke="#0B42A7" strokeWidth={3} fillOpacity={1} fill="url(#colorVentas)" name="Ventas Reales" activeDot={{ r: 6 }} />
-                            
-                            {/* Projected Sales */}
-                            {projection && (
-                                <Line 
-                                    type="monotone" 
-                                    dataKey="Proyeccion" 
-                                    stroke="#9333ea" 
-                                    strokeWidth={3} 
-                                    strokeDasharray="5 5" 
-                                    dot={{ r: 3, fill: '#9333ea' }} 
-                                    name="Proyección IA"
-                                    animationDuration={1500}
-                                />
-                            )}
-                        </ComposedChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* AI Insight Card */}
-                {projection && (
-                    <div className="mt-6 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 p-4 rounded-xl flex items-start gap-4 animate-fade-in">
-                        <div className="bg-purple-200 dark:bg-purple-800 p-2 rounded-lg text-purple-700 dark:text-purple-200">
-                            <SparklesIcon className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-purple-900 dark:text-white mb-1">Estrategia Sugerida</h4>
-                            <p className="text-sm text-purple-800 dark:text-purple-200 leading-relaxed italic">"{projection.suggestion}"</p>
-                            <div className="mt-2 flex gap-2">
-                                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Días Bajos:</span>
-                                {projection.lowTrafficDays.map(day => (
-                                    <span key={day} className="text-xs bg-white dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-700 font-medium">
-                                        {day}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
+            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+                <h3 className="text-lg font-semibold mb-4">Tendencia de Ingresos (Últimos 30 días)</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={monthlyTrendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: 'currentColor', fontSize: 12 }} />
+                        <YAxis tickFormatter={(value) => formatCurrency(value as number)} tick={{ fill: 'currentColor', fontSize: 12 }} />
+                        <Tooltip formatter={(value) => [formatCurrency(value as number), "Ingresos"]} />
+                        <Legend />
+                        <Line type="monotone" dataKey="Ingresos" stroke="#0B42A7" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                </ResponsiveContainer>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -419,7 +282,7 @@ const FinanzasPage: React.FC = () => {
                             <YAxis tickFormatter={(value) => formatCurrency(value as number)} tick={{ fill: 'currentColor', fontSize: 12 }} />
                             <Tooltip formatter={(value) => formatCurrency(value as number)} />
                             <Legend />
-                            <Bar dataKey="Ingresos" fill="#0B42A7" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="Ingresos" fill="#0B42A7" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

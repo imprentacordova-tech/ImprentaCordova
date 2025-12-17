@@ -110,14 +110,11 @@ export interface Producto {
   imagenUrl?: string;
 }
 
-// Updated Role Definition
-export type UserRole = 'Admin' | 'Operador' | 'Diseñador' | 'Atención al Cliente' | 'Prensista' | 'Encuadernador' | 'Instalador';
-
 export interface User {
   id: string;
   nombre: string;
   email: string;
-  rol: UserRole;
+  rol: 'Admin' | 'Operador' | 'Diseñador';
   estado: 'Activo' | 'Inactivo';
   ultimoAcceso: string;
   password?: string;
@@ -201,27 +198,4 @@ export interface Product {
   specs: string[];
   imageUrl: string;
   isPopular?: boolean;
-}
-
-export interface DailySales {
-    date: string; // YYYY-MM-DD
-    sales: number;
-}
-
-export interface FinancialProjection {
-    forecast: DailySales[];
-    lowTrafficDays: string[];
-    suggestion: string;
-}
-
-export interface SupervisorDetail {
-    tipo: 'TECNICA' | 'DISENO' | 'COLOR' | 'COMERCIAL';
-    descripcion: string;
-    sugerencia: string;
-}
-
-export interface SupervisorAnalysis {
-    estado: 'VERDE' | 'AMARILLO' | 'ROJO';
-    resumen: string;
-    detalles: SupervisorDetail[];
 }

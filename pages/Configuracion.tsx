@@ -6,23 +6,15 @@ import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCr
 import { Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, ArrowLeftIcon, ArrowRightIcon } from '../components/Icons';
 import { SriCredential } from '../types';
 
-const InputField: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, disabled?: boolean, [key: string]: any}> = ({ label, name, value, onChange, disabled, ...props }) => (
-    <div className={disabled ? "opacity-75" : ""}>
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
-            {label}
-            {disabled && <span className="text-[10px] text-gray-400 uppercase tracking-wider bg-gray-100 dark:bg-gray-700 px-2 rounded flex items-center gap-1">🔒 Sistema</span>}
-        </label>
+const InputField: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, [key: string]: any}> = ({ label, name, value, onChange, ...props }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
         <input
             id={name}
             name={name}
             value={value}
             onChange={onChange}
-            disabled={disabled}
-            className={`mt-1 block w-full p-2.5 border rounded-lg shadow-sm transition-all dark:text-white 
-                ${disabled 
-                    ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-900 dark:border-gray-800' 
-                    : 'bg-white border-gray-300 focus:ring-2 focus:ring-brand-blue focus:border-brand-blue dark:bg-gray-700 dark:border-gray-600'
-                }`}
+            className="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             {...props}
         />
     </div>
@@ -197,8 +189,9 @@ const ConfiguracionPage: React.FC = () => {
             </div>
 
             <div className="space-y-10">
-                {/* SRI Credentials */}
+                {/* SRI Credentials - New Design based on Screenshot */}
                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                    {/* Header Oscuro */}
                     <div className="bg-slate-900 p-6 flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="bg-green-500/20 p-2 rounded-full">
@@ -354,27 +347,20 @@ const ConfiguracionPage: React.FC = () => {
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-4 mb-6">Configuración de Documentos</h2>
                         
                         <div className="space-y-8">
-                            <div className="bg-blue-50/50 dark:bg-blue-900/10 p-6 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                                <h3 className="text-sm font-bold text-brand-blue uppercase tracking-wider mb-4 inline-block px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm border border-blue-100 dark:border-blue-800">
-                                    Datos del Emisor (No Editables)
-                                </h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
-                                    Estos datos son gestionados internamente por el sistema para garantizar la consistencia fiscal.
-                                </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pointer-events-none grayscale-[50%]">
-                                    <InputField label="Nombre Comercial" name="emisorNombreComercial" value={config.emisorNombreComercial} onChange={handleChange} disabled />
-                                    <InputField label="Razón Social" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={handleChange} disabled />
-                                    <InputField label="RUC Emisor" name="emisorRuc" value={config.emisorRuc} onChange={handleChange} disabled />
-                                    <InputField label="Tipo Contribuyente" name="emisorTipoContribuyente" value={config.emisorTipoContribuyente} onChange={handleChange} disabled />
-                                    <InputField label="Dirección Matriz" name="emisorDireccionMatriz" value={config.emisorDireccionMatriz} onChange={handleChange} disabled />
-                                    <InputField label="Dirección Sucursal" name="emisorDireccionSucursal" value={config.emisorDireccionSucursal} onChange={handleChange} disabled />
+                            <div>
+                                <h3 className="text-sm font-bold text-brand-blue uppercase tracking-wider mb-4 bg-blue-50 dark:bg-blue-900/20 inline-block px-3 py-1 rounded-md">Datos del Emisor</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <InputField label="Nombre Comercial" name="emisorNombreComercial" value={config.emisorNombreComercial} onChange={handleChange} />
+                                    <InputField label="Razón Social" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={handleChange} />
+                                    <InputField label="RUC Emisor" name="emisorRuc" value={config.emisorRuc} onChange={handleChange} />
+                                    <InputField label="Tipo Contribuyente" name="emisorTipoContribuyente" value={config.emisorTipoContribuyente} onChange={handleChange} />
+                                    <InputField label="Dirección Matriz" name="emisorDireccionMatriz" value={config.emisorDireccionMatriz} onChange={handleChange} />
+                                    <InputField label="Dirección Sucursal" name="emisorDireccionSucursal" value={config.emisorDireccionSucursal} onChange={handleChange} />
                                 </div>
                             </div>
 
                             <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-                                <h3 className="text-sm font-bold text-brand-blue uppercase tracking-wider mb-4 bg-blue-50 dark:bg-blue-900/20 inline-block px-3 py-1 rounded-md">
-                                    Detalles del Documento
-                                </h3>
+                                <h3 className="text-sm font-bold text-brand-blue uppercase tracking-wider mb-4 bg-blue-50 dark:bg-blue-900/20 inline-block px-3 py-1 rounded-md">Detalles del Documento</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <InputField label="Prefijo de Numeración" name="numeracionPrefijo" value={config.numeracionPrefijo} onChange={handleChange} placeholder="Ej: 002-001-" />
                                     <InputField label="Autorización SRI (10 dígitos)" name="autorizacionSRI" value={config.autorizacionSRI} onChange={handleChange} maxLength={10} />

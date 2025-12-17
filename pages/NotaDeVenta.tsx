@@ -6,7 +6,7 @@ import { Trabajo, Cliente } from '../types';
 import { formatCurrency } from '../utils';
 import { ArrowDownTrayIcon, PrinterIcon } from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
-import QRCode from 'qrcode'; // Library for generation
+
 
 // Declare html2pdf for TypeScript
 declare const html2pdf: any;
@@ -17,7 +17,6 @@ const NotaDeVentaPage: React.FC = () => {
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
     const [loading, setLoading] = useState(true);
-    const [qrDataUrl, setQrDataUrl] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,15 +29,6 @@ const NotaDeVentaPage: React.FC = () => {
                 setTrabajo(currentTrabajo);
                 const currentCliente = clientesData.find(c => c.id === currentTrabajo.clienteId);
                 setCliente(currentCliente || null);
-                
-                // Generate QR Code with tracking link
-                try {
-                    const trackingUrl = `${window.location.origin}/#/tracking?id=${currentTrabajo.id}`;
-                    const url = await QRCode.toDataURL(trackingUrl, { width: 100, margin: 0 });
-                    setQrDataUrl(url);
-                } catch (err) {
-                    console.error("QR Gen Error", err);
-                }
             }
             setLoading(false);
         };
@@ -79,10 +69,7 @@ const NotaDeVentaPage: React.FC = () => {
         ruc: config.emisorRuc,
         notaNro: `${config.numeracionPrefijo}${String(trabajo.orden).padStart(9, '0').slice(-9)}`,
         autorizacionSRI: config.autorizacionSRI,
-        fechaAutorizacion: new Date(config.fechaAutorizacion).toLocaleDateString('es-EC', { timeZone: 'UTC' }),
-        fechaCaducidad: new Date(config.fechaCaducidad).toLocaleDateString('es-EC', { timeZone: 'UTC' }),
-        telefono: config.emisorTelefono,
-        email: config.emisorEmail
+        fechaAutorizacion: new Date(config.fechaAutorizacion).toLocaleDateString('es-EC', { timeZone: 'UTC' })
     };
     
     const printer = {
@@ -227,13 +214,7 @@ const NotaDeVentaPage: React.FC = () => {
                                 <p>RUC: {printer.ruc} • Aut. {printer.autorizacion}</p>
                                 <p className="mt-0.5">Válido hasta: <span className="font-bold text-gray-900">{fechaCaducidad}</span></p>
                             </div>
-                            
-                            {/* QR Code Placement */}
-                            <div className="w-2/12 flex justify-center">
-                                {qrDataUrl && <img src={qrDataUrl} alt="QR Rastreo" className="w-16 h-16 object-contain" />}
-                            </div>
-
-                            <div className="w-5/12 flex gap-4 justify-end">
+                            <div className="w-6/12 flex gap-4 justify-end">
                                 <div className="text-center w-24">
                                     <div className="border-t border-gray-400 mb-1"></div>
                                     <span className="font-bold text-gray-500 uppercase text-[8px]">Firma Autorizada</span>

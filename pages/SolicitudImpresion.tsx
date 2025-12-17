@@ -6,7 +6,6 @@ import { Cliente, Trabajo } from '../types';
 import { PrinterIcon, AddIcon, TrashIcon, ArrowDownTrayIcon, ShieldCheckIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
-import QRCode from 'qrcode';
 
 // Declare html2pdf for TypeScript
 declare const html2pdf: any;
@@ -55,7 +54,6 @@ const SolicitudImpresionPage: React.FC = () => {
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
     const [loading, setLoading] = useState(true);
-    const [qrDataUrl, setQrDataUrl] = useState('');
 
     // Form State
     const [actividadEconomica, setActividadEconomica] = useState('');
@@ -95,15 +93,6 @@ const SolicitudImpresionPage: React.FC = () => {
                     precio: currentTrabajo.total
                 };
                 setItems([initialItem]);
-
-                // QR Generation
-                try {
-                    const trackingUrl = `${window.location.origin}/#/tracking?id=${currentTrabajo.id}`;
-                    const url = await QRCode.toDataURL(trackingUrl, { width: 100, margin: 0 });
-                    setQrDataUrl(url);
-                } catch (err) {
-                    console.error("QR Error", err);
-                }
             }
             setLoading(false);
         };
@@ -371,12 +360,9 @@ const SolicitudImpresionPage: React.FC = () => {
                                             <span>C.I. ____________________</span>
                                         </div>
                                     </div>
-                                    <div className="flex mt-2 justify-between items-center">
-                                        <p className="text-[8px] text-gray-400 text-justify leading-tight w-3/4">
-                                            Nota: Al firmar, el cliente autoriza la impresión y se responsabiliza por la información. Pasados 30 días no se aceptan reclamos.
-                                        </p>
-                                        {qrDataUrl && <img src={qrDataUrl} alt="QR" className="w-12 h-12 object-contain" />}
-                                    </div>
+                                    <p className="text-[8px] text-gray-400 mt-1 text-justify leading-tight">
+                                        Nota: Al firmar, el cliente autoriza la impresión y se responsabiliza por la información. Pasados 30 días no se aceptan reclamos.
+                                    </p>
                                 </div>
 
                                 <div className="w-5/12 bg-gray-100 rounded-lg p-2 border border-gray-200 shadow-sm">

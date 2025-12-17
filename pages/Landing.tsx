@@ -1,18 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
     ShieldCheckIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
     CloseIcon, TrashIcon, AddIcon, ArrowRightIcon, MapPinIcon, 
-    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, SparklesIcon, CalculatorIcon, WalletIcon, CheckCircleIcon
+    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, CheckCircleIcon, SparklesIcon
 } from '../components/Icons';
 import { getProductos, createPublicPedido } from '../services/mockApi';
 import { Producto } from '../types';
 import { formatCurrency } from '../utils';
 import AIHelper from '../components/AIHelper';
-import QuickQuoteCalculator from '../components/QuickQuoteCalculator';
 
-// --- UTILIDADES ---
+// --- UTILIDADES DE INTERFAZ ---
+
+// Scroll Suave
 const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
@@ -21,32 +21,9 @@ const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => 
     }
 };
 
-// --- COMPONENTES UI ---
+// --- SECCIONES ---
 
-const Modal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.ReactNode; title?: string }> = ({ isOpen, onClose, children, title }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"></div>
-            <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-slide-in-up border border-white/20" onClick={e => e.stopPropagation()}>
-                {title && (
-                    <div className="absolute top-4 left-6 z-10">
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight">{title}</h3>
-                    </div>
-                )}
-                <button 
-                    onClick={onClose} 
-                    className="absolute top-4 right-4 z-20 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
-                >
-                    <CloseIcon className="w-6 h-6" />
-                </button>
-                {children}
-            </div>
-        </div>
-    );
-};
-
-const Header: React.FC<{ cartCount: number, onOpenCart: () => void, onOpenQuote: () => void }> = ({ cartCount, onOpenCart, onOpenQuote }) => {
+const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartCount, onOpenCart }) => {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -57,167 +34,224 @@ const Header: React.FC<{ cartCount: number, onOpenCart: () => void, onOpenQuote:
 
     return (
         <header 
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
                 scrolled 
-                ? 'bg-white/80 backdrop-blur-lg shadow-sm py-3' 
+                ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-100 py-2' 
                 : 'bg-transparent py-6'
             }`}
         >
-            <div className="container mx-auto px-6 flex justify-between items-center">
+            <nav className="container mx-auto px-6 flex justify-between items-center">
                 <Link to="/" className="flex items-center gap-3 group">
-                    <div className={`transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-100'}`}>
-                        <CordovaLogo className={`h-10 w-auto object-contain transition-all ${scrolled ? 'brightness-100' : 'brightness-0 invert'}`} />
+                    <div className={`p-1 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-transparent' : 'bg-white/20 backdrop-blur-sm'}`}>
+                        <CordovaLogo className="h-12 w-auto object-contain" />
                     </div>
-                    <div className={`flex flex-col leading-none transition-colors duration-300 ${scrolled ? 'text-slate-900' : 'text-white'}`}>
-                        <span className="text-[10px] font-bold tracking-[0.4em] uppercase opacity-80">Imprenta</span>
-                        <span className="text-xl font-black tracking-widest uppercase">CÓRDOVA</span>
+                    <div className="flex flex-col leading-none">
+                        <span className={`text-xs font-bold tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
+                            Imprenta
+                        </span>
+                        <span className={`text-2xl font-black tracking-tighter uppercase ${scrolled ? 'text-brand-blue' : 'text-white'}`}>
+                            CÓRDOVA
+                        </span>
                     </div>
                 </Link>
                 
-                <div className="flex items-center gap-6">
-                    <nav className={`hidden md:flex gap-8 text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${scrolled ? 'text-slate-600' : 'text-white/80'}`}>
-                        <a href="#servicios" onClick={(e) => scrollToSection(e, 'servicios')} className="hover:text-brand-blue transition-colors">Servicios</a>
-                        <a href="#ai-helper" onClick={(e) => scrollToSection(e, 'ai-helper')} className="hover:text-purple-400 transition-colors flex items-center gap-1"><SparklesIcon className="w-3 h-3"/> IA Creativa</a>
-                        <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="hover:text-brand-blue transition-colors">Catálogo</a>
+                <div className="flex items-center gap-8">
+                    <nav className="hidden md:flex gap-8 text-sm font-bold uppercase tracking-wide">
+                        <a 
+                            href="#servicios" 
+                            onClick={(e) => scrollToSection(e, 'servicios')} 
+                            className={`transition-all duration-300 relative group ${scrolled ? 'text-slate-600 hover:text-brand-blue' : 'text-slate-200 hover:text-white'}`}
+                        >
+                            Servicios
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-red transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <a 
+                            href="#ai-helper" 
+                            onClick={(e) => scrollToSection(e, 'ai-helper')} 
+                            className={`transition-all duration-300 relative group flex items-center gap-1 ${scrolled ? 'text-purple-600 hover:text-purple-800' : 'text-purple-200 hover:text-white'}`}
+                        >
+                            <SparklesIcon className="w-3 h-3" />
+                            IA Creativa
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <a 
+                            href="#catalog" 
+                            onClick={(e) => scrollToSection(e, 'catalog')} 
+                            className={`transition-all duration-300 relative group ${scrolled ? 'text-slate-600 hover:text-brand-blue' : 'text-slate-200 hover:text-white'}`}
+                        >
+                            Catálogo
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-red transition-all duration-300 group-hover:w-full"></span>
+                        </a>
                     </nav>
 
-                    <div className="flex items-center gap-3">
-                        <button 
-                            onClick={onOpenQuote}
-                            className={`hidden lg:flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-lg hover:-translate-y-0.5 ${
-                                scrolled 
-                                ? 'bg-gradient-to-r from-brand-blue to-blue-700 text-white' 
-                                : 'bg-white text-brand-blue hover:bg-blue-50'
-                            }`}
-                        >
-                            <CalculatorIcon className="w-4 h-4" />
-                            Cotizador IA
-                        </button>
-
+                    <div className="flex items-center gap-4">
                         <button onClick={onOpenCart} className="relative group p-2">
-                            <div className={`p-2 rounded-full transition-colors ${scrolled ? 'bg-gray-100 hover:bg-gray-200 text-slate-700' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
-                                <ShoppingCartIcon className="w-5 h-5" />
-                            </div>
+                            <ShoppingCartIcon className={`w-6 h-6 transition-colors ${scrolled ? 'text-slate-700 group-hover:text-brand-blue' : 'text-white group-hover:text-brand-blue'}`} />
                             {cartCount > 0 && (
-                                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm animate-bounce">
+                                <span className="absolute -top-1 -right-1 bg-brand-red text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm animate-pulse">
                                     {cartCount}
                                 </span>
                             )}
                         </button>
+                        <Link 
+                            to="/login" 
+                            className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                                scrolled 
+                                ? 'bg-brand-blue text-white hover:bg-blue-800' 
+                                : 'bg-white text-brand-blue hover:bg-blue-50'
+                            }`}
+                        >
+                            <UsersIcon className="w-4 h-4" />
+                            Gestión Interna
+                        </Link>
                     </div>
                 </div>
-            </div>
+            </nav>
         </header>
     );
 };
 
-const HeroSection: React.FC<{ onOpenQuote: () => void }> = ({ onOpenQuote }) => (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-slate-900">
-        {/* Dynamic Background */}
-        <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-blue-900/80 to-slate-900 z-10"></div>
-            <img 
-                src="https://images.unsplash.com/photo-1562564055-71e051d33c19?auto=format&fit=crop&q=80&w=2000" 
-                alt="Imprenta Background" 
-                className="w-full h-full object-cover opacity-40 animate-pulse-slow scale-105"
-            />
-        </div>
+const HeroSection: React.FC = () => (
+    <section className="relative bg-brand-blue pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden min-h-[85vh] flex items-center">
+        {/* Background Gradients & Texture */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-brand-blue to-blue-800"></div>
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        
+        {/* Decorative Shapes */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand-red/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
 
-        {/* Decorative Light Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px] animate-blob"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] animate-blob animation-delay-2000"></div>
-
-        <div className="container mx-auto px-6 relative z-20 pt-20">
-            <div className="max-w-4xl mx-auto text-center space-y-8">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md animate-fade-in-up">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    <span className="text-xs font-bold text-white tracking-widest uppercase">Tecnología Roland &bull; Pasaje, El Oro</span>
-                </div>
-
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-none tracking-tight drop-shadow-2xl animate-fade-in-up animation-delay-300">
-                    IMPRESIÓN <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-blue-200">
-                        SIN LÍMITES
-                    </span>
-                </h1>
-
-                <p className="text-lg md:text-2xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed animate-fade-in-up animation-delay-500">
-                    Elevamos tu marca con impresiones de <span className="text-white font-medium">alta definición</span> y acabados premium. Desde tarjetas personales hasta gigantografías monumentales.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-5 justify-center pt-8 animate-fade-in-up animation-delay-700">
-                    <button 
-                        onClick={onOpenQuote}
-                        className="group relative px-8 py-4 bg-white text-slate-900 rounded-full font-bold text-lg shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <span className="relative flex items-center gap-2">
-                            <SparklesIcon className="w-5 h-5 text-purple-600" />
-                            Cotizar con IA
+        <div className="container mx-auto px-6 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+                
+                {/* Left Column: Content */}
+                <div className="space-y-8 text-center lg:text-left animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-sm mx-auto lg:mx-0">
+                        <span className="flex h-2 w-2 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                         </span>
-                    </button>
-                    
-                    <a 
-                        href="#catalog" 
-                        onClick={(e) => scrollToSection(e, 'catalog')}
-                        className="px-8 py-4 bg-white/5 border border-white/20 text-white rounded-full font-bold text-lg hover:bg-white/10 hover:border-white/40 transition-all backdrop-blur-sm flex items-center justify-center gap-2"
-                    >
-                        Ver Catálogo <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </a>
-                </div>
-            </div>
-        </div>
+                        <span className="text-xs font-bold text-white tracking-widest uppercase">Servicio Express en Pasaje</span>
+                    </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
-                <div className="w-1 h-2 bg-white rounded-full"></div>
+                    <div>
+                        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white leading-none tracking-tight drop-shadow-2xl mb-4">
+                            IMPRENTA <br className="hidden md:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">CÓRDOVA</span>
+                        </h1>
+                        
+                        <p className="text-2xl md:text-3xl font-bold text-blue-200 tracking-wide border-l-4 border-orange-500 pl-4">
+                            TU MARCA MERECE BRILLAR
+                        </p>
+                    </div>
+
+                    <p className="text-lg sm:text-xl text-blue-100 font-light max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        Desde gigantografías de alto impacto hasta facturación SRI. 
+                        Combinamos <span className="font-bold text-white">tecnología Roland</span> con acabados artesanales de primera.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                        <a href="#contact" className="group relative px-8 py-4 bg-brand-red overflow-hidden rounded-xl font-bold text-white tracking-wider shadow-lg shadow-red-900/30 transition-all hover:shadow-xl hover:scale-105 hover:bg-red-700 flex items-center justify-center gap-3">
+                            <PhoneIcon className="w-5 h-5"/> COTIZAR AHORA
+                        </a>
+                        <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="px-8 py-4 bg-white/10 border border-white/30 text-white font-bold rounded-xl hover:bg-white hover:text-brand-blue transition-all shadow-lg flex items-center justify-center gap-2 backdrop-blur-sm">
+                            VER CATÁLOGO <ArrowRightIcon className="w-5 h-5"/>
+                        </a>
+                    </div>
+
+                    <div className="pt-8 flex items-center justify-center lg:justify-start gap-8 opacity-80">
+                        <div className="flex items-center gap-2">
+                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-blue-100">Autorizado SRI</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-blue-100">Calidad HD</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-sm font-medium text-blue-100">Entrega Puntual</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Static Composition */}
+                <div className="relative hidden lg:block h-[600px]">
+                    {/* Main Image (Large Format Printer / Workshop) */}
+                    <div className="absolute top-10 left-10 w-4/5 h-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 transform -rotate-2 hover:rotate-0 transition-all duration-700 z-10 bg-gray-800">
+                        <img 
+                            src="https://i.imgur.com/AUvl1wF.png" 
+                            alt="Taller de Impresión" 
+                            className="w-full h-full object-cover opacity-90 hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent flex items-end p-8">
+                            <div>
+                                <p className="text-orange-400 font-bold uppercase tracking-wider text-sm mb-1">Tecnología Roland</p>
+                                <h3 className="text-white font-bold text-2xl">Gigantografías HD</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Secondary Image (Flyers/Stationery - Floating Top Right) */}
+                    <div className="absolute -top-4 right-4 w-64 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white transform rotate-6 hover:rotate-3 transition-all duration-500 z-20 bg-white animate-float">
+                        <img 
+                            src="https://i.imgur.com/cKqbnJj.jpeg" 
+                            alt="Papelería" 
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-2 left-2 bg-brand-red text-white text-[10px] font-bold px-2 py-1 rounded">
+                            OFFSET & DIGITAL
+                        </div>
+                    </div>
+
+                    {/* Tertiary Image (Merch - Floating Bottom Left) */}
+                    <div className="absolute bottom-8 -left-4 w-56 h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 transform hover:scale-105 transition-all duration-500 z-30">
+                        <img 
+                            src="https://i.imgur.com/TnsNdTS.png" 
+                            alt="Merchandising" 
+                            className="w-full h-full object-cover"
+                        />
+                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <span className="text-white font-bold">Merch</span>
+                        </div>
+                    </div>
+
+                    {/* Decorative Elements */}
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
+                </div>
             </div>
         </div>
     </section>
 );
 
-const ServiceCard: React.FC<{ title: string; desc: string; icon: React.FC<any>; delay: number }> = ({ title, desc, icon: Icon, delay }) => (
-    <div 
-        className="group p-8 bg-white rounded-3xl border border-slate-100 hover:border-blue-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden"
-        style={{ animationDelay: `${delay}ms` }}
-    >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-700"></div>
-        
-        <div className="relative z-10">
-            <div className="w-14 h-14 bg-white border border-slate-100 rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-brand-blue group-hover:border-brand-blue transition-colors duration-300">
-                <Icon className="w-7 h-7 text-slate-700 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
-            <p className="text-slate-500 leading-relaxed text-sm font-medium">{desc}</p>
-        </div>
-    </div>
-);
-
 const ServicesSection: React.FC = () => {
     const services = [
-        { title: "Gigantografías HD", desc: "Gran formato con tecnología Roland. Colores vibrantes y durabilidad garantizada para exteriores.", icon: MapPinIcon },
-        { title: "Imprenta Autorizada", desc: "Facturación electrónica y física autorizada por el SRI. Cumplimos con todas las normativas.", icon: ShieldCheckIcon },
-        { title: "Marketing Impreso", desc: "Volantes, trípticos y material POP que vende. Diseño estratégico incluido.", icon: UsersIcon },
-        { title: "Personalización", desc: "Merchandising corporativo: Tazas, gorras, camisetas con tu marca.", icon: BoxIcon },
-        { title: "Acabados de Lujo", desc: "Troquelados, barniz UV, laminados mate y brillante para destacar.", icon: StarIcon },
-        { title: "Entrega Express", desc: "Respetamos tu tiempo. Procesos optimizados para entregas puntuales.", icon: ClockIcon },
+        { title: "Gigantografías", desc: "Lonas y Vinilos en alta resolución Roland.", icon: <MapPinIcon className="w-8 h-8 text-blue-600"/>, bg: "bg-blue-50" },
+        { title: "Facturación SRI", desc: "Facturas, Notas de Venta y Retenciones.", icon: <ShieldCheckIcon className="w-8 h-8 text-red-600"/>, bg: "bg-red-50" },
+        { title: "Publicidad", desc: "Volantes, Trípticos y Afiches full color.", icon: <UsersIcon className="w-8 h-8 text-yellow-600"/>, bg: "bg-yellow-50" },
+        { title: "Sublimación", desc: "Tazas, Gorras y Camisetas personalizadas.", icon: <BoxIcon className="w-8 h-8 text-purple-600"/>, bg: "bg-purple-50" },
+        { title: "Imprenta Offset", desc: "Grandes volúmenes a bajo costo.", icon: <ClockIcon className="w-8 h-8 text-green-600"/>, bg: "bg-green-50" },
+        { title: "Acabados", desc: "Troquelados, Laminados y Barniz UV.", icon: <StarIcon className="w-8 h-8 text-orange-600"/>, bg: "bg-orange-50" },
     ];
 
     return (
-        <section id="servicios" className="py-32 bg-slate-50">
-            <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-20">
-                    <span className="text-brand-blue font-black tracking-widest uppercase text-xs mb-2 block">Nuestra Excelencia</span>
-                    <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Soluciones Integrales</h2>
-                    <p className="text-slate-500 mt-6 text-lg">
-                        Más que una imprenta, somos tu socio estratégico en comunicación visual. Calidad que se ve y se siente.
-                    </p>
+        <section id="servicios" className="py-24 bg-white relative">
+            <div className="container mx-auto px-6 relative z-10">
+                <div className="text-center mb-16">
+                    <span className="text-brand-red font-bold tracking-widest uppercase text-xs bg-red-50 px-3 py-1 rounded-full">Nuestros Servicios</span>
+                    <h2 className="text-4xl font-black text-slate-900 mt-4">SOLUCIONES INTEGRALES</h2>
+                    <p className="text-slate-500 mt-2 text-lg">Todo lo que tu empresa necesita para destacar.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {services.map((s, i) => (
-                        <ServiceCard key={i} {...s} delay={i * 100} />
+                        <div key={i} className="group bg-white border border-slate-100 p-8 rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-1">
+                            <div className={`${s.bg} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transform group-hover:rotate-6 transition-transform duration-300`}>
+                                {s.icon}
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-brand-blue transition-colors">{s.title}</h3>
+                            <p className="text-slate-600 leading-relaxed">{s.desc}</p>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -225,58 +259,56 @@ const ServicesSection: React.FC = () => {
     );
 };
 
-const CatalogSection: React.FC<{ onAddToCart: (p: Producto) => void }> = ({ onAddToCart }) => {
+const CatalogPreview: React.FC<{ onAddToCart: (p: Producto) => void }> = ({ onAddToCart }) => {
     const [productos, setProductos] = useState<Producto[]>([]);
 
     useEffect(() => {
-        getProductos().then(data => setProductos(data.slice(0, 8))); 
+        getProductos().then(data => setProductos(data.slice(0, 6))); 
     }, []);
 
     return (
-        <section id="catalog" className="py-32 bg-white relative overflow-hidden">
+        <section id="catalog" className="py-24 bg-slate-50 relative">
             <div className="container mx-auto px-6 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                     <div>
-                        <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-2">Catálogo Premium</h2>
-                        <p className="text-slate-500">Selección de nuestros productos más solicitados.</p>
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-900">CATÁLOGO ONLINE</h2>
+                        <p className="text-slate-500 mt-2">Precios directos de imprenta. Haz tu pedido ahora.</p>
                     </div>
-                    <Link to="/login" className="text-brand-blue font-bold hover:text-blue-800 transition-colors flex items-center gap-2">
-                        Ver Lista Completa <ArrowRightIcon className="w-5 h-5"/>
-                    </Link>
+                    <a href="#catalog" className="px-6 py-3 bg-white border border-slate-200 text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm flex items-center gap-2">
+                        VER TODO <ArrowRightIcon className="w-4 h-4"/>
+                    </a>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {productos.map((p) => (
-                        <div key={p.id} className="group bg-white rounded-3xl border border-slate-100 hover:border-slate-200 hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer">
-                            <div className="relative h-64 overflow-hidden bg-slate-50">
+                        <div key={p.id} className="bg-white rounded-2xl shadow-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 border border-slate-100">
+                            <div className="relative h-64 bg-slate-100 overflow-hidden">
                                 {p.imagenUrl ? (
                                     <img src={p.imagenUrl} alt={p.nombre} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-200">
-                                        <BoxIcon className="w-20 h-20" />
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <BoxIcon className="w-16 h-16" />
                                     </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                                    <button 
-                                        onClick={() => onAddToCart(p)}
-                                        className="bg-white text-brand-blue font-bold py-3 px-6 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl flex items-center gap-2 hover:bg-brand-blue hover:text-white"
-                                    >
-                                        <AddIcon className="w-5 h-5"/> Agregar
+                                {p.esSRI && (
+                                    <span className="absolute top-4 left-4 bg-brand-blue text-white text-[10px] font-bold px-3 py-1 rounded-md shadow-sm">AUTORIZADO SRI</span>
+                                )}
+                                <div className="absolute inset-0 bg-brand-blue/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
+                                    <button onClick={() => onAddToCart(p)} className="bg-white text-brand-blue font-bold py-3 px-8 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-brand-red hover:text-white shadow-xl flex items-center gap-2">
+                                        <AddIcon className="w-5 h-5"/> AGREGAR
                                     </button>
                                 </div>
-                                {p.esSRI && (
-                                    <span className="absolute top-4 left-4 bg-white/90 backdrop-blur text-brand-blue text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                                        SRI
-                                    </span>
-                                )}
                             </div>
                             <div className="p-6">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{p.categoria}</p>
-                                <h3 className="text-lg font-bold text-slate-900 mb-2 truncate">{p.nombre}</h3>
-                                <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-50">
-                                    <span className="text-xl font-black text-slate-800">{formatCurrency(p.precio)}</span>
-                                    <button onClick={() => onAddToCart(p)} className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-brand-blue hover:text-white transition-colors">
-                                        <ArrowRightIcon className="w-4 h-4"/>
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{p.categoria}</div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-3 truncate group-hover:text-brand-blue transition-colors">{p.nombre}</h3>
+                                <div className="flex justify-between items-end border-t border-slate-100 pt-4">
+                                    <div>
+                                        <p className="text-xs text-slate-400 mb-0.5">Precio Unitario</p>
+                                        <span className="text-2xl font-black text-slate-800">{formatCurrency(p.precio)}</span>
+                                    </div>
+                                    <button onClick={() => onAddToCart(p)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-brand-blue hover:text-white transition-colors">
+                                        <ShoppingCartIcon className="w-5 h-5"/>
                                     </button>
                                 </div>
                             </div>
@@ -288,7 +320,69 @@ const CatalogSection: React.FC<{ onAddToCart: (p: Producto) => void }> = ({ onAd
     );
 };
 
-// Reusing existing CartModal logic exactly as is
+const Footer: React.FC = () => (
+    <footer className="bg-slate-900 text-white pt-20 pb-10">
+        <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div className="col-span-1 md:col-span-2">
+                    <Link to="/" className="flex items-center gap-2 mb-6">
+                        <div className="bg-white p-1 rounded-lg">
+                            <CordovaLogo className="h-10 w-auto object-contain" />
+                        </div>
+                        <span className="text-2xl font-black uppercase tracking-tighter">Imprenta Córdova</span>
+                    </Link>
+                    <p className="text-slate-400 max-w-sm mb-6 font-light leading-relaxed">
+                        Más de 15 años brindando soluciones de impresión de calidad en Pasaje. Tecnología moderna y atención personalizada.
+                    </p>
+                    <div className="flex gap-4">
+                        {['Facebook', 'Instagram', 'WhatsApp'].map((s) => (
+                            <div key={s} className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-brand-blue hover:border-brand-blue transition-all cursor-pointer text-xs font-bold uppercase tracking-wider">
+                                {s}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs border-b border-slate-700 pb-2 inline-block">Enlaces Rápidos</h4>
+                    <ul className="space-y-3 text-slate-400 text-sm">
+                        <li><a href="#" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Inicio</a></li>
+                        <li><a href="#servicios" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Servicios</a></li>
+                        <li><a href="#catalog" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Catálogo</a></li>
+                        <li><Link to="/login" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Acceso Personal</Link></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs border-b border-slate-700 pb-2 inline-block">Contáctanos</h4>
+                    <ul className="space-y-4 text-slate-400 text-sm">
+                        <li className="flex items-start gap-3">
+                            <MapPinIcon className="w-5 h-5 text-brand-red mt-0.5 flex-shrink-0"/>
+                            <span>Colón E/ Sucre y Rocafuerte.<br/>Pasaje, El Oro, Ecuador.</span>
+                        </li>
+                        <li className="flex items-center gap-3">
+                            <PhoneIcon className="w-5 h-5 text-brand-blue flex-shrink-0"/>
+                            <span className="font-bold text-white">099 308 3943</span>
+                        </li>
+                        <li className="flex items-center gap-3">
+                            <EnvelopeIcon className="w-5 h-5 text-green-500 flex-shrink-0"/>
+                            imprentacordova@gmail.com
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
+                <p>&copy; 2025 Imprenta Córdova. Todos los derechos reservados.</p>
+                <p className="mt-2 md:mt-0 flex items-center gap-1">Desarrollado con tecnología <span className="text-brand-blue font-bold">React</span> & <span className="text-brand-blue font-bold">Gemini AI</span>.</p>
+            </div>
+        </div>
+    </footer>
+);
+
+// --- MAIN COMPONENT ---
+
+// Reusing the existing CartModal logic
 const CartModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
@@ -320,8 +414,8 @@ const CartModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] border border-white/10" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 {step === 'cart' && (
                     <>
                         <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
@@ -349,7 +443,7 @@ const CartModal: React.FC<{
                                                 <span className="text-sm font-bold w-6 text-center text-slate-800 dark:text-white">{item.cantidad}</span>
                                                 <button onClick={() => onUpdateQuantity(item.producto.id, 1)} className="w-7 h-7 flex items-center justify-center font-bold hover:bg-white dark:hover:bg-slate-600 rounded-md text-gray-600 dark:text-gray-300 transition-all">+</button>
                                             </div>
-                                            <button onClick={() => onRemoveItem(item.producto.id)} className="text-red-300 hover:text-red-500 transition-colors p-1" title="Eliminar"><TrashIcon className="w-4 h-4"/></button>
+                                            <button onClick={() => onRemoveItem(item.producto.id)} className="text-red-300 hover:text-red-500 transition-colors"><TrashIcon className="w-5 h-5" /></button>
                                         </div>
                                     </div>
                                 ))
@@ -452,72 +546,9 @@ const CartModal: React.FC<{
     );
 };
 
-const Footer: React.FC = () => (
-    <footer className="bg-slate-900 text-white py-20 border-t border-white/5">
-        <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-                <div className="space-y-6">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-white p-1 rounded-lg">
-                            <CordovaLogo className="h-8 w-auto object-contain" />
-                        </div>
-                        <span className="text-xl font-black uppercase tracking-widest text-white">CÓRDOVA</span>
-                    </div>
-                    <p className="text-slate-400 leading-relaxed text-sm">
-                        Excelencia gráfica y tecnología de vanguardia al servicio de tu marca. Más de 15 años de experiencia en Pasaje.
-                    </p>
-                </div>
-                
-                <div>
-                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Servicios</h4>
-                    <ul className="space-y-3 text-slate-400 text-sm">
-                        <li className="hover:text-white transition-colors cursor-pointer">Gigantografías</li>
-                        <li className="hover:text-white transition-colors cursor-pointer">Imprenta Offset</li>
-                        <li className="hover:text-white transition-colors cursor-pointer">Facturación SRI</li>
-                        <li className="hover:text-white transition-colors cursor-pointer">Merchandising</li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Contacto</h4>
-                    <ul className="space-y-4 text-slate-400 text-sm">
-                        <li className="flex items-center gap-3">
-                            <PhoneIcon className="w-4 h-4 text-brand-blue"/> 099 308 3943
-                        </li>
-                        <li className="flex items-center gap-3">
-                            <EnvelopeIcon className="w-4 h-4 text-brand-blue"/> imprentacordova@gmail.com
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <MapPinIcon className="w-4 h-4 text-brand-blue mt-1"/> Colón e/ Sucre y Rocafuerte, Pasaje.
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Horario</h4>
-                    <ul className="space-y-2 text-slate-400 text-sm">
-                        <li className="flex justify-between"><span>Lun - Vie</span> <span className="text-white">08:30 - 18:30</span></li>
-                        <li className="flex justify-between"><span>Sábados</span> <span className="text-white">09:00 - 13:00</span></li>
-                        <li className="flex justify-between text-slate-600"><span>Domingos</span> <span>Cerrado</span></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div className="border-t border-white/5 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
-                <p>&copy; 2025 Imprenta Córdova. Todos los derechos reservados.</p>
-                <div className="flex gap-4 mt-4 md:mt-0">
-                    <a href="#" className="hover:text-white transition-colors">Privacidad</a>
-                    <a href="#" className="hover:text-white transition-colors">Términos</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-);
-
 const LandingPage: React.FC = () => {
     const [cartItems, setCartItems] = useState<{ producto: Producto; cantidad: number }[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isQuoteOpen, setIsQuoteOpen] = useState(false);
 
     const handleAddToCart = (producto: Producto) => {
         setCartItems(prev => {
@@ -551,44 +582,29 @@ const LandingPage: React.FC = () => {
     const cartCount = cartItems.reduce((acc, item) => acc + item.cantidad, 0);
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 scroll-smooth selection:bg-brand-blue selection:text-white">
-            <Header cartCount={cartCount} onOpenCart={() => setIsCartOpen(true)} onOpenQuote={() => setIsQuoteOpen(true)} />
-            
+        <div className="min-h-screen bg-white font-sans text-slate-900 scroll-smooth">
+            <Header cartCount={cartCount} onOpenCart={() => setIsCartOpen(true)} />
             <main>
-                <HeroSection onOpenQuote={() => setIsQuoteOpen(true)} />
+                <HeroSection />
                 <ServicesSection />
                 <AIHelper />
-                <CatalogSection onAddToCart={handleAddToCart} />
+                <CatalogPreview onAddToCart={handleAddToCart} />
             </main>
-            
             <Footer />
-
-            {/* Floating Action Button for Calculator (Mobile/Tablet) */}
-            <div className="fixed bottom-24 right-6 z-40 lg:hidden">
-                <button 
-                    onClick={() => setIsQuoteOpen(true)}
-                    className="bg-brand-blue text-white p-4 rounded-full shadow-2xl shadow-blue-500/40 hover:scale-110 transition-transform active:scale-95"
-                >
-                    <CalculatorIcon className="w-6 h-6" />
-                </button>
-            </div>
-
-            {/* Floating Action Button for Cart */}
-            <div className="fixed bottom-6 right-6 z-40">
+            <div className="fixed bottom-8 right-8 z-40">
                 <button 
                     onClick={() => setIsCartOpen(true)} 
-                    className="bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 border border-white/10"
+                    className="bg-brand-red text-white p-4 rounded-full shadow-[0_10px_30px_rgba(217,0,0,0.4)] hover:scale-110 transition-transform hover:shadow-[0_15px_40px_rgba(217,0,0,0.5)]"
                 >
-                    <ShoppingCartIcon className="w-6 h-6" />
+                    <ShoppingCartIcon className="w-8 h-8" />
                     {cartCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-brand-red text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">
+                        <span className="absolute -top-2 -right-2 bg-white text-brand-red text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md border border-red-100">
                             {cartCount}
                         </span>
                     )}
                 </button>
             </div>
             
-            {/* Modals */}
             <CartModal 
                 isOpen={isCartOpen} 
                 onClose={() => setIsCartOpen(false)} 
@@ -597,10 +613,6 @@ const LandingPage: React.FC = () => {
                 onRemoveItem={handleRemoveItem}
                 onCheckout={handleCheckout}
             />
-
-            <Modal isOpen={isQuoteOpen} onClose={() => setIsQuoteOpen(false)}>
-                <QuickQuoteCalculator />
-            </Modal>
         </div>
     );
 };

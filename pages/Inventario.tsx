@@ -1,11 +1,8 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { BoxIcon, InventoryIcon, ExclamationTriangleIcon, AddIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon, SearchIcon, TrashIcon, CloseIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { InventoryItem } from '../types';
 import { getInventario, createInventarioItem, updateInventarioItem, deleteInventarioItem, setInventario as saveInventarioOrder } from '../services/mockApi';
-import QRScannerModal from '../components/QRScannerModal';
-import { useToast } from '../contexts/ToastContext';
 
 type SortKey = keyof InventoryItem | 'valorTotal';
 
@@ -144,7 +141,6 @@ const ConfirmationModal: React.FC<{
 
 
 const InventarioPage: React.FC = () => {
-    const { addToast } = useToast();
     const [inventario, setInventario] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -154,7 +150,6 @@ const InventarioPage: React.FC = () => {
     const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
     const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
     const [draggedOverItemId, setDraggedOverItemId] = useState<string | null>(null);
-    const [showScanner, setShowScanner] = useState(false);
     const ITEMS_PER_PAGE = 5;
 
     const fetchInventario = async () => {
@@ -284,41 +279,18 @@ const InventarioPage: React.FC = () => {
         setDraggedOverItemId(null);
     };
 
-    const handleScanResult = (decodedText: string) => {
-        // Assume QR contains Item ID directly
-        const item = inventario.find(i => i.id === decodedText || i.item.toLowerCase() === decodedText.toLowerCase());
-        
-        if (item) {
-            setItemToEdit(item);
-            addToast(`Producto "${item.item}" encontrado`, 'success');
-        } else {
-            addToast('Producto no encontrado en inventario', 'error');
-        }
-    };
-
 
     return (
         <div className="space-y-8">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inventario</h1>
-                <div className="flex gap-3">
-                    <button 
-                        onClick={() => setShowScanner(true)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 transition-colors"
-                    >
-                        <div className="w-5 h-5 flex items-center justify-center border-2 border-current rounded-sm">
-                            <div className="w-2 h-2 bg-current rounded-full"></div>
-                        </div>
-                        Escanear QR
-                    </button>
-                    <button
-                        onClick={() => setItemToEdit({})}
-                        className="flex items-center justify-center gap-2 bg-brand-blue text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                        <AddIcon className="h-5 w-5"/>
-                        <span>Agregar Item</span>
-                    </button>
-                </div>
+                <button
+                    onClick={() => setItemToEdit({})}
+                    className="flex items-center justify-center gap-2 bg-brand-blue text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                    <AddIcon className="h-5 w-5"/>
+                    <span>Agregar Item</span>
+                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -434,13 +406,6 @@ const InventarioPage: React.FC = () => {
 
             <ItemFormModal isOpen={!!itemToEdit} onClose={() => setItemToEdit(null)} onSave={handleSaveItem} itemToEdit={itemToEdit} />
             {itemToDelete && <ConfirmationModal item={itemToDelete} onConfirm={handleDeleteConfirm} onCancel={() => setItemToDelete(null)} />}
-            {showScanner && (
-                <QRScannerModal 
-                    onClose={() => setShowScanner(false)} 
-                    onScan={handleScanResult} 
-                    title="Escanear Producto"
-                />
-            )}
         </div>
     );
 };

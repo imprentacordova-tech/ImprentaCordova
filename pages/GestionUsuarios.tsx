@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { getUsers, updateUser, createUser } from '../services/mockApi';
-import { User, UserRole } from '../types';
+import { User } from '../types';
 import { UsersIcon, UserPlusIcon, ExclamationTriangleIcon, PencilIcon, SearchIcon, CloseIcon, ArrowUpIcon, ArrowDownIcon, ShieldCheckIcon } from '../components/Icons';
 import { formatDate } from '../utils';
 
@@ -29,26 +29,22 @@ const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<
 };
 
 const ConfirmationModal: React.FC<{ user: User; onConfirm: () => void; onCancel: () => void; }> = ({ user, onConfirm, onCancel }) => {
-    const isActivating = user.estado === 'Activo'; // Fix logic: if user is active, we are deactivating, if inactive we are activating. Wait, logic was reversed in previous code.
-    // Logic: button action. If user.estado === 'Inactivo', we want to Activate.
-    const actionLabel = user.estado === 'Inactivo' ? 'activar' : 'desactivar';
-    const confirmColor = user.estado === 'Inactivo' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
-
+    const isActivating = user.estado === 'Inactivo';
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4" onClick={onCancel}>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
                 <div className="p-6 text-center">
-                    <ExclamationTriangleIcon className={`mx-auto h-12 w-12 ${user.estado === 'Inactivo' ? 'text-green-500' : 'text-red-500'}`} />
+                    <ExclamationTriangleIcon className={`mx-auto h-12 w-12 ${isActivating ? 'text-green-500' : 'text-red-500'}`} />
                     <h3 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">
                         ¿Estás seguro?
                     </h3>
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Vas a {actionLabel} al usuario <span className="font-semibold">{user.nombre}</span>.
+                        Vas a {isActivating ? 'activar' : 'desactivar'} al usuario <span className="font-semibold">{user.nombre}</span>.
                     </p>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 flex justify-center gap-4 rounded-b-xl">
                     <button onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancelar</button>
-                    <button onClick={onConfirm} className={`px-4 py-2 text-white font-semibold rounded-lg ${confirmColor}`}>
+                    <button onClick={onConfirm} className={`px-4 py-2 text-white font-semibold rounded-lg ${isActivating ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>
                         Confirmar
                     </button>
                 </div>
@@ -64,7 +60,7 @@ const UserFormModal: React.FC<{
 }> = ({ user, onClose, onSave }) => {
     const [formData, setFormData] = useState<Partial<User>>({});
     useEffect(() => {
-        setFormData(user || { nombre: '', email: '', rol: 'Atención al Cliente', estado: 'Activo', requirePassword: false, password: '' });
+        setFormData(user || { nombre: '', email: '', rol: 'Operador', estado: 'Activo', requirePassword: false, password: '' });
     }, [user]);
 
     if (!user) return null;
@@ -101,22 +97,9 @@ const UserFormModal: React.FC<{
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol</label>
-                        <select name="rol" value={formData.rol || 'Atención al Cliente'} onChange={handleChange} className="mt-1 w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-blue">
-                            <optgroup label="Administración">
-                                <option value="Admin">Administrador</option>
-                            </optgroup>
-                            <optgroup label="Atención & Ventas">
-                                <option value="Atención al Cliente">Atención al Cliente</option>
-                            </optgroup>
-                            <optgroup label="Producción">
-                                <option value="Diseñador">Diseñador Gráfico</option>
-                                <option value="Prensista">Prensista (Maquinista)</option>
-                                <option value="Encuadernador">Encuadernador / Acabados</option>
-                                <option value="Operador">Operador General</option>
-                            </optgroup>
-                            <optgroup label="Logística">
-                                <option value="Instalador">Instalador / Motorizado</option>
-                            </optgroup>
+                        <select name="rol" value={formData.rol || 'Operador'} onChange={handleChange} className="mt-1 w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-blue">
+                            <option value="Admin">Admin</option>
+                            <option value="Operador">Operador</option>
                         </select>
                     </div>
 
@@ -142,7 +125,7 @@ const UserFormModal: React.FC<{
                             <div className="animate-fade-in bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
                                 <label className="block text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">Contraseña de Acceso</label>
                                 <input 
-                                    type="text" // Visible for admin convenience as requested in typical small ERPs
+                                    type="text" // Visible for admin convenience as requested in typical small ERPs, can be password type
                                     name="password" 
                                     value={formData.password || ''} 
                                     onChange={handleChange} 
@@ -190,40 +173,6 @@ const SortableHeader: React.FC<{
     );
 };
 
-// --- RENDERIZADO DE ROLES CON COLORES ---
-const RoleBadge: React.FC<{ role: UserRole }> = ({ role }) => {
-    let classes = "";
-    switch (role) {
-        case 'Admin':
-            classes = "bg-purple-100 text-purple-800 border-purple-200";
-            break;
-        case 'Atención al Cliente':
-            classes = "bg-blue-100 text-blue-800 border-blue-200";
-            break;
-        case 'Diseñador':
-            classes = "bg-pink-100 text-pink-800 border-pink-200";
-            break;
-        case 'Prensista':
-            classes = "bg-orange-100 text-orange-800 border-orange-200";
-            break;
-        case 'Encuadernador':
-            classes = "bg-teal-100 text-teal-800 border-teal-200";
-            break;
-        case 'Instalador':
-            classes = "bg-gray-100 text-gray-800 border-gray-200";
-            break;
-        default: // Operador y otros
-            classes = "bg-gray-100 text-gray-600 border-gray-200";
-            break;
-    }
-
-    return (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${classes}`}>
-            {role}
-        </span>
-    );
-};
-
 
 const GestionUsuariosPage: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -263,9 +212,7 @@ const GestionUsuariosPage: React.FC = () => {
         return [...users]
             .filter(u => u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
             .sort((a, b) => {
-                // @ts-ignore
                 if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-                // @ts-ignore
                 if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
                 return 0;
             });
@@ -333,15 +280,15 @@ const GestionUsuariosPage: React.FC = () => {
                                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{user.nombre}</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{user.email}</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm">
-                                        <RoleBadge role={user.rol} />
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.rol === 'Admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>{user.rol}</span>
                                     </td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm">
                                         {user.requirePassword ? (
-                                            <span className="flex items-center gap-1 text-green-600 font-medium text-xs">
+                                            <span className="flex items-center gap-1 text-green-600 font-medium">
                                                 <ShieldCheckIcon className="w-4 h-4"/> Protegido
                                             </span>
                                         ) : (
-                                            <span className="text-gray-400 italic text-xs">Sin contraseña</span>
+                                            <span className="text-gray-400 italic">Sin contraseña</span>
                                         )}
                                     </td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{formatDate(user.ultimoAcceso)}</td>

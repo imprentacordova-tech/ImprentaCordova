@@ -4,9 +4,8 @@ import { useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes, registerRetiro } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
 import { formatCurrency } from '../utils';
-import { SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ExclamationTriangleIcon, ClockIcon, UserPlusIcon, CalendarDaysIcon, CordovaLogo, WhatsAppIcon, CopyIcon } from '../components/Icons';
+import { SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ExclamationTriangleIcon, ClockIcon, UserPlusIcon, CalendarDaysIcon, CordovaLogo } from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
-import { useToast } from '../contexts/ToastContext';
 
 // Declare html2pdf for TypeScript
 declare const html2pdf: any;
@@ -14,30 +13,6 @@ declare const html2pdf: any;
 // --- Helper para formatear hora ---
 const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', hour12: true });
-};
-
-// --- Helper para generar enlace de WhatsApp ---
-const generateWhatsAppUrl = (cliente: Cliente, trabajo: Trabajo) => {
-    // Fallback si no hay teléfono
-    if (!cliente?.telefono || cliente.telefono.length === 0) return '#';
-    
-    let phone = cliente.telefono[0].replace(/\D/g, '');
-    
-    // Formato Ecuador 09 -> 5939
-    if (phone.startsWith('09')) {
-        phone = '593' + phone.substring(1);
-    } else if (phone.startsWith('9') && phone.length === 9) {
-        // Caso borde si guardaron sin el 0
-        phone = '593' + phone;
-    }
-
-    const saldoTxt = formatCurrency(trabajo.saldo);
-    // Coordenadas fijas de Imprenta Córdova
-    const mapLink = "https://maps.google.com/?q=-3.3281355,-79.8096219"; 
-    
-    const message = `Hola ${cliente.nombre}, tu pedido #${trabajo.orden} (${trabajo.subtipo}) está listo para retirar en Imprenta Córdova. El saldo pendiente es ${saldoTxt}. Ubicación: ${mapLink}`;
-    
-    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 };
 
 // --- MODAL DE VISTA PREVIA DEL COMPROBANTE (NOTA DE VENTA A5) ---
@@ -390,7 +365,6 @@ const RetiroModal: React.FC<{
 
 const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { addToast } = useToast();
     const [allTrabajos, setAllTrabajos] = useState<Trabajo[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [loading, setLoading] = useState(true);
@@ -446,30 +420,6 @@ const RetirosPage: React.FC = () => {
         await fetchData(); // Refresh data from "API"
     };
 
-    const handleCopyPaymentInfo = (trabajo: Trabajo, cliente: Cliente) => {
-        const phone = "593993083943"; // Imprenta phone
-        const waLink = `https://wa.me/${phone}`;
-        
-        const bankData = `🏦 *DATOS BANCARIOS*
-Banco: Pichincha
-Tipo: Corriente
-Cuenta: 2100xxxxxx
-Titular: Imprenta Córdova
-RUC: 070xxxxxxx001`;
-
-        const text = `Hola *${cliente.nombre}* 👋
-Tu pedido *#${trabajo.orden}* (${trabajo.subtipo}) está listo para retirar.
-
-💰 *Saldo Pendiente:* ${formatCurrency(trabajo.saldo)}
-
-${bankData}
-
-📸 Por favor envíe la foto del comprobante a este enlace: ${waLink}`;
-
-        navigator.clipboard.writeText(text);
-        addToast("Datos de cobro copiados al portapapeles", "success");
-    };
-
     return (
         <>
             <style>{`
@@ -504,11 +454,9 @@ ${bankData}
                         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                            {trabajosEnVitrina.map(trabajo => {
                                 const cliente = clientes.find(c => c.id === trabajo.clienteId);
-                                const whatsappUrl = cliente ? generateWhatsAppUrl(cliente, trabajo) : '#';
-                                
                                 return (
-                                     <li key={trabajo.id} className="p-5 hover:bg-blue-50 dark:hover:bg-gray-700/50 flex flex-col md:flex-row md:items-center gap-4 transition-colors group">
-                                        <div className="flex-grow">
+                                     <li key={trabajo.id} className="p-5 hover:bg-blue-50 dark:hover:bg-gray-700/50 flex flex-wrap justify-between items-center gap-4 transition-colors group">
+                                        <div>
                                             <div className="flex items-center gap-3 mb-1">
                                                 <span className="bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded">#{trabajo.orden}</span>
                                                 <p className="font-bold text-gray-900 dark:text-white text-lg">{cliente?.nombre}</p>
@@ -518,7 +466,7 @@ ${bankData}
                                                 <CalendarDaysIcon className="w-3 h-3"/> {new Date(trabajo.fechaEntrada).toLocaleDateString()}
                                             </p>
                                         </div>
-                                        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
+                                        <div className="text-right flex items-center gap-6">
                                             <div className="text-right">
                                                 {trabajo.saldo === 0 ? (
                                                     <p className="font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm">Pagado</p>
@@ -529,36 +477,9 @@ ${bankData}
                                                     </div>
                                                 )}
                                             </div>
-                                            
-                                            <div className="flex items-center gap-2">
-                                                {/* Botón WhatsApp */}
-                                                <a 
-                                                    href={whatsappUrl}
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    className="p-2.5 bg-green-100 text-green-600 hover:bg-green-600 hover:text-white rounded-lg transition-colors border border-green-200 flex items-center gap-2"
-                                                    title="Notificar por WhatsApp"
-                                                >
-                                                    <WhatsAppIcon className="w-5 h-5" />
-                                                    <span className="text-sm font-bold hidden lg:inline">Avisar</span>
-                                                </a>
-
-                                                {/* Botón Copiar Link Cobro (Solo si hay saldo) */}
-                                                {trabajo.saldo > 0 && cliente && (
-                                                    <button 
-                                                        onClick={() => handleCopyPaymentInfo(trabajo, cliente)}
-                                                        className="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors border border-indigo-200 flex items-center gap-2"
-                                                        title="Copiar datos de cobro"
-                                                    >
-                                                        <CopyIcon className="w-5 h-5" />
-                                                        <span className="text-sm font-bold hidden lg:inline">Copiar Cobro</span>
-                                                    </button>
-                                                )}
-
-                                                <button onClick={() => setSelectedTrabajo(trabajo)} className="px-5 py-2.5 bg-white border-2 border-brand-blue text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm">
-                                                    Entregar
-                                                </button>
-                                            </div>
+                                            <button onClick={() => setSelectedTrabajo(trabajo)} className="px-5 py-2.5 bg-white border-2 border-brand-blue text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm">
+                                                Entregar
+                                            </button>
                                         </div>
                                     </li>
                                 );
