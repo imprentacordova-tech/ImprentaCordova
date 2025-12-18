@@ -20,10 +20,81 @@ export enum Regimen {
   GENERAL = 'General'
 }
 
+// --- LANDING PAGE TYPES ---
+export enum ToneType {
+  PROFESSIONAL = 'Profesional',
+  CREATIVE = 'Creativo',
+  PERSUASIVE = 'Persuasivo',
+  FRIENDLY = 'Amigable'
+}
+
+export interface ServiceItem {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  imageUrl: string;
+}
+
+export interface ContactFormState {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  unit: string;
+  description: string;
+  specs: string[];
+  imageUrl: string;
+  isPopular?: boolean;
+}
+
+export type ProductCategory = 'Todos' | 'Favoritos' | 'Oficina' | 'Gran Formato' | 'Merch' | 'Publicidad' | 'Tarjetas' | 'Sublimación' | 'Etiquetas';
+
+// --- AI RELATED TYPES ---
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
+
+export interface StatusLog {
+    estado: TrabajoEstado;
+    fecha: string;
+    usuario: string;
+    nota?: string;
+}
+
+export interface DailySales {
+    date: string;
+    sales: number;
+}
+
+export interface FinancialProjection {
+    forecast: DailySales[];
+    lowTrafficDays: string[];
+    suggestion: string;
+}
+
+export interface SupervisorAnalysis {
+    estado: 'VERDE' | 'AMARILLO' | 'ROJO';
+    resumen: string;
+    detalles: {
+        tipo: 'TECNICA' | 'DISENO' | 'COLOR' | 'COMERCIAL';
+        descripcion: string;
+        sugerencia: string;
+    }[];
+}
+
 export interface SriCredential {
   ruc: string;
   password?: string;
-  origen?: string; // 'Manual', 'Chrome', etc.
+  origen?: string;
   updatedAt?: string;
 }
 
@@ -41,21 +112,6 @@ export interface Cliente {
   regimen: Regimen;
 }
 
-export interface TrabajoSpecs {
-  producto?: string;
-  material?: string;
-  medidas?: string; // "10x15 cm"
-  impresion?: string; // "4/0", "4/4"
-  acabados?: string[]; // ["Laminado", "Troquelado"]
-}
-
-export interface TrabajoDiseno {
-  estado: 'Cliente Provee' | 'Requiere Diseño';
-  archivoUrl?: string;
-  designerId?: string;
-  driveLink?: string;
-}
-
 export interface Trabajo {
   id: string;
   orden: number;
@@ -70,8 +126,7 @@ export interface Trabajo {
   saldo: number;
   estado: TrabajoEstado;
   fechaEntrada: string;
-  fechaEntrega?: string; // Fecha PACTADA
-  fechaVencimiento?: string; // Legacy support (alias for fechaEntrega)
+  fechaEntrega?: string;
   caduco: boolean;
   fotoOriginalUrl?: string;
   creadoPor?: string;
@@ -81,23 +136,12 @@ export interface Trabajo {
   claveAcceso?: string;
   origen?: 'Web' | 'Interno';
   esRenovacion?: boolean;
-  
-  // New Fields for Enhanced Order Management
   prioridad?: 'Normal' | 'Urgente';
-  specs?: TrabajoSpecs;
-  diseno?: TrabajoDiseno;
-  metodoPago?: 'Efectivo' | 'Transferencia' | 'Tarjeta';
-  descuento?: number;
-  costoDiseno?: number;
-  iva?: boolean;
-}
-
-export interface Kpi {
-    title: string;
-    metric: string;
-    tag?: string;
-    icon: React.ComponentType<{ className?: string }>;
-    variant: 'blue' | 'green' | 'purple' | 'red' | 'gray' | 'orange';
+  historial?: StatusLog[];
+  fechaVencimiento?: string;
+  // Métricas de productividad
+  tiempoDisenoMin?: number;
+  tiempoProduccionMin?: number;
 }
 
 export interface Producto {
@@ -161,41 +205,4 @@ export interface AIContentRequest {
   businessName: string;
   productType: string;
   tone: string;
-}
-
-export interface ServiceItem {
-  id: string;
-  title: string;
-  description: string;
-  iconName: string;
-  imageUrl: string;
-}
-
-export enum ToneType {
-  PROFESSIONAL = 'Profesional',
-  FRIENDLY = 'Amigable',
-  CREATIVE = 'Creativo',
-  URGENT = 'Urgente',
-  FORMAL = 'Formal'
-}
-
-export interface ContactFormState {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-}
-
-export type ProductCategory = string;
-
-export interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  unit: string;
-  description: string;
-  specs: string[];
-  imageUrl: string;
-  isPopular?: boolean;
 }

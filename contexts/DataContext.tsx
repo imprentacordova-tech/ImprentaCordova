@@ -1,10 +1,9 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential } from '../types';
 import * as api from '../services/mockApi';
 
 interface DataContextType {
-    // Data State
     clientes: Cliente[];
     trabajos: Trabajo[];
     productos: Producto[];
@@ -13,13 +12,9 @@ interface DataContextType {
     proveedores: Proveedor[];
     tareas: TareaProveedor[];
     sriCredentials: SriCredential[];
-    
-    // Loading States
     loading: boolean;
     syncing: boolean;
     error: string | null;
-
-    // Actions
     refreshData: () => Promise<void>;
     addCliente: (c: any) => Promise<Cliente>;
     updateCliente: (id: string, c: any) => Promise<void>;
@@ -27,7 +22,6 @@ interface DataContextType {
     updateTrabajoStatus: (id: string, status: any, user: string) => Promise<void>;
     addProducto: (p: any) => Promise<any>;
     updateProducto: (id: string, p: any) => Promise<void>;
-    // ... se pueden añadir más acciones específicas según necesidad
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -45,11 +39,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // Lock de sincronización para evitar loops infinitos o race conditions
+    const syncLock = useRef(false);
 
     const refreshData = useCallback(async () => {
+        if (syncLock.current) return;
+        syncLock.current = true;
         setSyncing(true);
+
         try {
-            // Carga paralela para eficiencia
             const [
                 cData, tData, pData, uData, iData, provData, taskData, sriData
             ] = await Promise.all([
@@ -73,20 +72,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setSriCredentials(sriData);
             setError(null);
         } catch (err) {
-            console.error("Error cargando datos:", err);
-            setError("Error de sincronización con la base de datos.");
+            console.error("Data Sync Error:", err);
+            setError("Problema de red al sincronizar datos.");
         } finally {
             setLoading(false);
             setSyncing(false);
+            syncLock.current = false;
         }
     }, []);
 
-    // Carga inicial
     useEffect(() => {
         refreshData();
+        const interval = setInterval(refreshData, 60000); // Polling más conservador (1 min)
+        return () => clearInterval(interval);
     }, [refreshData]);
-
-    // --- Wrappers para acciones que actualizan el estado local optimísticamente o recargan ---
 
     const addCliente = async (clienteData: any) => {
         const newCliente = await api.createCliente(clienteData);
@@ -133,17 +132,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateProducto: updateProductoState
     };
 
-    return (
-        <DataContext.Provider value={value}>
-            {children}
-        </DataContext.Provider>
-    );
+    return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
 export const useData = () => {
     const context = useContext(DataContext);
-    if (context === undefined) {
-        throw new Error('useData debe ser usado dentro de un DataProvider');
-    }
+    if (!context) throw new Error('useData debe usarse dentro de DataProvider');
     return context;
 };

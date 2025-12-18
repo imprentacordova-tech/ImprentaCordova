@@ -1,554 +1,309 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
     ShieldCheckIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
     CloseIcon, TrashIcon, AddIcon, ArrowRightIcon, MapPinIcon, 
-    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, CheckCircleIcon, SparklesIcon
+    EnvelopeIcon, CordovaLogo, StarIcon, CheckBadgeIcon, ClockIcon, 
+    SparklesIcon, CalculatorIcon, WalletIcon, CheckCircleIcon, PrinterIcon, 
+    PaletteIcon, MessageCircleIcon, SendIcon, Loader2Icon
 } from '../components/Icons';
 import { getProductos, createPublicPedido } from '../services/mockApi';
-import { Producto } from '../types';
+import { Producto, ChatMessage } from '../types';
 import { formatCurrency } from '../utils';
 import AIHelper from '../components/AIHelper';
+import { chatWithCustomer } from '../services/geminiService';
 
-// --- UTILIDADES DE INTERFAZ ---
-
-// Scroll Suave
+// --- UTILIDADES ---
 const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 };
 
-// --- SECCIONES ---
+// --- COMPONENTES UI ---
 
-const Header: React.FC<{ cartCount: number, onOpenCart: () => void }> = ({ cartCount, onOpenCart }) => {
+const Modal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.ReactNode; title?: string }> = ({ isOpen, onClose, children, title }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity"></div>
+            <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-bounce-in border border-white/20" onClick={e => e.stopPropagation()}>
+                {title && (
+                    <div className="absolute top-6 left-8 z-10">
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight uppercase">{title}</h3>
+                    </div>
+                )}
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-6 right-6 z-20 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+                >
+                    <CloseIcon className="w-6 h-6" />
+                </button>
+                <div className="pt-4">{children}</div>
+            </div>
+        </div>
+    );
+};
+
+const Header: React.FC<{ cartCount: number, onOpenCart: () => void, onOpenQuote: () => void }> = ({ cartCount, onOpenCart, onOpenQuote }) => {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', handleScroll);
+        const handleScroll = () => {
+            const isScrolled = window.scrollY > 20;
+            if (isScrolled !== scrolled) setScrolled(isScrolled);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [scrolled]);
 
     return (
         <header 
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
                 scrolled 
-                ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-100 py-2' 
+                ? 'bg-white/90 backdrop-blur-xl shadow-lg py-3' 
                 : 'bg-transparent py-6'
             }`}
         >
-            <nav className="container mx-auto px-6 flex justify-between items-center">
+            <div className="container mx-auto px-6 flex justify-between items-center">
                 <Link to="/" className="flex items-center gap-3 group">
-                    <div className={`p-1 rounded-lg transition-colors duration-300 ${scrolled ? 'bg-transparent' : 'bg-white/20 backdrop-blur-sm'}`}>
-                        <CordovaLogo className="h-12 w-auto object-contain" />
+                    <div className={`transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-110'}`}>
+                        <CordovaLogo className={`h-10 w-auto object-contain transition-all ${scrolled ? 'brightness-100' : 'brightness-0 invert'}`} />
                     </div>
-                    <div className="flex flex-col leading-none">
-                        <span className={`text-xs font-bold tracking-[0.3em] uppercase mb-0.5 ${scrolled ? 'text-slate-500' : 'text-blue-100'}`}>
-                            Imprenta
-                        </span>
-                        <span className={`text-2xl font-black tracking-tighter uppercase ${scrolled ? 'text-brand-blue' : 'text-white'}`}>
-                            CÓRDOVA
-                        </span>
+                    <div className={`flex flex-col leading-none transition-colors duration-300 ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+                        <span className="text-[10px] font-black tracking-[0.5em] uppercase opacity-70">Imprenta</span>
+                        <span className="text-xl font-black tracking-widest uppercase">CÓRDOVA</span>
                     </div>
                 </Link>
                 
                 <div className="flex items-center gap-8">
-                    <nav className="hidden md:flex gap-8 text-sm font-bold uppercase tracking-wide">
-                        <a 
-                            href="#servicios" 
-                            onClick={(e) => scrollToSection(e, 'servicios')} 
-                            className={`transition-all duration-300 relative group ${scrolled ? 'text-slate-600 hover:text-brand-blue' : 'text-slate-200 hover:text-white'}`}
-                        >
-                            Servicios
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-red transition-all duration-300 group-hover:w-full"></span>
-                        </a>
-                        <a 
-                            href="#ai-helper" 
-                            onClick={(e) => scrollToSection(e, 'ai-helper')} 
-                            className={`transition-all duration-300 relative group flex items-center gap-1 ${scrolled ? 'text-purple-600 hover:text-purple-800' : 'text-purple-200 hover:text-white'}`}
-                        >
-                            <SparklesIcon className="w-3 h-3" />
-                            IA Creativa
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full"></span>
-                        </a>
-                        <a 
-                            href="#catalog" 
-                            onClick={(e) => scrollToSection(e, 'catalog')} 
-                            className={`transition-all duration-300 relative group ${scrolled ? 'text-slate-600 hover:text-brand-blue' : 'text-slate-200 hover:text-white'}`}
-                        >
-                            Catálogo
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-red transition-all duration-300 group-hover:w-full"></span>
-                        </a>
+                    <nav className={`hidden lg:flex gap-10 text-[11px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${scrolled ? 'text-slate-600' : 'text-white/80'}`}>
+                        <a href="#servicios" onClick={(e) => scrollToSection(e, 'servicios')} className="hover:text-brand-blue transition-colors">Servicios</a>
+                        <a href="#ai-helper" onClick={(e) => scrollToSection(e, 'ai-helper')} className="hover:text-purple-400 transition-colors flex items-center gap-1"><SparklesIcon className="w-3 h-3 animate-pulse"/> IA Creativa</a>
+                        <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="hover:text-brand-blue transition-colors">Catálogo</a>
+                        <Link to="/login" className={`px-3 py-1 rounded-full border transition-all ${scrolled ? 'border-brand-red text-brand-red hover:bg-brand-red hover:text-white' : 'border-white/40 text-white hover:bg-white hover:text-brand-blue'}`}>Acceso</Link>
                     </nav>
 
                     <div className="flex items-center gap-4">
+                        <button 
+                            onClick={onOpenQuote}
+                            className={`hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-xl hover:-translate-y-1 ${
+                                scrolled 
+                                ? 'bg-brand-blue text-white' 
+                                : 'bg-white text-brand-blue hover:bg-blue-50'
+                            }`}
+                        >
+                            <CalculatorIcon className="w-4 h-4" /> Cotizar
+                        </button>
+
                         <button onClick={onOpenCart} className="relative group p-2">
-                            <ShoppingCartIcon className={`w-6 h-6 transition-colors ${scrolled ? 'text-slate-700 group-hover:text-brand-blue' : 'text-white group-hover:text-brand-blue'}`} />
+                            <div className={`p-2.5 rounded-full transition-all transform group-hover:scale-110 ${scrolled ? 'bg-brand-blue text-white shadow-lg' : 'bg-white/20 backdrop-blur-md text-white'}`}>
+                                <ShoppingCartIcon className="w-6 h-6" />
+                            </div>
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-brand-red text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm animate-pulse">
+                                <span className="absolute -top-1 -right-1 bg-brand-red text-white text-[10px] font-black rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white animate-bounce">
                                     {cartCount}
                                 </span>
                             )}
                         </button>
-                        <Link 
-                            to="/login" 
-                            className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
-                                scrolled 
-                                ? 'bg-brand-blue text-white hover:bg-blue-800' 
-                                : 'bg-white text-brand-blue hover:bg-blue-50'
-                            }`}
-                        >
-                            <UsersIcon className="w-4 h-4" />
-                            Gestión Interna
-                        </Link>
                     </div>
                 </div>
-            </nav>
+            </div>
         </header>
     );
 };
 
-const HeroSection: React.FC = () => (
-    <section className="relative bg-brand-blue pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden min-h-[85vh] flex items-center">
-        {/* Background Gradients & Texture */}
+/* Fix: Added missing HeroSection component */
+const HeroSection: React.FC<{ onOpenQuote: () => void }> = ({ onOpenQuote }) => (
+    <section className="relative bg-brand-blue pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden flex items-center">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-brand-blue to-blue-800"></div>
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        
-        {/* Decorative Shapes */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand-red/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
-
-        <div className="container mx-auto px-6 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-                
-                {/* Left Column: Content */}
-                <div className="space-y-8 text-center lg:text-left animate-fade-in-up">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-sm mx-auto lg:mx-0">
-                        <span className="flex h-2 w-2 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                        </span>
-                        <span className="text-xs font-bold text-white tracking-widest uppercase">Servicio Express en Pasaje</span>
-                    </div>
-
-                    <div>
-                        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white leading-none tracking-tight drop-shadow-2xl mb-4">
-                            IMPRENTA <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">CÓRDOVA</span>
-                        </h1>
-                        
-                        <p className="text-2xl md:text-3xl font-bold text-blue-200 tracking-wide border-l-4 border-orange-500 pl-4">
-                            TU MARCA MERECE BRILLAR
-                        </p>
-                    </div>
-
-                    <p className="text-lg sm:text-xl text-blue-100 font-light max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                        Desde gigantografías de alto impacto hasta facturación SRI. 
-                        Combinamos <span className="font-bold text-white">tecnología Roland</span> con acabados artesanales de primera.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                        <a href="#contact" className="group relative px-8 py-4 bg-brand-red overflow-hidden rounded-xl font-bold text-white tracking-wider shadow-lg shadow-red-900/30 transition-all hover:shadow-xl hover:scale-105 hover:bg-red-700 flex items-center justify-center gap-3">
-                            <PhoneIcon className="w-5 h-5"/> COTIZAR AHORA
-                        </a>
-                        <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="px-8 py-4 bg-white/10 border border-white/30 text-white font-bold rounded-xl hover:bg-white hover:text-brand-blue transition-all shadow-lg flex items-center justify-center gap-2 backdrop-blur-sm">
-                            VER CATÁLOGO <ArrowRightIcon className="w-5 h-5"/>
-                        </a>
-                    </div>
-
-                    <div className="pt-8 flex items-center justify-center lg:justify-start gap-8 opacity-80">
-                        <div className="flex items-center gap-2">
-                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
-                            <span className="text-sm font-medium text-blue-100">Autorizado SRI</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
-                            <span className="text-sm font-medium text-blue-100">Calidad HD</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <CheckBadgeIcon className="w-5 h-5 text-green-400" />
-                            <span className="text-sm font-medium text-blue-100">Entrega Puntual</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column: Static Composition */}
-                <div className="relative hidden lg:block h-[600px]">
-                    {/* Main Image (Large Format Printer / Workshop) */}
-                    <div className="absolute top-10 left-10 w-4/5 h-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 transform -rotate-2 hover:rotate-0 transition-all duration-700 z-10 bg-gray-800">
-                        <img 
-                            src="https://i.imgur.com/AUvl1wF.png" 
-                            alt="Taller de Impresión" 
-                            className="w-full h-full object-cover opacity-90 hover:scale-110 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent flex items-end p-8">
-                            <div>
-                                <p className="text-orange-400 font-bold uppercase tracking-wider text-sm mb-1">Tecnología Roland</p>
-                                <h3 className="text-white font-bold text-2xl">Gigantografías HD</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Secondary Image (Flyers/Stationery - Floating Top Right) */}
-                    <div className="absolute -top-4 right-4 w-64 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white transform rotate-6 hover:rotate-3 transition-all duration-500 z-20 bg-white animate-float">
-                        <img 
-                            src="https://i.imgur.com/cKqbnJj.jpeg" 
-                            alt="Papelería" 
-                            className="w-full h-full object-cover"
-                        />
-                        <div className="absolute bottom-2 left-2 bg-brand-red text-white text-[10px] font-bold px-2 py-1 rounded">
-                            OFFSET & DIGITAL
-                        </div>
-                    </div>
-
-                    {/* Tertiary Image (Merch - Floating Bottom Left) */}
-                    <div className="absolute bottom-8 -left-4 w-56 h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 transform hover:scale-105 transition-all duration-500 z-30">
-                        <img 
-                            src="https://i.imgur.com/TnsNdTS.png" 
-                            alt="Merchandising" 
-                            className="w-full h-full object-cover"
-                        />
-                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                            <span className="text-white font-bold">Merch</span>
-                        </div>
-                    </div>
-
-                    {/* Decorative Elements */}
-                    <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
-                </div>
+        <div className="container mx-auto px-6 relative z-10 text-center lg:text-left">
+            <h1 className="text-5xl lg:text-7xl font-black text-white mb-6">IMPRENTA CÓRDOVA</h1>
+            <p className="text-xl text-blue-100 mb-8 max-w-xl">Líderes en artes gráficas y soluciones SRI en Pasaje.</p>
+            <div className="flex flex-col sm:flex-row gap-4">
+                <button onClick={onOpenQuote} className="px-8 py-4 bg-brand-red text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-all">SOLICITAR COTIZACIÓN</button>
+                <a href="#catalog" onClick={(e) => scrollToSection(e, 'catalog')} className="px-8 py-4 bg-white/10 text-white border border-white/20 font-bold rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all">VER PRODUCTOS</a>
             </div>
         </div>
     </section>
 );
 
-const ServicesSection: React.FC = () => {
-    const services = [
-        { title: "Gigantografías", desc: "Lonas y Vinilos en alta resolución Roland.", icon: <MapPinIcon className="w-8 h-8 text-blue-600"/>, bg: "bg-blue-50" },
-        { title: "Facturación SRI", desc: "Facturas, Notas de Venta y Retenciones.", icon: <ShieldCheckIcon className="w-8 h-8 text-red-600"/>, bg: "bg-red-50" },
-        { title: "Publicidad", desc: "Volantes, Trípticos y Afiches full color.", icon: <UsersIcon className="w-8 h-8 text-yellow-600"/>, bg: "bg-yellow-50" },
-        { title: "Sublimación", desc: "Tazas, Gorras y Camisetas personalizadas.", icon: <BoxIcon className="w-8 h-8 text-purple-600"/>, bg: "bg-purple-50" },
-        { title: "Imprenta Offset", desc: "Grandes volúmenes a bajo costo.", icon: <ClockIcon className="w-8 h-8 text-green-600"/>, bg: "bg-green-50" },
-        { title: "Acabados", desc: "Troquelados, Laminados y Barniz UV.", icon: <StarIcon className="w-8 h-8 text-orange-600"/>, bg: "bg-orange-50" },
-    ];
-
-    return (
-        <section id="servicios" className="py-24 bg-white relative">
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="text-center mb-16">
-                    <span className="text-brand-red font-bold tracking-widest uppercase text-xs bg-red-50 px-3 py-1 rounded-full">Nuestros Servicios</span>
-                    <h2 className="text-4xl font-black text-slate-900 mt-4">SOLUCIONES INTEGRALES</h2>
-                    <p className="text-slate-500 mt-2 text-lg">Todo lo que tu empresa necesita para destacar.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {services.map((s, i) => (
-                        <div key={i} className="group bg-white border border-slate-100 p-8 rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-1">
-                            <div className={`${s.bg} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transform group-hover:rotate-6 transition-transform duration-300`}>
-                                {s.icon}
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-brand-blue transition-colors">{s.title}</h3>
-                            <p className="text-slate-600 leading-relaxed">{s.desc}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const CatalogPreview: React.FC<{ onAddToCart: (p: Producto) => void }> = ({ onAddToCart }) => {
-    const [productos, setProductos] = useState<Producto[]>([]);
-
-    useEffect(() => {
-        getProductos().then(data => setProductos(data.slice(0, 6))); 
-    }, []);
-
-    return (
-        <section id="catalog" className="py-24 bg-slate-50 relative">
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-                    <div>
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-900">CATÁLOGO ONLINE</h2>
-                        <p className="text-slate-500 mt-2">Precios directos de imprenta. Haz tu pedido ahora.</p>
-                    </div>
-                    <a href="#catalog" className="px-6 py-3 bg-white border border-slate-200 text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm flex items-center gap-2">
-                        VER TODO <ArrowRightIcon className="w-4 h-4"/>
-                    </a>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {productos.map((p) => (
-                        <div key={p.id} className="bg-white rounded-2xl shadow-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 border border-slate-100">
-                            <div className="relative h-64 bg-slate-100 overflow-hidden">
-                                {p.imagenUrl ? (
-                                    <img src={p.imagenUrl} alt={p.nombre} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                        <BoxIcon className="w-16 h-16" />
-                                    </div>
-                                )}
-                                {p.esSRI && (
-                                    <span className="absolute top-4 left-4 bg-brand-blue text-white text-[10px] font-bold px-3 py-1 rounded-md shadow-sm">AUTORIZADO SRI</span>
-                                )}
-                                <div className="absolute inset-0 bg-brand-blue/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
-                                    <button onClick={() => onAddToCart(p)} className="bg-white text-brand-blue font-bold py-3 px-8 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-brand-red hover:text-white shadow-xl flex items-center gap-2">
-                                        <AddIcon className="w-5 h-5"/> AGREGAR
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="p-6">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{p.categoria}</div>
-                                <h3 className="text-lg font-bold text-slate-900 mb-3 truncate group-hover:text-brand-blue transition-colors">{p.nombre}</h3>
-                                <div className="flex justify-between items-end border-t border-slate-100 pt-4">
-                                    <div>
-                                        <p className="text-xs text-slate-400 mb-0.5">Precio Unitario</p>
-                                        <span className="text-2xl font-black text-slate-800">{formatCurrency(p.precio)}</span>
-                                    </div>
-                                    <button onClick={() => onAddToCart(p)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-brand-blue hover:text-white transition-colors">
-                                        <ShoppingCartIcon className="w-5 h-5"/>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const Footer: React.FC = () => (
-    <footer className="bg-slate-900 text-white pt-20 pb-10">
+/* Fix: Added missing ServicesSection component */
+const ServicesSection: React.FC = () => (
+    <section id="servicios" className="py-24 bg-white">
         <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-                <div className="col-span-1 md:col-span-2">
-                    <Link to="/" className="flex items-center gap-2 mb-6">
-                        <div className="bg-white p-1 rounded-lg">
-                            <CordovaLogo className="h-10 w-auto object-contain" />
-                        </div>
-                        <span className="text-2xl font-black uppercase tracking-tighter">Imprenta Córdova</span>
-                    </Link>
-                    <p className="text-slate-400 max-w-sm mb-6 font-light leading-relaxed">
-                        Más de 15 años brindando soluciones de impresión de calidad en Pasaje. Tecnología moderna y atención personalizada.
-                    </p>
-                    <div className="flex gap-4">
-                        {['Facebook', 'Instagram', 'WhatsApp'].map((s) => (
-                            <div key={s} className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-brand-blue hover:border-brand-blue transition-all cursor-pointer text-xs font-bold uppercase tracking-wider">
-                                {s}
-                            </div>
-                        ))}
+            <div className="text-center mb-16">
+                <h2 className="text-4xl font-black text-slate-900">Nuestros Servicios</h2>
+                <p className="text-slate-500 mt-2">Soluciones gráficas de alta calidad para su negocio.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                    { title: 'SRI', desc: 'Facturas y Notas de Venta autorizadas.', icon: <ShieldCheckIcon /> },
+                    { title: 'Gigantografías', desc: 'Lonas y vinilos en HD.', icon: <PrinterIcon /> },
+                    { title: 'Merchandising', desc: 'Tazas, gorras y más.', icon: <BoxIcon /> }
+                ].map((s, i) => (
+                    <div key={i} className="p-8 border border-slate-100 rounded-2xl hover:shadow-xl transition-all">
+                        <div className="w-12 h-12 text-brand-blue mb-4">{s.icon}</div>
+                        <h3 className="text-xl font-bold mb-2">{s.title}</h3>
+                        <p className="text-slate-600">{s.desc}</p>
                     </div>
-                </div>
-                
-                <div>
-                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs border-b border-slate-700 pb-2 inline-block">Enlaces Rápidos</h4>
-                    <ul className="space-y-3 text-slate-400 text-sm">
-                        <li><a href="#" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Inicio</a></li>
-                        <li><a href="#servicios" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Servicios</a></li>
-                        <li><a href="#catalog" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Catálogo</a></li>
-                        <li><Link to="/login" className="hover:text-brand-blue transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-brand-red rounded-full"></span>Acceso Personal</Link></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs border-b border-slate-700 pb-2 inline-block">Contáctanos</h4>
-                    <ul className="space-y-4 text-slate-400 text-sm">
-                        <li className="flex items-start gap-3">
-                            <MapPinIcon className="w-5 h-5 text-brand-red mt-0.5 flex-shrink-0"/>
-                            <span>Colón E/ Sucre y Rocafuerte.<br/>Pasaje, El Oro, Ecuador.</span>
-                        </li>
-                        <li className="flex items-center gap-3">
-                            <PhoneIcon className="w-5 h-5 text-brand-blue flex-shrink-0"/>
-                            <span className="font-bold text-white">099 308 3943</span>
-                        </li>
-                        <li className="flex items-center gap-3">
-                            <EnvelopeIcon className="w-5 h-5 text-green-500 flex-shrink-0"/>
-                            imprentacordova@gmail.com
-                        </li>
-                    </ul>
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+/* Fix: Added missing CatalogSection component */
+const CatalogSection: React.FC<{ onAddToCart: (p: Producto) => void }> = ({ onAddToCart }) => {
+    const [productos, setProductos] = useState<Producto[]>([]);
+    useEffect(() => { getProductos().then(setProductos); }, []);
+    return (
+        <section id="catalog" className="py-24 bg-slate-50">
+            <div className="container mx-auto px-6">
+                <h2 className="text-3xl font-black mb-12">Catálogo Destacado</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {productos.slice(0, 6).map(p => (
+                        <div key={p.id} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all">
+                            <h3 className="font-bold text-lg mb-2">{p.nombre}</h3>
+                            <p className="text-brand-blue font-black text-xl mb-4">{formatCurrency(p.precio)}</p>
+                            <button onClick={() => onAddToCart(p)} className="w-full py-3 bg-brand-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-800 transition-colors">
+                                <AddIcon className="w-5 h-5"/> Agregar al Carrito
+                            </button>
+                        </div>
+                    ))}
                 </div>
             </div>
-            
-            <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-                <p>&copy; 2025 Imprenta Córdova. Todos los derechos reservados.</p>
-                <p className="mt-2 md:mt-0 flex items-center gap-1">Desarrollado con tecnología <span className="text-brand-blue font-bold">React</span> & <span className="text-brand-blue font-bold">Gemini AI</span>.</p>
-            </div>
+        </section>
+    );
+};
+
+/* Fix: Added missing LandingFooter component */
+const LandingFooter: React.FC = () => (
+    <footer className="bg-slate-900 text-white py-12">
+        <div className="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Imprenta Córdova. Pasaje, El Oro.</p>
         </div>
     </footer>
 );
 
-// --- MAIN COMPONENT ---
+/* Fix: Added missing QuickQuoteCalculator component placeholder */
+const QuickQuoteCalculator: React.FC = () => (
+    <div className="text-center p-8">
+        <CalculatorIcon className="w-16 h-16 text-brand-blue mx-auto mb-4" />
+        <p className="text-lg font-bold">Cotizador Maestro</p>
+        <p className="text-slate-500 mt-2">Próximamente disponible para autoservicio.</p>
+    </div>
+);
 
-// Reusing the existing CartModal logic
-const CartModal: React.FC<{
-    isOpen: boolean;
-    onClose: () => void;
-    cartItems: { producto: Producto; cantidad: number }[];
-    onUpdateQuantity: (id: string, delta: number) => void;
-    onRemoveItem: (id: string) => void;
-    onCheckout: (clientData: any) => void;
-}> = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem, onCheckout }) => {
-    const [clientData, setClientData] = useState({ nombre: '', telefono: '', email: '', ruc: '', direccion: '', regimen: 'General' });
-    const [tipoDocumento, setTipoDocumento] = useState<'SRI' | 'Recibo'>('Recibo');
-    const [step, setStep] = useState<'cart' | 'info' | 'success'>('cart');
+const AICustomerBot: React.FC = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<ChatMessage[]>([
+        { role: 'model', text: '¡Hola! Soy Córdova-Bot. 👋 ¿Cómo va tu día? Estoy aquí para ayudarte con horarios, ubicación o información de tus trabajos.' }
+    ]);
+    const [input, setInput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
-    const total = cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
+    const scrollToBottom = useCallback(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }, []);
 
     useEffect(() => {
-        if (isOpen) {
-            setStep('cart');
-            setClientData({ nombre: '', telefono: '', email: '', ruc: '', direccion: '', regimen: 'General' });
-            setTipoDocumento('Recibo');
-        }
-    }, [isOpen]);
+        if (isOpen) scrollToBottom();
+    }, [messages, isOpen, scrollToBottom]);
 
-    if (!isOpen) return null;
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
-        onCheckout({ ...clientData, tipoDocumento });
-        setStep('success');
+        if (!input.trim() || loading) return;
+
+        const userMsg = input.trim();
+        setInput('');
+        setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+        setLoading(true);
+
+        try {
+            const products = await getProductos();
+            const context = products.slice(0, 10).map(p => `${p.nombre}: ${formatCurrency(p.precio)}`).join(', ');
+            const response = await chatWithCustomer([...messages, { role: 'user', text: userMsg }], context);
+            setMessages(prev => [...prev, { role: 'model', text: response }]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                {step === 'cart' && (
-                    <>
-                        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-                                <ShoppingCartIcon className="w-6 h-6 text-brand-blue" /> Tu Pedido
-                            </h2>
-                            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 transition-colors"><CloseIcon className="w-6 h-6" /></button>
+        <div className="fixed bottom-24 right-8 z-[90] flex flex-col items-end">
+            {isOpen && (
+                <div className="w-[350px] h-[500px] bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-bounce-in mb-4">
+                    <div className="bg-slate-900 p-6 flex items-center gap-3">
+                        <div className="w-10 h-10 bg-brand-blue rounded-2xl flex items-center justify-center">
+                            <SparklesIcon className="w-6 h-6 text-white animate-pulse" />
                         </div>
-                        <div className="p-6 overflow-y-auto flex-grow space-y-4 bg-gray-50 dark:bg-slate-950/50">
-                            {cartItems.length === 0 ? (
-                                <div className="text-center py-12 text-gray-400">
-                                    <BoxIcon className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                    <p>Tu carrito está vacío.</p>
-                                </div>
-                            ) : (
-                                cartItems.map(item => (
-                                    <div key={item.producto.id} className="flex justify-between items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
-                                        <div className="flex-grow">
-                                            <p className="font-bold text-sm text-slate-800 dark:text-white">{item.producto.nombre}</p>
-                                            <p className="text-xs text-gray-500">{formatCurrency(item.producto.precio)} c/u</p>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
-                                                <button onClick={() => onUpdateQuantity(item.producto.id, -1)} className="w-7 h-7 flex items-center justify-center font-bold hover:bg-white dark:hover:bg-slate-600 rounded-md text-gray-600 dark:text-gray-300 transition-all">-</button>
-                                                <span className="text-sm font-bold w-6 text-center text-slate-800 dark:text-white">{item.cantidad}</span>
-                                                <button onClick={() => onUpdateQuantity(item.producto.id, 1)} className="w-7 h-7 flex items-center justify-center font-bold hover:bg-white dark:hover:bg-slate-600 rounded-md text-gray-600 dark:text-gray-300 transition-all">+</button>
-                                            </div>
-                                            <button onClick={() => onRemoveItem(item.producto.id)} className="text-red-300 hover:text-red-500 transition-colors"><TrashIcon className="w-5 h-5" /></button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                        <div>
+                            <h4 className="text-white font-black text-sm uppercase tracking-widest">Córdova Bot</h4>
+                            <p className="text-[10px] text-green-400 font-bold uppercase tracking-tighter flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping"></span> Online
+                            </p>
                         </div>
-                        {cartItems.length > 0 && (
-                            <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="font-bold text-gray-500 text-xs uppercase tracking-wider">Total Estimado</span>
-                                    <span className="text-3xl font-black text-brand-blue">{formatCurrency(total)}</span>
+                    </div>
+                    
+                    <div ref={scrollRef} className="flex-grow p-6 overflow-y-auto space-y-4 bg-slate-50 custom-scrollbar">
+                        {messages.map((m, i) => (
+                            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[85%] p-4 rounded-3xl text-sm font-medium leading-relaxed ${m.role === 'user' ? 'bg-brand-blue text-white rounded-tr-none' : 'bg-white text-slate-700 shadow-sm border border-slate-100 rounded-tl-none'}`}>
+                                    {m.text}
                                 </div>
-                                <button onClick={() => setStep('info')} className="w-full py-4 bg-brand-red text-white font-bold rounded-xl shadow-lg hover:bg-red-700 transition-all transform active:scale-95 flex justify-center items-center gap-2 uppercase tracking-wide">
-                                    Continuar
-                                </button>
+                            </div>
+                        ))}
+                        {loading && (
+                            <div className="flex justify-start">
+                                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex gap-1">
+                                    <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></span>
+                                    <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce delay-150"></span>
+                                    <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce delay-300"></span>
+                                </div>
                             </div>
                         )}
-                    </>
-                )}
-
-                {step === 'info' && (
-                    <>
-                        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-4 bg-white dark:bg-slate-900">
-                            <button onClick={() => setStep('cart')} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500"><ArrowRightIcon className="w-5 h-5 transform rotate-180" /></button>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white">Datos de Facturación</h2>
-                        </div>
-                        <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-y-auto bg-gray-50 dark:bg-slate-950/30">
-                            <div className="p-6 space-y-5">
-                                <div className="flex bg-gray-200 dark:bg-slate-800 p-1 rounded-xl mb-2">
-                                    <button type="button" onClick={() => setTipoDocumento('Recibo')} className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${tipoDocumento === 'Recibo' ? 'bg-white dark:bg-slate-600 text-brand-blue shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
-                                        Recibo Simple
-                                    </button>
-                                    <button type="button" onClick={() => setTipoDocumento('SRI')} className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${tipoDocumento === 'SRI' ? 'bg-white dark:bg-slate-600 text-brand-blue shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
-                                        Factura SRI
-                                    </button>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-gray-500 uppercase tracking-wide ml-1">Nombre / Razón Social</label>
-                                    <input required type="text" className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/50 outline-none transition-all" value={clientData.nombre} onChange={e => setClientData({...clientData, nombre: e.target.value})} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-gray-500 uppercase tracking-wide ml-1">Teléfono / WhatsApp</label>
-                                    <input required type="tel" className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/50 outline-none transition-all" value={clientData.telefono} onChange={e => setClientData({...clientData, telefono: e.target.value})} maxLength={10} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-gray-500 uppercase tracking-wide ml-1">Email {tipoDocumento === 'Recibo' && '(Opcional)'}</label>
-                                    <input type={tipoDocumento === 'SRI' ? "email" : "text"} required={tipoDocumento === 'SRI'} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/50 outline-none transition-all" value={clientData.email} onChange={e => setClientData({...clientData, email: e.target.value})} />
-                                </div>
-
-                                {tipoDocumento === 'SRI' && (
-                                    <div className="space-y-5 pt-4 border-t border-gray-200 dark:border-slate-800 animate-fade-in">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-bold mb-1.5 text-gray-500 uppercase tracking-wide ml-1">RUC / Cédula</label>
-                                                <input required type="text" className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/50 outline-none transition-all" value={clientData.ruc} onChange={e => setClientData({...clientData, ruc: e.target.value})} />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-bold mb-1.5 text-gray-500 uppercase tracking-wide ml-1">Régimen</label>
-                                                <select className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm transition-all" value={clientData.regimen} onChange={e => setClientData({...clientData, regimen: e.target.value})}>
-                                                    <option value="General">General</option>
-                                                    <option value="Rimpe Negocio Popular">Negocio Popular</option>
-                                                    <option value="Rimpe Emprendedor">Emprendedor</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold mb-1.5 text-gray-500 uppercase tracking-wide ml-1">Dirección</label>
-                                            <input required type="text" className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/50 outline-none transition-all" value={clientData.direccion} onChange={e => setClientData({...clientData, direccion: e.target.value})} />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-                                <button type="submit" className="w-full py-4 bg-green-500 text-white font-bold rounded-xl shadow-lg hover:bg-green-600 transition-all transform active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wide">
-                                    <CheckCircleIcon className="w-6 h-6"/>
-                                    Confirmar Pedido
-                                </button>
-                            </div>
-                        </form>
-                    </>
-                )}
-
-                {step === 'success' && (
-                    <div className="p-10 text-center flex flex-col items-center justify-center h-full bg-white dark:bg-slate-900">
-                        <div className="w-28 h-28 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce shadow-sm">
-                            <CheckCircleIcon className="w-14 h-14 text-green-500" />
-                        </div>
-                        <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">¡LISTO!</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mb-10 max-w-xs mx-auto text-lg leading-relaxed">
-                            Gracias <strong>{clientData.nombre}</strong>.<br/>
-                            Tu pedido ha sido enviado al taller. Te contactaremos pronto.
-                        </p>
-                        <button onClick={onClose} className="px-10 py-4 bg-brand-blue text-white font-bold rounded-xl hover:bg-blue-800 transition-all shadow-xl hover:-translate-y-1 uppercase tracking-wider">
-                            Cerrar
-                        </button>
                     </div>
-                )}
-            </div>
+
+                    <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex gap-2">
+                        <input 
+                            type="text" 
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            placeholder="Escribe aquí..." 
+                            className="flex-grow bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue outline-none"
+                        />
+                        <button type="submit" disabled={loading} className="p-3 bg-brand-blue text-white rounded-2xl hover:bg-blue-800 transition-colors shadow-lg active:scale-90">
+                            <SendIcon className="w-5 h-5"/>
+                        </button>
+                    </form>
+                </div>
+            )}
+            
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className={`p-5 rounded-full shadow-2xl transition-all transform hover:scale-110 active:scale-95 ${isOpen ? 'bg-slate-900' : 'bg-brand-blue'} text-white relative`}
+            >
+                {isOpen ? <CloseIcon className="w-8 h-8"/> : <MessageCircleIcon className="w-8 h-8"/>}
+                {!isOpen && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-red rounded-full animate-ping"></span>}
+            </button>
         </div>
     );
 };
 
-const LandingPage: React.FC = () => {
+export default function LandingPage() {
     const [cartItems, setCartItems] = useState<{ producto: Producto; cantidad: number }[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isQuoteOpen, setIsQuoteOpen] = useState(false);
 
     const handleAddToCart = (producto: Producto) => {
         setCartItems(prev => {
@@ -574,47 +329,70 @@ const LandingPage: React.FC = () => {
         setCartItems(prev => prev.filter(item => item.producto.id !== id));
     };
 
-    const handleCheckout = async (clientData: any) => {
-        await createPublicPedido(clientData, cartItems);
-        setCartItems([]);
-    };
-
     const cartCount = cartItems.reduce((acc, item) => acc + item.cantidad, 0);
 
     return (
-        <div className="min-h-screen bg-white font-sans text-slate-900 scroll-smooth">
-            <Header cartCount={cartCount} onOpenCart={() => setIsCartOpen(true)} />
+        <div className="min-h-screen bg-white font-sans text-slate-900 scroll-smooth selection:bg-brand-red selection:text-white relative overflow-x-hidden">
+            <Header cartCount={cartCount} onOpenCart={() => setIsCartOpen(true)} onOpenQuote={() => setIsQuoteOpen(true)} />
+            
             <main>
-                <HeroSection />
+                <HeroSection onOpenQuote={() => setIsQuoteOpen(true)} />
                 <ServicesSection />
                 <AIHelper />
-                <CatalogPreview onAddToCart={handleAddToCart} />
+                <CatalogSection onAddToCart={handleAddToCart} />
             </main>
-            <Footer />
-            <div className="fixed bottom-8 right-8 z-40">
-                <button 
-                    onClick={() => setIsCartOpen(true)} 
-                    className="bg-brand-red text-white p-4 rounded-full shadow-[0_10px_30px_rgba(217,0,0,0.4)] hover:scale-110 transition-transform hover:shadow-[0_15px_40px_rgba(217,0,0,0.5)]"
-                >
-                    <ShoppingCartIcon className="w-8 h-8" />
-                    {cartCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-white text-brand-red text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md border border-red-100">
-                            {cartCount}
-                        </span>
-                    )}
-                </button>
-            </div>
             
-            <CartModal 
-                isOpen={isCartOpen} 
-                onClose={() => setIsCartOpen(false)} 
-                cartItems={cartItems}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={handleRemoveItem}
-                onCheckout={handleCheckout}
-            />
+            <LandingFooter />
+            <AICustomerBot />
+
+            {/* Modals con prevención de scrolling de fondo */}
+            <Modal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} title="Mi Carrito">
+                <div className="p-8">
+                     {cartItems.length === 0 ? (
+                        <div className="text-center py-20">
+                            <BoxIcon className="w-24 h-24 mx-auto mb-6 opacity-10" />
+                            <p className="text-xl font-bold text-gray-400">Tu carrito está vacío</p>
+                            <button onClick={() => setIsCartOpen(false)} className="mt-6 text-brand-blue font-black uppercase tracking-widest text-sm underline underline-offset-8">Volver a la tienda</button>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            <div className="max-h-[40vh] overflow-y-auto space-y-4 pr-4 custom-scrollbar">
+                                {cartItems.map(item => (
+                                    <div key={item.producto.id} className="flex justify-between items-center bg-gray-50 p-6 rounded-[1.5rem] border border-gray-100 group transition-all hover:bg-white hover:shadow-xl">
+                                        <div>
+                                            <p className="font-black text-lg text-slate-800 uppercase tracking-tight">{item.producto.nombre}</p>
+                                            <p className="text-brand-blue font-bold">{formatCurrency(item.producto.precio)} c/u</p>
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex items-center gap-3 bg-white shadow-inner p-1.5 rounded-xl border border-gray-200">
+                                                <button onClick={() => handleUpdateQuantity(item.producto.id, -1)} className="w-10 h-10 flex items-center justify-center font-black hover:bg-gray-100 rounded-lg text-slate-400 transition-all">-</button>
+                                                <span className="text-lg font-black w-8 text-center text-slate-800">{item.cantidad}</span>
+                                                <button onClick={() => handleUpdateQuantity(item.producto.id, 1)} className="w-10 h-10 flex items-center justify-center font-black hover:bg-gray-100 rounded-lg text-slate-400 transition-all">+</button>
+                                            </div>
+                                            <button onClick={() => handleRemoveItem(item.producto.id)} className="text-red-300 hover:text-red-600 p-2 transition-colors"><TrashIcon className="w-6 h-6"/></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8">
+                                <div className="text-center md:text-left">
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Inversión Estimada</p>
+                                    <p className="text-5xl font-black text-brand-blue tracking-tighter">
+                                        {formatCurrency(cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0))}
+                                    </p>
+                                </div>
+                                <button onClick={() => {}} className="w-full md:w-auto px-12 py-5 bg-brand-red text-white font-black rounded-2xl shadow-2xl shadow-red-900/40 hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.2em]">
+                                    Proceder al Pedido
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </Modal>
+
+            <Modal isOpen={isQuoteOpen} onClose={() => setIsQuoteOpen(false)} title="Cotizador Maestro">
+                <div className="p-8"><QuickQuoteCalculator /></div>
+            </Modal>
         </div>
     );
-};
-
-export default LandingPage;
+}

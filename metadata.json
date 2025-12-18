@@ -1,7 +1,8 @@
 {
-  "name": "Imprenta Córdova 2025",
-  "description": "Una aplicación web profesional para la gestión de finanzas, clientes y producción (KDS) para Imprenta Córdova, optimizada para 2025.",
+  "name": "Imprenta Córdova 2025 - Edición Maestra",
+  "description": "Sistema ERP gráfico avanzado con seguimiento en vivo e IA operativa.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ]
 }

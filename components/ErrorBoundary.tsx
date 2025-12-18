@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+
+import React, { ErrorInfo, ReactNode } from "react";
 import { ExclamationTriangleIcon, Loader2Icon, DashboardIcon } from "./Icons";
 
 interface Props {
@@ -10,21 +11,29 @@ interface State {
   error: Error | null;
 }
 
+/**
+ * ErrorBoundary class to catch rendering errors in the component tree.
+ */
 export class ErrorBoundary extends React.Component<Props, State> {
+  // Fix: Explicitly define state property with proper typing
   public state: State = {
     hasError: false,
     error: null,
   };
 
+  // Fix: Static method for deriving state from errors
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
+  // Fix: Lifecycle method for error reporting
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  public render() {
+  // Fix: Properly type the render method and access this.props and this.state
+  public render(): ReactNode {
+    // Access this.state.hasError which is correctly typed via React.Component<Props, State>
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white p-6 text-center font-sans">
@@ -49,6 +58,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
         </div>
       );
     }
+    // Fix: Accessed this.props.children correctly through React.Component inheritance
     return this.props.children;
   }
 }
