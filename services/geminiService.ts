@@ -16,19 +16,24 @@ export const chatWithCustomer = async (history: ChatMessage[], productsContext: 
     const modelId = "gemini-3-flash-preview";
     
     const systemInstruction = `
-        Eres "Córdova AI", el asistente virtual de Imprenta Córdova en Pasaje, El Oro.
-        Tu tono es profesional, amable y eficiente.
+        Eres "Córdova AI", un experto Senior en Marketing y Producción Gráfica para Imprenta Córdova en Pasaje, El Oro.
+        Tu misión es asesorar a los clientes para que sus negocios crezcan a través de una buena imagen.
         
-        INFORMACIÓN CLAVE:
-        - Ubicación: Colón e/ Sucre y Rocafuerte, Pasaje.
-        - Horario: Lunes a Viernes 08:30-18:30, Sábado 09:00-13:00.
-        - Servicios: Gigantografías, Facturas SRI, Merchandising, Offset.
-        - Productos disponibles (Contexto): ${productsContext}
+        TONO: Profesional, inspirador, empático y experto.
         
-        REGLAS:
-        1. Si el cliente pregunta por el estado de su pedido, dile que use la sección "Seguimiento".
-        2. No des precios exactos si no están en el contexto.
-        3. Si preguntan por WhatsApp: 099 308 3943.
+        INFORMACIÓN CLAVE DE LA EMPRESA:
+        - Ubicación: Calle Colón entre Sucre y Rocafuerte, Pasaje, El Oro.
+        - Horario: Lunes a Viernes 08:30-18:30, Sábados 09:00-13:00.
+        - Especialidades: Gigantografías HD (máquinas Roland), Facturas autorizadas SRI, Merchandising, Offset.
+        - WhatsApp de Soporte: 099 308 3943.
+        
+        CATÁLOGO REFERENCIAL: ${productsContext}
+        
+        REGLAS DE RESPUESTA:
+        1. Si preguntan por precios: "Nuestros precios inician desde... pero el valor final depende de los acabados. ¿Quieres que un asesor te cotice exacto en WhatsApp?".
+        2. Si preguntan por estado de pedido: "Puedes rastrearlo con tu # de orden en la sección Seguimiento de nuestra web".
+        3. Siempre sé amable y menciona que estamos en el centro de Pasaje.
+        4. Si el cliente tiene una idea de diseño, dale un consejo técnico (ej: "Para gigantografías, asegúrate de que tu logo esté en alta resolución para que se vea perfecto").
     `;
 
     try {
@@ -38,12 +43,11 @@ export const chatWithCustomer = async (history: ChatMessage[], productsContext: 
         });
 
         const lastMsg = history[history.length - 1];
-        /* Fix: Cast response of withTimeout to GenerateContentResponse and access .text property */
         const response = await withTimeout(chat.sendMessage({ message: lastMsg.text }), 15000) as GenerateContentResponse;
-        return response.text || "Disculpa, no pude procesar esa idea.";
+        return response.text || "Lo siento, tuve un breve error. ¿Puedes escribirme de nuevo o contactarnos al 0993083943?";
     } catch (error) {
         console.error("Critical AI Error:", error);
-        return "Tengo problemas técnicos temporales. ¿Podrías intentar de nuevo o llamarnos al 0993083943?";
+        return "Nuestra IA está descansando. Por favor, llámanos directamente al 0993083943 para ayudarte de inmediato.";
     }
 };
 
@@ -52,10 +56,9 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
     const modelId = "gemini-3-flash-preview";
     
     const historyString = history.map(d => `${d.date}: $${d.sales}`).join('\n');
-    const prompt = `Analiza estas ventas y proyecta los próximos 30 días en JSON:\n${historyString}`;
+    const prompt = `Como analista financiero de una imprenta, analiza estas ventas y proyecta los próximos 30 días. Devuelve estrictamente JSON:\n${historyString}`;
 
     try {
-        /* Fix: Cast response of withTimeout to GenerateContentResponse and access .text property */
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,
             contents: prompt,
@@ -95,10 +98,11 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
     if (!designBase64) return null;
     const modelId = "gemini-2.5-flash-image";
 
-    const prompt = `Analiza este diseño para: ${context}. Busca errores y responde en JSON.`;
+    /* Fix: Updated prompt to strictly request JSON and defined the expected format, as responseMimeType/responseSchema are not supported for nano banana series models */
+    const prompt = `Eres un supervisor de control de calidad gráfica. Analiza este diseño para: ${context}. Busca errores de resolución, sangrados, ortografía o contraste. Responde estrictamente con un objeto JSON (sin markdown) que tenga los campos: estado ("VERDE", "AMARILLO", "ROJO"), resumen (string), y detalles (array de objetos con tipo ("TECNICA", "DISENO", "COLOR", "COMERCIAL"), descripcion (string), sugerencia (string)).`;
 
     try {
-        /* Fix: Cast response of withTimeout to GenerateContentResponse and access .text property */
+        /* Fix: Removed unsupported responseMimeType and responseSchema for gemini-2.5-flash-image */
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,
             contents: {
@@ -106,34 +110,13 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
                     { inlineData: { data: designBase64.split(',')[1], mimeType: 'image/jpeg' } },
                     { text: prompt }
                 ]
-            },
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        estado: { type: Type.STRING, enum: ["VERDE", "AMARILLO", "ROJO"] },
-                        resumen: { type: Type.STRING },
-                        detalles: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    tipo: { type: Type.STRING, enum: ["TECNICA", "DISENO", "COLOR", "COMERCIAL"] },
-                                    descripcion: { type: Type.STRING },
-                                    sugerencia: { type: Type.STRING }
-                                },
-                                required: ["tipo", "descripcion", "sugerencia"]
-                            }
-                        }
-                    },
-                    required: ["estado", "resumen", "detalles"]
-                }
             }
         }), 25000) as GenerateContentResponse;
 
         if (!response.text) return null;
-        return JSON.parse(response.text) as SupervisorAnalysis;
+        /* Fix: Added cleanup logic to ensure JSON is parsed correctly even if the model includes markdown blocks */
+        const cleanedJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanedJson) as SupervisorAnalysis;
     } catch (error) {
         console.error("Design AI Error:", error);
         return null;
@@ -142,13 +125,12 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
 
 export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
   const modelId = "gemini-3-flash-preview";
-  const prompt = `Genera copy publicitario para: ${request.businessName}, Producto: ${request.productType}, Tono: ${request.tone}`;
+  const prompt = `Genera copy publicitario profesional para: ${request.businessName}, Producto: ${request.productType}, Tono: ${request.tone}. Hazlo creativo y listo para imprimir.`;
 
   try {
-    /* Fix: Cast response of withTimeout to GenerateContentResponse and access .text property */
     const response = await withTimeout(ai.models.generateContent({ model: modelId, contents: prompt }), 10000) as GenerateContentResponse;
-    return response.text || "Error al generar ideas.";
+    return response.text || "Intenta de nuevo en unos momentos.";
   } catch (error) {
-    return "No pude conectar con el servicio creativo ahora.";
+    return "Error al conectar con el servicio creativo.";
   }
 };

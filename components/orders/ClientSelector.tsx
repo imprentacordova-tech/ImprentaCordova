@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { createCliente } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
-import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, CheckCircleIcon } from '../Icons';
+import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, CheckCircleIcon, ClipboardIcon, SparklesIcon } from '../Icons';
 
 // Helper para Inputs
 const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
@@ -12,6 +12,52 @@ const InputField: React.FC<{ label: string; name: string; value: any; onChange: 
         <input id={name} name={name} value={value} onChange={onChange} className="w-full p-2.5 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm" {...props} />
     </div>
 );
+
+/**
+ * Función de procesamiento de texto (RegEx) para certificados SRI
+ * Extrae datos de forma determinística sin IA
+ */
+const parseSRICertificate = (text: string) => {
+    const data: any = {};
+    
+    // 1. Extraer RUC (Patrón de 13 dígitos)
+    const rucMatch = text.match(/\d{13}/);
+    if (rucMatch) data.cedulaRuc = rucMatch[0];
+
+    // 2. Extraer Nombres
+    // Busca el patrón entre "Apellidos y nombres" y "Número RUC" o similar
+    const nameRegex = /(?:Apellidos y nombres|Apellidos y Nombres)\s+([\s\S]*?)(?=\s+Número RUC|\s+Estado|\s+\d{10})/;
+    const nameMatch = text.match(nameRegex);
+    if (nameMatch && nameMatch[1]) {
+        data.nombre = nameMatch[1].trim().replace(/\n/g, ' ');
+    } else {
+        // Fallback: Si el texto viene de OCR directo donde el nombre está cerca del RUC
+        const fallbackNameRegex = /([A-Z\s]{10,})(?=\s+\d{13})/;
+        const fallbackMatch = text.match(fallbackNameRegex);
+        if (fallbackMatch) data.nombre = fallbackMatch[1].trim();
+    }
+
+    // 3. Extraer Celular
+    const telMatch = text.match(/(?:Celular:|Celular)\s*(\d{10})/);
+    if (telMatch) data.telefono = telMatch[1];
+
+    // 4. Determinar Régimen
+    if (text.toUpperCase().includes('POPULAR')) data.regimen = Regimen.NEGOCIO_POPULAR;
+    else if (text.toUpperCase().includes('EMPRENDEDOR')) data.regimen = Regimen.EMPRENDEDOR;
+    else if (text.toUpperCase().includes('GENERAL')) data.regimen = Regimen.GENERAL;
+
+    // 5. Dirección (Domicilio tributario)
+    const dirRegex = /(?:Provincia:)\s+([\s\S]*?)(?=\s+Medios de contacto|\s+Actividades económicas)/;
+    const dirMatch = text.match(dirRegex);
+    if (dirMatch) data.direccion = dirMatch[1].trim().replace(/\n/g, ' ');
+
+    // 6. Actividades (para Notas)
+    const actRegex = /(?:Actividades económicas:?)\s+([\s\S]*?)(?=\s+Establecimientos|\s+Obligaciones)/;
+    const actMatch = text.match(actRegex);
+    if (actMatch) data.notas = "Actividades SRI: " + actMatch[1].trim().replace(/\n/g, ' ');
+
+    return data;
+};
 
 // Modal Interno de Creación
 const CreateClientModal: React.FC<{
@@ -26,6 +72,10 @@ const CreateClientModal: React.FC<{
     const [currentTelefono, setCurrentTelefono] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    
+    // Estado para extractor rápido
+    const [showExtractor, setShowExtractor] = useState(false);
+    const [rawText, setRawText] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -36,10 +86,28 @@ const CreateClientModal: React.FC<{
             setTelefonos([]);
             setCurrentTelefono('');
             setSaveSuccess(false);
+            setShowExtractor(false);
+            setRawText('');
         }
     }, [isOpen, initialName, initialCedulaRuc]);
 
     if (!isOpen) return null;
+
+    const handleApplyExtraction = () => {
+        const extracted = parseSRICertificate(rawText);
+        setNewClienteData(prev => ({
+            ...prev,
+            nombre: extracted.nombre || prev.nombre,
+            cedulaRuc: extracted.cedulaRuc || prev.cedulaRuc,
+            regimen: extracted.regimen || prev.regimen,
+            direccion: extracted.direccion || prev.direccion,
+            notas: extracted.notas || prev.notas
+        }));
+        if (extracted.telefono && !telefonos.includes(extracted.telefono)) {
+            setTelefonos(prev => [...prev, extracted.telefono]);
+        }
+        setShowExtractor(false);
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setNewClienteData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -92,9 +160,42 @@ const CreateClientModal: React.FC<{
                     </h2>
                     <button onClick={onClose}><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                
+                {/* Herramienta de Extracción Rápida */}
+                <div className="px-6 pt-4">
+                    <button 
+                        type="button"
+                        onClick={() => setShowExtractor(!showExtractor)}
+                        className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl border-2 border-dashed transition-all ${showExtractor ? 'bg-blue-50 border-brand-blue text-brand-blue' : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'}`}
+                    >
+                        <ClipboardIcon className="w-4 h-4" />
+                        <span className="text-xs font-black uppercase tracking-widest">
+                            {showExtractor ? 'Cerrar Extractor' : 'Auto-completar desde Certificado SRI'}
+                        </span>
+                    </button>
+
+                    {showExtractor && (
+                        <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 animate-bounce-in">
+                            <label className="block text-[10px] font-black text-brand-blue uppercase mb-2">Pega aquí el texto copiado del PDF/OCR:</label>
+                            <textarea 
+                                value={rawText}
+                                onChange={e => setRawText(e.target.value)}
+                                className="w-full h-32 p-3 text-xs border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-brand-blue mb-3 bg-white dark:bg-gray-800"
+                                placeholder="Pega el contenido del certificado aquí..."
+                            />
+                            <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => setRawText('')} className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-1">Limpiar</button>
+                                <button type="button" onClick={handleApplyExtraction} className="bg-brand-blue text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 flex items-center gap-1">
+                                    Extraer Datos
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InputField label="Nombres" name="nombre" value={newClienteData.nombre} onChange={handleChange} required autoFocus />
+                        <InputField label="Nombres" name="nombre" value={newClienteData.nombre} onChange={handleChange} required />
                         <InputField label="Nombre Comercial" name="nombreComercial" value={newClienteData.nombreComercial} onChange={handleChange} />
                     </div>
                     <div>
@@ -110,9 +211,21 @@ const CreateClientModal: React.FC<{
                             {telefonos.map((t, i) => (
                                 <span key={i} className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">{t} <button type="button" onClick={() => setTelefonos(prev => prev.filter((_, idx) => idx !== i))}>&times;</button></span>
                             ))}
-                            <input type="tel" value={currentTelefono} onChange={e => setCurrentTelefono(e.target.value)} onKeyDown={handleTelefonoKeyDown} placeholder="Escribir y Enter..." className="bg-transparent outline-none flex-grow min-w-[100px] text-sm" />
+                            <input type="tel" value={currentTelefono} onChange={e => setCurrentTelefono(e.target.value)} onKeyDown={handleTelefonoKeyDown} placeholder="Añadir tel..." className="bg-transparent outline-none flex-grow min-w-[100px] text-sm" />
                         </div>
                     </div>
+                    
+                    <InputField label="Dirección" name="direccion" value={newClienteData.direccion} onChange={handleChange} />
+
+                    <div>
+                        <label className="block text-sm font-medium dark:text-gray-300 mb-1">Régimen</label>
+                        <select name="regimen" value={newClienteData.regimen} onChange={handleChange} className="w-full p-2.5 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue">
+                            <option value={Regimen.GENERAL}>Régimen General</option>
+                            <option value={Regimen.EMPRENDEDOR}>Rimpe Emprendedor</option>
+                            <option value={Regimen.NEGOCIO_POPULAR}>Rimpe Negocio Popular</option>
+                        </select>
+                    </div>
+
                     <div className="flex justify-end pt-4 gap-3 border-t dark:border-gray-700">
                         <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</button>
                         <button type="submit" disabled={isSaving || saveSuccess} className={`px-6 py-2 text-white font-bold rounded-lg shadow-lg flex items-center gap-2 ${saveSuccess ? 'bg-green-500' : 'bg-brand-blue hover:bg-blue-800'}`}>

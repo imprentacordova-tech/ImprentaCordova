@@ -89,7 +89,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
                                     className="block w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm"
-                                    placeholder="Ej. Pedro"
+                                    placeholder=""
                                     autoFocus
                                     autoComplete="username"
                                 />

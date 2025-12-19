@@ -14,12 +14,16 @@ interface State {
 /**
  * ErrorBoundary class to catch rendering errors in the component tree.
  */
+// Fix: Use React.Component to ensure full type compatibility and access to this.props/this.state
 export class ErrorBoundary extends React.Component<Props, State> {
-  // Fix: Explicitly define state property with proper typing
-  public state: State = {
-    hasError: false,
-    error: null,
-  };
+  // Fix: Initializing state in constructor to follow standard patterns for class components
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+    };
+  }
 
   // Fix: Static method for deriving state from errors
   public static getDerivedStateFromError(error: Error): State {
@@ -31,10 +35,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  // Fix: Properly type the render method and access this.props and this.state
+  // Fix: Correctly access this.props and this.state from the React.Component base class
   public render(): ReactNode {
-    // Access this.state.hasError which is correctly typed via React.Component<Props, State>
-    if (this.state.hasError) {
+    const { hasError } = this.state;
+    const { children } = this.props;
+
+    if (hasError) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white p-6 text-center font-sans">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-lg w-full border border-gray-200 dark:border-gray-700 relative overflow-hidden">
@@ -58,7 +64,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
         </div>
       );
     }
-    // Fix: Accessed this.props.children correctly through React.Component inheritance
-    return this.props.children;
+
+    return children;
   }
 }
