@@ -14,33 +14,37 @@ interface State {
 /**
  * ErrorBoundary class to catch rendering errors in the component tree.
  */
-// Fix: Use React.Component to ensure full type compatibility and access to this.props/this.state
 export class ErrorBoundary extends React.Component<Props, State> {
-  // Fix: Initializing state in constructor to follow standard patterns for class components
+  // Fix: Explicitly declaring state and props to resolve TypeScript errors regarding visibility
+  // in environments where React.Component members are not correctly inherited or inferred.
+  public state: State;
+  public props: Props;
+
   constructor(props: Props) {
     super(props);
+    // Initialize state properly within the constructor
     this.state = {
       hasError: false,
       error: null,
     };
+    // Fix: Explicitly initialize props to ensure visibility to the TypeScript compiler
+    this.props = props;
   }
 
-  // Fix: Static method for deriving state from errors
+  // Defined static method for deriving state from errors correctly to satisfy React Boundary requirements
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  // Fix: Lifecycle method for error reporting
+  // Standard React lifecycle method for logging errors
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  // Fix: Correctly access this.props and this.state from the React.Component base class
+  // Render logic for catching errors and displaying a fallback UI
   public render(): ReactNode {
-    const { hasError } = this.state;
-    const { children } = this.props;
-
-    if (hasError) {
+    // Access state via this.state
+    if (this.state.hasError) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white p-6 text-center font-sans">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-lg w-full border border-gray-200 dark:border-gray-700 relative overflow-hidden">
@@ -65,6 +69,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
       );
     }
 
-    return children;
+    // Fix: Access props via this.props to resolve TS error: Property 'props' does not exist on type 'ErrorBoundary'.
+    return this.props.children;
   }
 }

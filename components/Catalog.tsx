@@ -1,214 +1,215 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, ShoppingCart, CheckCircle, Star, Filter, HeartIcon } from './Icons';
-import { Product, ProductCategory } from '../types';
+// Fix: Updated import to use 'Producto' as 'Product' alias
+import { Producto as Product, ProductCategory } from '../types';
 
 const products: Product[] = [
   {
     id: '1',
-    name: 'Facturas / Notas de Venta',
-    category: 'Oficina',
-    price: 18.00,
+    nombre: 'Facturas / Notas de Venta',
+    categoria: 'Oficina',
+    precio: 18.00,
     unit: 'block',
-    description: 'Documentos autorizados por el SRI. Disponibles en químico o bond.',
+    descripcion: 'Documentos autorizados por el SRI. Disponibles en químico o bond.',
     specs: ['Autorización SRI', 'Original y Copia(s)', 'Numeradas', 'Diseño estándar o personalizado'],
-    imageUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=400',
+    imagenUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=400',
     isPopular: true
   },
   {
     id: '2',
-    name: 'Gigantografía Publicitaria',
-    category: 'Gran Formato',
-    price: 10.00,
+    nombre: 'Gigantografía Publicitaria',
+    categoria: 'Gran Formato',
+    precio: 10.00,
     unit: 'm²',
-    description: 'Impresión de alta resolución en lona resistente para exteriores.',
+    descripcion: 'Impresión de alta resolución en lona resistente para exteriores.',
     specs: ['Calidad Fotográfica', 'Resistente al agua/sol', 'Incluye ojales', 'Diseño incluido'],
-    imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400',
+    imagenUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400',
     isPopular: true
   },
   {
     id: '3',
-    name: 'Tablas de Bingo',
-    category: 'Merch',
-    price: 0.10,
+    nombre: 'Tablas de Bingo',
+    categoria: 'Merch',
+    precio: 0.10,
     unit: 'unidad',
-    description: 'Tablas para bingos bailables o solidarios. Números claros y legibles.',
+    descripcion: 'Tablas para bingos bailables o solidarios. Números claros y legibles.',
     specs: ['Papel Bond o Cartulina', 'Impresión B/N o Color', 'Series variadas', 'Diseño personalizado'],
-    imageUrl: 'https://images.unsplash.com/photo-1516132006923-e97e23c20242?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1516132006923-e97e23c20242?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '4',
-    name: 'Rifas Numeradas',
-    category: 'Merch',
-    price: 35.00,
+    nombre: 'Rifas Numeradas',
+    categoria: 'Merch',
+    precio: 35.00,
     unit: 'millar',
-    description: 'Boletos para sorteos con talón desglosable y numeración secuencial.',
+    descripcion: 'Boletos para sorteos con talón desglosable y numeración secuencial.',
     specs: ['Numeración Variable', 'Línea de corte', 'Papel Bond Color', 'Engomados'],
-    imageUrl: 'https://images.unsplash.com/photo-1541560052-77ec1bbc09f7?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1541560052-77ec1bbc09f7?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '5',
-    name: 'Volantes Publicitarios',
-    category: 'Publicidad',
-    price: 30.00,
+    nombre: 'Volantes Publicitarios',
+    categoria: 'Publicidad',
+    precio: 30.00,
     unit: 'x 1000',
-    description: 'Flyers full color para promocionar tu negocio masivamente.',
+    descripcion: 'Flyers full color para promocionar tu negocio masivamente.',
     specs: ['Papel Couché Brillante', 'Tamaño A5 o A6', 'Impresión 1 o 2 lados', 'Diseño de alto impacto'],
-    imageUrl: 'https://images.unsplash.com/photo-1586717791821-3f44a5638d0f?auto=format&fit=crop&q=80&w=400',
+    imagenUrl: 'https://images.unsplash.com/photo-1586717791821-3f44a5638d0f?auto=format&fit=crop&q=80&w=400',
     isPopular: true
   },
   {
     id: '6',
-    name: 'Sellos Automáticos',
-    category: 'Oficina',
-    price: 15.00,
+    nombre: 'Sellos Automáticos',
+    categoria: 'Oficina',
+    precio: 15.00,
     unit: 'unidad',
-    description: 'Sellos de caucho auto-entintables. Ideales para profesionales.',
+    descripcion: 'Sellos de caucho auto-entintables. Ideales para profesionales.',
     specs: ['Marcas Trodat/Shiny', 'Varios tamaños', 'Tinta azul/negra', 'Entrega rápida'],
-    imageUrl: 'https://images.unsplash.com/photo-1563200055-e7eb77b8b200?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1563200055-e7eb77b8b200?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '7',
-    name: 'Tarjetas de Presentación',
-    category: 'Tarjetas',
-    price: 35.00,
+    nombre: 'Tarjetas de Presentación',
+    categoria: 'Tarjetas',
+    precio: 35.00,
     unit: 'x 1000',
-    description: 'La mejor carta de presentación para tu empresa.',
+    descripcion: 'La mejor carta de presentación para tu empresa.',
     specs: ['Cartulina Couché 300g', 'Laminado Mate/Brillo', 'Impresión Doble Lado', 'Diseño Gratuito'],
-    imageUrl: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '8',
-    name: 'Roll Up Banner',
-    category: 'Gran Formato',
-    price: 65.00,
+    nombre: 'Roll Up Banner',
+    categoria: 'Gran Formato',
+    precio: 65.00,
     unit: 'unidad',
-    description: 'Exhibidor portátil de aluminio elegante para ferias y oficinas.',
+    descripcion: 'Exhibidor portátil de aluminio elegante para ferias y oficinas.',
     specs: ['80x200 cm', 'Estructura Aluminio', 'Lona fotográfica', 'Incluye bolso'],
-    imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '9',
-    name: 'Empastados de Tesis',
-    category: 'Oficina',
-    price: 25.00,
+    nombre: 'Empastados de Tesis',
+    categoria: 'Oficina',
+    precio: 25.00,
     unit: 'unidad',
-    description: 'Empastado de lujo con letras doradas para trabajos de grado.',
+    descripcion: 'Empastado de lujo con letras doradas para trabajos de grado.',
     specs: ['Tapa dura', 'Grabado en Pan de Oro', 'Colores variados', 'Acabado profesional'],
-    imageUrl: 'https://images.unsplash.com/photo-1519682577862-22b62b24e491?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1519682577862-22b62b24e491?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '10',
-    name: 'Taza Personalizada',
-    category: 'Sublimación',
-    price: 6.00,
+    nombre: 'Taza Personalizada',
+    categoria: 'Sublimación',
+    precio: 6.00,
     unit: 'unidad',
-    description: 'Taza de cerámica blanca sublimada con tu diseño o foto.',
+    descripcion: 'Taza de cerámica blanca sublimada con tu diseño o foto.',
     specs: ['Cerámica AAA', 'Resistente a microondas', 'Impresión Full Color', 'Caja individual'],
-    imageUrl: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&q=80&w=400',
+    imagenUrl: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&q=80&w=400',
     isPopular: true
   },
   {
     id: '11',
-    name: 'Gorra Tipo Camionero',
-    category: 'Sublimación',
-    price: 7.00,
+    nombre: 'Gorra Tipo Camionero',
+    categoria: 'Sublimación',
+    precio: 7.00,
     unit: 'unidad',
-    description: 'Gorra con malla trasera y frente acolchado personalizado.',
+    descripcion: 'Gorra con malla trasera y frente acolchado personalizado.',
     specs: ['Varios colores', 'Estampado Sublimación/Vinil', 'Talla ajustable', 'Entrega rápida'],
-    imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '12',
-    name: 'Camiseta Estampada',
-    category: 'Sublimación',
-    price: 12.00,
+    nombre: 'Camiseta Estampada',
+    categoria: 'Sublimación',
+    precio: 12.00,
     unit: 'unidad',
-    description: 'Camisetas personalizadas para eventos, empresas o uso diario.',
+    descripcion: 'Camisetas personalizadas para eventos, empresas o uso diario.',
     specs: ['Telas Algodón/Poliéster', 'Técnica DTF o Sublimación', 'Tallas S-XL', 'Diseño a medida'],
-    imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=400',
+    imagenUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=400',
     isPopular: true
   },
   {
     id: '13',
-    name: 'Etiquetas Adhesivas',
-    category: 'Etiquetas',
-    price: 15.00,
+    nombre: 'Etiquetas Adhesivas',
+    categoria: 'Etiquetas',
+    precio: 15.00,
     unit: 'x 100',
-    description: 'Stickers troquelados para productos, frascos o packaging.',
+    descripcion: 'Stickers troquelados para productos, frascos o packaging.',
     specs: ['Vinil resistente al agua', 'Corte personalizado', 'Full Color', 'Entrega en pliego'],
-    imageUrl: 'https://images.unsplash.com/photo-1616406432452-07bc5921752d?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1616406432452-07bc5921752d?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '14',
-    name: 'Credencial PVC',
-    category: 'Oficina',
-    price: 3.50,
+    nombre: 'Credencial PVC',
+    categoria: 'Oficina',
+    precio: 3.50,
     unit: 'unidad',
-    description: 'Identificación plástica duradera tipo tarjeta de crédito.',
+    descripcion: 'Identificación plástica duradera tipo tarjeta de crédito.',
     specs: ['Material PVC rígido', 'Impresión ambas caras', 'Incluye cordón', 'Alta durabilidad'],
-    imageUrl: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '15',
-    name: 'Carpeta Corporativa',
-    category: 'Oficina',
-    price: 1.50,
+    nombre: 'Carpeta Corporativa',
+    categoria: 'Oficina',
+    precio: 1.50,
     unit: 'unidad',
-    description: 'Carpeta de presentación con bolsillo interno para documentos.',
+    descripcion: 'Carpeta de presentación con bolsillo interno para documentos.',
     specs: ['Cartulina Couché 300g', 'Bolsillo troquelado', 'Laminado opcional', 'Ideal para cotizaciones'],
-    imageUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '16',
-    name: 'Jarro Mágico',
-    category: 'Sublimación',
-    price: 8.00,
+    nombre: 'Jarro Mágico',
+    categoria: 'Sublimación',
+    precio: 8.00,
     unit: 'unidad',
-    description: 'Taza negra que revela tu foto al poner agua caliente. ¡Sorprendente!',
+    descripcion: 'Taza negra que revela tu foto al poner agua caliente. ¡Sorprendente!',
     specs: ['Cerámica Termosensible', 'Negro a Color', 'Caja Individual', 'Diseño Personalizado'],
-    imageUrl: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&q=80&w=400',
+    imagenUrl: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&q=80&w=400',
     isPopular: true
   },
   {
     id: '17',
-    name: 'Tomatodo Deportivo',
-    category: 'Sublimación',
-    price: 9.00,
+    nombre: 'Tomatodo Deportivo',
+    categoria: 'Sublimación',
+    precio: 9.00,
     unit: 'unidad',
-    description: 'Botella de aluminio con gancho, ideal para escuelas y deporte.',
+    descripcion: 'Botella de aluminio con gancho, ideal para escuelas y deporte.',
     specs: ['600ml / 750ml', 'Aluminio inoxidable', 'Tapa rosca segura', 'Full Color'],
-    imageUrl: 'https://images.unsplash.com/photo-1602143407151-01114195bc51?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1602143407151-01114195bc51?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '18',
-    name: 'Menú Plastificado',
-    category: 'Publicidad',
-    price: 3.50,
+    nombre: 'Menú Plastificado',
+    categoria: 'Publicidad',
+    precio: 3.50,
     unit: 'unidad',
-    description: 'Carta para restaurante rígida, lavable y de alta durabilidad.',
+    descripcion: 'Carta para restaurante rígida, lavable y de alta durabilidad.',
     specs: ['Tamaño A4 o A3', 'Laminado Grueso (175 mic)', 'Bordes Redondeados', 'Resistente al agua'],
-    imageUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '19',
-    name: 'Señalética Sintra',
-    category: 'Gran Formato',
-    price: 5.00,
+    nombre: 'Señalética Sintra',
+    categoria: 'Gran Formato',
+    precio: 5.00,
     unit: 'unidad',
-    description: 'Letreros rígidos para seguridad, baños u oficinas.',
+    descripcion: 'Letreros rígidos para seguridad, baños u oficinas.',
     specs: ['Base Sintra 3mm', 'Vinil Laminado', 'Medida A4/A3', 'Incluye cinta doble faz'],
-    imageUrl: 'https://images.unsplash.com/photo-1574359411659-15573a21bc2c?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1574359411659-15573a21bc2c?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '20',
-    name: 'Llaveros Personalizados',
-    category: 'Merch',
-    price: 45.00,
+    nombre: 'Llaveros Personalizados',
+    categoria: 'Merch',
+    precio: 45.00,
     unit: 'ciento',
-    description: 'Recuerdos económicos para campañas o eventos.',
+    descripcion: 'Recuerdos económicos para campañas o eventos.',
     specs: ['Acrílico o Metal', 'Impresión ambos lados', 'Pedido mínimo 50', 'Formas variadas'],
-    imageUrl: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&q=80&w=400'
+    imagenUrl: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&q=80&w=400'
   }
 ];
 
@@ -243,10 +244,11 @@ const Catalog: React.FC = () => {
   };
 
   const filteredProducts = products.filter(product => {
+    /* Fix: Updated field names to match 'Producto' interface */
     const matchesCategory = selectedCategory === 'Todos' || 
-                            (selectedCategory === 'Favoritos' ? favorites.includes(product.id) : product.category === selectedCategory);
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
+                            (selectedCategory === 'Favoritos' ? favorites.includes(product.id) : product.categoria === selectedCategory);
+    const matchesSearch = product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          product.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -330,27 +332,30 @@ const Catalog: React.FC = () => {
 
                 {/* Image */}
                 <div className="h-56 bg-slate-100 overflow-hidden relative">
+                  {/* Fix: Updated field name to 'imagenUrl' and 'nombre' */}
                   <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
+                    src={product.imagenUrl} 
+                    alt={product.nombre} 
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-3 left-4">
+                    {/* Fix: Updated field name to 'categoria' */}
                     <span className="text-white text-xs font-bold bg-black/30 px-2 py-1 rounded backdrop-blur-sm border border-white/20 uppercase tracking-wide">
-                      {product.category}
+                      {product.categoria}
                     </span>
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-900 transition-colors">{product.name}</h3>
-                  <p className="text-slate-600 text-sm mb-4 flex-grow leading-relaxed">{product.description}</p>
+                  {/* Fix: Updated field names to 'nombre' and 'descripcion' */}
+                  <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-900 transition-colors">{product.nombre}</h3>
+                  <p className="text-slate-600 text-sm mb-4 flex-grow leading-relaxed">{product.descripcion}</p>
                   
                   {/* Specs */}
                   <div className="mb-6 space-y-1.5">
-                    {product.specs.slice(0, 3).map((spec, idx) => (
+                    {product.specs?.slice(0, 3).map((spec, idx) => (
                       <div key={idx} className="flex items-start text-xs text-slate-500">
                         <CheckCircle className="w-3.5 h-3.5 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
                         <span>{spec}</span>
@@ -362,13 +367,15 @@ const Catalog: React.FC = () => {
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                     <div>
                       <p className="text-xs text-slate-400 font-medium uppercase">Precio Estimado</p>
+                      {/* Fix: Updated field name to 'precio' */}
                       <p className="text-lg font-bold text-blue-900">
-                        ${product.price.toFixed(2)} 
+                        ${product.precio.toFixed(2)} 
                         <span className="text-xs font-normal text-slate-500 ml-1">/ {product.unit}</span>
                       </p>
                     </div>
+                    {/* Fix: Updated field name to 'nombre' */}
                     <a 
-                      href={`https://wa.me/593993083943?text=Hola,%20me%20interesa%20cotizar%20${encodeURIComponent(product.name)}`}
+                      href={`https://wa.me/593993083943?text=Hola,%20me%20interesa%20cotizar%20${encodeURIComponent(product.nombre)}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 hover:bg-orange-500 hover:text-white text-sm font-bold rounded-lg transition-all duration-300"

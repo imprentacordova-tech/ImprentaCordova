@@ -12,6 +12,65 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
     ]);
 };
 
+/**
+ * Extrae datos de un certificado de RUC del SRI (Ecuador) a partir de una imagen.
+ * Optimizado para detectar nombres en la parte superior del documento.
+ */
+export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
+    const modelId = "gemini-2.5-flash-image";
+    
+    const prompt = `Analiza detalladamente este certificado de RUC del SRI de Ecuador. 
+    REGLA CRÍTICA PARA EL NOMBRE: El nombre del contribuyente suele aparecer en letras grandes en la parte superior, JUSTO ENCIMA de la etiqueta que dice "Apellidos y nombres".
+    
+    Extrae los datos y devuélvelos EXCLUSIVAMENTE en este formato JSON (sin texto adicional, sin markdown):
+    {
+      "nombre": "Nombres y Apellidos completos encontrados arriba de la etiqueta",
+      "ruc": "Los 13 dígitos del RUC",
+      "regimen": "Debe ser uno de estos: 'Rimpe Negocio Popular', 'Rimpe Emprendedor' o 'General'",
+      "direccion": "Provincia, Cantón y Dirección completa (Calles y Referencia)",
+      "actividades": "Breve resumen de las actividades económicas principales",
+      "email": "El correo electrónico de contacto",
+      "telefono": "El número de celular o teléfono"
+    }
+
+    Si algún dato no es legible, deja el campo vacío "".`;
+
+    try {
+        const response = await withTimeout(ai.models.generateContent({
+            model: modelId,
+            contents: {
+                parts: [
+                    { inlineData: { data: base64Image.split(',')[1], mimeType: 'image/jpeg' } },
+                    { text: prompt }
+                ]
+            },
+            config: {
+                temperature: 0.1, // Baja temperatura para mayor precisión en extracción
+            }
+        }), 25000) as GenerateContentResponse;
+
+        if (!response.text) return null;
+
+        // Limpieza profunda de la respuesta para obtener solo el JSON
+        let text = response.text.trim();
+        if (text.includes('```')) {
+            text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        }
+        
+        // Intentar limpiar posibles prefijos que la IA a veces agrega
+        const jsonStartIndex = text.indexOf('{');
+        const jsonEndIndex = text.lastIndexOf('}') + 1;
+        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+            text = text.substring(jsonStartIndex, jsonEndIndex);
+        }
+
+        return JSON.parse(text);
+    } catch (error) {
+        console.error("SRI Extraction Error:", error);
+        return null;
+    }
+};
+
 export const chatWithCustomer = async (history: ChatMessage[], productsContext: string): Promise<string> => {
     const modelId = "gemini-3-flash-preview";
     
@@ -98,11 +157,9 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
     if (!designBase64) return null;
     const modelId = "gemini-2.5-flash-image";
 
-    /* Fix: Updated prompt to strictly request JSON and defined the expected format, as responseMimeType/responseSchema are not supported for nano banana series models */
     const prompt = `Eres un supervisor de control de calidad gráfica. Analiza este diseño para: ${context}. Busca errores de resolución, sangrados, ortografía o contraste. Responde estrictamente con un objeto JSON (sin markdown) que tenga los campos: estado ("VERDE", "AMARILLO", "ROJO"), resumen (string), y detalles (array de objetos con tipo ("TECNICA", "DISENO", "COLOR", "COMERCIAL"), descripcion (string), sugerencia (string)).`;
 
     try {
-        /* Fix: Removed unsupported responseMimeType and responseSchema for gemini-2.5-flash-image */
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,
             contents: {
@@ -114,7 +171,6 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
         }), 25000) as GenerateContentResponse;
 
         if (!response.text) return null;
-        /* Fix: Added cleanup logic to ensure JSON is parsed correctly even if the model includes markdown blocks */
         const cleanedJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
         return JSON.parse(cleanedJson) as SupervisorAnalysis;
     } catch (error) {

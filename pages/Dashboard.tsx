@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, TrabajoEstado, User } from '../types';
+import { Trabajo, TrabajoEstado, User, Cliente } from '../types';
 import { 
     SolidDollarIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon, Loader2Icon, 
     ArrowRightIcon, PaletteIcon, PrinterIcon, CheckCircleIcon, DocumentIcon,
-    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon, SparklesIcon
+    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon, SparklesIcon, UserPlusIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
+import { CreateClientModal } from '../components/orders/ClientSelector';
 
 const StatCard: React.FC<{ 
     title: string; 
@@ -44,6 +45,7 @@ const DashboardPage: React.FC = () => {
     const { trabajos, loading, refreshData } = useData();
     const navigate = useNavigate();
     
+    const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     const [stats, setStats] = useState({
         ingresosHoy: 0,
         pedidosHoy: 0,
@@ -71,6 +73,11 @@ const DashboardPage: React.FC = () => {
         });
     }, [trabajos, loading]);
 
+    const handleClientCreated = (client: Cliente) => {
+        setIsClientModalOpen(false);
+        refreshData();
+    };
+
     if (loading) return <div className="h-screen flex items-center justify-center"><Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" /></div>;
 
     return (
@@ -92,12 +99,15 @@ const DashboardPage: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        <button 
+                            onClick={() => setIsClientModalOpen(true)}
+                            className="px-8 py-5 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-xl border border-white/10 transition-all text-white font-black text-sm flex items-center justify-center gap-3 group"
+                        >
+                            <UserPlusIcon className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" /> NUEVO CLIENTE
+                        </button>
                         <NavLink to="/nuevo" className="px-10 py-5 bg-white text-slate-950 rounded-2xl font-black text-sm shadow-xl hover:scale-105 transition-transform flex items-center justify-center gap-3">
                             <AddIcon className="w-5 h-5 text-brand-red" /> NUEVA ORDEN
                         </NavLink>
-                        <button onClick={() => refreshData()} className="p-5 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-xl border border-white/10 transition-all text-white flex items-center justify-center">
-                            <Loader2Icon className="w-6 h-6" />
-                        </button>
                     </div>
                 </div>
             </div>
@@ -128,6 +138,12 @@ const DashboardPage: React.FC = () => {
                     ))}
                 </div>
             </div>
+
+            <CreateClientModal 
+                isOpen={isClientModalOpen} 
+                onClose={() => setIsClientModalOpen(false)} 
+                onClientCreated={handleClientCreated} 
+            />
         </div>
     );
 };

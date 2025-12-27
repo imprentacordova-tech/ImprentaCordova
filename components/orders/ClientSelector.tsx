@@ -1,126 +1,173 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { createCliente } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
-import { SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, CheckCircleIcon, ClipboardIcon, SparklesIcon } from '../Icons';
+import { extractClientFromImage } from '../../services/geminiService';
+import { 
+    SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
+    CheckCircleIcon, BuildingStorefrontIcon, SparklesIcon, 
+    AddIcon, ArrowRightIcon, PhoneIcon, CameraIcon, UploadIcon,
+    ExclamationTriangleIcon
+} from '../Icons';
 
-// Helper para Inputs
-const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
+const InputField: React.FC<{ 
+    label: string; 
+    name: string; 
+    value: any; 
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; 
+    isHighlighted?: boolean; 
+    [key: string]: any; 
+}> = ({ label, name, value, onChange, isHighlighted, ...props }) => (
     <div className="group">
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors group-focus-within:text-brand-blue">{label}</label>
-        <input id={name} name={name} value={value} onChange={onChange} className="w-full p-2.5 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm" {...props} />
+        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${isHighlighted ? 'text-brand-blue' : 'text-gray-400 group-focus-within:text-brand-blue'}`}>
+            {label} {isHighlighted && "✨"}
+        </label>
+        {props.as === 'textarea' ? (
+            <textarea 
+                id={name} 
+                name={name} 
+                value={value} 
+                onChange={onChange} 
+                className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all shadow-sm resize-none ${isHighlighted ? 'ring-4 ring-yellow-400 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30' : 'border-gray-200'}`} 
+                {...props} 
+            />
+        ) : (
+            <input 
+                id={name} 
+                name={name} 
+                value={value} 
+                onChange={onChange} 
+                className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all shadow-sm ${isHighlighted ? 'ring-4 ring-yellow-400 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30' : 'border-gray-200'}`} 
+                {...props} 
+            />
+        )}
     </div>
 );
 
-/**
- * Función de procesamiento de texto (RegEx) para certificados SRI
- * Extrae datos de forma determinística sin IA
- */
-const parseSRICertificate = (text: string) => {
-    const data: any = {};
-    
-    // 1. Extraer RUC (Patrón de 13 dígitos)
-    const rucMatch = text.match(/\d{13}/);
-    if (rucMatch) data.cedulaRuc = rucMatch[0];
-
-    // 2. Extraer Nombres
-    // Busca el patrón entre "Apellidos y nombres" y "Número RUC" o similar
-    const nameRegex = /(?:Apellidos y nombres|Apellidos y Nombres)\s+([\s\S]*?)(?=\s+Número RUC|\s+Estado|\s+\d{10})/;
-    const nameMatch = text.match(nameRegex);
-    if (nameMatch && nameMatch[1]) {
-        data.nombre = nameMatch[1].trim().replace(/\n/g, ' ');
-    } else {
-        // Fallback: Si el texto viene de OCR directo donde el nombre está cerca del RUC
-        const fallbackNameRegex = /([A-Z\s]{10,})(?=\s+\d{13})/;
-        const fallbackMatch = text.match(fallbackNameRegex);
-        if (fallbackMatch) data.nombre = fallbackMatch[1].trim();
-    }
-
-    // 3. Extraer Celular
-    const telMatch = text.match(/(?:Celular:|Celular)\s*(\d{10})/);
-    if (telMatch) data.telefono = telMatch[1];
-
-    // 4. Determinar Régimen
-    if (text.toUpperCase().includes('POPULAR')) data.regimen = Regimen.NEGOCIO_POPULAR;
-    else if (text.toUpperCase().includes('EMPRENDEDOR')) data.regimen = Regimen.EMPRENDEDOR;
-    else if (text.toUpperCase().includes('GENERAL')) data.regimen = Regimen.GENERAL;
-
-    // 5. Dirección (Domicilio tributario)
-    const dirRegex = /(?:Provincia:)\s+([\s\S]*?)(?=\s+Medios de contacto|\s+Actividades económicas)/;
-    const dirMatch = text.match(dirRegex);
-    if (dirMatch) data.direccion = dirMatch[1].trim().replace(/\n/g, ' ');
-
-    // 6. Actividades (para Notas)
-    const actRegex = /(?:Actividades económicas:?)\s+([\s\S]*?)(?=\s+Establecimientos|\s+Obligaciones)/;
-    const actMatch = text.match(actRegex);
-    if (actMatch) data.notas = "Actividades SRI: " + actMatch[1].trim().replace(/\n/g, ' ');
-
-    return data;
-};
-
-// Modal Interno de Creación
-const CreateClientModal: React.FC<{
-    isOpen: boolean; onClose: () => void; onClientCreated: (client: Cliente) => void; initialName?: string; initialCedulaRuc?: string;
+export const CreateClientModal: React.FC<{
+    isOpen: boolean; 
+    onClose: () => void; 
+    onClientCreated: (client: Cliente) => void; 
+    initialName?: string; 
+    initialCedulaRuc?: string;
 }> = ({ isOpen, onClose, onClientCreated, initialName, initialCedulaRuc }) => {
-    
     const [newClienteData, setNewClienteData] = useState({ 
         nombre: '', nombreComercial: '', cedulaRuc: '', email: '', 
-        direccion: 'Pasaje, El Oro', notas: '', regimen: Regimen.GENERAL 
+        direccion: 'Pasaje, El Oro', actividades: '', regimen: Regimen.GENERAL 
     });
     const [telefonos, setTelefonos] = useState<string[]>([]);
     const [currentTelefono, setCurrentTelefono] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     
-    // Estado para extractor rápido
-    const [showExtractor, setShowExtractor] = useState(false);
-    const [rawText, setRawText] = useState('');
+    // AI Scanner States
+    const [isScanning, setIsScanning] = useState(false);
+    const [scanError, setScanError] = useState<string | null>(null);
+    const [scanPreview, setScanPreview] = useState<string | null>(null);
+    const [extractedData, setExtractedData] = useState<any>(null);
+    const [highlightFields, setHighlightFields] = useState<string[]>([]);
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
             setNewClienteData({ 
                 nombre: initialName || '', nombreComercial: '', cedulaRuc: initialCedulaRuc || '', 
-                email: '', direccion: 'Pasaje, El Oro', notas: '', regimen: Regimen.GENERAL 
+                email: '', direccion: 'Pasaje, El Oro', actividades: '', regimen: Regimen.GENERAL 
             });
             setTelefonos([]);
-            setCurrentTelefono('');
             setSaveSuccess(false);
-            setShowExtractor(false);
-            setRawText('');
+            setExtractedData(null);
+            setScanPreview(null);
+            setHighlightFields([]);
+            setScanError(null);
         }
     }, [isOpen, initialName, initialCedulaRuc]);
 
-    if (!isOpen) return null;
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-    const handleApplyExtraction = () => {
-        const extracted = parseSRICertificate(rawText);
+        // Validar tamaño (máximo 5MB para mayor velocidad)
+        if (file.size > 5 * 1024 * 1024) {
+            setScanError("La imagen es demasiado pesada. Usa una de menos de 5MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64 = event.target?.result as string;
+            setScanPreview(base64);
+            setIsScanning(true);
+            setScanError(null);
+            
+            try {
+                const data = await extractClientFromImage(base64);
+                if (data && data.nombre) {
+                    setExtractedData(data);
+                } else {
+                    setScanError("No pudimos extraer datos claros. Asegúrate de capturar todo el documento.");
+                    setScanPreview(null);
+                }
+            } catch (err) {
+                setScanError("Error crítico de conexión con la IA. Inténtalo de nuevo.");
+                setScanPreview(null);
+            } finally {
+                setIsScanning(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const applyExtractedData = () => {
+        if (!extractedData) return;
+
+        const fields: string[] = [];
+        if (extractedData.nombre) fields.push('nombre');
+        if (extractedData.ruc) fields.push('cedulaRuc');
+        if (extractedData.direccion) fields.push('direccion');
+        if (extractedData.actividades) fields.push('actividades');
+        if (extractedData.email) fields.push('email');
+        
+        setHighlightFields(fields);
+        
         setNewClienteData(prev => ({
             ...prev,
-            nombre: extracted.nombre || prev.nombre,
-            cedulaRuc: extracted.cedulaRuc || prev.cedulaRuc,
-            regimen: extracted.regimen || prev.regimen,
-            direccion: extracted.direccion || prev.direccion,
-            notas: extracted.notas || prev.notas
+            nombre: extractedData.nombre || prev.nombre,
+            cedulaRuc: extractedData.ruc || prev.cedulaRuc,
+            direccion: extractedData.direccion || prev.direccion,
+            actividades: extractedData.actividades || prev.actividades,
+            email: extractedData.email || prev.email,
+            regimen: extractedData.regimen === 'Rimpe Negocio Popular' ? Regimen.NEGOCIO_POPULAR :
+                     extractedData.regimen === 'Rimpe Emprendedor' ? Regimen.EMPRENDEDOR : Regimen.GENERAL
         }));
-        if (extracted.telefono && !telefonos.includes(extracted.telefono)) {
-            setTelefonos(prev => [...prev, extracted.telefono]);
+
+        if (extractedData.telefono) {
+            const cleanTel = extractedData.telefono.replace(/\D/g, '');
+            if (cleanTel.length >= 7 && !telefonos.includes(cleanTel)) {
+                setTelefonos(prev => [...prev, cleanTel]);
+            }
         }
-        setShowExtractor(false);
+
+        setExtractedData(null);
+        setScanPreview(null);
+        
+        // Mantener resaltado por 3 segundos
+        setTimeout(() => setHighlightFields([]), 3000);
     };
+
+    if (!isOpen) return null;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setNewClienteData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleTelefonoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const val = currentTelefono.trim().replace(/\D/g, '');
-            if (val.length >= 7) {
-                if (!telefonos.includes(val)) setTelefonos(prev => [...prev, val]);
-                setCurrentTelefono('');
-            }
+    const handleAddTel = () => {
+        const val = currentTelefono.trim().replace(/\D/g, '');
+        if (val.length >= 7 && !telefonos.includes(val)) {
+            setTelefonos([...telefonos, val]);
+            setCurrentTelefono('');
         }
     };
 
@@ -128,23 +175,14 @@ const CreateClientModal: React.FC<{
         e.preventDefault();
         setIsSaving(true);
         const finalTelefonos = [...telefonos];
-        const val = currentTelefono.trim().replace(/\D/g, '');
-        if (val.length >= 7 && !finalTelefonos.includes(val)) finalTelefonos.push(val);
-
-        if (!newClienteData.nombre || !newClienteData.cedulaRuc) {
-            setIsSaving(false); return;
-        }
+        if (currentTelefono.length >= 7) finalTelefonos.push(currentTelefono);
 
         const newCliente = await createCliente({ 
-            nombre: newClienteData.nombre, 
-            cedula: newClienteData.cedulaRuc, 
-            ruc: newClienteData.cedulaRuc.length === 13 ? newClienteData.cedulaRuc : undefined, 
-            telefono: finalTelefonos.length > 0 ? finalTelefonos : ['9999999999'],
-            email: newClienteData.email || undefined, 
-            regimen: newClienteData.regimen,
-            nombreComercial: newClienteData.nombreComercial || undefined,
-            direccion: newClienteData.direccion || undefined,
-            notas: newClienteData.notas || undefined
+            ...newClienteData,
+            cedula: newClienteData.cedulaRuc,
+            ruc: newClienteData.cedulaRuc.length === 13 ? newClienteData.cedulaRuc : undefined,
+            telefono: finalTelefonos.length > 0 ? finalTelefonos : ['0990000000'],
+            creadoEn: new Date().toISOString()
         });
         
         setSaveSuccess(true);
@@ -152,152 +190,285 @@ const CreateClientModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex justify-center items-center p-4 animate-fade-in" onClick={e => e.stopPropagation()}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-100 relative">
-                <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-2xl">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <UserPlusIcon className="h-5 w-5 text-brand-blue" /> Crear Nuevo Cliente
-                    </h2>
-                    <button onClick={onClose}><CloseIcon className="w-5 h-5 text-gray-500" /></button>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[70] flex justify-center items-center p-4 animate-fade-in">
+            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-2xl overflow-hidden border border-white/10 flex flex-col max-h-[90vh]">
+                
+                {/* Header */}
+                <div className="flex justify-between items-center p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-slate-900/50">
+                    <div>
+                        <h2 className="text-2xl font-black text-brand-blue dark:text-white flex items-center gap-3 tracking-tighter">
+                            <UserPlusIcon className="h-7 w-7 text-brand-red" /> REGISTRO DE CLIENTE
+                        </h2>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Impulsado por Córdova Vision AI</p>
+                    </div>
+                    <button onClick={onClose} className="p-3 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all border border-transparent hover:border-gray-200"><CloseIcon className="w-6 h-6 text-gray-400" /></button>
                 </div>
                 
-                {/* Herramienta de Extracción Rápida */}
-                <div className="px-6 pt-4">
-                    <button 
-                        type="button"
-                        onClick={() => setShowExtractor(!showExtractor)}
-                        className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl border-2 border-dashed transition-all ${showExtractor ? 'bg-blue-50 border-brand-blue text-brand-blue' : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'}`}
-                    >
-                        <ClipboardIcon className="w-4 h-4" />
-                        <span className="text-xs font-black uppercase tracking-widest">
-                            {showExtractor ? 'Cerrar Extractor' : 'Auto-completar desde Certificado SRI'}
-                        </span>
-                    </button>
+                <div className="flex-grow p-8 space-y-6 overflow-y-auto custom-scrollbar">
+                    
+                    {/* Panel de Escaneo IA */}
+                    {!scanPreview ? (
+                        <div className="flex flex-col gap-4">
+                            <button 
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className={`w-full flex items-center justify-center gap-4 py-6 rounded-3xl border-2 border-dashed transition-all group shadow-sm ${scanError ? 'border-red-500 bg-red-50 text-red-600' : 'border-brand-blue/30 bg-blue-50/50 text-brand-blue hover:bg-brand-blue hover:text-white'}`}
+                            >
+                                <UploadIcon className="w-6 h-6 group-hover:scale-125 transition-transform" />
+                                <div className="text-left">
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] block leading-none mb-1">
+                                        {scanError ? "Error al escanear" : "Subir Certificado RUC"}
+                                    </span>
+                                    <span className="text-[9px] font-bold opacity-60 uppercase tracking-widest">
+                                        {scanError ? "Toca aquí para intentar con otra imagen" : "Cargar PDF o Foto clara del SRI"}
+                                    </span>
+                                </div>
+                            </button>
+                            {scanError && (
+                                <div className="flex items-center gap-2 text-red-500 bg-red-50 p-3 rounded-xl animate-fade-in border border-red-100">
+                                    <ExclamationTriangleIcon className="w-4 h-4 flex-shrink-0" />
+                                    <p className="text-[10px] font-bold uppercase">{scanError}</p>
+                                </div>
+                            )}
+                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
+                        </div>
+                    ) : (
+                        <div className="bg-slate-900 rounded-[2rem] p-6 animate-slide-in-up border border-blue-500/30 overflow-hidden relative">
+                            {isScanning && (
+                                <div className="absolute inset-0 z-10 bg-slate-900/50 backdrop-blur-sm flex flex-col items-center justify-center">
+                                    <div className="w-full h-1 bg-blue-400 absolute top-0 animate-scan shadow-[0_0_15px_rgba(96,165,250,1)]"></div>
+                                    <Loader2Icon className="w-12 h-12 text-blue-400 animate-spin mb-4" />
+                                    <p className="text-blue-400 font-black text-xs uppercase tracking-[0.3em] animate-pulse">Analizando Documento...</p>
+                                </div>
+                            )}
 
-                    {showExtractor && (
-                        <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 animate-bounce-in">
-                            <label className="block text-[10px] font-black text-brand-blue uppercase mb-2">Pega aquí el texto copiado del PDF/OCR:</label>
-                            <textarea 
-                                value={rawText}
-                                onChange={e => setRawText(e.target.value)}
-                                className="w-full h-32 p-3 text-xs border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-brand-blue mb-3 bg-white dark:bg-gray-800"
-                                placeholder="Pega el contenido del certificado aquí..."
-                            />
-                            <div className="flex justify-end gap-2">
-                                <button type="button" onClick={() => setRawText('')} className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-1">Limpiar</button>
-                                <button type="button" onClick={handleApplyExtraction} className="bg-brand-blue text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 flex items-center gap-1">
-                                    Extraer Datos
-                                </button>
-                            </div>
+                            {extractedData && (
+                                <div className="space-y-4 animate-fade-in">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Datos Extraídos Correctamente:</h3>
+                                        <button onClick={() => {setScanPreview(null); setExtractedData(null); setScanError(null);}} className="text-slate-500 hover:text-white"><CloseIcon className="w-4 h-4"/></button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/50 p-5 rounded-2xl border border-white/5 shadow-inner">
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Nombre Detectado</p>
+                                            <p className="text-sm font-black text-yellow-400 uppercase leading-tight">{extractedData.nombre || '???'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">RUC / Cédula</p>
+                                            <p className="text-sm font-black text-blue-400 font-mono tracking-tighter">{extractedData.ruc || '???'}</p>
+                                        </div>
+                                        <div className="col-span-full pt-4">
+                                            <button 
+                                                type="button" 
+                                                onClick={applyExtractedData}
+                                                className="w-full py-4 bg-blue-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-xl hover:bg-blue-500 transform active:scale-95 transition-all flex items-center justify-center gap-3"
+                                            >
+                                                <CheckCircleIcon className="w-5 h-5" /> ¡Completar Formulario!
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {!extractedData && !isScanning && (
+                                <div className="h-40 flex items-center justify-center">
+                                     <img src={scanPreview} className="max-h-full rounded-lg opacity-30 grayscale" />
+                                </div>
+                            )}
                         </div>
                     )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField 
+                                label="Nombres / Razón Social" 
+                                name="nombre" 
+                                value={newClienteData.nombre} 
+                                onChange={handleChange} 
+                                required 
+                                isHighlighted={highlightFields.includes('nombre')}
+                            />
+                            <InputField 
+                                label="Nombre Comercial / Negocio" 
+                                name="nombreComercial" 
+                                value={newClienteData.nombreComercial} 
+                                onChange={handleChange} 
+                                placeholder="Ej: Restaurante El Sabor" 
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField 
+                                label="Cédula / RUC (13 dígitos)" 
+                                name="cedulaRuc" 
+                                value={newClienteData.cedulaRuc} 
+                                onChange={handleChange} 
+                                maxLength={13} 
+                                required 
+                                isHighlighted={highlightFields.includes('cedulaRuc')}
+                            />
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Régimen Fiscal</label>
+                                <select 
+                                    name="regimen" 
+                                    value={newClienteData.regimen} 
+                                    onChange={handleChange} 
+                                    className="w-full p-3 border border-gray-200 rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-red transition-all shadow-sm font-bold text-sm"
+                                >
+                                    <option value={Regimen.GENERAL}>Régimen General</option>
+                                    <option value={Regimen.EMPRENDEDOR}>Emprendedor</option>
+                                    <option value={Regimen.NEGOCIO_POPULAR}>Negocio Popular</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <InputField 
+                            label="Actividad Económica (Notas adicionales)" 
+                            name="actividades" 
+                            value={newClienteData.actividades} 
+                            onChange={handleChange} 
+                            as="textarea" 
+                            rows={2} 
+                            isHighlighted={highlightFields.includes('actividades')}
+                            placeholder="Descripción de la actividad según el RUC..."
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField 
+                                label="Dirección Impresa" 
+                                name="direccion" 
+                                value={newClienteData.direccion} 
+                                onChange={handleChange} 
+                                isHighlighted={highlightFields.includes('direccion')}
+                            />
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Teléfonos</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="tel" 
+                                        value={currentTelefono} 
+                                        onChange={e => setCurrentTelefono(e.target.value.replace(/\D/g, ''))} 
+                                        placeholder="099..." 
+                                        className="flex-grow p-3 border border-gray-200 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-brand-red outline-none shadow-sm" 
+                                        maxLength={10} 
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={handleAddTel} 
+                                        className="bg-slate-100 dark:bg-gray-800 p-3 rounded-xl hover:bg-brand-blue hover:text-white transition-all border border-gray-200 dark:border-gray-700"
+                                    >
+                                        <AddIcon className="w-5 h-5"/>
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    {telefonos.map((t, i) => (
+                                        <span key={i} className="bg-blue-50 dark:bg-blue-900/30 text-brand-blue text-[10px] font-black px-3 py-1.5 rounded-full border border-blue-100/50 flex items-center gap-2 shadow-sm">
+                                            <PhoneIcon className="w-3 h-3"/> {t} 
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setTelefonos(telefonos.filter((_, idx) => idx !== i))}
+                                                className="hover:text-red-500 font-black text-lg leading-none"
+                                            >
+                                                &times;
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
+                            <button type="button" onClick={onClose} className="px-8 py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px] hover:text-slate-900 transition-colors">Cerrar</button>
+                            <button 
+                                type="submit" 
+                                disabled={isSaving || saveSuccess} 
+                                className={`px-12 py-5 text-white font-black rounded-2xl shadow-2xl transition-all transform active:scale-95 flex items-center gap-3 uppercase tracking-[0.2em] text-xs ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-900 hover:shadow-brand-red/20'}`}
+                            >
+                                {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Finalizar Registro"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InputField label="Nombres" name="nombre" value={newClienteData.nombre} onChange={handleChange} required />
-                        <InputField label="Nombre Comercial" name="nombreComercial" value={newClienteData.nombreComercial} onChange={handleChange} />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium dark:text-gray-300">Cédula / RUC</label>
-                        <div className="relative group">
-                            <input type="text" pattern="[0-9]*" maxLength={13} name="cedulaRuc" value={newClienteData.cedulaRuc} onChange={handleChange} required className="w-full p-2.5 pl-3 pr-10 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm" />
-                            <ShieldCheckIcon className="absolute right-3 top-2.5 text-gray-400 group-focus-within:text-brand-blue h-5 w-5" />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium dark:text-gray-300">Teléfono(s)</label>
-                        <div className="flex flex-wrap items-center gap-2 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
-                            {telefonos.map((t, i) => (
-                                <span key={i} className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">{t} <button type="button" onClick={() => setTelefonos(prev => prev.filter((_, idx) => idx !== i))}>&times;</button></span>
-                            ))}
-                            <input type="tel" value={currentTelefono} onChange={e => setCurrentTelefono(e.target.value)} onKeyDown={handleTelefonoKeyDown} placeholder="Añadir tel..." className="bg-transparent outline-none flex-grow min-w-[100px] text-sm" />
-                        </div>
-                    </div>
-                    
-                    <InputField label="Dirección" name="direccion" value={newClienteData.direccion} onChange={handleChange} />
-
-                    <div>
-                        <label className="block text-sm font-medium dark:text-gray-300 mb-1">Régimen</label>
-                        <select name="regimen" value={newClienteData.regimen} onChange={handleChange} className="w-full p-2.5 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue">
-                            <option value={Regimen.GENERAL}>Régimen General</option>
-                            <option value={Regimen.EMPRENDEDOR}>Rimpe Emprendedor</option>
-                            <option value={Regimen.NEGOCIO_POPULAR}>Rimpe Negocio Popular</option>
-                        </select>
-                    </div>
-
-                    <div className="flex justify-end pt-4 gap-3 border-t dark:border-gray-700">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</button>
-                        <button type="submit" disabled={isSaving || saveSuccess} className={`px-6 py-2 text-white font-bold rounded-lg shadow-lg flex items-center gap-2 ${saveSuccess ? 'bg-green-500' : 'bg-brand-blue hover:bg-blue-800'}`}>
-                            {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Guardar"}
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     );
 };
 
-interface ClientSelectorProps {
-    onSelectClient: (cliente: Cliente) => void;
-}
+interface ClientSelectorProps { onSelectClient: (cliente: Cliente) => void; }
 
 const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
     const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     
-    // Simple filter
     const filteredClients = searchTerm.length > 1 
-        ? clientes.filter(c => 
-            c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            c.cedula.includes(searchTerm) || 
-            (c.ruc && c.ruc.includes(searchTerm))
-          ).slice(0, 5)
+        ? clientes.filter(c => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || c.cedula.includes(searchTerm) || (c.ruc && c.ruc.includes(searchTerm))).slice(0, 5)
         : [];
 
     return (
-        <div className="animate-fade-in w-full max-w-2xl mx-auto">
-            <div className="relative">
-                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input 
-                    type="text" 
-                    value={searchTerm} 
-                    onChange={e => setSearchTerm(e.target.value)} 
-                    placeholder="Buscar por cédula, RUC o nombre..." 
-                    className="w-full pl-12 p-4 border border-gray-200 dark:border-gray-700 rounded-2xl dark:bg-gray-800 text-lg shadow-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all" 
-                    autoFocus
-                />
+        <div className="animate-fade-in w-full max-w-2xl mx-auto space-y-4">
+            <div className="flex gap-3">
+                <div className="relative group flex-grow">
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-300 group-focus-within:text-brand-red transition-colors" />
+                    <input 
+                        type="text" 
+                        value={searchTerm} 
+                        onChange={e => setSearchTerm(e.target.value)} 
+                        placeholder="Buscar por nombre o RUC..." 
+                        className="w-full pl-16 pr-8 py-6 border-none rounded-[2.5rem] bg-white dark:bg-gray-800 text-xl font-bold shadow-2xl shadow-slate-200/50 dark:shadow-none focus:ring-4 focus:ring-brand-blue/10 transition-all dark:text-white placeholder:text-slate-300" 
+                    />
+                </div>
+                <button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    title="Nuevo Cliente"
+                    className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-auto bg-brand-red text-white rounded-[2rem] shadow-xl shadow-red-900/20 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-all transform active:scale-95 group"
+                >
+                    <UserPlusIcon className="w-8 h-8 group-hover:rotate-12 transition-transform" />
+                    <span className="hidden sm:block text-[9px] font-black uppercase tracking-widest">Nuevo</span>
+                </button>
             </div>
 
             {searchTerm.length > 1 && (
-                <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+                <div className="mt-6 bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-3xl overflow-hidden border border-slate-100 dark:border-gray-700 divide-y divide-gray-50 dark:divide-gray-700 animate-slide-in-up">
                     {filteredClients.length > 0 ? (
                         filteredClients.map((c) => (
                             <div 
                                 key={c.id} 
                                 onClick={() => onSelectClient(c)}
-                                className="p-4 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 flex justify-between items-center transition-colors group"
+                                className="p-8 cursor-pointer hover:bg-slate-50 dark:hover:bg-blue-400/5 flex justify-between items-center transition-all group"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm group-hover:scale-110 transition-transform">
+                                <div className="flex items-center gap-6">
+                                    <div className="h-16 w-16 rounded-2xl bg-brand-blue text-white flex items-center justify-center font-black text-2xl group-hover:scale-110 group-hover:rotate-3 transition-all shadow-xl">
                                         {c.nombre.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 dark:text-white leading-tight">{c.nombre}</p>
-                                        <p className="text-sm text-gray-500 flex items-center gap-1"><ShieldCheckIcon className="w-3 h-3"/> {c.cedula}</p>
+                                        <p className="font-black text-slate-900 dark:text-white text-xl tracking-tighter uppercase leading-tight">{c.nombreComercial || c.nombre}</p>
+                                        <div className="flex items-center gap-3 mt-1.5">
+                                            <p className="text-sm text-gray-500 font-bold flex items-center gap-2">
+                                                <ShieldCheckIcon className="w-4 h-4 text-green-500"/> {c.cedula}
+                                            </p>
+                                            <span className="text-gray-300">|</span> 
+                                            <span className="text-brand-blue dark:text-blue-400 uppercase text-[10px] font-black tracking-widest">{c.regimen}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                                    {c.regimen}
-                                </span>
+                                <div className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center group-hover:bg-brand-red group-hover:border-brand-red transition-all">
+                                    <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-white transition-all" />
+                                </div>
                             </div>
                         ))
                     ) : (
-                        <div className="p-6 text-center">
-                            <p className="text-gray-500 mb-4">No se encontraron clientes.</p>
-                            <button onClick={() => setIsCreateModalOpen(true)} className="inline-flex items-center gap-2 px-6 py-2 bg-brand-blue text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform hover:-translate-y-1">
-                                <UserPlusIcon className="h-5 w-5"/> Crear Nuevo Cliente
+                        <div className="p-16 text-center">
+                            <div className="w-24 h-24 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <SearchIcon className="w-10 h-10 text-slate-300"/>
+                            </div>
+                            <p className="text-slate-400 font-black mb-8 uppercase tracking-[0.2em] text-sm">Cliente no registrado en el taller</p>
+                            <button 
+                                onClick={() => setIsCreateModalOpen(true)} 
+                                className="inline-flex items-center gap-4 px-12 py-5 bg-brand-red text-white font-black rounded-2xl shadow-3xl shadow-red-900/20 hover:scale-105 transition-all transform active:scale-95 uppercase tracking-widest text-xs"
+                            >
+                                <UserPlusIcon className="h-5 w-5 text-white"/> REGISTRAR NUEVO CLIENTE
                             </button>
                         </div>
                     )}

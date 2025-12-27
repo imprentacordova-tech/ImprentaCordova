@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,26 +14,9 @@
             colors: {
               'brand-blue': '#0B42A7',
               'brand-red': '#D90000',
+              'brand-navy': '#051E4E',
               'neutral-light': '#F3F5F7',
-              'neutral-dark': '#111827',
-              'neutral-text': '#1F2937',
-
-              // KPI Card Colors
-              'kpi-blue-bg': '#EBF5FF',
-              'kpi-green-bg': '#E6FBF0',
-              'kpi-purple-bg': '#F4EFFF',
-              'kpi-red-bg': '#FFEBEB',
-              'kpi-gray-bg': '#F3F4F6',
-              'kpi-orange-bg': '#FFFBEB',
-
-              'kpi-blue-text-tag': '#4C82E5',
-              'kpi-blue-bg-tag': '#D8E6FF',
-
-              'kpi-green-text-tag': '#00B88A',
-              'kpi-green-bg-tag': '#C2F5E9',
-
-              'kpi-purple-text-tag': '#8A63F0',
-              'kpi-purple-bg-tag': '#E5D9FF',
+              'neutral-dark': '#0F172A',
             },
             keyframes: {
               fadeIn: {
@@ -43,52 +27,28 @@
                 '0%': { opacity: 0, transform: 'translateY(30px)' },
                 '100%': { opacity: 1, transform: 'translateY(0)' },
               },
-              pulse: {
-                '0%, 100%': { transform: 'scale(1)' },
-                '50%': { transform: 'scale(1.05)' },
-              },
-              heroZoom: {
-                '0%': { transform: 'scale(1.1)' },
-                '100%': { transform: 'scale(1)' },
-              },
               blob: {
-                "0%": {
-                  transform: "translate(0px, 0px) scale(1)",
-                },
-                "33%": {
-                  transform: "translate(30px, -50px) scale(1.1)",
-                },
-                "66%": {
-                  transform: "translate(-20px, 20px) scale(0.9)",
-                },
-                "100%": {
-                  transform: "translate(0px, 0px) scale(1)",
-                },
+                "0%": { transform: "translate(0px, 0px) scale(1)" },
+                "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                "100%": { transform: "translate(0px, 0px) scale(1)" },
               },
               float: {
-                  '0%, 100%': { transform: 'translateY(0) rotate(6deg)' },
-                  '50%': { transform: 'translateY(-10px) rotate(6deg)' },
-              },
-              bounceIn: {
-                '0%': { opacity: 0, transform: 'scale(0.9)' },
-                '70%': { opacity: 1, transform: 'scale(1.02)' },
-                '100%': { transform: 'scale(1)' },
+                  '0%, 100%': { transform: 'translateY(0)' },
+                  '50%': { transform: 'translateY(-15px)' },
               }
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out forwards',
               'slide-in-up': 'slideInUp 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both',
-              'pulse-slow': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'hero-zoom': 'heroZoom 15s ease-out forwards',
-              blob: "blob 7s infinite",
-              float: "float 6s ease-in-out infinite",
-              'bounce-in': 'bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              'blob': "blob 7s infinite",
+              'float': "float 6s ease-in-out infinite",
             },
           }
         }
       }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="importmap">
 {
   "imports": {
@@ -100,17 +60,16 @@
     "react-router-dom": "https://esm.sh/react-router-dom@6.23.0?external=react,react-dom",
     "@google/genai": "https://esm.sh/@google/genai@0.2.0",
     "lucide-react": "https://esm.sh/lucide-react@0.378.0?external=react,react-dom",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "path": "https://esm.sh/path@^0.12.7",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-neutral-light dark:bg-neutral-dark text-neutral-text dark:text-neutral-light font-sans antialiased">
+<body class="bg-neutral-light dark:bg-neutral-dark text-slate-900 dark:text-neutral-light font-sans antialiased selection:bg-brand-red selection:text-white">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
