@@ -13,58 +13,71 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
 };
 
 /**
- * Extrae datos de un certificado de RUC del SRI (Ecuador) a partir de una imagen.
- * Optimizado para detectar nombres en la parte superior del documento.
+ * Extrae datos de un certificado de RUC del SRI (Ecuador) a partir de una imagen o PDF.
+ * Detecta automáticamente el MIME type para evitar errores 400 INVALID_ARGUMENT.
+ * Extrae: Datos básicos, Correo y Lista de Establecimientos Abiertos.
  */
 export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
-    const modelId = "gemini-2.5-flash-image";
+    // Usamos gemini-3-flash-preview para análisis de documentos complejo
+    const modelId = "gemini-3-flash-preview";
     
-    const prompt = `Analiza detalladamente este certificado de RUC del SRI de Ecuador. 
-    REGLA CRÍTICA PARA EL NOMBRE: El nombre del contribuyente suele aparecer en letras grandes en la parte superior, JUSTO ENCIMA de la etiqueta que dice "Apellidos y nombres".
+    const mimeMatch = base64Image.match(/^data:(.*);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const dataPart = base64Image.split(',')[1];
+
+    const prompt = `Analiza este documento del SRI de Ecuador (Certificado de RUC).
     
-    Extrae los datos y devuélvelos EXCLUSIVAMENTE en este formato JSON (sin texto adicional, sin markdown):
+    INSTRUCCIONES DE EXTRACCIÓN:
+    1. NOMBRE: El nombre del contribuyente está arriba de la etiqueta "Apellidos y nombres".
+    2. CONTACTO: Busca el correo electrónico y teléfono en la sección de datos de contacto.
+    3. ESTABLECIMIENTOS: Busca la tabla de "Establecimientos registrados". Extrae SOLO los que digan estado "ABIERTO".
+    
+    Responde EXCLUSIVAMENTE en formato JSON plano:
     {
-      "nombre": "Nombres y Apellidos completos encontrados arriba de la etiqueta",
-      "ruc": "Los 13 dígitos del RUC",
-      "regimen": "Debe ser uno de estos: 'Rimpe Negocio Popular', 'Rimpe Emprendedor' o 'General'",
-      "direccion": "Provincia, Cantón y Dirección completa (Calles y Referencia)",
-      "actividades": "Breve resumen de las actividades económicas principales",
-      "email": "El correo electrónico de contacto",
-      "telefono": "El número de celular o teléfono"
+      "nombre": "Nombre completo",
+      "ruc": "13 dígitos",
+      "regimen": "Rimpe Popular, Emprendedor o General",
+      "direccion": "Dirección completa",
+      "actividades": "Resumen de actividad económica",
+      "email": "correo electrónico encontrado",
+      "telefono": "número de contacto",
+      "establecimientos": [
+        { "codigo": "001", "nombre": "Nombre del local", "estado": "ABIERTO" }
+      ]
     }
 
-    Si algún dato no es legible, deja el campo vacío "".`;
+    Si el documento tiene varias páginas (común en PDFs), analiza todas para encontrar la tabla de establecimientos.`;
 
     try {
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,
             contents: {
                 parts: [
-                    { inlineData: { data: base64Image.split(',')[1], mimeType: 'image/jpeg' } },
+                    { inlineData: { data: dataPart, mimeType: mimeType } },
                     { text: prompt }
                 ]
             },
             config: {
-                temperature: 0.1, // Baja temperatura para mayor precisión en extracción
+                temperature: 0.1,
+                responseMimeType: "application/json",
             }
-        }), 25000) as GenerateContentResponse;
+        }), 30000) as GenerateContentResponse;
 
         if (!response.text) return null;
 
-        // Limpieza profunda de la respuesta para obtener solo el JSON
         let text = response.text.trim();
-        if (text.includes('```')) {
-            text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        }
+        // Limpieza de posibles tags de markdown
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
         
-        // Intentar limpiar posibles prefijos que la IA a veces agrega
         const jsonStartIndex = text.indexOf('{');
         const jsonEndIndex = text.lastIndexOf('}') + 1;
         if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
             text = text.substring(jsonStartIndex, jsonEndIndex);
         }
 
-        return JSON.parse(text);
+        const data = JSON.parse(text);
+        console.log("IA Extracted Data:", data);
+        return data;
     } catch (error) {
         console.error("SRI Extraction Error:", error);
         return null;
@@ -155,7 +168,7 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
 
 export const analyzeDesignWithSupervisor = async (designBase64: string, context: string): Promise<SupervisorAnalysis | null> => {
     if (!designBase64) return null;
-    const modelId = "gemini-2.5-flash-image";
+    const modelId = "gemini-3-flash-preview";
 
     const prompt = `Eres un supervisor de control de calidad gráfica. Analiza este diseño para: ${context}. Busca errores de resolución, sangrados, ortografía o contraste. Responde estrictamente con un objeto JSON (sin markdown) que tenga los campos: estado ("VERDE", "AMARILLO", "ROJO"), resumen (string), y detalles (array de objetos con tipo ("TECNICA", "DISENO", "COLOR", "COMERCIAL"), descripcion (string), sugerencia (string)).`;
 

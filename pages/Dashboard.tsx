@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NavLink, useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, TrabajoEstado, User, Cliente } from '../types';
+import { Trabajo, TrabajoEstado, User, Cliente, Regimen } from '../types';
 import { 
     SolidDollarIcon, SolidBoxIcon, KdsIcon, AddIcon, ReceiptIcon, Loader2Icon, 
     ArrowRightIcon, PaletteIcon, PrinterIcon, CheckCircleIcon, DocumentIcon,
-    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon, SparklesIcon, UserPlusIcon
+    SolidClockIcon, SolidFinanceIcon, CalendarDaysIcon, WrenchScrewdriverIcon, SparklesIcon, UserPlusIcon,
+    ShieldCheckIcon, DocumentTextIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { CreateClientModal } from '../components/orders/ClientSelector';
@@ -42,43 +43,40 @@ const StatCard: React.FC<{
 
 const DashboardPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { trabajos, loading, refreshData } = useData();
+    const { trabajos, clientes, loading, refreshData } = useData();
     const navigate = useNavigate();
     
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-    const [stats, setStats] = useState({
-        ingresosHoy: 0,
-        pedidosHoy: 0,
-        saldosPendientes: 0,
-        diseno: 0,
-        produccion: 0,
-        vitrina: 0,
-        eficienciaIA: 94 // Valor simulado basado en historial
-    });
-
-    useEffect(() => {
-        if (loading) return;
+    
+    const stats = useMemo(() => {
+        if (loading) return null;
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const tHoy = trabajos.filter(t => new Date(t.fechaEntrada) >= today);
         
-        setStats({
+        // Conteo por régimen
+        const popularCount = clientes.filter(c => c.regimen === Regimen.NEGOCIO_POPULAR).length;
+        const generalCount = clientes.filter(c => c.regimen === Regimen.GENERAL || c.regimen === Regimen.EMPRENDEDOR).length;
+
+        return {
             ingresosHoy: tHoy.reduce((sum, t) => sum + t.abono, 0),
             pedidosHoy: tHoy.length,
             saldosPendientes: trabajos.filter(t => t.saldo > 0 && t.estado !== TrabajoEstado.ENTREGADO).reduce((sum, t) => sum + t.saldo, 0),
             diseno: trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length,
             produccion: trabajos.filter(t => t.estado === TrabajoEstado.PROCESO).length,
             vitrina: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length,
+            popularCount,
+            generalCount,
             eficienciaIA: 94
-        });
-    }, [trabajos, loading]);
+        };
+    }, [trabajos, clientes, loading]);
 
     const handleClientCreated = (client: Cliente) => {
         setIsClientModalOpen(false);
         refreshData();
     };
 
-    if (loading) return <div className="h-screen flex items-center justify-center"><Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" /></div>;
+    if (loading || !stats) return <div className="h-screen flex items-center justify-center"><Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" /></div>;
 
     return (
         <div className="space-y-8 animate-fade-in max-w-7xl mx-auto px-2 pb-10">
@@ -89,13 +87,35 @@ const DashboardPage: React.FC = () => {
                     <div className="text-center md:text-left">
                         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full mb-6">
                             <SparklesIcon className="w-4 h-4 text-orange-400" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200">Asistente Operativo Activo</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200">Imprenta Córdova v2.5</span>
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 leading-none">
                             {currentUser.nombre}, <br/>
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-white">tu taller está al {stats.eficienciaIA}%</span>
                         </h1>
-                        <p className="text-slate-400 max-w-md italic">"El mejor servicio al menor tiempo"</p>
+                        
+                        {/* Widget de Regímenes Rápidos */}
+                        <div className="flex gap-6 mt-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+                                    <ReceiptIcon className="w-5 h-5 text-orange-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rimpe Popular</p>
+                                    <p className="text-xl font-black text-white">{stats.popularCount}</p>
+                                </div>
+                            </div>
+                            <div className="h-10 w-px bg-white/10"></div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                                    <DocumentTextIcon className="w-5 h-5 text-blue-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Régimen General</p>
+                                    <p className="text-xl font-black text-white">{stats.generalCount}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">

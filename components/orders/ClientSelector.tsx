@@ -8,7 +8,9 @@ import {
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
     CheckCircleIcon, BuildingStorefrontIcon, SparklesIcon, 
     AddIcon, ArrowRightIcon, PhoneIcon, CameraIcon, UploadIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon, DocumentTextIcon, ReceiptIcon,
+    // Added InfoIcon to the imports to resolve the error on line 309
+    InfoIcon
 } from '../Icons';
 
 const InputField: React.FC<{ 
@@ -89,9 +91,8 @@ export const CreateClientModal: React.FC<{
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validar tamaño (máximo 5MB para mayor velocidad)
-        if (file.size > 5 * 1024 * 1024) {
-            setScanError("La imagen es demasiado pesada. Usa una de menos de 5MB.");
+        if (file.size > 8 * 1024 * 1024) {
+            setScanError("El archivo es muy pesado (máx 8MB).");
             return;
         }
 
@@ -107,12 +108,10 @@ export const CreateClientModal: React.FC<{
                 if (data && data.nombre) {
                     setExtractedData(data);
                 } else {
-                    setScanError("No pudimos extraer datos claros. Asegúrate de capturar todo el documento.");
-                    setScanPreview(null);
+                    setScanError("No se detectaron datos válidos. Intenta con una imagen más nítida.");
                 }
             } catch (err) {
-                setScanError("Error crítico de conexión con la IA. Inténtalo de nuevo.");
-                setScanPreview(null);
+                setScanError("Error al procesar con IA.");
             } finally {
                 setIsScanning(false);
             }
@@ -139,8 +138,8 @@ export const CreateClientModal: React.FC<{
             direccion: extractedData.direccion || prev.direccion,
             actividades: extractedData.actividades || prev.actividades,
             email: extractedData.email || prev.email,
-            regimen: extractedData.regimen === 'Rimpe Negocio Popular' ? Regimen.NEGOCIO_POPULAR :
-                     extractedData.regimen === 'Rimpe Emprendedor' ? Regimen.EMPRENDEDOR : Regimen.GENERAL
+            regimen: extractedData.regimen?.toLowerCase().includes('popular') ? Regimen.NEGOCIO_POPULAR :
+                     extractedData.regimen?.toLowerCase().includes('emprendedor') ? Regimen.EMPRENDEDOR : Regimen.GENERAL
         }));
 
         if (extractedData.telefono) {
@@ -152,8 +151,6 @@ export const CreateClientModal: React.FC<{
 
         setExtractedData(null);
         setScanPreview(null);
-        
-        // Mantener resaltado por 3 segundos
         setTimeout(() => setHighlightFields([]), 3000);
     };
 
@@ -191,80 +188,65 @@ export const CreateClientModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[70] flex justify-center items-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-2xl overflow-hidden border border-white/10 flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-2xl overflow-hidden border border-white/10 flex flex-col max-h-[95vh]">
                 
                 {/* Header */}
-                <div className="flex justify-between items-center p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-slate-900/50">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-slate-900/50">
                     <div>
-                        <h2 className="text-2xl font-black text-brand-blue dark:text-white flex items-center gap-3 tracking-tighter">
-                            <UserPlusIcon className="h-7 w-7 text-brand-red" /> REGISTRO DE CLIENTE
+                        <h2 className="text-xl font-black text-brand-blue dark:text-white flex items-center gap-3 tracking-tighter uppercase">
+                            <UserPlusIcon className="h-6 w-6 text-brand-red" /> Nuevo Registro
                         </h2>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Impulsado por Córdova Vision AI</p>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Sincronización Automática con Taller</p>
                     </div>
-                    <button onClick={onClose} className="p-3 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all border border-transparent hover:border-gray-200"><CloseIcon className="w-6 h-6 text-gray-400" /></button>
+                    <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all"><CloseIcon className="w-5 h-5 text-gray-400" /></button>
                 </div>
                 
-                <div className="flex-grow p-8 space-y-6 overflow-y-auto custom-scrollbar">
+                <div className="flex-grow p-6 space-y-6 overflow-y-auto custom-scrollbar">
                     
                     {/* Panel de Escaneo IA */}
                     {!scanPreview ? (
-                        <div className="flex flex-col gap-4">
-                            <button 
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className={`w-full flex items-center justify-center gap-4 py-6 rounded-3xl border-2 border-dashed transition-all group shadow-sm ${scanError ? 'border-red-500 bg-red-50 text-red-600' : 'border-brand-blue/30 bg-blue-50/50 text-brand-blue hover:bg-brand-blue hover:text-white'}`}
-                            >
-                                <UploadIcon className="w-6 h-6 group-hover:scale-125 transition-transform" />
-                                <div className="text-left">
-                                    <span className="text-xs font-black uppercase tracking-[0.2em] block leading-none mb-1">
-                                        {scanError ? "Error al escanear" : "Subir Certificado RUC"}
-                                    </span>
-                                    <span className="text-[9px] font-bold opacity-60 uppercase tracking-widest">
-                                        {scanError ? "Toca aquí para intentar con otra imagen" : "Cargar PDF o Foto clara del SRI"}
-                                    </span>
-                                </div>
-                            </button>
-                            {scanError && (
-                                <div className="flex items-center gap-2 text-red-500 bg-red-50 p-3 rounded-xl animate-fade-in border border-red-100">
-                                    <ExclamationTriangleIcon className="w-4 h-4 flex-shrink-0" />
-                                    <p className="text-[10px] font-bold uppercase">{scanError}</p>
-                                </div>
-                            )}
+                        <button 
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`w-full flex items-center justify-center gap-4 py-8 rounded-[2rem] border-2 border-dashed transition-all group shadow-sm ${scanError ? 'border-red-400 bg-red-50 text-red-600' : 'border-brand-blue/20 bg-blue-50/30 text-brand-blue hover:bg-brand-blue hover:text-white'}`}
+                        >
+                            <UploadIcon className="w-8 h-8 group-hover:scale-125 transition-transform" />
+                            <div className="text-left">
+                                <span className="text-xs font-black uppercase tracking-[0.2em] block leading-none mb-1">
+                                    {scanError ? "Error: " + scanError : "Cargar RUC (PDF/Foto)"}
+                                </span>
+                                <span className="text-[9px] font-bold opacity-60 uppercase tracking-widest">Detecta el régimen automáticamente</span>
+                            </div>
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
-                        </div>
+                        </button>
                     ) : (
-                        <div className="bg-slate-900 rounded-[2rem] p-6 animate-slide-in-up border border-blue-500/30 overflow-hidden relative">
+                        <div className="bg-slate-900 rounded-[2rem] p-5 animate-slide-in-up border border-blue-500/30 relative">
                             {isScanning && (
-                                <div className="absolute inset-0 z-10 bg-slate-900/50 backdrop-blur-sm flex flex-col items-center justify-center">
+                                <div className="absolute inset-0 z-10 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-[2rem]">
                                     <div className="w-full h-1 bg-blue-400 absolute top-0 animate-scan shadow-[0_0_15px_rgba(96,165,250,1)]"></div>
-                                    <Loader2Icon className="w-12 h-12 text-blue-400 animate-spin mb-4" />
-                                    <p className="text-blue-400 font-black text-xs uppercase tracking-[0.3em] animate-pulse">Analizando Documento...</p>
+                                    <Loader2Icon className="w-10 h-10 text-blue-400 animate-spin mb-3" />
+                                    <p className="text-blue-400 font-black text-[10px] uppercase tracking-[0.3em] animate-pulse">Consultando SRI...</p>
                                 </div>
                             )}
 
                             {extractedData && (
                                 <div className="space-y-4 animate-fade-in">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Datos Extraídos Correctamente:</h3>
-                                        <button onClick={() => {setScanPreview(null); setExtractedData(null); setScanError(null);}} className="text-slate-500 hover:text-white"><CloseIcon className="w-4 h-4"/></button>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/50 p-5 rounded-2xl border border-white/5 shadow-inner">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/50 p-5 rounded-2xl border border-white/5">
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Nombre Detectado</p>
-                                            <p className="text-sm font-black text-yellow-400 uppercase leading-tight">{extractedData.nombre || '???'}</p>
+                                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Contribuyente</p>
+                                            <p className="text-xs font-black text-white uppercase">{extractedData.nombre || '???'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">RUC / Cédula</p>
-                                            <p className="text-sm font-black text-blue-400 font-mono tracking-tighter">{extractedData.ruc || '???'}</p>
+                                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Régimen SRI</p>
+                                            <p className="text-xs font-bold text-yellow-400 uppercase">{extractedData.regimen || 'General'}</p>
                                         </div>
-                                        <div className="col-span-full pt-4">
+                                        <div className="col-span-full pt-3">
                                             <button 
                                                 type="button" 
                                                 onClick={applyExtractedData}
-                                                className="w-full py-4 bg-blue-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-xl hover:bg-blue-500 transform active:scale-95 transition-all flex items-center justify-center gap-3"
+                                                className="w-full py-3 bg-blue-600 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-xl hover:bg-blue-500 transition-all flex items-center justify-center gap-2"
                                             >
-                                                <CheckCircleIcon className="w-5 h-5" /> ¡Completar Formulario!
+                                                <CheckCircleIcon className="w-4 h-4" /> Autocompletar con IA
                                             </button>
                                         </div>
                                     </div>
@@ -272,17 +254,17 @@ export const CreateClientModal: React.FC<{
                             )}
                             
                             {!extractedData && !isScanning && (
-                                <div className="h-40 flex items-center justify-center">
-                                     <img src={scanPreview} className="max-h-full rounded-lg opacity-30 grayscale" />
+                                <div className="h-32 flex items-center justify-center">
+                                     <img src={scanPreview} className="max-h-full rounded-lg opacity-20 grayscale" />
                                 </div>
                             )}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <InputField 
-                                label="Nombres / Razón Social" 
+                                label="Razón Social" 
                                 name="nombre" 
                                 value={newClienteData.nombre} 
                                 onChange={handleChange} 
@@ -290,17 +272,7 @@ export const CreateClientModal: React.FC<{
                                 isHighlighted={highlightFields.includes('nombre')}
                             />
                             <InputField 
-                                label="Nombre Comercial / Negocio" 
-                                name="nombreComercial" 
-                                value={newClienteData.nombreComercial} 
-                                onChange={handleChange} 
-                                placeholder="Ej: Restaurante El Sabor" 
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField 
-                                label="Cédula / RUC (13 dígitos)" 
+                                label="RUC / Cédula" 
                                 name="cedulaRuc" 
                                 value={newClienteData.cedulaRuc} 
                                 onChange={handleChange} 
@@ -308,33 +280,44 @@ export const CreateClientModal: React.FC<{
                                 required 
                                 isHighlighted={highlightFields.includes('cedulaRuc')}
                             />
-                            <div className="group">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Régimen Fiscal</label>
-                                <select 
-                                    name="regimen" 
-                                    value={newClienteData.regimen} 
-                                    onChange={handleChange} 
-                                    className="w-full p-3 border border-gray-200 rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-red transition-all shadow-sm font-bold text-sm"
-                                >
-                                    <option value={Regimen.GENERAL}>Régimen General</option>
-                                    <option value={Regimen.EMPRENDEDOR}>Emprendedor</option>
-                                    <option value={Regimen.NEGOCIO_POPULAR}>Negocio Popular</option>
-                                </select>
+                        </div>
+
+                        {/* SECTOR CRÍTICO: RÉGIMEN */}
+                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-white/5 space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Régimen Fiscal del Cliente</label>
+                                <ShieldCheckIcon className="w-4 h-4 text-brand-blue" />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {[
+                                    { id: Regimen.GENERAL, label: 'General', icon: DocumentTextIcon, color: 'blue' },
+                                    { id: Regimen.EMPRENDEDOR, label: 'Emprendedor', icon: DocumentTextIcon, color: 'indigo' },
+                                    { id: Regimen.NEGOCIO_POPULAR, label: 'Popular', icon: ReceiptIcon, color: 'orange' }
+                                ].map((reg) => (
+                                    <button
+                                        key={reg.id}
+                                        type="button"
+                                        onClick={() => setNewClienteData(prev => ({ ...prev, regimen: reg.id }))}
+                                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${newClienteData.regimen === reg.id ? `bg-${reg.color}-50 dark:bg-${reg.color}-900/20 border-${reg.color}-500 shadow-md` : 'bg-white dark:bg-gray-700 border-transparent hover:border-slate-200'}`}
+                                    >
+                                        <reg.icon className={`w-5 h-5 ${newClienteData.regimen === reg.id ? `text-${reg.color}-600` : 'text-slate-300'}`} />
+                                        <span className={`text-[10px] font-black uppercase ${newClienteData.regimen === reg.id ? `text-${reg.color}-700 dark:text-${reg.color}-300` : 'text-slate-500'}`}>{reg.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            {/* Información de ayuda basada en el régimen */}
+                            <div className={`p-3 rounded-xl text-[10px] font-bold border flex gap-3 items-center ${newClienteData.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                                <InfoIcon className="w-4 h-4 flex-shrink-0" />
+                                <p>
+                                    {newClienteData.regimen === Regimen.NEGOCIO_POPULAR 
+                                        ? "ESTE CLIENTE SOLO EMITE NOTAS DE VENTA. No olvide configurar el talonario con 0% IVA."
+                                        : "ESTE CLIENTE REQUIERE FACTURAS ELECTRÓNICAS O FÍSICAS CON DESGLOSE DE IVA."}
+                                </p>
                             </div>
                         </div>
 
-                        <InputField 
-                            label="Actividad Económica (Notas adicionales)" 
-                            name="actividades" 
-                            value={newClienteData.actividades} 
-                            onChange={handleChange} 
-                            as="textarea" 
-                            rows={2} 
-                            isHighlighted={highlightFields.includes('actividades')}
-                            placeholder="Descripción de la actividad según el RUC..."
-                        />
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <InputField 
                                 label="Dirección Impresa" 
                                 name="direccion" 
@@ -343,49 +326,39 @@ export const CreateClientModal: React.FC<{
                                 isHighlighted={highlightFields.includes('direccion')}
                             />
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Teléfonos</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Teléfono Principal</label>
                                 <div className="flex gap-2">
                                     <input 
                                         type="tel" 
                                         value={currentTelefono} 
                                         onChange={e => setCurrentTelefono(e.target.value.replace(/\D/g, ''))} 
                                         placeholder="099..." 
-                                        className="flex-grow p-3 border border-gray-200 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-brand-red outline-none shadow-sm" 
+                                        className="flex-grow p-3 border border-gray-200 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-brand-red outline-none text-xs" 
                                         maxLength={10} 
                                     />
-                                    <button 
-                                        type="button" 
-                                        onClick={handleAddTel} 
-                                        className="bg-slate-100 dark:bg-gray-800 p-3 rounded-xl hover:bg-brand-blue hover:text-white transition-all border border-gray-200 dark:border-gray-700"
-                                    >
-                                        <AddIcon className="w-5 h-5"/>
+                                    <button type="button" onClick={handleAddTel} className="bg-slate-100 dark:bg-gray-800 p-3 rounded-xl hover:bg-brand-blue hover:text-white transition-all">
+                                        <AddIcon className="w-4 h-4"/>
                                     </button>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mt-3">
+                                <div className="flex flex-wrap gap-2 mt-2">
                                     {telefonos.map((t, i) => (
-                                        <span key={i} className="bg-blue-50 dark:bg-blue-900/30 text-brand-blue text-[10px] font-black px-3 py-1.5 rounded-full border border-blue-100/50 flex items-center gap-2 shadow-sm">
+                                        <span key={i} className="bg-blue-50 dark:bg-blue-900/30 text-brand-blue text-[9px] font-black px-2 py-1 rounded-full border border-blue-100/50 flex items-center gap-1">
                                             <PhoneIcon className="w-3 h-3"/> {t} 
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setTelefonos(telefonos.filter((_, idx) => idx !== i))}
-                                                className="hover:text-red-500 font-black text-lg leading-none"
-                                            >
-                                                &times;
-                                            </button>
+                                            <button type="button" onClick={() => setTelefonos(telefonos.filter((_, idx) => idx !== i))} className="hover:text-red-500 font-black ml-1">&times;</button>
                                         </span>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
-                            <button type="button" onClick={onClose} className="px-8 py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px] hover:text-slate-900 transition-colors">Cerrar</button>
+                        <div className="flex justify-end pt-6 gap-3 border-t dark:border-gray-800">
+                            <button type="button" onClick={onClose} className="px-6 py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Cerrar</button>
                             <button 
                                 type="submit" 
                                 disabled={isSaving || saveSuccess} 
-                                className={`px-12 py-5 text-white font-black rounded-2xl shadow-2xl transition-all transform active:scale-95 flex items-center gap-3 uppercase tracking-[0.2em] text-xs ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-900 hover:shadow-brand-red/20'}`}
+                                className={`px-10 py-4 text-white font-black rounded-xl shadow-xl transition-all transform active:scale-95 flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-950'}`}
                             >
-                                {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Finalizar Registro"}
+                                {isSaving ? <Loader2Icon className="animate-spin w-4 h-4"/> : saveSuccess ? <CheckCircleIcon className="w-4 h-4"/> : "Guardar Cliente"}
                             </button>
                         </div>
                     </form>

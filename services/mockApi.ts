@@ -57,10 +57,39 @@ const PROVEEDORES_KEY = 'mockProveedoresData';
 const TAREAS_PROVEEDOR_KEY = 'mockTareasProveedorData';
 const SRI_KEYS_KEY = 'mockSriKeysData';
 
-/* Fix: Removed non-existent 'price' property from defaultProductos */
+// --- CONFIGURACIÓN DE PRODUCTOS CON PRECIOS SOLICITADOS ---
+// Regla: 1/4 Oficio 25/50H = $10 | 100H = $13 | 2 Blocks = $20
 const defaultProductos: Producto[] = [
-  { id: 'sri_fac_1', nombre: 'Facturas (1/4 Oficio)', descripcion: 'Autocopiativo', precio: 18.00, categoria: 'SRI', esSRI: true },
-  { id: 'gf_1', nombre: 'Lona HD', descripcion: '1440dpi', precio: 10.00, categoria: 'Gran Formato', esSRI: false },
+  // --- FACTURAS (Precios Unificados 1 color Papel Químico) ---
+  { id: 'f_14_25', nombre: 'Facturas (1/4 Oficio - 25 juegos)', descripcion: 'Químico 1 color - Original y 1 Copia', precio: 10.00, categoria: 'SRI', esSRI: true },
+  { id: 'f_14_50', nombre: 'Facturas (1/4 Oficio - 50 juegos)', descripcion: 'Químico 1 color - Original y 1 Copia', precio: 10.00, categoria: 'SRI', esSRI: true },
+  { id: 'f_14_100', nombre: 'Facturas (1/4 Oficio - 100 juegos)', descripcion: 'Químico 1 color - 1 Block de 100 juegos', precio: 13.00, categoria: 'SRI', esSRI: true },
+  { id: 'f_14_2b', nombre: 'Facturas (1/4 Oficio - 2 Blocks x 50)', descripcion: 'Químico 1 color - Total 200 hojas', precio: 20.00, categoria: 'SRI', esSRI: true },
+  { id: 'f_14_5b', nombre: 'Facturas (1/4 Oficio - 5 Blocks x 50)', descripcion: 'Precio sugerido por volumen', precio: 45.00, categoria: 'SRI', esSRI: true },
+  
+  // --- NOTAS DE VENTA (Mismos precios por tamaño) ---
+  { id: 'nv_14_25', nombre: 'Notas de Venta (1/4 Oficio - 25 juegos)', descripcion: 'RIMPE Popular - Químico 1 color', precio: 10.00, categoria: 'SRI', esSRI: true },
+  { id: 'nv_14_50', nombre: 'Notas de Venta (1/4 Oficio - 50 juegos)', descripcion: 'RIMPE Popular - Químico 1 color', precio: 10.00, categoria: 'SRI', esSRI: true },
+  { id: 'nv_14_100', nombre: 'Notas de Venta (1/4 Oficio - 100 juegos)', descripcion: 'RIMPE Popular - Químico 1 color', precio: 13.00, categoria: 'SRI', esSRI: true },
+  { id: 'nv_14_2b', nombre: 'Notas de Venta (1/4 Oficio - 2 Blocks x 50)', descripcion: 'RIMPE Popular - 200 hojas total', precio: 20.00, categoria: 'SRI', esSRI: true },
+
+  // --- RETENCIONES / LIQUIDACIONES (Mismos precios por tamaño 1/4) ---
+  { id: 'ret_14_50', nombre: 'Retenciones (1/4 Oficio - 50 juegos)', descripcion: 'Químico 1 color', precio: 10.00, categoria: 'SRI', esSRI: true },
+  { id: 'liq_14_50', nombre: 'Liquidaciones (1/4 Oficio - 50 juegos)', descripcion: 'Químico 1 color', precio: 10.00, categoria: 'SRI', esSRI: true },
+  
+  // --- TAMAÑO 1/2 OFICIO (Sugeridos) ---
+  { id: 'sri_12_50', nombre: 'Doc. SRI (1/2 Oficio - 50 juegos)', descripcion: 'Factura/Nota Venta/Retención - 1 color', precio: 15.00, categoria: 'SRI', esSRI: true },
+  { id: 'sri_12_100', nombre: 'Doc. SRI (1/2 Oficio - 100 juegos)', descripcion: 'Factura/Nota Venta/Retención - 1 color', precio: 22.00, categoria: 'SRI', esSRI: true },
+  { id: 'sri_12_2b', nombre: 'Doc. SRI (1/2 Oficio - 2 Blocks x 50)', descripcion: 'Total 200 hojas - 1 color', precio: 28.00, categoria: 'SRI', esSRI: true },
+
+  // --- TAMAÑO OFICIO / A4 (Sugeridos) ---
+  { id: 'sri_of_50', nombre: 'Doc. SRI (Oficio - 50 juegos)', descripcion: 'Guías de Remisión / Facturas - 1 color', precio: 22.00, categoria: 'SRI', esSRI: true },
+  { id: 'sri_of_100', nombre: 'Doc. SRI (Oficio - 100 juegos)', descripcion: 'Guías de Remisión / Facturas - 1 color', precio: 35.00, categoria: 'SRI', esSRI: true },
+
+  // --- PRODUCTOS GENERALES (MANTENIDOS) ---
+  { id: 'gf_lona_hd', nombre: 'Lona HD (m2)', descripcion: 'Impresión 1440dpi Roland', precio: 10.00, categoria: 'Gran Formato', esSRI: false },
+  { id: 'gf_vinil', nombre: 'Vinil Adhesivo (m2)', descripcion: 'Brillante o Mate', precio: 12.50, categoria: 'Gran Formato', esSRI: false },
+  { id: 'tar_eco', nombre: 'Tarjetas de Presentación (1000 unidades)', descripcion: 'Couché 300g con UV', precio: 35.00, categoria: 'Tarjetas', esSRI: false },
 ];
 
 export const getTrabajos = async (): Promise<Trabajo[]> => getStoredData(TRABAJOS_KEY, []);
@@ -79,7 +108,6 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
         const log: StatusLog = { estado: newStatus, fecha: new Date().toISOString(), usuario };
         trabajos[index].estado = newStatus;
         trabajos[index].actualizadoPor = usuario;
-        /* Fix: Accessing 'historial' property which is now added to Trabajo type */
         trabajos[index].historial = [...(trabajos[index].historial || []), log];
         await setStoredData(TRABAJOS_KEY, trabajos);
         return trabajos[index];
@@ -99,7 +127,6 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
         creadoPor: usuario,
         origen: 'Interno',
         saldo: trabajoData.total - trabajoData.abono,
-        /* Fix: Initializing 'historial' property */
         historial: [log]
     };
     trabajos.unshift(newTrabajo);
@@ -185,7 +212,6 @@ export const registerRetiro = async (id: string, pago: number, user: string) => 
         trabajos[idx].abono += pago;
         trabajos[idx].saldo = 0;
         trabajos[idx].actualizadoPor = user;
-        /* Fix: Accessing 'historial' property which is now added to Trabajo type */
         trabajos[idx].historial = [...(trabajos[idx].historial || []), log];
         await setStoredData(TRABAJOS_KEY, trabajos);
         return trabajos[idx];
@@ -321,7 +347,6 @@ export const createPublicPedido = async (clienteInfo: any, productos: any): Prom
         caduco: false,
         creadoPor: 'Portal Web',
         origen: 'Web',
-        /* Fix: Initializing 'historial' property */
         historial: [initialLog]
     };
     
