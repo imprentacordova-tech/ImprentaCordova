@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon } from './Icons';
+import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon, CordovaLogo } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
 
@@ -14,112 +14,100 @@ interface LayoutProps {
 
 const navGroups = [
   {
-    title: 'INICIO',
+    title: 'Navegación',
     items: [
-      { path: "/dashboard", label: "Panel", icon: DashboardIcon },
-      { path: "/", label: "Ver Tienda", icon: GlobeAltIcon },
+      { path: "/dashboard", label: "Panel Principal", icon: DashboardIcon },
+      { path: "/", label: "Vista Pública", icon: GlobeAltIcon },
     ]
   },
   {
-    title: 'OPERACIONES',
+    title: 'Producción',
     items: [
-      { path: "/nuevo", label: "Nuevo Pedido", icon: AddIcon },
-      { path: "/diseno", label: "Estudio Diseño", icon: PaletteIcon }, // Added Design Link
-      { path: "/kds", label: "Taller Producción", icon: KdsIcon },
-      { path: "/trabajos", label: "Historial Trabajos", icon: DocumentIcon },
-      { path: "/retiros", label: "Entregas", icon: ReceiptIcon },
+      { path: "/nuevo", label: "Nueva Orden", icon: AddIcon },
+      { path: "/diseno", label: "Área de Diseño", icon: PaletteIcon },
+      { path: "/kds", label: "Taller en Vivo", icon: KdsIcon },
+      { path: "/retiros", label: "Entregas / Caja", icon: ReceiptIcon },
     ]
   },
   {
-    title: 'HERRAMIENTAS',
+    title: 'Administración',
     items: [
-      { path: "/calculadora", label: "Calculadora Offset", icon: CalculatorIcon },
+      { path: "/clientes", label: "Contribuyentes", icon: ClientsIcon },
+      { path: "/trabajos", label: "Historial", icon: DocumentIcon },
+      { path: "/productos", label: "Catálogo", icon: BoxIcon },
+      { path: "/inventario", label: "Insumos", icon: SolidBoxIcon },
     ]
   },
   {
-    title: 'GESTIÓN',
-    items: [
-      { path: "/clientes", label: "Clientes", icon: ClientsIcon },
-      { path: "/productos", label: "Productos", icon: BoxIcon },
-      { path: "/proveedores", label: "Proveedores", icon: BuildingStorefrontIcon },
-      { path: "/inventario", label: "Inventario", icon: SolidBoxIcon },
-    ]
-  },
-  {
-    title: 'ANÁLISIS',
-    items: [
-      { path: "/finanzas", label: "Reportes", icon: FinanceIcon },
-    ]
-  },
-  {
-    title: 'ADMINISTRACIÓN',
+    title: 'Sistema',
     adminOnly: true,
     items: [
-      { path: "/usuarios", label: "Usuarios", icon: UsersIcon },
+      { path: "/finanzas", label: "Reportes IA", icon: FinanceIcon },
+      { path: "/usuarios", label: "Personal", icon: UsersIcon },
       { path: "/configuracion", label: "Configuración", icon: Cog8ToothIcon },
     ]
   },
 ];
 
-
 const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     const location = useLocation();
-    const [vitrinaCount, setVitrinaCount] = useState(0);
-    const [designCount, setDesignCount] = useState(0);
+    const [counts, setCounts] = useState({ design: 0, retail: 0 });
 
-    // Fetch counts for badges
     useEffect(() => {
         const fetchCount = async () => {
             const trabajos = await getTrabajos();
-            setVitrinaCount(trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length);
-            setDesignCount(trabajos.filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO).length);
+            setCounts({
+                design: trabajos.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)).length,
+                retail: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length
+            });
         };
-        
         fetchCount();
-        const interval = setInterval(fetchCount, 10000);
+        const interval = setInterval(fetchCount, 20000);
         return () => clearInterval(interval);
     }, []);
 
     return (
-      <aside className="w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col h-full border-r border-gray-200 dark:border-gray-700">
-        <nav className="flex-grow p-2 space-y-2 mt-4 overflow-y-auto">
+      <aside className="w-72 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col h-full border-r border-slate-100 dark:border-slate-800 shadow-2xl z-20">
+        <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center gap-4">
+             <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-lg shadow-brand-blue/20">
+                <CordovaLogo className="w-8 h-8 brightness-0 invert" />
+             </div>
+             <div>
+                <h2 className="text-xl font-black tracking-tighter leading-none">CÓRDOVA</h2>
+                <p className="text-[9px] font-black text-brand-red uppercase tracking-[0.3em] mt-1">E.R.P. Vision</p>
+             </div>
+        </div>
+        
+        <nav className="flex-grow p-4 space-y-8 overflow-y-auto custom-scrollbar pt-8">
           {navGroups.map(group => {
-            if (group.adminOnly && user.rol !== 'Admin') {
-                return null;
-            }
+            if (group.adminOnly && user.rol !== 'Admin') return null;
             return (
-                <div key={group.title}>
-                    <h3 className="px-4 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">{group.title}</h3>
+                <div key={group.title} className="space-y-2">
+                    <h3 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">{group.title}</h3>
                     <div className="space-y-1">
                         {group.items.map(item => {
-                            const isActive = location.pathname === item.path || (item.path === '/configuracion' && location.pathname.startsWith('/configuracion'));
-                            const showVitrinaBadge = item.path === '/retiros' && vitrinaCount > 0;
-                            const showDesignBadge = item.path === '/diseno' && designCount > 0;
+                            const isActive = location.pathname === item.path;
+                            const badge = item.path === '/diseno' ? counts.design : item.path === '/retiros' ? counts.retail : 0;
 
                             return (
                                 <NavLink
                                     key={item.path}
                                     to={item.path}
                                     className={
-                                        `group w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 transform hover:translate-x-1 ${
+                                        `group w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 ${
                                             isActive
-                                                ? 'bg-blue-50 text-brand-blue dark:bg-blue-900/50 shadow-sm'
-                                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                ? 'bg-brand-blue text-white shadow-xl shadow-brand-blue/20 translate-x-2'
+                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-brand-blue'
                                         }`
                                     }
                                 >
-                                    <div className="flex items-center space-x-3">
-                                        <item.icon className="h-5 w-5 flex-shrink-0" />
-                                        <span>{item.label}</span>
+                                    <div className="flex items-center gap-4">
+                                        <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
+                                        <span className="tracking-wide">{item.label}</span>
                                     </div>
-                                    {showVitrinaBadge && (
-                                        <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                            {vitrinaCount}
-                                        </span>
-                                    )}
-                                    {showDesignBadge && (
-                                        <span className="bg-blue-100 text-brand-blue text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                            {designCount}
+                                    {badge > 0 && (
+                                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black ${isActive ? 'bg-white text-brand-blue' : 'bg-brand-red text-white'}`}>
+                                            {badge}
                                         </span>
                                     )}
                                 </NavLink>
@@ -130,19 +118,24 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
             );
           })}
         </nav>
+        
+        <div className="p-6 border-t border-slate-50 dark:border-slate-800">
+            <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-3xl flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-brand-blue text-white flex items-center justify-center font-black text-sm">
+                    {user.nombre.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                    <p className="text-xs font-black text-slate-900 dark:text-white truncate uppercase">{user.nombre}</p>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{user.rol}</p>
+                </div>
+            </div>
+        </div>
       </aside>
     );
 };
 
-const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void }> = ({ onMenuClick, onLogout }) => {
-    // Theme state initialized from localStorage
-    const [isDark, setIsDark] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('theme') === 'dark' || 
-                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-        return false;
-    });
+const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: User }> = ({ onMenuClick, onLogout, user }) => {
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
 
     useEffect(() => {
         if (isDark) {
@@ -154,34 +147,35 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void }> = ({ o
         }
     }, [isDark]);
 
-    const toggleTheme = () => {
-        setIsDark(!isDark);
-    };
-
     return (
-        <header className="h-16 bg-white dark:bg-gray-800 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <div className="flex items-center">
-                <button onClick={onMenuClick} className="lg:hidden p-2 -ml-2 mr-4 text-gray-600 dark:text-gray-300">
+        <header className="h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl flex items-center justify-between px-8 border-b border-slate-100 dark:border-slate-800 flex-shrink-0 sticky top-0 z-30">
+            <div className="flex items-center gap-6">
+                <button onClick={onMenuClick} className="lg:hidden p-3 bg-slate-100 dark:bg-white/5 rounded-xl text-slate-600 dark:text-slate-300">
                     <MenuIcon className="h-6 w-6" />
                 </button>
-                 <Link to="/dashboard" className="text-2xl font-bold">
-                    <span className="text-brand-blue">Imprenta</span>
-                    <span className="text-brand-red"> Córdova</span>
-                </Link>
+                <div className="hidden sm:flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cerebro Córdova Online</p>
+                </div>
             </div>
-            <div className="flex items-center space-x-4">
-                {/* Theme Toggle Button */}
+
+            <div className="flex items-center gap-6">
+                <div className="hidden md:flex flex-col text-right mr-4 leading-none">
+                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Terminal de Acceso</span>
+                     <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">{new Date().toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                </div>
+                
                 <button 
-                    onClick={toggleTheme} 
-                    className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
-                    aria-label="Alternar tema oscuro"
+                    onClick={() => setIsDark(!isDark)} 
+                    className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-brand-blue transition-all"
+                    aria-label="Toggle Theme"
                 >
                     {isDark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
                 </button>
 
-                <button onClick={onLogout} className="flex items-center space-x-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-colors">
+                <button onClick={onLogout} className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all group flex items-center gap-2">
                     <LogoutIcon className="h-5 w-5" />
-                    <span className="hidden sm:inline">Salir</span>
+                    <span className="hidden xl:inline text-[10px] font-black uppercase tracking-widest">Desconectar</span>
                 </button>
             </div>
         </header>
@@ -192,17 +186,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-    <div className="flex h-screen bg-neutral-light dark:bg-neutral-dark overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans selection:bg-brand-blue selection:text-white">
         {/* Mobile Sidebar */}
-        <div className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)}></div>
-            <div className={`relative w-64 h-full bg-white dark:bg-gray-900 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="absolute top-4 right-4">
-                    <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-600 dark:text-gray-300">
-                        <CloseIcon className="h-6 w-6" />
-                    </button>
-                </div>
+        <div className={`fixed inset-0 z-[100] lg:hidden transition-opacity duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
+            <div className={`relative w-72 h-full bg-white dark:bg-slate-900 shadow-3xl transition-transform duration-500 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <Sidebar user={user} />
+                <button onClick={() => setSidebarOpen(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-brand-red"><CloseIcon className="h-6 w-6" /></button>
             </div>
         </div>
 
@@ -212,8 +202,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
         </div>
 
         <div className="flex flex-col flex-1 w-0 overflow-hidden">
-            <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} />
-            <main className="flex-1 relative overflow-y-auto focus:outline-none p-4 sm:p-6 lg:p-8">
+            <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
+            <main className="flex-1 relative overflow-y-auto focus:outline-none p-6 lg:p-10 scroll-smooth custom-scrollbar">
                 {children}
             </main>
         </div>
