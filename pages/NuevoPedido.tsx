@@ -6,7 +6,6 @@ import ClientSelector from '../components/orders/ClientSelector';
 import ProductGrid from '../components/orders/ProductGrid';
 import OrderSummary from '../components/orders/OrderSummary';
 import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
-// Fix: Added CordovaLogo to the imports to resolve the missing name error
 import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { getTrabajos } from '../services/mockApi';
@@ -16,8 +15,8 @@ const NuevoPedidoPage: React.FC = () => {
     const navigate = useNavigate();
     const { 
         selectedCliente, cartItems, jobType, titular, abono, 
-        orderTotal, isLoading, sriData,
-        setSelectedCliente, setJobType, setAbono, setSriData,
+        orderTotal, isLoading, sriData, imprimirClave,
+        setSelectedCliente, setJobType, setAbono, setSriData, setImprimirClave,
         addProduct, removeProduct, updateQuantity, finalizeOrder, resetOrder
     } = useOrder(currentUser.nombre);
 
@@ -72,7 +71,7 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="bg-brand-blue text-white w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg relative">
                                     {selectedCliente.nombre.charAt(0)}
                                     {sriData.hasKey && (
-                                        <span className="absolute -top-1 -right-1 bg-green-500 border-2 border-white rounded-full p-1 shadow-md">
+                                        <span className="absolute -top-1 -right-1 bg-emerald-500 border-2 border-white rounded-full p-1 shadow-md">
                                             <KeyIcon className="w-3 h-3 text-white" />
                                         </span>
                                     )}
@@ -84,8 +83,8 @@ const NuevoPedidoPage: React.FC = () => {
                                             {selectedCliente.regimen}
                                         </span>
                                         {sriData.hasKey && (
-                                            <span className={`flex items-center gap-1 bg-green-50 text-green-700 text-[9px] font-black px-2 py-0.5 rounded border border-green-100 ${sriData.autoFilled ? 'animate-bounce' : ''}`}>
-                                                <KeyIcon className="w-3 h-3"/> CLAVE SRI ENCONTRADA
+                                            <span className={`flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded border border-emerald-100`}>
+                                                <KeyIcon className="w-3 h-3"/> CLAVE DETECTADA
                                             </span>
                                         )}
                                         {clientDebt > 0 && (
@@ -97,15 +96,14 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Panel SRI Rápido */}
                             {jobType === TrabajoTipo.SRI && (
                                 <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-gray-700">
                                     <div className="flex flex-col px-3 border-r border-slate-200">
                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Estab - P.Emi</span>
                                         <div className="flex items-center gap-1 font-mono font-bold text-sm">
-                                            <input type="text" maxLength={3} value={sriData.establecimiento} onChange={e => setSriData({...sriData, establecimiento: e.target.value})} className="w-9 bg-transparent outline-none text-brand-red" />
+                                            <input type="text" maxLength={3} value={sriData.establecimiento} onChange={e => setSriData({...sriData, establecimiento: e.target.value})} className="w-9 bg-transparent outline-none text-brand-red text-center" />
                                             <span>-</span>
-                                            <input type="text" maxLength={3} value={sriData.puntoEmision} onChange={e => setSriData({...sriData, puntoEmision: e.target.value})} className="w-9 bg-transparent outline-none text-brand-red" />
+                                            <input type="text" maxLength={3} value={sriData.puntoEmision} onChange={e => setSriData({...sriData, puntoEmision: e.target.value})} className="w-9 bg-transparent outline-none text-brand-red text-center" />
                                         </div>
                                     </div>
                                     <button onClick={resetOrder} className="px-4 py-2 text-xs font-black text-slate-400 hover:text-brand-red uppercase tracking-widest transition-colors">Cancelar</button>
@@ -115,13 +113,8 @@ const NuevoPedidoPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Grid de Productos con Validación de Régimen */}
                 {selectedCliente && (
                     <div className="flex-grow bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden flex flex-col">
-                        <div className="flex items-center gap-3 mb-6">
-                            <SparklesIcon className="w-5 h-5 text-brand-blue" />
-                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Selección de Documentos</h3>
-                        </div>
                         <ProductGrid 
                             onProductAction={(action, p) => addProduct(p)} 
                             productsInCart={productsInCart}
@@ -133,17 +126,11 @@ const NuevoPedidoPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Resumen Derecho */}
-            <div className="hidden xl:flex w-[400px] flex-col bg-white dark:bg-gray-800 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden relative">
-                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                    {/* Fix: CordovaLogo is now recognized thanks to the import fix above */}
-                    <CordovaLogo className="w-32 h-32" />
-                 </div>
+            <div className="hidden xl:flex w-[400px] flex-col bg-white dark:bg-gray-800 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden">
                 <div className="p-8 border-b border-slate-50 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900/50">
                     <h3 className="font-black text-xl tracking-tighter flex items-center gap-3 uppercase">
                         <ShoppingCartIcon className="w-6 h-6 text-brand-red"/> Carrito
                     </h3>
-                    <span className="bg-brand-blue text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">{cartItems.length} ítems</span>
                 </div>
                 <div className="flex-grow overflow-hidden">
                     <OrderSummary 
@@ -158,6 +145,11 @@ const NuevoPedidoPage: React.FC = () => {
                         onRemoveItem={removeProduct}
                         onFinalize={handleFinalize}
                         isLoading={isLoading}
+                        // SRI Props
+                        sriData={sriData}
+                        setSriData={setSriData}
+                        imprimirClave={imprimirClave}
+                        setImprimirClave={setImprimirClave}
                     />
                 </div>
             </div>

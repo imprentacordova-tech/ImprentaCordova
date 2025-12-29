@@ -56,7 +56,9 @@ export interface Trabajo {
   actualizadoPor?: string;
   establecimiento?: string;
   puntoEmision?: string;
-  claveAcceso?: string; // Para guardar la clave del SRI en la orden
+  claveAcceso?: string; // Contraseña del SRI
+  estadoClave: 'LISTA' | 'PENDIENTE' | 'ERROR'; 
+  imprimirClave: boolean; // Si el cliente quiere que aparezca en el papel
   origen?: 'Web' | 'Interno';
   esRenovacion?: boolean;
   prioridad?: 'Normal' | 'Urgente';

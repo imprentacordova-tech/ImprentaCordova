@@ -3,7 +3,10 @@ import React, { useState, useMemo } from 'react';
 import { Producto, TrabajoTipo, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { formatCurrency } from '../../utils';
-import { SearchIcon, DocumentIcon, ShieldCheckIcon, FolderIcon, AddIcon, CloseIcon } from '../Icons';
+import { 
+    SearchIcon, DocumentIcon, ShieldCheckIcon, AddIcon, 
+    CloseIcon, RulerIcon, TableIcon, SparklesIcon, ChevronRightIcon 
+} from '../Icons';
 
 interface ProductGridProps {
     onProductAction: (action: 'add', product: Producto) => void;
@@ -13,146 +16,212 @@ interface ProductGridProps {
     onSetJobType: (type: TrabajoTipo) => void;
 }
 
-interface ProductVariation { id: string; variationName: string; price: number; producto: Producto; }
-interface ProductGroup { groupName: string; categoria: string; esSRI: boolean; variations: ProductVariation[]; isGroup: true; imagenUrl?: string; }
-type DisplayableProduct = ProductGroup | (Producto & { isGroup?: false });
-
-const ProductGroupModal: React.FC<{ group: ProductGroup | null; onClose: () => void; onAddProduct: (product: Producto) => void; }> = ({ group, onClose, onAddProduct }) => {
-    if (!group) return null;
-    return (
-        <div className="fixed inset-0 bg-black/60 z-[70] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-100 transition-all" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <FolderIcon className="w-5 h-5 text-brand-blue"/> {group.groupName}
-                    </h2>
-                    <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500 hover:text-gray-700" /></button>
-                </div>
-                <ul className="p-2 max-h-96 overflow-y-auto">
-                    {group.variations.map(v => (
-                        <li key={v.id} onClick={() => { onAddProduct(v.producto); onClose(); }} className="flex justify-between items-center p-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg cursor-pointer transition-colors group">
-                            <span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-brand-blue">{v.variationName}</span>
-                            <div className="flex items-center gap-3">
-                                <span className="font-bold text-gray-900 dark:text-white">{formatCurrency(v.price)}</span>
-                                <button className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-full group-hover:bg-brand-blue group-hover:text-white transition-colors"><AddIcon className="w-4 h-4"/></button>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </div>
-    );
-};
-
 const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCart, jobType, clientRegimen, onSetJobType }) => {
     const { productos } = useData();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('Todas');
-    const [viewingGroup, setViewingGroup] = useState<ProductGroup | null>(null);
+    const [selectedBaseProduct, setSelectedBaseProduct] = useState<string | null>(null);
 
-    const productGroupsAndItems = useMemo((): DisplayableProduct[] => {
-        const groups = new Map<string, ProductGroup>();
-        const singleItems: DisplayableProduct[] = [];
-        const regex = /^(.*?) \((.*?)\)$/;
-        
-        for (const p of productos) {
-            const match = p.nombre.match(regex);
-            if (match) {
-                const [, groupName, variationName] = match;
-                const key = `${groupName}-${p.esSRI}`;
-                if (!groups.has(key)) groups.set(key, { groupName, categoria: p.categoria, esSRI: !!p.esSRI, variations: [], isGroup: true, imagenUrl: p.imagenUrl });
-                groups.get(key)!.variations.push({ id: p.id, variationName, price: p.precio, producto: p });
-            } else {
-                singleItems.push(p);
+    // --- LÓGICA DE AGRUPACIÓN PREMIUM ---
+    // Agrupamos por nombre base (ej: "Facturas SRI") y extraemos atributos
+    const groupedProducts = useMemo(() => {
+        const map = new Map<string, {
+            name: string;
+            categoria: string;
+            esSRI: boolean;
+            sizes: Set<string>;
+            quantities: Set<string>;
+            items: Producto[];
+        }>();
+
+        productos.forEach(p => {
+            // Esperamos formato: "Nombre Base (Tamaño - Cantidad)"
+            const match = p.nombre.match(/^(.*?) \((.*?) - (.*?)\)$/);
+            const baseName = match ? match[1] : p.nombre;
+            const size = match ? match[2] : 'Único';
+            const qty = match ? match[3] : 'Estándar';
+
+            if (!map.has(baseName)) {
+                map.set(baseName, {
+                    name: baseName,
+                    categoria: p.categoria,
+                    esSRI: !!p.esSRI,
+                    sizes: new Set(),
+                    quantities: new Set(),
+                    items: []
+                });
             }
-        }
-        return [...groups.values(), ...singleItems];
-    }, [productos]);
+            const group = map.get(baseName)!;
+            group.sizes.add(size);
+            group.quantities.add(qty);
+            group.items.push(p);
+        });
 
-    const categories = useMemo(() => ['Todas', ...new Set(productGroupsAndItems.filter(p => (jobType === TrabajoTipo.SRI ? p.esSRI : !p.esSRI)).map(p => p.categoria))], [productGroupsAndItems, jobType]);
-
-    const filteredItems = useMemo(() => {
-        let items = productGroupsAndItems.filter(p =>
-            (jobType === TrabajoTipo.SRI ? !!p.esSRI : !p.esSRI) &&
-            (selectedCategory === 'Todas' || p.categoria === selectedCategory) &&
-            ('groupName' in p ? p.groupName : p.nombre).toLowerCase().includes(searchTerm.toLowerCase())
+        return Array.from(map.values()).filter(g => 
+            (jobType === TrabajoTipo.SRI ? g.esSRI : !g.esSRI) &&
+            g.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-
-        if (jobType === TrabajoTipo.SRI && clientRegimen) {
-            items = items.map(item => {
-                let currentItem: any = { ...item };
-                const name = 'groupName' in item ? item.groupName : item.nombre;
-                const nameLower = name.toLowerCase();
-                
-                const isFactura = nameLower.includes('factura');
-                
-                if (clientRegimen === Regimen.NEGOCIO_POPULAR && isFactura) {
-                    currentItem.blocked = true; 
-                    currentItem.reason = "Popular NO emite Facturas";
-                } 
-                return currentItem;
-            });
-        }
-        return items;
-    }, [productGroupsAndItems, jobType, selectedCategory, searchTerm, clientRegimen]);
+    }, [productos, jobType, searchTerm]);
 
     return (
-        <div className="flex flex-col h-full animate-fade-in">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                <div className="flex-grow relative">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar producto..." className="w-full pl-10 p-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-blue" />
-                </div>
-                <div className="flex-shrink-0 grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg h-fit self-start">
-                    <button onClick={() => onSetJobType(TrabajoTipo.GENERAL)} className={`px-4 py-2 text-sm font-bold rounded-md flex items-center gap-2 transition-all ${jobType === TrabajoTipo.GENERAL ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}><DocumentIcon className="w-4 h-4"/> General</button>
-                    <button onClick={() => onSetJobType(TrabajoTipo.SRI)} className={`px-4 py-2 text-sm font-bold rounded-md flex items-center gap-2 transition-all ${jobType === TrabajoTipo.SRI ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}><ShieldCheckIcon className="w-4 h-4"/> SRI</button>
-                </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4 pb-2 border-b dark:border-gray-700 overflow-x-auto no-scrollbar">
-                {categories.map(cat => (
-                    <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${selectedCategory === cat ? 'bg-brand-blue text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}`}>
-                        {cat}
+        <div className="flex flex-col h-full animate-fade-in gap-6">
+            {/* Header de Filtros Minimalista */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-[2rem] border border-slate-100 dark:border-white/5">
+                <div className="flex bg-white dark:bg-slate-800 p-1 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700">
+                    <button 
+                        onClick={() => { onSetJobType(TrabajoTipo.SRI); setSelectedBaseProduct(null); }}
+                        className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.SRI ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Talonarios SRI
                     </button>
-                ))}
+                    <button 
+                        onClick={() => { onSetJobType(TrabajoTipo.GENERAL); setSelectedBaseProduct(null); }}
+                        className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.GENERAL ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Publicidad & Otros
+                    </button>
+                </div>
+                
+                <div className="relative flex-grow max-w-xs">
+                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
+                    <input 
+                        type="text" 
+                        value={searchTerm} 
+                        onChange={e => setSearchTerm(e.target.value)} 
+                        placeholder="Filtrar servicios..." 
+                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border-none rounded-2xl text-xs font-bold shadow-sm focus:ring-2 focus:ring-brand-blue/20 outline-none"
+                    />
+                </div>
             </div>
 
-            <div className="flex-grow overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-24 pr-2">
-                {filteredItems.map((item: any) => {
-                    const isGroup = 'groupName' in item;
-                    const name = isGroup ? item.groupName : item.nombre;
-                    const price = isGroup && item.variations[0] ? item.variations[0].price : item.precio;
-                    const qty = !isGroup ? productsInCart.get(item.id)?.cantidad : 0; 
-                    
-                    return (
-                        <div 
-                            key={isGroup ? item.groupName : item.id}
-                            onClick={() => !item.blocked && (isGroup ? setViewingGroup(item) : onProductAction('add', item))}
-                            className={`relative bg-white dark:bg-gray-800 p-4 rounded-xl border-2 transition-all cursor-pointer group flex flex-col h-full 
-                                ${qty > 0 ? 'border-brand-blue bg-blue-50/50' : 'border-transparent hover:border-brand-blue/30 hover:shadow-lg'}
-                                ${item.blocked ? 'opacity-50 cursor-not-allowed grayscale' : ''}
-                            `}
-                        >
-                            {qty > 0 && <span className="absolute top-2 right-2 bg-brand-blue text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md z-10">{qty}</span>}
-                            {item.blocked && <div className="absolute inset-0 z-20 flex items-center justify-center"><span className="bg-black/80 text-white text-[10px] px-2 py-1 rounded font-bold text-center mx-2">{item.reason}</span></div>}
-                            
-                            <div className="mb-3 self-center p-3 bg-gray-50 dark:bg-gray-700 rounded-full group-hover:scale-110 transition-transform">
-                                {isGroup ? <FolderIcon className="w-8 h-8 text-brand-blue"/> : <DocumentIcon className="w-8 h-8 text-gray-400"/>}
+            <div className="flex-grow overflow-hidden flex gap-6">
+                {/* Lista de Productos Base (Izquierda) */}
+                <div className="w-1/3 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                    {groupedProducts.map(group => {
+                        const isSelected = selectedBaseProduct === group.name;
+                        // Validación de Régimen para UX preventivo
+                        const isBlocked = clientRegimen === Regimen.NEGOCIO_POPULAR && group.name.toLowerCase().includes('factura');
+
+                        return (
+                            <button
+                                key={group.name}
+                                onClick={() => !isBlocked && setSelectedBaseProduct(group.name)}
+                                className={`w-full text-left p-5 rounded-[1.8rem] border-2 transition-all group relative overflow-hidden ${
+                                    isSelected 
+                                    ? 'bg-brand-blue border-brand-blue shadow-xl shadow-blue-900/20 translate-x-2' 
+                                    : isBlocked 
+                                    ? 'bg-slate-50 border-transparent opacity-40 cursor-not-allowed grayscale' 
+                                    : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-white/5 hover:border-brand-blue/30 shadow-sm'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between relative z-10">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-2xl transition-colors ${isSelected ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                                            {group.esSRI ? <ShieldCheckIcon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-brand-red'}`} /> : <DocumentIcon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />}
+                                        </div>
+                                        <div>
+                                            <h3 className={`text-xs font-black uppercase tracking-tight leading-none mb-1 ${isSelected ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                                                {group.name}
+                                            </h3>
+                                            <p className={`text-[9px] font-bold uppercase tracking-widest ${isSelected ? 'text-blue-200' : 'text-slate-400'}`}>
+                                                {group.categoria}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ChevronRightIcon className={`w-4 h-4 transition-transform ${isSelected ? 'text-white rotate-90' : 'text-slate-300 group-hover:translate-x-1'}`} />
+                                </div>
+                                {isBlocked && (
+                                    <div className="absolute top-2 right-2 bg-slate-900 text-white text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                        No permitido para Popular
+                                    </div>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Configurador de Variaciones (Derecha) */}
+                <div className="flex-1 bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-inner p-8 overflow-y-auto custom-scrollbar">
+                    {selectedBaseProduct ? (
+                        <div className="space-y-10 animate-fade-in">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h2 className="text-2xl font-black text-brand-blue dark:text-white uppercase tracking-tighter italic">
+                                        Configuración de <span className="text-brand-red">{selectedBaseProduct}</span>
+                                    </h2>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Seleccione las especificaciones técnicas</p>
+                                </div>
+                                <SparklesIcon className="w-6 h-6 text-yellow-400 animate-pulse" />
                             </div>
-                            
-                            <div className="text-center mt-auto">
-                                <h3 className="font-bold text-gray-800 dark:text-white text-sm leading-tight mb-1 line-clamp-2">{name}</h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{item.categoria}</p>
-                                <p className="text-brand-blue font-bold bg-blue-50 dark:bg-blue-900/30 inline-block px-2 py-0.5 rounded text-sm">
-                                    {isGroup ? 'Ver opciones' : formatCurrency(price)}
+
+                            {/* Selector de Tamaño */}
+                            <div className="space-y-4">
+                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <RulerIcon className="w-4 h-4" /> 1. Dimensiones (Formato)
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {Array.from(groupedProducts.find(g => g.name === selectedBaseProduct)!.sizes).map(size => (
+                                        <div key={size} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-transparent text-center">
+                                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase">{size}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Selector de Cantidad / Precio Directo */}
+                            <div className="space-y-4">
+                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <TableIcon className="w-4 h-4" /> 2. Volumen de Impresión
+                                </label>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {groupedProducts.find(g => g.name === selectedBaseProduct)!.items.map(item => {
+                                        // Extraer solo la cantidad del nombre para mostrarla limpia
+                                        const qty = item.nombre.match(/- (.*?)\)/)?.[1] || 'Estándar';
+                                        const inCart = productsInCart.get(item.id);
+
+                                        return (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => onProductAction('add', item)}
+                                                className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all transform active:scale-[0.98] ${
+                                                    inCart 
+                                                    ? 'bg-brand-blue/5 border-brand-blue' 
+                                                    : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-gray-700 hover:border-brand-blue/30'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs ${inCart ? 'bg-brand-blue text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>
+                                                        {inCart ? inCart.cantidad : '+'}
+                                                    </div>
+                                                    <span className="font-bold text-slate-700 dark:text-slate-200 text-sm uppercase">{qty}</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Precio Profesional</p>
+                                                    <p className="text-lg font-black text-brand-blue">{formatCurrency(item.precio)}</p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t dark:border-gray-700 flex items-center gap-4 text-slate-400">
+                                <ShieldCheckIcon className="w-5 h-5 flex-shrink-0" />
+                                <p className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
+                                    Los precios incluyen papel químico autocopiativo de alta sensibilidad y numeración secuencial garantizada por la normativa vigente del SRI Pasaje.
                                 </p>
                             </div>
                         </div>
-                    );
-                })}
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                            <div className="w-24 h-24 bg-slate-100 dark:bg-slate-700 rounded-[2.5rem] flex items-center justify-center mb-6">
+                                <DocumentIcon className="w-12 h-12 text-slate-300" />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-400 uppercase tracking-tighter">Seleccione un Producto</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Elija un servicio de la lista izquierda para configurar</p>
+                        </div>
+                    )}
+                </div>
             </div>
-
-            <ProductGroupModal group={viewingGroup} onClose={() => setViewingGroup(null)} onAddProduct={(p) => onProductAction('add', p)} />
         </div>
     );
 };

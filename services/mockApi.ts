@@ -1,7 +1,7 @@
 
 import { Cliente, Producto, Regimen, Trabajo, TrabajoEstado, TrabajoTipo, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, StatusLog } from '../types';
 
-// La URL se obtiene de las variables de entorno o de la configuración del sistema
+// URL del Google Apps Script configurado por el usuario
 const getScriptUrl = () => {
     const savedConfig = localStorage.getItem('appConfig');
     if (savedConfig) {
@@ -26,31 +26,6 @@ const callGoogleScript = async (action: string, payload?: any) => {
         return false;
     }
 };
-
-// --- PRODUCTOS PREDETERMINADOS (CATÁLOGO SRI ECUADOR) ---
-const defaultProductos: Producto[] = [
-  // FACTURAS
-  { id: 'sri-f1', nombre: 'Facturas SRI (1/4 Oficio - 50 Juegos)', descripcion: 'Facturas autorizadas, Original y 1 Copia. Papel químico.', precio: 13.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original/Copia', 'Numeradas', 'Papel Químico'], unit: 'block' },
-  { id: 'sri-f2', nombre: 'Facturas SRI (1/4 Oficio - 100 Juegos)', descripcion: 'Facturas autorizadas, Original y 1 Copia. Papel químico.', precio: 18.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original/Copia', 'Numeradas', 'Papel Químico'], unit: 'block' },
-  { id: 'sri-f3', nombre: 'Facturas SRI (1/2 Oficio - 100 Juegos)', descripcion: 'Facturas autorizadas tamaño grande, Original y 1 Copia.', precio: 25.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original/Copia', 'Numeradas', 'Papel Químico'], unit: 'block' },
-  
-  // NOTAS DE VENTA (RIMPE POPULAR)
-  { id: 'sri-nv1', nombre: 'Notas de Venta (1/4 Oficio - 50 Hojas)', descripcion: 'Para Contribuyente RIMPE Negocio Popular. Papel Bond.', precio: 10.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original', 'Papel Bond 75g', 'Numeradas'], unit: 'block' },
-  { id: 'sri-nv2', nombre: 'Notas de Venta (1/4 Oficio - 100 Hojas)', descripcion: 'Para Contribuyente RIMPE Negocio Popular. Papel Bond.', precio: 15.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original', 'Papel Bond 75g', 'Numeradas'], unit: 'block' },
-  
-  // RETENCIONES
-  { id: 'sri-r1', nombre: 'Comprobante de Retención (1/4 Oficio)', descripcion: 'Original y 1 Copia. Papel químico.', precio: 18.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original/Copia', 'Numeradas', 'Autorizado'], unit: 'block' },
-  
-  // LIQUIDACIONES
-  { id: 'sri-lc1', nombre: 'Liquidación de Compra (1/2 Oficio)', descripcion: 'Para bienes o servicios específicos. Original y 1 Copia.', precio: 22.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original/Copia', 'Numeradas'], unit: 'block' },
-  
-  // GUÍAS
-  { id: 'sri-gr1', nombre: 'Guía de Remisión (1/2 Oficio)', descripcion: 'Para transporte de mercaderías. Original y 2 Copias.', precio: 28.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original y 2 Copias', 'Numeradas'], unit: 'block' },
-  
-  // OTROS NO SRI
-  { id: 'gen-g1', nombre: 'Gigantografía Publicitaria (m2)', descripcion: 'Impresión en lona 13oz HD.', precio: 10.00, categoria: 'Gran Formato', esSRI: false, isPopular: true, specs: ['HD 1440dpi', 'Ojalillos incluidos', 'Lona resistente'], unit: 'm2' },
-  { id: 'gen-s1', nombre: 'Sello Automático Trodat', descripcion: 'Sello profesional para oficina.', precio: 15.00, categoria: 'Oficina', esSRI: false, isPopular: true, specs: ['Automático', 'Tinta incluida', 'Personalizado'], unit: 'unidad' }
-];
 
 const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
     let localData = defaultValue;
@@ -81,34 +56,43 @@ const PROVEEDORES_KEY = 'mockProveedoresData';
 const SRI_KEYS_KEY = 'mockSriKeysData';
 const TAREAS_KEY = 'mockTareasData';
 
-// --- USUARIOS PREDETERMINADOS ---
-const defaultUsers: User[] = [
-  { id: 'u1', nombre: 'Pedro', email: 'pedro@imprentacordova.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
-  { id: 'u2', nombre: 'Aleida', email: 'aleida@imprentacordova.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
-  { id: 'u3', nombre: 'Roberto', email: 'roberto@imprentacordova.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
-  { id: 'u4', nombre: 'Daniel', email: 'daniel@imprentacordova.com', rol: 'Diseñador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
-  { id: 'u5', nombre: 'Dante', email: 'dante@imprentacordova.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false }
-];
-
 export const getTrabajos = async (): Promise<Trabajo[]> => getStoredData(TRABAJOS_KEY, []);
 export const getClientes = async (): Promise<Cliente[]> => getStoredData(CLIENTES_KEY, []);
-export const getProductos = async (): Promise<Producto[]> => getStoredData(PRODUCTOS_KEY, defaultProductos);
-export const getUsers = async (): Promise<User[]> => getStoredData(USERS_KEY, defaultUsers);
+export const getProductos = async (): Promise<Producto[]> => getStoredData(PRODUCTOS_KEY, []);
+export const getUsers = async (): Promise<User[]> => getStoredData(USERS_KEY, []);
 export const getInventario = async (): Promise<InventoryItem[]> => getStoredData(INVENTARIO_KEY, []);
 export const getProveedores = async (): Promise<Proveedor[]> => getStoredData(PROVEEDORES_KEY, []);
 export const getSriCredentials = async (): Promise<SriCredential[]> => getStoredData(SRI_KEYS_KEY, []);
 export const getTareasProveedor = async (): Promise<TareaProveedor[]> => getStoredData(TAREAS_KEY, []);
 
-// --- MÉTODOS DE ESCRITURA ---
+export const addSriCredential = async (cred: SriCredential): Promise<SriCredential[]> => {
+    const creds = await getSriCredentials();
+    const updated = [...creds.filter(c => c.ruc !== cred.ruc), { ...cred, updatedAt: new Date().toISOString() }];
+    await setStoredData(SRI_KEYS_KEY, updated);
+    await callGoogleScript('save_sri_key', { data: cred });
+    return updated;
+};
 
-export const updateTrabajoPhoto = async (id: string, photoUrl: string): Promise<void> => {
-    const trabajos = await getTrabajos();
-    const idx = trabajos.findIndex(t => t.id === id);
-    if (idx > -1) {
-        trabajos[idx].fotoOriginalUrl = photoUrl;
-        await setStoredData(TRABAJOS_KEY, trabajos);
-    }
-    await callGoogleScript('upload_to_drive', { id, fileData: photoUrl, folder: 'artes' });
+export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
+    let creds = await getSriCredentials();
+    const rucMap = new Map(creds.map(c => [c.ruc, c]));
+    
+    newCreds.forEach(c => {
+        rucMap.set(c.ruc, { ...c, updatedAt: new Date().toISOString() });
+    });
+    
+    const updated = Array.from(rucMap.values());
+    await setStoredData(SRI_KEYS_KEY, updated);
+    await callGoogleScript('bulk_save_sri_keys', { data: newCreds });
+    return updated;
+};
+
+export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]> => {
+    let creds = await getSriCredentials();
+    creds = creds.filter(c => c.ruc !== ruc);
+    await setStoredData(SRI_KEYS_KEY, creds);
+    await callGoogleScript('delete_sri_key', { ruc });
+    return creds;
 };
 
 export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoEstado, usuario: string): Promise<Trabajo> => {
@@ -126,6 +110,19 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
     throw new Error("No encontrado");
 };
 
+/**
+ * Fix: Added updateTrabajoPhoto to handle visual reference attachments in KDS.
+ */
+export const updateTrabajoPhoto = async (id: string, photoUrl: string): Promise<void> => {
+    const trabajos = await getTrabajos();
+    const index = trabajos.findIndex(t => t.id === id);
+    if (index > -1) {
+        trabajos[index].fotoOriginalUrl = photoUrl;
+        await setStoredData(TRABAJOS_KEY, trabajos);
+        await callGoogleScript('update_job_photo', { id, photoUrl });
+    }
+};
+
 export const createTrabajo = async (trabajoData: any, usuario: string): Promise<Trabajo> => {
     const trabajos = await getTrabajos();
     const log: StatusLog = { estado: TrabajoEstado.PENDIENTE, fecha: new Date().toISOString(), usuario };
@@ -137,6 +134,8 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
         caduco: false,
         creadoPor: usuario,
         origen: 'Interno',
+        estadoClave: trabajoData.estadoClave || 'PENDIENTE',
+        imprimirClave: trabajoData.imprimirClave || false,
         saldo: (trabajoData.total || 0) - (trabajoData.abono || 0),
         historial: [log]
     };
@@ -146,6 +145,25 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
     return newTrabajo;
 };
 
+/**
+ * Fix: Added createPublicPedido to handle orders from the landing page.
+ */
+export const createPublicPedido = async (clientData: any, cartItems: any[]): Promise<void> => {
+    const cliente = await createCliente(clientData);
+    const total = cartItems.reduce((acc, item) => acc + (item.producto.price || item.producto.precio) * item.cantidad, 0);
+    await createTrabajo({
+        clienteId: cliente.id,
+        titular: cliente.nombre,
+        tipo: clientData.tipoDocumento === 'SRI' ? TrabajoTipo.SRI : TrabajoTipo.GENERAL,
+        subtipo: cartItems.map(i => `${i.cantidad}x ${i.producto.nombre}`).join(', '),
+        cantidad: cartItems.reduce((acc, i) => acc + i.cantidad, 0),
+        total: total,
+        abono: 0,
+        estado: TrabajoEstado.PENDIENTE,
+        origen: 'Web'
+    }, 'Cliente Web');
+};
+
 export const createCliente = async (clienteData: any): Promise<Cliente> => {
     const clientes = await getClientes();
     const newCliente = { id: `c${Date.now()}`, creadoEn: new Date().toISOString(), ...clienteData };
@@ -153,22 +171,6 @@ export const createCliente = async (clienteData: any): Promise<Cliente> => {
     await setStoredData(CLIENTES_KEY, clientes);
     await callGoogleScript('create_client', { data: newCliente });
     return newCliente;
-};
-
-export const addSriCredential = async (cred: SriCredential): Promise<SriCredential[]> => {
-    const creds = await getSriCredentials();
-    const updated = [...creds.filter(c => c.ruc !== cred.ruc), { ...cred, updatedAt: new Date().toISOString() }];
-    await setStoredData(SRI_KEYS_KEY, updated);
-    await callGoogleScript('save_sri_key', { data: cred });
-    return updated;
-};
-
-export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]> => {
-    let creds = await getSriCredentials();
-    creds = creds.filter(c => c.ruc !== ruc);
-    await setStoredData(SRI_KEYS_KEY, creds);
-    await callGoogleScript('delete_sri_key', { ruc });
-    return creds;
 };
 
 export const updateCliente = async (id: string, data: any) => {
@@ -195,70 +197,75 @@ export const registerRetiro = async (id: string, pago: number, user: string) => 
     throw new Error("No encontrado");
 };
 
+/**
+ * Fix: Added Inventory CRUD functions to resolve errors in Inventario.tsx.
+ */
 export const createInventarioItem = async (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
-    const items = await getInventario();
+    const inventario = await getInventario();
     const newItem = { id: `i${Date.now()}`, ...item };
-    items.push(newItem);
-    await setStoredData(INVENTARIO_KEY, items);
+    inventario.push(newItem);
+    await setStoredData(INVENTARIO_KEY, inventario);
     await callGoogleScript('create_inventory_item', { data: newItem });
     return newItem;
 };
 
 export const updateInventarioItem = async (id: string, data: Partial<InventoryItem>): Promise<void> => {
-    const items = await getInventario();
-    const idx = items.findIndex(i => i.id === id);
-    if (idx > -1) {
-        items[idx] = { ...items[idx], ...data };
-        await setStoredData(INVENTARIO_KEY, items);
+    const inventario = await getInventario();
+    const index = inventario.findIndex(i => i.id === id);
+    if (index > -1) {
+        inventario[index] = { ...inventario[index], ...data };
+        await setStoredData(INVENTARIO_KEY, inventario);
         await callGoogleScript('update_inventory_item', { id, data });
     }
 };
 
 export const deleteInventarioItem = async (id: string): Promise<void> => {
-    let items = await getInventario();
-    items = items.filter(i => i.id !== id);
-    await setStoredData(INVENTARIO_KEY, items);
+    let inventario = await getInventario();
+    inventario = inventario.filter(i => i.id !== id);
+    await setStoredData(INVENTARIO_KEY, inventario);
     await callGoogleScript('delete_inventory_item', { id });
 };
 
 export const setInventario = async (items: InventoryItem[]): Promise<void> => {
     await setStoredData(INVENTARIO_KEY, items);
-    await callGoogleScript('sync_inventario', { data: items });
+    await callGoogleScript('set_inventory', { data: items });
 };
 
-export const createPublicPedido = async (clientData: any, cartItems: any[]): Promise<void> => {
-    await callGoogleScript('create_public_order', { client: clientData, items: cartItems });
-};
-
-export const createProducto = async (product: Partial<Producto>): Promise<Producto> => {
-    const products = await getProductos();
-    const newProduct = { id: `p${Date.now()}`, ...product } as Producto;
-    products.push(newProduct);
-    await setStoredData(PRODUCTOS_KEY, products);
-    await callGoogleScript('create_product', { data: newProduct });
-    return newProduct;
+/**
+ * Fix: Added Product CRUD functions to resolve errors in Productos.tsx.
+ */
+export const createProducto = async (producto: Omit<Producto, 'id'>): Promise<Producto> => {
+    const productos = await getProductos();
+    const newP = { id: `p${Date.now()}`, ...producto };
+    productos.push(newP);
+    await setStoredData(PRODUCTOS_KEY, productos);
+    await callGoogleScript('create_product', { data: newP });
+    return newP;
 };
 
 export const updateProducto = async (id: string, data: Partial<Producto>): Promise<void> => {
-    const products = await getProductos();
-    const idx = products.findIndex(p => p.id === id);
-    if (idx > -1) {
-        products[idx] = { ...products[idx], ...data };
-        await setStoredData(PRODUCTOS_KEY, products);
+    const productos = await getProductos();
+    const index = productos.findIndex(p => p.id === id);
+    if (index > -1) {
+        productos[index] = { ...productos[index], ...data };
+        await setStoredData(PRODUCTOS_KEY, productos);
         await callGoogleScript('update_product', { id, data });
     }
 };
 
 export const deleteProducto = async (id: string): Promise<void> => {
-    let products = await getProductos();
-    products = products.filter(p => p.id !== id);
-    await setStoredData(PRODUCTOS_KEY, products);
+    let productos = await getProductos();
+    productos = productos.filter(p => p.id !== id);
+    await setStoredData(PRODUCTOS_KEY, productos);
     await callGoogleScript('delete_product', { id });
 };
 
-export const createUser = async (user: Omit<User, 'id'>): Promise<User> => {
+/**
+ * Fix: Added User CRUD functions to resolve errors in GestionUsuarios.tsx.
+ */
+export const createUser = async (user: Omit<User, 'id' | 'ultimoAcceso'>): Promise<User> => {
     const users = await getUsers();
-    const newUser = { id: `u${Date.now()}`, ...user, ultimoAcceso: new Date().toISOString() } as User;
+    const newUser = { id: `u${Date.now()}`, ultimoAcceso: new Date().toISOString(), ...user } as User;
     users.push(newUser);
     await setStoredData(USERS_KEY, users);
     await callGoogleScript('create_user', { data: newUser });
@@ -267,42 +274,31 @@ export const createUser = async (user: Omit<User, 'id'>): Promise<User> => {
 
 export const updateUser = async (id: string, data: Partial<User>): Promise<void> => {
     const users = await getUsers();
-    const idx = users.findIndex(u => u.id === id);
-    if (idx > -1) {
-        users[idx] = { ...users[idx], ...data };
+    const index = users.findIndex(u => u.id === id);
+    if (index > -1) {
+        users[index] = { ...users[index], ...data };
         await setStoredData(USERS_KEY, users);
         await callGoogleScript('update_user', { id, data });
     }
 };
 
-export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
-    let creds = await getSriCredentials();
-    const rucs = new Set(creds.map(c => c.ruc));
-    newCreds.forEach(c => {
-        if (!rucs.has(c.ruc)) {
-            creds.push({ ...c, updatedAt: new Date().toISOString() });
-            rucs.add(c.ruc);
-        }
-    });
-    await setStoredData(SRI_KEYS_KEY, creds);
-    await callGoogleScript('bulk_save_sri_keys', { data: newCreds });
-    return creds;
-};
-
-export const createProveedor = async (proveedor: Omit<Proveedor, 'id' | 'creadoEn'>): Promise<Proveedor> => {
+/**
+ * Fix: Added Provider CRUD functions to resolve errors in Proveedores.tsx.
+ */
+export const createProveedor = async (prov: Omit<Proveedor, 'id' | 'creadoEn'>): Promise<Proveedor> => {
     const proveedores = await getProveedores();
-    const newP = { id: `pr${Date.now()}`, creadoEn: new Date().toISOString(), ...proveedor } as Proveedor;
-    proveedores.push(newP);
+    const newProv = { id: `prov${Date.now()}`, creadoEn: new Date().toISOString(), ...prov } as Proveedor;
+    proveedores.push(newProv);
     await setStoredData(PROVEEDORES_KEY, proveedores);
-    await callGoogleScript('create_provider', { data: newP });
-    return newP;
+    await callGoogleScript('create_provider', { data: newProv });
+    return newProv;
 };
 
 export const updateProveedor = async (id: string, data: Partial<Proveedor>): Promise<void> => {
     const proveedores = await getProveedores();
-    const idx = proveedores.findIndex(p => p.id === id);
-    if (idx > -1) {
-        proveedores[idx] = { ...proveedores[idx], ...data };
+    const index = proveedores.findIndex(p => p.id === id);
+    if (index > -1) {
+        proveedores[index] = { ...proveedores[index], ...data };
         await setStoredData(PROVEEDORES_KEY, proveedores);
         await callGoogleScript('update_provider', { id, data });
     }
@@ -315,6 +311,9 @@ export const deleteProveedor = async (id: string): Promise<void> => {
     await callGoogleScript('delete_provider', { id });
 };
 
+/**
+ * Fix: Added Provider Task functions to resolve errors in Proveedores.tsx.
+ */
 export const createTareaProveedor = async (tarea: Omit<TareaProveedor, 'id' | 'completada'>): Promise<TareaProveedor> => {
     const tareas = await getTareasProveedor();
     const newT = { id: `t${Date.now()}`, completada: false, ...tarea };
@@ -326,9 +325,9 @@ export const createTareaProveedor = async (tarea: Omit<TareaProveedor, 'id' | 'c
 
 export const updateTareaProveedor = async (id: string, data: Partial<TareaProveedor>): Promise<void> => {
     const tareas = await getTareasProveedor();
-    const idx = tareas.findIndex(t => t.id === id);
-    if (idx > -1) {
-        tareas[idx] = { ...tareas[idx], ...data };
+    const index = tareas.findIndex(t => t.id === id);
+    if (index > -1) {
+        tareas[index] = { ...tareas[index], ...data };
         await setStoredData(TAREAS_KEY, tareas);
         await callGoogleScript('update_provider_task', { id, data });
     }

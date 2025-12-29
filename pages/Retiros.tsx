@@ -4,18 +4,23 @@ import { useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes, registerRetiro } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
 import { formatCurrency } from '../utils';
-import { SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ExclamationTriangleIcon, ClockIcon, UserPlusIcon, CalendarDaysIcon, CordovaLogo } from '../components/Icons';
+// Added Loader2Icon, ArrowRightIcon, and BoxIcon to the imports
+import { 
+    SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, 
+    MapPinIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ExclamationTriangleIcon, 
+    ClockIcon, UserPlusIcon, CalendarDaysIcon, CordovaLogo, ShieldCheckIcon,
+    Loader2Icon, ArrowRightIcon, BoxIcon
+} from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
 // Declare html2pdf for TypeScript
 declare const html2pdf: any;
 
-// --- Helper para formatear hora ---
 const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', hour12: true });
 };
 
-// --- MODAL DE VISTA PREVIA DEL COMPROBANTE (NOTA DE VENTA A5) ---
+// --- MODAL DE VISTA PREVIA DEL COMPROBANTE ---
 const ComprobantePreviewModal: React.FC<{
     data: { trabajo: Trabajo; cliente: Cliente; pagoFinal: number; usuario: string; };
     onClose: () => void;
@@ -33,7 +38,7 @@ const ComprobantePreviewModal: React.FC<{
         const element = document.getElementById('comprobante-preview-content');
         if (!element) return;
         const opt = {
-          margin:       0, // Sin margen para que el CSS controle el borde
+          margin:       0,
           filename:     `NotaVenta-${trabajo.orden}.pdf`,
           image:        { type: 'jpeg', quality: 0.98 },
           html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
@@ -42,9 +47,7 @@ const ComprobantePreviewModal: React.FC<{
         html2pdf().from(element).set(opt).save();
     };
 
-    if (!config) {
-        return <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"><p className="text-white font-bold">Generando documento...</p></div>;
-    }
+    if (!config) return null;
 
     const issuer = {
         nombreComercial: config.emisorNombreComercial,
@@ -65,39 +68,35 @@ const ComprobantePreviewModal: React.FC<{
     const emissionDate = new Date().toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4 animate-fade-in backdrop-blur-sm">
-            <div className="bg-gray-100 dark:bg-gray-900 w-full max-w-4xl h-[95vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <div className="bg-white dark:bg-gray-800 p-4 flex justify-between items-center border-b dark:border-gray-700 flex-shrink-0 no-print">
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in">
+            <div className="bg-white dark:bg-gray-900 w-full max-w-4xl h-[95vh] rounded-[3rem] shadow-3xl flex flex-col overflow-hidden border border-white/10">
+                <div className="p-8 flex justify-between items-center bg-gray-50 dark:bg-slate-900/50 border-b dark:border-gray-800 no-print">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                            <DocumentCheckIcon className="w-6 h-6 text-green-500"/>
-                            Nota de Venta Generada
+                        <h3 className="text-2xl font-black text-brand-blue dark:text-white uppercase tracking-tighter flex items-center gap-3">
+                            <ShieldCheckIcon className="w-7 h-7 text-emerald-500"/>
+                            Entrega Confirmada
                         </h3>
-                        <p className="text-xs text-gray-500">Listo para imprimir o descargar</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Comprobante de Caja Generado</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-                            <PrinterIcon className="h-5 w-5" /> Imprimir
+                        <button onClick={handlePrint} className="flex items-center gap-3 px-6 py-3 bg-brand-blue text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-950 transition-all shadow-xl">
+                            <PrinterIcon className="h-4 w-4" /> Imprimir
                         </button>
-                        <button onClick={handleDownloadPdf} className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors shadow-sm">
-                           <ArrowDownTrayIcon className="h-5 w-5" /> Descargar PDF
+                        <button onClick={handleDownloadPdf} className="flex items-center gap-3 px-6 py-3 bg-white border border-slate-200 text-slate-600 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all">
+                           <ArrowDownTrayIcon className="h-4 w-4" /> PDF
                         </button>
-                        <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <button onClick={onClose} className="p-3 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all text-slate-400">
                             <CloseIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
                 
-                <div className="flex-grow overflow-y-auto p-8 font-sans flex justify-center bg-gray-300 dark:bg-gray-900">
-                    {/* A5 Container Wrapper */}
-                    <div id="comprobante-preview-content" className="bg-white shadow-2xl relative flex flex-col box-border" style={{ width: '148mm', minHeight: '210mm', padding: '10mm', position: 'relative' }}>
-                         
-                         {/* Watermark Logo */}
+                <div className="flex-grow overflow-y-auto p-12 bg-slate-200/50 dark:bg-slate-950 flex justify-center custom-scrollbar">
+                    {/* Contenedor A5 */}
+                    <div id="comprobante-preview-content" className="bg-white shadow-2xl relative flex flex-col box-border" style={{ width: '148mm', minHeight: '210mm', padding: '10mm' }}>
                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
                              <CordovaLogo className="w-64 h-64 grayscale" />
                          </div>
-
-                         {/* Header: Logo & SRI Box */}
                          <div className="flex justify-between gap-4 mb-6 relative z-10">
                             <div className="w-7/12 pt-2">
                                 <div className="flex items-center gap-3 mb-2">
@@ -109,132 +108,91 @@ const ComprobantePreviewModal: React.FC<{
                                 </div>
                                 <div className="text-[8px] text-gray-500 space-y-0.5 mt-2">
                                     <p className="text-brand-blue font-bold uppercase">{issuer.tipoContribuyente}</p>
-                                    <p className="flex items-start gap-1"><MapPinIcon className="w-2.5 h-2.5 mt-0.5 text-brand-red flex-shrink-0"/> <span className="leading-tight">{issuer.direccionMatriz}</span></p>
-                                    {issuer.direccionSucursal && <p className="flex items-start gap-1"><MapPinIcon className="w-2.5 h-2.5 mt-0.5 text-brand-red flex-shrink-0"/> <span className="leading-tight">{issuer.direccionSucursal}</span></p>}
-                                    <div className="flex gap-3 mt-1">
-                                        <p className="flex items-center gap-1"><PhoneIcon className="w-2.5 h-2.5 text-brand-red"/> {issuer.telefono}</p>
-                                        <p className="flex items-center gap-1"><EnvelopeIcon className="w-2.5 h-2.5 text-brand-red"/> {issuer.email}</p>
-                                    </div>
+                                    <p className="leading-tight">{issuer.direccionMatriz}</p>
+                                    <p className="flex items-center gap-1">Tel: {issuer.telefono} | {issuer.email}</p>
                                 </div>
                             </div>
                             <div className="w-5/12">
-                                <div className="border border-brand-blue rounded-lg p-3 bg-blue-50/30">
-                                    <p className="text-xs font-bold text-gray-700">R.U.C. {issuer.ruc}</p>
-                                    <div className="bg-brand-blue text-white text-center text-sm font-bold py-1 my-1 rounded shadow-sm">
-                                        NOTA DE VENTA
-                                    </div>
-                                    <div className="flex justify-between items-center text-[10px] text-gray-600 mb-1">
-                                        <span>No.</span>
-                                        <span className="font-mono text-base font-bold text-red-600">{issuer.notaNro}</span>
-                                    </div>
-                                    <div className="text-[8px] text-gray-500 leading-tight border-t border-blue-200 pt-1 mt-1">
-                                        <p><strong>AUT. SRI:</strong> {issuer.autorizacionSRI}</p>
-                                        <p className="mt-0.5"><strong>FECHA AUT.:</strong> {issuer.fechaAutorizacion}</p>
-                                    </div>
+                                <div className="border-2 border-brand-blue rounded-xl p-3 bg-blue-50/30 text-center">
+                                    <p className="text-[10px] font-black text-gray-700">R.U.C. {issuer.ruc}</p>
+                                    <div className="bg-brand-blue text-white text-xs font-black py-1.5 my-2 rounded-lg tracking-widest uppercase shadow-md">NOTA DE VENTA</div>
+                                    <div className="font-mono text-xl font-black text-red-600 leading-none mb-1">{issuer.notaNro}</div>
+                                    <p className="text-[7px] font-bold text-gray-400 uppercase tracking-widest">AUT. SRI: {issuer.autorizacionSRI}</p>
                                 </div>
                             </div>
                          </div>
-
-                         {/* Client Section */}
-                         <div className="border border-gray-200 rounded-lg p-3 mb-4 bg-gray-50 relative z-10">
-                            <div className="grid grid-cols-12 gap-y-2 text-[10px]">
-                                <div className="col-span-8 flex flex-col">
-                                    <span className="text-gray-400 font-bold uppercase text-[8px]">Cliente / Razón Social</span>
-                                    <span className="font-bold text-gray-900 text-xs uppercase truncate pr-2">{cliente.nombre}</span>
-                                </div>
-                                <div className="col-span-4 flex flex-col text-right">
-                                    <span className="text-gray-400 font-bold uppercase text-[8px]">RUC / CI</span>
-                                    <span className="font-mono font-bold text-gray-900">{cliente.ruc || cliente.cedula}</span>
-                                </div>
-                                <div className="col-span-8 flex flex-col">
-                                    <span className="text-gray-400 font-bold uppercase text-[8px]">Dirección</span>
-                                    <span className="text-gray-800 truncate pr-2">{cliente.direccion || 'Ciudad'}</span>
-                                </div>
-                                <div className="col-span-4 flex flex-col text-right">
-                                    <span className="text-gray-400 font-bold uppercase text-[8px]">Fecha de Emisión</span>
-                                    <span className="font-bold text-gray-900">{emissionDate}</span>
-                                </div>
+                         <div className="border border-slate-100 rounded-2xl p-4 mb-6 bg-slate-50 relative z-10 grid grid-cols-12 gap-y-3">
+                            <div className="col-span-8">
+                                <span className="text-gray-400 font-black uppercase text-[7px] tracking-widest block mb-1">Señor(es)</span>
+                                <span className="font-black text-slate-900 text-xs uppercase">{cliente.nombre}</span>
+                            </div>
+                            <div className="col-span-4 text-right">
+                                <span className="text-gray-400 font-black uppercase text-[7px] tracking-widest block mb-1">RUC / C.I.</span>
+                                <span className="font-mono font-bold text-slate-900">{cliente.ruc || cliente.cedula}</span>
+                            </div>
+                            <div className="col-span-8">
+                                <span className="text-gray-400 font-black uppercase text-[7px] tracking-widest block mb-1">Fecha de Entrega</span>
+                                <span className="font-bold text-slate-800 uppercase text-[10px]">{emissionDate}</span>
+                            </div>
+                            <div className="col-span-4 text-right">
+                                <span className="text-gray-400 font-black uppercase text-[7px] tracking-widest block mb-1">Dirección</span>
+                                <span className="font-bold text-slate-800 uppercase text-[10px] truncate">{cliente.direccion || 'Pasaje'}</span>
                             </div>
                          </div>
-
-                         {/* Table */}
-                         <div className="flex-grow mb-4 relative z-10">
+                         <div className="flex-grow mb-6 relative z-10">
                             <table className="w-full text-[10px] border-collapse">
                                 <thead>
-                                    <tr className="bg-brand-blue text-white uppercase">
-                                        <th className="py-1.5 px-2 text-center rounded-tl-md w-[10%]">Cant.</th>
-                                        <th className="py-1.5 px-2 text-left w-[65%]">Descripción</th>
-                                        <th className="py-1.5 px-2 text-right w-[12%]">P. Unit</th>
-                                        <th className="py-1.5 px-2 text-right rounded-tr-md w-[13%]">Total</th>
+                                    <tr className="bg-slate-900 text-white uppercase text-[8px] tracking-widest">
+                                        <th className="py-2 px-3 text-center rounded-tl-xl w-[10%]">Cant</th>
+                                        <th className="py-2 px-3 text-left w-[65%]">Descripción del Servicio</th>
+                                        <th className="py-2 px-3 text-right w-[12%]">Unit</th>
+                                        <th className="py-2 px-3 text-right rounded-tr-xl w-[13%]">Total</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-gray-800">
-                                    <tr className="border-b border-gray-100">
-                                        <td className="py-2 px-2 text-center font-bold align-top">{trabajo.cantidad}</td>
-                                        <td className="py-2 px-2 align-top">
-                                            <p className="font-bold uppercase mb-0.5">{trabajo.subtipo}</p>
-                                            <p className="text-[9px] text-gray-500 italic">Orden de Trabajo #{trabajo.orden}</p>
+                                <tbody className="text-slate-800 divide-y divide-slate-100 border-x border-slate-100">
+                                    <tr>
+                                        <td className="py-4 px-3 text-center font-black align-top">{trabajo.cantidad}</td>
+                                        <td className="py-4 px-3 align-top">
+                                            <p className="font-black uppercase text-[11px] mb-1">{trabajo.subtipo}</p>
+                                            <p className="text-[8px] text-slate-400 italic">Servicio Gráfico Profesional - Orden #{trabajo.orden}</p>
                                         </td>
-                                        <td className="py-2 px-2 text-right align-top">{formatCurrency(unitPrice)}</td>
-                                        <td className="py-2 px-2 text-right font-bold align-top">{formatCurrency(trabajo.total)}</td>
+                                        <td className="py-4 px-3 text-right align-top font-bold">{formatCurrency(unitPrice)}</td>
+                                        <td className="py-4 px-3 text-right font-black align-top text-brand-blue">{formatCurrency(trabajo.total)}</td>
                                     </tr>
-                                    {/* Empty rows filler for aesthetics */}
-                                    {[...Array(6)].map((_, i) => (
-                                        <tr key={i}><td className="py-2"></td><td></td><td></td><td></td></tr>
+                                    {[...Array(5)].map((_, i) => (
+                                        <tr key={i}><td className="py-4"></td><td></td><td></td><td></td></tr>
                                     ))}
                                 </tbody>
                             </table>
                          </div>
-
-                         {/* Footer Totals & Signatures */}
                          <div className="relative z-10 mt-auto">
-                             <div className="flex gap-4 items-end mb-6">
-                                 {/* Notes / Payment Info */}
+                             <div className="flex gap-6 items-end">
                                  <div className="w-7/12">
-                                     <div className="bg-gray-100 rounded p-2 text-[8px] text-gray-500 leading-relaxed border border-gray-200">
-                                         <p className="font-bold text-gray-700 mb-1">OBSERVACIONES:</p>
-                                         <p>Pago realizado en su totalidad. Documento válido para crédito tributario en Negocios Populares.</p>
+                                     <div className="bg-slate-50 rounded-2xl p-4 text-[7px] text-slate-400 leading-relaxed border border-slate-100">
+                                         <p className="font-black text-slate-600 mb-1 uppercase tracking-widest">Condiciones:</p>
+                                         <p>Documento de control interno para Régimen RIMPE. No transferible. Garantía de impresión de 30 días contra defectos de fabricación.</p>
                                      </div>
                                  </div>
-                                 
-                                 {/* Totals Box */}
-                                 <div className="w-5/12">
-                                     <div className="border border-gray-300 rounded overflow-hidden text-[10px]">
-                                         <div className="flex justify-between px-2 py-1 bg-gray-50 border-b border-gray-200">
-                                             <span className="font-bold text-gray-600">SUBTOTAL</span>
-                                             <span>{formatCurrency(trabajo.total)}</span>
-                                         </div>
-                                         <div className="flex justify-between px-2 py-1 bg-gray-50 border-b border-gray-200">
-                                             <span className="font-bold text-gray-600">IVA 0%</span>
-                                             <span>$0.00</span>
-                                         </div>
-                                         <div className="flex justify-between px-2 py-1.5 bg-brand-blue text-white font-bold">
-                                             <span>VALOR TOTAL</span>
-                                             <span>{formatCurrency(trabajo.total)}</span>
-                                         </div>
+                                 <div className="w-5/12 space-y-2">
+                                     <div className="flex justify-between px-3 py-2 bg-slate-50 rounded-xl">
+                                         <span className="text-[9px] font-black text-slate-500 uppercase">Subtotal</span>
+                                         <span className="font-bold text-slate-900">{formatCurrency(trabajo.total)}</span>
+                                     </div>
+                                     <div className="flex justify-between px-3 py-3 bg-brand-blue text-white rounded-xl shadow-lg">
+                                         <span className="text-[9px] font-black uppercase tracking-widest">Total Pagado</span>
+                                         <span className="text-sm font-black tracking-tighter">{formatCurrency(trabajo.total)}</span>
                                      </div>
                                  </div>
                              </div>
-
-                             {/* Signatures */}
-                             <div className="grid grid-cols-2 gap-8 mt-4 pt-4 border-t border-gray-200">
+                             <div className="grid grid-cols-2 gap-12 mt-12 mb-4">
                                 <div className="text-center">
-                                    <div className="h-10"></div>
-                                    <div className="border-t border-gray-400 w-3/4 mx-auto mb-1"></div>
-                                    <p className="text-[9px] font-bold text-gray-500 uppercase">Firma Autorizada</p>
-                                    <p className="text-[8px] text-gray-400">{config.imprentaNombre}</p>
+                                    <div className="border-t-2 border-slate-900 w-full mb-1"></div>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-slate-900">Firma Autorizada</p>
                                 </div>
                                 <div className="text-center">
-                                    <div className="h-10"></div>
-                                    <div className="border-t border-gray-400 w-3/4 mx-auto mb-1"></div>
-                                    <p className="text-[9px] font-bold text-gray-500 uppercase">Recibí Conforme</p>
-                                    <p className="text-[8px] text-gray-400">{cliente.nombre}</p>
+                                    <div className="border-t-2 border-slate-900 w-full mb-1"></div>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-slate-900">Recibí Conforme</p>
                                 </div>
-                             </div>
-                             
-                             <div className="mt-2 text-[8px] text-gray-400 text-center flex justify-between">
-                                 <span>Válido hasta: {issuer.fechaCaducidad}</span>
-                                 <span>Original: Adquirente / Copia: Emisor</span>
                              </div>
                          </div>
                     </div>
@@ -244,124 +202,69 @@ const ComprobantePreviewModal: React.FC<{
     );
 };
 
-
-// --- MODAL DE CONFIRMACIÓN DE RETIRO (LÓGICA ACTUALIZADA) ---
+// --- MODAL DE RETIRO ---
 const RetiroModal: React.FC<{
     trabajo: Trabajo;
     cliente: Cliente;
     onClose: () => void;
     onConfirm: (pagoFinal: number) => void;
 }> = ({ trabajo, cliente, onClose, onConfirm }) => {
-    
-    // El saldo a pagar es fijo (el saldo restante). No se permite edición.
     const saldoPendiente = trabajo.saldo;
 
-    const handleConfirm = () => {
-        onConfirm(saldoPendiente);
-    };
-
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in backdrop-blur-sm" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100" onClick={e => e.stopPropagation()}>
-                 
-                 {/* Header */}
-                 <div className="bg-gradient-to-r from-brand-blue to-blue-800 p-6 flex justify-between items-center text-white">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-lg overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
+                 <div className="bg-brand-blue p-8 flex justify-between items-center text-white">
                     <div>
-                        <h2 className="text-xl font-bold">Confirmar Entrega</h2>
-                        <p className="text-blue-200 text-xs mt-1 uppercase tracking-wide font-bold">Orden #{String(trabajo.orden).padStart(6,'0')}</p>
+                        <h2 className="text-3xl font-black uppercase tracking-tighter italic leading-none">Confirmar Entrega</h2>
+                        <p className="text-blue-200 text-[10px] mt-2 uppercase tracking-[0.3em] font-black">Orden de Producción #{trabajo.orden}</p>
                     </div>
-                    <button onClick={onClose} className="bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors"><CloseIcon className="w-5 h-5 text-white" /></button>
+                    <button onClick={onClose} className="p-3 hover:bg-white/10 rounded-full transition-all"><CloseIcon className="w-6 h-6 text-white" /></button>
                 </div>
 
-                <div className="p-6 space-y-6">
-                    
-                    {/* Job Metadata */}
-                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 border border-gray-100 dark:border-gray-600 space-y-3">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-brand-blue dark:text-blue-300">
-                                <CalendarDaysIcon className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Fecha de Pedido</p>
-                                <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                                    {new Date(trabajo.fechaEntrada).toLocaleDateString('es-EC', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-purple-100 dark:bg-purple-900/50 p-2 rounded-lg text-purple-600 dark:text-purple-300">
-                                <ClockIcon className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Hora de Recepción</p>
-                                <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                                    {formatTime(trabajo.fechaEntrada)}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-green-100 dark:bg-green-900/50 p-2 rounded-lg text-green-600 dark:text-green-300">
-                                <UserPlusIcon className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Atendido Por</p>
-                                <p className="text-sm font-semibold text-gray-800 dark:text-white capitalize">
-                                    {trabajo.creadoPor || 'Sistema'}
-                                </p>
-                            </div>
+                <div className="p-10 space-y-8">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center font-black text-2xl text-brand-blue shadow-inner">{cliente.nombre.charAt(0)}</div>
+                        <div>
+                            <h3 className="font-black text-xl text-slate-900 dark:text-white uppercase leading-tight tracking-tight">{cliente.nombre}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{trabajo.subtipo}</p>
                         </div>
                     </div>
 
-                    {/* Financial Summary */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400 px-2">
-                            <span>Costo Total:</span>
-                            <span className="font-semibold">{formatCurrency(trabajo.total)}</span>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-gray-700">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Abonado</span>
+                            <span className="text-xl font-black text-emerald-500">{formatCurrency(trabajo.abono)}</span>
                         </div>
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400 px-2">
-                            <span>Abonado:</span>
-                            <span className="font-semibold text-green-600">{formatCurrency(trabajo.abono)}</span>
+                        <div className={`p-5 rounded-3xl border ${saldoPendiente > 0 ? 'bg-red-50 border-red-100 dark:bg-red-900/20' : 'bg-green-50 border-green-100'}`}>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Por Cobrar</span>
+                            <span className={`text-xl font-black ${saldoPendiente > 0 ? 'text-brand-red' : 'text-emerald-500'}`}>{formatCurrency(saldoPendiente)}</span>
                         </div>
-                        
-                        <div className={`p-5 rounded-xl border-2 flex justify-between items-center ${saldoPendiente > 0 ? 'bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900' : 'bg-green-50 border-green-100 dark:bg-green-900/20 dark:border-green-900'}`}>
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-full ${saldoPendiente > 0 ? 'bg-red-200 text-red-700' : 'bg-green-200 text-green-700'}`}>
-                                    <DollarIcon className="w-6 h-6" />
-                                </div>
-                                <span className={`font-bold text-sm uppercase tracking-wider ${saldoPendiente > 0 ? 'text-red-800 dark:text-red-300' : 'text-green-800 dark:text-green-300'}`}>
-                                    {saldoPendiente > 0 ? 'Saldo a Cobrar' : 'Trabajo Pagado'}
-                                </span>
-                            </div>
-                            <span className={`text-2xl font-black ${saldoPendiente > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                {formatCurrency(saldoPendiente)}
-                            </span>
-                        </div>
-
-                        {saldoPendiente > 0 && (
-                            <div className="flex items-start gap-2 text-xs text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-100">
-                                <ExclamationTriangleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <p className="font-medium">
-                                    Política de la empresa: El saldo no es negociable. Debe cancelarse la totalidad para retirar el trabajo.
-                                </p>
-                            </div>
-                        )}
                     </div>
-                </div>
 
-                <div className="flex justify-end pt-4 gap-3 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-b-xl border-t border-gray-200 dark:border-gray-700">
-                    <button type="button" onClick={onClose} className="px-5 py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
-                        Cancelar
-                    </button>
-                    <button onClick={handleConfirm} className="flex items-center gap-2 px-6 py-3 bg-brand-blue text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-900/20 transition-all transform active:scale-95">
-                        <DocumentCheckIcon className="h-5 w-5" />
-                        {saldoPendiente > 0 ? 'Cobrar y Entregar' : 'Entregar Trabajo'}
-                    </button>
+                    {saldoPendiente > 0 && (
+                        <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border border-amber-100 dark:border-amber-800 flex items-start gap-4">
+                            <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 shrink-0 mt-1" />
+                            <p className="text-xs text-amber-700 dark:text-amber-300 font-bold leading-relaxed uppercase tracking-tight">
+                                POLÍTICA: El trabajo solo se entrega tras cancelar el 100%. Por favor, realice el cobro del saldo antes de entregar.
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-3 pt-6 border-t dark:border-gray-800">
+                        <button 
+                            onClick={() => onConfirm(saldoPendiente)} 
+                            className="w-full py-5 bg-brand-red text-white font-black text-xs uppercase tracking-[0.3em] rounded-2xl shadow-2xl hover:bg-slate-950 transition-all flex items-center justify-center gap-4"
+                        >
+                            <DocumentCheckIcon className="w-5 h-5" /> {saldoPendiente > 0 ? `Cobrar y Entregar` : 'Entregar Ahora'}
+                        </button>
+                        <button onClick={onClose} className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Volver a Vitrina</button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
-
 
 const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -399,30 +302,22 @@ const RetirosPage: React.FC = () => {
 
     const handleConfirmRetiro = async (pagoFinal: number) => {
         if (!selectedTrabajo) return;
-
         const updatedTrabajo = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
         const cliente = clientes.find(c => c.id === selectedTrabajo.clienteId);
-
         if (cliente) {
-             setComprobanteData({
-                trabajo: updatedTrabajo,
-                cliente,
-                pagoFinal,
-                usuario: currentUser.nombre
-            });
+             setComprobanteData({ trabajo: updatedTrabajo, cliente, pagoFinal, usuario: currentUser.nombre });
         }
-        
         setSelectedTrabajo(null);
     };
     
     const handleClosePreview = async () => {
         setComprobanteData(null);
-        await fetchData(); // Refresh data from "API"
+        await fetchData();
     };
 
     return (
-        <>
-            <style>{`
+        <div className="space-y-10 pb-20 animate-fade-in">
+             <style>{`
                 @media print {
                     @page { size: A5; margin: 0; }
                     body { margin: 0; }
@@ -432,68 +327,69 @@ const RetirosPage: React.FC = () => {
                     .no-print { display: none !important; }
                 }
             `}</style>
-             <div className="space-y-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Retiro de Trabajos (Vitrina)</h1>
-                 <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div className="relative">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar por #orden, cliente o producto..."
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 p-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-shadow"
-                        />
-                    </div>
-                </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    {loading ? (
-                        <p className="p-12 text-center text-gray-500">Cargando trabajos en vitrina...</p>
-                    ) : trabajosEnVitrina.length > 0 ? (
-                        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                           {trabajosEnVitrina.map(trabajo => {
-                                const cliente = clientes.find(c => c.id === trabajo.clienteId);
-                                return (
-                                     <li key={trabajo.id} className="p-5 hover:bg-blue-50 dark:hover:bg-gray-700/50 flex flex-wrap justify-between items-center gap-4 transition-colors group">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <span className="bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded">#{trabajo.orden}</span>
-                                                <p className="font-bold text-gray-900 dark:text-white text-lg">{cliente?.nombre}</p>
-                                            </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{trabajo.subtipo}</p>
-                                            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                                                <CalendarDaysIcon className="w-3 h-3"/> {new Date(trabajo.fechaEntrada).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <div className="text-right flex items-center gap-6">
-                                            <div className="text-right">
-                                                {trabajo.saldo === 0 ? (
-                                                    <p className="font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm">Pagado</p>
-                                                ) : (
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase font-bold">Pendiente</p>
-                                                        <p className="font-black text-brand-red text-xl">{formatCurrency(trabajo.saldo)}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <button onClick={() => setSelectedTrabajo(trabajo)} className="px-5 py-2.5 bg-white border-2 border-brand-blue text-brand-blue font-bold rounded-lg hover:bg-brand-blue hover:text-white transition-all shadow-sm">
-                                                Entregar
-                                            </button>
-                                        </div>
-                                    </li>
-                                );
-                           })}
-                        </ul>
-                    ) : (
-                         <div className="p-12 text-center">
-                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                 <SearchIcon className="w-8 h-8 text-gray-400"/>
-                             </div>
-                             <p className="text-gray-500 font-medium">No hay trabajos en vitrina que coincidan con la búsqueda.</p>
-                         </div>
-                    )}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Vitrina de <span className="text-brand-red">Entregas</span></h1>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Control de caja y salida de producto terminado</p>
                 </div>
+                <div className="relative w-full md:w-96">
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por #Orden o Cliente..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full pl-14 pr-6 py-4 bg-white dark:bg-slate-900 border-none rounded-[2rem] shadow-xl text-sm font-bold focus:ring-4 focus:ring-brand-blue/10 outline-none transition-all dark:text-white"
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {loading ? (
+                    <div className="col-span-full py-20 text-center"><Loader2Icon className="animate-spin w-10 h-10 text-brand-blue mx-auto" /></div>
+                ) : trabajosEnVitrina.length > 0 ? (
+                    trabajosEnVitrina.map(trabajo => {
+                        const cliente = clientes.find(c => c.id === trabajo.clienteId);
+                        const isHighRisk = trabajo.saldo > (trabajo.total * 0.5);
+                        return (
+                            <div key={trabajo.id} className="group bg-white dark:bg-gray-800 rounded-[3rem] p-8 shadow-xl border border-slate-50 dark:border-white/5 hover:shadow-3xl hover:-translate-y-2 transition-all duration-500 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-6">
+                                        <span className="font-black text-[10px] text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-1 rounded-full uppercase tracking-widest border dark:border-gray-700">Orden #{trabajo.orden}</span>
+                                        {isHighRisk && <div className="w-2 h-2 rounded-full bg-brand-red animate-ping" title="Saldo Elevado"></div>}
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight mb-2 truncate" title={cliente?.nombre}>{cliente?.nombre}</h3>
+                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest line-clamp-2 min-h-[32px]">{trabajo.subtipo}</p>
+                                    
+                                    <div className="mt-8 space-y-3">
+                                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            <span>Total Inversión</span>
+                                            <span className="text-slate-900 dark:text-white">{formatCurrency(trabajo.total)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Saldo Pendiente</span>
+                                            <span className={`text-xl font-black ${trabajo.saldo > 0 ? 'text-brand-red' : 'text-emerald-500'}`}>{formatCurrency(trabajo.saldo)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => setSelectedTrabajo(trabajo)} 
+                                    className="mt-8 w-full py-4 bg-brand-blue text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3"
+                                >
+                                    Procesar Entrega <ArrowRightIcon className="w-4 h-4"/>
+                                </button>
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div className="col-span-full py-32 bg-white dark:bg-slate-900/50 rounded-[4rem] border-2 border-dashed border-slate-200 dark:border-gray-800 text-center">
+                        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6"><BoxIcon className="w-10 h-10 text-slate-300" /></div>
+                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-tighter italic">Vitrina Vacía</h3>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">No hay trabajos listos para entrega en este momento</p>
+                    </div>
+                )}
             </div>
 
             {selectedTrabajo && clientes.find(c => c.id === selectedTrabajo.clienteId) && (
@@ -506,7 +402,7 @@ const RetirosPage: React.FC = () => {
             )}
             
             {comprobanteData && <ComprobantePreviewModal data={comprobanteData} onClose={handleClosePreview} />}
-        </>
+        </div>
     );
 };
 
