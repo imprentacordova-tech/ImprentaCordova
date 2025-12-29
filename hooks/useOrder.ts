@@ -34,8 +34,14 @@ export const useOrder = (user: string) => {
         const checkSriKey = async () => {
             if (selectedCliente) {
                 const creds = await getSriCredentials();
-                const ruc = selectedCliente.ruc || selectedCliente.cedula;
-                const cred = creds.find(c => c.ruc === ruc || (ruc.length === 10 && c.ruc === ruc + '001'));
+                const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
+                
+                // Buscar por RUC completo o Cédula + 001
+                const cred = creds.find(c => 
+                    c.ruc === ruc || 
+                    (ruc.length === 10 && c.ruc === ruc + '001') ||
+                    (ruc.length === 13 && c.ruc === ruc.substring(0, 10))
+                );
                 
                 if (cred) {
                     setSriData(prev => ({ 

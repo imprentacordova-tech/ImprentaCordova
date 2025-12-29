@@ -64,6 +64,7 @@ const NotaDeVentaPage: React.FC = () => {
         nombreComercial: config.emisorNombreComercial,
         razonSocial: config.emisorRazonSocial,
         tipoContribuyente: config.emisorTipoContribuyente,
+        actividades: config.emisorActividades,
         direccionMatriz: config.emisorDireccionMatriz,
         direccionSucursal: config.emisorDireccionSucursal,
         ruc: config.emisorRuc,
@@ -111,17 +112,15 @@ const NotaDeVentaPage: React.FC = () => {
                     </button>
                 </div>
 
-                {/* A5 Container optimized */}
                 <div id="nota-de-venta-imprimible" className="bg-white p-6 shadow-xl border border-gray-200" style={{width: '148mm', minHeight: '210mm', padding: '10mm', fontFamily: 'Arial, sans-serif'}}>
                     <div className="border border-gray-800 p-3 h-full flex flex-col rounded-sm relative">
                         
-                        {/* Top Section: Issuer & SRI Box */}
                         <div className="flex justify-between gap-3 mb-3">
-                            {/* Left: Issuer Info */}
                             <div className="w-3/5 pt-1">
                                 <div className="text-left mb-2">
                                     <h1 className="font-black text-lg text-gray-900 uppercase tracking-tight leading-none mb-1">{issuer.nombreComercial}</h1>
                                     <p className="text-[10px] font-bold text-gray-600 uppercase leading-tight">{issuer.razonSocial}</p>
+                                    <p className="text-[7px] font-bold text-gray-400 uppercase leading-tight mt-1">{issuer.actividades}</p>
                                 </div>
                                 <div className="text-[8px] space-y-0.5 text-gray-600 leading-tight">
                                     <p className="font-bold text-brand-blue text-[9px] uppercase">{issuer.tipoContribuyente}</p>
@@ -131,7 +130,6 @@ const NotaDeVentaPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Right: SRI Info Box */}
                             <div className="w-2/5">
                                 <div className="border border-gray-800 rounded-md p-2 bg-gray-50/50">
                                     <p className="text-xs font-bold text-gray-800">R.U.C. {issuer.ruc}</p>
@@ -150,7 +148,6 @@ const NotaDeVentaPage: React.FC = () => {
                             </div>
                         </div>
                         
-                        {/* Client Section */}
                         <div className="bg-gray-100 rounded-md p-2 mb-2 border border-gray-200">
                             <div className="flex flex-wrap gap-y-1 text-[10px]">
                                 <div className="w-2/3">
@@ -172,7 +169,6 @@ const NotaDeVentaPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Table Section */}
                         <div className="flex-grow">
                             <table className="w-full border-collapse text-[10px]">
                                 <thead>
@@ -190,7 +186,6 @@ const NotaDeVentaPage: React.FC = () => {
                                         <td className="border-x border-gray-300 py-1 text-right px-2 align-top">{formatCurrency(unitPrice).replace('$','')}</td>
                                         <td className="border-x border-gray-300 py-1 text-right px-2 align-top font-bold">{formatCurrency(trabajo.total).replace('$','')}</td>
                                     </tr>
-                                    {/* Fillers to maintain height */}
                                     {[...Array(10)].map((_, i) => (
                                          <tr key={i}><td className="border-x border-gray-300 h-5"></td><td className="border-x border-gray-300"></td><td className="border-x border-gray-300"></td><td className="border-x border-gray-300"></td></tr>
                                     ))}
@@ -207,7 +202,6 @@ const NotaDeVentaPage: React.FC = () => {
                             </table>
                         </div>
 
-                        {/* Footer Section */}
                         <div className="mt-2 pt-2 border-t border-gray-800 flex items-end justify-between text-[9px] text-gray-600 px-1">
                             <div className="w-5/12 leading-tight">
                                 <p className="font-bold text-gray-800">{printer.nombre}</p>

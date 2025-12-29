@@ -5,7 +5,8 @@ import { useData } from '../../contexts/DataContext';
 import { formatCurrency } from '../../utils';
 import { 
     SearchIcon, DocumentIcon, ShieldCheckIcon, AddIcon, 
-    CloseIcon, RulerIcon, TableIcon, SparklesIcon, ChevronRightIcon 
+    CloseIcon, RulerIcon, TableIcon, SparklesIcon, ChevronRightIcon,
+    ExclamationTriangleIcon
 } from '../Icons';
 
 interface ProductGridProps {
@@ -21,8 +22,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBaseProduct, setSelectedBaseProduct] = useState<string | null>(null);
 
-    // --- LÓGICA DE AGRUPACIÓN PREMIUM ---
-    // Agrupamos por nombre base (ej: "Facturas SRI") y extraemos atributos
+    // Agrupación mejorada: No elimina productos por régimen, solo los marca.
     const groupedProducts = useMemo(() => {
         const map = new Map<string, {
             name: string;
@@ -34,7 +34,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
         }>();
 
         productos.forEach(p => {
-            // Esperamos formato: "Nombre Base (Tamaño - Cantidad)"
             const match = p.nombre.match(/^(.*?) \((.*?) - (.*?)\)$/);
             const baseName = match ? match[1] : p.nombre;
             const size = match ? match[2] : 'Único';
@@ -64,7 +63,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
 
     return (
         <div className="flex flex-col h-full animate-fade-in gap-6">
-            {/* Header de Filtros Minimalista */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-[2rem] border border-slate-100 dark:border-white/5">
                 <div className="flex bg-white dark:bg-slate-800 p-1 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700">
                     <button 
@@ -80,7 +78,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                         Publicidad & Otros
                     </button>
                 </div>
-                
                 <div className="relative flex-grow max-w-xs">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
                     <input 
@@ -94,29 +91,32 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             </div>
 
             <div className="flex-grow overflow-hidden flex gap-6">
-                {/* Lista de Productos Base (Izquierda) */}
                 <div className="w-1/3 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                     {groupedProducts.map(group => {
                         const isSelected = selectedBaseProduct === group.name;
-                        // Validación de Régimen para UX preventivo
-                        const isBlocked = clientRegimen === Regimen.NEGOCIO_POPULAR && group.name.toLowerCase().includes('factura');
+                        // Regla SRI: Negocio Popular NO factura, otros SI.
+                        const isFactura = group.name.toLowerCase().includes('factura');
+                        const isNotaVenta = group.name.toLowerCase().includes('nota de venta');
+                        
+                        const isWarning = (clientRegimen === Regimen.NEGOCIO_POPULAR && isFactura) || 
+                                         (clientRegimen !== Regimen.NEGOCIO_POPULAR && isNotaVenta && jobType === TrabajoTipo.SRI);
 
                         return (
                             <button
                                 key={group.name}
-                                onClick={() => !isBlocked && setSelectedBaseProduct(group.name)}
+                                onClick={() => setSelectedBaseProduct(group.name)}
                                 className={`w-full text-left p-5 rounded-[1.8rem] border-2 transition-all group relative overflow-hidden ${
                                     isSelected 
                                     ? 'bg-brand-blue border-brand-blue shadow-xl shadow-blue-900/20 translate-x-2' 
-                                    : isBlocked 
-                                    ? 'bg-slate-50 border-transparent opacity-40 cursor-not-allowed grayscale' 
+                                    : isWarning 
+                                    ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/10' 
                                     : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-white/5 hover:border-brand-blue/30 shadow-sm'
                                 }`}
                             >
                                 <div className="flex items-center justify-between relative z-10">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-3 rounded-2xl transition-colors ${isSelected ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                                            {group.esSRI ? <ShieldCheckIcon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-brand-red'}`} /> : <DocumentIcon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />}
+                                            {group.esSRI ? <ShieldCheckIcon className={`w-5 h-5 ${isSelected ? 'text-white' : isWarning ? 'text-amber-500' : 'text-brand-red'}`} /> : <DocumentIcon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />}
                                         </div>
                                         <div>
                                             <h3 className={`text-xs font-black uppercase tracking-tight leading-none mb-1 ${isSelected ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
@@ -127,54 +127,43 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                             </p>
                                         </div>
                                     </div>
-                                    <ChevronRightIcon className={`w-4 h-4 transition-transform ${isSelected ? 'text-white rotate-90' : 'text-slate-300 group-hover:translate-x-1'}`} />
+                                    {isWarning && !isSelected && <ExclamationTriangleIcon className="w-4 h-4 text-amber-500" />}
                                 </div>
-                                {isBlocked && (
-                                    <div className="absolute top-2 right-2 bg-slate-900 text-white text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                        No permitido para Popular
-                                    </div>
-                                )}
                             </button>
                         );
                     })}
                 </div>
 
-                {/* Configurador de Variaciones (Derecha) */}
                 <div className="flex-1 bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-inner p-8 overflow-y-auto custom-scrollbar">
                     {selectedBaseProduct ? (
                         <div className="space-y-10 animate-fade-in">
+                            {/* Mostrar aviso de advertencia si el producto no coincide con el régimen */}
+                            {((selectedBaseProduct.toLowerCase().includes('factura') && clientRegimen === Regimen.NEGOCIO_POPULAR) || 
+                              (selectedBaseProduct.toLowerCase().includes('nota de venta') && clientRegimen !== Regimen.NEGOCIO_POPULAR)) && (
+                                <div className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-2xl flex gap-4 items-center">
+                                    <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 flex-shrink-0" />
+                                    <p className="text-[10px] font-bold text-amber-700 uppercase leading-tight tracking-tight">
+                                        ¡Atención! Este tipo de documento no suele ser emitido por contribuyentes en el régimen <span className="underline">{clientRegimen}</span>. Confirme con el RUC del cliente.
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h2 className="text-2xl font-black text-brand-blue dark:text-white uppercase tracking-tighter italic">
-                                        Configuración de <span className="text-brand-red">{selectedBaseProduct}</span>
+                                        Variaciones de <span className="text-brand-red">{selectedBaseProduct}</span>
                                     </h2>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Seleccione las especificaciones técnicas</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Configuración técnica de impresión</p>
                                 </div>
                                 <SparklesIcon className="w-6 h-6 text-yellow-400 animate-pulse" />
                             </div>
 
-                            {/* Selector de Tamaño */}
                             <div className="space-y-4">
                                 <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <RulerIcon className="w-4 h-4" /> 1. Dimensiones (Formato)
-                                </label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {Array.from(groupedProducts.find(g => g.name === selectedBaseProduct)!.sizes).map(size => (
-                                        <div key={size} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-transparent text-center">
-                                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase">{size}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Selector de Cantidad / Precio Directo */}
-                            <div className="space-y-4">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <TableIcon className="w-4 h-4" /> 2. Volumen de Impresión
+                                    <RulerIcon className="w-4 h-4" /> Especificaciones de Formato
                                 </label>
                                 <div className="grid grid-cols-1 gap-3">
                                     {groupedProducts.find(g => g.name === selectedBaseProduct)!.items.map(item => {
-                                        // Extraer solo la cantidad del nombre para mostrarla limpia
                                         const qty = item.nombre.match(/- (.*?)\)/)?.[1] || 'Estándar';
                                         const inCart = productsInCart.get(item.id);
 
@@ -195,7 +184,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                                     <span className="font-bold text-slate-700 dark:text-slate-200 text-sm uppercase">{qty}</span>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Precio Profesional</p>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">P.V.P.</p>
                                                     <p className="text-lg font-black text-brand-blue">{formatCurrency(item.precio)}</p>
                                                 </div>
                                             </button>
@@ -203,21 +192,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                     })}
                                 </div>
                             </div>
-
-                            <div className="pt-6 border-t dark:border-gray-700 flex items-center gap-4 text-slate-400">
-                                <ShieldCheckIcon className="w-5 h-5 flex-shrink-0" />
-                                <p className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                                    Los precios incluyen papel químico autocopiativo de alta sensibilidad y numeración secuencial garantizada por la normativa vigente del SRI Pasaje.
-                                </p>
-                            </div>
                         </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                             <div className="w-24 h-24 bg-slate-100 dark:bg-slate-700 rounded-[2.5rem] flex items-center justify-center mb-6">
                                 <DocumentIcon className="w-12 h-12 text-slate-300" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-400 uppercase tracking-tighter">Seleccione un Producto</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Elija un servicio de la lista izquierda para configurar</p>
+                            <h3 className="text-xl font-black text-slate-400 uppercase tracking-tighter">Explora el Catálogo</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Selecciona un servicio base para ver sus precios y tamaños</p>
                         </div>
                     )}
                 </div>

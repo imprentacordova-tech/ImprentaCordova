@@ -13,6 +13,7 @@ export interface NotaDeVentaConfig {
     emisorDireccionMatriz: string;
     emisorDireccionSucursal: string;
     emisorRuc: string;
+    emisorActividades: string;
     // Campos para Recibo de Abono
     reciboCodAuto: string;
     emisorDireccionCompleta: string;
@@ -34,11 +35,12 @@ const defaultConfig: NotaDeVentaConfig = {
     imprentaRuc: "1709876543001",
     imprentaAutorizacion: "1234",
     emisorNombreComercial: "Imprenta Córdova",
-    emisorRazonSocial: "Perez Lara Juan Efrain",
+    emisorRazonSocial: "Pedro Manuel Cordova Rodiguez",
     emisorTipoContribuyente: "Contribuyente Negocio Popular - Régimen RIMPE",
-    emisorDireccionMatriz: "Calle Colón Ej. Sucre y Rocafuerte",
+    emisorDireccionMatriz: "Calle Colón Ej. Sucre y Rocafuerte - Pasaje El Oro",
     emisorDireccionSucursal: "Pasaje - El Oro - Ecuador",
-    emisorRuc: "1722112233001",
+    emisorRuc: "0702065319001",
+    emisorActividades: "SERVICIOS GRÁFICOS Y PUBLICITARIOS",
     
     // Defaults para Recibo de Abono
     reciboCodAuto: "8634",
