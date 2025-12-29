@@ -6,11 +6,8 @@ import { useData } from '../../contexts/DataContext';
 import { extractClientFromImage } from '../../services/geminiService';
 import { 
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
-    CheckCircleIcon, BuildingStorefrontIcon, SparklesIcon, 
-    AddIcon, ArrowRightIcon, PhoneIcon, CameraIcon, UploadIcon,
-    ExclamationTriangleIcon, DocumentTextIcon, ReceiptIcon,
-    // Added InfoIcon to the imports to resolve the error on line 309
-    InfoIcon
+    CheckCircleIcon, SparklesIcon, AddIcon, ArrowRightIcon, PhoneIcon, 
+    UploadIcon, DocumentTextIcon, ReceiptIcon, InfoIcon
 } from '../Icons';
 
 const InputField: React.FC<{ 
@@ -31,7 +28,7 @@ const InputField: React.FC<{
                 name={name} 
                 value={value} 
                 onChange={onChange} 
-                className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all shadow-sm resize-none ${isHighlighted ? 'ring-4 ring-yellow-400 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30' : 'border-gray-200'}`} 
+                className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm resize-none ${isHighlighted ? 'ring-2 ring-brand-blue/30 border-brand-blue bg-blue-50/50 dark:bg-brand-blue/10' : 'border-gray-200 dark:border-gray-700'}`} 
                 {...props} 
             />
         ) : (
@@ -40,7 +37,7 @@ const InputField: React.FC<{
                 name={name} 
                 value={value} 
                 onChange={onChange} 
-                className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all shadow-sm ${isHighlighted ? 'ring-4 ring-yellow-400 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30' : 'border-gray-200'}`} 
+                className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm ${isHighlighted ? 'ring-2 ring-brand-blue/30 border-brand-blue bg-blue-50/50 dark:bg-brand-blue/10' : 'border-gray-200 dark:border-gray-700'}`} 
                 {...props} 
             />
         )}
@@ -66,7 +63,6 @@ export const CreateClientModal: React.FC<{
     // AI Scanner States
     const [isScanning, setIsScanning] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
-    const [scanPreview, setScanPreview] = useState<string | null>(null);
     const [extractedData, setExtractedData] = useState<any>(null);
     const [highlightFields, setHighlightFields] = useState<string[]>([]);
     
@@ -81,7 +77,6 @@ export const CreateClientModal: React.FC<{
             setTelefonos([]);
             setSaveSuccess(false);
             setExtractedData(null);
-            setScanPreview(null);
             setHighlightFields([]);
             setScanError(null);
         }
@@ -91,66 +86,60 @@ export const CreateClientModal: React.FC<{
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (file.size > 8 * 1024 * 1024) {
-            setScanError("El archivo es muy pesado (máx 8MB).");
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const base64 = event.target?.result as string;
-            setScanPreview(base64);
-            setIsScanning(true);
-            setScanError(null);
-            
-            try {
+        setIsScanning(true);
+        setScanError(null);
+        setExtractedData(null);
+        
+        try {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64 = event.target?.result as string;
                 const data = await extractClientFromImage(base64);
-                if (data && data.nombre) {
+                
+                if (data && (data.nombre || data.ruc)) {
                     setExtractedData(data);
+                    // Aplicar automáticamente
+                    applyExtractedData(data);
                 } else {
-                    setScanError("No se detectaron datos válidos. Intenta con una imagen más nítida.");
+                    setScanError("No se pudieron leer datos claros. Intenta con otra imagen.");
                 }
-            } catch (err) {
-                setScanError("Error al procesar con IA.");
-            } finally {
                 setIsScanning(false);
-            }
-        };
-        reader.readAsDataURL(file);
+            };
+            reader.readAsDataURL(file);
+        } catch (err) {
+            setScanError("Error al procesar el archivo.");
+            setIsScanning(false);
+        }
     };
 
-    const applyExtractedData = () => {
-        if (!extractedData) return;
-
+    const applyExtractedData = (data: any) => {
         const fields: string[] = [];
-        if (extractedData.nombre) fields.push('nombre');
-        if (extractedData.ruc) fields.push('cedulaRuc');
-        if (extractedData.direccion) fields.push('direccion');
-        if (extractedData.actividades) fields.push('actividades');
-        if (extractedData.email) fields.push('email');
+        if (data.nombre) fields.push('nombre');
+        if (data.ruc) fields.push('cedulaRuc');
+        if (data.direccion) fields.push('direccion');
+        if (data.actividades) fields.push('actividades');
+        if (data.email) fields.push('email');
         
         setHighlightFields(fields);
         
         setNewClienteData(prev => ({
             ...prev,
-            nombre: extractedData.nombre || prev.nombre,
-            cedulaRuc: extractedData.ruc || prev.cedulaRuc,
-            direccion: extractedData.direccion || prev.direccion,
-            actividades: extractedData.actividades || prev.actividades,
-            email: extractedData.email || prev.email,
-            regimen: extractedData.regimen?.toLowerCase().includes('popular') ? Regimen.NEGOCIO_POPULAR :
-                     extractedData.regimen?.toLowerCase().includes('emprendedor') ? Regimen.EMPRENDEDOR : Regimen.GENERAL
+            nombre: data.nombre || prev.nombre,
+            cedulaRuc: data.ruc || prev.cedulaRuc,
+            direccion: data.direccion || prev.direccion,
+            actividades: data.actividades || prev.actividades,
+            email: data.email || prev.email,
+            regimen: data.regimen?.toLowerCase().includes('popular') ? Regimen.NEGOCIO_POPULAR :
+                     data.regimen?.toLowerCase().includes('emprendedor') ? Regimen.EMPRENDEDOR : Regimen.GENERAL
         }));
 
-        if (extractedData.telefono) {
-            const cleanTel = extractedData.telefono.replace(/\D/g, '');
+        if (data.telefono) {
+            const cleanTel = data.telefono.replace(/\D/g, '');
             if (cleanTel.length >= 7 && !telefonos.includes(cleanTel)) {
                 setTelefonos(prev => [...prev, cleanTel]);
             }
         }
 
-        setExtractedData(null);
-        setScanPreview(null);
         setTimeout(() => setHighlightFields([]), 3000);
     };
 
@@ -171,6 +160,7 @@ export const CreateClientModal: React.FC<{
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
+        
         const finalTelefonos = [...telefonos];
         if (currentTelefono.length >= 7) finalTelefonos.push(currentTelefono);
 
@@ -188,7 +178,7 @@ export const CreateClientModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[70] flex justify-center items-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-2xl overflow-hidden border border-white/10 flex flex-col max-h-[95vh]">
+            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-3xl overflow-hidden border border-white/10 flex flex-col max-h-[95vh]">
                 
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-slate-900/50">
@@ -196,80 +186,66 @@ export const CreateClientModal: React.FC<{
                         <h2 className="text-xl font-black text-brand-blue dark:text-white flex items-center gap-3 tracking-tighter uppercase">
                             <UserPlusIcon className="h-6 w-6 text-brand-red" /> Nuevo Registro
                         </h2>
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Sincronización Automática con Taller</p>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Gestión de Contribuyentes Autorizados</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all"><CloseIcon className="w-5 h-5 text-gray-400" /></button>
                 </div>
                 
-                <div className="flex-grow p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                <div className="flex-grow p-8 space-y-8 overflow-y-auto custom-scrollbar">
                     
-                    {/* Panel de Escaneo IA */}
-                    {!scanPreview ? (
+                    {/* DROPZONE MEJORADO */}
+                    <div className="relative">
                         <button 
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className={`w-full flex items-center justify-center gap-4 py-8 rounded-[2rem] border-2 border-dashed transition-all group shadow-sm ${scanError ? 'border-red-400 bg-red-50 text-red-600' : 'border-brand-blue/20 bg-blue-50/30 text-brand-blue hover:bg-brand-blue hover:text-white'}`}
+                            disabled={isScanning}
+                            className={`w-full flex flex-col items-center justify-center gap-3 py-10 rounded-[2rem] border-2 border-dashed transition-all group shadow-inner ${isScanning ? 'border-brand-blue bg-blue-50/20' : scanError ? 'border-red-300 bg-red-50 text-red-600' : extractedData ? 'border-green-400 bg-green-50/30' : 'border-slate-200 dark:border-gray-700 bg-slate-50/50 hover:bg-white dark:hover:bg-gray-800'}`}
                         >
-                            <UploadIcon className="w-8 h-8 group-hover:scale-125 transition-transform" />
-                            <div className="text-left">
-                                <span className="text-xs font-black uppercase tracking-[0.2em] block leading-none mb-1">
-                                    {scanError ? "Error: " + scanError : "Cargar RUC (PDF/Foto)"}
-                                </span>
-                                <span className="text-[9px] font-bold opacity-60 uppercase tracking-widest">Detecta el régimen automáticamente</span>
-                            </div>
+                            {isScanning ? (
+                                <>
+                                    <Loader2Icon className="w-12 h-12 text-brand-blue animate-spin" />
+                                    <p className="text-brand-blue font-black text-xs uppercase tracking-[0.3em] animate-pulse">Escaneando Certificado SRI...</p>
+                                </>
+                            ) : extractedData ? (
+                                <>
+                                    <CheckCircleIcon className="w-12 h-12 text-green-500 animate-bounce" />
+                                    <p className="text-green-600 font-black text-xs uppercase tracking-[0.2em]">¡Datos del RUC extraídos con éxito!</p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-16 h-16 bg-white dark:bg-gray-700 rounded-2xl shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <UploadIcon className="w-8 h-8 text-brand-blue" />
+                                    </div>
+                                    <div className="text-center">
+                                        <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-700 dark:text-slate-200 block mb-1">
+                                            {scanError || "Cargar Certificado de RUC"}
+                                        </span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PDF o Imagen (Máx 8MB)</span>
+                                    </div>
+                                </>
+                            )}
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
                         </button>
-                    ) : (
-                        <div className="bg-slate-900 rounded-[2rem] p-5 animate-slide-in-up border border-blue-500/30 relative">
-                            {isScanning && (
-                                <div className="absolute inset-0 z-10 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-[2rem]">
-                                    <div className="w-full h-1 bg-blue-400 absolute top-0 animate-scan shadow-[0_0_15px_rgba(96,165,250,1)]"></div>
-                                    <Loader2Icon className="w-10 h-10 text-blue-400 animate-spin mb-3" />
-                                    <p className="text-blue-400 font-black text-[10px] uppercase tracking-[0.3em] animate-pulse">Consultando SRI...</p>
-                                </div>
-                            )}
+                        
+                        {extractedData && (
+                            <div className="absolute top-4 right-4 animate-fade-in">
+                                <span className="bg-yellow-400 text-yellow-900 text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl flex items-center gap-2">
+                                    <SparklesIcon className="w-3 h-3"/> Asistente IA Activo
+                                </span>
+                            </div>
+                        )}
+                    </div>
 
-                            {extractedData && (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/50 p-5 rounded-2xl border border-white/5">
-                                        <div className="space-y-1">
-                                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Contribuyente</p>
-                                            <p className="text-xs font-black text-white uppercase">{extractedData.nombre || '???'}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Régimen SRI</p>
-                                            <p className="text-xs font-bold text-yellow-400 uppercase">{extractedData.regimen || 'General'}</p>
-                                        </div>
-                                        <div className="col-span-full pt-3">
-                                            <button 
-                                                type="button" 
-                                                onClick={applyExtractedData}
-                                                className="w-full py-3 bg-blue-600 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-xl hover:bg-blue-500 transition-all flex items-center justify-center gap-2"
-                                            >
-                                                <CheckCircleIcon className="w-4 h-4" /> Autocompletar con IA
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {!extractedData && !isScanning && (
-                                <div className="h-32 flex items-center justify-center">
-                                     <img src={scanPreview} className="max-h-full rounded-lg opacity-20 grayscale" />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField 
-                                label="Razón Social" 
+                                label="Razón Social / Nombres" 
                                 name="nombre" 
                                 value={newClienteData.nombre} 
                                 onChange={handleChange} 
                                 required 
                                 isHighlighted={highlightFields.includes('nombre')}
+                                placeholder="NOMBRE DEL NEGOCIO O PERSONA"
                             />
                             <InputField 
                                 label="RUC / Cédula" 
@@ -279,86 +255,92 @@ export const CreateClientModal: React.FC<{
                                 maxLength={13} 
                                 required 
                                 isHighlighted={highlightFields.includes('cedulaRuc')}
+                                placeholder="17XXXXXXXX001"
                             />
                         </div>
 
                         {/* SECTOR CRÍTICO: RÉGIMEN */}
                         <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-white/5 space-y-4">
                             <div className="flex justify-between items-center">
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Régimen Fiscal del Cliente</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo de Contribuyente (Régimen SRI)</label>
                                 <ShieldCheckIcon className="w-4 h-4 text-brand-blue" />
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 {[
-                                    { id: Regimen.GENERAL, label: 'General', icon: DocumentTextIcon, color: 'blue' },
-                                    { id: Regimen.EMPRENDEDOR, label: 'Emprendedor', icon: DocumentTextIcon, color: 'indigo' },
-                                    { id: Regimen.NEGOCIO_POPULAR, label: 'Popular', icon: ReceiptIcon, color: 'orange' }
+                                    { id: Regimen.GENERAL, label: 'Gral', full: 'Régimen General', icon: DocumentTextIcon, color: 'blue' },
+                                    { id: Regimen.EMPRENDEDOR, label: 'Emprendedor', full: 'RIMPE Emprendedor', icon: DocumentTextIcon, color: 'indigo' },
+                                    { id: Regimen.NEGOCIO_POPULAR, label: 'Popular', full: 'RIMPE Negocio Popular', icon: ReceiptIcon, color: 'orange' }
                                 ].map((reg) => (
                                     <button
                                         key={reg.id}
                                         type="button"
                                         onClick={() => setNewClienteData(prev => ({ ...prev, regimen: reg.id }))}
-                                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${newClienteData.regimen === reg.id ? `bg-${reg.color}-50 dark:bg-${reg.color}-900/20 border-${reg.color}-500 shadow-md` : 'bg-white dark:bg-gray-700 border-transparent hover:border-slate-200'}`}
+                                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all transform active:scale-95 ${newClienteData.regimen === reg.id ? `bg-white dark:bg-gray-700 border-brand-blue shadow-xl ring-4 ring-brand-blue/10` : 'bg-white/40 dark:bg-gray-800 border-transparent grayscale opacity-60 hover:opacity-100 hover:grayscale-0'}`}
                                     >
-                                        <reg.icon className={`w-5 h-5 ${newClienteData.regimen === reg.id ? `text-${reg.color}-600` : 'text-slate-300'}`} />
-                                        <span className={`text-[10px] font-black uppercase ${newClienteData.regimen === reg.id ? `text-${reg.color}-700 dark:text-${reg.color}-300` : 'text-slate-500'}`}>{reg.label}</span>
+                                        <reg.icon className={`w-6 h-6 ${newClienteData.regimen === reg.id ? `text-brand-blue` : 'text-slate-300'}`} />
+                                        <span className={`text-[10px] font-black uppercase ${newClienteData.regimen === reg.id ? `text-brand-blue` : 'text-slate-500'}`}>{reg.label}</span>
                                     </button>
                                 ))}
                             </div>
-                            
-                            {/* Información de ayuda basada en el régimen */}
-                            <div className={`p-3 rounded-xl text-[10px] font-bold border flex gap-3 items-center ${newClienteData.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
-                                <InfoIcon className="w-4 h-4 flex-shrink-0" />
-                                <p>
-                                    {newClienteData.regimen === Regimen.NEGOCIO_POPULAR 
-                                        ? "ESTE CLIENTE SOLO EMITE NOTAS DE VENTA. No olvide configurar el talonario con 0% IVA."
-                                        : "ESTE CLIENTE REQUIERE FACTURAS ELECTRÓNICAS O FÍSICAS CON DESGLOSE DE IVA."}
-                                </p>
-                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField 
-                                label="Dirección Impresa" 
+                                label="Dirección Tributaria" 
                                 name="direccion" 
                                 value={newClienteData.direccion} 
                                 onChange={handleChange} 
                                 isHighlighted={highlightFields.includes('direccion')}
                             />
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Teléfono Principal</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">WhatsApp / Contacto</label>
                                 <div className="flex gap-2">
                                     <input 
                                         type="tel" 
                                         value={currentTelefono} 
                                         onChange={e => setCurrentTelefono(e.target.value.replace(/\D/g, ''))} 
                                         placeholder="099..." 
-                                        className="flex-grow p-3 border border-gray-200 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-brand-red outline-none text-xs" 
+                                        className="flex-grow p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-blue outline-none text-sm font-bold" 
                                         maxLength={10} 
                                     />
-                                    <button type="button" onClick={handleAddTel} className="bg-slate-100 dark:bg-gray-800 p-3 rounded-xl hover:bg-brand-blue hover:text-white transition-all">
-                                        <AddIcon className="w-4 h-4"/>
+                                    <button type="button" onClick={handleAddTel} className="bg-brand-blue text-white p-3 rounded-xl hover:bg-brand-navy transition-all shadow-lg">
+                                        <AddIcon className="w-5 h-5"/>
                                     </button>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mt-2">
+                                <div className="flex flex-wrap gap-2 mt-3">
                                     {telefonos.map((t, i) => (
-                                        <span key={i} className="bg-blue-50 dark:bg-blue-900/30 text-brand-blue text-[9px] font-black px-2 py-1 rounded-full border border-blue-100/50 flex items-center gap-1">
+                                        <span key={i} className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-black px-3 py-1.5 rounded-xl border border-green-100 dark:border-green-800 flex items-center gap-2">
                                             <PhoneIcon className="w-3 h-3"/> {t} 
-                                            <button type="button" onClick={() => setTelefonos(telefonos.filter((_, idx) => idx !== i))} className="hover:text-red-500 font-black ml-1">&times;</button>
+                                            <button type="button" onClick={() => setTelefonos(telefonos.filter((_, idx) => idx !== i))} className="hover:text-red-500 font-black ml-1 text-lg">&times;</button>
                                         </span>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-6 gap-3 border-t dark:border-gray-800">
-                            <button type="button" onClick={onClose} className="px-6 py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Cerrar</button>
+                        <InputField 
+                            as="textarea"
+                            label="Actividades Económicas" 
+                            name="actividades" 
+                            value={newClienteData.actividades} 
+                            onChange={handleChange} 
+                            rows={2}
+                            isHighlighted={highlightFields.includes('actividades')}
+                            placeholder="EJ. VENTA DE ROPA, SERVICIOS PROFESIONALES..."
+                        />
+
+                        <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
+                            <button type="button" onClick={onClose} className="px-8 py-4 text-slate-400 font-bold uppercase tracking-widest text-[10px] hover:text-slate-600 transition-colors">Cancelar</button>
                             <button 
                                 type="submit" 
                                 disabled={isSaving || saveSuccess} 
-                                className={`px-10 py-4 text-white font-black rounded-xl shadow-xl transition-all transform active:scale-95 flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-950'}`}
+                                className={`min-w-[200px] px-12 py-4 text-white font-black rounded-2xl shadow-2xl transition-all transform active:scale-95 flex items-center justify-center gap-3 uppercase tracking-[0.2em] text-xs ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-950'}`}
                             >
-                                {isSaving ? <Loader2Icon className="animate-spin w-4 h-4"/> : saveSuccess ? <CheckCircleIcon className="w-4 h-4"/> : "Guardar Cliente"}
+                                {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : (
+                                    <>
+                                        Finalizar Registro <ArrowRightIcon className="w-4 h-4"/>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </form>

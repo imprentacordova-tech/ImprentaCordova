@@ -11,20 +11,15 @@ const getScriptUrl = () => {
     return "https://script.google.com/macros/s/AKfycbz9BrIG8s1h5spiy3H2OQVInN4lODW6VJ50-SmGBajjIQ2jbgzBl-65-_6XF7IYRluM/exec";
 };
 
-/**
- * Helper para realizar llamadas al Google Apps Script
- */
 const callGoogleScript = async (action: string, payload?: any) => {
     const url = getScriptUrl();
     try {
-        // En modo no-cors no podemos leer la respuesta, pero el envío se realiza.
         await fetch(url, {
             method: 'POST',
             mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, ...payload })
         });
-        
         return true;
     } catch (e) {
         console.error("Error al sincronizar con Google Sheets:", e);
@@ -32,7 +27,30 @@ const callGoogleScript = async (action: string, payload?: any) => {
     }
 };
 
-// --- MÉTODOS DE LECTURA (USAN CACHÉ LOCAL + SYNC) ---
+// --- PRODUCTOS PREDETERMINADOS (CATÁLOGO SRI ECUADOR) ---
+const defaultProductos: Producto[] = [
+  // FACTURAS
+  { id: 'sri-f1', nombre: 'Facturas SRI (1/4 Oficio - 50 Juegos)', descripcion: 'Facturas autorizadas, Original y 1 Copia. Papel químico.', precio: 13.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original/Copia', 'Numeradas', 'Papel Químico'], unit: 'block' },
+  { id: 'sri-f2', nombre: 'Facturas SRI (1/4 Oficio - 100 Juegos)', descripcion: 'Facturas autorizadas, Original y 1 Copia. Papel químico.', precio: 18.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original/Copia', 'Numeradas', 'Papel Químico'], unit: 'block' },
+  { id: 'sri-f3', nombre: 'Facturas SRI (1/2 Oficio - 100 Juegos)', descripcion: 'Facturas autorizadas tamaño grande, Original y 1 Copia.', precio: 25.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original/Copia', 'Numeradas', 'Papel Químico'], unit: 'block' },
+  
+  // NOTAS DE VENTA (RIMPE POPULAR)
+  { id: 'sri-nv1', nombre: 'Notas de Venta (1/4 Oficio - 50 Hojas)', descripcion: 'Para Contribuyente RIMPE Negocio Popular. Papel Bond.', precio: 10.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original', 'Papel Bond 75g', 'Numeradas'], unit: 'block' },
+  { id: 'sri-nv2', nombre: 'Notas de Venta (1/4 Oficio - 100 Hojas)', descripcion: 'Para Contribuyente RIMPE Negocio Popular. Papel Bond.', precio: 15.00, categoria: 'Documentos SRI', esSRI: true, isPopular: true, specs: ['Original', 'Papel Bond 75g', 'Numeradas'], unit: 'block' },
+  
+  // RETENCIONES
+  { id: 'sri-r1', nombre: 'Comprobante de Retención (1/4 Oficio)', descripcion: 'Original y 1 Copia. Papel químico.', precio: 18.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original/Copia', 'Numeradas', 'Autorizado'], unit: 'block' },
+  
+  // LIQUIDACIONES
+  { id: 'sri-lc1', nombre: 'Liquidación de Compra (1/2 Oficio)', descripcion: 'Para bienes o servicios específicos. Original y 1 Copia.', precio: 22.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original/Copia', 'Numeradas'], unit: 'block' },
+  
+  // GUÍAS
+  { id: 'sri-gr1', nombre: 'Guía de Remisión (1/2 Oficio)', descripcion: 'Para transporte de mercaderías. Original y 2 Copias.', precio: 28.00, categoria: 'Documentos SRI', esSRI: true, specs: ['Original y 2 Copias', 'Numeradas'], unit: 'block' },
+  
+  // OTROS NO SRI
+  { id: 'gen-g1', nombre: 'Gigantografía Publicitaria (m2)', descripcion: 'Impresión en lona 13oz HD.', precio: 10.00, categoria: 'Gran Formato', esSRI: false, isPopular: true, specs: ['HD 1440dpi', 'Ojalillos incluidos', 'Lona resistente'], unit: 'm2' },
+  { id: 'gen-s1', nombre: 'Sello Automático Trodat', descripcion: 'Sello profesional para oficina.', precio: 15.00, categoria: 'Oficina', esSRI: false, isPopular: true, specs: ['Automático', 'Tinta incluida', 'Personalizado'], unit: 'unidad' }
+];
 
 const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
     let localData = defaultValue;
@@ -40,9 +58,11 @@ const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
     if (item) {
         try {
             const parsed = JSON.parse(item);
-            if (parsed) localData = parsed;
+            if (parsed && (!Array.isArray(parsed) || parsed.length > 0)) {
+                localData = parsed;
+            }
         } catch (e) {
-            console.error(`Error al parsear ${key} de localStorage`, e);
+            console.error(`Error al parsear ${key}`, e);
         }
     }
     return localData;
@@ -72,24 +92,22 @@ const defaultUsers: User[] = [
 
 export const getTrabajos = async (): Promise<Trabajo[]> => getStoredData(TRABAJOS_KEY, []);
 export const getClientes = async (): Promise<Cliente[]> => getStoredData(CLIENTES_KEY, []);
-export const getProductos = async (): Promise<Producto[]> => getStoredData(PRODUCTOS_KEY, []);
+export const getProductos = async (): Promise<Producto[]> => getStoredData(PRODUCTOS_KEY, defaultProductos);
 export const getUsers = async (): Promise<User[]> => getStoredData(USERS_KEY, defaultUsers);
 export const getInventario = async (): Promise<InventoryItem[]> => getStoredData(INVENTARIO_KEY, []);
 export const getProveedores = async (): Promise<Proveedor[]> => getStoredData(PROVEEDORES_KEY, []);
 export const getSriCredentials = async (): Promise<SriCredential[]> => getStoredData(SRI_KEYS_KEY, []);
 export const getTareasProveedor = async (): Promise<TareaProveedor[]> => getStoredData(TAREAS_KEY, []);
 
-// --- MÉTODOS DE ESCRITURA CON SINCRONIZACIÓN A DRIVE/SHEETS ---
+// --- MÉTODOS DE ESCRITURA ---
 
 export const updateTrabajoPhoto = async (id: string, photoUrl: string): Promise<void> => {
-    // 1. Guardar localmente para respuesta inmediata
     const trabajos = await getTrabajos();
     const idx = trabajos.findIndex(t => t.id === id);
     if (idx > -1) {
         trabajos[idx].fotoOriginalUrl = photoUrl;
         await setStoredData(TRABAJOS_KEY, trabajos);
     }
-    // 2. Enviar a Google Drive a través del Script
     await callGoogleScript('upload_to_drive', { id, fileData: photoUrl, folder: 'artes' });
 };
 
@@ -102,10 +120,7 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
         trabajos[index].actualizadoPor = usuario;
         trabajos[index].historial = [...(trabajos[index].historial || []), log];
         await setStoredData(TRABAJOS_KEY, trabajos);
-        
-        // Sincronizar estado en la hoja de cálculo
         await callGoogleScript('update_job_status', { id: trabajoId, status: newStatus, user: usuario });
-        
         return trabajos[index];
     }
     throw new Error("No encontrado");
@@ -116,7 +131,7 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
     const log: StatusLog = { estado: TrabajoEstado.PENDIENTE, fecha: new Date().toISOString(), usuario };
     const newTrabajo: Trabajo = {
         id: String(Date.now()),
-        orden: Math.max(...trabajos.map(t => t.orden), 1000) + 1,
+        orden: (trabajos.length > 0 ? Math.max(...trabajos.map(t => t.orden)) : 1000) + 1,
         ...trabajoData,
         fechaEntrada: new Date().toISOString(),
         caduco: false,
@@ -127,10 +142,7 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
     };
     trabajos.unshift(newTrabajo);
     await setStoredData(TRABAJOS_KEY, trabajos);
-    
-    // Guardar nueva fila en Google Sheets
     await callGoogleScript('create_job', { data: newTrabajo });
-    
     return newTrabajo;
 };
 
@@ -139,10 +151,7 @@ export const createCliente = async (clienteData: any): Promise<Cliente> => {
     const newCliente = { id: `c${Date.now()}`, creadoEn: new Date().toISOString(), ...clienteData };
     clientes.unshift(newCliente);
     await setStoredData(CLIENTES_KEY, clientes);
-    
-    // Guardar nuevo cliente en Google Sheets
     await callGoogleScript('create_client', { data: newCliente });
-    
     return newCliente;
 };
 
@@ -150,10 +159,7 @@ export const addSriCredential = async (cred: SriCredential): Promise<SriCredenti
     const creds = await getSriCredentials();
     const updated = [...creds.filter(c => c.ruc !== cred.ruc), { ...cred, updatedAt: new Date().toISOString() }];
     await setStoredData(SRI_KEYS_KEY, updated);
-    
-    // Guardar credencial en pestaña segura de Google Sheets
     await callGoogleScript('save_sri_key', { data: cred });
-    
     return updated;
 };
 
@@ -161,9 +167,7 @@ export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]>
     let creds = await getSriCredentials();
     creds = creds.filter(c => c.ruc !== ruc);
     await setStoredData(SRI_KEYS_KEY, creds);
-    
     await callGoogleScript('delete_sri_key', { ruc });
-    
     return creds;
 };
 
@@ -191,9 +195,6 @@ export const registerRetiro = async (id: string, pago: number, user: string) => 
     throw new Error("No encontrado");
 };
 
-// --- FIX: Missing functions exported for Inventario, Landing, Productos, Users, SRI and Proveedores ---
-
-// 1. Inventario
 export const createInventarioItem = async (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
     const items = await getInventario();
     const newItem = { id: `i${Date.now()}`, ...item };
@@ -225,12 +226,10 @@ export const setInventario = async (items: InventoryItem[]): Promise<void> => {
     await callGoogleScript('sync_inventario', { data: items });
 };
 
-// 2. Landing / Public
 export const createPublicPedido = async (clientData: any, cartItems: any[]): Promise<void> => {
     await callGoogleScript('create_public_order', { client: clientData, items: cartItems });
 };
 
-// 3. Productos
 export const createProducto = async (product: Partial<Producto>): Promise<Producto> => {
     const products = await getProductos();
     const newProduct = { id: `p${Date.now()}`, ...product } as Producto;
@@ -257,7 +256,6 @@ export const deleteProducto = async (id: string): Promise<void> => {
     await callGoogleScript('delete_product', { id });
 };
 
-// 4. Usuarios
 export const createUser = async (user: Omit<User, 'id'>): Promise<User> => {
     const users = await getUsers();
     const newUser = { id: `u${Date.now()}`, ...user, ultimoAcceso: new Date().toISOString() } as User;
@@ -277,24 +275,20 @@ export const updateUser = async (id: string, data: Partial<User>): Promise<void>
     }
 };
 
-// 5. SRI
 export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
     let creds = await getSriCredentials();
     const rucs = new Set(creds.map(c => c.ruc));
-    
     newCreds.forEach(c => {
         if (!rucs.has(c.ruc)) {
             creds.push({ ...c, updatedAt: new Date().toISOString() });
             rucs.add(c.ruc);
         }
     });
-    
     await setStoredData(SRI_KEYS_KEY, creds);
     await callGoogleScript('bulk_save_sri_keys', { data: newCreds });
     return creds;
 };
 
-// 6. Proveedores
 export const createProveedor = async (proveedor: Omit<Proveedor, 'id' | 'creadoEn'>): Promise<Proveedor> => {
     const proveedores = await getProveedores();
     const newP = { id: `pr${Date.now()}`, creadoEn: new Date().toISOString(), ...proveedor } as Proveedor;
@@ -321,7 +315,6 @@ export const deleteProveedor = async (id: string): Promise<void> => {
     await callGoogleScript('delete_provider', { id });
 };
 
-// 7. Tareas Proveedor
 export const createTareaProveedor = async (tarea: Omit<TareaProveedor, 'id' | 'completada'>): Promise<TareaProveedor> => {
     const tareas = await getTareasProveedor();
     const newT = { id: `t${Date.now()}`, completada: false, ...tarea };
