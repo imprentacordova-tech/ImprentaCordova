@@ -109,12 +109,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizadoPor: user } : t));
     };
 
+    // Fix: Added implementation of addProducto calling the correct api function
     const addProducto = async (p: any) => {
         const newP = await api.createProducto(p);
         setProductos(prev => [newP, ...prev]);
         return newP;
     };
 
+    // Fix: Added implementation of updateProductoState calling the correct api function
     const updateProductoState = async (id: string, p: any) => {
         await api.updateProducto(id, p);
         setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));

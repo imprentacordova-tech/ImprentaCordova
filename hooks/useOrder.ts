@@ -1,6 +1,5 @@
-
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential } from '../types';
+import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
 import { createTrabajo, getSriCredentials } from '../services/mockApi';
 import { getConfig } from '../services/configService';
 
@@ -10,76 +9,69 @@ export interface CartItem {
 }
 
 export const useOrder = (user: string) => {
-    // Estado del Pedido
+    // SRI es el tipo predeterminado ahora
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+    // Fix: Explicitly type the Map to prevent 'unknown' inference in callbacks
     const [selectedProductos, setSelectedProductos] = useState<Map<string, CartItem>>(new Map());
-    const [jobType, setJobType] = useState<TrabajoTipo>(TrabajoTipo.GENERAL);
+    const [jobType, setJobType] = useState<TrabajoTipo>(TrabajoTipo.SRI);
     const [titular, setTitular] = useState('');
     const [abono, setAbono] = useState(0);
     const [esRenovacion, setEsRenovacion] = useState(false);
     
-    // Estado SRI
     const [sriData, setSriData] = useState({
-        establecimiento: '',
-        puntoEmision: '',
+        establecimiento: '001',
+        puntoEmision: '001',
         claveAcceso: '',
-        foundCredential: null as SriCredential | null,
+        hasKey: false,
         autoFilled: false
     });
 
     const [isLoading, setIsLoading] = useState(false);
-    const [createdTrabajo, setCreatedTrabajo] = useState<Trabajo | null>(null);
 
-    // Cargar Configuración Inicial
+    // Buscar clave SRI automáticamente al seleccionar cliente
     useEffect(() => {
-        const conf = getConfig();
-        const [estab = '001', pto = '001'] = conf.numeracionPrefijo.split('-').map(s => s.trim()).filter(Boolean);
-        setSriData(prev => ({ ...prev, establecimiento: estab, puntoEmision: pto }));
-    }, []);
-
-    // Lógica Inteligente SRI al seleccionar cliente
-    useEffect(() => {
-        const checkCredentials = async () => {
+        const checkSriKey = async () => {
             if (selectedCliente) {
                 const creds = await getSriCredentials();
                 const ruc = selectedCliente.ruc || selectedCliente.cedula;
+                // Buscar coincidencia exacta o RUC base (10 dígitos)
                 const cred = creds.find(c => c.ruc === ruc || (ruc.length === 10 && c.ruc === ruc + '001'));
                 
-                if (cred && cred.password) {
-                    setSriData(prev => ({ 
-                        ...prev, 
-                        claveAcceso: cred.password || '', 
-                        foundCredential: cred,
-                        autoFilled: true 
-                    }));
-                    // Resetear el efecto visual de "auto-fill"
-                    setTimeout(() => setSriData(prev => ({ ...prev, autoFilled: false })), 2000);
+                if (cred) {
+                    setSriData(prev => ({ ...prev, claveAcceso: cred.password || '', hasKey: true, autoFilled: true }));
                 } else {
-                    setSriData(prev => ({ ...prev, claveAcceso: '', foundCredential: null }));
+                    setSriData(prev => ({ ...prev, claveAcceso: '', hasKey: false, autoFilled: false }));
                 }
                 setTitular(selectedCliente.nombre);
-            } else {
-                setSriData(prev => ({ ...prev, claveAcceso: '', foundCredential: null }));
-                setTitular('');
+                
+                // Si es Popular, limpiar productos que no sean compatibles (ej. Facturas)
+                if (selectedCliente.regimen === Regimen.NEGOCIO_POPULAR) {
+                    setSelectedProductos(prev => {
+                        // Fix: Explicitly type constructor to prevent 'unknown' in subsequent access (Error line 55)
+                        const newMap = new Map<string, CartItem>(prev);
+                        // Fix: Explicitly type the iterator key and handle CartItem properties
+                        Array.from(newMap.keys()).forEach((id: string) => {
+                            const item = newMap.get(id);
+                            if (item && item.producto.nombre.toLowerCase().includes('factura')) {
+                                newMap.delete(id);
+                            }
+                        });
+                        return newMap;
+                    });
+                }
             }
         };
-        checkCredentials();
+        checkSriKey();
     }, [selectedCliente]);
 
-    // Cálculos
     const orderTotal = useMemo(() => {
+        // Fix: Added explicit type parameter for reduce to fix unknown accumulation
         return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => total + (item.producto.precio * item.cantidad), 0);
     }, [selectedProductos]);
 
-    const totalItems = useMemo(() => {
-        return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => total + item.cantidad, 0);
-    }, [selectedProductos]);
-
-    const saldo = orderTotal - abono;
-
-    // Acciones del Carrito
     const addProduct = useCallback((producto: Producto) => {
-        setSelectedProductos((prev: Map<string, CartItem>) => {
+        setSelectedProductos(prev => {
+            // Fix: Explicitly type constructor to prevent 'unknown' inference (Error line 76)
             const newMap = new Map<string, CartItem>(prev);
             const existing = newMap.get(producto.id);
             newMap.set(producto.id, { producto, cantidad: (existing?.cantidad || 0) + 1 });
@@ -88,7 +80,8 @@ export const useOrder = (user: string) => {
     }, []);
 
     const removeProduct = useCallback((productId: string) => {
-        setSelectedProductos((prev: Map<string, CartItem>) => {
+        setSelectedProductos(prev => {
+            // Fix: Explicitly type constructor to prevent type loss
             const newMap = new Map<string, CartItem>(prev);
             newMap.delete(productId);
             return newMap;
@@ -97,12 +90,11 @@ export const useOrder = (user: string) => {
 
     const updateQuantity = useCallback((productId: string, quantity: number) => {
         if (quantity < 1) return;
-        setSelectedProductos((prev: Map<string, CartItem>) => {
+        setSelectedProductos(prev => {
+            // Fix: Explicitly type constructor to prevent 'unknown' in spread (Error line 94)
             const newMap = new Map<string, CartItem>(prev);
             const item = newMap.get(productId);
-            if (item) {
-                newMap.set(productId, { ...item, cantidad: quantity });
-            }
+            if (item) newMap.set(productId, { ...item, cantidad: quantity });
             return newMap;
         });
     }, []);
@@ -110,74 +102,38 @@ export const useOrder = (user: string) => {
     const finalizeOrder = async () => {
         if (!selectedCliente || selectedProductos.size === 0) return null;
         setIsLoading(true);
+        // Fix: Explicitly type items array to prevent unknown errors in map/reduce
+        const items: CartItem[] = Array.from(selectedProductos.values());
         
-        try {
-            const items = Array.from(selectedProductos.values());
-            const newTrabajo = await createTrabajo({
-                clienteId: selectedCliente.id,
-                titular: titular || selectedCliente.nombre,
-                tipo: jobType,
-                subtipo: items.map((i: CartItem) => `${i.cantidad}x ${i.producto.nombre}`).join(', '),
-                cantidad: items.reduce((sum: number, i: CartItem) => sum + i.cantidad, 0),
-                tamano: 'Varios',
-                total: orderTotal,
-                abono,
-                estado: TrabajoEstado.PENDIENTE,
-                establecimiento: jobType === TrabajoTipo.SRI ? sriData.establecimiento : undefined,
-                puntoEmision: jobType === TrabajoTipo.SRI ? sriData.puntoEmision : undefined,
-                claveAcceso: jobType === TrabajoTipo.SRI ? sriData.claveAcceso : undefined,
-                esRenovacion,
-            }, user);
-            
-            setCreatedTrabajo(newTrabajo);
-            return newTrabajo;
-        } catch (error) {
-            console.error("Error creating order", error);
-            return null;
-        } finally {
-            setIsLoading(false);
-        }
+        const newTrabajo = await createTrabajo({
+            clienteId: selectedCliente.id,
+            titular: titular || selectedCliente.nombre,
+            tipo: jobType,
+            subtipo: items.map((i: CartItem) => `${i.cantidad}x ${i.producto.nombre}`).join(', '),
+            cantidad: items.reduce((sum: number, i: CartItem) => sum + i.cantidad, 0),
+            tamano: '1/4 Oficio',
+            total: orderTotal,
+            abono,
+            estado: TrabajoEstado.PENDIENTE,
+            establecimiento: sriData.establecimiento,
+            puntoEmision: sriData.puntoEmision,
+            claveAcceso: sriData.claveAcceso,
+            esRenovacion
+        }, user);
+        
+        setIsLoading(false);
+        return newTrabajo;
     };
 
-    const resetOrder = useCallback(() => {
-        setSelectedCliente(null);
-        setSelectedProductos(new Map());
-        setTitular('');
-        setAbono(0);
-        setCreatedTrabajo(null);
-        setJobType(TrabajoTipo.GENERAL);
-        setEsRenovacion(false);
-        setSriData(prev => ({ ...prev, claveAcceso: '', foundCredential: null }));
-    }, []);
-
     return {
-        // State
-        selectedCliente,
-        cartItems: Array.from(selectedProductos.values()), // Exportar como array para facilitar renderizado
-        jobType,
-        titular,
-        abono,
-        esRenovacion,
-        sriData,
-        orderTotal,
-        totalItems,
-        saldo,
-        isLoading,
-        createdTrabajo,
-
-        // Setters
-        setSelectedCliente,
-        setJobType,
-        setTitular,
-        setAbono,
-        setEsRenovacion,
-        setSriData,
-
-        // Actions
-        addProduct,
-        removeProduct,
-        updateQuantity,
-        finalizeOrder,
-        resetOrder
+        selectedCliente, cartItems: Array.from(selectedProductos.values()), jobType, titular, abono, esRenovacion, sriData, orderTotal, isLoading,
+        setSelectedCliente, setJobType, setTitular, setAbono, setEsRenovacion, setSriData,
+        addProduct, removeProduct, updateQuantity, finalizeOrder,
+        resetOrder: () => {
+            setSelectedCliente(null);
+            setSelectedProductos(new Map());
+            setAbono(0);
+            setJobType(TrabajoTipo.SRI);
+        }
     };
 };

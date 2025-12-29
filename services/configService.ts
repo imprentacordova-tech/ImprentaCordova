@@ -1,3 +1,4 @@
+
 export interface NotaDeVentaConfig {
     numeracionPrefijo: string;
     autorizacionSRI: string;
@@ -18,6 +19,8 @@ export interface NotaDeVentaConfig {
     emisorEmail: string;
     emisorTelefono: string;
     reciboServicios: string;
+    // Cloud Storage
+    googleScriptUrl: string;
 }
 
 const CONFIG_KEY = 'appConfig';
@@ -33,8 +36,8 @@ const defaultConfig: NotaDeVentaConfig = {
     emisorNombreComercial: "Imprenta Córdova",
     emisorRazonSocial: "Perez Lara Juan Efrain",
     emisorTipoContribuyente: "Contribuyente Negocio Popular - Régimen RIMPE",
-    emisorDireccionMatriz: "Páez N22-53 y Ramirez Dávalos",
-    emisorDireccionSucursal: "García Moreno y Sucre",
+    emisorDireccionMatriz: "Calle Colón Ej. Sucre y Rocafuerte",
+    emisorDireccionSucursal: "Pasaje - El Oro - Ecuador",
     emisorRuc: "1722112233001",
     
     // Defaults para Recibo de Abono
@@ -42,14 +45,16 @@ const defaultConfig: NotaDeVentaConfig = {
     emisorDireccionCompleta: "Colón Ej. Sucre y Rocafuerte • Pasaje - El Oro - Ecuador",
     emisorEmail: "imprentacordova@gmail.com",
     emisorTelefono: "0993083943",
-    reciboServicios: "DOCUMENTOS AUTORIZADOS POR EL SRI; FACTURAS, NOTAS DE VENTA ETC. TARJETAS PARA TODO COMPROMISO SOCIAL, VOLANTES, RECIBOS, RIFAS, TABLAS DE BINGO, SELLOS, GIGANTOGRAFIAS, DIPLOMAS, CALENDARIOS, EMPASTAMOS TODO TIPO DE LIBROS, ANILLADOS. ADEMAS: DECLARACIONES TRIBUTARIAS SRI."
+    reciboServicios: "DOCUMENTOS AUTORIZADOS POR EL SRI; FACTURAS, NOTAS DE VENTA ETC. TARJETAS PARA TODO COMPROMISO SOCIAL, VOLANTES, RECIBOS, RIFAS, TABLAS DE BINGO, SELLOS, GIGANTOGRAFIAS, DIPLOMAS, CALENDARIOS, EMPASTAMOS TODO TIPO DE LIBROS, ANILLADOS. ADEMAS: DECLARACIONES TRIBUTARIAS SRI.",
+    
+    // URL del Google Apps Script
+    googleScriptUrl: "https://script.google.com/macros/s/AKfycbz9BrIG8s1h5spiy3H2OQVInN4lODW6VJ50-SmGBajjIQ2jbgzBl-65-_6XF7IYRluM/exec"
 };
 
 export const getConfig = (): NotaDeVentaConfig => {
     try {
         const savedConfig = localStorage.getItem(CONFIG_KEY);
         if (savedConfig) {
-            // Merge saved config with defaults to ensure new fields are present
             return { ...defaultConfig, ...JSON.parse(savedConfig) };
         }
     } catch (error) {
