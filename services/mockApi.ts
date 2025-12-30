@@ -2,6 +2,34 @@
 import { Cliente, Producto, Regimen, Trabajo, TrabajoEstado, TrabajoTipo, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, StatusLog } from '../types';
 import { getConfig } from './configService';
 
+// LLAVES DE LOCALSTORAGE
+const TRABAJOS_KEY = 'mockTrabajosData';
+const CLIENTES_KEY = 'mockClientesData';
+const PRODUCTOS_KEY = 'mockProductosData';
+const USERS_KEY = 'mockUsersData';
+const INVENTARIO_KEY = 'mockInventarioData';
+const PROVEEDORES_KEY = 'mockProveedoresData';
+const SRI_KEYS_KEY = 'mockSriKeysData';
+const TAREAS_KEY = 'mockTareasData';
+
+// --- HELPER DE SINCRONIZACIÓN NUBE ---
+const syncToCloud = async (action: string, data: any) => {
+    const config = getConfig();
+    if (!config.googleScriptUrl || config.googleScriptUrl.includes('macros')) {
+        try {
+            await fetch(config.googleScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors', // Necesario para Google Apps Script
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, payload: data, timestamp: new Date().toISOString() })
+            });
+            console.log(`Cloud Sync [${action}]: Éxito.`);
+        } catch (e) {
+            console.warn("Cloud Sync Fallido. Guardado local solamente.", e);
+        }
+    }
+};
+
 const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
     const item = localStorage.getItem(key);
     if (item) {
@@ -17,16 +45,6 @@ const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
 const setStoredData = async <T>(key: string, value: T): Promise<void> => {
     localStorage.setItem(key, JSON.stringify(value));
 };
-
-// LLAVES DE LOCALSTORAGE
-const TRABAJOS_KEY = 'mockTrabajosData';
-const CLIENTES_KEY = 'mockClientesData';
-const PRODUCTOS_KEY = 'mockProductosData';
-const USERS_KEY = 'mockUsersData';
-const INVENTARIO_KEY = 'mockInventarioData';
-const PROVEEDORES_KEY = 'mockProveedoresData';
-const SRI_KEYS_KEY = 'mockSriKeysData';
-const TAREAS_KEY = 'mockTareasData';
 
 // --- USUARIOS INICIALES ---
 const INITIAL_USERS: User[] = [
@@ -62,6 +80,10 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
     };
     trabajos.unshift(newTrabajo);
     await setStoredData(TRABAJOS_KEY, trabajos);
+    
+    // Sincronización Nube
+    await syncToCloud('CREATE_WORK', newTrabajo);
+    
     return newTrabajo;
 };
 
@@ -74,6 +96,10 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
         trabajos[index].actualizadoPor = usuario;
         trabajos[index].historial = [...(trabajos[index].historial || []), log];
         await setStoredData(TRABAJOS_KEY, trabajos);
+        
+        // Sincronización Nube
+        await syncToCloud('UPDATE_STATUS', trabajos[index]);
+        
         return trabajos[index];
     }
     throw new Error("No encontrado");
@@ -84,6 +110,10 @@ export const createCliente = async (clienteData: any): Promise<Cliente> => {
     const newCliente = { id: `c${Date.now()}`, creadoEn: new Date().toISOString(), ...clienteData };
     clientes.unshift(newCliente);
     await setStoredData(CLIENTES_KEY, clientes);
+    
+    // Sincronización Nube
+    await syncToCloud('CREATE_CLIENT', newCliente);
+    
     return newCliente;
 };
 
@@ -95,6 +125,10 @@ export const registerRetiro = async (id: string, pago: number, user: string) => 
         trabajos[idx].abono += pago;
         trabajos[idx].saldo = 0;
         await setStoredData(TRABAJOS_KEY, trabajos);
+        
+        // Sincronización Nube
+        await syncToCloud('REGISTER_RETIRE', trabajos[idx]);
+        
         return trabajos[idx];
     }
     throw new Error("No encontrado");
@@ -131,6 +165,7 @@ export const updateCliente = async (id: string, data: any) => {
     if (index > -1) {
         clientes[index] = { ...clientes[index], ...data };
         await setStoredData(CLIENTES_KEY, clientes);
+        await syncToCloud('UPDATE_CLIENT', clientes[index]);
     }
 };
 
