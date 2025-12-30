@@ -71,16 +71,14 @@ import {
     Layout,
     MapPin,
     FileCheck2,
-    // Add Printer to lucide-react imports to resolve missing PrinterIcon errors
-    Printer
+    Printer,
+    Layers,
+    FileStack
 } from 'lucide-react';
 
 // Common SVG props
 type IconProps = React.SVGProps<SVGSVGElement>;
 
-/**
- * Base Icons from Lucide re-exported with consistent naming conventions.
- */
 export const ChevronRightIcon = ChevronRight;
 export const ClipboardIcon = Clipboard;
 export const LockClosedIcon = Lock;
@@ -100,10 +98,6 @@ export const EyeSlashIcon = EyeOff;
 export const ExclamationTriangleIcon = AlertTriangle;
 export const Loader2Icon = Loader2;
 export const Copy = CopyLucide;
-
-/**
- * Aliases and additional icons required by specific components in the ERP.
- */
 export const WhatsAppIcon = MessageCircle;
 export const ArrowRightIcon = ArrowRight;
 export const HeartIcon = Heart;
@@ -159,16 +153,12 @@ export const SaveIcon = Save;
 export const SolidClockIcon = Clock;
 export const UserPlusIcon = UserPlus;
 export const MapPinIcon = MapPin;
-// Fix: Added PrinterIcon export used by multiple pages (Retiros, ReciboAbono, etc)
 export const PrinterIcon = Printer;
+export const LayersIcon = Layers;
+export const FileStackIcon = FileStack;
 
-// Exporting original lucide icons with original names for generic usage
-// Fix: Explicitly export Printer and Sparkles to resolve naming collision and visibility errors
 export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles };
 
-/**
- * Custom Logo component using an external image.
- */
 export const CordovaLogo = ({ className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     <img
         src="https://i.imgur.com/kzhXFkE.png"
