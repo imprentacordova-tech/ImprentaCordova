@@ -1,6 +1,4 @@
 
-import React;
-
 export enum TrabajoTipo {
   SRI = 'sri',
   GENERAL = 'general'
@@ -26,7 +24,7 @@ export interface Cliente {
   ruc?: string;
   nombre: string;
   nombreComercial?: string;
-  actividades?: string; // Guardadas como string separado por pipes |
+  actividades?: string; 
   direccion?: string;
   notas?: string;
   telefono: string[];
@@ -64,7 +62,7 @@ export interface Trabajo {
   prioridad?: 'Normal' | 'Urgente';
   historial?: StatusLog[];
   fechaVencimiento?: string;
-  actividadSeleccionada?: string; // Actividad elegida para este documento específico
+  actividadSeleccionada?: string;
 }
 
 export interface Producto {
