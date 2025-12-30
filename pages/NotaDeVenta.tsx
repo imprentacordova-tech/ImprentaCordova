@@ -4,11 +4,9 @@ import { useParams } from 'react-router-dom';
 import { getTrabajos, getClientes } from '../services/mockApi';
 import { Trabajo, Cliente } from '../types';
 import { formatCurrency } from '../utils';
-import { ArrowDownTrayIcon, PrinterIcon } from '../components/Icons';
+import { ArrowDownTrayIcon, PrinterIcon, CordovaLogo, MapPinIcon, PhoneIcon, EnvelopeIcon } from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
-
-// Declare html2pdf for TypeScript
 declare const html2pdf: any;
 
 const NotaDeVentaPage: React.FC = () => {
@@ -22,211 +20,192 @@ const NotaDeVentaPage: React.FC = () => {
         const fetchData = async () => {
             if (!trabajoId) return;
             setLoading(true);
-            setConfig(getConfig());
+            const cfg = getConfig();
+            setConfig(cfg);
             const [trabajosData, clientesData] = await Promise.all([getTrabajos(), getClientes()]);
             const currentTrabajo = trabajosData.find(t => t.id === trabajoId);
             if (currentTrabajo) {
                 setTrabajo(currentTrabajo);
-                const currentCliente = clientesData.find(c => c.id === currentTrabajo.clienteId);
-                setCliente(currentCliente || null);
+                setCliente(clientesData.find(c => c.id === currentTrabajo.clienteId) || null);
             }
             setLoading(false);
         };
         fetchData();
     }, [trabajoId]);
     
-    const handleGeneratePdf = () => {
-        if (!trabajo) return;
-        const element = document.getElementById('nota-de-venta-imprimible');
-        const opt = {
-          margin:       0,
-          filename:     `NotaDeVenta-${trabajo.orden}.pdf`,
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true },
-          jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
-        };
-        html2pdf().from(element).set(opt).save();
-    };
+    const handlePrint = () => window.print();
 
-    const handlePrint = () => {
-        window.print();
-    };
-
-    if (loading || !config) {
-        return <div className="text-center p-10">Cargando nota de venta...</div>;
+    if (loading || !config || !trabajo || !cliente) {
+        return <div className="text-center p-20">Generando documento oficial...</div>;
     }
 
-    if (!trabajo || !cliente) {
-        return <div className="text-center p-10 text-red-500">No se encontró el trabajo o el cliente.</div>;
-    }
-
-    const issuer = {
-        nombreComercial: config.emisorNombreComercial,
-        razonSocial: config.emisorRazonSocial,
-        tipoContribuyente: config.emisorTipoContribuyente,
-        actividades: config.emisorActividades,
-        direccionMatriz: config.emisorDireccionMatriz,
-        direccionSucursal: config.emisorDireccionSucursal,
-        ruc: config.emisorRuc,
-        notaNro: `${config.numeracionPrefijo}${String(trabajo.orden).padStart(9, '0').slice(-9)}`,
-        autorizacionSRI: config.autorizacionSRI,
-        fechaAutorizacion: new Date(config.fechaAutorizacion).toLocaleDateString('es-EC', { timeZone: 'UTC' })
-    };
+    const secuencialFormateado = String(trabajo.orden).padStart(9, '0');
+    const notaNro = `${config.emisorEstablecimiento}-${config.emisorPuntoEmision}-${secuencialFormateado}`;
     
-    const printer = {
-        nombre: config.imprentaNombre,
-        ruc: config.imprentaRuc,
-        autorizacion: config.imprentaAutorizacion
-    };
-    
-    const fechaCaducidad = new Date(config.fechaCaducidad).toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
     const unitPrice = trabajo.cantidad > 0 ? trabajo.total / trabajo.cantidad : 0;
     const emissionDate = new Date(trabajo.fechaEntrada).toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, ' - ');
+    const caducidadFormateada = new Date(config.fechaCaducidad).toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, ' - ');
 
     return (
-        <>
+        <div className="bg-slate-200 min-h-screen py-12 flex flex-col items-center">
             <style>{`
                 @media print {
                     @page { size: A5; margin: 0; }
-                    body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    body * { visibility: hidden; }
-                    #nota-de-venta-imprimible, #nota-de-venta-imprimible * { visibility: visible; }
-                    #nota-de-venta-imprimible { 
-                        position: absolute; left: 0; top: 0; 
-                        width: 148mm !important; height: 210mm !important; 
-                        margin: 0; padding: 10mm !important; 
-                        border: none; box-shadow: none; box-sizing: border-box;
-                    }
+                    body { margin: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     .no-print { display: none !important; }
+                    #nota-print-container { 
+                        box-shadow: none !important; 
+                        border: none !important;
+                        width: 148mm !important;
+                        height: 210mm !important;
+                        margin: 0 !important;
+                        padding: 10mm !important;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                    }
                 }
             `}</style>
-            <div className="bg-gray-100 dark:bg-gray-900 p-4 sm:p-8 font-sans flex flex-col items-center">
-                <div className="flex justify-end mb-4 no-print gap-4 w-full max-w-[148mm]">
-                     <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
-                        <PrinterIcon className="h-5 w-5" />
-                        <span>Imprimir</span>
-                    </button>
-                    <button onClick={handleGeneratePdf} className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors">
-                        <ArrowDownTrayIcon className="h-5 w-5" />
-                        <span>Generar PDF</span>
-                    </button>
-                </div>
 
-                <div id="nota-de-venta-imprimible" className="bg-white p-6 shadow-xl border border-gray-200" style={{width: '148mm', minHeight: '210mm', padding: '10mm', fontFamily: 'Arial, sans-serif'}}>
-                    <div className="border border-gray-800 p-3 h-full flex flex-col rounded-sm relative">
-                        
-                        <div className="flex justify-between gap-3 mb-3">
-                            <div className="w-3/5 pt-1">
-                                <div className="text-left mb-2">
-                                    <h1 className="font-black text-lg text-gray-900 uppercase tracking-tight leading-none mb-1">{issuer.nombreComercial}</h1>
-                                    <p className="text-[10px] font-bold text-gray-600 uppercase leading-tight">{issuer.razonSocial}</p>
-                                    <p className="text-[7px] font-bold text-gray-400 uppercase leading-tight mt-1">{issuer.actividades}</p>
-                                </div>
-                                <div className="text-[8px] space-y-0.5 text-gray-600 leading-tight">
-                                    <p className="font-bold text-brand-blue text-[9px] uppercase">{issuer.tipoContribuyente}</p>
-                                    <p><strong>Matriz:</strong> {issuer.direccionMatriz}</p>
-                                    {issuer.direccionSucursal && <p><strong>Sucursal:</strong> {issuer.direccionSucursal}</p>}
-                                    <p><strong>Tel:</strong> {config.emisorTelefono} <strong>Email:</strong> {config.emisorEmail}</p>
-                                </div>
-                            </div>
+            <div className="w-full max-w-[148mm] flex justify-between mb-8 no-print px-4">
+                <h1 className="text-slate-800 font-black text-sm uppercase tracking-widest">Vista Previa SRI</h1>
+                <button onClick={handlePrint} className="bg-brand-blue text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-3 hover:bg-brand-navy transition-all">
+                    <PrinterIcon className="w-5 h-5"/> Imprimir Nota de Venta
+                </button>
+            </div>
 
-                            <div className="w-2/5">
-                                <div className="border border-gray-800 rounded-md p-2 bg-gray-50/50">
-                                    <p className="text-xs font-bold text-gray-800">R.U.C. {issuer.ruc}</p>
-                                    <div className="bg-brand-blue text-white text-center text-xs font-bold py-1 my-1 rounded-sm shadow-sm">
-                                        NOTA DE VENTA
-                                    </div>
-                                    <div className="flex justify-between items-baseline mb-1">
-                                        <span className="text-[9px] font-bold text-gray-500">No.</span>
-                                        <span className="font-mono text-base font-bold text-red-600">{issuer.notaNro}</span>
-                                    </div>
-                                    <div className="text-[8px] text-gray-500 border-t border-gray-300 pt-1 mt-1 leading-tight">
-                                        <p><strong>AUT. SRI:</strong> {issuer.autorizacionSRI}</p>
-                                        <p><strong>FECHA AUT.:</strong> {issuer.fechaAutorizacion}</p>
-                                    </div>
-                                </div>
+            {/* FORMATO A5 (148mm x 210mm) */}
+            <div id="nota-print-container" className="bg-white shadow-2xl relative flex flex-col box-border border border-gray-300" style={{ width: '148mm', height: '210mm', padding: '10mm', fontFamily: 'Arial, sans-serif' }}>
+                
+                {/* CABECERA (LOGO + EMISOR + RUC BOX) */}
+                <div className="flex justify-between items-start gap-4 mb-4">
+                    {/* INFO EMISOR */}
+                    <div className="w-7/12">
+                        <div className="flex items-center gap-3 mb-2">
+                             <CordovaLogo className="h-14 w-auto object-contain" />
+                             <div>
+                                <h2 className="text-xl font-black text-brand-blue uppercase leading-none">{config.emisorNombreComercial}</h2>
+                                <p className="text-[9px] font-bold text-gray-700 uppercase mt-1">{config.emisorRazonSocial}</p>
+                             </div>
+                        </div>
+                        <div className="space-y-0.5 text-[8px] text-gray-600 uppercase font-medium">
+                            <p className="font-black text-brand-red text-[9px]">{config.emisorTipoContribuyente}</p>
+                            <p className="leading-tight">{config.emisorActividades}</p>
+                            <div className="mt-2 border-t pt-1">
+                                <p><strong>Matriz:</strong> {config.emisorDireccionMatriz}</p>
+                                <p><strong>Sucursal:</strong> {config.emisorDireccionSucursal}</p>
+                                <p><strong>Tel:</strong> {config.emisorTelefono} | <strong>Email:</strong> {config.emisorEmail}</p>
                             </div>
                         </div>
-                        
-                        <div className="bg-gray-100 rounded-md p-2 mb-2 border border-gray-200">
-                            <div className="flex flex-wrap gap-y-1 text-[10px]">
-                                <div className="w-2/3">
-                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">CLIENTE:</span>
-                                    <span className="font-bold text-gray-900 uppercase">{cliente.nombre}</span>
-                                </div>
-                                <div className="w-1/3 text-right">
-                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">RUC/CI:</span>
-                                    <span className="font-mono text-gray-900">{cliente.ruc || cliente.cedula}</span>
-                                </div>
-                                <div className="w-2/3">
-                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">DIR:</span>
-                                    <span className="text-gray-900 uppercase text-[9px]">{cliente.direccion || 'Ciudad'}</span>
-                                </div>
-                                <div className="w-1/3 text-right">
-                                    <span className="font-bold text-gray-500 mr-2 text-[9px]">FECHA:</span>
-                                    <span className="font-mono text-gray-900">{emissionDate}</span>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
 
-                        <div className="flex-grow">
-                            <table className="w-full border-collapse text-[10px]">
-                                <thead>
-                                    <tr className="bg-brand-blue text-white">
-                                        <th className="border border-brand-blue py-1 w-[10%] font-bold">CANT.</th>
-                                        <th className="border border-brand-blue py-1 w-[60%] font-bold text-left px-2">DESCRIPCIÓN</th>
-                                        <th className="border border-brand-blue py-1 w-[15%] font-bold text-right px-1">P. UNIT.</th>
-                                        <th className="border border-brand-blue py-1 w-[15%] font-bold text-right px-1">TOTAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-gray-800">
-                                    <tr>
-                                        <td className="border-x border-gray-300 py-1 text-center align-top font-bold">{trabajo.cantidad}</td>
-                                        <td className="border-x border-gray-300 py-1 px-2 align-top uppercase leading-tight">{trabajo.subtipo}</td>
-                                        <td className="border-x border-gray-300 py-1 text-right px-2 align-top">{formatCurrency(unitPrice).replace('$','')}</td>
-                                        <td className="border-x border-gray-300 py-1 text-right px-2 align-top font-bold">{formatCurrency(trabajo.total).replace('$','')}</td>
-                                    </tr>
-                                    {[...Array(10)].map((_, i) => (
-                                         <tr key={i}><td className="border-x border-gray-300 h-5"></td><td className="border-x border-gray-300"></td><td className="border-x border-gray-300"></td><td className="border-x border-gray-300"></td></tr>
-                                    ))}
-                                    <tr className="border-t border-gray-300">
-                                        <td colSpan={2} className="p-1 align-bottom">
-                                             <div className="text-[8px] text-gray-500 border border-gray-200 rounded p-1">
-                                                <span className="font-bold">FORMA DE PAGO:</span> Efectivo [ x ] &nbsp; Dinero Elec. [ &nbsp; ] &nbsp; Tarjeta [ &nbsp; ] &nbsp; Otros [ &nbsp; ]
-                                             </div>
-                                        </td>
-                                        <td className="border border-gray-300 p-1 font-bold bg-gray-100 text-right pr-2 text-[9px]">TOTAL $</td>
-                                        <td className="border border-gray-300 p-1 font-bold text-right pr-2 text-xs">{formatCurrency(trabajo.total).replace('$','')}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="mt-2 pt-2 border-t border-gray-800 flex items-end justify-between text-[9px] text-gray-600 px-1">
-                            <div className="w-5/12 leading-tight">
-                                <p className="font-bold text-gray-800">{printer.nombre}</p>
-                                <p>RUC: {printer.ruc} • Aut. {printer.autorizacion}</p>
-                                <p className="mt-0.5">Válido hasta: <span className="font-bold text-gray-900">{fechaCaducidad}</span></p>
+                    {/* RUC BOX OFICIAL */}
+                    <div className="w-5/12">
+                        <div className="border-2 border-gray-800 rounded-2xl p-3 text-center bg-gray-50/50">
+                            <p className="text-[11px] font-black text-gray-900">R.U.C. {config.emisorRuc}</p>
+                            <div className="bg-brand-blue text-white text-[10px] font-black py-1.5 my-2 rounded-lg tracking-widest shadow-sm">NOTA DE VENTA</div>
+                            <div className="flex justify-between items-baseline mb-1 px-2">
+                                <span className="text-[10px] font-bold text-gray-500">Nº</span>
+                                <span className="font-mono text-lg font-black text-red-600 tracking-tighter">{notaNro}</span>
                             </div>
-                            <div className="w-6/12 flex gap-4 justify-end">
-                                <div className="text-center w-24">
-                                    <div className="border-t border-gray-400 mb-1"></div>
-                                    <span className="font-bold text-gray-500 uppercase text-[8px]">Firma Autorizada</span>
-                                </div>
-                                <div className="text-center w-24">
-                                    <div className="border-t border-gray-400 mb-1"></div>
-                                    <span className="font-bold text-gray-500 uppercase text-[8px]">Recibí Conforme</span>
-                                </div>
+                            <div className="text-[8px] text-gray-500 border-t border-gray-200 pt-1 mt-1 leading-tight text-left pl-2">
+                                <p><strong>AUT. SRI:</strong> {config.autorizacionSRI}</p>
+                                <p><strong>FECHA AUTORIZACIÓN:</strong> {new Date(config.fechaAutorizacion).toLocaleDateString()}</p>
                             </div>
-                        </div>
-                        
-                        <div className="text-center text-[7px] text-gray-400 mt-1">
-                            Original: Adquirente / Copia: Emisor
                         </div>
                     </div>
                 </div>
+
+                {/* DATOS CLIENTE */}
+                <div className="border border-gray-400 rounded-xl p-3 mb-4 bg-white grid grid-cols-12 gap-y-1.5 text-[10px] font-medium text-gray-800">
+                    <div className="col-span-8 flex gap-2">
+                        <span className="font-black text-gray-500 uppercase text-[9px]">Sr(es):</span>
+                        <span className="font-black uppercase truncate">{cliente.nombre}</span>
+                    </div>
+                    <div className="col-span-4 text-right flex justify-end gap-2">
+                        <span className="font-black text-gray-500 uppercase text-[9px]">RUC/CI:</span>
+                        <span className="font-mono font-bold">{cliente.ruc || cliente.cedula}</span>
+                    </div>
+                    <div className="col-span-8 flex gap-2">
+                        <span className="font-black text-gray-500 uppercase text-[9px]">Dir:</span>
+                        <span className="uppercase truncate">{cliente.direccion || 'Pasaje'}</span>
+                    </div>
+                    <div className="col-span-4 text-right flex justify-end gap-2">
+                        <span className="font-black text-gray-500 uppercase text-[9px]">Fecha:</span>
+                        <span className="font-mono">{emissionDate}</span>
+                    </div>
+                    <div className="col-span-12 flex gap-2">
+                        <span className="font-black text-gray-500 uppercase text-[9px]">Guía Remisión:</span>
+                        <span className="border-b border-gray-300 flex-grow h-3"></span>
+                    </div>
+                </div>
+
+                {/* TABLA DE PRODUCTOS */}
+                <div className="flex-grow">
+                    <table className="w-full border-collapse border border-gray-800 text-[10px]">
+                        <thead>
+                            <tr className="bg-gray-100 uppercase text-[8px] font-black text-gray-700">
+                                <th className="border border-gray-800 p-1.5 w-[12%]">Cant.</th>
+                                <th className="border border-gray-800 p-1.5 text-left w-[60%]">Descripción</th>
+                                <th className="border border-gray-800 p-1.5 w-[14%]">P. Unit.</th>
+                                <th className="border border-gray-800 p-1.5 w-[14%]">V. Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="h-8">
+                                <td className="border-x border-gray-800 text-center font-bold">{trabajo.cantidad}</td>
+                                <td className="border-x border-gray-800 px-2 font-bold uppercase">{trabajo.subtipo}</td>
+                                <td className="border-x border-gray-800 text-right pr-2">{formatCurrency(unitPrice).replace('$', '')}</td>
+                                <td className="border-x border-gray-800 text-right pr-2 font-black">{formatCurrency(trabajo.total).replace('$', '')}</td>
+                            </tr>
+                            {/* Relleno de filas vacías para estética oficial */}
+                            {[...Array(12)].map((_, i) => (
+                                <tr key={i} className="h-6"><td className="border-x border-gray-800"></td><td className="border-x border-gray-800"></td><td className="border-x border-gray-800"></td><td className="border-x border-gray-800"></td></tr>
+                            ))}
+                            {/* TOTALES */}
+                            <tr className="border-t border-gray-800">
+                                <td colSpan={2} rowSpan={1} className="border border-gray-800 p-0 align-top">
+                                     <div className="grid grid-cols-2 h-full text-[7px] font-black uppercase">
+                                        <div className="p-1 border-r border-b border-gray-300">Forma de Pago</div>
+                                        <div className="p-1 border-b border-gray-300">Valor</div>
+                                        <div className="p-1 border-r border-gray-200">Efectivo</div>
+                                        <div className="p-1 border-l border-gray-200 text-center">[ x ]</div>
+                                        <div className="p-1 border-r border-gray-200">Dinero Electr.</div>
+                                        <div className="p-1 border-l border-gray-200 text-center">[ &nbsp; ]</div>
+                                        <div className="p-1 border-r border-gray-200">T. Débito/Créd.</div>
+                                        <div className="p-1 border-l border-gray-200 text-center">[ &nbsp; ]</div>
+                                        <div className="p-1 border-r border-gray-200">Otros</div>
+                                        <div className="p-1 border-l border-gray-200 text-center">[ &nbsp; ]</div>
+                                     </div>
+                                </td>
+                                <td className="border border-gray-800 bg-gray-100 font-black text-center text-[9px] h-full uppercase">Valor Total</td>
+                                <td className="border border-gray-800 text-right pr-2 font-black text-lg bg-blue-50/30">{formatCurrency(trabajo.total).replace('$', '')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* PIE DE NOTA (IMPRENTA + CADUCIDAD) */}
+                <div className="mt-4 grid grid-cols-12 gap-4 items-end">
+                    <div className="col-span-7 space-y-1">
+                        <div className="border-t border-gray-400 p-2 text-center">
+                            <p className="text-[8px] font-black uppercase text-gray-500">Firma Autorizada</p>
+                        </div>
+                        <div className="p-2 border border-gray-200 rounded-lg text-[7px] text-gray-500 leading-tight">
+                            <p><strong>IMPRENTA:</strong> {config.imprentaNombre}</p>
+                            <p>RUC: {config.imprentaRuc} | Autorización: {config.imprentaAutorizacion}</p>
+                            <p className="mt-1 text-[8px] text-gray-900 font-black">VÁLIDO PARA SU EMISIÓN HASTA: {caducidadFormateada}</p>
+                        </div>
+                    </div>
+                    <div className="col-span-5 text-center">
+                         <div className="border-t border-gray-400 p-2">
+                            <p className="text-[8px] font-black uppercase text-gray-500">Recibí Conforme (Adquirente)</p>
+                        </div>
+                        <p className="text-[7px] text-gray-400 font-bold uppercase mt-2 italic">Original: Adquirente / Copia: Emisor</p>
+                    </div>
+                </div>
             </div>
-        </>
+        </div>
     );
 };
 

@@ -1,5 +1,6 @@
 
 import { Cliente, Producto, Regimen, Trabajo, TrabajoEstado, TrabajoTipo, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, StatusLog } from '../types';
+import { getConfig } from './configService';
 
 const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
     const item = localStorage.getItem(key);
@@ -27,7 +28,7 @@ const PROVEEDORES_KEY = 'mockProveedoresData';
 const SRI_KEYS_KEY = 'mockSriKeysData';
 const TAREAS_KEY = 'mockTareasData';
 
-// --- USUARIOS INICIALES (PEDRO SIEMPRE ACTIVO) ---
+// --- USUARIOS INICIALES ---
 const INITIAL_USERS: User[] = [
     { id: 'u1', nombre: 'Pedro', email: 'pedro@imprentacordova.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
     { id: 'u2', nombre: 'Aleida', email: 'aleida@imprentacordova.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
@@ -43,33 +44,32 @@ export const getProveedores = async (): Promise<Proveedor[]> => getStoredData(PR
 export const getSriCredentials = async (): Promise<SriCredential[]> => getStoredData(SRI_KEYS_KEY, []);
 export const getTareasProveedor = async (): Promise<TareaProveedor[]> => getStoredData(TAREAS_KEY, []);
 
-// --- FUNCIONES SRI ---
-export const addSriCredential = async (cred: SriCredential): Promise<SriCredential[]> => {
-    const creds = await getSriCredentials();
-    const updated = [...creds.filter(c => c.ruc !== cred.ruc), { ...cred, updatedAt: new Date().toISOString() }];
-    await setStoredData(SRI_KEYS_KEY, updated);
-    return updated;
+export const createTrabajo = async (trabajoData: any, usuario: string): Promise<Trabajo> => {
+    const trabajos = await getTrabajos();
+    const config = getConfig();
+    
+    // Calcular el siguiente número de orden
+    // Si no hay trabajos, usa el secuencialInicio de la config.
+    // Si hay trabajos, usa el máximo entre el último trabajo y la config (por si Pedro la resetea).
+    const lastSequence = trabajos.length > 0 ? Math.max(...trabajos.map(t => t.orden)) : config.secuencialInicio - 1;
+    const nextSequence = Math.max(lastSequence + 1, config.secuencialInicio);
+
+    const newTrabajo: Trabajo = {
+        id: String(Date.now()),
+        orden: nextSequence,
+        ...trabajoData,
+        fechaEntrada: new Date().toISOString(),
+        caduco: false,
+        creadoPor: usuario,
+        saldo: (trabajoData.total || 0) - (trabajoData.abono || 0),
+        historial: [{ estado: TrabajoEstado.PENDIENTE, fecha: new Date().toISOString(), usuario }]
+    };
+    trabajos.unshift(newTrabajo);
+    await setStoredData(TRABAJOS_KEY, trabajos);
+    return newTrabajo;
 };
 
-export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
-    let creds = await getSriCredentials();
-    const rucMap = new Map(creds.map(c => [c.ruc, c]));
-    newCreds.forEach(c => {
-        rucMap.set(c.ruc, { ...c, updatedAt: new Date().toISOString() });
-    });
-    const updated = Array.from(rucMap.values());
-    await setStoredData(SRI_KEYS_KEY, updated);
-    return updated;
-};
-
-export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]> => {
-    let creds = await getSriCredentials();
-    creds = creds.filter(c => c.ruc !== ruc);
-    await setStoredData(SRI_KEYS_KEY, creds);
-    return creds;
-};
-
-// --- TRABAJOS ---
+// ... Resto de funciones del API (se mantienen iguales)
 export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoEstado, usuario: string): Promise<Trabajo> => {
     const trabajos = await getTrabajos();
     const index = trabajos.findIndex(t => t.id === trabajoId);
@@ -82,23 +82,6 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
         return trabajos[index];
     }
     throw new Error("No encontrado");
-};
-
-export const createTrabajo = async (trabajoData: any, usuario: string): Promise<Trabajo> => {
-    const trabajos = await getTrabajos();
-    const newTrabajo: Trabajo = {
-        id: String(Date.now()),
-        orden: (trabajos.length > 0 ? Math.max(...trabajos.map(t => t.orden)) : 1000) + 1,
-        ...trabajoData,
-        fechaEntrada: new Date().toISOString(),
-        caduco: false,
-        creadoPor: usuario,
-        saldo: (trabajoData.total || 0) - (trabajoData.abono || 0),
-        historial: [{ estado: TrabajoEstado.PENDIENTE, fecha: new Date().toISOString(), usuario }]
-    };
-    trabajos.unshift(newTrabajo);
-    await setStoredData(TRABAJOS_KEY, trabajos);
-    return newTrabajo;
 };
 
 export const createCliente = async (clienteData: any): Promise<Cliente> => {
@@ -191,6 +174,14 @@ export const createProducto = async (p: any) => {
     return newP;
 };
 
+export const bulkCreateProductos = async (products: any[]) => {
+    const data = await getProductos();
+    const newProducts = products.map((p, idx) => ({ id: `p${Date.now()}-${idx}`, ...p }));
+    const updated = [...data, ...newProducts];
+    await setStoredData(PRODUCTOS_KEY, updated);
+    return newProducts;
+};
+
 export const updateProducto = async (id: string, p: any) => {
     const data = await getProductos();
     const idx = data.findIndex(i => i.id === id);
@@ -261,4 +252,29 @@ export const updateTareaProveedor = async (id: string, t: any) => {
         data[idx] = { ...data[idx], ...t };
         await setStoredData(TAREAS_KEY, data);
     }
+};
+
+export const addSriCredential = async (cred: SriCredential): Promise<SriCredential[]> => {
+    const creds = await getSriCredentials();
+    const updated = [...creds.filter(c => c.ruc !== cred.ruc), { ...cred, updatedAt: new Date().toISOString() }];
+    await setStoredData(SRI_KEYS_KEY, updated);
+    return updated;
+};
+
+export const bulkAddSriCredentials = async (newCreds: SriCredential[]): Promise<SriCredential[]> => {
+    let creds = await getSriCredentials();
+    const rucMap = new Map(creds.map(c => [c.ruc, c]));
+    newCreds.forEach(c => {
+        rucMap.set(c.ruc, { ...c, updatedAt: new Date().toISOString() });
+    });
+    const updated = Array.from(rucMap.values());
+    await setStoredData(SRI_KEYS_KEY, updated);
+    return updated;
+};
+
+export const deleteSriCredential = async (ruc: string): Promise<SriCredential[]> => {
+    let creds = await getSriCredentials();
+    creds = creds.filter(c => c.ruc !== ruc);
+    await setStoredData(SRI_KEYS_KEY, creds);
+    return creds;
 };

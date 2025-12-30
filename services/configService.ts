@@ -1,6 +1,10 @@
 
 export interface NotaDeVentaConfig {
-    numeracionPrefijo: string;
+    // Numeración
+    emisorEstablecimiento: string;
+    emisorPuntoEmision: string;
+    secuencialInicio: number;
+    
     autorizacionSRI: string;
     fechaAutorizacion: string;
     fechaCaducidad: string;
@@ -27,7 +31,10 @@ export interface NotaDeVentaConfig {
 const CONFIG_KEY = 'appConfig';
 
 const defaultConfig: NotaDeVentaConfig = {
-    numeracionPrefijo: "002-001-",
+    emisorEstablecimiento: "001",
+    emisorPuntoEmision: "001",
+    secuencialInicio: 1, // Permite que Pedro decida desde qué número arranca el sistema
+    
     autorizacionSRI: "1234567890",
     fechaAutorizacion: "2024-01-15",
     fechaCaducidad: "2025-01-15",
@@ -42,14 +49,11 @@ const defaultConfig: NotaDeVentaConfig = {
     emisorRuc: "0702065319001",
     emisorActividades: "SERVICIOS GRÁFICOS Y PUBLICITARIOS",
     
-    // Defaults para Recibo de Abono
     reciboCodAuto: "8634",
     emisorDireccionCompleta: "Colón Ej. Sucre y Rocafuerte • Pasaje - El Oro - Ecuador",
     emisorEmail: "imprentacordova@gmail.com",
     emisorTelefono: "0993083943",
-    reciboServicios: "DOCUMENTOS AUTORIZADOS POR EL SRI; FACTURAS, NOTAS DE VENTA ETC. TARJETAS PARA TODO COMPROMISO SOCIAL, VOLANTES, RECIBOS, RIFAS, TABLAS DE BINGO, SELLOS, GIGANTOGRAFIAS, DIPLOMAS, CALENDARIOS, EMPASTAMOS TODO TIPO DE LIBROS, ANILLADOS. ADEMAS: DECLARACIONES TRIBUTARIAS SRI.",
-    
-    // URL del Google Apps Script
+    reciboServicios: "DOCUMENTOS AUTORIZADOS POR EL SRI; FACTURAS, NOTAS DE VENTA ETC...",
     googleScriptUrl: "https://script.google.com/macros/s/AKfycbz9BrIG8s1h5spiy3H2OQVInN4lODW6VJ50-SmGBajjIQ2jbgzBl-65-_6XF7IYRluM/exec"
 };
 

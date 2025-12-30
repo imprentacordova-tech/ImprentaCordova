@@ -9,7 +9,7 @@ import {
 } from '../components/Icons';
 import { SriCredential } from '../types';
 
-const InputField: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, [key: string]: any}> = ({ label, name, value, onChange, ...props }) => (
+const InputField: React.FC<{label: string, name: string, value: any, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, [key: string]: any}> = ({ label, name, value, onChange, ...props }) => (
     <div>
         <label htmlFor={name} className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">{label}</label>
         <input
@@ -121,6 +121,7 @@ const ConfiguracionPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Bóveda SRI */}
             <div className="bg-slate-950 rounded-[3.5rem] shadow-3xl border border-white/5 overflow-hidden">
                 <div className="p-10 flex flex-col lg:flex-row justify-between items-center gap-8 border-b border-white/5 relative">
                     <div className="flex items-center gap-6 relative z-10">
@@ -134,7 +135,6 @@ const ConfiguracionPage: React.FC = () => {
                             </span>
                         </div>
                     </div>
-                    
                     <div className="flex gap-4 relative z-10">
                         <input type="file" ref={fileInputRef} onChange={handleImportCSV} className="hidden" accept=".csv" />
                         <button onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-950 hover:bg-brand-red hover:text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 shadow-xl">
@@ -144,94 +144,79 @@ const ConfiguracionPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="p-10 space-y-8 bg-white/5 backdrop-blur-md">
-                    <div className="relative group">
-                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500 group-focus-within:text-brand-blue transition-colors" />
-                        <input 
-                            type="text" 
-                            placeholder="BUSCAR POR RUC O NOMBRE..." 
-                            value={searchTerm} 
-                            onChange={e => setSearchTerm(e.target.value)} 
-                            className="w-full pl-16 pr-8 py-5 bg-slate-900 border border-white/10 rounded-2xl text-lg font-black uppercase tracking-tight text-white focus:ring-4 focus:ring-brand-blue/20 transition-all outline-none" 
-                        />
+                <div className="p-10 bg-white/5 backdrop-blur-md">
+                    <div className="relative group mb-8">
+                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                        <input type="text" placeholder="BUSCAR POR RUC O NOMBRE..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-900 border border-white/10 rounded-2xl text-lg font-black uppercase tracking-tight text-white focus:ring-4 focus:ring-brand-blue/20 transition-all outline-none" />
                     </div>
-
-                    <div className="rounded-[2.5rem] border border-white/10 overflow-hidden bg-slate-900/50 shadow-inner">
-                        <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-950 sticky top-0 z-20 border-b border-white/10">
-                                    <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                                        <th className="px-8 py-6">RUC / Contribuyente</th>
-                                        <th className="px-8 py-6">Credencial Portal SRI</th>
-                                        <th className="px-8 py-6 text-right">Acciones de Bóveda</th>
+                    <div className="max-h-96 overflow-y-auto custom-scrollbar rounded-2xl border border-white/10">
+                         <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-950 sticky top-0 z-20 border-b border-white/10">
+                                <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                                    <th className="px-8 py-4">RUC / Contribuyente</th>
+                                    <th className="px-8 py-4">Clave</th>
+                                    <th className="px-8 py-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {filteredCredentials.map(c => (
+                                    <tr key={c.ruc} className="hover:bg-white/[0.03] transition-all">
+                                        <td className="px-8 py-4">
+                                            <p className="text-white font-black uppercase text-sm truncate">{c.origen || 'SRI Client'}</p>
+                                            <p className="text-xs font-mono font-bold text-slate-500">{c.ruc}</p>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <button onClick={() => togglePasswordVisibility(c.ruc)} className="text-slate-400 hover:text-white flex items-center gap-2">
+                                                {visiblePasswords.has(c.ruc) ? <span className="text-emerald-400 font-mono">{c.password}</span> : '••••••••'}
+                                                {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-4 h-4"/> : <EyeIcon className="w-4 h-4"/>}
+                                            </button>
+                                        </td>
+                                        <td className="px-8 py-4 text-right">
+                                            <button onClick={() => deleteSriCredential(c.ruc).then(getSriCredentials).then(setSriCredentials)} className="text-slate-600 hover:text-red-500"><TrashIcon className="w-4 h-4"/></button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {filteredCredentials.map(c => (
-                                        <tr key={c.ruc} className="hover:bg-white/[0.03] transition-all group">
-                                            <td className="px-8 py-5">
-                                                <p className="text-white font-black uppercase tracking-tight text-sm truncate">{c.origen || 'SRI Client'}</p>
-                                                <p className="text-xs font-mono font-bold text-slate-500">{c.ruc}</p>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex-grow bg-black/40 rounded-xl px-4 py-2 border border-white/5 font-mono text-sm min-w-[150px]">
-                                                        {visiblePasswords.has(c.ruc) ? <span className="text-emerald-400">{c.password}</span> : <span className="text-slate-600">••••••••••••</span>}
-                                                    </div>
-                                                    <button onClick={() => togglePasswordVisibility(c.ruc)} className="text-slate-500 hover:text-white transition-colors">
-                                                        {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-5 h-5"/> : <EyeIcon className="w-5 h-5"/>}
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-right">
-                                                <div className="flex justify-end gap-3">
-                                                    <button onClick={() => copyAndOpenSri(c.password || '')} className="bg-brand-blue text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 flex items-center gap-2 shadow-lg active:scale-95">
-                                                        <GlobeAltIcon className="w-4 h-4"/> Portal SRI
-                                                    </button>
-                                                    <button onClick={() => handleDeleteKey(c.ruc)} className="p-2 text-slate-600 hover:text-brand-red transition-all"><TrashIcon className="w-5 h-5"/></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-                <form onSubmit={handleSaveGeneral} className="bg-white dark:bg-gray-800 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-8">
+            {/* Configuración de Negocio y Numeración */}
+            <div className="grid lg:grid-cols-1 gap-8">
+                <form onSubmit={handleSaveGeneral} className="bg-white dark:bg-gray-800 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-10">
                     <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
                         <div className="p-2 bg-brand-red rounded-xl text-white"><ShieldCheckIcon className="w-6 h-6" /></div>
-                        Datos Matriz Imprenta
+                        Parámetros de Facturación Oficial
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InputField label="Razón Social (Dueño)" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={e => setConfig({...config, emisorRazonSocial: e.target.value})} />
-                        <InputField label="Nombre Comercial" name="emisorNombreComercial" value={config.emisorNombreComercial} onChange={e => setConfig({...config, emisorNombreComercial: e.target.value})} />
-                        <InputField label="RUC Empresa" name="emisorRuc" value={config.emisorRuc} onChange={e => setConfig({...config, emisorRuc: e.target.value})} />
-                        <InputField label="Cód. Autorización (Recibos)" name="reciboCodAuto" value={config.reciboCodAuto} onChange={e => setConfig({...config, reciboCodAuto: e.target.value})} />
-                        <InputField label="Dirección Matriz" name="emisorDireccionMatriz" value={config.emisorDireccionMatriz} onChange={e => setConfig({...config, emisorDireccionMatriz: e.target.value})} />
-                        <InputField label="Actividad Económica" name="emisorActividades" value={config.emisorActividades} onChange={e => setConfig({...config, emisorActividades: e.target.value})} />
-                        <InputField label="Teléfono Matriz" name="emisorTelefono" value={config.emisorTelefono} onChange={e => setConfig({...config, emisorTelefono: e.target.value})} />
-                        <InputField label="Email Contacto" name="emisorEmail" value={config.emisorEmail} onChange={e => setConfig({...config, emisorEmail: e.target.value})} />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-8 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-900/30">
+                        <InputField label="Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} placeholder="001" />
+                        <InputField label="Punto de Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} placeholder="001" />
+                        <InputField label="Próximo Secuencial (Inicio)" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} placeholder="501" />
+                        <div className="md:col-span-3">
+                            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed">
+                                Tip: Si vas por el block #500 en tus facturas físicas, pon 501 aquí para que el sistema siga la secuencia.
+                            </p>
+                        </div>
                     </div>
-                    <div className="pt-6 border-t flex justify-between items-center">
-                        {showSuccess && <span className="text-emerald-500 font-black text-[10px] animate-fade-in tracking-widest">✓ DATOS ACTUALIZADOS</span>}
-                        <button type="submit" className="px-10 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-brand-blue transition-all uppercase tracking-widest text-[10px]">Guardar Matriz</button>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <InputField label="Razón Social (Dueño)" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={e => setConfig({...config, emisorRazonSocial: e.target.value})} />
+                        <InputField label="RUC Empresa" name="emisorRuc" value={config.emisorRuc} onChange={e => setConfig({...config, emisorRuc: e.target.value})} />
+                        <InputField label="Autorización SRI (Vigente)" name="autorizacionSRI" value={config.autorizacionSRI} onChange={e => setConfig({...config, autorizacionSRI: e.target.value})} />
+                        <InputField label="Código Autorización Recibos" name="reciboCodAuto" value={config.reciboCodAuto} onChange={e => setConfig({...config, reciboCodAuto: e.target.value})} />
+                        <InputField label="Fecha Caducidad Documentos" type="date" name="fechaCaducidad" value={config.fechaCaducidad} onChange={e => setConfig({...config, fechaCaducidad: e.target.value})} />
+                        <InputField label="Actividad Económica" name="emisorActividades" value={config.emisorActividades} onChange={e => setConfig({...config, emisorActividades: e.target.value})} />
+                        <InputField label="Nombre de la Imprenta" name="imprentaNombre" value={config.imprentaNombre} onChange={e => setConfig({...config, imprentaNombre: e.target.value})} />
+                        <InputField label="RUC de la Imprenta" name="imprentaRuc" value={config.imprentaRuc} onChange={e => setConfig({...config, imprentaRuc: e.target.value})} />
+                    </div>
+
+                    <div className="pt-8 border-t flex justify-between items-center">
+                        {showSuccess && <span className="text-emerald-500 font-black text-[10px] animate-fade-in tracking-widest uppercase">✓ Configuración Actualizada</span>}
+                        <button type="submit" className="px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all uppercase tracking-widest text-xs">Guardar Cambios Maestros</button>
                     </div>
                 </form>
-                
-                <div className="bg-gradient-to-br from-brand-blue to-brand-navy p-10 rounded-[3rem] shadow-2xl text-white flex flex-col justify-between relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-10 opacity-10">
-                        <GlobeAltIcon className="w-48 h-48" />
-                    </div>
-                    <div>
-                        <h3 className="text-3xl font-black uppercase tracking-tighter italic mb-4 leading-none">Cloud Backup<br/>Real-Time</h3>
-                        <p className="text-blue-100/60 text-sm leading-relaxed max-w-xs font-medium">Todas tus órdenes y claves se sincronizan con la nube para acceso remoto seguro desde cualquier dispositivo.</p>
-                    </div>
-                    <button onClick={() => window.open(config.googleScriptUrl, '_blank')} className="w-full py-4 bg-white text-brand-blue font-black rounded-2xl shadow-xl hover:bg-slate-900 hover:text-white transition-all text-xs uppercase tracking-widest z-10">Nube Operativa</button>
-                </div>
             </div>
         </div>
     );
