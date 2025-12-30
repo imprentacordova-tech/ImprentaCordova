@@ -61,7 +61,8 @@ const SolicitudImpresionPage: React.FC = () => {
         </div>
     );
 
-    const isSRI = trabajo.tipo === TrabajoTipo.SRI;
+    // Validación estricta para determinar si es un trabajo que requiere datos del SRI
+    const isSRI = trabajo.tipo === TrabajoTipo.SRI || String(trabajo.tipo).toLowerCase() === 'sri';
     const isQuimico = trabajo.subtipo.toLowerCase().includes('químico') || trabajo.subtipo.toLowerCase().includes('quimico');
 
     return (
@@ -109,8 +110,8 @@ const SolicitudImpresionPage: React.FC = () => {
                             <div className="text-[7px] font-bold text-slate-500 uppercase mt-1 leading-tight">
                                 <p className="flex items-center gap-1"><MapPinIcon className="w-2 h-2 text-brand-red"/> {config.emisorDireccionCompleta}</p>
                                 <p className="flex items-center gap-3">
-                                    <span className="flex items-center gap-1"><PhoneIcon className="w-2 h-2 text-brand-red"/> {config.emisorTelefono}</span>
-                                    <span className="flex items-center gap-1"><EnvelopeIcon className="w-2 h-2 text-brand-red"/> {config.emisorEmail}</span>
+                                    <span className="flex items-center gap-1"><PhoneIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorTelefono}</span>
+                                    <span className="flex items-center gap-1"><EnvelopeIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorEmail}</span>
                                 </p>
                             </div>
                         </div>
@@ -123,7 +124,7 @@ const SolicitudImpresionPage: React.FC = () => {
                 </div>
 
                 {/* FICHA TÉCNICA */}
-                <div className="grid grid-cols-12 gap-y-3 mb-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                <div className={`grid grid-cols-12 gap-y-3 mb-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 ${!isSRI ? 'items-center' : ''}`}>
                     <div className="col-span-8">
                         <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Razón Social</span>
                         <span className="text-xs font-black text-slate-900 uppercase leading-none">{cliente.nombre}</span>
@@ -133,8 +134,9 @@ const SolicitudImpresionPage: React.FC = () => {
                         <span className="text-xs font-mono font-bold text-slate-900">{cliente.ruc || cliente.cedula}</span>
                     </div>
 
+                    {/* ESTA SECCIÓN SOLO APARECE PARA TRABAJOS SRI */}
                     {isSRI && (
-                        <div className="col-span-12 border-t border-slate-200 pt-2 flex justify-between items-end">
+                        <div className="col-span-12 border-t border-slate-200 pt-2 flex justify-between items-end animate-fade-in">
                             <div className="flex-1">
                                 <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-1">GESTIÓN SEGURIDAD SRI</span>
                                 <div className="flex items-center gap-4">

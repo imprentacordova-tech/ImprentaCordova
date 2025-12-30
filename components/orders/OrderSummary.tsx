@@ -37,8 +37,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     const [copied, setCopied] = useState(false);
     const saldo = Math.max(0, orderTotal - abono);
     
-    // Lógica de redondeo solicitada: 50% redondeado hacia arriba al entero más cercano
-    // para evitar monedas de centavos y usar billetes/dólares redondos.
+    // REDONDEO INTELIGENTE: 50% redondeado hacia arriba al entero más cercano
+    // Ejemplo: $9.00 -> $5.00 (en lugar de $4.50)
     const minAbonoSugerido = Math.ceil(orderTotal * 0.5);
     
     const isFullyPaid = abono >= orderTotal && orderTotal > 0;
@@ -52,20 +52,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-800">
-            {/* LISTA DE PRODUCTOS EN CARRITO */}
+            {/* LISTA DE PRODUCTOS */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 {cartItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 space-y-4 opacity-60">
                         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                             <WalletIcon className="w-8 h-8" />
                         </div>
-                        <p className="font-black uppercase text-[10px] tracking-widest">Carrito de Producción Vacío</p>
+                        <p className="font-black uppercase text-[10px] tracking-widest">Sin productos en la orden</p>
                     </div>
                 ) : (
                     <>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 mb-4">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen de Orden</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle del Pedido</span>
                                 <div className="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
                             </div>
                             {cartItems.map(([uniqueId, item]) => {
@@ -92,7 +92,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                             })}
                         </div>
 
-                        {/* SECCIÓN SRI / CLAVES (SÓLO SI HAY CLIENTE) */}
+                        {/* SECCIÓN SRI (SÓLO SI HAY CLIENTE) */}
                         {client && (
                             <div className="bg-slate-950 text-white rounded-[2rem] p-6 space-y-4 shadow-2xl relative overflow-hidden group border border-white/5">
                                 <div className="absolute top-0 right-0 p-4 opacity-5">
@@ -146,23 +146,23 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 )}
             </div>
 
-            {/* PANEL DE COBRO Y TOTALES (STRECHED FOOTER) */}
+            {/* PANEL DE COBRO MEJORADO */}
             <div className="p-8 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-gray-700 shadow-[0_-15px_40px_rgba(0,0,0,0.05)]">
                 <div className="space-y-6">
                     <div className="flex justify-between items-end">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total a Pagar</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Inversión Total</span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter">{formatCurrency(orderTotal)}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* INTERFAZ DE ABONO */}
+                    {/* REGISTRO DE ABONO */}
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                            <label className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Registrar Abono ($)</label>
-                            {isFullyPaid && <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Pago Completo</span>}
+                            <label className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Abono del Cliente ($)</label>
+                            {isFullyPaid && <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase animate-fade-in">Pago Total Recibido</span>}
                         </div>
                         
                         <div className="relative group">
@@ -176,7 +176,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                             />
                         </div>
 
-                        {/* BOTONES RÁPIDOS DE ABONO */}
+                        {/* BOTONES DE ACCESO RÁPIDO CON REDONDEO */}
                         <div className="grid grid-cols-6 gap-2">
                             {quickAmounts.map(amount => (
                                 <button 
@@ -190,9 +190,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                             <button 
                                 onClick={() => setAbono(minAbonoSugerido)} 
                                 className={`col-span-1 py-2.5 rounded-xl font-black text-[9px] border-2 transition-all flex flex-col items-center justify-center leading-none ${abono === minAbonoSugerido ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}
-                                title={`50% redondeado: $${minAbonoSugerido}`}
+                                title={`50% con redondeo: $${minAbonoSugerido}`}
                             >
                                 <span>50%</span>
+                                <span className="text-[7px] opacity-60 mt-0.5">${minAbonoSugerido}</span>
                             </button>
                             <button 
                                 onClick={() => setAbono(orderTotal)} 
@@ -207,7 +208,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         <div className="relative z-10 flex flex-col">
                             <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Saldo Pendiente</span>
                             <span className={`text-2xl font-black tracking-tighter ${isFullyPaid ? 'text-emerald-400' : 'text-brand-red'}`}>
-                                {isFullyPaid ? 'SALDADO ✓' : formatCurrency(saldo)}
+                                {isFullyPaid ? 'SIN DEUDA ✓' : formatCurrency(saldo)}
                             </span>
                         </div>
                         <DollarIcon className="absolute right-[-10px] top-1/2 -translate-y-1/2 w-16 h-16 opacity-5 rotate-12" />
