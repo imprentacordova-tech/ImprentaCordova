@@ -48,10 +48,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSyncing(true);
 
         try {
-            // Intento de hidratación si el local está vacío
-            const localIsEmpty = localStorage.getItem('mockClientesData') === null;
-            if (localIsEmpty) {
-                console.log("♻️ Local vacío, intentando hidratar desde nube...");
+            // Intento de hidratación si el local está vacío o es la primera vez
+            const localHasData = localStorage.getItem('mockClientesData') !== null;
+            if (!localHasData) {
+                console.log("♻️ Local vacío, hidratando desde Google Sheets...");
                 await api.hydrateFromCloud();
             }
 
@@ -89,8 +89,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     useEffect(() => {
         refreshData();
-        const interval = setInterval(refreshData, 30000); 
-        return () => clearInterval(interval);
+        // Sincronización automática de lectura cada 30 segundos
+        const refreshInterval = setInterval(refreshData, 30000); 
+        
+        // AUTO-BACKUP DE SEGURIDAD: Sube todo a la nube cada 5 minutos por si acaso
+        const backupInterval = setInterval(() => {
+            console.log("☁️ Realizando respaldo automático de seguridad...");
+            api.forcePushAllToCloud();
+        }, 300000); 
+
+        return () => {
+            clearInterval(refreshInterval);
+            clearInterval(backupInterval);
+        };
     }, [refreshData]);
 
     const addCliente = async (clienteData: any) => {
