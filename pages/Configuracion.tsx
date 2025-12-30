@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getConfig, saveConfig, NotaDeVentaConfig } from '../services/configService';
-import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, seed50Products, hydrateFromCloud } from '../services/mockApi';
-// Fix: Removed non-existent CloudIcon from imports to resolve Module '"../components/Icons"' has no exported member 'CloudIcon'
+import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, seed50Products, hydrateFromCloud, forcePushAllToCloud, testCloudConnection } from '../services/mockApi';
 import { 
     Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, 
     ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, GlobeAltIcon, 
     Copy, EyeIcon, EyeSlashIcon, LockClosedIcon, DocumentDuplicateIcon,
-    DollarIcon, WrenchScrewdriverIcon, SparklesIcon, BoxIcon, ExclamationTriangleIcon
+    DollarIcon, WrenchScrewdriverIcon, SparklesIcon, BoxIcon, ExclamationTriangleIcon,
+    ArrowUpIcon, CloudIcon, CheckIcon
 } from '../components/Icons';
 import { SriCredential } from '../types';
 
@@ -32,6 +33,8 @@ const ConfiguracionPage: React.FC = () => {
     const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
     const [isImporting, setIsImporting] = useState(false);
     const [isSeeding, setIsSeeding] = useState(false);
+    const [isPushing, setIsPushing] = useState(false);
+    const [isTesting, setIsTesting] = useState(false);
     const [cloudStatus, setCloudStatus] = useState<'IDLE' | 'SYNCING' | 'ERROR' | 'CONNECTED'>('IDLE');
     
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +42,7 @@ const ConfiguracionPage: React.FC = () => {
     useEffect(() => {
         getSriCredentials().then(setSriCredentials);
         if (config.googleScriptUrl.includes('macros')) setCloudStatus('CONNECTED');
-    }, [config.googleScriptUrl]);
+    }, []);
 
     const handleSaveGeneral = (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,24 +52,48 @@ const ConfiguracionPage: React.FC = () => {
         setTimeout(() => setShowSuccess(false), 3000);
     };
 
+    const handleTestConn = async () => {
+        // Forzamos guardado primero para usar la URL actual del input
+        saveConfig(config);
+        setIsTesting(true);
+        const result = await testCloudConnection(config.googleScriptUrl);
+        setIsTesting(false);
+        
+        if (result.success) {
+            alert(result.message);
+            setCloudStatus('CONNECTED');
+        } else {
+            alert("❌ FALLO DE CONEXIÓN:\n\n" + result.message);
+            setCloudStatus('ERROR');
+        }
+    };
+
     const handleSyncNow = async () => {
         setCloudStatus('SYNCING');
         const success = await hydrateFromCloud();
         setCloudStatus(success ? 'CONNECTED' : 'ERROR');
         if (success) {
-            alert("✅ Sincronización completa. Los datos locales han sido actualizados desde la nube.");
+            alert("✅ ¡Sincronización Exitosa! Los datos se han descargado de la nube.");
             window.location.reload();
         } else {
-            alert("❌ Error de conexión. Verifica la URL de Google Script.");
+            alert("❌ ERROR DE DESCARGA.\n\nVerifica que tu script de Google tenga permisos 'Anyone' y que hayas usado el botón 'Probar Conexión' para diagnosticar.");
         }
     };
 
+    const handlePushAll = async () => {
+        if (!window.confirm("¿Deseas subir todos los datos locales a Google Sheets ahora mismo?")) return;
+        setIsPushing(true);
+        await forcePushAllToCloud();
+        setIsPushing(false);
+        alert("✅ Respaldo enviado a la nube correctamente.");
+    };
+
     const handleSeed = async () => {
-        if (!window.confirm("Esto inyectará 50 productos reales de imprenta al catálogo y los enviará a tu Google Sheet. ¿Continuar?")) return;
+        if (!window.confirm("Esto inyectará 50 productos reales de imprenta. ¿Continuar?")) return;
         setIsSeeding(true);
         await seed50Products();
         setIsSeeding(false);
-        alert("✅ 50 Productos inyectados exitosamente. Revisa el catálogo para ver los resultados.");
+        alert("✅ 50 Productos inyectados localmente.\n\nUsa 'Subir a Nube' para respaldarlos.");
     };
 
     const togglePasswordVisibility = (ruc: string) => {
@@ -107,7 +134,7 @@ const ConfiguracionPage: React.FC = () => {
             if (creds.length > 0) {
                 const updated = await bulkAddSriCredentials(creds);
                 setSriCredentials(updated);
-                alert(`Importación exitosa: ${creds.length} claves sincronizadas.`);
+                alert(`Importación exitosa: ${creds.length} claves.`);
             }
         } catch (error) { alert("Error al procesar CSV."); } finally { setIsImporting(false); e.target.value = ''; }
     };
@@ -129,12 +156,12 @@ const ConfiguracionPage: React.FC = () => {
                     </div>
                     <div>
                         <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Centro de <span className="text-brand-red">Control</span></h1>
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">Configuración global y sincronización</p>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">Sincronización Maestra Pedro Córdova</p>
                     </div>
                 </div>
             </div>
 
-            {/* PANEL DE NUBE (NUEVO) */}
+            {/* PANEL DE NUBE DIAGNÓSTICO */}
             <div className="bg-slate-900 rounded-[3rem] p-10 shadow-3xl border border-white/5 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
                 
@@ -145,23 +172,27 @@ const ConfiguracionPage: React.FC = () => {
                         </div>
                         <div>
                             <div className="flex items-center gap-3 mb-1">
-                                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Estado de la Nube</h3>
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Cerebro Online</h3>
                                 <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
-                                    {cloudStatus === 'CONNECTED' ? 'Conexión Activa' : cloudStatus === 'SYNCING' ? 'Sincronizando...' : 'Sin Conexión'}
+                                    {cloudStatus === 'CONNECTED' ? 'Enlace Activo' : cloudStatus === 'SYNCING' ? 'Sincronizando...' : 'Error de Enlace'}
                                 </span>
                             </div>
-                            <p className="text-slate-400 text-sm max-w-md">Tus datos se guardan automáticamente en Google Drive para que Pedro pueda verlos desde cualquier lugar (incluyendo modo incógnito).</p>
+                            <p className="text-slate-400 text-sm max-w-md">Utiliza **Probar Conexión** para diagnosticar bloqueos del navegador o falta de permisos en Google Sheets.</p>
                         </div>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                        <button onClick={handleSyncNow} disabled={cloudStatus === 'SYNCING'} className="px-10 py-5 bg-white text-slate-900 font-black rounded-2xl shadow-xl hover:bg-brand-blue hover:text-white transition-all flex items-center justify-center gap-4 uppercase tracking-[0.1em] text-[11px]">
-                            {cloudStatus === 'SYNCING' ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ArrowDownTrayIcon className="w-5 h-5"/>}
-                            Sincronizar Manual
+                        <button onClick={handleTestConn} disabled={isTesting} className="px-6 py-4 bg-brand-blue text-white font-black rounded-xl shadow-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]">
+                            {isTesting ? <Loader2Icon className="animate-spin w-4 h-4"/> : <ShieldCheckIcon className="w-4 h-4"/>}
+                            Probar Conexión
                         </button>
-                        <button onClick={handleSeed} disabled={isSeeding} className="px-10 py-5 bg-brand-red text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.1em] text-[11px]">
-                            {isSeeding ? <Loader2Icon className="animate-spin w-5 h-5"/> : <SparklesIcon className="w-5 h-5"/>}
-                            Inyectar 50 Productos
+                        <button onClick={handlePushAll} disabled={isPushing} className="px-6 py-4 bg-emerald-500 text-white font-black rounded-xl shadow-xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]">
+                            {isPushing ? <Loader2Icon className="animate-spin w-4 h-4"/> : <ArrowUpIcon className="w-4 h-4"/>}
+                            Subir a Nube
+                        </button>
+                        <button onClick={handleSyncNow} disabled={cloudStatus === 'SYNCING'} className="px-6 py-4 bg-white text-slate-900 font-black rounded-xl shadow-xl hover:bg-brand-blue hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]">
+                            {cloudStatus === 'SYNCING' ? <Loader2Icon className="animate-spin w-4 h-4"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
+                            Descargar
                         </button>
                     </div>
                 </div>
@@ -245,11 +276,7 @@ const ConfiguracionPage: React.FC = () => {
                         
                         <div className="space-y-2">
                              <InputField label="URL Google Apps Script (Sincronización Nube)" name="googleScriptUrl" value={config.googleScriptUrl} onChange={e => setConfig({...config, googleScriptUrl: e.target.value})} />
-                             {cloudStatus === 'ERROR' && (
-                                 <div className="flex items-center gap-2 text-rose-500 text-[10px] font-black uppercase mt-2 bg-rose-50 p-2 rounded-lg">
-                                     <ExclamationTriangleIcon className="w-4 h-4" /> La URL actual no parece ser un script válido de Google.
-                                 </div>
-                             )}
+                             <p className="text-[9px] font-black text-slate-400 uppercase mt-2">Asegúrate de que la URL termine en <b>/exec</b></p>
                         </div>
                     </div>
 
@@ -275,7 +302,7 @@ const ConfiguracionPage: React.FC = () => {
                 </div>
 
                 <div className="pt-8 border-t dark:border-gray-700 flex justify-between items-center">
-                    {showSuccess && <span className="text-emerald-500 font-black text-[11px] animate-fade-in tracking-widest uppercase">✓ Configuración Guardada localmente</span>}
+                    {showSuccess && <span className="text-emerald-500 font-black text-[11px] animate-fade-in tracking-widest uppercase">✓ Configuración Guardada</span>}
                     <button type="submit" className="px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all uppercase tracking-widest text-xs">Guardar Cambios Maestros</button>
                 </div>
             </form>

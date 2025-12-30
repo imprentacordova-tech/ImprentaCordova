@@ -73,7 +73,8 @@ import {
     FileCheck2,
     Printer,
     Layers,
-    FileStack
+    FileStack,
+    Folder
 } from 'lucide-react';
 
 // Common SVG props
@@ -92,6 +93,10 @@ export const ArrowDownTrayIcon = Download;
 export const CheckCircleIcon = CheckCircle;
 export const Cog8ToothIcon = Settings;
 export const GlobeAltIcon = Globe;
+// Fixed: Added CloudIcon export (using Globe as established in Layout.tsx) to resolve import errors in Configuracion.tsx
+export const CloudIcon = Globe;
+// Fixed: Added FolderIcon export to resolve import errors in NuevoPedido.tsx
+export const FolderIcon = Folder;
 export const ShieldCheckIcon = ShieldCheck;
 export const EyeIcon = Eye;
 export const EyeSlashIcon = EyeOff;
@@ -156,6 +161,8 @@ export const MapPinIcon = MapPin;
 export const PrinterIcon = Printer;
 export const LayersIcon = Layers;
 export const FileStackIcon = FileStack;
+// Fixed: Added CheckIcon export to resolve import errors in Configuracion.tsx
+export const CheckIcon = Check;
 
 export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles };
 

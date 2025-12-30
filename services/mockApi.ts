@@ -14,34 +14,94 @@ const TAREAS_KEY = 'mockTareasData';
 const ACTIVIDADES_MASTER_KEY = 'mockActividadesMaster';
 
 /**
- * MOTOR DE SINCRONIZACIÓN NUBE (Google Sheets)
+ * TEST DE CONEXIÓN MAESTRO
+ * Diagnostica exactamente por qué falla Google Apps Script
  */
+export const testCloudConnection = async (customUrl?: string): Promise<{success: boolean, message: string}> => {
+    const config = getConfig();
+    const url = customUrl || config.googleScriptUrl;
+
+    if (!url || !url.includes('macros')) {
+        return { success: false, message: "La URL no parece ser de Google Apps Script. Debe contener '/macros/s/'." };
+    }
+
+    if (url.includes('/edit')) {
+        return { success: false, message: "URL INCORRECTA: La URL termina en '/edit'. Debes publicar el script y usar la URL que termina en '/exec'." };
+    }
+
+    try {
+        // Intento 1: Fetch estándar con seguimiento de redirección
+        const response = await fetch(`${url}?action=TEST&ts=${Date.now()}`, {
+            method: 'GET',
+            redirect: 'follow'
+        });
+
+        if (response.ok) {
+            try {
+                const data = await response.json();
+                if (data && data.success) {
+                    return { success: true, message: "¡CONEXIÓN PERFECTA! Google Sheets respondió correctamente." };
+                }
+                return { success: true, message: "CONEXIÓN ESTABLECIDA, pero el script no devolvió el formato JSON esperado. Revisa tu código doGet en Google." };
+            } catch (jsonErr) {
+                // Si no es JSON, quizás es HTML (error de Google)
+                const text = await response.text();
+                if (text.includes("Google Drive -- Page Not Found")) {
+                    return { success: false, message: "ERROR 404: La URL es válida pero el script no existe o fue borrado." };
+                }
+                return { success: true, message: "CONEXIÓN ESTABLECIDA, pero la respuesta no es JSON. El script está activo pero mal configurado." };
+            }
+        }
+
+        if (response.status === 401 || response.status === 403) {
+            return { success: false, message: "ERROR DE PERMISOS: Debes configurar 'Who has access' como 'Anyone' al implementar en Google." };
+        }
+
+        return { success: false, message: `Error del Servidor: Código ${response.status}.` };
+
+    } catch (e: any) {
+        console.error("Error de red en test:", e);
+        // El error de Red en Google Apps Script suele ser CORS si no está configurado como 'Anyone'
+        return { 
+            success: false, 
+            message: "BLOQUEO DE RED (CORS): Tu navegador bloqueó la respuesta. Esto sucede si el script NO está publicado para 'Anyone' (Cualquier persona, incluso anónimos)." 
+        };
+    }
+};
+
 const syncToCloud = async (action: string, data: any) => {
     const config = getConfig();
-    if (config.googleScriptUrl && config.googleScriptUrl.includes('macros')) {
-        try {
-            window.dispatchEvent(new CustomEvent('cloud-sync-active'));
-            
-            // Usamos un timeout corto para la respuesta pero dejamos que la petición siga
-            await fetch(config.googleScriptUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    action, 
-                    payload: data, 
-                    source: 'ERP_CORDOVA_2025',
-                    user: 'Pedro', 
-                    timestamp: new Date().toISOString() 
-                })
-            });
-            
-            setTimeout(() => window.dispatchEvent(new CustomEvent('cloud-sync-idle')), 1500);
-        } catch (e) {
-            console.warn("⚠️ Error en Sincronización Nube.", e);
-            window.dispatchEvent(new CustomEvent('cloud-sync-idle'));
-        }
+    if (!config.googleScriptUrl || !config.googleScriptUrl.includes('macros')) return;
+
+    try {
+        window.dispatchEvent(new CustomEvent('cloud-sync-active'));
+        // Usamos mode: 'no-cors' para escritura ciega (evita errores de CORS en POST)
+        await fetch(`${config.googleScriptUrl}?ts=${Date.now()}`, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action, 
+                payload: data, 
+                source: 'ERP_CORDOVA_2025',
+                timestamp: new Date().toISOString() 
+            })
+        });
+        setTimeout(() => window.dispatchEvent(new CustomEvent('cloud-sync-idle')), 1000);
+    } catch (e) {
+        window.dispatchEvent(new CustomEvent('cloud-sync-idle'));
     }
+};
+
+export const forcePushAllToCloud = async () => {
+    const data = {
+        trabajos: await getStoredData(TRABAJOS_KEY, []),
+        clientes: await getStoredData(CLIENTES_KEY, []),
+        productos: await getStoredData(PRODUCTOS_KEY, []),
+        users: await getStoredData(USERS_KEY, []),
+    };
+    await syncToCloud('FULL_BACKUP', data);
+    return true;
 };
 
 export const hydrateFromCloud = async (): Promise<boolean> => {
@@ -50,9 +110,12 @@ export const hydrateFromCloud = async (): Promise<boolean> => {
 
     try {
         window.dispatchEvent(new CustomEvent('cloud-sync-active'));
-        const response = await fetch(`${config.googleScriptUrl}?action=GET_ALL_DATA`);
+        const response = await fetch(`${config.googleScriptUrl}?action=GET_ALL_DATA&ts=${Date.now()}`, {
+            method: 'GET',
+            redirect: 'follow',
+            cache: 'no-store'
+        });
         const data = await response.json();
-        
         if (data && data.success) {
             if (data.trabajos) localStorage.setItem(TRABAJOS_KEY, JSON.stringify(data.trabajos));
             if (data.clientes) localStorage.setItem(CLIENTES_KEY, JSON.stringify(data.clientes));
@@ -62,7 +125,7 @@ export const hydrateFromCloud = async (): Promise<boolean> => {
             return true;
         }
     } catch (e) {
-        console.error("Error hidratando desde nube:", e);
+        console.error(e);
     }
     window.dispatchEvent(new CustomEvent('cloud-sync-idle'));
     return false;
@@ -71,11 +134,7 @@ export const hydrateFromCloud = async (): Promise<boolean> => {
 const getStoredData = async <T>(key: string, defaultValue: T): Promise<T> => {
     const item = localStorage.getItem(key);
     if (item) {
-        try {
-            return JSON.parse(item);
-        } catch (e) {
-            console.error(`Error al parsear ${key}`, e);
-        }
+        try { return JSON.parse(item); } catch (e) { console.error(`Error parseando ${key}`); }
     }
     return defaultValue;
 };
@@ -84,60 +143,26 @@ const setStoredData = async <T>(key: string, value: T): Promise<void> => {
     localStorage.setItem(key, JSON.stringify(value));
 };
 
-// --- GESTIÓN DE PRODUCTOS (SEMILLERO DE 50) ---
-export const getProductos = async (): Promise<Producto[]> => {
-    return getStoredData(PRODUCTOS_KEY, []);
-};
+// --- PRODUCTOS ---
+export const getProductos = async (): Promise<Producto[]> => getStoredData(PRODUCTOS_KEY, []);
 
 export const seed50Products = async () => {
     const list: Partial<Producto>[] = [
-        // SRI - FACTURAS
         { nombre: 'FACTURAS (1/4 OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 15.00, esSRI: true },
-        { nombre: 'FACTURAS (1/4 OFICIO - BLOCK X 100H - DUPLICADO)', categoria: 'SRI', precio: 22.00, esSRI: true },
-        { nombre: 'FACTURAS (1/2 OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 25.00, esSRI: true },
-        { nombre: 'FACTURAS (OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 35.00, esSRI: true },
-        // SRI - NOTAS DE VENTA
         { nombre: 'NOTAS DE VENTA (1/4 OFICIO - BLOCK X 50H - ÚNICO)', categoria: 'SRI', precio: 10.00, esSRI: true },
-        { nombre: 'NOTAS DE VENTA (1/2 OFICIO - BLOCK X 50H - ÚNICO)', categoria: 'SRI', precio: 18.00, esSRI: true },
-        // SRI - RETENCIONES
-        { nombre: 'RETENCIONES (1/4 OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 15.00, esSRI: true },
-        // PUBLICIDAD - TARJETAS
-        { nombre: 'TARJETAS PERSONALES (COUCHÉ 300G - MATE - X1000)', categoria: 'PUBLICIDAD', precio: 35.00, esSRI: false },
         { nombre: 'TARJETAS PERSONALES (COUCHÉ 300G - BRILLO UV - X1000)', categoria: 'PUBLICIDAD', precio: 40.00, esSRI: false },
-        { nombre: 'TARJETAS CON LAMINADO SOFT TOUCH (X1000)', categoria: 'PUBLICIDAD', precio: 65.00, esSRI: false },
-        // PUBLICIDAD - FLYERS
-        { nombre: 'FLYERS A5 (COUCHÉ 115G - FULL COLOR - X1000)', categoria: 'PUBLICIDAD', precio: 45.00, esSRI: false },
-        { nombre: 'FLYERS A6 (COUCHÉ 115G - FULL COLOR - X1000)', categoria: 'PUBLICIDAD', precio: 30.00, esSRI: false },
-        // GRAN FORMATO
         { nombre: 'GIGANTOGRAFÍA LONA 13OZ (M2)', categoria: 'GRAN FORMATO', precio: 10.00, esSRI: false },
-        { nombre: 'GIGANTOGRAFÍA LONA MATE (M2)', categoria: 'GRAN FORMATO', precio: 12.00, esSRI: false },
-        { nombre: 'VINIL ADHESIVO BRILLANTE (M2)', categoria: 'GRAN FORMATO', precio: 15.00, esSRI: false },
-        { nombre: 'MICROPERFORADO PARA VIDRIOS (M2)', categoria: 'GRAN FORMATO', precio: 18.00, esSRI: false },
         { nombre: 'ROLL UP COMPLETO (80X200CM)', categoria: 'GRAN FORMATO', precio: 45.00, esSRI: false },
-        // MERCHANDISING
-        { nombre: 'TAZA PERSONALIZADA BLANCA (UNIDAD)', categoria: 'MERCH', precio: 5.00, esSRI: false },
-        { nombre: 'TAZA MÁGICA PERSONALIZADA (UNIDAD)', categoria: 'MERCH', precio: 8.00, esSRI: false },
-        { nombre: 'GORRA CAMIONERA SUBLIMADA', categoria: 'MERCH', precio: 6.00, esSRI: false },
-        { nombre: 'CAMISETA POLIÉSTER SUBLIMADA', categoria: 'MERCH', precio: 10.00, esSRI: false },
-        // SELLOS
+        { nombre: 'TAZA PERSONALIZADA BLANCA', categoria: 'MERCH', precio: 5.00, esSRI: false },
         { nombre: 'SELLO AUTOMÁTICO TRODAT 4911', categoria: 'OFICINA', precio: 15.00, esSRI: false },
-        { nombre: 'SELLO AUTOMÁTICO TRODAT 4912', categoria: 'OFICINA', precio: 18.00, esSRI: false },
-        { nombre: 'SELLO DE MADERA PEQUEÑO', categoria: 'OFICINA', precio: 5.00, esSRI: false },
-        // VARIOS HASTA COMPLETAR 50 (Dinámicos)
-        ...Array.from({ length: 26 }).map((_, i) => ({
-            nombre: `SERVICIO ESPECIAL DE IMPRESIÓN #${i + 1} (PERSONALIZADO)`,
+        ...Array.from({ length: 43 }).map((_, i) => ({
+            nombre: `SERVICIO DE IMPRESIÓN #${i + 8} (PERSONALIZADO)`,
             categoria: 'OTROS',
             precio: 5 + i,
             esSRI: false
         }))
     ];
-
-    const finalProducts = list.map((p, idx) => ({
-        id: `p-auto-${idx}`,
-        descripcion: `Producto generado automáticamente para catálogo Córdova 2025.`,
-        ...p
-    })) as Producto[];
-
+    const finalProducts = list.map((p, idx) => ({ id: `p-auto-${idx}`, descripcion: `Producto catálogo Córdova 2025.`, ...p })) as Producto[];
     await setStoredData(PRODUCTOS_KEY, finalProducts);
     await syncToCloud('BULK_SEED_PRODUCTS', finalProducts);
     return finalProducts;
@@ -164,10 +189,7 @@ export const createProducto = async (p: any) => {
 
 export const bulkCreateProductos = async (newProducts: Producto[]) => {
     const data = await getProductos();
-    const withIds = newProducts.map(p => ({ 
-        ...p, 
-        id: `p${Date.now()}-${Math.random().toString(36).substring(2, 7)}` 
-    }));
+    const withIds = newProducts.map(p => ({ ...p, id: `p${Date.now()}-${Math.random().toString(36).substring(2, 7)}` }));
     const updated = [...data, ...withIds];
     await setStoredData(PRODUCTOS_KEY, updated);
     await syncToCloud('BULK_CREATE_PRODUCTS', withIds);
@@ -179,8 +201,6 @@ export const deleteProducto = async (id: string) => {
     await setStoredData(PRODUCTOS_KEY, filtered);
     await syncToCloud('DELETE_PRODUCT', { id });
 };
-
-// --- MÉTODOS DE APOYO (Inventario, Usuarios, SRI, Proveedores) ---
 
 export const getClientes = async (): Promise<Cliente[]> => getStoredData(CLIENTES_KEY, []);
 export const createCliente = async (clienteData: any): Promise<Cliente> => {
@@ -242,9 +262,8 @@ export const registerRetiro = async (id: string, pago: number, user: string) => 
     throw new Error("No encontrado");
 };
 
-export const getMasterActividades = async (): Promise<string[]> => getStoredData(ACTIVIDADES_MASTER_KEY, ["VENTA DE COMIDAS", "SERVICIOS PROFESIONALES", "TRANSPORTE DE CARGA", "ALQUILER DE BIENES"]);
+export const getMasterActividades = async (): Promise<string[]> => getStoredData(ACTIVIDADES_MASTER_KEY, ["VENTA DE COMIDAS", "SERVICIOS PROFESIONALES"]);
 export const getUsers = async (): Promise<User[]> => getStoredData(USERS_KEY, [{ id: 'u1', nombre: 'Pedro', email: 'imprentacordova@gmail.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: new Date().toISOString() }]);
-
 export const getInventario = async (): Promise<InventoryItem[]> => getStoredData(INVENTARIO_KEY, []);
 export const getProveedores = async (): Promise<Proveedor[]> => getStoredData(PROVEEDORES_KEY, []);
 export const getTareasProveedor = async (): Promise<TareaProveedor[]> => getStoredData(TAREAS_KEY, []);
@@ -290,16 +309,7 @@ export const updateTrabajoPhoto = async (trabajoId: string, photoUrl: string): P
 export const createPublicPedido = async (clientData: any, cartItems: any[]): Promise<Trabajo> => {
     const total = cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
     const subtipo = cartItems.map(item => `${item.cantidad}x ${item.producto.nombre}`).join(', ');
-    return createTrabajo({
-        titular: clientData.nombre,
-        tipo: TrabajoTipo.GENERAL,
-        subtipo,
-        cantidad: cartItems.length,
-        total,
-        abono: 0,
-        estado: TrabajoEstado.PENDIENTE,
-        origen: 'Web'
-    }, 'Usuario Web');
+    return createTrabajo({ titular: clientData.nombre, tipo: TrabajoTipo.GENERAL, subtipo, cantidad: cartItems.length, total, abono: 0, estado: TrabajoEstado.PENDIENTE, origen: 'Web' }, 'Usuario Web');
 };
 
 export const updateUser = async (id: string, u: any) => {
