@@ -2,16 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getProductos, createProducto, updateProducto, deleteProducto, bulkCreateProductos } from '../services/mockApi';
 import { Producto } from '../types';
-// Added missing icon imports: ArrowRightIcon, AddIcon, SearchIcon, and Loader2Icon
 import { BoxIcon, Cog8ToothIcon, CloseIcon, PencilIcon, TrashIcon, PhotoIcon, SparklesIcon, TableIcon, CheckCircleIcon, ArrowRightIcon, AddIcon, SearchIcon, Loader2Icon } from '../components/Icons';
 import { formatCurrency } from '../utils';
-
-const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-});
 
 const SIZES = ["1/8 Oficio", "1/4 Oficio", "1/2 Oficio", "Oficio"];
 const QUANTITIES = [
@@ -382,7 +374,6 @@ const ProductCard: React.FC<{
                 <div className="flex justify-between items-center pt-4 border-t dark:border-gray-800">
                     <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter">{formatCurrency(producto.precio)}</p>
                     <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-brand-blue group-hover:text-white transition-all shadow-inner">
-                        {/* Fix: ArrowRightIcon was missing from imports, but now added */}
                         <ArrowRightIcon className="w-4 h-4" />
                     </div>
                 </div>
@@ -489,7 +480,6 @@ const ProductosPage: React.FC = () => {
                     <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Catálogo <span className="text-brand-red">Maestro</span></h1>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Gestión de servicios y productos terminados</p>
                 </div>
-                {/* Fix: AddIcon was missing from imports, but now added */}
                 <button onClick={handleOpenMgmtModal} className="w-full md:w-auto px-10 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-3xl shadow-blue-900/20 hover:bg-slate-950 transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] text-[10px]">
                     <AddIcon className="h-5 w-5"/> + Crear Nuevo Producto
                 </button>
@@ -497,7 +487,6 @@ const ProductosPage: React.FC = () => {
             
             <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-sm border border-slate-50 dark:border-white/5 flex flex-col md:flex-row gap-6">
                 <div className="flex-grow relative group">
-                    {/* Fix: SearchIcon was missing from imports, but now added */}
                     <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
                     <input 
                         type="text" 
@@ -521,7 +510,6 @@ const ProductosPage: React.FC = () => {
             
             {loading ? (
                 <div className="py-20 text-center space-y-4">
-                    {/* Fix: Loader2Icon was missing from imports, but now added */}
                     <Loader2Icon className="animate-spin h-10 w-10 text-brand-blue mx-auto" />
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sincronizando catálogo...</p>
                 </div>

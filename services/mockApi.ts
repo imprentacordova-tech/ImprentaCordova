@@ -47,10 +47,6 @@ export const getTareasProveedor = async (): Promise<TareaProveedor[]> => getStor
 export const createTrabajo = async (trabajoData: any, usuario: string): Promise<Trabajo> => {
     const trabajos = await getTrabajos();
     const config = getConfig();
-    
-    // Calcular el siguiente número de orden
-    // Si no hay trabajos, usa el secuencialInicio de la config.
-    // Si hay trabajos, usa el máximo entre el último trabajo y la config (por si Pedro la resetea).
     const lastSequence = trabajos.length > 0 ? Math.max(...trabajos.map(t => t.orden)) : config.secuencialInicio - 1;
     const nextSequence = Math.max(lastSequence + 1, config.secuencialInicio);
 
@@ -69,7 +65,6 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
     return newTrabajo;
 };
 
-// ... Resto de funciones del API (se mantienen iguales)
 export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoEstado, usuario: string): Promise<Trabajo> => {
     const trabajos = await getTrabajos();
     const index = trabajos.findIndex(t => t.id === trabajoId);
