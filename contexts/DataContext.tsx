@@ -40,7 +40,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [syncing, setSyncing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
-    // Lock de sincronización para evitar loops infinitos o race conditions
     const syncLock = useRef(false);
 
     const refreshData = useCallback(async () => {
@@ -49,6 +48,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSyncing(true);
 
         try {
+            // Intento de hidratación si el local está vacío
+            const localIsEmpty = localStorage.getItem('mockClientesData') === null;
+            if (localIsEmpty) {
+                console.log("♻️ Local vacío, intentando hidratar desde nube...");
+                await api.hydrateFromCloud();
+            }
+
             const [
                 cData, tData, pData, uData, iData, provData, taskData, sriData
             ] = await Promise.all([
@@ -83,7 +89,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     useEffect(() => {
         refreshData();
-        const interval = setInterval(refreshData, 60000); // Polling más conservador (1 min)
+        const interval = setInterval(refreshData, 30000); 
         return () => clearInterval(interval);
     }, [refreshData]);
 
@@ -109,14 +115,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizadoPor: user } : t));
     };
 
-    // Fix: Added implementation of addProducto calling the correct api function
     const addProducto = async (p: any) => {
         const newP = await api.createProducto(p);
         setProductos(prev => [newP, ...prev]);
         return newP;
     };
 
-    // Fix: Added implementation of updateProductoState calling the correct api function
     const updateProductoState = async (id: string, p: any) => {
         await api.updateProducto(id, p);
         setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));

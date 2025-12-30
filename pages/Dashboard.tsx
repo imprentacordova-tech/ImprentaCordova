@@ -75,8 +75,8 @@ const DashboardPage: React.FC = () => {
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-12">
                         <div className="space-y-6 max-w-xl">
                             <div className="flex items-center gap-3">
-                                <span className="bg-brand-red text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">PEDRO ADMIN MODE</span>
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Taller en Vivo — {new Date().toLocaleTimeString()}</p>
+                                <span className="bg-brand-red text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">MODO: {currentUser.rol.toUpperCase()}</span>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sincronización Cloud Activa</p>
                             </div>
                             
                             <h1 className="text-5xl lg:text-7xl font-black text-white leading-none tracking-tighter">
@@ -84,7 +84,7 @@ const DashboardPage: React.FC = () => {
                             </h1>
                             
                             <p className="text-lg text-slate-400 font-medium leading-relaxed">
-                                El sistema Córdova V2 está listo. Tienes <span className="text-white font-bold">{stats.totalActivos} trabajos activos</span> fluyendo en el taller.
+                                El sistema Córdova V2 está listo. Tienes <span className="text-white font-bold">{stats.totalActivos} trabajos activos</span> fluyendo en el taller y guardados en la nube.
                             </p>
 
                             <div className="flex flex-wrap gap-4 pt-4">

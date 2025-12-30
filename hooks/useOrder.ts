@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
 import { createTrabajo, getSriCredentials } from '../services/mockApi';
@@ -17,51 +16,34 @@ export const useOrder = (user: string) => {
     const [jobType, setJobType] = useState<TrabajoTipo>(TrabajoTipo.SRI);
     const [titular, setTitular] = useState('');
     const [abono, setAbono] = useState(0);
-    const [esRenovacion, setEsRenovacion] = useState(false);
+    const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
     const [imprimirClave, setImprimirClave] = useState(false);
+    const [actividadSeleccionada, setActividadSeleccionada] = useState<string>('');
     
     const [sriData, setSriData] = useState({
         establecimiento: '001',
         puntoEmision: '001',
         claveAcceso: '',
         estadoClave: 'PENDIENTE' as 'LISTA' | 'PENDIENTE' | 'ERROR',
-        hasKey: false,
-        autoFilled: false
+        hasKey: false
     });
 
     const [isLoading, setIsLoading] = useState(false);
 
-    // Buscar clave SRI automáticamente al seleccionar cliente
     useEffect(() => {
         const checkSriKey = async () => {
             if (selectedCliente) {
                 const creds = await getSriCredentials();
                 const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
-                
-                const cred = creds.find(c => 
-                    c.ruc === ruc || 
-                    (ruc.length === 10 && c.ruc === ruc + '001') ||
-                    (ruc.length === 13 && c.ruc === ruc.substring(0, 10))
-                );
+                const cred = creds.find(c => c.ruc === ruc);
                 
                 if (cred) {
-                    setSriData(prev => ({ 
-                        ...prev, 
-                        claveAcceso: cred.password || '', 
-                        hasKey: true, 
-                        autoFilled: true,
-                        estadoClave: 'LISTA' 
-                    }));
+                    setSriData(prev => ({ ...prev, claveAcceso: cred.password || '', hasKey: true, estadoClave: 'LISTA' }));
                 } else {
-                    setSriData(prev => ({ 
-                        ...prev, 
-                        claveAcceso: '', 
-                        hasKey: false, 
-                        autoFilled: false,
-                        estadoClave: 'PENDIENTE' 
-                    }));
+                    setSriData(prev => ({ ...prev, claveAcceso: '', hasKey: false, estadoClave: 'PENDIENTE' }));
                 }
                 setTitular(selectedCliente.nombre);
+                if (selectedCliente.actividades) setActividadSeleccionada(selectedCliente.actividades.split('|')[0]);
             }
         };
         checkSriKey();
@@ -69,44 +51,16 @@ export const useOrder = (user: string) => {
 
     const orderTotal = useMemo(() => {
         return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => {
-            // Fix: Removing item.producto.price as it doesn't exist on Producto type. Using item.producto.precio.
-            const base = item.producto.precio * item.cantidad;
-            const extras = (item.surcharge || 0) * item.cantidad;
-            return total + base + extras;
+            return total + (item.producto.precio + (item.surcharge || 0)) * item.cantidad;
         }, 0);
     }, [selectedProductos]);
 
     const addProduct = useCallback((producto: Producto & { surcharge?: number, surchargeLabel?: string }) => {
         setSelectedProductos(prev => {
             const newMap = new Map<string, CartItem>(prev);
-            // Identificador único incluyendo surcargos para que no se mezclen items perforados con no perforados
-            const uniqueId = `${producto.id}-${producto.surcharge || 0}`;
-            const existing = newMap.get(uniqueId);
-            
-            newMap.set(uniqueId, { 
-                producto, 
-                cantidad: (existing?.cantidad || 0) + 1,
-                surcharge: producto.surcharge,
-                surchargeLabel: producto.surchargeLabel
-            });
-            return newMap;
-        });
-    }, []);
-
-    const removeProduct = useCallback((uniqueId: string) => {
-        setSelectedProductos(prev => {
-            const newMap = new Map<string, CartItem>(prev);
-            newMap.delete(uniqueId);
-            return newMap;
-        });
-    }, []);
-
-    const updateQuantity = useCallback((uniqueId: string, quantity: number) => {
-        if (quantity < 1) return;
-        setSelectedProductos(prev => {
-            const newMap = new Map<string, CartItem>(prev);
-            const item = newMap.get(uniqueId);
-            if (item) newMap.set(uniqueId, { ...item, cantidad: quantity });
+            const id = `${producto.id}-${producto.surcharge || 0}`;
+            const existing = newMap.get(id);
+            newMap.set(id, { producto, cantidad: (existing?.cantidad || 0) + 1, surcharge: producto.surcharge, surchargeLabel: producto.surchargeLabel });
             return newMap;
         });
     }, []);
@@ -114,30 +68,25 @@ export const useOrder = (user: string) => {
     const finalizeOrder = async () => {
         if (!selectedCliente || selectedProductos.size === 0) return null;
         setIsLoading(true);
-        const items: CartItem[] = Array.from(selectedProductos.values());
+        // Fix: Explicitly cast to CartItem[] to resolve unknown type errors on lines 78 and 79.
+        const items = Array.from(selectedProductos.values()) as CartItem[];
         
-        const subTitles = items.map((i: CartItem) => {
-            let label = `${i.cantidad}x ${i.producto.nombre}`;
-            if (i.surchargeLabel) label += ` (${i.surchargeLabel})`;
-            return label;
-        }).join(', ');
-
         const newTrabajo = await createTrabajo({
             clienteId: selectedCliente.id,
             titular: titular || selectedCliente.nombre,
             tipo: jobType,
-            subtipo: subTitles,
-            cantidad: items.reduce((sum: number, i: CartItem) => sum + i.cantidad, 0),
-            tamano: 'Varios',
+            subtipo: items.map(i => `${i.cantidad}x ${i.producto.nombre}`).join(', '),
+            cantidad: items.reduce((sum, i) => sum + i.cantidad, 0),
             total: orderTotal,
             abono,
+            prioridad,
             estado: TrabajoEstado.PENDIENTE,
             establecimiento: sriData.establecimiento,
             puntoEmision: sriData.puntoEmision,
             claveAcceso: sriData.claveAcceso,
             estadoClave: sriData.estadoClave,
             imprimirClave,
-            esRenovacion
+            actividadSeleccionada
         }, user);
         
         setIsLoading(false);
@@ -145,14 +94,17 @@ export const useOrder = (user: string) => {
     };
 
     return {
-        selectedCliente, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, esRenovacion, sriData, orderTotal, isLoading, imprimirClave,
-        setSelectedCliente, setJobType, setTitular, setAbono, setEsRenovacion, setSriData, setImprimirClave,
-        addProduct, removeProduct, updateQuantity, finalizeOrder,
-        resetOrder: () => {
-            setSelectedCliente(null);
-            setSelectedProductos(new Map());
-            setAbono(0);
-            setJobType(TrabajoTipo.SRI);
-        }
+        selectedCliente, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, prioridad, sriData, orderTotal, isLoading, imprimirClave, actividadSeleccionada,
+        setSelectedCliente, setJobType, setTitular, setAbono, setPrioridad, setSriData, setImprimirClave, setActividadSeleccionada,
+        addProduct, removeProduct: (id: string) => setSelectedProductos(prev => { const n = new Map(prev); n.delete(id); return n; }), 
+        // Fix: Explicitly casting the item to CartItem to avoid "Spread types may only be created from object types" error on line 102.
+        updateQuantity: (id: string, q: number) => setSelectedProductos(prev => { 
+            const n = new Map(prev); 
+            const i = n.get(id); 
+            if (i) n.set(id, { ...(i as CartItem), cantidad: q }); 
+            return n; 
+        }),
+        finalizeOrder,
+        resetOrder: () => { setSelectedCliente(null); setSelectedProductos(new Map()); setAbono(0); setJobType(TrabajoTipo.SRI); }
     };
 };

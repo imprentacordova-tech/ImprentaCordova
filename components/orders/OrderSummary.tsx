@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Cliente } from '../../types';
 import { formatCurrency } from '../../utils';
 import { 
     TrashIcon, CheckCircleIcon, Loader2Icon, WalletIcon, 
-    ExclamationTriangleIcon, SparklesIcon, ArrowRightIcon, 
-    KeyIcon, Copy, ShieldCheckIcon, DollarIcon 
+    ShieldCheckIcon, KeyIcon, Copy, ArrowRightIcon, ExclamationTriangleIcon
 } from '../Icons';
 import { CartItem } from '../../hooks/useOrder';
 
@@ -17,6 +16,8 @@ interface OrderSummaryProps {
     client: Cliente | null;
     abono: number;
     setAbono: (val: number) => void;
+    prioridad?: 'Normal' | 'Urgente';
+    setPrioridad?: (val: 'Normal' | 'Urgente') => void;
     onUpdateQuantity: (id: string, qty: number) => void;
     onRemoveItem: (id: string) => void;
     onFinalize: () => void;
@@ -27,199 +28,96 @@ interface OrderSummaryProps {
     setImprimirClave: (val: boolean) => void;
 }
 
-const quickAmounts = [1, 5, 10, 20];
-
 const OrderSummary: React.FC<OrderSummaryProps> = ({ 
-    cartItems, orderTotal, client, 
-    abono, setAbono, onUpdateQuantity, onRemoveItem, onFinalize, isLoading,
+    cartItems, orderTotal, client, abono, setAbono, 
+    prioridad = 'Normal', setPrioridad,
+    onUpdateQuantity, onRemoveItem, onFinalize, isLoading,
     sriData, setSriData, imprimirClave, setImprimirClave
 }) => {
     const [copied, setCopied] = useState(false);
     const saldo = Math.max(0, orderTotal - abono);
-    
-    // REDONDEO INTELIGENTE: El 50% siempre redondeado al entero superior para caja.
-    // Ejemplo: $9.00 -> $5.00
-    const minAbonoSugerido = Math.ceil(orderTotal * 0.5);
-    
-    const isFullyPaid = abono >= orderTotal && orderTotal > 0;
 
-    const handleCopy = () => {
-        if (!sriData.claveAcceso) return;
-        navigator.clipboard.writeText(sriData.claveAcceso);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const suggestAbono = (percent: number) => {
+        setAbono(Math.ceil(orderTotal * percent));
     };
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-800">
-            {/* LISTA DE PRODUCTOS */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 {cartItems.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 space-y-4 opacity-60">
-                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                            <WalletIcon className="w-8 h-8" />
-                        </div>
-                        <p className="font-black uppercase text-[10px] tracking-widest">Sin ítems seleccionados</p>
+                    <div className="h-full flex flex-col items-center justify-center opacity-40">
+                        <WalletIcon className="w-12 h-12 mb-2" />
+                        <p className="text-[10px] font-black uppercase tracking-widest">Pedido Vacío</p>
                     </div>
                 ) : (
-                    <>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen de Orden</span>
-                                <div className="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
-                            </div>
-                            {cartItems.map(([uniqueId, item]) => {
-                                const { producto, cantidad, surcharge, surchargeLabel } = item;
-                                const itemTotal = (producto.precio + (surcharge || 0)) * cantidad;
-
-                                return (
-                                    <div key={uniqueId} className="group flex items-center gap-4 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-transparent hover:border-brand-blue/20 transition-all">
-                                        <div className="flex flex-col items-center bg-white dark:bg-slate-800 rounded-xl p-0.5 shadow-sm border border-slate-100 dark:border-slate-700">
-                                            <button onClick={() => onUpdateQuantity(uniqueId, cantidad + 1)} className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-brand-blue text-xs">▲</button>
-                                            <span className="font-black text-[11px] text-brand-blue leading-none">{cantidad}</span>
-                                            <button onClick={() => onUpdateQuantity(uniqueId, Math.max(1, cantidad - 1))} className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-brand-red text-xs">▼</button>
-                                        </div>
-                                        <div className="flex-grow min-w-0">
-                                            <p className="font-bold text-[10px] text-slate-800 dark:text-white uppercase leading-tight truncate">{producto.nombre}</p>
-                                            {surchargeLabel && <p className="text-[8px] font-black text-amber-600 uppercase tracking-tighter mt-0.5">{surchargeLabel}</p>}
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-black text-slate-900 dark:text-white">{formatCurrency(itemTotal)}</p>
-                                        </div>
-                                        <button onClick={() => onRemoveItem(uniqueId)} className="text-slate-200 hover:text-brand-red transition-colors p-1"><TrashIcon className="w-4 h-4"/></button>
-                                    </div>
-                                );
-                            })}
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center mb-4">
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle</span>
+                             {setPrioridad && (
+                                <button 
+                                    onClick={() => setPrioridad(prioridad === 'Normal' ? 'Urgente' : 'Normal')}
+                                    className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${prioridad === 'Urgente' ? 'bg-brand-red text-white animate-pulse' : 'bg-slate-100 text-slate-400'}`}
+                                >
+                                    {prioridad === 'Urgente' ? '🔥 URGENTE' : 'Prioridad'}
+                                </button>
+                             )}
                         </div>
-
-                        {/* SECCIÓN SRI DINÁMICA */}
-                        {client && (
-                            <div className="bg-slate-950 text-white rounded-[2rem] p-6 space-y-4 shadow-2xl relative overflow-hidden group border border-white/5">
-                                <div className="absolute top-0 right-0 p-4 opacity-5">
-                                    <ShieldCheckIcon className="w-24 h-24" />
+                        {cartItems.map(([id, item]) => (
+                            <div key={id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-transparent hover:border-brand-blue/20">
+                                <div className="min-w-0 flex-grow">
+                                    <p className="text-[10px] font-black uppercase truncate text-slate-800 dark:text-white">{item.producto.nombre}</p>
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase">{item.cantidad} unidades • {formatCurrency(item.producto.precio + (item.surcharge || 0))} c/u</p>
                                 </div>
-                                
-                                <div className="flex justify-between items-center relative z-10">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`p-1.5 rounded-lg ${sriData.hasKey ? 'bg-emerald-500' : 'bg-amber-500'}`}>
-                                            <KeyIcon className="w-4 h-4 text-white" />
-                                        </div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Clave SRI</span>
-                                    </div>
-                                    <select 
-                                        value={sriData.estadoClave} 
-                                        onChange={e => setSriData({...sriData, estadoClave: e.target.value})}
-                                        className={`text-[8px] font-black px-2 py-1 rounded-full border-none outline-none cursor-pointer ${sriData.estadoClave === 'LISTA' ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                                    >
-                                        <option value="LISTA">LISTA ✓</option>
-                                        <option value="PENDIENTE">PEND...</option>
-                                        <option value="ERROR">ERR</option>
-                                    </select>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-black text-xs">{formatCurrency((item.producto.precio + (item.surcharge || 0)) * item.cantidad)}</span>
+                                    <button onClick={() => onRemoveItem(id)} className="text-slate-300 hover:text-brand-red"><TrashIcon className="w-4 h-4"/></button>
                                 </div>
-
-                                <div className="flex gap-2 relative z-10">
-                                    <input 
-                                        type="text" 
-                                        value={sriData.claveAcceso} 
-                                        onChange={e => setSriData({...sriData, claveAcceso: e.target.value})}
-                                        placeholder="Contraseña del portal..."
-                                        className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono placeholder:text-white/20 outline-none focus:bg-white/10 transition-all"
-                                    />
-                                    <button 
-                                        onClick={handleCopy}
-                                        disabled={!sriData.claveAcceso}
-                                        className={`px-3 py-2 rounded-xl transition-all ${copied ? 'bg-emerald-500' : 'bg-brand-blue hover:bg-blue-600'}`}
-                                    >
-                                        {copied ? <CheckCircleIcon className="w-4 h-4"/> : <Copy className="w-4 h-4"/>}
-                                    </button>
-                                </div>
-                                <label className="flex items-center gap-2 cursor-pointer relative z-10">
-                                    <input type="checkbox" checked={imprimirClave} onChange={e => setImprimirClave(e.target.checked)} className="sr-only peer" />
-                                    <div className="w-7 h-4 bg-white/10 rounded-full peer-checked:bg-emerald-500 transition-colors relative">
-                                        <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full peer-checked:translate-x-3 transition-transform"></div>
-                                    </div>
-                                    <span className="text-[8px] font-black uppercase text-white/40">Imprimir Clave en la Orden</span>
-                                </label>
                             </div>
+                        ))}
+
+                        {client && (
+                             <div className="bg-slate-950 p-6 rounded-[2rem] space-y-4 border border-white/5 shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-5"><ShieldCheckIcon className="w-20 h-20" /></div>
+                                <div className="flex justify-between items-center relative z-10">
+                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Credenciales SRI</span>
+                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${sriData.estadoClave === 'LISTA' ? 'bg-emerald-500' : 'bg-amber-500'} text-white`}>{sriData.estadoClave}</span>
+                                </div>
+                                <div className="flex gap-2 relative z-10">
+                                    <input type="text" value={sriData.claveAcceso} onChange={e => setSriData({...sriData, claveAcceso: e.target.value})} placeholder="Clave..." className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono text-white" />
+                                    <button onClick={() => { navigator.clipboard.writeText(sriData.claveAcceso); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} className="p-2 bg-brand-blue rounded-xl">{copied ? <CheckCircleIcon className="w-4 h-4 text-white"/> : <KeyIcon className="w-4 h-4 text-white"/>}</button>
+                                </div>
+                             </div>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
 
-            {/* PANEL DE COBRO MEJORADO */}
-            <div className="p-8 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-gray-700 shadow-[0_-15px_40px_rgba(0,0,0,0.05)]">
-                <div className="space-y-6">
+            <div className="p-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-gray-700">
+                <div className="space-y-4">
                     <div className="flex justify-between items-end">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total a Pagar</span>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter">{formatCurrency(orderTotal)}</span>
-                            </div>
+                        <div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Inversión Total</span>
+                            <span className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">{formatCurrency(orderTotal)}</span>
                         </div>
                     </div>
 
                     <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <label className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Abono del Cliente ($)</label>
-                            {isFullyPaid && <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Pagado</span>}
-                        </div>
-                        
-                        <div className="relative group">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xl">$</div>
-                            <input 
-                                type="number" 
-                                value={abono || ''} 
-                                onChange={e => setAbono(parseFloat(e.target.value) || 0)}
-                                placeholder="0.00"
-                                className="w-full pl-8 pr-4 py-4 bg-white dark:bg-gray-700 border-2 border-slate-200 dark:border-gray-600 rounded-2xl font-black text-2xl text-brand-blue outline-none focus:border-brand-blue transition-all shadow-inner"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-6 gap-2">
-                            {quickAmounts.map(amount => (
-                                <button 
-                                    key={amount} 
-                                    onClick={() => setAbono(amount)} 
-                                    className={`py-2.5 rounded-xl font-black text-[10px] border-2 transition-all ${abono === amount ? 'bg-brand-blue border-brand-blue text-white shadow-md' : 'bg-white dark:bg-slate-800 border-slate-200 text-slate-500 hover:border-brand-blue/30'}`}
-                                >
-                                    ${amount}
-                                </button>
-                            ))}
-                            <button 
-                                onClick={() => setAbono(minAbonoSugerido)} 
-                                className={`col-span-1 py-2.5 rounded-xl font-black text-[9px] border-2 transition-all flex flex-col items-center justify-center leading-none ${abono === minAbonoSugerido ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}
-                                title={`50% Redondeado: $${minAbonoSugerido}`}
-                            >
-                                <span>50%</span>
-                                <span className="text-[7px] mt-0.5 opacity-60">${minAbonoSugerido}</span>
-                            </button>
-                            <button 
-                                onClick={() => setAbono(orderTotal)} 
-                                className={`col-span-1 py-2.5 rounded-xl font-black text-[9px] border-2 transition-all flex flex-col items-center justify-center leading-none ${abono === orderTotal ? 'bg-emerald-600 border-emerald-600 text-white shadow-md' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}
-                            >
-                                <span>100%</span>
-                            </button>
-                        </div>
+                         <div className="flex justify-between items-center"><label className="text-[10px] font-black text-brand-blue uppercase">Abono Realizado ($)</label></div>
+                         <input type="number" value={abono || ''} onChange={e => setAbono(parseFloat(e.target.value) || 0)} className="w-full p-4 bg-white dark:bg-gray-800 border-2 border-slate-200 dark:border-gray-700 rounded-2xl font-black text-2xl text-brand-blue outline-none focus:border-brand-blue" placeholder="0.00" />
+                         <div className="grid grid-cols-3 gap-2">
+                             <button onClick={() => suggestAbono(0.5)} className="py-2.5 rounded-xl border-2 border-indigo-100 text-indigo-600 font-black text-[10px] uppercase hover:bg-indigo-50">Sugerir 50%</button>
+                             <button onClick={() => suggestAbono(1)} className="py-2.5 rounded-xl border-2 border-emerald-100 text-emerald-600 font-black text-[10px] uppercase hover:bg-emerald-50">Sugerir 100%</button>
+                             <button onClick={() => setAbono(0)} className="py-2.5 rounded-xl border-2 border-slate-100 text-slate-400 font-black text-[10px] uppercase hover:bg-slate-50">Limpiar</button>
+                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center py-4 px-6 rounded-3xl bg-slate-950 text-white relative overflow-hidden">
-                        <div className="relative z-10 flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Saldo Pendiente</span>
-                            <span className={`text-2xl font-black tracking-tighter ${isFullyPaid ? 'text-emerald-400' : 'text-brand-red'}`}>
-                                {isFullyPaid ? 'SIN DEUDA ✓' : formatCurrency(saldo)}
-                            </span>
-                        </div>
-                        <DollarIcon className="absolute right-[-10px] top-1/2 -translate-y-1/2 w-16 h-16 opacity-5 rotate-12" />
+                    <div className="flex justify-between items-center p-4 bg-slate-950 text-white rounded-3xl relative overflow-hidden">
+                        <div className="z-10"><span className="text-[8px] font-black uppercase opacity-40 block">Saldo en Entrega</span><span className="text-2xl font-black tracking-tighter text-brand-red">{formatCurrency(saldo)}</span></div>
+                        {saldo === 0 && orderTotal > 0 && <CheckCircleIcon className="w-8 h-8 text-emerald-500 z-10" />}
                     </div>
 
-                    <button 
-                        onClick={onFinalize} 
-                        disabled={isLoading || cartItems.length === 0} 
-                        className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-4 ${isLoading || cartItems.length === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-brand-red text-white hover:bg-slate-950 shadow-red-900/20'}`}
-                    >
-                        {isLoading ? <Loader2Icon className="animate-spin w-5 h-5"/> : (
-                            <>Confirmar Pedido <ArrowRightIcon className="w-5 h-5"/></>
-                        )}
+                    <button onClick={onFinalize} disabled={isLoading || cartItems.length === 0} className="w-full py-6 bg-brand-red text-white font-black text-xs uppercase tracking-[0.3em] rounded-2xl shadow-2xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3">
+                        {isLoading ? <Loader2Icon className="animate-spin w-5 h-5"/> : <>Confirmar Pedido <ArrowRightIcon className="w-5 h-5"/></>}
                     </button>
                 </div>
             </div>

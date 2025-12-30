@@ -6,7 +6,7 @@ import ClientSelector from '../components/orders/ClientSelector';
 import ProductGrid from '../components/orders/ProductGrid';
 import OrderSummary from '../components/orders/OrderSummary';
 import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
-import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon } from '../components/Icons';
+import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon, ArrowRightIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { getTrabajos } from '../services/mockApi';
 
@@ -15,26 +15,17 @@ const NuevoPedidoPage: React.FC = () => {
     const navigate = useNavigate();
     const { 
         selectedCliente, cartItems, jobType, abono, 
-        orderTotal, isLoading, sriData, imprimirClave,
-        setSelectedCliente, setJobType, setAbono, setSriData, setImprimirClave,
+        orderTotal, isLoading, sriData, imprimirClave, actividadSeleccionada,
+        setSelectedCliente, setJobType, setAbono, setSriData, setImprimirClave, setActividadSeleccionada,
         addProduct, removeProduct, updateQuantity, finalizeOrder, resetOrder
     } = useOrder(currentUser.nombre);
 
-    const [selectedActivity, setSelectedActivity] = useState<string>('');
     const [clientDebt, setClientDebt] = useState(0);
 
-    // Parseamos las actividades guardadas como etiquetas
     const clientActivities = useMemo(() => {
         if (!selectedCliente?.actividades) return [];
         return selectedCliente.actividades.split('|').filter(a => a.length > 0);
     }, [selectedCliente]);
-
-    // Al seleccionar cliente, marcamos la primera actividad por defecto
-    useEffect(() => {
-        if (clientActivities.length > 0) {
-            setSelectedActivity(clientActivities[0]);
-        }
-    }, [clientActivities]);
 
     useEffect(() => {
         if (selectedCliente) {
@@ -48,7 +39,6 @@ const NuevoPedidoPage: React.FC = () => {
     }, [selectedCliente]);
 
     const handleFinalize = async () => {
-        // En un caso real, pasaríamos selectedActivity a finalizeOrder para que se guarde en el historial del trabajo
         const newJob = await finalizeOrder();
         if (newJob) {
             if (newJob.tipo === TrabajoTipo.SRI) {
@@ -70,8 +60,8 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <ShieldCheckIcon className="w-8 h-8 text-brand-blue" />
                                 </div>
-                                <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Nueva Orden de Trabajo</h2>
-                                <p className="text-slate-500 mt-2">Busca un contribuyente registrado o escanea un nuevo RUC.</p>
+                                <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Nueva Orden SRI</h2>
+                                <p className="text-slate-500 mt-2 tracking-tight">Busca un contribuyente o escanea su RUC para iniciar.</p>
                             </div>
                             <ClientSelector onSelectClient={setSelectedCliente} />
                         </div>
@@ -98,19 +88,19 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* SELECCIÓN DE ACTIVIDAD PARA SRI */}
+                            {/* SELECTOR DE ACTIVIDAD PARA SRI */}
                             {jobType === TrabajoTipo.SRI && clientActivities.length > 0 && (
                                 <div className="bg-slate-950 p-4 rounded-2xl flex flex-col md:flex-row items-center gap-4 animate-slide-in-up">
                                     <div className="flex items-center gap-2 shrink-0">
-                                        <LayersIcon className="w-4 h-4 text-brand-red" />
-                                        <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Actividad para este documento:</span>
+                                        <div className="p-1.5 bg-brand-red rounded-lg"><LayersIcon className="w-3.5 h-3.5 text-white" /></div>
+                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Actividad para este documento:</span>
                                     </div>
-                                    <div className="flex flex-wrap gap-2 flex-grow">
+                                    <div className="flex flex-wrap gap-2 flex-grow overflow-x-auto custom-scrollbar pb-1">
                                         {clientActivities.map(act => (
                                             <button 
                                                 key={act} 
-                                                onClick={() => setSelectedActivity(act)}
-                                                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${selectedActivity === act ? 'bg-brand-red text-white shadow-lg' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                                                onClick={() => setActividadSeleccionada(act)}
+                                                className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all whitespace-nowrap border ${actividadSeleccionada === act ? 'bg-brand-red border-brand-red text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white'}`}
                                             >
                                                 {act}
                                             </button>

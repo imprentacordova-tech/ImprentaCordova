@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Cliente, Regimen } from '../../types';
-import { createCliente, getMasterActividades, addMasterActividades } from '../../services/mockApi';
+import { createCliente, getMasterActividades } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
 import { extractClientFromImage } from '../../services/geminiService';
 import { 
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
     CheckCircleIcon, SparklesIcon, AddIcon, ArrowRightIcon, PhoneIcon, 
-    UploadIcon, DocumentTextIcon, ReceiptIcon, InfoIcon, LayersIcon
+    UploadIcon, DocumentTextIcon, LayersIcon
 } from '../Icons';
 
 const InputField: React.FC<{ 
@@ -47,13 +47,10 @@ export const CreateClientModal: React.FC<{
     const [actividades, setActividades] = useState<string[]>([]);
     const [currentActividad, setCurrentActividad] = useState('');
     const [masterActividades, setMasterActividades] = useState<string[]>([]);
-    const [telefonos, setTelefonos] = useState<string[]>([]);
-    const [currentTelefono, setCurrentTelefono] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     
     const [isScanning, setIsScanning] = useState(false);
-    const [extractedData, setExtractedData] = useState<any>(null);
     const [highlightFields, setHighlightFields] = useState<string[]>([]);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,9 +62,7 @@ export const CreateClientModal: React.FC<{
                 email: '', direccion: 'Pasaje, El Oro', regimen: Regimen.GENERAL 
             });
             setActividades([]);
-            setTelefonos([]);
             setSaveSuccess(false);
-            setExtractedData(null);
             getMasterActividades().then(setMasterActividades);
         }
     }, [isOpen, initialName, initialCedulaRuc]);
@@ -81,7 +76,6 @@ export const CreateClientModal: React.FC<{
             const base64 = event.target?.result as string;
             const data = await extractClientFromImage(base64);
             if (data) {
-                setExtractedData(data);
                 applyExtractedData(data);
             }
             setIsScanning(false);
@@ -101,9 +95,10 @@ export const CreateClientModal: React.FC<{
         }));
 
         if (data.actividades) {
-            const cleaned = data.actividades.split(/[,\n•]/)
+            // Limpieza inteligente de actividades separadas por comas, puntos o saltos
+            const cleaned = data.actividades.split(/[,\n•.;]/)
                 .map((a: string) => a.trim().toUpperCase())
-                .filter((a: string) => a.length > 3);
+                .filter((a: string) => a.length > 4);
             setActividades(prev => Array.from(new Set([...prev, ...cleaned])));
         }
         setTimeout(() => setHighlightFields([]), 3000);
@@ -125,7 +120,7 @@ export const CreateClientModal: React.FC<{
             actividades: actividades.join('|'),
             cedula: newClienteData.cedulaRuc,
             ruc: newClienteData.cedulaRuc.length === 13 ? newClienteData.cedulaRuc : undefined,
-            telefono: telefonos.length > 0 ? telefonos : ['0990000000']
+            telefono: ['0990000000'] // Por defecto si no se escanea
         });
         setSaveSuccess(true);
         setTimeout(() => onClientCreated(newCliente), 800);
@@ -140,7 +135,7 @@ export const CreateClientModal: React.FC<{
                 <div className="flex justify-between items-center p-6 border-b dark:border-gray-800 bg-gray-50 dark:bg-slate-900/50">
                     <div>
                         <h2 className="text-xl font-black text-brand-blue dark:text-white uppercase tracking-tighter">REGISTRO DE CONTRIBUYENTE</h2>
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Imprenta Córdova - Centro de Datos SRI</p>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Imprenta Córdova - Extractor Inteligente</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full"><CloseIcon className="w-5 h-5 text-gray-400" /></button>
                 </div>
@@ -154,7 +149,7 @@ export const CreateClientModal: React.FC<{
                         className={`w-full flex flex-col items-center justify-center gap-3 py-8 rounded-[2rem] border-2 border-dashed transition-all ${isScanning ? 'border-brand-blue bg-blue-50/20' : 'border-slate-200 dark:border-gray-700 bg-slate-50/50 hover:bg-white'}`}
                     >
                         {isScanning ? <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" /> : <UploadIcon className="w-10 h-10 text-brand-blue" />}
-                        <span className="text-xs font-black uppercase tracking-[0.2em]">{isScanning ? "Procesando RUC con IA..." : "Escanear Certificado de RUC"}</span>
+                        <span className="text-xs font-black uppercase tracking-[0.2em]">{isScanning ? "IA Analizando Documento..." : "Escanear Certificado RUC"}</span>
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
                     </button>
 
@@ -178,13 +173,13 @@ export const CreateClientModal: React.FC<{
                             ))}
                         </div>
 
-                        {/* ACTIVIDADES COMO ETIQUETAS */}
+                        {/* ACTIVIDADES COMO ETIQUETAS (COLECCIÓN) */}
                         <div className="bg-slate-900 rounded-[2rem] p-8 space-y-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-[10px] font-black text-brand-red uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <LayersIcon className="w-4 h-4"/> Actividades Económicas
+                                    <LayersIcon className="w-4 h-4"/> Actividades Económicas Detectadas
                                 </h3>
-                                <span className="text-[8px] font-bold text-white/40 uppercase">Presione Enter para añadir</span>
+                                <span className="text-[8px] font-bold text-white/40 uppercase">Presione Enter para añadir manualmente</span>
                             </div>
 
                             <div className="flex flex-wrap gap-2 min-h-[50px] p-4 bg-white/5 rounded-2xl border border-white/10">
@@ -199,16 +194,16 @@ export const CreateClientModal: React.FC<{
                                     value={currentActividad} 
                                     onChange={e => setCurrentActividad(e.target.value)} 
                                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addActividad(currentActividad))}
-                                    placeholder="Añadir actividad..."
+                                    placeholder="Escribe actividad..."
                                     className="bg-transparent border-none outline-none text-white text-[11px] font-bold flex-grow min-w-[150px]"
                                 />
                             </div>
 
                             {/* Sugerencias de la base maestra */}
                             <div className="space-y-3">
-                                <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Sugerencias Frecuentes:</p>
+                                <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Colección Global (Sugerencias):</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {masterActividades.filter(ma => !actividades.includes(ma)).slice(0, 8).map(ma => (
+                                    {masterActividades.filter(ma => !actividades.includes(ma)).slice(0, 10).map(ma => (
                                         <button 
                                             key={ma} 
                                             type="button" 
@@ -227,7 +222,7 @@ export const CreateClientModal: React.FC<{
                         <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
                             <button type="button" onClick={onClose} className="px-8 py-4 text-slate-400 font-bold uppercase text-[10px]">Cancelar</button>
                             <button type="submit" disabled={isSaving || saveSuccess} className={`min-w-[200px] px-12 py-4 text-white font-black rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-3 uppercase text-xs ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-950'}`}>
-                                {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Guardar Contribuyente"}
+                                {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Confirmar Datos"}
                             </button>
                         </div>
                     </form>

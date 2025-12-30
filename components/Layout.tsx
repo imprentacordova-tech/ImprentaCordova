@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon, CordovaLogo } from './Icons';
+import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon, CordovaLogo, GlobeAltIcon as CloudIcon, CheckCircleIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
 
@@ -136,6 +136,7 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
 
 const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: User }> = ({ onMenuClick, onLogout, user }) => {
     const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+    const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
         if (isDark) {
@@ -147,21 +148,42 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: Us
         }
     }, [isDark]);
 
+    // Listener para el motor de sincronización
+    useEffect(() => {
+        const startSync = () => setIsSyncing(true);
+        const endSync = () => setIsSyncing(false);
+        window.addEventListener('cloud-sync-active', startSync);
+        window.addEventListener('cloud-sync-idle', endSync);
+        return () => {
+            window.removeEventListener('cloud-sync-active', startSync);
+            window.removeEventListener('cloud-sync-idle', endSync);
+        };
+    }, []);
+
     return (
         <header className="h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl flex items-center justify-between px-8 border-b border-slate-100 dark:border-slate-800 flex-shrink-0 sticky top-0 z-30">
             <div className="flex items-center gap-6">
                 <button onClick={onMenuClick} className="lg:hidden p-3 bg-slate-100 dark:bg-white/5 rounded-xl text-slate-600 dark:text-slate-300">
                     <MenuIcon className="h-6 w-6" />
                 </button>
-                <div className="hidden sm:flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cerebro Córdova Online</p>
+                <div className="flex items-center gap-4">
+                    <div className="hidden sm:flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cerebro Online</p>
+                    </div>
+                    {/* Indicador Cloud */}
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-500 ${isSyncing ? 'bg-blue-50 border-blue-200 animate-pulse' : 'bg-slate-50 border-slate-100'}`}>
+                        {isSyncing ? <CloudIcon className="w-3 h-3 text-brand-blue animate-bounce" /> : <CheckCircleIcon className="w-3 h-3 text-emerald-500" />}
+                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+                            {isSyncing ? 'Sincronizando Nube...' : 'Nube Actualizada'}
+                        </span>
+                    </div>
                 </div>
             </div>
 
             <div className="flex items-center gap-6">
                 <div className="hidden md:flex flex-col text-right mr-4 leading-none">
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Terminal de Acceso</span>
+                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Terminal {user.nombre.toUpperCase()}</span>
                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">{new Date().toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                 </div>
                 
@@ -175,7 +197,7 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: Us
 
                 <button onClick={onLogout} className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all group flex items-center gap-2">
                     <LogoutIcon className="h-5 w-5" />
-                    <span className="hidden xl:inline text-[10px] font-black uppercase tracking-widest">Desconectar</span>
+                    <span className="hidden xl:inline text-[10px] font-black uppercase tracking-widest">Salir</span>
                 </button>
             </div>
         </header>

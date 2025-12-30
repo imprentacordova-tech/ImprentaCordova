@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React;
 
 export enum TrabajoTipo {
   SRI = 'sri',
@@ -26,7 +26,7 @@ export interface Cliente {
   ruc?: string;
   nombre: string;
   nombreComercial?: string;
-  actividades?: string;
+  actividades?: string; // Guardadas como string separado por pipes |
   direccion?: string;
   notas?: string;
   telefono: string[];
@@ -56,14 +56,15 @@ export interface Trabajo {
   actualizadoPor?: string;
   establecimiento?: string;
   puntoEmision?: string;
-  claveAcceso?: string; // Contraseña del SRI
+  claveAcceso?: string;
   estadoClave: 'LISTA' | 'PENDIENTE' | 'ERROR'; 
-  imprimirClave: boolean; // Si el cliente quiere que aparezca en el papel
+  imprimirClave: boolean;
   origen?: 'Web' | 'Interno';
   esRenovacion?: boolean;
   prioridad?: 'Normal' | 'Urgente';
   historial?: StatusLog[];
   fechaVencimiento?: string;
+  actividadSeleccionada?: string; // Actividad elegida para este documento específico
 }
 
 export interface Producto {
@@ -103,7 +104,6 @@ export interface StatusLog {
   usuario: string;
 }
 
-// Interfaces adicionales para IA y Dashboard
 export interface ChatMessage { role: 'user' | 'model'; text: string; }
 export interface AIContentRequest { businessName: string; productType: string; tone: string; }
 export interface DailySales { date: string; sales: number; }
