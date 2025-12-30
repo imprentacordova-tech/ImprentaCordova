@@ -2,13 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTrabajos, getClientes } from '../services/mockApi';
-import { Cliente, Trabajo, Regimen, TrabajoTipo } from '../types';
+import { Cliente, Trabajo, TrabajoTipo } from '../types';
 import { 
-    PrinterIcon, MapPinIcon, PhoneIcon, ClockIcon, 
-    BuildingStorefrontIcon, CalendarDaysIcon, CheckBadgeIcon, 
-    CordovaLogo, ArrowDownTrayIcon, ArrowLeftIcon, 
-    ShieldCheckIcon, DocumentTextIcon, ExclamationTriangleIcon,
-    BoxIcon, ReceiptIcon, Loader2Icon, EnvelopeIcon, KeyIcon
+    PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
+    CordovaLogo, Loader2Icon, ShieldCheckIcon, DocumentTextIcon,
+    ExclamationTriangleIcon, CheckIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
@@ -40,187 +38,179 @@ const SolicitudImpresionPage: React.FC = () => {
     }, [trabajoId]);
 
     const handleDownloadPdf = () => {
-        const element = document.getElementById('documento-maestro-layout');
+        const element = document.getElementById('documento-oficial-sri');
         if (!element || !trabajo) return;
         const opt = {
             margin: 0,
-            filename: `Orden-${trabajo.orden}-${cliente?.nombre}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            filename: `Solicitud-SRI-${trabajo.orden}-${cliente?.nombre}.pdf`,
+            image: { type: 'jpeg', quality: 1 },
             html2canvas: { scale: 3, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         html2pdf().from(element).set(opt).save();
     };
 
     if (loading || !config || !trabajo || !cliente) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Generando Documento Técnico...</p>
-            </div>
+            <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
         </div>
     );
 
-    // Validación estricta para determinar si es un trabajo que requiere datos del SRI
-    const isSRI = trabajo.tipo === TrabajoTipo.SRI || String(trabajo.tipo).toLowerCase() === 'sri';
-    const isQuimico = trabajo.subtipo.toLowerCase().includes('químico') || trabajo.subtipo.toLowerCase().includes('quimico');
+    const isSRI = trabajo.tipo === TrabajoTipo.SRI;
+    const fechaHoy = new Date().toLocaleDateString('es-EC');
 
     return (
         <div className="bg-slate-200 min-h-screen py-12 flex flex-col items-center overflow-y-auto">
             <style>{`
                 @media print {
-                    @page { size: A5; margin: 0; }
+                    @page { size: A4; margin: 0; }
                     body { margin: 0; background: white; -webkit-print-color-adjust: exact; }
                     .no-print { display: none !important; }
-                    #documento-maestro-layout { 
+                    #documento-oficial-sri { 
                         box-shadow: none !important; 
                         border: none !important;
-                        width: 100% !important;
-                        height: 100vh !important;
-                        margin: 0 !important;
-                        padding: 8mm !important;
+                        width: 210mm !important;
+                        height: 297mm !important;
+                        padding: 15mm !important;
                     }
                 }
             `}</style>
 
-            <div className="w-full max-w-[148mm] flex justify-between mb-8 no-print px-4">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 font-black text-[10px] uppercase tracking-widest hover:text-brand-blue transition-colors">
+            <div className="w-full max-w-[210mm] flex justify-between mb-8 no-print px-4">
+                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 font-black text-xs uppercase tracking-widest hover:text-brand-blue transition-colors">
                     <ArrowLeftIcon className="w-4 h-4" /> Volver
                 </button>
                 <div className="flex gap-3">
-                    <button onClick={handleDownloadPdf} className="bg-white border-2 border-slate-300 px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2">
-                        <ArrowDownTrayIcon className="w-4 h-4" /> PDF
+                    <button onClick={handleDownloadPdf} className="bg-white border-2 border-slate-300 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
+                        <ArrowDownTrayIcon className="w-5 h-5" /> Exportar PDF
                     </button>
-                    <button onClick={() => window.print()} className="bg-brand-blue text-white px-8 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-2 hover:bg-brand-navy transition-all">
-                        <PrinterIcon className="w-4 h-4"/> Imprimir
+                    <button onClick={() => window.print()} className="bg-brand-blue text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2 hover:bg-slate-950 transition-all">
+                        <PrinterIcon className="w-5 h-5"/> Imprimir Solicitud
                     </button>
                 </div>
             </div>
 
-            <div id="documento-maestro-layout" className="bg-white shadow-2xl border border-slate-300 relative flex flex-col" style={{ width: '148mm', minHeight: '210mm', padding: '10mm' }}>
+            {/* FORMATO ANEXO 1 - SOLICITUD DE AUTORIZACIONES */}
+            <div id="documento-oficial-sri" className="bg-white shadow-2xl border border-slate-300 relative flex flex-col box-border" style={{ width: '210mm', minHeight: '297mm', padding: '20mm', fontFamily: 'Arial, sans-serif' }}>
                 
-                {/* ENCABEZADO */}
-                <div className="flex justify-between items-start border-b-4 border-brand-blue pb-4 mb-4">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-brand-blue p-2 rounded-2xl shadow-lg">
-                            <CordovaLogo className="h-12 w-auto object-contain brightness-0 invert" />
+                {/* CABECERA OFICIAL */}
+                <div className="flex justify-between items-start border-b-2 border-gray-100 pb-6 mb-8">
+                    <div className="flex items-center gap-5">
+                        <div className="bg-brand-blue p-3 rounded-2xl shadow-lg">
+                            <CordovaLogo className="h-16 w-auto brightness-0 invert" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-brand-blue tracking-tighter leading-none">IMPRENTA <span className="text-brand-red">CÓRDOVA</span></h1>
-                            <div className="text-[7px] font-bold text-slate-500 uppercase mt-1 leading-tight">
-                                <p className="flex items-center gap-1"><MapPinIcon className="w-2 h-2 text-brand-red"/> {config.emisorDireccionCompleta}</p>
-                                <p className="flex items-center gap-3">
-                                    <span className="flex items-center gap-1"><PhoneIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorTelefono}</span>
-                                    <span className="flex items-center gap-1"><EnvelopeIcon className="w-2.5 h-2.5 text-brand-red"/> {config.emisorEmail}</span>
-                                </p>
-                            </div>
+                            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Archivo para Establecimientos Gráficos</h2>
+                            <h1 className="text-2xl font-black text-brand-blue tracking-tighter leading-none">ANEXO 1 - SOLICITUD DE AUTORIZACIONES</h1>
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="bg-brand-blue text-white text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest mb-1 shadow-md">ORDEN DE PRODUCCIÓN</div>
-                        <p className="text-xs font-black text-slate-400 tracking-widest uppercase">Nro. Registro</p>
-                        <p className="text-2xl font-mono font-black text-brand-red leading-none">#{String(trabajo.orden).padStart(6, '0')}</p>
+                        <div className="inline-block px-3 py-1 bg-brand-red text-white text-[9px] font-black rounded uppercase tracking-widest mb-2">ORIGINAL</div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase">Orden Interna: <span className="text-slate-900 font-black">#{trabajo.orden}</span></p>
                     </div>
                 </div>
 
-                {/* FICHA TÉCNICA */}
-                <div className={`grid grid-cols-12 gap-y-3 mb-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 ${!isSRI ? 'items-center' : ''}`}>
-                    <div className="col-span-8">
-                        <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Razón Social</span>
-                        <span className="text-xs font-black text-slate-900 uppercase leading-none">{cliente.nombre}</span>
-                    </div>
-                    <div className="col-span-4 text-right border-l border-slate-200 pl-4">
-                        <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">RUC / C.I.</span>
-                        <span className="text-xs font-mono font-bold text-slate-900">{cliente.ruc || cliente.cedula}</span>
-                    </div>
-
-                    {/* SECCIÓN CONDICIONAL SRI: Se oculta totalmente si el trabajo es General */}
-                    {isSRI && (
-                        <div className="col-span-12 border-t border-slate-200 pt-2 flex justify-between items-end animate-fade-in">
-                            <div className="flex-1">
-                                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-1">GESTIÓN SEGURIDAD SRI</span>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-3 h-3 rounded-full ${trabajo.estadoClave === 'LISTA' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                                        <span className="text-[8px] font-black uppercase text-slate-600">CLAVE: {trabajo.estadoClave}</span>
-                                    </div>
-                                    <div className="bg-white px-3 py-1 rounded-md border border-slate-200 min-w-[120px]">
-                                        <span className="text-[9px] font-mono font-bold text-brand-blue uppercase">
-                                            {trabajo.imprimirClave ? trabajo.claveAcceso : "********* (OCULTA)"}
-                                        </span>
-                                    </div>
-                                </div>
+                {/* DATOS DEL CONTRIBUYENTE (BLOQUE 1) */}
+                <div className="space-y-4 mb-10">
+                    <div className="grid grid-cols-12 border border-gray-300">
+                        <div className="col-span-12 bg-gray-100 p-2 border-b border-gray-300">
+                            <span className="text-[10px] font-black uppercase">1. Información del Contribuyente</span>
+                        </div>
+                        <div className="col-span-12 p-4 grid grid-cols-2 gap-8">
+                            <div className="border-b border-gray-200 pb-2">
+                                <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Apellidos y Nombres / Razón Social</p>
+                                <p className="text-sm font-bold uppercase text-slate-900">{cliente.nombre}</p>
                             </div>
-                            <div className="text-right">
-                                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Establecimiento</span>
-                                <span className="text-xs font-mono font-black text-brand-blue">{trabajo.establecimiento || '001'} - {trabajo.puntoEmision || '001'}</span>
+                            <div className="border-b border-gray-200 pb-2">
+                                <p className="text-[9px] font-black text-gray-400 uppercase mb-1">R.U.C. (Registro Único de Contribuyentes)</p>
+                                <p className="text-sm font-mono font-black text-brand-blue">{cliente.ruc || cliente.cedula}</p>
+                            </div>
+                            <div className="border-b border-gray-200 pb-2">
+                                <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Fecha de Solicitud</p>
+                                <p className="text-sm font-bold uppercase">{fechaHoy}</p>
+                            </div>
+                            <div className="border-b border-gray-200 pb-2">
+                                <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Teléfono de Contacto</p>
+                                <p className="text-sm font-bold">{cliente.telefono[0]}</p>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
-                {/* DETALLE */}
-                <div className="mb-6 flex-grow">
-                    <h3 className="text-[8px] font-black text-brand-blue uppercase tracking-[0.3em] mb-3 flex items-center gap-2">ESPECIFICACIONES DE TALLER</h3>
-                    <table className="w-full text-[9px] border-collapse">
-                        <thead>
-                            <tr className="bg-brand-blue text-white uppercase text-[7px] tracking-widest">
-                                <th className="p-2 border border-brand-blue w-[10%]">Cant</th>
-                                <th className="p-2 border border-brand-blue text-left w-[40%]">Descripción</th>
-                                <th className="p-2 border border-brand-blue w-[15%] text-center">Material</th>
-                                <th className="p-2 border border-brand-blue w-[15%] text-center">Tamaño</th>
-                                <th className="p-2 border border-brand-blue w-[20%] text-right">Total</th>
+                {/* DETALLE DE DOCUMENTOS (TABLA SOLICITADA) */}
+                <div className="border border-gray-300 mb-10">
+                    <div className="bg-gray-100 p-2 border-b border-gray-300">
+                        <span className="text-[10px] font-black uppercase">2. Detalle de Documentos Solicitados</span>
+                    </div>
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 border-b border-gray-300">
+                            <tr className="text-[9px] font-black text-gray-600 uppercase">
+                                <th className="p-3 border-r">Tipo de Documento</th>
+                                <th className="p-3 border-r text-center">Establecimiento</th>
+                                <th className="p-3 border-r text-center">Punto Emisión</th>
+                                <th className="p-3 text-center">Cantidad</th>
                             </tr>
                         </thead>
-                        <tbody className="text-slate-800">
-                            <tr className="font-bold">
-                                <td className="p-3 border border-slate-200 text-center text-lg">{trabajo.cantidad}</td>
-                                <td className="p-3 border border-slate-200 uppercase leading-tight">{trabajo.subtipo}</td>
-                                <td className="p-3 border border-slate-200 text-center uppercase text-[8px]">{isQuimico ? 'Químico' : 'Papel/Vinilo'}</td>
-                                <td className="p-3 border border-slate-200 text-center uppercase text-[8px]">{trabajo.tamano}</td>
-                                <td className="p-3 border border-slate-200 text-right text-base font-black text-brand-blue">{formatCurrency(trabajo.total)}</td>
+                        <tbody className="text-xs">
+                            <tr className="border-b">
+                                <td className="p-3 border-r font-bold uppercase text-brand-blue">{trabajo.subtipo}</td>
+                                <td className="p-3 border-r text-center font-mono font-bold text-lg">{trabajo.establecimiento || '001'}</td>
+                                <td className="p-3 border-r text-center font-mono font-bold text-lg">{trabajo.puntoEmision || '001'}</td>
+                                <td className="p-3 text-center font-black text-lg">{trabajo.cantidad}</td>
                             </tr>
-                            {[...Array(3)].map((_, i) => (
-                                <tr key={i}><td className="p-3 border border-slate-100"></td><td className="p-3 border border-slate-100"></td><td className="p-3 border border-slate-100"></td><td className="p-3 border border-slate-100"></td><td className="p-3 border border-slate-100"></td></tr>
+                            {[...Array(2)].map((_, i) => (
+                                <tr key={i} className="border-b h-10">
+                                    <td className="p-3 border-r"></td><td className="p-3 border-r"></td><td className="p-3 border-r"></td><td className="p-3"></td>
+                                </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
 
+                {/* OPCIONES ADICIONALES */}
+                <div className="grid grid-cols-2 gap-8 mb-10">
+                    <div className="border border-gray-300 p-4 rounded-xl">
+                        <p className="text-[9px] font-black text-gray-400 uppercase mb-3">¿Desea categoría negociable?</p>
+                        <div className="flex gap-6">
+                            <div className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-slate-300 rounded flex items-center justify-center text-white"><CheckIcon className="w-3 h-3 text-slate-300"/></div><span className="text-xs font-bold">SI</span></div>
+                            <div className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-brand-blue bg-brand-blue rounded flex items-center justify-center text-white"><CheckIcon className="w-3 h-3"/></div><span className="text-xs font-bold">NO</span></div>
+                        </div>
+                    </div>
+                    <div className="border border-gray-300 p-4 rounded-xl">
+                        <p className="text-[9px] font-black text-gray-400 uppercase mb-3">Régimen Detectado</p>
+                        <span className="text-xs font-black bg-blue-50 text-brand-blue px-3 py-1 rounded-full uppercase tracking-widest">{cliente.regimen}</span>
+                    </div>
+                </div>
+
+                {/* DIRECCIÓN Y OTROS */}
+                <div className="border border-gray-300 p-4 mb-10 bg-slate-50/50">
+                    <p className="text-[9px] font-black text-gray-400 uppercase mb-2">Dirección a imprimir en el documento</p>
+                    <p className="text-sm font-bold uppercase text-slate-800 leading-tight">{cliente.direccion || 'C. Principal y C. Secundaria, Pasaje - El Oro'}</p>
+                </div>
+
+                {/* DECLARACIÓN Y FIRMAS */}
+                <div className="mt-auto space-y-12">
+                    <div className="p-4 border-2 border-brand-blue/10 bg-blue-50/30 rounded-2xl text-[10px] leading-relaxed text-gray-600">
+                        <p className="font-bold mb-1">DECLARACIÓN DE RESPONSABILIDAD:</p>
+                        Declaro que los datos proporcionados en esta solicitud son exactos y verdaderos, por lo que asumo la responsabilidad legal sobre su veracidad. Autorizo a <b>IMPRENTA CÓRDOVA</b> para que gestione ante el SRI la autorización de impresión correspondiente.
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-20 pt-16">
+                        <div className="text-center border-t border-slate-400 pt-3">
+                            <p className="text-[9px] font-black text-slate-900 uppercase">Firma del Contribuyente</p>
+                            <p className="text-[8px] text-slate-400 font-bold uppercase mt-1">C.I. {cliente.cedula}</p>
+                        </div>
+                        <div className="text-center border-t border-slate-400 pt-3">
+                            <p className="text-[9px] font-black text-slate-900 uppercase">Recibido por Imprenta</p>
+                            <p className="text-[8px] text-slate-400 font-bold uppercase mt-1">Autorización SRI: {config.imprentaAutorizacion}</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* PIE DE PÁGINA */}
-                <div className="mt-auto">
-                    <div className="bg-brand-red/5 border-2 border-brand-red/20 rounded-2xl p-4 mb-6 text-center">
-                        <h4 className="text-[9px] font-black text-brand-red uppercase tracking-widest mb-1">¡ATENCIÓN!</h4>
-                        <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-tight leading-tight">
-                            PASADO EL MES NO NOS HACEMOS RESPONSABLES POR TRABAJOS NO RETIRADOS. INDISPENSABLE PRESENTAR ESTE COMPROBANTE PARA EL RETIRO.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-12 mb-8 text-center pt-8 border-t border-slate-100">
-                        <div>
-                            <div className="border-t-2 border-slate-800 w-full mb-1"></div>
-                            <p className="text-[8px] font-black uppercase text-slate-900">Firma Autorizada</p>
-                        </div>
-                        <div>
-                            <div className="border-t-2 border-slate-800 w-full mb-1"></div>
-                            <p className="text-[8px] font-black uppercase text-slate-900">Recibí Conforme</p>
-                        </div>
-                    </div>
-
-                    <div className="border-t-2 border-dashed border-slate-300 pt-6 mt-4 grid grid-cols-3 gap-3">
-                        <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 flex flex-col items-center">
-                            <span className="text-[8px] font-black text-slate-400 uppercase mb-1">Valor Total $</span>
-                            <span className="text-xl font-black text-slate-900 leading-none">{formatCurrency(trabajo.total)}</span>
-                        </div>
-                        <div className="bg-blue-50 p-3 rounded-xl border border-brand-blue/20 flex flex-col items-center">
-                            <span className="text-[8px] font-black text-brand-blue uppercase mb-1">Abonado $</span>
-                            <span className="text-xl font-black text-brand-blue leading-none">{formatCurrency(trabajo.abono)}</span>
-                        </div>
-                        <div className="bg-brand-red p-3 rounded-xl flex flex-col items-center shadow-lg shadow-red-900/10">
-                            <span className="text-[8px] font-black text-white/80 uppercase mb-1">Saldo $</span>
-                            <span className="text-xl font-black text-white leading-none">{formatCurrency(trabajo.saldo)}</span>
-                        </div>
-                    </div>
+                <div className="absolute bottom-10 left-0 w-full px-[20mm] flex justify-between items-center opacity-40">
+                    <p className="text-[8px] font-bold text-gray-400">Generado por Córdova E.R.P. 2025 - Sistema Maestro de Pasaje</p>
+                    <p className="text-[8px] font-bold text-gray-400">Página 1 de 1</p>
                 </div>
             </div>
         </div>

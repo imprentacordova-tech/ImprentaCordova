@@ -10,7 +10,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
 };
 
 /**
- * Extrae datos detallados de un Certificado de RUC o documento del SRI Ecuador.
+ * Extrae datos detallados de un Certificado de RUC del SRI.
  * Optimizado para Imprenta Córdova - Pasaje.
  */
 export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
@@ -20,14 +20,14 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
     const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
     const dataPart = base64Image.split(',')[1];
     
-    const prompt = `Analiza este documento del SRI (Ecuador). Sigue estas reglas estrictas:
-    1. NOMBRE: Extrae Apellidos y Nombres (Persona Natural) o Razón Social (Empresa).
-    2. RUC: Extrae los 13 dígitos. Ignora cédulas de 10 dígitos, siempre deben ser 13.
-    3. REGIMEN: Identifica si es "RIMPE - NEGOCIO POPULAR", "RIMPE - EMPRENDEDOR" o "REGIMEN GENERAL".
-    4. ACTIVIDADES: Extrae solo el texto descriptivo. ELIMINA los códigos numéricos (ej. de "G45.10 - VENTA..." a "VENTA...").
-    5. DIRECCION: Extrae solo la Calle Principal y Secundaria. IGNORA referencias como "detrás de", "junto a" o códigos postales. Al final añade siempre "Pasaje - El Oro".
-    6. ESTABLECIMIENTOS: Cuenta cuántos establecimientos ABIERTOS tiene. Indica el número total y extrae el código del primer establecimiento (ej: 001).
-    7. EMAIL/TEL: Extrae el correo electrónico y celular para uso interno comercial.`;
+    const prompt = `Analiza este documento del SRI Ecuador. Sigue estas reglas estrictas para Imprenta Córdova:
+    1. NOMBRE: Extrae "Apellidos y Nombres" para personas naturales o "Razón Social" para empresas.
+    2. RUC: Extrae los 13 dígitos. Ignora cédulas de 10 dígitos.
+    3. REGIMEN: Identifica si es RIMPE (Negocio Popular / Emprendedor) o General.
+    4. ACTIVIDADES: Extrae la descripción de las actividades económicas. ELIMINA los códigos CIIU (ej. de "G45.10 - VENTA" a solo "VENTA").
+    5. DIRECCIÓN: Extrae solo la Calle Principal y Secundaria. IGNORA referencias (detrás de, junto a, etc.) y códigos postales. Formato final: "[Calle P] y [Calle S], Pasaje - El Oro".
+    6. ESTABLECIMIENTOS: Identifica cuántos establecimientos ABIERTOS tiene. Si es solo 1, usa "001". Si hay más, indica el total.
+    7. EMAIL: Extrae el correo para base de datos interna (marketing).`;
 
     try {
         const response = await withTimeout(ai.models.generateContent({
@@ -47,7 +47,7 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
                         telefono: { type: Type.STRING },
                         actividades: { type: Type.STRING },
                         numEstablecimientos: { type: Type.NUMBER },
-                        establecimientoPrincipal: { type: Type.STRING, description: 'Código de 3 dígitos, ej: 001' }
+                        establecimientoPrincipal: { type: Type.STRING }
                     },
                     required: ['nombre', 'ruc', 'numEstablecimientos']
                 }
@@ -56,64 +56,41 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
         
         return JSON.parse(response.text || "{}");
     } catch (error) { 
-        console.error("Error extraiendo datos del RUC:", error);
+        console.error("Error IA RUC:", error);
         return null; 
     }
 };
 
-// ... Resto de funciones del servicio se mantienen igual ...
-
 /**
- * Genera mensajes de marketing personalizados para clientes basándose en su historial.
+ * Genera mensajes de marketing personalizados.
  */
 export const generateMarketingPromotion = async (clientName: string, lastProducts: string[]): Promise<string> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelId = "gemini-3-flash-preview";
-    const prompt = `Como experto en marketing para Imprenta Córdova, redacta un mensaje de WhatsApp amigable y profesional para el cliente "${clientName}". 
-    Su último pedido fue: ${lastProducts.join(", ")}. 
-    El objetivo es saludarlo porque hace tiempo no nos visita y ofrecerle un 10% de descuento en su próxima gigantografía o talonario SRI. 
-    Usa emojis, mantén el tono cercano y menciona que estamos en el centro de Pasaje. Máximo 60 palabras.`;
-
+    const prompt = `Redacta un mensaje de WhatsApp amigable para "${clientName}" de Imprenta Córdova (Pasaje). Ofrece 10% en su próxima impresión de: ${lastProducts.join(", ")}. Usa emojis.`;
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
-            contents: prompt
-        }), 10000) as GenerateContentResponse;
-        return response.text || "¡Hola! Te extrañamos en Imprenta Córdova. Ven por un descuento especial hoy.";
-    } catch (error) {
-        return "¡Hola! Tenemos promociones nuevas para ti en Imprenta Córdova. ¡Escríbenos!";
-    }
+        const response = await withTimeout(ai.models.generateContent({ model: modelId, contents: prompt }), 10000) as GenerateContentResponse;
+        return response.text || "¡Hola! Tenemos promos para ti.";
+    } catch (error) { return "¡Hola! Escríbenos para una oferta especial."; }
 };
 
-/**
- * Asistente IA para interacción directa con clientes.
- */
 export const chatWithCustomer = async (history: ChatMessage[], productsContext: string): Promise<string> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelId = "gemini-3-flash-preview";
-    const systemInstruction = `Eres "Córdova AI", experto en Marketing Gráfico en Pasaje. Ayuda al cliente basándote en: ${productsContext}`;
+    const systemInstruction = `Eres Córdova AI. Ayuda al cliente en Pasaje sobre: ${productsContext}`;
     try {
-        const chat = ai.chats.create({ 
-            model: modelId, 
-            config: { 
-                systemInstruction, 
-                temperature: 0.7 
-            } 
-        });
+        const chat = ai.chats.create({ model: modelId, config: { systemInstruction, temperature: 0.7 } });
         const lastMsg = history[history.length - 1];
         const response = await withTimeout(chat.sendMessage({ message: lastMsg.text }), 15000) as GenerateContentResponse;
-        return response.text || "Error de conexión.";
+        return response.text || "Error.";
     } catch (error) { return "IA no disponible."; }
 };
 
-/**
- * Proyecta ventas futuras basadas en el historial de transacciones.
- */
 export const generateFinancialProjection = async (history: DailySales[]): Promise<FinancialProjection | null> => {
     if (!history.length) return null;
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelId = "gemini-3-flash-preview";
-    const prompt = `Analiza estas ventas históricas y proyecta los próximos 30 días: ${JSON.stringify(history)}`;
+    const prompt = `Analiza ventas y proyecta 30 días: ${JSON.stringify(history)}`;
     try {
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,
@@ -123,38 +100,22 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        forecast: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    date: { type: Type.STRING },
-                                    sales: { type: Type.NUMBER }
-                                }
-                            }
-                        },
-                        lowTrafficDays: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING }
-                        },
+                        forecast: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { date: { type: Type.STRING }, sales: { type: Type.NUMBER } } } },
+                        lowTrafficDays: { type: Type.ARRAY, items: { type: Type.STRING } },
                         suggestion: { type: Type.STRING }
                     },
                     required: ['forecast', 'lowTrafficDays', 'suggestion']
                 }
             }
         }), 20000) as GenerateContentResponse;
-        return response.text ? JSON.parse(response.text) : null;
+        return JSON.parse(response.text);
     } catch (error) { return null; }
 };
 
-/**
- * Analiza diseños gráficos para control de calidad.
- */
 export const analyzeDesignWithSupervisor = async (designBase64: string, context: string): Promise<SupervisorAnalysis | null> => {
-    if (!designBase64) return null;
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelId = "gemini-3-flash-preview";
-    const prompt = `Eres supervisor de calidad gráfica. Analiza resolución y diseño para: ${context}. Proporciona estado, resumen y detalles técnicos.`;
+    const prompt = `Supervisor de calidad. Analiza: ${context}`;
     try {
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,
@@ -166,35 +127,22 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
                     properties: {
                         estado: { type: Type.STRING, enum: ['VERDE', 'AMARILLO', 'ROJO'] },
                         resumen: { type: Type.STRING },
-                        detalles: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    tipo: { type: Type.STRING, enum: ['TECNICA', 'DISENO', 'COLOR', 'COMERCIAL'] },
-                                    descripcion: { type: Type.STRING },
-                                    sugerencia: { type: Type.STRING }
-                                }
-                            }
-                        }
+                        detalles: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { tipo: { type: Type.STRING }, descripcion: { type: Type.STRING }, sugerencia: { type: Type.STRING } } } }
                     },
                     required: ['estado', 'resumen', 'detalles']
                 }
             }
         }), 25000) as GenerateContentResponse;
-        return response.text ? JSON.parse(response.text) : null;
+        return JSON.parse(response.text);
     } catch (error) { return null; }
 };
 
-/**
- * Genera copys publicitarios para productos específicos.
- */
 export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const modelId = "gemini-3-flash-preview";
-  const prompt = `Genera copy profesional para: ${request.businessName}, Producto: ${request.productType}, Tono: ${request.tone}.`;
+  const prompt = `Copy para: ${request.businessName}, Producto: ${request.productType}, Tono: ${request.tone}.`;
   try {
     const response = await withTimeout(ai.models.generateContent({ model: modelId, contents: prompt }), 10000) as GenerateContentResponse;
-    return response.text || "Intenta de nuevo.";
+    return response.text || "Error.";
   } catch (error) { return "Error."; }
 };
