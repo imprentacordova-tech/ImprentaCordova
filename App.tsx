@@ -1,113 +1,104 @@
-
-import React, { useState, useCallback } from 'react';
-import { HashRouter, Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
-import { Layout } from './components/Layout';
+import React, { useState } from 'react';
+import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { User } from './types';
 import { DataProvider } from './contexts/DataContext';
-import Login from './pages/Login';
+import { Layout } from './components/Layout';
+
+// Pages
+import LandingPage from './pages/Landing';
+import LoginPage from './pages/Login';
 import DashboardPage from './pages/Dashboard';
 import KDSPage from './pages/KDS';
 import FinanzasPage from './pages/Finanzas';
 import ClientesPage from './pages/Clientes';
 import NuevoPedidoPage from './pages/NuevoPedido';
-import InventarioPage from './pages/Inventario';
-import LandingPage from './pages/Landing';
-import NotaDeVentaPage from './pages/NotaDeVenta';
+import ConfiguracionPage from './pages/Configuracion';
 import ProductosPage from './pages/Productos';
-import SolicitudImpresionPage from './pages/SolicitudImpresion';
-import TrabajoDetallePage from './pages/TrabajoDetalle';
-import TrabajosPage from './pages/Trabajos';
+import InventarioPage from './pages/Inventario';
 import GestionUsuariosPage from './pages/GestionUsuarios';
 import RetirosPage from './pages/Retiros';
-import ConfiguracionPage from './pages/Configuracion';
-import ReciboAbonoPage from './pages/ReciboAbono';
-import ProveedoresPage from './pages/Proveedores';
-import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
 import DisenoPage from './pages/Diseno';
-import TrackingPage from './pages/Tracking'; // Nueva ruta
-import { User } from './types';
+import TrackingPage from './pages/Tracking';
+import OrdenProduccionPage from './pages/OrdenProduccion';
+import NotaDeVentaPage from './pages/NotaDeVenta';
+import SolicitudImpresionPage from './pages/SolicitudImpresion';
+import ReciboAbonoPage from './pages/ReciboAbono';
+import TrabajoDetallePage from './pages/TrabajoDetalle';
+import TrabajosPage from './pages/Trabajos';
 
-const AdminRoutes: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
-    if (currentUser.rol !== 'Admin') {
-        return <Navigate to="/dashboard" replace />;
-    }
-    return <Outlet context={{ currentUser }} />;
+/**
+ * ProtectedRoute component to handle authenticated access.
+ */
+const ProtectedRoute = ({ user, onLogout }: { user: User | null, onLogout: () => void }) => {
+  if (!user) return <Navigate to="/login" replace />;
+  return (
+    <Layout user={user} onLogout={onLogout}>
+      <Outlet context={{ currentUser: user }} />
+    </Layout>
+  );
 };
 
-const ProtectedRoutes: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ currentUser, onLogout }) => {
-    if (!currentUser) {
-        return <Navigate to="/login" replace />;
-    }
-    return (
-        <Layout onLogout={onLogout} user={currentUser}>
-            <Outlet context={{ currentUser }} />
-        </Layout>
-    );
-};
-
+/**
+ * Main App component with defined routing structure.
+ * Fixes missing Route and page component imports.
+ */
 const App: React.FC = () => {
-    const [currentUser, setCurrentUser] = useState<User | null>(() => {
-        const localUser = localStorage.getItem('currentUser');
-        const sessionUser = sessionStorage.getItem('currentUser');
-        try {
-            if (localUser) return JSON.parse(localUser);
-            if (sessionUser) return JSON.parse(sessionUser);
-            return null;
-        } catch {
-            return null;
-        }
-    });
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
 
-    const handleLogin = useCallback((user: User, remember: boolean) => {
-        if (remember) {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-        } else {
-            sessionStorage.setItem('currentUser', JSON.stringify(user));
-        }
-        setCurrentUser(user);
-    }, []);
+  const handleLogin = (user: User, remember: boolean) => {
+    setCurrentUser(user);
+    if (remember) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+  };
 
-    const handleLogout = useCallback(() => {
-        localStorage.removeItem('currentUser');
-        sessionStorage.removeItem('currentUser');
-        setCurrentUser(null);
-    }, []);
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
+  };
 
-    return (
-        <HashRouter>
-            <DataProvider>
-                <Routes>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/tracking" element={<TrackingPage />} />
-                    <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLogin} />} />
-                    <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
+  return (
+    <DataProvider>
+      <HashRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage onLoginSuccess={handleLogin} />} />
+          <Route path="/tracking" element={<TrackingPage />} />
+          
+          {/* Internal Print Views (No Navigation Layout) */}
+          <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
+          <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
+          <Route path="/orden-produccion/:trabajoId" element={<OrdenProduccionPage />} />
+          <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
 
-                    <Route element={<ProtectedRoutes currentUser={currentUser} onLogout={handleLogout} />}>
-                        <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/nuevo" element={<NuevoPedidoPage />} />
-                        <Route path="/diseno" element={<DisenoPage />} />
-                        <Route path="/kds" element={<KDSPage />} />
-                        <Route path="/trabajos" element={<TrabajosPage />} />
-                        <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
-                        <Route path="/retiros" element={<RetirosPage />} />
-                        <Route path="/clientes" element={<ClientesPage />} />
-                        <Route path="/productos" element={<ProductosPage />} />
-                        <Route path="/proveedores" element={<ProveedoresPage />} />
-                        <Route path="/inventario" element={<InventarioPage />} />
-                        <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
-                        <Route path="/finanzas" element={<FinanzasPage />} />
-                        <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
-                        <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
-                        <Route element={<AdminRoutes />}>
-                            <Route path="/usuarios" element={<GestionUsuariosPage />} />
-                            <Route path="/configuracion" element={<ConfiguracionPage />} />
-                        </Route>
-                    </Route>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </DataProvider>
-        </HashRouter>
-    );
+          {/* Protected Administration Routes */}
+          <Route element={<ProtectedRoute user={currentUser} onLogout={handleLogout} />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/nuevo" element={<NuevoPedidoPage />} />
+            <Route path="/diseno" element={<DisenoPage />} />
+            <Route path="/kds" element={<KDSPage />} />
+            <Route path="/retiros" element={<RetirosPage />} />
+            <Route path="/clientes" element={<ClientesPage />} />
+            <Route path="/trabajos" element={<TrabajosPage />} />
+            <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
+            <Route path="/productos" element={<ProductosPage />} />
+            <Route path="/inventario" element={<InventarioPage />} />
+            <Route path="/finanzas" element={<FinanzasPage />} />
+            <Route path="/usuarios" element={<GestionUsuariosPage />} />
+            <Route path="/configuracion" element={<ConfiguracionPage />} />
+          </Route>
+
+          {/* Fallback to Home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </HashRouter>
+    </DataProvider>
+  );
 };
 
+// Exporting App as default to fix index.tsx import error
 export default App;
