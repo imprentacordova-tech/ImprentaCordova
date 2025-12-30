@@ -1,15 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado } from '../types';
 import { formatCurrency, formatDate } from '../utils';
-/**
- * Importing required icons and components to fix "Cannot find name" errors.
- */
 import { 
     ArrowLeftIcon, ReceiptIcon, DocumentTextIcon, LayersIcon, 
     Loader2Icon, CheckCircleIcon, BoxIcon, UsersIcon, 
-    ShieldCheckIcon, CalendarDaysIcon
+    ShieldCheckIcon, CalendarDaysIcon, PrinterIcon,
+    ArrowDownTrayIcon
 } from '../components/Icons';
 
 const TrabajoDetallePage: React.FC = () => {
@@ -34,9 +33,6 @@ const TrabajoDetallePage: React.FC = () => {
         fetch();
     }, [trabajoId]);
 
-    /**
-     * Updates the status of the current work order.
-     */
     const handleStatusChange = async (newStatus: TrabajoEstado) => {
         if (!trabajo) return;
         const updated = await updateTrabajoStatus(trabajo.id, newStatus, 'Admin');
@@ -49,21 +45,30 @@ const TrabajoDetallePage: React.FC = () => {
     return (
         <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
             {/* Header / Actions Section */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-brand-blue font-bold uppercase text-xs tracking-widest transition-all">
                     <ArrowLeftIcon className="w-4 h-4"/> Volver
                 </button>
-                <div className="flex gap-3">
-                    <button onClick={() => window.open(`/#/recibo-abono/${trabajo.id}`, '_blank')} className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
-                        <ReceiptIcon className="w-4 h-4 text-brand-blue" /> Recibo Abono
-                    </button>
+                <div className="flex flex-wrap gap-2">
+                    {/* BOTONES DE ENTRADA */}
                     {trabajo.tipo === 'sri' ? (
-                        <button onClick={() => navigate(`/solicitud-impresion/${trabajo.id}`)} className="px-6 py-3 bg-brand-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-slate-950 transition-all flex items-center gap-2">
+                        <button onClick={() => navigate(`/solicitud-impresion/${trabajo.id}`)} className="px-5 py-2.5 bg-brand-blue text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg hover:bg-slate-950 transition-all flex items-center gap-2">
                             <DocumentTextIcon className="w-4 h-4" /> Solicitud SRI
                         </button>
                     ) : (
-                        <button onClick={() => navigate(`/orden-produccion/${trabajo.id}`)} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-brand-blue transition-all flex items-center gap-2">
+                        <button onClick={() => navigate(`/orden-produccion/${trabajo.id}`)} className="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg hover:bg-brand-blue transition-all flex items-center gap-2">
                             <LayersIcon className="w-4 h-4" /> Orden de Taller
+                        </button>
+                    )}
+
+                    <button onClick={() => window.open(`/#/recibo-abono/${trabajo.id}`, '_blank')} className="px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                        <ReceiptIcon className="w-4 h-4 text-brand-blue" /> Recibo Abono
+                    </button>
+
+                    {/* BOTÓN DE SALIDA (LA MADRE DE LAS NOTAS) */}
+                    {(trabajo.estado === TrabajoEstado.VITRINA || trabajo.estado === TrabajoEstado.ENTREGADO) && (
+                        <button onClick={() => navigate(`/nota-de-venta/${trabajo.id}`)} className="px-5 py-2.5 bg-brand-red text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-xl hover:bg-red-800 transition-all flex items-center gap-2">
+                            <PrinterIcon className="w-4 h-4" /> Nota de Retiro
                         </button>
                     )}
                 </div>

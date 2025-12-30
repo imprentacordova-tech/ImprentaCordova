@@ -41,10 +41,12 @@ const NuevoPedidoPage: React.FC = () => {
     const handleFinalize = async () => {
         const newJob = await finalizeOrder();
         if (newJob) {
+            // REDIRECCIÓN INTELIGENTE A LOS PDF DE ENTRADA
             if (newJob.tipo === TrabajoTipo.SRI) {
                 navigate(`/solicitud-impresion/${newJob.id}`);
             } else {
-                navigate('/kds');
+                // Ahora no se salta, va a la orden de producción interna
+                navigate(`/orden-produccion/${newJob.id}`);
             }
         }
     };
