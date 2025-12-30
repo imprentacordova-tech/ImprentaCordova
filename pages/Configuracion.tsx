@@ -5,7 +5,8 @@ import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCr
 import { 
     Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, 
     ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, GlobeAltIcon, 
-    Copy, EyeIcon, EyeSlashIcon, LockClosedIcon, DocumentDuplicateIcon 
+    Copy, EyeIcon, EyeSlashIcon, LockClosedIcon, DocumentDuplicateIcon,
+    DollarIcon, WrenchScrewdriverIcon
 } from '../components/Icons';
 import { SriCredential } from '../types';
 
@@ -95,18 +96,6 @@ const ConfiguracionPage: React.FC = () => {
         ).slice(0, 50);
     }, [sriCredentials, searchTerm]);
 
-    const copyAndOpenSri = (val: string) => {
-        navigator.clipboard.writeText(val);
-        window.open('https://srienlinea.sri.gob.ec/auth/realms/Internet/protocol/openid-connect/auth?client_id=app-sri-en-linea-v2&redirect_uri=https%3A%2F%2Fsrienlinea.sri.gob.ec%2Fsri-en-linea%2F%2F%2F&response_type=code&scope=openid', '_blank');
-    };
-
-    const handleDeleteKey = async (ruc: string) => {
-        if (window.confirm('¿Eliminar clave del sistema?')) {
-            const updated = await deleteSriCredential(ruc);
-            setSriCredentials(updated);
-        }
-    };
-
     return (
         <div className="space-y-10 max-w-7xl mx-auto pb-32 animate-fade-in">
             <div className="flex justify-between items-center">
@@ -116,7 +105,7 @@ const ConfiguracionPage: React.FC = () => {
                     </div>
                     <div>
                         <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Centro de <span className="text-brand-red">Control</span></h1>
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">Configuración global y bóveda de seguridad</p>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">Configuración global y adicionales</p>
                     </div>
                 </div>
             </div>
@@ -182,42 +171,52 @@ const ConfiguracionPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Configuración de Negocio y Numeración */}
-            <div className="grid lg:grid-cols-1 gap-8">
-                <form onSubmit={handleSaveGeneral} className="bg-white dark:bg-gray-800 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-10">
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
-                        <div className="p-2 bg-brand-red rounded-xl text-white"><ShieldCheckIcon className="w-6 h-6" /></div>
-                        Parámetros de Facturación Oficial
-                    </h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-8 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-900/30">
-                        <InputField label="Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} placeholder="001" />
-                        <InputField label="Punto de Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} placeholder="001" />
-                        <InputField label="Próximo Secuencial (Inicio)" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} placeholder="501" />
-                        <div className="md:col-span-3">
-                            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed">
-                                Tip: Si vas por el block #500 en tus facturas físicas, pon 501 aquí para que el sistema siga la secuencia.
-                            </p>
+            {/* Configuración de Negocio y Precios de Adicionales */}
+            <form onSubmit={handleSaveGeneral} className="bg-white dark:bg-gray-800 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-10">
+                
+                <div className="grid lg:grid-cols-2 gap-10">
+                    {/* Facturación */}
+                    <div className="space-y-6">
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
+                            <div className="p-2 bg-brand-red rounded-xl text-white"><ShieldCheckIcon className="w-6 h-6" /></div>
+                            Parámetros SRI
+                        </h2>
+                        <div className="grid grid-cols-2 gap-4">
+                            <InputField label="Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} />
+                            <InputField label="Punto de Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} />
+                        </div>
+                        <InputField label="Próximo Secuencial (Inicio)" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} />
+                        <InputField label="Autorización SRI (Vigente)" name="autorizacionSRI" value={config.autorizacionSRI} onChange={e => setConfig({...config, autorizacionSRI: e.target.value})} />
+                    </div>
+
+                    {/* Costos Adicionales */}
+                    <div className="space-y-6">
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
+                            <div className="p-2 bg-brand-blue rounded-xl text-white"><DollarIcon className="w-6 h-6" /></div>
+                            Servicios Adicionales
+                        </h2>
+                        <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Valor por Perforación (Manual/Máquina)</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-blue-400">$</span>
+                                <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    value={config.costoPerforado} 
+                                    onChange={e => setConfig({...config, costoPerforado: parseFloat(e.target.value)})}
+                                    className="w-full pl-10 pr-4 py-4 bg-white dark:bg-gray-700 border-none rounded-2xl shadow-inner font-black text-xl text-brand-blue outline-none"
+                                />
+                            </div>
+                            <p className="text-[9px] font-bold text-blue-400 mt-4 uppercase leading-relaxed">Este valor se sumará automáticamente cuando marques la opción "Perforar" en una nueva orden.</p>
                         </div>
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <InputField label="Razón Social (Dueño)" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={e => setConfig({...config, emisorRazonSocial: e.target.value})} />
-                        <InputField label="RUC Empresa" name="emisorRuc" value={config.emisorRuc} onChange={e => setConfig({...config, emisorRuc: e.target.value})} />
-                        <InputField label="Autorización SRI (Vigente)" name="autorizacionSRI" value={config.autorizacionSRI} onChange={e => setConfig({...config, autorizacionSRI: e.target.value})} />
-                        <InputField label="Código Autorización Recibos" name="reciboCodAuto" value={config.reciboCodAuto} onChange={e => setConfig({...config, reciboCodAuto: e.target.value})} />
-                        <InputField label="Fecha Caducidad Documentos" type="date" name="fechaCaducidad" value={config.fechaCaducidad} onChange={e => setConfig({...config, fechaCaducidad: e.target.value})} />
-                        <InputField label="Actividad Económica" name="emisorActividades" value={config.emisorActividades} onChange={e => setConfig({...config, emisorActividades: e.target.value})} />
-                        <InputField label="Nombre de la Imprenta" name="imprentaNombre" value={config.imprentaNombre} onChange={e => setConfig({...config, imprentaNombre: e.target.value})} />
-                        <InputField label="RUC de la Imprenta" name="imprentaRuc" value={config.imprentaRuc} onChange={e => setConfig({...config, imprentaRuc: e.target.value})} />
-                    </div>
-
-                    <div className="pt-8 border-t flex justify-between items-center">
-                        {showSuccess && <span className="text-emerald-500 font-black text-[10px] animate-fade-in tracking-widest uppercase">✓ Configuración Actualizada</span>}
-                        <button type="submit" className="px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all uppercase tracking-widest text-xs">Guardar Cambios Maestros</button>
-                    </div>
-                </form>
-            </div>
+                <div className="pt-8 border-t flex justify-between items-center">
+                    {showSuccess && <span className="text-emerald-500 font-black text-[10px] animate-fade-in tracking-widest uppercase">✓ Configuración Actualizada</span>}
+                    <button type="submit" className="px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all uppercase tracking-widest text-xs">Guardar Cambios Maestros</button>
+                </div>
+            </form>
         </div>
     );
 };

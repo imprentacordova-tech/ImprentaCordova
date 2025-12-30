@@ -24,6 +24,8 @@ export interface NotaDeVentaConfig {
     emisorEmail: string;
     emisorTelefono: string;
     reciboServicios: string;
+    // Adicionales
+    costoPerforado: number;
     // Cloud Storage
     googleScriptUrl: string;
 }
@@ -33,7 +35,7 @@ const CONFIG_KEY = 'appConfig';
 const defaultConfig: NotaDeVentaConfig = {
     emisorEstablecimiento: "001",
     emisorPuntoEmision: "001",
-    secuencialInicio: 1, // Permite que Pedro decida desde qué número arranca el sistema
+    secuencialInicio: 1,
     
     autorizacionSRI: "1234567890",
     fechaAutorizacion: "2024-01-15",
@@ -54,6 +56,7 @@ const defaultConfig: NotaDeVentaConfig = {
     emisorEmail: "imprentacordova@gmail.com",
     emisorTelefono: "0993083943",
     reciboServicios: "DOCUMENTOS AUTORIZADOS POR EL SRI; FACTURAS, NOTAS DE VENTA ETC...",
+    costoPerforado: 2.00,
     googleScriptUrl: "https://script.google.com/macros/s/AKfycbz9BrIG8s1h5spiy3H2OQVInN4lODW6VJ50-SmGBajjIQ2jbgzBl-65-_6XF7IYRluM/exec"
 };
 

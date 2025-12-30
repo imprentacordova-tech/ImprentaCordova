@@ -2,13 +2,17 @@
 import React, { useState } from 'react';
 import { Cliente } from '../../types';
 import { formatCurrency } from '../../utils';
-import { TrashIcon, CheckCircleIcon, Loader2Icon, WalletIcon, ExclamationTriangleIcon, SparklesIcon, ArrowRightIcon, KeyIcon, Copy, ShieldCheckIcon } from '../Icons';
+import { 
+    TrashIcon, CheckCircleIcon, Loader2Icon, WalletIcon, 
+    ExclamationTriangleIcon, SparklesIcon, ArrowRightIcon, 
+    KeyIcon, Copy, ShieldCheckIcon, DollarIcon 
+} from '../Icons';
 import { CartItem } from '../../hooks/useOrder';
 
 interface OrderSummaryProps {
     isOpen: boolean;
     onClose: () => void;
-    cartItems: CartItem[];
+    cartItems: [string, CartItem][];
     orderTotal: number;
     client: Cliente | null;
     abono: number;
@@ -17,14 +21,13 @@ interface OrderSummaryProps {
     onRemoveItem: (id: string) => void;
     onFinalize: () => void;
     isLoading: boolean;
-    // Props para Claves SRI
     sriData: any;
     setSriData: (data: any) => void;
     imprimirClave: boolean;
     setImprimirClave: (val: boolean) => void;
 }
 
-const quickAmounts = [5, 10, 20];
+const quickAmounts = [1, 5, 10, 20];
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ 
     cartItems, orderTotal, client, 
@@ -32,10 +35,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     sriData, setSriData, imprimirClave, setImprimirClave
 }) => {
     const [copied, setCopied] = useState(false);
-    const saldo = orderTotal - abono;
-    const minAbonoSugerido = orderTotal * 0.5;
-    const isUnderPolicy = abono < minAbonoSugerido && abono > 0;
-    const isFullyPaid = abono >= orderTotal;
+    const saldo = Math.max(0, orderTotal - abono);
+    
+    // Lógica de redondeo solicitada: 50% redondeado hacia arriba al entero más cercano
+    // para evitar monedas de centavos y usar billetes/dólares redondos.
+    const minAbonoSugerido = Math.ceil(orderTotal * 0.5);
+    
+    const isFullyPaid = abono >= orderTotal && orderTotal > 0;
 
     const handleCopy = () => {
         if (!sriData.claveAcceso) return;
@@ -46,135 +52,165 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-800">
+            {/* LISTA DE PRODUCTOS EN CARRITO */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 {cartItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 space-y-4 opacity-60">
                         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                             <WalletIcon className="w-8 h-8" />
                         </div>
-                        <p className="font-black uppercase text-[10px] tracking-widest">El carrito está vacío</p>
+                        <p className="font-black uppercase text-[10px] tracking-widest">Carrito de Producción Vacío</p>
                     </div>
                 ) : (
                     <>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             <div className="flex items-center gap-2 mb-4">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle de Orden</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen de Orden</span>
                                 <div className="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
                             </div>
-                            {cartItems.map(({ producto, cantidad }) => (
-                                <div key={producto.id} className="group flex items-start gap-4 p-4 rounded-3xl bg-slate-50/50 dark:bg-slate-900/50 border border-transparent hover:border-brand-blue/20 transition-all">
-                                    <div className="flex flex-col items-center bg-white dark:bg-slate-800 rounded-2xl p-1 shadow-sm border border-slate-100 dark:border-slate-700">
-                                        <button onClick={() => onUpdateQuantity(producto.id, cantidad + 1)} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-brand-blue transition-colors">▲</button>
-                                        <span className="font-black text-xs text-brand-blue py-1">{cantidad}</span>
-                                        <button onClick={() => onUpdateQuantity(producto.id, Math.max(1, cantidad - 1))} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-brand-red transition-colors">▼</button>
+                            {cartItems.map(([uniqueId, item]) => {
+                                const { producto, cantidad, surcharge, surchargeLabel } = item;
+                                const itemTotal = (producto.precio + (surcharge || 0)) * cantidad;
+
+                                return (
+                                    <div key={uniqueId} className="group flex items-center gap-4 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-transparent hover:border-brand-blue/20 transition-all">
+                                        <div className="flex flex-col items-center bg-white dark:bg-slate-800 rounded-xl p-0.5 shadow-sm border border-slate-100 dark:border-slate-700">
+                                            <button onClick={() => onUpdateQuantity(uniqueId, cantidad + 1)} className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-brand-blue text-xs">▲</button>
+                                            <span className="font-black text-[11px] text-brand-blue leading-none">{cantidad}</span>
+                                            <button onClick={() => onUpdateQuantity(uniqueId, Math.max(1, cantidad - 1))} className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-brand-red text-xs">▼</button>
+                                        </div>
+                                        <div className="flex-grow min-w-0">
+                                            <p className="font-bold text-[10px] text-slate-800 dark:text-white uppercase leading-tight truncate">{producto.nombre}</p>
+                                            {surchargeLabel && <p className="text-[8px] font-black text-amber-600 uppercase tracking-tighter mt-0.5">{surchargeLabel}</p>}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs font-black text-slate-900 dark:text-white">{formatCurrency(itemTotal)}</p>
+                                        </div>
+                                        <button onClick={() => onRemoveItem(uniqueId)} className="text-slate-200 hover:text-brand-red transition-colors p-1"><TrashIcon className="w-4 h-4"/></button>
                                     </div>
-                                    <div className="flex-grow min-w-0">
-                                        <p className="font-black text-xs text-slate-800 dark:text-white uppercase leading-tight truncate">{producto.nombre}</p>
-                                        <p className="text-[10px] font-bold text-slate-400 mt-1">{formatCurrency(producto.precio)} unit.</p>
-                                        <p className="text-sm font-black text-brand-blue mt-2">{formatCurrency(producto.precio * cantidad)}</p>
-                                    </div>
-                                    <button onClick={() => onRemoveItem(producto.id)} className="text-slate-200 hover:text-brand-red transition-colors p-2"><TrashIcon className="w-5 h-5"/></button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
-                        {/* SECCIÓN DE CLAVE SRI MAESTRA - OPTIMIZADA */}
+                        {/* SECCIÓN SRI / CLAVES (SÓLO SI HAY CLIENTE) */}
                         {client && (
-                            <div className="bg-slate-950 text-white rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden group border border-white/5">
-                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                    <ShieldCheckIcon className="w-32 h-32" />
+                            <div className="bg-slate-950 text-white rounded-[2rem] p-6 space-y-4 shadow-2xl relative overflow-hidden group border border-white/5">
+                                <div className="absolute top-0 right-0 p-4 opacity-5">
+                                    <ShieldCheckIcon className="w-24 h-24" />
                                 </div>
                                 
                                 <div className="flex justify-between items-center relative z-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-xl ${sriData.hasKey ? 'bg-emerald-500' : 'bg-amber-500'} shadow-lg`}>
-                                            <KeyIcon className="w-5 h-5 text-white" />
+                                    <div className="flex items-center gap-2">
+                                        <div className={`p-1.5 rounded-lg ${sriData.hasKey ? 'bg-emerald-500' : 'bg-amber-500'}`}>
+                                            <KeyIcon className="w-4 h-4 text-white" />
                                         </div>
-                                        <div>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 block">Portal SRI</span>
-                                            <span className="text-xs font-black uppercase text-white tracking-tighter">Seguridad Maestra</span>
-                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Clave SRI</span>
                                     </div>
                                     <select 
                                         value={sriData.estadoClave} 
                                         onChange={e => setSriData({...sriData, estadoClave: e.target.value})}
-                                        className={`text-[8px] font-black px-3 py-1.5 rounded-full border-none outline-none shadow-xl transition-colors cursor-pointer ${sriData.estadoClave === 'LISTA' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}
+                                        className={`text-[8px] font-black px-2 py-1 rounded-full border-none outline-none cursor-pointer ${sriData.estadoClave === 'LISTA' ? 'bg-emerald-500' : 'bg-amber-500'}`}
                                     >
-                                        <option value="LISTA">PROBADA ✓</option>
-                                        <option value="PENDIENTE">PENDIENTE ⏳</option>
-                                        <option value="ERROR">ERROR ✖</option>
+                                        <option value="LISTA">OK ✓</option>
+                                        <option value="PENDIENTE">...</option>
+                                        <option value="ERROR">ERR</option>
                                     </select>
                                 </div>
 
-                                <div className="space-y-4 relative z-10">
-                                    <div className="flex gap-2">
-                                        <input 
-                                            type="text" 
-                                            value={sriData.claveAcceso} 
-                                            onChange={e => setSriData({...sriData, claveAcceso: e.target.value})}
-                                            placeholder="Introduce clave..."
-                                            className="flex-grow bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-sm font-mono placeholder:text-white/20 outline-none focus:bg-white/20 focus:ring-2 focus:ring-brand-blue transition-all"
-                                        />
-                                        <button 
-                                            onClick={handleCopy}
-                                            disabled={!sriData.claveAcceso}
-                                            className={`px-4 py-3 rounded-2xl transition-all shadow-xl flex items-center justify-center ${copied ? 'bg-emerald-500 text-white scale-105' : 'bg-brand-blue text-white hover:bg-blue-600 active:scale-95'}`}
-                                            title="Copiar para el portal del SRI"
-                                        >
-                                            {copied ? <CheckCircleIcon className="w-5 h-5 animate-bounce"/> : <Copy className="w-5 h-5"/>}
-                                        </button>
-                                    </div>
-                                    
-                                    <div className="flex items-center justify-between px-2">
-                                        <label className="flex items-center gap-3 cursor-pointer group/toggle">
-                                            <div className="relative">
-                                                <input type="checkbox" checked={imprimirClave} onChange={e => setImprimirClave(e.target.checked)} className="sr-only peer" />
-                                                <div className="w-10 h-5 bg-white/10 rounded-full peer-checked:bg-emerald-500 transition-colors"></div>
-                                                <div className="absolute top-1 left-1 w-3 h-3 bg-white rounded-full peer-checked:translate-x-5 transition-transform"></div>
-                                            </div>
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover/toggle:text-white transition-colors">¿Imprimir en Solicitud?</span>
-                                        </label>
-                                        
-                                        {sriData.autoFilled && (
-                                            <span className="text-[8px] font-black text-emerald-400 uppercase bg-emerald-500/10 px-2 py-1 rounded-md animate-fade-in">Auto-detectada</span>
-                                        )}
-                                    </div>
+                                <div className="flex gap-2 relative z-10">
+                                    <input 
+                                        type="text" 
+                                        value={sriData.claveAcceso} 
+                                        onChange={e => setSriData({...sriData, claveAcceso: e.target.value})}
+                                        placeholder="Contraseña del portal..."
+                                        className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono placeholder:text-white/20 outline-none focus:bg-white/10 transition-all"
+                                    />
+                                    <button 
+                                        onClick={handleCopy}
+                                        disabled={!sriData.claveAcceso}
+                                        className={`px-3 py-2 rounded-xl transition-all ${copied ? 'bg-emerald-500' : 'bg-brand-blue hover:bg-blue-600'}`}
+                                    >
+                                        {copied ? <CheckCircleIcon className="w-4 h-4"/> : <Copy className="w-4 h-4"/>}
+                                    </button>
                                 </div>
+                                <label className="flex items-center gap-2 cursor-pointer relative z-10">
+                                    <input type="checkbox" checked={imprimirClave} onChange={e => setImprimirClave(e.target.checked)} className="sr-only peer" />
+                                    <div className="w-7 h-4 bg-white/10 rounded-full peer-checked:bg-emerald-500 transition-colors relative">
+                                        <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full peer-checked:translate-x-3 transition-transform"></div>
+                                    </div>
+                                    <span className="text-[8px] font-black uppercase text-white/40">Imprimir en la orden</span>
+                                </label>
                             </div>
                         )}
                     </>
                 )}
             </div>
 
-            {/* SECCIÓN DE PAGOS */}
-            <div className="p-8 bg-white dark:bg-gray-800 border-t border-slate-100 dark:border-gray-700 shadow-[0_-20px_50px_rgba(0,0,0,0.04)] relative z-20">
+            {/* PANEL DE COBRO Y TOTALES (STRECHED FOOTER) */}
+            <div className="p-8 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-gray-700 shadow-[0_-15px_40px_rgba(0,0,0,0.05)]">
                 <div className="space-y-6">
                     <div className="flex justify-between items-end">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Inversión</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{formatCurrency(orderTotal)}</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total a Pagar</span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter">{formatCurrency(orderTotal)}</span>
                             </div>
                         </div>
-                        {isUnderPolicy && (
-                            <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-600 px-3 py-1.5 rounded-xl border border-amber-100 flex items-center gap-2 animate-pulse">
-                                <ExclamationTriangleIcon className="w-4 h-4"/>
-                                <span className="text-[9px] font-black uppercase tracking-widest">50% min.</span>
-                            </div>
-                        )}
                     </div>
 
-                    <div className="grid grid-cols-5 gap-2">
-                        {quickAmounts.map(amount => (
-                            <button key={amount} onClick={() => setAbono(amount)} className={`py-3 rounded-xl font-black text-[10px] border-2 transition-all ${abono === amount ? 'bg-brand-blue border-brand-blue text-white shadow-lg' : 'bg-slate-50 dark:bg-slate-900 border-slate-100 text-slate-500'}`}>${amount}</button>
-                        ))}
-                        <button onClick={() => setAbono(minAbonoSugerido)} className={`py-3 rounded-xl font-black text-[10px] border-2 transition-all ${abono === minAbonoSugerido ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-600'}`}>50%</button>
-                        <button onClick={() => setAbono(orderTotal)} className={`py-3 rounded-xl font-black text-[10px] border-2 transition-all ${abono === orderTotal ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}>100%</button>
+                    {/* INTERFAZ DE ABONO */}
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                            <label className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Registrar Abono ($)</label>
+                            {isFullyPaid && <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Pago Completo</span>}
+                        </div>
+                        
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black">$</div>
+                            <input 
+                                type="number" 
+                                value={abono || ''} 
+                                onChange={e => setAbono(parseFloat(e.target.value) || 0)}
+                                placeholder="0.00"
+                                className="w-full pl-8 pr-4 py-4 bg-white dark:bg-gray-700 border-2 border-slate-200 dark:border-gray-600 rounded-2xl font-black text-2xl text-brand-blue outline-none focus:border-brand-blue transition-all shadow-inner"
+                            />
+                        </div>
+
+                        {/* BOTONES RÁPIDOS DE ABONO */}
+                        <div className="grid grid-cols-6 gap-2">
+                            {quickAmounts.map(amount => (
+                                <button 
+                                    key={amount} 
+                                    onClick={() => setAbono(amount)} 
+                                    className={`py-2.5 rounded-xl font-black text-[10px] border-2 transition-all ${abono === amount ? 'bg-brand-blue border-brand-blue text-white shadow-md' : 'bg-white dark:bg-slate-800 border-slate-200 text-slate-500 hover:border-brand-blue/30'}`}
+                                >
+                                    ${amount}
+                                </button>
+                            ))}
+                            <button 
+                                onClick={() => setAbono(minAbonoSugerido)} 
+                                className={`col-span-1 py-2.5 rounded-xl font-black text-[9px] border-2 transition-all flex flex-col items-center justify-center leading-none ${abono === minAbonoSugerido ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}
+                                title={`50% redondeado: $${minAbonoSugerido}`}
+                            >
+                                <span>50%</span>
+                            </button>
+                            <button 
+                                onClick={() => setAbono(orderTotal)} 
+                                className={`col-span-1 py-2.5 rounded-xl font-black text-[9px] border-2 transition-all flex flex-col items-center justify-center leading-none ${abono === orderTotal ? 'bg-emerald-600 border-emerald-600 text-white shadow-md' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}
+                            >
+                                <span>100%</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="flex justify-between items-center py-4 px-6 rounded-3xl bg-slate-900 text-white relative">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Saldo</span>
-                        <span className={`text-2xl font-black tracking-tighter ${isFullyPaid ? 'text-emerald-400' : 'text-brand-red'}`}>{isFullyPaid ? 'PAGADO ✓' : formatCurrency(saldo)}</span>
+                    <div className="flex justify-between items-center py-4 px-6 rounded-3xl bg-slate-950 text-white relative overflow-hidden">
+                        <div className="relative z-10 flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Saldo Pendiente</span>
+                            <span className={`text-2xl font-black tracking-tighter ${isFullyPaid ? 'text-emerald-400' : 'text-brand-red'}`}>
+                                {isFullyPaid ? 'SALDADO ✓' : formatCurrency(saldo)}
+                            </span>
+                        </div>
+                        <DollarIcon className="absolute right-[-10px] top-1/2 -translate-y-1/2 w-16 h-16 opacity-5 rotate-12" />
                     </div>
 
                     <button 
@@ -183,7 +219,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-4 ${isLoading || cartItems.length === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-brand-red text-white hover:bg-slate-950 shadow-red-900/20'}`}
                     >
                         {isLoading ? <Loader2Icon className="animate-spin w-5 h-5"/> : (
-                            <>Generar Orden <ArrowRightIcon className="w-5 h-5"/></>
+                            <>Confirmar Pedido <ArrowRightIcon className="w-5 h-5"/></>
                         )}
                     </button>
                 </div>

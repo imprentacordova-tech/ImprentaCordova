@@ -7,6 +7,8 @@ import { getConfig } from '../services/configService';
 export interface CartItem {
     producto: Producto;
     cantidad: number;
+    surcharge?: number;
+    surchargeLabel?: string;
 }
 
 export const useOrder = (user: string) => {
@@ -36,7 +38,6 @@ export const useOrder = (user: string) => {
                 const creds = await getSriCredentials();
                 const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
                 
-                // Buscar por RUC completo o Cédula + 001
                 const cred = creds.find(c => 
                     c.ruc === ruc || 
                     (ruc.length === 10 && c.ruc === ruc + '001') ||
@@ -61,51 +62,51 @@ export const useOrder = (user: string) => {
                     }));
                 }
                 setTitular(selectedCliente.nombre);
-                
-                if (selectedCliente.regimen === Regimen.NEGOCIO_POPULAR) {
-                    setSelectedProductos(prev => {
-                        const newMap = new Map<string, CartItem>(prev);
-                        Array.from(newMap.keys()).forEach((id: string) => {
-                            const item = newMap.get(id);
-                            if (item && item.producto.nombre.toLowerCase().includes('factura')) {
-                                newMap.delete(id);
-                            }
-                        });
-                        return newMap;
-                    });
-                }
             }
         };
         checkSriKey();
     }, [selectedCliente]);
 
     const orderTotal = useMemo(() => {
-        return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => total + (item.producto.precio * item.cantidad), 0);
+        return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => {
+            // Fix: Removing item.producto.price as it doesn't exist on Producto type. Using item.producto.precio.
+            const base = item.producto.precio * item.cantidad;
+            const extras = (item.surcharge || 0) * item.cantidad;
+            return total + base + extras;
+        }, 0);
     }, [selectedProductos]);
 
-    const addProduct = useCallback((producto: Producto) => {
+    const addProduct = useCallback((producto: Producto & { surcharge?: number, surchargeLabel?: string }) => {
         setSelectedProductos(prev => {
             const newMap = new Map<string, CartItem>(prev);
-            const existing = newMap.get(producto.id);
-            newMap.set(producto.id, { producto, cantidad: (existing?.cantidad || 0) + 1 });
+            // Identificador único incluyendo surcargos para que no se mezclen items perforados con no perforados
+            const uniqueId = `${producto.id}-${producto.surcharge || 0}`;
+            const existing = newMap.get(uniqueId);
+            
+            newMap.set(uniqueId, { 
+                producto, 
+                cantidad: (existing?.cantidad || 0) + 1,
+                surcharge: producto.surcharge,
+                surchargeLabel: producto.surchargeLabel
+            });
             return newMap;
         });
     }, []);
 
-    const removeProduct = useCallback((productId: string) => {
+    const removeProduct = useCallback((uniqueId: string) => {
         setSelectedProductos(prev => {
             const newMap = new Map<string, CartItem>(prev);
-            newMap.delete(productId);
+            newMap.delete(uniqueId);
             return newMap;
         });
     }, []);
 
-    const updateQuantity = useCallback((productId: string, quantity: number) => {
+    const updateQuantity = useCallback((uniqueId: string, quantity: number) => {
         if (quantity < 1) return;
         setSelectedProductos(prev => {
             const newMap = new Map<string, CartItem>(prev);
-            const item = newMap.get(productId);
-            if (item) newMap.set(productId, { ...item, cantidad: quantity });
+            const item = newMap.get(uniqueId);
+            if (item) newMap.set(uniqueId, { ...item, cantidad: quantity });
             return newMap;
         });
     }, []);
@@ -115,13 +116,19 @@ export const useOrder = (user: string) => {
         setIsLoading(true);
         const items: CartItem[] = Array.from(selectedProductos.values());
         
+        const subTitles = items.map((i: CartItem) => {
+            let label = `${i.cantidad}x ${i.producto.nombre}`;
+            if (i.surchargeLabel) label += ` (${i.surchargeLabel})`;
+            return label;
+        }).join(', ');
+
         const newTrabajo = await createTrabajo({
             clienteId: selectedCliente.id,
             titular: titular || selectedCliente.nombre,
             tipo: jobType,
-            subtipo: items.map((i: CartItem) => `${i.cantidad}x ${i.producto.nombre}`).join(', '),
+            subtipo: subTitles,
             cantidad: items.reduce((sum: number, i: CartItem) => sum + i.cantidad, 0),
-            tamano: '1/4 Oficio',
+            tamano: 'Varios',
             total: orderTotal,
             abono,
             estado: TrabajoEstado.PENDIENTE,
@@ -138,7 +145,7 @@ export const useOrder = (user: string) => {
     };
 
     return {
-        selectedCliente, cartItems: Array.from(selectedProductos.values()), jobType, titular, abono, esRenovacion, sriData, orderTotal, isLoading, imprimirClave,
+        selectedCliente, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, esRenovacion, sriData, orderTotal, isLoading, imprimirClave,
         setSelectedCliente, setJobType, setTitular, setAbono, setEsRenovacion, setSriData, setImprimirClave,
         addProduct, removeProduct, updateQuantity, finalizeOrder,
         resetOrder: () => {
