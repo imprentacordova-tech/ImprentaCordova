@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getConfig, saveConfig, NotaDeVentaConfig } from '../services/configService';
-import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential } from '../services/mockApi';
+import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, seed50Products } from '../services/mockApi';
 import { 
     Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, 
     ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, GlobeAltIcon, 
     Copy, EyeIcon, EyeSlashIcon, LockClosedIcon, DocumentDuplicateIcon,
-    DollarIcon, WrenchScrewdriverIcon
+    DollarIcon, WrenchScrewdriverIcon, SparklesIcon, BoxIcon
 } from '../components/Icons';
 import { SriCredential } from '../types';
 
@@ -31,6 +31,7 @@ const ConfiguracionPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
     const [isImporting, setIsImporting] = useState(false);
+    const [isSeeding, setIsSeeding] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +44,14 @@ const ConfiguracionPage: React.FC = () => {
         saveConfig(config);
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
+    };
+
+    const handleSeed = async () => {
+        if (!window.confirm("Esto inyectará 50 productos de prueba y los enviará a la nube. ¿Continuar?")) return;
+        setIsSeeding(true);
+        await seed50Products();
+        setIsSeeding(false);
+        alert("✅ 50 Productos inyectados. Verifica el indicador 'Nube Actualizada' arriba.");
     };
 
     const togglePasswordVisibility = (ruc: string) => {
@@ -110,6 +119,27 @@ const ConfiguracionPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* MÓDULO DE PRUEBA DE SINCRONIZACIÓN */}
+            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="flex items-center gap-6">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-3xl">
+                        <SparklesIcon className="w-10 h-10 text-brand-blue" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Prueba de Sincronización Masiva</h3>
+                        <p className="text-sm text-slate-500 font-medium max-w-md">Inyecta 50 productos reales al sistema para verificar que los datos se guarden en tu Google Sheet automáticamente.</p>
+                    </div>
+                </div>
+                <button 
+                    onClick={handleSeed}
+                    disabled={isSeeding}
+                    className="w-full md:w-auto px-10 py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-brand-blue transition-all flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-[10px]"
+                >
+                    {isSeeding ? <Loader2Icon className="animate-spin w-5 h-5"/> : <BoxIcon className="w-5 h-5"/>}
+                    Inyectar 50 Productos
+                </button>
+            </div>
+
             {/* Bóveda SRI */}
             <div className="bg-slate-950 rounded-[3.5rem] shadow-3xl border border-white/5 overflow-hidden">
                 <div className="p-10 flex flex-col lg:flex-row justify-between items-center gap-8 border-b border-white/5 relative">
@@ -171,11 +201,10 @@ const ConfiguracionPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Configuración de Negocio y Precios de Adicionales */}
+            {/* Configuración de Negocio */}
             <form onSubmit={handleSaveGeneral} className="bg-white dark:bg-gray-800 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-10">
                 
                 <div className="grid lg:grid-cols-2 gap-10">
-                    {/* Facturación */}
                     <div className="space-y-6">
                         <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
                             <div className="p-2 bg-brand-red rounded-xl text-white"><ShieldCheckIcon className="w-6 h-6" /></div>
@@ -185,18 +214,17 @@ const ConfiguracionPage: React.FC = () => {
                             <InputField label="Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} />
                             <InputField label="Punto de Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} />
                         </div>
-                        <InputField label="Próximo Secuencial (Inicio)" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} />
-                        <InputField label="Autorización SRI (Vigente)" name="autorizacionSRI" value={config.autorizacionSRI} onChange={e => setConfig({...config, autorizacionSRI: e.target.value})} />
+                        <InputField label="Próximo Secuencial" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} />
+                        <InputField label="URL Google Apps Script (Nube)" name="googleScriptUrl" value={config.googleScriptUrl} onChange={e => setConfig({...config, googleScriptUrl: e.target.value})} />
                     </div>
 
-                    {/* Costos Adicionales */}
                     <div className="space-y-6">
                         <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4">
                             <div className="p-2 bg-brand-blue rounded-xl text-white"><DollarIcon className="w-6 h-6" /></div>
                             Servicios Adicionales
                         </h2>
                         <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
-                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Valor por Perforación (Manual/Máquina)</label>
+                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Valor por Perforación</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-blue-400">$</span>
                                 <input 
@@ -207,7 +235,6 @@ const ConfiguracionPage: React.FC = () => {
                                     className="w-full pl-10 pr-4 py-4 bg-white dark:bg-gray-700 border-none rounded-2xl shadow-inner font-black text-xl text-brand-blue outline-none"
                                 />
                             </div>
-                            <p className="text-[9px] font-bold text-blue-400 mt-4 uppercase leading-relaxed">Este valor se sumará automáticamente cuando marques la opción "Perforar" en una nueva orden.</p>
                         </div>
                     </div>
                 </div>
