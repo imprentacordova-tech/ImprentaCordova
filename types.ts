@@ -31,6 +31,10 @@ export interface Cliente {
   email?: string;
   creadoEn: string;
   regimen: Regimen;
+  // Nuevos campos para automatización SRI
+  establecimientoPredeterminado?: string; // Ej: 001
+  puntoEmisionPredeterminado?: string;    // Ej: 001
+  numEstablecimientosOpen?: number;
 }
 
 export interface Trabajo {

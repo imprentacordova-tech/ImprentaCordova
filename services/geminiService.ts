@@ -11,17 +11,23 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
 
 /**
  * Extrae datos detallados de un Certificado de RUC o documento del SRI Ecuador.
+ * Optimizado para Imprenta Córdova - Pasaje.
  */
 export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
-    // Initializing right before call to ensure the latest API key is used
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelId = "gemini-3-flash-preview";
     const mimeMatch = base64Image.match(/^data:(.*);base64,/);
     const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
     const dataPart = base64Image.split(',')[1];
     
-    const prompt = `Analiza este Certificado de RUC del SRI (Ecuador). 
-    Extrae la información de forma precisa y estructurada.`;
+    const prompt = `Analiza este documento del SRI (Ecuador). Sigue estas reglas estrictas:
+    1. NOMBRE: Extrae Apellidos y Nombres (Persona Natural) o Razón Social (Empresa).
+    2. RUC: Extrae los 13 dígitos. Ignora cédulas de 10 dígitos, siempre deben ser 13.
+    3. REGIMEN: Identifica si es "RIMPE - NEGOCIO POPULAR", "RIMPE - EMPRENDEDOR" o "REGIMEN GENERAL".
+    4. ACTIVIDADES: Extrae solo el texto descriptivo. ELIMINA los códigos numéricos (ej. de "G45.10 - VENTA..." a "VENTA...").
+    5. DIRECCION: Extrae solo la Calle Principal y Secundaria. IGNORA referencias como "detrás de", "junto a" o códigos postales. Al final añade siempre "Pasaje - El Oro".
+    6. ESTABLECIMIENTOS: Cuenta cuántos establecimientos ABIERTOS tiene. Indica el número total y extrae el código del primer establecimiento (ej: 001).
+    7. EMAIL/TEL: Extrae el correo electrónico y celular para uso interno comercial.`;
 
     try {
         const response = await withTimeout(ai.models.generateContent({
@@ -33,15 +39,17 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        nombre: { type: Type.STRING, description: 'Razón Social o Nombres Apellidos' },
-                        ruc: { type: Type.STRING, description: 'Número de RUC completo de 13 dígitos' },
-                        regimen: { type: Type.STRING, description: 'Régimen tributario (Popular, Emprendedor, General)' },
+                        nombre: { type: Type.STRING },
+                        ruc: { type: Type.STRING },
+                        regimen: { type: Type.STRING },
                         direccion: { type: Type.STRING },
                         email: { type: Type.STRING },
                         telefono: { type: Type.STRING },
-                        actividades: { type: Type.STRING }
+                        actividades: { type: Type.STRING },
+                        numEstablecimientos: { type: Type.NUMBER },
+                        establecimientoPrincipal: { type: Type.STRING, description: 'Código de 3 dígitos, ej: 001' }
                     },
-                    required: ['nombre', 'ruc']
+                    required: ['nombre', 'ruc', 'numEstablecimientos']
                 }
             }
         }), 35000) as GenerateContentResponse;
@@ -52,6 +60,8 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
         return null; 
     }
 };
+
+// ... Resto de funciones del servicio se mantienen igual ...
 
 /**
  * Genera mensajes de marketing personalizados para clientes basándose en su historial.

@@ -7,7 +7,7 @@ import { extractClientFromImage } from '../../services/geminiService';
 import { 
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
     CheckCircleIcon, SparklesIcon, AddIcon, ArrowRightIcon, PhoneIcon, 
-    UploadIcon, DocumentTextIcon, LayersIcon
+    UploadIcon, DocumentTextIcon, LayersIcon, ExclamationTriangleIcon
 } from '../Icons';
 
 const InputField: React.FC<{ 
@@ -42,7 +42,9 @@ export const CreateClientModal: React.FC<{
 }> = ({ isOpen, onClose, onClientCreated, initialName, initialCedulaRuc }) => {
     const [newClienteData, setNewClienteData] = useState({ 
         nombre: '', nombreComercial: '', cedulaRuc: '', email: '', 
-        direccion: 'Pasaje, El Oro', regimen: Regimen.GENERAL 
+        direccion: 'Pasaje, El Oro', regimen: Regimen.GENERAL,
+        establecimientoPredeterminado: '001', puntoEmisionPredeterminado: '001',
+        numEstablecimientosOpen: 1
     });
     const [actividades, setActividades] = useState<string[]>([]);
     const [currentActividad, setCurrentActividad] = useState('');
@@ -59,7 +61,9 @@ export const CreateClientModal: React.FC<{
         if (isOpen) {
             setNewClienteData({ 
                 nombre: initialName || '', nombreComercial: '', cedulaRuc: initialCedulaRuc || '', 
-                email: '', direccion: 'Pasaje, El Oro', regimen: Regimen.GENERAL 
+                email: '', direccion: 'Pasaje, El Oro', regimen: Regimen.GENERAL,
+                establecimientoPredeterminado: '001', puntoEmisionPredeterminado: '001',
+                numEstablecimientosOpen: 1
             });
             setActividades([]);
             setSaveSuccess(false);
@@ -84,19 +88,26 @@ export const CreateClientModal: React.FC<{
     };
 
     const applyExtractedData = (data: any) => {
-        const fields = ['nombre', 'cedulaRuc', 'direccion'];
+        const fields = ['nombre', 'cedulaRuc', 'direccion', 'regimen'];
         setHighlightFields(fields);
+        
+        let regimenFinal = Regimen.GENERAL;
+        if (data.regimen?.toUpperCase().includes('POPULAR')) regimenFinal = Regimen.NEGOCIO_POPULAR;
+        else if (data.regimen?.toUpperCase().includes('EMPRENDEDOR')) regimenFinal = Regimen.EMPRENDEDOR;
+
         setNewClienteData(prev => ({
             ...prev,
             nombre: data.nombre || prev.nombre,
             cedulaRuc: data.ruc || prev.cedulaRuc,
             direccion: data.direccion || prev.direccion,
-            regimen: data.regimen?.toLowerCase().includes('popular') ? Regimen.NEGOCIO_POPULAR : Regimen.GENERAL
+            regimen: regimenFinal,
+            email: data.email || prev.email,
+            numEstablecimientosOpen: data.numEstablecimientos || 1,
+            establecimientoPredeterminado: data.establecimientoPrincipal || '001'
         }));
 
         if (data.actividades) {
-            // Limpieza inteligente de actividades separadas por comas, puntos o saltos
-            const cleaned = data.actividades.split(/[,\n•.;]/)
+            const cleaned = data.actividades.split(/[|\n]/)
                 .map((a: string) => a.trim().toUpperCase())
                 .filter((a: string) => a.length > 4);
             setActividades(prev => Array.from(new Set([...prev, ...cleaned])));
@@ -120,7 +131,7 @@ export const CreateClientModal: React.FC<{
             actividades: actividades.join('|'),
             cedula: newClienteData.cedulaRuc,
             ruc: newClienteData.cedulaRuc.length === 13 ? newClienteData.cedulaRuc : undefined,
-            telefono: ['0990000000'] // Por defecto si no se escanea
+            telefono: ['0990000000']
         });
         setSaveSuccess(true);
         setTimeout(() => onClientCreated(newCliente), 800);
@@ -155,11 +166,27 @@ export const CreateClientModal: React.FC<{
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField label="Razón Social" name="nombre" value={newClienteData.nombre} onChange={e => setNewClienteData({...newClienteData, nombre: e.target.value.toUpperCase()})} required isHighlighted={highlightFields.includes('nombre')} />
-                            <InputField label="RUC / Cédula" name="cedulaRuc" value={newClienteData.cedulaRuc} onChange={e => setNewClienteData({...newClienteData, cedulaRuc: e.target.value})} maxLength={13} required isHighlighted={highlightFields.includes('cedulaRuc')} />
+                            <InputField label="Apellidos y Nombres / Razón Social" name="nombre" value={newClienteData.nombre} onChange={e => setNewClienteData({...newClienteData, nombre: e.target.value.toUpperCase()})} required isHighlighted={highlightFields.includes('nombre')} />
+                            <InputField label="RUC (13 Dígitos)" name="cedulaRuc" value={newClienteData.cedulaRuc} onChange={e => setNewClienteData({...newClienteData, cedulaRuc: e.target.value})} maxLength={13} required isHighlighted={highlightFields.includes('cedulaRuc')} />
                         </div>
 
-                        {/* RÉGIMEN */}
+                        {/* ALERTA DE ESTABLECIMIENTOS MÚLTIPLES */}
+                        {newClienteData.numEstablecimientosOpen > 1 && (
+                            <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center gap-4 animate-bounce-in">
+                                <ExclamationTriangleIcon className="w-6 h-6 text-amber-600" />
+                                <div className="text-xs font-bold text-amber-800 uppercase leading-tight">
+                                    ¡ATENCIÓN! Este contribuyente tiene {newClienteData.numEstablecimientosOpen} negocios abiertos. 
+                                    <br/><span className="font-black">Preguntar para cuál establecimiento desea sus documentos.</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <InputField label="Cód. Establecimiento" name="establecimientoPredeterminado" value={newClienteData.establecimientoPredeterminado} onChange={e => setNewClienteData({...newClienteData, establecimientoPredeterminado: e.target.value})} maxLength={3} />
+                            <InputField label="Punto de Emisión" name="puntoEmisionPredeterminado" value={newClienteData.puntoEmisionPredeterminado} onChange={e => setNewClienteData({...newClienteData, puntoEmisionPredeterminado: e.target.value})} maxLength={3} />
+                            <InputField label="Email (Solo Marketing)" name="email" value={newClienteData.email} onChange={e => setNewClienteData({...newClienteData, email: e.target.value})} />
+                        </div>
+
                         <div className="flex gap-3">
                             {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
                                 <button
@@ -173,18 +200,17 @@ export const CreateClientModal: React.FC<{
                             ))}
                         </div>
 
-                        {/* ACTIVIDADES COMO ETIQUETAS (COLECCIÓN) */}
                         <div className="bg-slate-900 rounded-[2rem] p-8 space-y-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-[10px] font-black text-brand-red uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <LayersIcon className="w-4 h-4"/> Actividades Económicas Detectadas
+                                    <LayersIcon className="w-4 h-4"/> Actividades del Contribuyente
                                 </h3>
-                                <span className="text-[8px] font-bold text-white/40 uppercase">Presione Enter para añadir manualmente</span>
+                                <span className="text-[8px] font-bold text-white/40 uppercase">Códigos eliminados automáticamente</span>
                             </div>
 
                             <div className="flex flex-wrap gap-2 min-h-[50px] p-4 bg-white/5 rounded-2xl border border-white/10">
                                 {actividades.map((a, i) => (
-                                    <span key={i} className="bg-brand-blue text-white text-[9px] font-black px-3 py-2 rounded-lg flex items-center gap-2 animate-fade-in group">
+                                    <span key={i} className="bg-brand-blue text-white text-[9px] font-black px-3 py-2 rounded-lg flex items-center gap-2 animate-fade-in">
                                         {a}
                                         <button type="button" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))} className="hover:text-brand-red font-bold text-lg leading-none">&times;</button>
                                     </span>
@@ -198,26 +224,9 @@ export const CreateClientModal: React.FC<{
                                     className="bg-transparent border-none outline-none text-white text-[11px] font-bold flex-grow min-w-[150px]"
                                 />
                             </div>
-
-                            {/* Sugerencias de la base maestra */}
-                            <div className="space-y-3">
-                                <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Colección Global (Sugerencias):</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {masterActividades.filter(ma => !actividades.includes(ma)).slice(0, 10).map(ma => (
-                                        <button 
-                                            key={ma} 
-                                            type="button" 
-                                            onClick={() => addActividad(ma)}
-                                            className="px-3 py-1.5 rounded-full border border-white/10 text-[8px] font-black text-white/60 hover:bg-white/10 hover:text-white transition-all uppercase"
-                                        >
-                                            + {ma}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
                         </div>
 
-                        <InputField label="Dirección Tributaria" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({...newClienteData, direccion: e.target.value.toUpperCase()})} isHighlighted={highlightFields.includes('direccion')} />
+                        <InputField label="Dirección (Calles Principales)" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({...newClienteData, direccion: e.target.value.toUpperCase()})} isHighlighted={highlightFields.includes('direccion')} />
 
                         <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
                             <button type="button" onClick={onClose} className="px-8 py-4 text-slate-400 font-bold uppercase text-[10px]">Cancelar</button>
