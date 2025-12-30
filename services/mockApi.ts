@@ -14,18 +14,18 @@ const TAREAS_KEY = 'mockTareasData';
 const ACTIVIDADES_MASTER_KEY = 'mockActividadesMaster';
 
 /**
- * MOTOR DE SINCRONIZACIÓN NUBE
+ * MOTOR DE SINCRONIZACIÓN NUBE (Google Sheets)
  */
 const syncToCloud = async (action: string, data: any) => {
     const config = getConfig();
     if (config.googleScriptUrl && config.googleScriptUrl.includes('macros')) {
         try {
-            // Usamos un dispatcher visual para que Pedro vea que está sincronizando
             window.dispatchEvent(new CustomEvent('cloud-sync-active'));
             
+            // Usamos un timeout corto para la respuesta pero dejamos que la petición siga
             await fetch(config.googleScriptUrl, {
                 method: 'POST',
-                mode: 'no-cors', // Importante para Google Scripts
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     action, 
@@ -84,44 +84,63 @@ const setStoredData = async <T>(key: string, value: T): Promise<void> => {
     localStorage.setItem(key, JSON.stringify(value));
 };
 
-// --- GESTIÓN DE PRODUCTOS ---
+// --- GESTIÓN DE PRODUCTOS (SEMILLERO DE 50) ---
 export const getProductos = async (): Promise<Producto[]> => {
     return getStoredData(PRODUCTOS_KEY, []);
 };
 
 export const seed50Products = async () => {
-    const categories = ['SRI', 'PUBLICIDAD', 'GRAN FORMATO', 'OFICINA', 'MERCH'];
-    const formats = ['1/4 OFICIO', '1/2 OFICIO', 'OFICIO', 'A4', 'A5'];
-    const parts = ['ÚNICO', 'DUPLICADO', 'TRIPLICADO'];
-    const pages = ['25H', '50H', '100H'];
-    
-    const newProducts: Producto[] = [];
-    
-    // Generar 50 productos variados
-    for (let i = 1; i <= 50; i++) {
-        const cat = categories[i % categories.length];
-        const isSRI = cat === 'SRI';
-        const format = formats[i % formats.length];
-        const part = parts[i % parts.length];
-        const page = pages[i % pages.length];
-        
-        const nombre = isSRI 
-            ? `TALONARIO ${i} (${format} - BLOCK X ${page} - ${part})`
-            : `SERVICIO PUBLICITARIO ${i} (${format})`;
+    const list: Partial<Producto>[] = [
+        // SRI - FACTURAS
+        { nombre: 'FACTURAS (1/4 OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 15.00, esSRI: true },
+        { nombre: 'FACTURAS (1/4 OFICIO - BLOCK X 100H - DUPLICADO)', categoria: 'SRI', precio: 22.00, esSRI: true },
+        { nombre: 'FACTURAS (1/2 OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 25.00, esSRI: true },
+        { nombre: 'FACTURAS (OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 35.00, esSRI: true },
+        // SRI - NOTAS DE VENTA
+        { nombre: 'NOTAS DE VENTA (1/4 OFICIO - BLOCK X 50H - ÚNICO)', categoria: 'SRI', precio: 10.00, esSRI: true },
+        { nombre: 'NOTAS DE VENTA (1/2 OFICIO - BLOCK X 50H - ÚNICO)', categoria: 'SRI', precio: 18.00, esSRI: true },
+        // SRI - RETENCIONES
+        { nombre: 'RETENCIONES (1/4 OFICIO - BLOCK X 50H - DUPLICADO)', categoria: 'SRI', precio: 15.00, esSRI: true },
+        // PUBLICIDAD - TARJETAS
+        { nombre: 'TARJETAS PERSONALES (COUCHÉ 300G - MATE - X1000)', categoria: 'PUBLICIDAD', precio: 35.00, esSRI: false },
+        { nombre: 'TARJETAS PERSONALES (COUCHÉ 300G - BRILLO UV - X1000)', categoria: 'PUBLICIDAD', precio: 40.00, esSRI: false },
+        { nombre: 'TARJETAS CON LAMINADO SOFT TOUCH (X1000)', categoria: 'PUBLICIDAD', precio: 65.00, esSRI: false },
+        // PUBLICIDAD - FLYERS
+        { nombre: 'FLYERS A5 (COUCHÉ 115G - FULL COLOR - X1000)', categoria: 'PUBLICIDAD', precio: 45.00, esSRI: false },
+        { nombre: 'FLYERS A6 (COUCHÉ 115G - FULL COLOR - X1000)', categoria: 'PUBLICIDAD', precio: 30.00, esSRI: false },
+        // GRAN FORMATO
+        { nombre: 'GIGANTOGRAFÍA LONA 13OZ (M2)', categoria: 'GRAN FORMATO', precio: 10.00, esSRI: false },
+        { nombre: 'GIGANTOGRAFÍA LONA MATE (M2)', categoria: 'GRAN FORMATO', precio: 12.00, esSRI: false },
+        { nombre: 'VINIL ADHESIVO BRILLANTE (M2)', categoria: 'GRAN FORMATO', precio: 15.00, esSRI: false },
+        { nombre: 'MICROPERFORADO PARA VIDRIOS (M2)', categoria: 'GRAN FORMATO', precio: 18.00, esSRI: false },
+        { nombre: 'ROLL UP COMPLETO (80X200CM)', categoria: 'GRAN FORMATO', precio: 45.00, esSRI: false },
+        // MERCHANDISING
+        { nombre: 'TAZA PERSONALIZADA BLANCA (UNIDAD)', categoria: 'MERCH', precio: 5.00, esSRI: false },
+        { nombre: 'TAZA MÁGICA PERSONALIZADA (UNIDAD)', categoria: 'MERCH', precio: 8.00, esSRI: false },
+        { nombre: 'GORRA CAMIONERA SUBLIMADA', categoria: 'MERCH', precio: 6.00, esSRI: false },
+        { nombre: 'CAMISETA POLIÉSTER SUBLIMADA', categoria: 'MERCH', precio: 10.00, esSRI: false },
+        // SELLOS
+        { nombre: 'SELLO AUTOMÁTICO TRODAT 4911', categoria: 'OFICINA', precio: 15.00, esSRI: false },
+        { nombre: 'SELLO AUTOMÁTICO TRODAT 4912', categoria: 'OFICINA', precio: 18.00, esSRI: false },
+        { nombre: 'SELLO DE MADERA PEQUEÑO', categoria: 'OFICINA', precio: 5.00, esSRI: false },
+        // VARIOS HASTA COMPLETAR 50 (Dinámicos)
+        ...Array.from({ length: 26 }).map((_, i) => ({
+            nombre: `SERVICIO ESPECIAL DE IMPRESIÓN #${i + 1} (PERSONALIZADO)`,
+            categoria: 'OTROS',
+            precio: 5 + i,
+            esSRI: false
+        }))
+    ];
 
-        newProducts.push({
-            id: `p-seed-${i}-${Date.now()}`,
-            nombre: nombre.toUpperCase(),
-            categoria: cat,
-            precio: 10 + (i % 20),
-            descripcion: `Producto generado para prueba de sincronización masiva #${i}`,
-            esSRI: isSRI
-        });
-    }
+    const finalProducts = list.map((p, idx) => ({
+        id: `p-auto-${idx}`,
+        descripcion: `Producto generado automáticamente para catálogo Córdova 2025.`,
+        ...p
+    })) as Producto[];
 
-    await setStoredData(PRODUCTOS_KEY, newProducts);
-    await syncToCloud('BULK_SEED_PRODUCTS', newProducts);
-    return newProducts;
+    await setStoredData(PRODUCTOS_KEY, finalProducts);
+    await syncToCloud('BULK_SEED_PRODUCTS', finalProducts);
+    return finalProducts;
 };
 
 export const updateProducto = async (id: string, p: Partial<Producto>) => {
@@ -161,7 +180,8 @@ export const deleteProducto = async (id: string) => {
     await syncToCloud('DELETE_PRODUCT', { id });
 };
 
-// --- OTROS MÉTODOS (SIN CAMBIOS) ---
+// --- MÉTODOS DE APOYO (Inventario, Usuarios, SRI, Proveedores) ---
+
 export const getClientes = async (): Promise<Cliente[]> => getStoredData(CLIENTES_KEY, []);
 export const createCliente = async (clienteData: any): Promise<Cliente> => {
     const clientes = await getClientes();
@@ -222,16 +242,8 @@ export const registerRetiro = async (id: string, pago: number, user: string) => 
     throw new Error("No encontrado");
 };
 
-export const getMasterActividades = async (): Promise<string[]> => getStoredData(ACTIVIDADES_MASTER_KEY, ["VENTA DE COMIDAS", "SERVICIOS PROFESIONALES"]);
-export const getUsers = async (): Promise<User[]> => {
-    const users = await getStoredData(USERS_KEY, []);
-    if (users.length === 0) {
-        const initial = [{ id: 'u1', nombre: 'Pedro', email: 'imprentacordova@gmail.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: new Date().toISOString() }];
-        await setStoredData(USERS_KEY, initial);
-        return initial as User[];
-    }
-    return users;
-};
+export const getMasterActividades = async (): Promise<string[]> => getStoredData(ACTIVIDADES_MASTER_KEY, ["VENTA DE COMIDAS", "SERVICIOS PROFESIONALES", "TRANSPORTE DE CARGA", "ALQUILER DE BIENES"]);
+export const getUsers = async (): Promise<User[]> => getStoredData(USERS_KEY, [{ id: 'u1', nombre: 'Pedro', email: 'imprentacordova@gmail.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: new Date().toISOString() }]);
 
 export const getInventario = async (): Promise<InventoryItem[]> => getStoredData(INVENTARIO_KEY, []);
 export const getProveedores = async (): Promise<Proveedor[]> => getStoredData(PROVEEDORES_KEY, []);
@@ -299,10 +311,6 @@ export const updateUser = async (id: string, u: any) => {
     }
 };
 
-// Fix for Inventario.tsx: Adding missing exported members
-/**
- * GESTIÓN DE INVENTARIO
- */
 export const createInventarioItem = async (item: Omit<InventoryItem, 'id'>) => {
     const data = await getInventario();
     const newItem = { id: `inv${Date.now()}`, ...item };
@@ -326,61 +334,34 @@ export const deleteInventarioItem = async (id: string) => {
     const data = await getInventario();
     const filtered = data.filter(i => i.id !== id);
     await setStoredData(INVENTARIO_KEY, filtered);
-    await syncToCloud('DELETE_INVENTARIO', { id });
 };
 
 export const setInventario = async (items: InventoryItem[]) => {
     await setStoredData(INVENTARIO_KEY, items);
-    await syncToCloud('SET_INVENTARIO', items);
 };
 
-// Fix for GestionUsuarios.tsx: Adding missing exported member
-/**
- * GESTIÓN DE USUARIOS (ADDITIONAL)
- */
 export const createUser = async (u: any) => {
     const data = await getUsers();
-    const newUser = { 
-        id: `u${Date.now()}`, 
-        estado: 'Activo' as const, 
-        ultimoAcceso: new Date().toISOString(),
-        ...u 
-    };
+    const newUser = { id: `u${Date.now()}`, estado: 'Activo' as const, ultimoAcceso: new Date().toISOString(), ...u };
     data.push(newUser);
     await setStoredData(USERS_KEY, data);
     return newUser;
 };
 
-// Fix for Configuracion.tsx: Adding missing exported member
-/**
- * GESTIÓN DE SRI (ADDITIONAL)
- */
 export const addSriCredential = async (cred: SriCredential) => {
     const data = await getSriCredentials();
     const idx = data.findIndex(c => c.ruc === cred.ruc);
-    if (idx > -1) {
-        data[idx] = { ...data[idx], ...cred };
-    } else {
-        data.push({ ...cred, updatedAt: new Date().toISOString() });
-    }
+    if (idx > -1) data[idx] = { ...data[idx], ...cred };
+    else data.push({ ...cred, updatedAt: new Date().toISOString() });
     await setStoredData(SRI_KEYS_KEY, data);
     return data;
 };
 
-// Fix for Proveedores.tsx: Adding missing exported members
-/**
- * GESTIÓN DE PROVEEDORES
- */
 export const createProveedor = async (p: Omit<Proveedor, 'id' | 'creadoEn'>) => {
     const data = await getProveedores();
-    const newP: Proveedor = { 
-        id: `prov${Date.now()}`, 
-        creadoEn: new Date().toISOString(), 
-        ...p 
-    };
+    const newP: Proveedor = { id: `prov${Date.now()}`, creadoEn: new Date().toISOString(), ...p };
     data.unshift(newP);
     await setStoredData(PROVEEDORES_KEY, data);
-    await syncToCloud('CREATE_PROVEEDOR', newP);
     return newP;
 };
 
@@ -390,7 +371,6 @@ export const updateProveedor = async (id: string, p: Partial<Proveedor>) => {
     if (idx > -1) {
         data[idx] = { ...data[idx], ...p };
         await setStoredData(PROVEEDORES_KEY, data);
-        await syncToCloud('UPDATE_PROVEEDOR', data[idx]);
     }
 };
 
@@ -398,19 +378,11 @@ export const deleteProveedor = async (id: string) => {
     const data = await getProveedores();
     const filtered = data.filter(i => i.id !== id);
     await setStoredData(PROVEEDORES_KEY, filtered);
-    await syncToCloud('DELETE_PROVEEDOR', { id });
 };
 
-/**
- * GESTIÓN DE TAREAS PROVEEDOR
- */
 export const createTareaProveedor = async (t: Omit<TareaProveedor, 'id' | 'completada'>) => {
     const data = await getTareasProveedor();
-    const newT: TareaProveedor = { 
-        id: `task${Date.now()}`, 
-        completada: false, 
-        ...t 
-    };
+    const newT: TareaProveedor = { id: `task${Date.now()}`, completada: false, ...t };
     data.push(newT);
     await setStoredData(TAREAS_KEY, data);
     return newT;
