@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
-import { Trabajo, Cliente, TrabajoEstado } from '../types';
+import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { 
     ArrowLeftIcon, ReceiptIcon, DocumentTextIcon, LayersIcon, 
     Loader2Icon, CheckCircleIcon, BoxIcon, UsersIcon, 
     ShieldCheckIcon, CalendarDaysIcon, PrinterIcon,
-    ArrowDownTrayIcon
+    ArrowDownTrayIcon, KeyIcon, LockClosedIcon, MapPinIcon
 } from '../components/Icons';
 
 const TrabajoDetallePage: React.FC = () => {
@@ -43,15 +43,14 @@ const TrabajoDetallePage: React.FC = () => {
     if (!trabajo || !cliente) return <div className="p-10 text-center text-slate-500">Trabajo no encontrado.</div>;
 
     return (
-        <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
+        <div className="space-y-8 animate-fade-in max-w-6xl mx-auto pb-20">
             {/* Header / Actions Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-brand-blue font-bold uppercase text-xs tracking-widest transition-all">
                     <ArrowLeftIcon className="w-4 h-4"/> Volver
                 </button>
                 <div className="flex flex-wrap gap-2">
-                    {/* BOTONES DE ENTRADA */}
-                    {trabajo.tipo === 'sri' ? (
+                    {trabajo.tipo === TrabajoTipo.SRI ? (
                         <button onClick={() => navigate(`/solicitud-impresion/${trabajo.id}`)} className="px-5 py-2.5 bg-brand-blue text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg hover:bg-slate-950 transition-all flex items-center gap-2">
                             <DocumentTextIcon className="w-4 h-4" /> Solicitud SRI
                         </button>
@@ -65,7 +64,6 @@ const TrabajoDetallePage: React.FC = () => {
                         <ReceiptIcon className="w-4 h-4 text-brand-blue" /> Recibo Abono
                     </button>
 
-                    {/* BOTÓN DE SALIDA (LA MADRE DE LAS NOTAS) */}
                     {(trabajo.estado === TrabajoEstado.VITRINA || trabajo.estado === TrabajoEstado.ENTREGADO) && (
                         <button onClick={() => navigate(`/nota-de-venta/${trabajo.id}`)} className="px-5 py-2.5 bg-brand-red text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-xl hover:bg-red-800 transition-all flex items-center gap-2">
                             <PrinterIcon className="w-4 h-4" /> Nota de Retiro
@@ -74,9 +72,11 @@ const TrabajoDetallePage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Main Technical Info Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* COLUMNA PRINCIPAL */}
+                <div className="lg:col-span-8 space-y-8">
+                    
+                    {/* CARD PRINCIPAL DE TRABAJO */}
                     <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-white/5">
                         <div className="flex justify-between items-start mb-8">
                             <div>
@@ -96,10 +96,41 @@ const TrabajoDetallePage: React.FC = () => {
                         </div>
 
                         <div className="mt-8 space-y-4">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><BoxIcon className="w-4 h-4"/> Descripción</h3>
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><BoxIcon className="w-4 h-4"/> Descripción del Pedido</h3>
                             <p className="text-lg font-bold text-slate-700 dark:text-slate-300 leading-relaxed uppercase">{trabajo.subtipo}</p>
                         </div>
                     </div>
+
+                    {/* BLOQUE TÉCNICO SRI (SOLIDIFICACIÓN) */}
+                    {trabajo.tipo === TrabajoTipo.SRI && (
+                        <div className="bg-slate-950 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden border border-white/5 animate-slide-in-up">
+                            <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheckIcon className="w-32 h-32" /></div>
+                            <div className="relative z-10">
+                                <h3 className="text-brand-red font-black text-[10px] uppercase tracking-[0.4em] mb-8">Validación Técnica SRI</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Punto de Emisión</p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="bg-white/10 p-2 rounded-lg text-brand-red font-mono text-xl font-black">{trabajo.establecimiento || '001'}</div>
+                                            <div className="h-px w-4 bg-white/20"></div>
+                                            <div className="bg-white/10 p-2 rounded-lg text-brand-red font-mono text-xl font-black">{trabajo.puntoEmision || '001'}</div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Clave de Acceso / Contraseña</p>
+                                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center group">
+                                            <span className="font-mono text-emerald-400 font-bold tracking-widest uppercase">{trabajo.claveAcceso || 'PENDIENTE'}</span>
+                                            <KeyIcon className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Actividad Económica</p>
+                                        <p className="text-[10px] font-bold text-slate-300 uppercase leading-tight">{trabajo.actividadSeleccionada || 'ACTIVIDAD GENERAL'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Timeline / Status Logs */}
                     <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-white/5">
@@ -121,8 +152,8 @@ const TrabajoDetallePage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Sidebar Info Section */}
-                <div className="space-y-8">
+                {/* COLUMNA LATERAL */}
+                <div className="lg:col-span-4 space-y-8">
                     {/* Contributor (Client) Summary Card */}
                     <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-5"><UsersIcon className="w-20 h-20" /></div>
@@ -130,25 +161,26 @@ const TrabajoDetallePage: React.FC = () => {
                         <div className="space-y-4">
                             <p className="text-xl font-black uppercase leading-tight tracking-tight">{cliente.nombre}</p>
                             <div className="space-y-2">
-                                <p className="text-xs font-bold text-slate-400 flex items-center gap-2"><ShieldCheckIcon className="w-4 h-4"/> {cliente.ruc || cliente.cedula}</p>
-                                <p className="text-xs font-bold text-slate-400 flex items-center gap-2"><CalendarDaysIcon className="w-4 h-4"/> {cliente.regimen}</p>
+                                <p className="text-xs font-bold text-slate-400 flex items-center gap-2"><ShieldCheckIcon className="w-4 h-4 text-brand-blue"/> {cliente.ruc || cliente.cedula}</p>
+                                <p className="text-xs font-bold text-slate-400 flex items-center gap-2"><MapPinIcon className="w-4 h-4 text-brand-blue"/> {cliente.direccion || 'Pasaje, El Oro'}</p>
+                                <p className="text-xs font-bold text-slate-400 flex items-center gap-2"><CalendarDaysIcon className="w-4 h-4 text-brand-blue"/> {cliente.regimen}</p>
                             </div>
-                            <button onClick={() => navigate(`/clientes`)} className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all mt-4">Ver Perfil Completo</button>
+                            <button onClick={() => navigate(`/clientes`)} className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all mt-4">Ver Directorio</button>
                         </div>
                     </div>
 
                     {/* Manual Status Overrides */}
                     <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-sm border border-slate-100 dark:border-white/5">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Cambiar Estado Manual</h3>
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Acción de Taller</h3>
                         <div className="grid grid-cols-1 gap-2">
                             {[TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO, TrabajoEstado.PROCESO, TrabajoEstado.VITRINA, TrabajoEstado.ENTREGADO].map(status => (
                                 <button 
                                     key={status}
                                     onClick={() => handleStatusChange(status)}
                                     disabled={trabajo.estado === status}
-                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${trabajo.estado === status ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-default' : 'bg-white dark:bg-slate-800 border-transparent hover:border-brand-blue text-slate-600 dark:text-slate-400'}`}
+                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${trabajo.estado === status ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-default' : 'bg-white dark:bg-slate-800 border-transparent hover:border-brand-blue text-slate-600 dark:text-slate-400 hover:bg-slate-50'}`}
                                 >
-                                    {status}
+                                    {status === TrabajoEstado.VITRINA ? 'Mover a Vitrina' : status}
                                 </button>
                             ))}
                         </div>

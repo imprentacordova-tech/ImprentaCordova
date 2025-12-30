@@ -1,12 +1,13 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Producto, TrabajoTipo, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { formatCurrency } from '../../utils';
 import { getConfig } from '../../services/configService';
 import { 
-    SearchIcon, DocumentIcon, ShieldCheckIcon, AddIcon, 
-    RulerIcon, SparklesIcon, CheckCircleIcon, LayersIcon, 
-    FileStackIcon, BoxIcon, ChevronRightIcon, MonitorIcon
+    SearchIcon, ShieldCheckIcon, AddIcon, 
+    RulerIcon, SparklesIcon, LayersIcon, 
+    BoxIcon, MonitorIcon, ExclamationTriangleIcon
 } from '../Icons';
 
 interface ProductGridProps {
@@ -27,14 +28,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
     const [perforar, setPerforar] = useState(false);
     const config = getConfig();
 
-    // Resetear niveles inferiores al cambiar el superior
     useEffect(() => {
         setSelectedSize(null);
         setSelectedQty(null);
         setPerforar(false);
     }, [selectedBaseName, jobType]);
 
-    // Lógica de Agrupamiento Pro
+    // REGLA DE ORO SRI: Filtrado por Régimen
     const baseProducts = useMemo(() => {
         const map = new Map<string, {
             name: string;
@@ -45,10 +45,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
         }>();
 
         productos.forEach(p => {
-            // Regex para extraer el nombre base ignorando el paréntesis de variaciones
-            const match = p.nombre.match(/^(.*?) \((.*?) - (.*?)\)$/);
-            const baseName = match ? match[1] : p.nombre;
-            const size = match ? match[2] : 'Estándar';
+            const baseName = p.nombre.split(' (')[0];
+            const sizeMatch = p.nombre.match(/\((.*?) -/);
+            const size = sizeMatch ? sizeMatch[1] : 'Estándar';
+
+            // LÓGICA DE EXCLUSIÓN
+            const isNotaVenta = p.nombre.toUpperCase().includes('NOTA DE VENTA');
+            const isFactura = p.nombre.toUpperCase().includes('FACTURA');
+
+            if (jobType === TrabajoTipo.SRI && clientRegimen) {
+                if (clientRegimen === Regimen.NEGOCIO_POPULAR && !isNotaVenta) return;
+                if (clientRegimen !== Regimen.NEGOCIO_POPULAR && isNotaVenta) return;
+            }
 
             if (!map.has(baseName)) {
                 map.set(baseName, {
@@ -68,7 +76,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             (jobType === TrabajoTipo.SRI ? g.esSRI : !g.esSRI) &&
             g.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [productos, jobType, searchTerm]);
+    }, [productos, jobType, searchTerm, clientRegimen]);
 
     const currentGroup = useMemo(() => 
         baseProducts.find(g => g.name === selectedBaseName), 
@@ -84,7 +92,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             });
     }, [currentGroup, selectedSize]);
 
-    // PRODUCTO FINAL DETECTADO
     const selectedProductObject = useMemo(() => {
         if (!selectedQty) return null;
         return availableQuantities.find(q => q.label === selectedQty)?.product || null;
@@ -95,24 +102,22 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
         return selectedProductObject.precio + (perforar ? config.costoPerforado : 0);
     }, [selectedProductObject, perforar]);
 
-    const handleFinalAdd = () => {
-        if (!selectedProductObject) return;
-        onProductAction('add', { 
-            ...selectedProductObject, 
-            surcharge: perforar ? config.costoPerforado : 0, 
-            surchargeLabel: perforar ? "+ Perforado" : "" 
-        });
-        // Feedback visual
-        setSelectedQty(null);
-    };
-
     return (
         <div className="flex flex-col h-full animate-fade-in gap-4">
-            {/* Header / Buscador */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-slate-100 dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-white/5">
-                <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-inner border border-slate-100 dark:border-gray-700">
-                    <button onClick={() => onSetJobType(TrabajoTipo.SRI)} className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.SRI ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-400'}`}>Talonarios SRI</button>
-                    <button onClick={() => onSetJobType(TrabajoTipo.GENERAL)} className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.GENERAL ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-400'}`}>General</button>
+                <div className="flex items-center gap-4">
+                    <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-inner border border-slate-100">
+                        <button onClick={() => onSetJobType(TrabajoTipo.SRI)} className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.SRI ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-400'}`}>Talonarios SRI</button>
+                        <button onClick={() => onSetJobType(TrabajoTipo.GENERAL)} className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.GENERAL ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-400'}`}>General</button>
+                    </div>
+                    {jobType === TrabajoTipo.SRI && clientRegimen && (
+                        <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${clientRegimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-50 border-orange-200 text-orange-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
+                            <ShieldCheckIcon className="w-4 h-4"/>
+                            <span className="text-[9px] font-black uppercase tracking-widest">
+                                MODO: {clientRegimen === Regimen.NEGOCIO_POPULAR ? 'SOLO NOTAS DE VENTA' : 'SOLO FACTURAS'}
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div className="relative flex-grow max-w-xs">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -120,9 +125,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                 </div>
             </div>
 
-            {/* Grid Triple Cascada */}
             <div className="flex-grow overflow-hidden flex flex-col md:flex-row gap-4">
-                {/* 1. Servicios Base */}
                 <div className="w-full md:w-1/3 overflow-y-auto space-y-1.5 pr-2 custom-scrollbar">
                     {baseProducts.map(group => (
                         <button 
@@ -141,13 +144,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                             </div>
                         </button>
                     ))}
+                    {baseProducts.length === 0 && (
+                        <div className="p-8 text-center bg-white dark:bg-slate-800 rounded-3xl opacity-50">
+                            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-slate-300"/>
+                            <p className="text-[10px] font-black uppercase tracking-widest">No hay documentos para este régimen</p>
+                        </div>
+                    )}
                 </div>
 
-                {/* 2. Variaciones (Tamaño y Cantidad) */}
                 <div className="flex-1 bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-inner p-8 overflow-y-auto custom-scrollbar">
                     {selectedBaseName ? (
                         <div className="space-y-8 animate-fade-in">
-                            {/* Selector de Tamaño */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <RulerIcon className="w-4 h-4 text-brand-blue" /> 1. DEFINA TAMAÑO
@@ -165,7 +172,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                 </div>
                             </div>
 
-                            {/* Selector de Cantidad / Tipo */}
                             {selectedSize && (
                                 <div className="space-y-4 animate-slide-in-up">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -186,7 +192,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                 </div>
                             )}
 
-                            {/* Resumen de Precio y Acción */}
                             {selectedQty && (
                                 <div className="space-y-6 pt-8 border-t dark:border-gray-700 animate-fade-in">
                                     <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 shadow-sm gap-4">
@@ -206,7 +211,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                                 <span className="text-[9px] font-black uppercase">Perforar</span>
                                             </button>
                                             <button 
-                                                onClick={handleFinalAdd} 
+                                                onClick={() => {
+                                                    if (!selectedProductObject) return;
+                                                    onProductAction('add', { 
+                                                        ...selectedProductObject, 
+                                                        surcharge: perforar ? config.costoPerforado : 0, 
+                                                        surchargeLabel: perforar ? "+ Perforado" : "" 
+                                                    });
+                                                    setSelectedQty(null);
+                                                }} 
                                                 className="px-8 py-4 bg-brand-red text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
                                             >
                                                 Añadir <AddIcon className="w-5 h-5"/>

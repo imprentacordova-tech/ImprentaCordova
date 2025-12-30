@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTrabajos, getClientes } from '../services/mockApi';
-import { Cliente, Trabajo, TrabajoTipo } from '../types';
+import { Cliente, Trabajo, TrabajoTipo, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
     CordovaLogo, Loader2Icon, ShieldCheckIcon, DocumentTextIcon,
@@ -57,32 +57,22 @@ const SolicitudImpresionPage: React.FC = () => {
         </div>
     );
 
-    // Formatear Fecha de Pedido con Hora
     const fechaPedidoConHora = new Date(trabajo.fechaEntrada).toLocaleString('es-EC', {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: true
     });
 
-    // Calcular Fecha de Retiro (Siguiente día en la tarde)
     const dtRetiro = new Date(trabajo.fechaEntrada);
-    dtRetiro.setDate(dtRetiro.getDate() + 1);
+    // Ajuste dinámico según tiempo estimado
+    const hoursToAdd = trabajo.tiempoEntregaEstimado === '24h' ? 24 : 48;
+    dtRetiro.setHours(dtRetiro.getHours() + hoursToAdd);
     
     const diaSemana = dtRetiro.toLocaleDateString('es-EC', { weekday: 'long' });
     const diaMes = dtRetiro.getDate();
     const fechaRetiroFormateada = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} ${diaMes} (Tarde)`;
 
-    const fechaEntregaFull = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).toLocaleDateString('es-EC', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-    }) : 'Pendiente';
-
-    const horaEntregaFull = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).toLocaleTimeString('es-EC', {
-        hour: '2-digit', minute: '2-digit', hour12: true
-    }) : '--:--';
-
-    // Helper para parsear el nombre del producto y sacar los datos de la tabla
     const parseProductDetails = (subtipo: string) => {
-        const subtipos = subtipo.split(', ');
-        return subtipos.map(s => {
+        return subtipo.split(', ').map(s => {
             const qtyMatch = s.match(/^(\d+)x/);
             const numBlocks = qtyMatch ? qtyMatch[1] : "1";
             const sizeMatch = s.match(/(1\/\d+ OFICIO|OFICIO|A\d+)/i);
@@ -102,6 +92,10 @@ const SolicitudImpresionPage: React.FC = () => {
     };
 
     const parsedItems = parseProductDetails(trabajo.subtipo);
+
+    // QR para seguimiento web
+    const trackingUrl = `${window.location.origin}/#/tracking?order=${trabajo.orden}`;
+    const qrSource = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(trackingUrl)}`;
 
     return (
         <div className="bg-slate-300 min-h-screen py-12 flex flex-col items-center overflow-y-auto">
@@ -136,7 +130,6 @@ const SolicitudImpresionPage: React.FC = () => {
 
             <div id="documento-maestro-sri" className="bg-white shadow-2xl relative flex flex-col box-border border border-slate-400" style={{ width: '210mm', minHeight: '297mm', padding: '15mm', fontFamily: 'Arial, sans-serif' }}>
                 
-                {/* CABECERA */}
                 <div className="border-4 border-brand-blue rounded-3xl p-6 mb-8 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-bl-full"></div>
                     <div className="flex justify-between items-center relative z-10">
@@ -165,12 +158,15 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* DATOS DEL CONTRIBUYENTE (INCLUYE TELÉFONO SOLICITADO) */}
                 <div className="grid grid-cols-12 gap-x-8 gap-y-4 mb-8 text-[11px]">
                     <div className="col-span-8 space-y-4">
                         <div className="border-b border-gray-300 pb-1">
                             <span className="font-black text-gray-400 uppercase text-[9px] block">Contribuyente:</span>
                             <span className="font-bold text-slate-900 uppercase text-sm">{cliente.nombre}</span>
+                        </div>
+                        <div className="border-b border-gray-300 pb-1">
+                            <span className="font-black text-gray-400 uppercase text-[9px] block">Régimen:</span>
+                            <span className="font-black text-brand-red uppercase text-xs">{cliente.regimen}</span>
                         </div>
                         <div className="border-b border-gray-300 pb-1">
                             <span className="font-black text-gray-400 uppercase text-[9px] block">Actividad Económica:</span>
@@ -193,10 +189,6 @@ const SolicitudImpresionPage: React.FC = () => {
                                 <span className="font-black text-gray-400 uppercase text-[9px] block">Fecha Pedido:</span>
                                 <span className="font-bold text-[10px]">{fechaPedidoConHora}</span>
                             </div>
-                            <div className="border-b border-gray-300 pb-1">
-                                <span className="font-black text-brand-red uppercase text-[9px] block">Fecha Retiro:</span>
-                                <span className="font-black text-slate-900">{fechaRetiroFormateada}</span>
-                            </div>
                             <div className="border-b border-gray-300 pb-1 text-right">
                                 <span className="font-black text-gray-400 uppercase text-[9px] block">Orden Nº:</span>
                                 <span className="font-black text-brand-red text-lg">#{trabajo.orden}</span>
@@ -205,7 +197,6 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* TABLA TÉCNICA SRI */}
                 <div className="mb-6 overflow-hidden rounded-2xl border-2 border-brand-blue">
                     <div className="bg-brand-blue text-white p-3 text-center text-[10px] font-black uppercase tracking-[0.2em]">
                         SOLICITO LA ELABORACIÓN DE LOS SIGUIENTES DOCUMENTOS:
@@ -216,8 +207,8 @@ const SolicitudImpresionPage: React.FC = () => {
                                 <th className="p-3 border-r border-brand-blue/20">TAMAÑO</th>
                                 <th className="p-3 border-r border-brand-blue/20">DOCUMENTO</th>
                                 <th className="p-3 border-r border-brand-blue/20">DETALLE / CANTIDAD</th>
-                                <th className="p-3 border-r border-brand-blue/20 text-[8px]">ESTAB.</th>
-                                <th className="p-3 border-r border-brand-blue/20 text-[8px]">PUNTO EMIS.</th>
+                                <th className="p-3 border-r border-brand-blue/20">ESTAB.</th>
+                                <th className="p-3 border-r border-brand-blue/20">PTO. EMIS.</th>
                                 <th className="p-3">P.V.P</th>
                             </tr>
                         </thead>
@@ -227,81 +218,78 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <td className="p-4 border-r border-gray-100 uppercase">{item.size}</td>
                                     <td className="p-4 border-r border-gray-100 uppercase text-brand-blue">{item.docName}</td>
                                     <td className="p-4 border-r border-gray-100 uppercase text-slate-500 font-black">{item.detailedQty}</td>
-                                    <td className="p-4 border-r border-gray-100 font-mono text-lg">{trabajo.establecimiento || '001'}</td>
-                                    <td className="p-4 border-r border-gray-100 font-mono text-lg">{trabajo.puntoEmision || '001'}</td>
-                                    <td className="p-4 text-brand-red text-lg">{formatCurrency(trabajo.total)}</td>
-                                </tr>
-                            ))}
-                            {[...Array(2)].map((_, i) => (
-                                <tr key={i} className="border-b border-gray-50 h-10">
-                                    <td className="border-r border-gray-50"></td><td className="border-r border-gray-50"></td>
-                                    <td className="border-r border-gray-50"></td><td className="border-r border-gray-50"></td>
-                                    <td className="border-r border-gray-50"></td><td></td>
+                                    <td className="p-4 border-r border-gray-100 font-mono text-xl text-brand-red">{trabajo.establecimiento || '001'}</td>
+                                    <td className="p-4 border-r border-gray-100 font-mono text-xl text-brand-red">{trabajo.puntoEmision || '001'}</td>
+                                    <td className="p-4 text-brand-blue text-xl font-black">{formatCurrency(trabajo.total)}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
 
-                {/* BLOQUE DE PAPEL QUÍMICO Y ENTREGA */}
                 <div className="grid grid-cols-12 gap-6 mb-8">
-                    <div className="col-span-7 bg-slate-950 text-white rounded-3xl p-6 relative overflow-hidden">
-                        <div className="relative z-10">
-                            <h3 className="text-[10px] font-black uppercase text-brand-red tracking-widest mb-3">ESPECIFICACIÓN DE PRODUCCIÓN</h3>
-                            <p className="text-xs font-bold leading-relaxed mb-4">
-                                <span className="text-brand-blue">MATERIA PRIMA:</span> TRABAJO REALIZADO EXCLUSIVAMENTE EN PAPEL QUÍMICO AUTOCOPIANTE DE ALTA TRANSFERENCIA.
-                            </p>
-                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                                <ExclamationTriangleIcon className="w-5 h-5 text-yellow-400" />
-                                <p className="text-[9px] uppercase font-bold text-slate-400">Sin recibo pierde derecho a retiro. Máximo 30 días de custodia.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="col-span-5 bg-brand-red text-white rounded-3xl p-6 flex flex-col justify-center shadow-xl">
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-2 opacity-80 flex items-center gap-2">
-                            <ClockIcon className="w-4 h-4"/> Compromiso de Entrega
+                    <div className="col-span-12 bg-slate-50 border-2 border-dashed border-slate-200 p-6 rounded-3xl">
+                        <h3 className="text-[10px] font-black uppercase text-brand-blue tracking-widest mb-3">AUTODECLARACIÓN DE RESPONSABILIDAD</h3>
+                        <p className="text-[9px] text-slate-500 font-medium leading-relaxed italic">
+                            El contribuyente declara que la información proporcionada (RUC, Régimen, Actividades y Direcciones) es verídica y corresponde a su registro actualizado en el SRI. Imprenta Córdova actúa únicamente como emisor autorizado basado en estos datos.
                         </p>
-                        <div className="space-y-1">
-                            <p className="text-3xl font-black tracking-tighter uppercase">{fechaRetiroFormateada}</p>
-                            <p className="text-sm font-bold opacity-80 italic">Listo para retirar en local</p>
-                        </div>
                     </div>
                 </div>
 
-                {/* PIE DE PÁGINA */}
-                <div className="mt-auto">
-                    <div className="flex items-center gap-20 pt-10 mb-10">
+                <div className="mt-auto space-y-8">
+                    {/* BLOQUE DE COMPROMISO MAESTRO CON MARCO ROJO Y QR */}
+                    <div className="border-[6px] border-brand-red rounded-[2.5rem] p-8 flex justify-between items-center bg-white shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
+                            <CordovaLogo className="w-40 h-40" />
+                        </div>
+                        <div className="relative z-10 space-y-4">
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-1">Compromiso de Entrega</span>
+                                <h3 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">{fechaRetiroFormateada}</h3>
+                            </div>
+                            <div className="bg-brand-red text-white inline-block px-8 py-3 rounded-2xl font-black text-xl tracking-tighter uppercase shadow-2xl">
+                                LISTO PARA RETIRAR EN LOCAL
+                            </div>
+                        </div>
+                        <div className="relative z-10 flex flex-col items-center gap-2 border-l-2 border-slate-100 pl-8 ml-8">
+                             <div className="bg-white p-2 border-2 border-slate-100 rounded-2xl shadow-sm">
+                                <img src={qrSource} alt="QR Tracking" className="w-24 h-24" />
+                             </div>
+                             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rastrea tu pedido</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-20 pt-4 mb-8">
                         <div className="flex-1 text-center border-t-2 border-slate-400 pt-4">
                             <p className="text-[10px] font-black text-slate-900 uppercase">Firma del Solicitante</p>
                             <p className="text-[8px] text-slate-400 font-bold uppercase mt-1">C.I.: {cliente.cedula}</p>
                         </div>
                         <div className="flex-1 text-center border-t-2 border-slate-400 pt-4">
-                            <p className="text-[10px] font-black text-slate-900 uppercase">Sello Imprenta</p>
-                            <p className="text-[8px] text-slate-400 font-bold uppercase mt-1">Autorización Vigente</p>
+                            <p className="text-[10px] font-black text-slate-900 uppercase">Sello de Autorización</p>
+                            <p className="text-[8px] text-slate-400 font-bold uppercase mt-1">SISTEMA CÓRDOVA VISION v2.0</p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 border-2 border-slate-200 rounded-[2rem] p-6 flex justify-between items-center">
-                         <div className="text-center px-4">
-                            <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">Total a Pagar</span>
-                            <span className="text-2xl font-black text-slate-900 tracking-tighter">{formatCurrency(trabajo.total)}</span>
-                        </div>
-                        <div className="h-10 w-px bg-slate-200"></div>
+                    <div className="bg-slate-950 text-white rounded-[2rem] p-6 flex justify-between items-center shadow-xl">
                         <div className="text-center px-4">
-                            <span className="text-[9px] font-black text-emerald-500 uppercase block mb-1">Abono</span>
-                            <span className="text-2xl font-black text-emerald-600 tracking-tighter">{formatCurrency(trabajo.abono)}</span>
+                            <span className="text-[9px] font-black text-emerald-500 uppercase block mb-1">Abonado</span>
+                            <span className="text-xl font-black text-emerald-400 tracking-tighter">{formatCurrency(trabajo.abono)}</span>
                         </div>
-                        <div className="h-10 w-px bg-slate-200"></div>
+                        <div className="h-10 w-px bg-white/10"></div>
+                        <div className="text-center px-4 flex-grow">
+                             <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 opacity-50">Nro. Orden</span>
+                             <span className="text-2xl font-black text-white tracking-tighter">#{trabajo.orden}</span>
+                        </div>
+                        <div className="h-10 w-px bg-white/10"></div>
                         <div className="text-center px-4">
-                            <span className="text-[9px] font-black text-brand-red uppercase block mb-1">Saldo</span>
+                            <span className="text-[9px] font-black text-brand-red uppercase block mb-1">Saldo a Pagar</span>
                             <span className="text-4xl font-black text-brand-red tracking-tighter">{formatCurrency(trabajo.saldo)}</span>
                         </div>
                     </div>
 
                     <div className="mt-6 flex justify-between items-center opacity-30">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em]">Córdova Vision ERP 2025 • Pasaje El Oro</p>
-                        <p className="text-[8px] font-bold text-slate-500 uppercase">Original Imprenta / Copia Cliente</p>
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em]">CÓRDOVA STUDIO 2025 • PASAJE EL ORO</p>
+                        <p className="text-[8px] font-bold text-slate-500 uppercase">CONTROL TÉCNICO DE EMISIÓN SRI</p>
                     </div>
                 </div>
             </div>

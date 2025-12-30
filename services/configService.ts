@@ -8,9 +8,14 @@ export interface NotaDeVentaConfig {
     autorizacionSRI: string;
     fechaAutorizacion: string;
     fechaCaducidad: string;
+    
+    // Datos de la Imprenta (Quien fabrica)
     imprentaNombre: string;
     imprentaRuc: string;
     imprentaAutorizacion: string;
+    imprentaTelefono: string;
+
+    // Datos del Emisor (El cliente de la imprenta)
     emisorNombreComercial: string;
     emisorRazonSocial: string;
     emisorTipoContribuyente: string;
@@ -18,12 +23,14 @@ export interface NotaDeVentaConfig {
     emisorDireccionSucursal: string;
     emisorRuc: string;
     emisorActividades: string;
+    
     // Campos para Recibo de Abono
     reciboCodAuto: string;
     emisorDireccionCompleta: string;
     emisorEmail: string;
     emisorTelefono: string;
     reciboServicios: string;
+    
     // Adicionales
     costoPerforado: number;
     // Cloud Storage
@@ -40,11 +47,15 @@ const defaultConfig: NotaDeVentaConfig = {
     autorizacionSRI: "1234567890",
     fechaAutorizacion: "2024-01-15",
     fechaCaducidad: "2025-01-15",
+    
+    // Valores por defecto para Imprenta Córdova (Pasaje)
     imprentaNombre: "Carlos Ángel Bolívar Mora / Imprenta Bolívar",
     imprentaRuc: "1709876543001",
     imprentaAutorizacion: "1234",
+    imprentaTelefono: "096 258 5172",
+
     emisorNombreComercial: "Imprenta Córdova",
-    emisorRazonSocial: "Pedro Manuel Cordova Rodiguez",
+    emisorRazonSocial: "Pedro Manuel Cordova Rodriguez",
     emisorTipoContribuyente: "Contribuyente Negocio Popular - Régimen RIMPE",
     emisorDireccionMatriz: "Calle Colón Ej. Sucre y Rocafuerte - Pasaje El Oro",
     emisorDireccionSucursal: "Pasaje - El Oro - Ecuador",
