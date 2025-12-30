@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { User } from '../types';
 import { getUsers } from '../services/mockApi';
@@ -11,6 +11,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+  const navigate = useNavigate();
   const [key, setKey] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,28 +24,35 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setError('');
     
-    // Simulate slight network delay for better UX feel
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      // Simulación de delay para feedback visual
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-    const users = await getUsers();
-    const validUser = users.find(u => u.nombre.toLowerCase() === key.toLowerCase() && u.estado === 'Activo');
+      const users = await getUsers();
+      const validUser = users.find(u => u.nombre.toLowerCase() === key.toLowerCase() && u.estado === 'Activo');
 
-    if (validUser) {
-      if (validUser.requirePassword) {
-          if (validUser.password === password) {
-              onLoginSuccess(validUser, remember);
-          } else {
-              setError("Contraseña incorrecta");
-              setLoading(false);
-          }
+      if (validUser) {
+        if (validUser.requirePassword) {
+            if (validUser.password === password) {
+                onLoginSuccess(validUser, remember);
+                navigate('/dashboard');
+            } else {
+                setError("Contraseña incorrecta");
+                setLoading(false);
+            }
+        } else {
+            // No requiere contraseña
+            onLoginSuccess(validUser, remember);
+            navigate('/dashboard');
+        }
       } else {
-          // No password required for this user
-          onLoginSuccess(validUser, remember);
+        setError("Usuario no encontrado o inactivo");
+        setKey('');
+        setPassword('');
+        setLoading(false);
       }
-    } else {
-      setError("Usuario no encontrado o inactivo");
-      setKey('');
-      setPassword('');
+    } catch (err) {
+      setError("Error de conexión al sistema");
       setLoading(false);
     }
   };
@@ -89,7 +97,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
                                     className="block w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm"
-                                    placeholder=""
+                                    placeholder="Nombre de usuario"
                                     autoFocus
                                     autoComplete="username"
                                 />
