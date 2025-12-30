@@ -4,7 +4,8 @@ import { Cliente } from '../../types';
 import { formatCurrency } from '../../utils';
 import { 
     TrashIcon, CheckCircleIcon, Loader2Icon, WalletIcon, 
-    ShieldCheckIcon, KeyIcon, Copy, ArrowRightIcon, ExclamationTriangleIcon
+    ShieldCheckIcon, KeyIcon, Copy, ArrowRightIcon, ExclamationTriangleIcon,
+    ClockIcon
 } from '../Icons';
 import { CartItem } from '../../hooks/useOrder';
 
@@ -18,6 +19,8 @@ interface OrderSummaryProps {
     setAbono: (val: number) => void;
     prioridad?: 'Normal' | 'Urgente';
     setPrioridad?: (val: 'Normal' | 'Urgente') => void;
+    tiempoEntrega?: '24h' | '48h';
+    setTiempoEntrega?: (val: '24h' | '48h') => void;
     onUpdateQuantity: (id: string, qty: number) => void;
     onRemoveItem: (id: string) => void;
     onFinalize: () => void;
@@ -31,6 +34,7 @@ interface OrderSummaryProps {
 const OrderSummary: React.FC<OrderSummaryProps> = ({ 
     cartItems, orderTotal, client, abono, setAbono, 
     prioridad = 'Normal', setPrioridad,
+    tiempoEntrega = '48h', setTiempoEntrega,
     onUpdateQuantity, onRemoveItem, onFinalize, isLoading,
     sriData, setSriData, imprimirClave, setImprimirClave
 }) => {
@@ -53,14 +57,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle</span>
-                             {setPrioridad && (
-                                <button 
-                                    onClick={() => setPrioridad(prioridad === 'Normal' ? 'Urgente' : 'Normal')}
-                                    className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${prioridad === 'Urgente' ? 'bg-brand-red text-white animate-pulse' : 'bg-slate-100 text-slate-400'}`}
-                                >
-                                    {prioridad === 'Urgente' ? '🔥 URGENTE' : 'Prioridad'}
-                                </button>
-                             )}
+                             <div className="flex gap-2">
+                                {setPrioridad && (
+                                    <button 
+                                        onClick={() => setPrioridad(prioridad === 'Normal' ? 'Urgente' : 'Normal')}
+                                        className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all ${prioridad === 'Urgente' ? 'bg-brand-red text-white animate-pulse' : 'bg-slate-100 text-slate-400'}`}
+                                    >
+                                        {prioridad === 'Urgente' ? '🔥 URGENTE' : 'Prioridad'}
+                                    </button>
+                                )}
+                             </div>
                         </div>
                         {cartItems.map(([id, item]) => (
                             <div key={id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-transparent hover:border-brand-blue/20">
@@ -74,6 +80,27 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 </div>
                             </div>
                         ))}
+
+                        {/* SELECTOR DE TIEMPO DE ENTREGA */}
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100">
+                             <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <ClockIcon className="w-3 h-3"/> Promesa de Entrega
+                             </p>
+                             <div className="flex gap-2">
+                                <button 
+                                    onClick={() => setTiempoEntrega?.('24h')}
+                                    className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase border-2 transition-all ${tiempoEntrega === '24h' ? 'bg-brand-blue border-brand-blue text-white shadow-md' : 'bg-white text-slate-400 border-transparent'}`}
+                                >
+                                    24 Horas
+                                </button>
+                                <button 
+                                    onClick={() => setTiempoEntrega?.('48h')}
+                                    className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase border-2 transition-all ${tiempoEntrega === '48h' ? 'bg-brand-blue border-brand-blue text-white shadow-md' : 'bg-white text-slate-400 border-transparent'}`}
+                                >
+                                    48 Horas
+                                </button>
+                             </div>
+                        </div>
 
                         {client && (
                              <div className="bg-slate-950 p-6 rounded-[2rem] space-y-4 border border-white/5 shadow-2xl relative overflow-hidden">

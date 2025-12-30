@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
 import { createTrabajo, getSriCredentials } from '../services/mockApi';
@@ -17,6 +18,7 @@ export const useOrder = (user: string) => {
     const [titular, setTitular] = useState('');
     const [abono, setAbono] = useState(0);
     const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
+    const [tiempoEntrega, setTiempoEntrega] = useState<'24h' | '48h'>('48h');
     const [imprimirClave, setImprimirClave] = useState(false);
     const [actividadSeleccionada, setActividadSeleccionada] = useState<string>('');
     
@@ -44,6 +46,9 @@ export const useOrder = (user: string) => {
                 }
                 setTitular(selectedCliente.nombre);
                 if (selectedCliente.actividades) setActividadSeleccionada(selectedCliente.actividades.split('|')[0]);
+                
+                // Por defecto, SRI suele ser 48h por autorización, pero permitimos 24h
+                setTiempoEntrega('48h');
             }
         };
         checkSriKey();
@@ -68,9 +73,13 @@ export const useOrder = (user: string) => {
     const finalizeOrder = async () => {
         if (!selectedCliente || selectedProductos.size === 0) return null;
         setIsLoading(true);
-        // Fix: Explicitly cast to CartItem[] to resolve unknown type errors on lines 78 and 79.
         const items = Array.from(selectedProductos.values()) as CartItem[];
         
+        // Calcular fecha de entrega real
+        const deliveryDate = new Date();
+        const hoursToAdd = tiempoEntrega === '24h' ? 24 : 48;
+        deliveryDate.setHours(deliveryDate.getHours() + hoursToAdd);
+
         const newTrabajo = await createTrabajo({
             clienteId: selectedCliente.id,
             titular: titular || selectedCliente.nombre,
@@ -81,6 +90,8 @@ export const useOrder = (user: string) => {
             abono,
             prioridad,
             estado: TrabajoEstado.PENDIENTE,
+            fechaEntrega: deliveryDate.toISOString(),
+            tiempoEntregaEstimado: tiempoEntrega,
             establecimiento: sriData.establecimiento,
             puntoEmision: sriData.puntoEmision,
             claveAcceso: sriData.claveAcceso,
@@ -94,10 +105,9 @@ export const useOrder = (user: string) => {
     };
 
     return {
-        selectedCliente, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, prioridad, sriData, orderTotal, isLoading, imprimirClave, actividadSeleccionada,
-        setSelectedCliente, setJobType, setTitular, setAbono, setPrioridad, setSriData, setImprimirClave, setActividadSeleccionada,
+        selectedCliente, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, prioridad, tiempoEntrega, sriData, orderTotal, isLoading, imprimirClave, actividadSeleccionada,
+        setSelectedCliente, setJobType, setTitular, setAbono, setPrioridad, setTiempoEntrega, setSriData, setImprimirClave, setActividadSeleccionada,
         addProduct, removeProduct: (id: string) => setSelectedProductos(prev => { const n = new Map(prev); n.delete(id); return n; }), 
-        // Fix: Explicitly casting the item to CartItem to avoid "Spread types may only be created from object types" error on line 102.
         updateQuantity: (id: string, q: number) => setSelectedProductos(prev => { 
             const n = new Map(prev); 
             const i = n.get(id); 

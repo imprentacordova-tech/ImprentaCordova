@@ -31,9 +31,8 @@ export interface Cliente {
   email?: string;
   creadoEn: string;
   regimen: Regimen;
-  // Nuevos campos para automatización SRI
-  establecimientoPredeterminado?: string; // Ej: 001
-  puntoEmisionPredeterminado?: string;    // Ej: 001
+  establecimientoPredeterminado?: string;
+  puntoEmisionPredeterminado?: string;
   numEstablecimientosOpen?: number;
 }
 
@@ -52,6 +51,7 @@ export interface Trabajo {
   estado: TrabajoEstado;
   fechaEntrada: string;
   fechaEntrega?: string;
+  tiempoEntregaEstimado?: '24h' | '48h';
   caduco: boolean;
   fotoOriginalUrl?: string;
   creadoPor?: string;
