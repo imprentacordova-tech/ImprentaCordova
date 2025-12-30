@@ -57,46 +57,46 @@ const SolicitudImpresionPage: React.FC = () => {
         </div>
     );
 
-    const fechaHoy = new Date(trabajo.fechaEntrada).toLocaleDateString('es-EC', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
+    // Formatear Fecha de Pedido con Hora
+    const fechaPedidoConHora = new Date(trabajo.fechaEntrada).toLocaleString('es-EC', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
     });
 
-    const fechaEntrega = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).toLocaleDateString('es-EC', {
+    // Calcular Fecha de Retiro (Siguiente día en la tarde)
+    const dtRetiro = new Date(trabajo.fechaEntrada);
+    dtRetiro.setDate(dtRetiro.getDate() + 1);
+    
+    const diaSemana = dtRetiro.toLocaleDateString('es-EC', { weekday: 'long' });
+    const diaMes = dtRetiro.getDate();
+    const fechaRetiroFormateada = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} ${diaMes} (Tarde)`;
+
+    const fechaEntregaFull = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).toLocaleDateString('es-EC', {
         day: '2-digit', month: '2-digit', year: 'numeric'
     }) : 'Pendiente';
 
-    const horaEntrega = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).toLocaleTimeString('es-EC', {
+    const horaEntregaFull = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).toLocaleTimeString('es-EC', {
         hour: '2-digit', minute: '2-digit', hour12: true
     }) : '--:--';
 
     // Helper para parsear el nombre del producto y sacar los datos de la tabla
     const parseProductDetails = (subtipo: string) => {
-        // Ejemplo: "1x FACTURAS (1/4 OFICIO - BLOCK X 50H - DUPLICADO)"
         const subtipos = subtipo.split(', ');
         return subtipos.map(s => {
             const qtyMatch = s.match(/^(\d+)x/);
             const numBlocks = qtyMatch ? qtyMatch[1] : "1";
-            
-            // Extraer Tamaño
             const sizeMatch = s.match(/(1\/\d+ OFICIO|OFICIO|A\d+)/i);
             const size = sizeMatch ? sizeMatch[0] : "1/4 Oficio";
-
-            // Extraer Tipo Doc
             const nameMatch = s.match(/x (.*?) \(/);
             const docName = nameMatch ? nameMatch[1] : "Documento SRI";
-
-            // Extraer Hojas y Copias
             const sheetsMatch = s.match(/(\d+H)/i);
             const copiesMatch = s.match(/(DUPLICADO|TRIPLICADO|ÚNICO)/i);
-            
             let detailedQty = sheetsMatch ? sheetsMatch[0].toLowerCase() : "100h";
             if (copiesMatch) {
                 const multiplier = copiesMatch[0].toUpperCase() === 'DUPLICADO' ? '2' : (copiesMatch[0].toUpperCase() === 'TRIPLICADO' ? '3' : '1');
                 if (multiplier !== '1') detailedQty += ` x ${multiplier}`;
             }
-            
             detailedQty += ` (${numBlocks} block)`;
-
             return { size, docName, detailedQty };
         });
     };
@@ -165,9 +165,9 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* DATOS DEL CONTRIBUYENTE */}
+                {/* DATOS DEL CONTRIBUYENTE (INCLUYE TELÉFONO SOLICITADO) */}
                 <div className="grid grid-cols-12 gap-x-8 gap-y-4 mb-8 text-[11px]">
-                    <div className="col-span-8 space-y-3">
+                    <div className="col-span-8 space-y-4">
                         <div className="border-b border-gray-300 pb-1">
                             <span className="font-black text-gray-400 uppercase text-[9px] block">Contribuyente:</span>
                             <span className="font-bold text-slate-900 uppercase text-sm">{cliente.nombre}</span>
@@ -175,6 +175,10 @@ const SolicitudImpresionPage: React.FC = () => {
                         <div className="border-b border-gray-300 pb-1">
                             <span className="font-black text-gray-400 uppercase text-[9px] block">Actividad Económica:</span>
                             <span className="font-bold text-slate-900 uppercase">{trabajo.actividadSeleccionada || cliente.actividades || '-'}</span>
+                        </div>
+                        <div className="border-b border-gray-300 pb-1">
+                            <span className="font-black text-gray-400 uppercase text-[9px] block">Teléfono(s) del Cliente:</span>
+                            <span className="font-bold text-slate-900 uppercase tracking-widest">{cliente.telefono.join(' • ') || '-'}</span>
                         </div>
                     </div>
                     <div className="col-span-4 space-y-3">
@@ -184,12 +188,16 @@ const SolicitudImpresionPage: React.FC = () => {
                                 {cliente.ruc || cliente.cedula}
                             </span>
                         </div>
-                        <div className="flex gap-4">
-                            <div className="flex-1 border-b border-gray-300 pb-1">
+                        <div className="flex flex-col gap-2">
+                            <div className="border-b border-gray-300 pb-1">
                                 <span className="font-black text-gray-400 uppercase text-[9px] block">Fecha Pedido:</span>
-                                <span className="font-bold">{fechaHoy}</span>
+                                <span className="font-bold text-[10px]">{fechaPedidoConHora}</span>
                             </div>
-                            <div className="flex-1 border-b border-gray-300 pb-1 text-right">
+                            <div className="border-b border-gray-300 pb-1">
+                                <span className="font-black text-brand-red uppercase text-[9px] block">Fecha Retiro:</span>
+                                <span className="font-black text-slate-900">{fechaRetiroFormateada}</span>
+                            </div>
+                            <div className="border-b border-gray-300 pb-1 text-right">
                                 <span className="font-black text-gray-400 uppercase text-[9px] block">Orden Nº:</span>
                                 <span className="font-black text-brand-red text-lg">#{trabajo.orden}</span>
                             </div>
@@ -224,7 +232,7 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <td className="p-4 text-brand-red text-lg">{formatCurrency(trabajo.total)}</td>
                                 </tr>
                             ))}
-                            {[...Array(3)].map((_, i) => (
+                            {[...Array(2)].map((_, i) => (
                                 <tr key={i} className="border-b border-gray-50 h-10">
                                     <td className="border-r border-gray-50"></td><td className="border-r border-gray-50"></td>
                                     <td className="border-r border-gray-50"></td><td className="border-r border-gray-50"></td>
@@ -252,14 +260,11 @@ const SolicitudImpresionPage: React.FC = () => {
                     
                     <div className="col-span-5 bg-brand-red text-white rounded-3xl p-6 flex flex-col justify-center shadow-xl">
                         <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-2 opacity-80 flex items-center gap-2">
-                            <ClockIcon className="w-4 h-4"/> Fecha y Hora de Entrega
+                            <ClockIcon className="w-4 h-4"/> Compromiso de Entrega
                         </p>
                         <div className="space-y-1">
-                            <p className="text-3xl font-black tracking-tighter uppercase">{fechaEntrega}</p>
-                            <p className="text-xl font-bold opacity-90">{horaEntrega}</p>
-                            <span className="inline-block mt-2 px-3 py-1 bg-white/20 rounded-full text-[8px] font-black uppercase tracking-widest">
-                                Promesa {trabajo.tiempoEntregaEstimado || '48h'}
-                            </span>
+                            <p className="text-3xl font-black tracking-tighter uppercase">{fechaRetiroFormateada}</p>
+                            <p className="text-sm font-bold opacity-80 italic">Listo para retirar en local</p>
                         </div>
                     </div>
                 </div>
