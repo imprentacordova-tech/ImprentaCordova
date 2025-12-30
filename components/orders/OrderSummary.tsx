@@ -37,7 +37,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     const [copied, setCopied] = useState(false);
     const saldo = Math.max(0, orderTotal - abono);
     
-    // REDONDEO SOLICITADO: Si es $9, la mitad es $4.50, redondeamos a $5.00
+    // REDONDEO INTELIGENTE: El 50% siempre redondeado al entero superior para caja.
+    // Ejemplo: $9.00 -> $5.00
     const minAbonoSugerido = Math.ceil(orderTotal * 0.5);
     
     const isFullyPaid = abono >= orderTotal && orderTotal > 0;
@@ -58,13 +59,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                             <WalletIcon className="w-8 h-8" />
                         </div>
-                        <p className="font-black uppercase text-[10px] tracking-widest">Carrito Vacío</p>
+                        <p className="font-black uppercase text-[10px] tracking-widest">Sin ítems seleccionados</p>
                     </div>
                 ) : (
                     <>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 mb-4">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ítems Seleccionados</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen de Orden</span>
                                 <div className="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
                             </div>
                             {cartItems.map(([uniqueId, item]) => {
@@ -110,8 +111,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                         onChange={e => setSriData({...sriData, estadoClave: e.target.value})}
                                         className={`text-[8px] font-black px-2 py-1 rounded-full border-none outline-none cursor-pointer ${sriData.estadoClave === 'LISTA' ? 'bg-emerald-500' : 'bg-amber-500'}`}
                                     >
-                                        <option value="LISTA">OK ✓</option>
-                                        <option value="PENDIENTE">...</option>
+                                        <option value="LISTA">LISTA ✓</option>
+                                        <option value="PENDIENTE">PEND...</option>
                                         <option value="ERROR">ERR</option>
                                     </select>
                                 </div>
@@ -121,7 +122,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                         type="text" 
                                         value={sriData.claveAcceso} 
                                         onChange={e => setSriData({...sriData, claveAcceso: e.target.value})}
-                                        placeholder="Clave del portal..."
+                                        placeholder="Contraseña del portal..."
                                         className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono placeholder:text-white/20 outline-none focus:bg-white/10 transition-all"
                                     />
                                     <button 
@@ -137,7 +138,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                     <div className="w-7 h-4 bg-white/10 rounded-full peer-checked:bg-emerald-500 transition-colors relative">
                                         <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full peer-checked:translate-x-3 transition-transform"></div>
                                     </div>
-                                    <span className="text-[8px] font-black uppercase text-white/40">Imprimir Clave en Orden</span>
+                                    <span className="text-[8px] font-black uppercase text-white/40">Imprimir Clave en la Orden</span>
                                 </label>
                             </div>
                         )}
@@ -145,12 +146,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 )}
             </div>
 
-            {/* TOTALES Y ABONO */}
+            {/* PANEL DE COBRO MEJORADO */}
             <div className="p-8 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-gray-700 shadow-[0_-15px_40px_rgba(0,0,0,0.05)]">
                 <div className="space-y-6">
                     <div className="flex justify-between items-end">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Orden</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total a Pagar</span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter">{formatCurrency(orderTotal)}</span>
                             </div>
@@ -159,12 +160,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                            <label className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Abono Recibido ($)</label>
-                            {isFullyPaid && <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Saldado</span>}
+                            <label className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Abono del Cliente ($)</label>
+                            {isFullyPaid && <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Pagado</span>}
                         </div>
                         
                         <div className="relative group">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black">$</div>
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xl">$</div>
                             <input 
                                 type="number" 
                                 value={abono || ''} 
@@ -187,7 +188,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                             <button 
                                 onClick={() => setAbono(minAbonoSugerido)} 
                                 className={`col-span-1 py-2.5 rounded-xl font-black text-[9px] border-2 transition-all flex flex-col items-center justify-center leading-none ${abono === minAbonoSugerido ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}
-                                title={`50% redondeado a: $${minAbonoSugerido}`}
+                                title={`50% Redondeado: $${minAbonoSugerido}`}
                             >
                                 <span>50%</span>
                                 <span className="text-[7px] mt-0.5 opacity-60">${minAbonoSugerido}</span>
@@ -203,7 +204,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
                     <div className="flex justify-between items-center py-4 px-6 rounded-3xl bg-slate-950 text-white relative overflow-hidden">
                         <div className="relative z-10 flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Saldo Restante</span>
+                            <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Saldo Pendiente</span>
                             <span className={`text-2xl font-black tracking-tighter ${isFullyPaid ? 'text-emerald-400' : 'text-brand-red'}`}>
                                 {isFullyPaid ? 'SIN DEUDA ✓' : formatCurrency(saldo)}
                             </span>
@@ -217,7 +218,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-4 ${isLoading || cartItems.length === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-brand-red text-white hover:bg-slate-950 shadow-red-900/20'}`}
                     >
                         {isLoading ? <Loader2Icon className="animate-spin w-5 h-5"/> : (
-                            <>Crear Orden de Trabajo <ArrowRightIcon className="w-5 h-5"/></>
+                            <>Confirmar Pedido <ArrowRightIcon className="w-5 h-5"/></>
                         )}
                     </button>
                 </div>

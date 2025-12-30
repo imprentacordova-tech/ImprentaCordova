@@ -56,7 +56,7 @@ const SolicitudImpresionPage: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-4">
                 <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Generando Orden...</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Generando Documento Técnico...</p>
             </div>
         </div>
     );
@@ -85,7 +85,7 @@ const SolicitudImpresionPage: React.FC = () => {
 
             <div className="w-full max-w-[148mm] flex justify-between mb-8 no-print px-4">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 font-black text-[10px] uppercase tracking-widest hover:text-brand-blue transition-colors">
-                    <ArrowLeftIcon className="w-4 h-4" /> Regresar
+                    <ArrowLeftIcon className="w-4 h-4" /> Volver
                 </button>
                 <div className="flex gap-3">
                     <button onClick={handleDownloadPdf} className="bg-white border-2 border-slate-300 px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2">
@@ -123,10 +123,10 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* FICHA DEL CLIENTE */}
+                {/* FICHA TÉCNICA */}
                 <div className={`grid grid-cols-12 gap-y-3 mb-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 ${!isSRI ? 'items-center' : ''}`}>
                     <div className="col-span-8">
-                        <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Nombre / Razón Social</span>
+                        <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Razón Social</span>
                         <span className="text-xs font-black text-slate-900 uppercase leading-none">{cliente.nombre}</span>
                     </div>
                     <div className="col-span-4 text-right border-l border-slate-200 pl-4">
@@ -134,9 +134,9 @@ const SolicitudImpresionPage: React.FC = () => {
                         <span className="text-xs font-mono font-bold text-slate-900">{cliente.ruc || cliente.cedula}</span>
                     </div>
 
-                    {/* SECCIÓN CONDICIONAL SRI: Sólo si es trabajo tipo SRI */}
+                    {/* SECCIÓN CONDICIONAL SRI: Se oculta totalmente si el trabajo es General */}
                     {isSRI && (
-                        <div className="col-span-12 border-t border-slate-200 pt-2 flex justify-between items-end">
+                        <div className="col-span-12 border-t border-slate-200 pt-2 flex justify-between items-end animate-fade-in">
                             <div className="flex-1">
                                 <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-1">GESTIÓN SEGURIDAD SRI</span>
                                 <div className="flex items-center gap-4">
@@ -146,27 +146,27 @@ const SolicitudImpresionPage: React.FC = () => {
                                     </div>
                                     <div className="bg-white px-3 py-1 rounded-md border border-slate-200 min-w-[120px]">
                                         <span className="text-[9px] font-mono font-bold text-brand-blue uppercase">
-                                            {trabajo.imprimirClave ? trabajo.claveAcceso : "********* (PROTEGIDA)"}
+                                            {trabajo.imprimirClave ? trabajo.claveAcceso : "********* (OCULTA)"}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Estab - P.Emi</span>
+                                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Establecimiento</span>
                                 <span className="text-xs font-mono font-black text-brand-blue">{trabajo.establecimiento || '001'} - {trabajo.puntoEmision || '001'}</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* DETALLE TÉCNICO */}
+                {/* DETALLE */}
                 <div className="mb-6 flex-grow">
-                    <h3 className="text-[8px] font-black text-brand-blue uppercase tracking-[0.3em] mb-3 flex items-center gap-2">ESPECIFICACIONES DEL TRABAJO</h3>
+                    <h3 className="text-[8px] font-black text-brand-blue uppercase tracking-[0.3em] mb-3 flex items-center gap-2">ESPECIFICACIONES DE TALLER</h3>
                     <table className="w-full text-[9px] border-collapse">
                         <thead>
                             <tr className="bg-brand-blue text-white uppercase text-[7px] tracking-widest">
                                 <th className="p-2 border border-brand-blue w-[10%]">Cant</th>
-                                <th className="p-2 border border-brand-blue text-left w-[40%]">Producto / Servicio</th>
+                                <th className="p-2 border border-brand-blue text-left w-[40%]">Descripción</th>
                                 <th className="p-2 border border-brand-blue w-[15%] text-center">Material</th>
                                 <th className="p-2 border border-brand-blue w-[15%] text-center">Tamaño</th>
                                 <th className="p-2 border border-brand-blue w-[20%] text-right">Total</th>
@@ -176,7 +176,7 @@ const SolicitudImpresionPage: React.FC = () => {
                             <tr className="font-bold">
                                 <td className="p-3 border border-slate-200 text-center text-lg">{trabajo.cantidad}</td>
                                 <td className="p-3 border border-slate-200 uppercase leading-tight">{trabajo.subtipo}</td>
-                                <td className="p-3 border border-slate-200 text-center uppercase text-[8px]">{isQuimico ? 'Químico' : 'Especial'}</td>
+                                <td className="p-3 border border-slate-200 text-center uppercase text-[8px]">{isQuimico ? 'Químico' : 'Papel/Vinilo'}</td>
                                 <td className="p-3 border border-slate-200 text-center uppercase text-[8px]">{trabajo.tamano}</td>
                                 <td className="p-3 border border-slate-200 text-right text-base font-black text-brand-blue">{formatCurrency(trabajo.total)}</td>
                             </tr>
@@ -190,30 +190,30 @@ const SolicitudImpresionPage: React.FC = () => {
                 {/* PIE DE PÁGINA */}
                 <div className="mt-auto">
                     <div className="bg-brand-red/5 border-2 border-brand-red/20 rounded-2xl p-4 mb-6 text-center">
-                        <h4 className="text-[9px] font-black text-brand-red uppercase tracking-widest mb-1">¡AVISO IMPORTANTE!</h4>
+                        <h4 className="text-[9px] font-black text-brand-red uppercase tracking-widest mb-1">¡ATENCIÓN!</h4>
                         <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-tight leading-tight">
-                            Pasado 30 días no nos responsabilizamos por trabajos olvidados. Imprescindible presentar este recibo para retiro de mercadería.
+                            PASADO EL MES NO NOS HACEMOS RESPONSABLES POR TRABAJOS NO RETIRADOS. INDISPENSABLE PRESENTAR ESTE COMPROBANTE PARA EL RETIRO.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-12 mb-8 text-center pt-6">
+                    <div className="grid grid-cols-2 gap-12 mb-8 text-center pt-8 border-t border-slate-100">
                         <div>
                             <div className="border-t-2 border-slate-800 w-full mb-1"></div>
                             <p className="text-[8px] font-black uppercase text-slate-900">Firma Autorizada</p>
                         </div>
                         <div>
                             <div className="border-t-2 border-slate-800 w-full mb-1"></div>
-                            <p className="text-[8px] font-black uppercase text-slate-900">Cliente Satisfecho</p>
+                            <p className="text-[8px] font-black uppercase text-slate-900">Recibí Conforme</p>
                         </div>
                     </div>
 
                     <div className="border-t-2 border-dashed border-slate-300 pt-6 mt-4 grid grid-cols-3 gap-3">
                         <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 flex flex-col items-center">
-                            <span className="text-[8px] font-black text-slate-400 uppercase mb-1">Total $</span>
+                            <span className="text-[8px] font-black text-slate-400 uppercase mb-1">Valor Total $</span>
                             <span className="text-xl font-black text-slate-900 leading-none">{formatCurrency(trabajo.total)}</span>
                         </div>
                         <div className="bg-blue-50 p-3 rounded-xl border border-brand-blue/20 flex flex-col items-center">
-                            <span className="text-[8px] font-black text-brand-blue uppercase mb-1">Abonó $</span>
+                            <span className="text-[8px] font-black text-brand-blue uppercase mb-1">Abonado $</span>
                             <span className="text-xl font-black text-brand-blue leading-none">{formatCurrency(trabajo.abono)}</span>
                         </div>
                         <div className="bg-brand-red p-3 rounded-xl flex flex-col items-center shadow-lg shadow-red-900/10">
