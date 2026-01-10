@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { getTrabajos, getClientes, registerRetiro } from '../services/mockApi';
@@ -128,7 +127,8 @@ const RetirosPage: React.FC = () => {
                             <div className="bg-amber-50 p-4 rounded-2xl flex items-center gap-3 border border-amber-100">
                                 <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 shrink-0"/><p className="text-[10px] font-bold text-amber-800 uppercase leading-tight">Al confirmar, el sistema registrará el pago completo y permitirá imprimir la Nota de Venta oficial.</p>
                             </div>
-                            <button onClick={handleConfirmRetiro(selectedTrabajo.saldo)} className="w-full py-6 bg-brand-red text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3">
+                            {/* FIX: Use arrow function for onClick to prevent immediate call during render */}
+                            <button onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} className="w-full py-6 bg-brand-red text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3">
                                 <DocumentCheckIcon className="w-6 h-6"/> REGISTRAR COBRO Y SALIDA
                             </button>
                         </div>
