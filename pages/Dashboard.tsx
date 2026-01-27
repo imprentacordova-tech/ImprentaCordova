@@ -6,7 +6,7 @@ import { TrabajoEstado, User } from '../types';
 import { 
     SolidBoxIcon, AddIcon, Loader2Icon, 
     ArrowRightIcon, PaletteIcon, PrinterIcon, CheckCircleIcon,
-    SparklesIcon, UserPlusIcon, MonitorIcon, MessageCircleIcon, EyeIcon
+    SparklesIcon, UserPlusIcon, MonitorIcon, MessageCircleIcon, EyeIcon, GlobeAltIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { CreateClientModal } from '../components/orders/ClientSelector';
@@ -43,6 +43,9 @@ const DashboardPage: React.FC = () => {
         const activeJobs = trabajos.filter(t => t.estado !== TrabajoEstado.ENTREGADO);
         const designJobs = activeJobs.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado));
         const productionJobs = activeJobs.filter(t => t.estado === TrabajoEstado.PROCESO);
+        
+        // New Metric: Web Orders Pending
+        const webOrders = activeJobs.filter(t => t.origen === 'Web' && t.estado === TrabajoEstado.PENDIENTE);
 
         const designLoad = Math.min(100, Math.round((designJobs.length / 15) * 100));
         const productionLoad = Math.min(100, Math.round((productionJobs.length / 20) * 100));
@@ -55,7 +58,8 @@ const DashboardPage: React.FC = () => {
             productionLoad,
             priorityJob,
             totalActivos: activeJobs.length,
-            enVitrina: activeJobs.filter(t => t.estado === TrabajoEstado.VITRINA).length
+            enVitrina: activeJobs.filter(t => t.estado === TrabajoEstado.VITRINA).length,
+            webOrders
         };
     }, [trabajos, loading]);
 
@@ -86,6 +90,18 @@ const DashboardPage: React.FC = () => {
                             <p className="text-lg text-slate-400 font-medium leading-relaxed">
                                 El sistema Córdova V2 está listo. Tienes <span className="text-white font-bold">{stats.totalActivos} trabajos activos</span> fluyendo en el taller y guardados en la nube.
                             </p>
+
+                            {/* WEB ORDER ALERT */}
+                            {stats.webOrders.length > 0 && (
+                                <div className="bg-indigo-600/20 border border-indigo-500/30 p-4 rounded-2xl flex items-center gap-4 animate-bounce-in">
+                                    <div className="p-2 bg-indigo-500 rounded-xl text-white"><GlobeAltIcon className="w-5 h-5" /></div>
+                                    <div>
+                                        <p className="text-white font-black uppercase text-sm">¡Atención! {stats.webOrders.length} Pedidos Web Nuevos</p>
+                                        <p className="text-indigo-200 text-xs">Revisar solicitudes entrantes desde la página pública.</p>
+                                    </div>
+                                    <button onClick={() => navigate('/trabajos')} className="ml-auto px-4 py-2 bg-white text-indigo-900 font-black text-[9px] uppercase rounded-xl hover:bg-indigo-50">Ver</button>
+                                </div>
+                            )}
 
                             <div className="flex flex-wrap gap-4 pt-4">
                                 <button onClick={() => navigate('/nuevo')} className="bg-brand-red text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-white hover:text-brand-red transition-all flex items-center gap-3">

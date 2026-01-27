@@ -4,6 +4,7 @@ import { Cliente, Regimen } from '../../types';
 import { createCliente, getMasterActividades } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
 import { extractClientFromImage } from '../../services/geminiService';
+import { validarIdentificacionEC } from '../../utils';
 import { 
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
     CheckCircleIcon, SparklesIcon, AddIcon, ArrowRightIcon, PhoneIcon, 
@@ -16,10 +17,11 @@ const InputField: React.FC<{
     value: any; 
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; 
     isHighlighted?: boolean; 
+    error?: string;
     [key: string]: any; 
-}> = ({ label, name, value, onChange, isHighlighted, ...props }) => (
+}> = ({ label, name, value, onChange, isHighlighted, error, ...props }) => (
     <div className="group">
-        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${isHighlighted ? 'text-brand-blue' : 'text-gray-400 group-focus-within:text-brand-blue'}`}>
+        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${error ? 'text-red-500' : isHighlighted ? 'text-brand-blue' : 'text-gray-400 group-focus-within:text-brand-blue'}`}>
             {label} {isHighlighted && "✨"}
         </label>
         <input 
@@ -27,9 +29,16 @@ const InputField: React.FC<{
             name={name} 
             value={value} 
             onChange={onChange} 
-            className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm ${isHighlighted ? 'ring-2 ring-brand-blue/30 border-brand-blue bg-blue-50/50 dark:bg-brand-blue/10' : 'border-gray-200 dark:border-gray-700'}`} 
+            className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:border-transparent transition-all shadow-sm 
+                ${error 
+                    ? 'border-red-300 bg-red-50 focus:ring-red-500 text-red-900' 
+                    : isHighlighted 
+                        ? 'ring-2 ring-brand-blue/30 border-brand-blue bg-blue-50/50 dark:bg-brand-blue/10 focus:ring-brand-blue' 
+                        : 'border-gray-200 dark:border-gray-700 focus:ring-brand-blue'
+                }`} 
             {...props} 
         />
+        {error && <p className="text-[9px] text-red-500 font-bold mt-1 uppercase tracking-wider">{error}</p>}
     </div>
 );
 
@@ -46,6 +55,8 @@ export const CreateClientModal: React.FC<{
         establecimientoPredeterminado: '001', puntoEmisionPredeterminado: '001',
         numEstablecimientosOpen: 1
     });
+    const [telefonos, setTelefonos] = useState<string[]>([]);
+    const [currentTelefono, setCurrentTelefono] = useState('');
     const [actividades, setActividades] = useState<string[]>([]);
     const [currentActividad, setCurrentActividad] = useState('');
     const [masterActividades, setMasterActividades] = useState<string[]>([]);
@@ -54,6 +65,7 @@ export const CreateClientModal: React.FC<{
     
     const [isScanning, setIsScanning] = useState(false);
     const [highlightFields, setHighlightFields] = useState<string[]>([]);
+    const [rucError, setRucError] = useState('');
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,11 +77,23 @@ export const CreateClientModal: React.FC<{
                 establecimientoPredeterminado: '001', puntoEmisionPredeterminado: '001',
                 numEstablecimientosOpen: 1
             });
+            setTelefonos([]);
             setActividades([]);
             setSaveSuccess(false);
+            setRucError('');
             getMasterActividades().then(setMasterActividades);
         }
     }, [isOpen, initialName, initialCedulaRuc]);
+
+    // Validación en tiempo real del RUC
+    useEffect(() => {
+        if (newClienteData.cedulaRuc.length >= 10) {
+            const isValid = validarIdentificacionEC(newClienteData.cedulaRuc);
+            setRucError(isValid ? '' : 'Número de identificación inválido (Ecuador)');
+        } else {
+            setRucError('');
+        }
+    }, [newClienteData.cedulaRuc]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -88,7 +112,7 @@ export const CreateClientModal: React.FC<{
     };
 
     const applyExtractedData = (data: any) => {
-        const fields = ['nombre', 'cedulaRuc', 'direccion', 'regimen'];
+        const fields = ['nombre', 'cedulaRuc', 'direccion', 'regimen', 'telefono'];
         setHighlightFields(fields);
         
         let regimenFinal = Regimen.GENERAL;
@@ -105,6 +129,12 @@ export const CreateClientModal: React.FC<{
             numEstablecimientosOpen: data.numEstablecimientos || 1,
             establecimientoPredeterminado: data.establecimientoPrincipal || '001'
         }));
+
+        if (data.telefono) {
+            const rawPhones = data.telefono.split(/[,;]/);
+            const cleanPhones = rawPhones.map((p: string) => p.replace(/\D/g, '')).filter((p: string) => p.length >= 7);
+            setTelefonos(prev => Array.from(new Set([...prev, ...cleanPhones])));
+        }
 
         if (data.actividades) {
             const cleaned = data.actividades.split(/[|\n]/)
@@ -123,15 +153,25 @@ export const CreateClientModal: React.FC<{
         }
     };
 
+    const addTelefono = (text: string) => {
+        const val = text.replace(/\D/g, '');
+        if (val.length >= 7 && !telefonos.includes(val)) {
+            setTelefonos([...telefonos, val]);
+            setCurrentTelefono('');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (rucError) return; // Bloquear si el RUC es inválido
+        
         setIsSaving(true);
         const newCliente = await createCliente({ 
             ...newClienteData,
             actividades: actividades.join('|'),
             cedula: newClienteData.cedulaRuc,
             ruc: newClienteData.cedulaRuc.length === 13 ? newClienteData.cedulaRuc : undefined,
-            telefono: ['0990000000']
+            telefono: telefonos.length > 0 ? telefonos : ['0990000000']
         });
         setSaveSuccess(true);
         setTimeout(() => onClientCreated(newCliente), 800);
@@ -167,7 +207,16 @@ export const CreateClientModal: React.FC<{
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label="Apellidos y Nombres / Razón Social" name="nombre" value={newClienteData.nombre} onChange={e => setNewClienteData({...newClienteData, nombre: e.target.value.toUpperCase()})} required isHighlighted={highlightFields.includes('nombre')} />
-                            <InputField label="RUC (13 Dígitos)" name="cedulaRuc" value={newClienteData.cedulaRuc} onChange={e => setNewClienteData({...newClienteData, cedulaRuc: e.target.value})} maxLength={13} required isHighlighted={highlightFields.includes('cedulaRuc')} />
+                            <InputField 
+                                label="RUC (13 Dígitos) / Cédula" 
+                                name="cedulaRuc" 
+                                value={newClienteData.cedulaRuc} 
+                                onChange={e => setNewClienteData({...newClienteData, cedulaRuc: e.target.value})} 
+                                maxLength={13} 
+                                required 
+                                isHighlighted={highlightFields.includes('cedulaRuc')} 
+                                error={rucError}
+                            />
                         </div>
 
                         {/* ALERTA DE ESTABLECIMIENTOS MÚLTIPLES */}
@@ -176,7 +225,7 @@ export const CreateClientModal: React.FC<{
                                 <ExclamationTriangleIcon className="w-6 h-6 text-amber-600" />
                                 <div className="text-xs font-bold text-amber-800 uppercase leading-tight">
                                     ¡ATENCIÓN! Este contribuyente tiene {newClienteData.numEstablecimientosOpen} negocios abiertos. 
-                                    <br/><span className="font-black">Preguntar para cuál establecimiento desea sus documentos.</span>
+                                    <br/><span className="font-black italic">Confirmar para cuál local (Cód: {newClienteData.establecimientoPredeterminado} o superior) se imprimen los documentos.</span>
                                 </div>
                             </div>
                         )}
@@ -184,7 +233,24 @@ export const CreateClientModal: React.FC<{
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <InputField label="Cód. Establecimiento" name="establecimientoPredeterminado" value={newClienteData.establecimientoPredeterminado} onChange={e => setNewClienteData({...newClienteData, establecimientoPredeterminado: e.target.value})} maxLength={3} />
                             <InputField label="Punto de Emisión" name="puntoEmisionPredeterminado" value={newClienteData.puntoEmisionPredeterminado} onChange={e => setNewClienteData({...newClienteData, puntoEmisionPredeterminado: e.target.value})} maxLength={3} />
-                            <InputField label="Email (Solo Marketing)" name="email" value={newClienteData.email} onChange={e => setNewClienteData({...newClienteData, email: e.target.value})} />
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Teléfonos</label>
+                                <div className={`flex flex-wrap gap-2 p-2 border rounded-xl bg-white dark:bg-slate-800 ${highlightFields.includes('telefono') ? 'border-brand-blue ring-1 ring-brand-blue/30' : 'border-gray-200 dark:border-gray-700'}`}>
+                                    {telefonos.map((t, idx) => (
+                                        <span key={idx} className="bg-blue-50 text-brand-blue px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
+                                            {t} <button type="button" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
+                                        </span>
+                                    ))}
+                                    <input 
+                                        type="tel" 
+                                        placeholder="+" 
+                                        value={currentTelefono} 
+                                        onChange={e => setCurrentTelefono(e.target.value)} 
+                                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
+                                        className="bg-transparent border-none outline-none text-xs font-bold w-20"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex gap-3">
@@ -205,7 +271,7 @@ export const CreateClientModal: React.FC<{
                                 <h3 className="text-[10px] font-black text-brand-red uppercase tracking-[0.3em] flex items-center gap-2">
                                     <LayersIcon className="w-4 h-4"/> Actividades del Contribuyente
                                 </h3>
-                                <span className="text-[8px] font-bold text-white/40 uppercase">Códigos eliminados automáticamente</span>
+                                <span className="text-[8px] font-bold text-white/40 uppercase">Limpieza automática de códigos CIIU</span>
                             </div>
 
                             <div className="flex flex-wrap gap-2 min-h-[50px] p-4 bg-white/5 rounded-2xl border border-white/10">
@@ -230,7 +296,7 @@ export const CreateClientModal: React.FC<{
 
                         <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
                             <button type="button" onClick={onClose} className="px-8 py-4 text-slate-400 font-bold uppercase text-[10px]">Cancelar</button>
-                            <button type="submit" disabled={isSaving || saveSuccess} className={`min-w-[200px] px-12 py-4 text-white font-black rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-3 uppercase text-xs ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-950'}`}>
+                            <button type="submit" disabled={isSaving || saveSuccess || !!rucError} className={`min-w-[200px] px-12 py-4 text-white font-black rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-3 uppercase text-xs ${saveSuccess ? 'bg-green-500' : 'bg-brand-red hover:bg-slate-950'} disabled:opacity-50 disabled:cursor-not-allowed`}>
                                 {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : "Confirmar Datos"}
                             </button>
                         </div>

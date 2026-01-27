@@ -5,19 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- SEO MAESTRO: Títulos y Metas enfocados en Pasaje y El Oro -->
+    <!-- SEO MAESTRO: Dominio total en Pasaje y El Oro -->
     <title>Imprenta Córdova | La Imprenta #1 en Pasaje Autorizada por el SRI</title>
-    <meta name="description" content="¿Buscas una imprenta en Pasaje? Imprenta Córdova es la imprenta autorizada líder en El Oro. Especialistas en facturas RIMPE, notas de venta, gigantografías HD Roland y sellos. ¡Entrega en 24h!" />
-    <meta name="keywords" content="imprenta pasaje, imprenta en pasaje el oro, imprenta autorizada sri pasaje, facturas rimpe pasaje, notas de venta pasaje, gigantografias pasaje, publicidad pasaje el oro, pedro cordova imprenta, talonarios pasaje" />
-    
-    <!-- Open Graph para Redes Sociales -->
-    <meta property="og:title" content="Imprenta Córdova Pasaje | Calidad Superior en Impresión" />
-    <meta property="og:description" content="Imprenta autorizada SRI en Pasaje. Facturación, Publicidad y Gigantografías." />
-    <meta property="og:image" content="https://i.imgur.com/kzhXFkE.png" />
-    <meta property="og:url" content="https://imprentacordova.com" />
-    <meta property="og:type" content="website" />
-
-    <link rel="canonical" href="https://imprentacordova.com" />
+    <meta name="description" content="¿Buscas la mejor imprenta en Pasaje? Imprenta Córdova ofrece Gigantografías HD, Facturas SRI, Publicidad y Diseño Profesional. Calidad Roland garantizada en El Oro." />
+    <meta name="keywords" content="imprenta pasaje, facturas sri pasaje, gigantografias el oro, publicidad pasaje, imprenta autorizada pasaje, pedro cordova, diseño grafico pasaje" />
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,31 +24,24 @@
               'neutral-dark': '#0F172A',
             },
             keyframes: {
-              fadeIn: {
-                '0%': { opacity: 0, transform: 'translateY(-10px)' },
+              fadeInUp: {
+                '0%': { opacity: 0, transform: 'translateY(20px)' },
                 '100%': { opacity: 1, transform: 'translateY(0)' },
-              },
-              slideInUp: {
-                '0%': { opacity: 0, transform: 'translateY(30px)' },
-                '100%': { opacity: 1, transform: 'translateY(0)' },
-              },
-              blob: {
-                "0%": { transform: "translate(0px, 0px) scale(1)" },
-                "33%": { transform: "translate(30px, -50px) scale(1.1)" },
-                "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
-                "100%": { transform: "translate(0px, 0px) scale(1)" },
               },
               float: {
-                  '0%, 100%': { transform: 'translateY(0)' },
-                  '50%': { transform: 'translateY(-15px)' },
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
               }
             },
             animation: {
-              'fade-in': 'fadeIn 0.5s ease-out forwards',
-              'slide-in-up': 'slideInUp 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both',
-              'blob': "blob 7s infinite",
-              'float': "float 6s ease-in-out infinite",
+              'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+              'float': 'float 4s ease-in-out infinite',
+              'spin-slow': 'spin 8s linear infinite',
             },
+            boxShadow: {
+              '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+              '4xl': '0 50px 100px -20px rgba(11, 66, 167, 0.25)',
+            }
           }
         }
       }
@@ -83,7 +67,7 @@
 }
 </script>
 </head>
-<body class="bg-neutral-light dark:bg-neutral-dark text-slate-900 dark:text-neutral-light font-sans antialiased selection:bg-brand-red selection:text-white">
+<body class="bg-white dark:bg-neutral-dark text-slate-900 dark:text-neutral-light font-sans antialiased selection:bg-brand-red selection:text-white">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

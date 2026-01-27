@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { User } from './types';
@@ -5,7 +6,7 @@ import { DataProvider } from './contexts/DataContext';
 import { Layout } from './components/Layout';
 
 // Pages
-import LandingPage from './pages/Landing';
+import VisualLanding from './pages/VisualLanding'; // Changed from LandingPage
 import LoginPage from './pages/Login';
 import DashboardPage from './pages/Dashboard';
 import KDSPage from './pages/KDS';
@@ -40,7 +41,6 @@ const ProtectedRoute = ({ user, onLogout }: { user: User | null, onLogout: () =>
 
 /**
  * Main App component with defined routing structure.
- * Fixes missing Route and page component imports.
  */
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -64,8 +64,8 @@ const App: React.FC = () => {
     <DataProvider>
       <HashRouter>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
+          {/* Public Routes - NOW USING PREMIUM VISUAL LANDING */}
+          <Route path="/" element={<VisualLanding />} />
           <Route path="/login" element={<LoginPage onLoginSuccess={handleLogin} />} />
           <Route path="/tracking" element={<TrackingPage />} />
           
@@ -100,5 +100,4 @@ const App: React.FC = () => {
   );
 };
 
-// Exporting App as default to fix index.tsx import error
 export default App;

@@ -30,6 +30,7 @@ import {
     Users, 
     LogOut, 
     Menu, 
+    Mic,
     X, 
     Package, 
     Box, 
@@ -112,6 +113,9 @@ export const ClientsIcon = Users;
 export const LogoutIcon = LogOut;
 export const MenuIcon = Menu;
 export const CloseIcon = X;
+// Added XIcon and MicIcon to resolve import errors in Tracking.tsx
+export const XIcon = X;
+export const MicIcon = Mic;
 export const InventoryIcon = Package;
 export const BoxIcon = Box;
 export const DocumentIcon = FileText;

@@ -49,13 +49,26 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             const sizeMatch = p.nombre.match(/\((.*?) -/);
             const size = sizeMatch ? sizeMatch[1] : 'Estándar';
 
-            // LÓGICA DE EXCLUSIÓN
-            const isNotaVenta = p.nombre.toUpperCase().includes('NOTA DE VENTA');
+            // LÓGICA DE EXCLUSIÓN SRI ESTRICTA
+            const isNotaVenta = p.nombre.toUpperCase().includes('NOTA DE VENTA') || p.nombre.toUpperCase().includes('NOTAS DE VENTA');
             const isFactura = p.nombre.toUpperCase().includes('FACTURA');
 
             if (jobType === TrabajoTipo.SRI && clientRegimen) {
+                // Caso 1: Negocio Popular solo puede hacer NOTAS DE VENTA
                 if (clientRegimen === Regimen.NEGOCIO_POPULAR && !isNotaVenta) return;
-                if (clientRegimen !== Regimen.NEGOCIO_POPULAR && isNotaVenta) return;
+                
+                // Caso 2: General/Emprendedor solo puede hacer FACTURAS
+                if (clientRegimen !== Regimen.NEGOCIO_POPULAR) {
+                    if (isNotaVenta) return;
+                    
+                    // RESTRICCIÓN DE CONTINGENCIA: Si es Factura, solo mostrar opciones pequeñas (ej. 25 o 50 hojas)
+                    // Filtramos productos que NO sean de contingencia si existen los de contingencia
+                    if (isFactura && !p.nombre.includes('25H') && !p.nombre.includes('50H')) {
+                        // Opcional: podrías ocultar los de 100H si quieres ser muy estricto, 
+                        // pero dejaremos 50H como opción también.
+                        // return; 
+                    }
+                }
             }
 
             if (!map.has(baseName)) {
@@ -84,13 +97,31 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
 
     const availableQuantities = useMemo(() => {
         if (!currentGroup || !selectedSize) return [];
-        return currentGroup.items
-            .filter(p => p.nombre.includes(`(${selectedSize} -`))
-            .map(p => {
-                const qMatch = p.nombre.match(/- (.*?)\)$/);
-                return { label: qMatch ? qMatch[1] : 'Fijo', product: p };
-            });
-    }, [currentGroup, selectedSize]);
+        
+        let items = currentGroup.items.filter(p => p.nombre.includes(`(${selectedSize} -`));
+
+        // FILTRADO ADICIONAL NIVEL VARIANTE PARA GENERAL/EMPRENDEDOR
+        if (jobType === TrabajoTipo.SRI && clientRegimen !== Regimen.NEGOCIO_POPULAR && currentGroup.name.toUpperCase().includes('FACTURA')) {
+             // Preferir mostrar solo las opciones de contingencia (25H) si están disponibles
+             const contingencyItems = items.filter(p => p.nombre.includes('25H'));
+             if (contingencyItems.length > 0) {
+                 items = contingencyItems;
+             }
+        }
+
+        return items.map(p => {
+            const qMatch = p.nombre.match(/- (.*?)\)$/);
+            // Extraer cantidad de hojas para mostrar mejor
+            const hMatch = p.nombre.match(/(\d+)H/);
+            const hojasLabel = hMatch ? hMatch[0] : '';
+            const suffix = qMatch ? qMatch[1].replace(hojasLabel, '').trim() : 'Fijo';
+            
+            return { 
+                label: `${hojasLabel} ${suffix}`.trim() || 'Estándar', 
+                product: p 
+            };
+        });
+    }, [currentGroup, selectedSize, jobType, clientRegimen]);
 
     const selectedProductObject = useMemo(() => {
         if (!selectedQty) return null;
@@ -114,7 +145,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                         <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${clientRegimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-50 border-orange-200 text-orange-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
                             <ShieldCheckIcon className="w-4 h-4"/>
                             <span className="text-[9px] font-black uppercase tracking-widest">
-                                MODO: {clientRegimen === Regimen.NEGOCIO_POPULAR ? 'SOLO NOTAS DE VENTA' : 'SOLO FACTURAS'}
+                                MODO: {clientRegimen === Regimen.NEGOCIO_POPULAR ? 'SOLO NOTAS DE VENTA' : 'FACTURAS (CONTINGENCIA)'}
                             </span>
                         </div>
                     )}
@@ -147,7 +178,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                     {baseProducts.length === 0 && (
                         <div className="p-8 text-center bg-white dark:bg-slate-800 rounded-3xl opacity-50">
                             <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-slate-300"/>
-                            <p className="text-[10px] font-black uppercase tracking-widest">No hay documentos para este régimen</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest">No hay documentos disponibles para este régimen</p>
                         </div>
                     )}
                 </div>
@@ -175,7 +206,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                             {selectedSize && (
                                 <div className="space-y-4 animate-slide-in-up">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <LayersIcon className="w-4 h-4 text-brand-red" /> 2. DEFINA CANTIDAD / TIPO
+                                        <LayersIcon className="w-4 h-4 text-brand-red" /> 2. TIPO DE BLOCK
                                     </label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {availableQuantities.map(q => (
@@ -184,7 +215,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                                 onClick={() => setSelectedQty(q.label)} 
                                                 className={`p-4 rounded-2xl text-[10px] font-black uppercase transition-all border-2 text-center flex flex-col items-center gap-1 ${selectedQty === q.label ? 'bg-brand-blue border-brand-blue text-white shadow-xl scale-105' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-gray-700 text-slate-500 hover:border-brand-blue/30'}`}
                                             >
-                                                <span className="opacity-60 text-[8px]">Opciones:</span>
+                                                <span className="opacity-60 text-[8px]">Opción:</span>
                                                 {q.label}
                                             </button>
                                         ))}
@@ -232,7 +263,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center opacity-20 text-center space-y-4">
                             <MonitorIcon className="w-20 h-20 text-slate-300" />
-                            <p className="text-xs font-black uppercase tracking-[0.3em]">Selecciona un servicio a la izquierda</p>
+                            <p className="text-xs font-black uppercase tracking-[0.3em]">Selecciona un documento para ver opciones</p>
                         </div>
                     )}
                 </div>

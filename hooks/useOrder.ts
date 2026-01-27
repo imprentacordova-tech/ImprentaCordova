@@ -1,7 +1,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
-import { createTrabajo, getSriCredentials } from '../services/mockApi';
+import { createTrabajo, getSriCredentials, addSriCredential } from '../services/mockApi';
 import { getConfig } from '../services/configService';
 
 export interface CartItem {
@@ -80,6 +80,21 @@ export const useOrder = (user: string) => {
         const hoursToAdd = tiempoEntrega === '24h' ? 24 : 48;
         deliveryDate.setHours(deliveryDate.getHours() + hoursToAdd);
 
+        // MAESTRO UPDATE: Guardar clave SRI en base de datos si se ingresó una nueva
+        if (sriData.claveAcceso && selectedCliente) {
+            const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
+            // Si no tenía clave (hasKey false) o si la clave cambió
+            if (!sriData.hasKey) { // Simple check, ideally check if changed
+                 await addSriCredential({
+                     ruc: ruc,
+                     password: sriData.claveAcceso,
+                     origen: selectedCliente.nombre,
+                     updatedAt: new Date().toISOString()
+                 });
+                 // No necesitamos esperar confirmación visual, es background process
+            }
+        }
+
         const newTrabajo = await createTrabajo({
             clienteId: selectedCliente.id,
             titular: titular || selectedCliente.nombre,
@@ -95,7 +110,7 @@ export const useOrder = (user: string) => {
             establecimiento: sriData.establecimiento,
             puntoEmision: sriData.puntoEmision,
             claveAcceso: sriData.claveAcceso,
-            estadoClave: sriData.estadoClave,
+            estadoClave: sriData.claveAcceso ? 'LISTA' : 'PENDIENTE',
             imprimirClave,
             actividadSeleccionada
         }, user);

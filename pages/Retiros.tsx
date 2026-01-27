@@ -1,13 +1,13 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { getTrabajos, getClientes, registerRetiro } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
-import { formatCurrency } from '../utils';
-// Added CheckCircleIcon to the imports to fix the error on line 67
+import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { 
     SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, 
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
-    ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon
+    ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon
 } from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
@@ -47,6 +47,24 @@ const RetirosPage: React.FC = () => {
         fetchData();
     };
 
+    const notifyClient = (trabajo: Trabajo) => {
+        const cliente = clientes.find(c => c.id === trabajo.clienteId);
+        if (!cliente || !cliente.telefono.length) {
+            alert("El cliente no tiene teléfono registrado.");
+            return;
+        }
+        
+        const saldoMsg = trabajo.saldo > 0 ? `Saldo pendiente: ${formatCurrency(trabajo.saldo)}.` : "¡Su pedido está cancelado!";
+        const message = `👋 Hola ${cliente.nombre}, Imprenta Córdova le informa que su pedido #${trabajo.orden} (${trabajo.subtipo}) está listo para ser retirado. 📍 ${saldoMsg} Visítenos en Colón y Sucre.`;
+        
+        window.open(generateWhatsAppLink(cliente.telefono[0], message), '_blank');
+    };
+
+    const getDaysInVitrina = (dateString: string) => {
+        const diff = new Date().getTime() - new Date(dateString).getTime();
+        return Math.floor(diff / (1000 * 3600 * 24));
+    };
+
     return (
         <div className="space-y-10 animate-fade-in pb-20">
             <div className="flex justify-between items-center">
@@ -82,14 +100,27 @@ const RetirosPage: React.FC = () => {
                     <div className="col-span-full py-20 text-center"><Loader2Icon className="animate-spin w-10 h-10 text-brand-blue mx-auto" /></div>
                 ) : filtered.length > 0 ? filtered.map(t => {
                     const c = clientes.find(cl => cl.id === t.clienteId);
+                    const days = getDaysInVitrina(t.fechaEntrada); // Usamos fechaEntrada como proxy si no hay fecha de paso a vitrina
+                    const isOld = days > 15;
+
                     return (
-                        <div key={t.id} className="bg-white dark:bg-gray-800 rounded-[3rem] p-8 shadow-xl border border-slate-100 dark:border-white/5 hover:-translate-y-2 transition-all duration-500 flex flex-col justify-between group">
+                        <div key={t.id} className="bg-white dark:bg-gray-800 rounded-[3rem] p-8 shadow-xl border border-slate-100 dark:border-white/5 hover:-translate-y-2 transition-all duration-500 flex flex-col justify-between group relative">
+                            {isOld && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg animate-pulse z-20">
+                                    ¡Abandonado ({days} días)!
+                                </div>
+                            )}
+                            <button onClick={(e) => { e.stopPropagation(); notifyClient(t); }} className="absolute top-6 right-6 p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-500 hover:text-white transition-all shadow-sm z-10" title="Avisar por WhatsApp">
+                                <WhatsAppIcon className="w-5 h-5" />
+                            </button>
                             <div>
                                 <div className="flex justify-between mb-6">
                                     <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1 rounded-full border">ORDEN #{t.orden}</span>
-                                    {t.prioridad === 'Urgente' && <span className="text-[8px] font-black text-white bg-brand-red px-2 py-0.5 rounded-md animate-pulse uppercase">Urgente</span>}
+                                    <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full">
+                                        <ClockIcon className="w-3 h-3"/> {days}d
+                                    </div>
                                 </div>
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase truncate">{c?.nombre}</h3>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase truncate pr-8">{c?.nombre}</h3>
                                 <p className="text-xs text-slate-500 font-bold uppercase mt-1 leading-relaxed line-clamp-2">{t.subtipo}</p>
                                 <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-900 rounded-[2rem] flex flex-col gap-2">
                                     <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase"><span>Total:</span> <span>{formatCurrency(t.total)}</span></div>
@@ -127,7 +158,6 @@ const RetirosPage: React.FC = () => {
                             <div className="bg-amber-50 p-4 rounded-2xl flex items-center gap-3 border border-amber-100">
                                 <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 shrink-0"/><p className="text-[10px] font-bold text-amber-800 uppercase leading-tight">Al confirmar, el sistema registrará el pago completo y permitirá imprimir la Nota de Venta oficial.</p>
                             </div>
-                            {/* FIX: Use arrow function for onClick to prevent immediate call during render */}
                             <button onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} className="w-full py-6 bg-brand-red text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3">
                                 <DocumentCheckIcon className="w-6 h-6"/> REGISTRAR COBRO Y SALIDA
                             </button>

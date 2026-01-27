@@ -55,3 +55,39 @@ export const numeroALetras = (num: number): string => {
 
     return textoFinal;
 };
+
+/**
+ * Valida Cédula o RUC Ecuatoriano (Algoritmo Módulo 10)
+ */
+export const validarIdentificacionEC = (identificacion: string): boolean => {
+    const id = identificacion.trim();
+    if (!/^\d+$/.test(id)) return false;
+    if (id.length !== 10 && id.length !== 13) return false;
+
+    const provincia = parseInt(id.substring(0, 2));
+    if (provincia < 1 || provincia > 24) return false;
+
+    const digitoVerificador = parseInt(id.substring(9, 10));
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let total = 0;
+
+    for (let i = 0; i < 9; i++) {
+        let valor = parseInt(id.charAt(i)) * coeficientes[i];
+        if (valor > 9) valor -= 9;
+        total += valor;
+    }
+
+    const mod = total % 10;
+    const val = mod === 0 ? 0 : 10 - mod;
+
+    return val === digitoVerificador;
+};
+
+export const generateWhatsAppLink = (phone: string, message: string): string => {
+    // Limpieza de número para formato internacional
+    let cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.startsWith('0')) cleanPhone = '593' + cleanPhone.substring(1);
+    else if (!cleanPhone.startsWith('593')) cleanPhone = '593' + cleanPhone;
+    
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+};

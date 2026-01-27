@@ -1,3 +1,4 @@
+
 import { Cliente, Producto, Regimen, Trabajo, TrabajoEstado, TrabajoTipo, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, StatusLog } from '../types';
 import { getConfig } from './configService';
 
@@ -103,6 +104,20 @@ export const createTrabajo = async (trabajoData: any, usuario: string): Promise<
     return newTrabajo;
 };
 
+export const aprobarArte = async (trabajoId: string): Promise<Trabajo> => {
+    const trabajos = JSON.parse(localStorage.getItem(DB_MAP.trabajos) || '[]');
+    const idx = trabajos.findIndex((t: any) => t.id === trabajoId);
+    if (idx > -1) {
+        trabajos[idx].arteAprobado = true;
+        trabajos[idx].estado = TrabajoEstado.PROCESO; // Pasa a taller tras aprobación
+        trabajos[idx].historial.push({ estado: TrabajoEstado.PROCESO, fecha: new Date().toISOString(), usuario: 'Cliente (Web)' });
+        localStorage.setItem(DB_MAP.trabajos, JSON.stringify(trabajos));
+        forcePushAllToCloud();
+        return trabajos[idx];
+    }
+    throw new Error("Trabajo no encontrado");
+};
+
 // --- GESTIÓN DE PRODUCTOS ---
 export const getProductos = async (): Promise<Producto[]> => {
     const data = JSON.parse(localStorage.getItem(DB_MAP.productos) || '[]');
@@ -123,6 +138,7 @@ export const seed50Products = async (): Promise<Producto[]> => {
     const catalog: Omit<Producto, 'id'>[] = [
         // SRI
         { nombre: 'FACTURAS (1/4 OFICIO - 50H - DUPLICADO)', categoria: 'SRI', precio: 15.00, esSRI: true, descripcion: 'Autorizado SRI, papel químico original y copia.', imagenUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=400' },
+        { nombre: 'FACTURAS (1/4 OFICIO - 25H - DUPLICADO)', categoria: 'SRI', precio: 10.00, esSRI: true, descripcion: 'Contingencia Régimen General (25 Hojas).', imagenUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=400' },
         { nombre: 'NOTAS DE VENTA (1/4 OFICIO - 50H - ÚNICO)', categoria: 'SRI', precio: 10.00, esSRI: true, descripcion: 'RIMPE Negocio Popular, papel bond original numerado.', imagenUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?q=80&w=400' },
         { nombre: 'NOTAS DE CRÉDITO (1/4 OFICIO - 50H)', categoria: 'SRI', precio: 15.00, esSRI: true, descripcion: 'Documento legal para devoluciones y descuentos.', imagenUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=400' },
         
@@ -153,7 +169,6 @@ export const seed50Products = async (): Promise<Producto[]> => {
     return finalCatalog;
 };
 
-// ... Resto de funciones se mantienen iguales por brevedad ...
 export const getClientes = async (): Promise<Cliente[]> => JSON.parse(localStorage.getItem(DB_MAP.clientes) || '[]');
 export const createCliente = async (clienteData: any): Promise<Cliente> => {
     const clientes = JSON.parse(localStorage.getItem(DB_MAP.clientes) || '[]');
@@ -183,7 +198,6 @@ export const updateTrabajoStatus = async (trabajoId: string, newStatus: TrabajoE
     throw new Error("No encontrado");
 };
 
-// FIX: Added missing registerRetiro function to resolve import error in Retiros.tsx
 export const registerRetiro = async (trabajoId: string, pagoFinal: number, usuario: string): Promise<Trabajo> => {
     const trabajos = JSON.parse(localStorage.getItem(DB_MAP.trabajos) || '[]');
     const idx = trabajos.findIndex((t: any) => t.id === trabajoId);
@@ -207,7 +221,6 @@ export const getProveedores = async (): Promise<Proveedor[]> => JSON.parse(local
 export const getTareasProveedor = async (): Promise<TareaProveedor[]> => JSON.parse(localStorage.getItem(DB_MAP.tareas) || '[]');
 export const getSriCredentials = async (): Promise<SriCredential[]> => JSON.parse(localStorage.getItem(DB_MAP.sri) || '[]');
 
-// FIX: Added missing addSriCredential function to resolve import error in Configuracion.tsx
 export const addSriCredential = async (cred: SriCredential) => {
     const data = JSON.parse(localStorage.getItem(DB_MAP.sri) || '[]');
     const idx = data.findIndex((c: any) => c.ruc === cred.ruc);
@@ -223,11 +236,46 @@ export const updateTrabajoPhoto = async (trabajoId: string, photoUrl: string): P
     const idx = trabajos.findIndex((t: any) => t.id === trabajoId);
     if (idx > -1) { trabajos[idx].fotoOriginalUrl = photoUrl; localStorage.setItem(DB_MAP.trabajos, JSON.stringify(trabajos)); forcePushAllToCloud(); }
 };
-export const createPublicPedido = async (clientData: any, cartItems: any[]): Promise<Trabajo> => {
+
+/**
+ * CREAR PEDIDO PÚBLICO (WEB)
+ * Gestiona automáticamente el cliente y crea la orden.
+ */
+export const createPublicPedido = async (clientData: { nombre: string, telefono: string }, cartItems: any[]): Promise<Trabajo> => {
+    const clientes = await getClientes();
+    
+    // 1. Buscar o Crear Cliente
+    let cliente = clientes.find(c => c.telefono.includes(clientData.telefono) || c.nombre.toLowerCase() === clientData.nombre.toLowerCase());
+    
+    if (!cliente) {
+        cliente = await createCliente({
+            nombre: clientData.nombre.toUpperCase(),
+            telefono: [clientData.telefono],
+            cedula: '9999999999', // Consumidor Final temporal
+            direccion: 'Pedido Web',
+            regimen: Regimen.GENERAL
+        });
+    }
+
+    // 2. Calcular Totales
     const total = cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
     const subtipo = cartItems.map(item => `${item.cantidad}x ${item.producto.nombre}`).join(', ');
-    return createTrabajo({ titular: clientData.nombre, tipo: TrabajoTipo.GENERAL, subtipo, cantidad: cartItems.length, total, abono: 0, estado: TrabajoEstado.PENDIENTE, origen: 'Web' }, 'Usuario Web');
+
+    // 3. Crear Trabajo
+    return createTrabajo({ 
+        clienteId: cliente.id,
+        titular: cliente.nombre, 
+        tipo: TrabajoTipo.GENERAL, 
+        subtipo, 
+        cantidad: cartItems.length, 
+        total, 
+        abono: 0, 
+        estado: TrabajoEstado.PENDIENTE, 
+        origen: 'Web',
+        prioridad: 'Normal'
+    }, 'Web/Cliente');
 };
+
 export const forcePushAllToCloud = async () => {
     const config = getConfig();
     if (!config.googleScriptUrl || !config.googleScriptUrl.includes('macros')) return;

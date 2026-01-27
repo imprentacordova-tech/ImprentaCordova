@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado, SupervisorAnalysis, User } from '../types';
 import { formatCurrency, formatDate } from '../utils';
-import { PaletteIcon, MonitorIcon, ClockIcon, CheckCircleIcon, ArrowRightIcon, EyeIcon, UploadIcon, SparklesIcon, Loader2Icon, ExclamationTriangleIcon } from '../components/Icons';
+import { PaletteIcon, MonitorIcon, ClockIcon, CheckCircleIcon, ArrowRightIcon, EyeIcon, UploadIcon, SparklesIcon, Loader2Icon, ExclamationTriangleIcon, PrinterIcon } from '../components/Icons';
 import { useOutletContext } from 'react-router-dom';
 import { analyzeDesignWithSupervisor } from '../services/geminiService';
 
@@ -50,15 +50,34 @@ const DisenoPage: React.FC = () => {
         setAnalyzing(false);
     };
 
+    const handleSendToPrint = async () => {
+        if (!selectedJob) return;
+        
+        // Validación opcional: ¿Requiere análisis previo?
+        if (!aiAnalysis && !window.confirm("El Supervisor IA no ha validado este diseño. ¿Enviar a impresión de todas formas?")) {
+            return;
+        }
+
+        try {
+            await updateTrabajoStatus(selectedJob.id, TrabajoEstado.PROCESO, currentUser.nombre);
+            // Feedback visual y limpieza
+            alert(`✅ Orden #${selectedJob.orden} enviada a Taller correctamente.`);
+            setSelectedJob(null);
+            fetchData();
+        } catch (error) {
+            alert("Error al mover el trabajo a producción.");
+        }
+    };
+
     return (
-        <div className="flex h-[calc(100vh-100px)] gap-6 overflow-hidden">
+        <div className="flex h-[calc(100vh-100px)] gap-6 overflow-hidden animate-fade-in">
             {/* Left Queue */}
             <div className="w-1/4 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                 <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
                     <h2 className="font-bold flex items-center gap-2"><PaletteIcon className="w-5 h-5" /> Diseño</h2>
                     <span className="bg-brand-red px-2 py-0.5 rounded text-xs">{pendingJobs.length}</span>
                 </div>
-                <div className="flex-grow overflow-y-auto p-2 space-y-2">
+                <div className="flex-grow overflow-y-auto p-2 space-y-2 custom-scrollbar">
                     {pendingJobs.map(job => (
                         <div key={job.id} onClick={() => setSelectedJob(job)} className={`p-4 rounded-xl cursor-pointer border transition-all ${selectedJob?.id === job.id ? 'bg-blue-50 border-brand-blue ring-1' : 'bg-white border-slate-100 hover:border-blue-200'}`}>
                             <p className="font-black text-slate-800">#{job.orden}</p>
@@ -66,6 +85,9 @@ const DisenoPage: React.FC = () => {
                             <p className="text-xs text-slate-500 line-clamp-1">{job.subtipo}</p>
                         </div>
                     ))}
+                    {pendingJobs.length === 0 && (
+                        <div className="p-8 text-center text-slate-400 text-xs">No hay trabajos pendientes de diseño.</div>
+                    )}
                 </div>
             </div>
 
@@ -87,13 +109,16 @@ const DisenoPage: React.FC = () => {
                                     {analyzing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <SparklesIcon className="w-5 h-5"/>}
                                     SUPERVISOR MAESTRO (IA)
                                 </button>
-                                <button className="px-6 py-2.5 bg-brand-blue text-white font-bold rounded-xl shadow-lg hover:bg-blue-800 transition-all">
-                                    ENVIAR A IMPRESIÓN
+                                <button 
+                                    onClick={handleSendToPrint}
+                                    className="px-6 py-2.5 bg-brand-blue text-white font-bold rounded-xl shadow-lg hover:bg-blue-800 transition-all flex items-center gap-2"
+                                >
+                                    <PrinterIcon className="w-5 h-5"/> ENVIAR A IMPRESIÓN
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex-grow p-6 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="flex-grow p-6 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 gap-8 custom-scrollbar">
                             {/* Visual Reference */}
                             <div className="lg:col-span-7 space-y-6">
                                 <div className="aspect-[4/3] bg-slate-200 rounded-3xl overflow-hidden shadow-inner border-4 border-white flex items-center justify-center relative group">

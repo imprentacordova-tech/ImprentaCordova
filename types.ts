@@ -67,6 +67,7 @@ export interface Trabajo {
   historial?: StatusLog[];
   fechaVencimiento?: string;
   actividadSeleccionada?: string;
+  arteAprobado?: boolean;
 }
 
 export interface Producto {
