@@ -19,7 +19,6 @@ const RetirosPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
-    const [lastDeliveredId, setLastDeliveredId] = useState<string | null>(null);
 
     const fetchData = async () => {
         setLoading(true);
@@ -42,9 +41,8 @@ const RetirosPage: React.FC = () => {
     const handleConfirmRetiro = async (pagoFinal: number) => {
         if (!selectedTrabajo) return;
         const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
-        setLastDeliveredId(updated.id);
-        setSelectedTrabajo(null);
-        fetchData();
+        // Automatización: Redirigir inmediatamente a la Nota de Venta para impresión
+        navigate(`/nota-de-venta/${updated.id}`);
     };
 
     const notifyClient = (trabajo: Trabajo) => {
@@ -77,23 +75,6 @@ const RetirosPage: React.FC = () => {
                     <input type="text" placeholder="Buscar por orden o cliente..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-12 pr-6 py-4 bg-white dark:bg-slate-900 border-none rounded-[2rem] shadow-xl text-sm font-bold focus:ring-4 focus:ring-brand-blue/10 outline-none transition-all dark:text-white" />
                 </div>
             </div>
-
-            {/* AVISO DE ÚLTIMA ENTREGA */}
-            {lastDeliveredId && (
-                <div className="bg-emerald-500 text-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 animate-bounce-in">
-                    <div className="flex items-center gap-4">
-                        <CheckCircleIcon className="w-10 h-10" />
-                        <div>
-                            <h3 className="text-lg font-black uppercase tracking-tighter">¡Entrega Registrada!</h3>
-                            <p className="text-xs font-bold opacity-80 uppercase">El trabajo se ha movido al historial de entregados.</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-3">
-                        <button onClick={() => navigate(`/nota-de-venta/${lastDeliveredId}`)} className="px-8 py-3 bg-white text-emerald-600 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-950 hover:text-white transition-all">Imprimir Nota de Venta Premium</button>
-                        <button onClick={() => setLastDeliveredId(null)} className="px-4 py-3 bg-white/20 rounded-xl hover:bg-white/30 transition-all"><CloseIcon className="w-5 h-5"/></button>
-                    </div>
-                </div>
-            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {loading ? (
@@ -156,10 +137,10 @@ const RetirosPage: React.FC = () => {
                                 <span className="text-5xl font-black text-brand-red tracking-tighter">{formatCurrency(selectedTrabajo.saldo)}</span>
                             </div>
                             <div className="bg-amber-50 p-4 rounded-2xl flex items-center gap-3 border border-amber-100">
-                                <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 shrink-0"/><p className="text-[10px] font-bold text-amber-800 uppercase leading-tight">Al confirmar, el sistema registrará el pago completo y permitirá imprimir la Nota de Venta oficial.</p>
+                                <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 shrink-0"/><p className="text-[10px] font-bold text-amber-800 uppercase leading-tight">Al confirmar, el sistema generará automáticamente la Nota de Venta PDF.</p>
                             </div>
                             <button onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} className="w-full py-6 bg-brand-red text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-slate-950 transition-all flex items-center justify-center gap-3">
-                                <DocumentCheckIcon className="w-6 h-6"/> REGISTRAR COBRO Y SALIDA
+                                <DocumentCheckIcon className="w-6 h-6"/> REGISTRAR Y GENERAR PDF
                             </button>
                         </div>
                     </div>

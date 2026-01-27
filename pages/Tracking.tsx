@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getTrabajos, getClientes, aprobarArte } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado } from '../types';
 import { formatCurrency } from '../utils';
@@ -8,7 +8,7 @@ import {
     SearchIcon, CordovaLogo, ArrowLeftIcon, ClockIcon, CheckCircleIcon, 
     PrinterIcon, PaletteIcon, BoxIcon, MessageCircleIcon, MapPinIcon, 
     Loader2Icon, ShieldCheckIcon, PhoneIcon, EyeIcon, CheckBadgeIcon,
-    SparklesIcon, MicIcon, XIcon, InfoIcon
+    SparklesIcon, MicIcon, XIcon, InfoIcon, ArrowDownTrayIcon
 } from '../components/Icons';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 
@@ -48,6 +48,7 @@ const statusSteps = [
 ];
 
 const TrackingPage: React.FC = () => {
+    const [searchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
     const [foundJobs, setFoundJobs] = useState<Trabajo[]>([]);
     const [searching, setSearching] = useState(false);
@@ -60,6 +61,33 @@ const TrackingPage: React.FC = () => {
     const audioContextRef = useRef<AudioContext | null>(null);
     const nextStartTimeRef = useRef(0);
     const micStreamRef = useRef<MediaStream | null>(null);
+
+    // Auto-search from URL param (QR Code)
+    useEffect(() => {
+        const q = searchParams.get('q');
+        if (q) {
+            setSearchQuery(q);
+            // Necesitamos envolverlo en una función asíncrona inmediata
+            (async () => {
+                setSearching(true);
+                setError('');
+                try {
+                    await new Promise(r => setTimeout(r, 800)); // Simular carga
+                    const [trabajos, clientes] = await Promise.all([getTrabajos(), getClientes()]);
+                    let matches = trabajos.filter(t => String(t.orden) === q);
+                    if (matches.length > 0) {
+                        setFoundJobs(matches);
+                    } else {
+                        setError('Orden no encontrada. Verifique el número.');
+                    }
+                } catch(e) {
+                    setError('Error al rastrear.');
+                } finally {
+                    setSearching(false);
+                }
+            })();
+        }
+    }, [searchParams]);
 
     const handleSearch = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -76,7 +104,7 @@ const TrackingPage: React.FC = () => {
             if (matches.length === 0) {
                 const matchedClients = clientes.filter(c => c.telefono.some(tel => tel.includes(cleanQuery)));
                 const clientIds = matchedClients.map(c => c.id);
-                matches = trabajos.filter(t => clientIds.includes(t.clienteId) && t.estado !== TrabajoEstado.ENTREGADO);
+                matches = trabajos.filter(t => clientIds.includes(t.clienteId));
             }
 
             if (matches.length > 0) {
@@ -102,6 +130,7 @@ const TrackingPage: React.FC = () => {
         } catch (e) { alert("Error al aprobar arte."); }
     };
 
+    // ... (Voice Tracking logic remains identical to previous version) ...
     // MAESTRO FEATURE: Voice AI Control
     const startVoiceTracking = async () => {
         if (!foundJobs.length) {
@@ -231,6 +260,7 @@ const TrackingPage: React.FC = () => {
                     {foundJobs.map(job => {
                         const currentStepIdx = statusSteps.findIndex(s => s.value === job.estado);
                         const isDesigning = job.estado === TrabajoEstado.EN_DISENO || job.estado === TrabajoEstado.PENDIENTE;
+                        const isDelivered = job.estado === TrabajoEstado.ENTREGADO;
                         
                         return (
                             <div key={job.id} className="bg-white dark:bg-slate-900 rounded-[4rem] shadow-4xl border border-slate-100 dark:border-white/5 overflow-hidden animate-fade-in-up">
@@ -246,6 +276,11 @@ const TrackingPage: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="flex gap-4">
+                                        {isDelivered && (
+                                            <a href={`/#/nota-de-venta/${job.id}`} target="_blank" className="bg-emerald-500 text-white px-6 py-4 rounded-[1.8rem] shadow-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-600 transition-all">
+                                                <ArrowDownTrayIcon className="w-4 h-4"/> Ver Nota de Venta
+                                            </a>
+                                        )}
                                         <div className="bg-white dark:bg-slate-800 px-8 py-4 rounded-[1.8rem] shadow-inner border dark:border-white/5 text-center">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
                                             <p className={`text-xl font-black uppercase ${job.estado === TrabajoEstado.VITRINA ? 'text-green-500 animate-pulse' : 'text-brand-blue'}`}>
@@ -318,7 +353,7 @@ const TrackingPage: React.FC = () => {
                                             <h3 className="text-xs font-black text-brand-blue uppercase tracking-widest flex items-center gap-3">Resumen de Cuenta</h3>
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div><span className="text-[10px] font-black text-slate-400 uppercase block mb-1">Total</span><span className="text-3xl font-black text-slate-900 dark:text-white">{formatCurrency(job.total)}</span></div>
-                                                <div><span className="text-[10px] font-black text-slate-400 uppercase block mb-1">Abonado</span><span className="text-3xl font-black text-emerald-500">{formatCurrency(job.abono)}</span></div>
+                                                <div><span className="text-[10px] font-black text-slate-400 uppercase block mb-1">Abono</span><span className="text-3xl font-black text-emerald-500">{formatCurrency(job.abono)}</span></div>
                                                 <div className="col-span-2 p-6 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-100 dark:border-red-900/30">
                                                     <span className="text-[10px] font-black text-brand-red uppercase block mb-1">Saldo a Pagar en Local</span>
                                                     <span className="text-4xl font-black text-brand-red">{formatCurrency(job.saldo)}</span>

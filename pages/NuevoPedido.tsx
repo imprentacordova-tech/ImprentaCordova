@@ -14,9 +14,9 @@ const NuevoPedidoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const navigate = useNavigate();
     const { 
-        selectedCliente, cartItems, jobType, abono, 
+        selectedCliente, cartItems, jobType, abono, titular,
         orderTotal, isLoading, sriData, imprimirClave, actividadSeleccionada,
-        setSelectedCliente, setJobType, setAbono, setSriData, setImprimirClave, setActividadSeleccionada,
+        setSelectedCliente, setJobType, setAbono, setSriData, setImprimirClave, setActividadSeleccionada, setTitular,
         addProduct, removeProduct, updateQuantity, finalizeOrder, resetOrder
     } = useOrder(currentUser.nombre);
 
@@ -35,18 +35,24 @@ const NuevoPedidoPage: React.FC = () => {
                     .reduce((sum, t) => sum + t.saldo, 0);
                 setClientDebt(totalDebt);
             });
+            // Auto-seleccionar la primera actividad si existe para evitar nulos
+            if (selectedCliente.actividades) {
+                const firstAct = selectedCliente.actividades.split('|')[0];
+                if (firstAct) setActividadSeleccionada(firstAct);
+            }
         }
     }, [selectedCliente]);
 
     const handleFinalize = async () => {
         const newJob = await finalizeOrder();
         if (newJob) {
-            // REDIRECCIÓN INTELIGENTE A LOS PDF DE ENTRADA
+            // --- ENRUTAMIENTO INTELIGENTE ---
             if (newJob.tipo === TrabajoTipo.SRI) {
+                // Flujo SRI: Prioridad es la Solicitud de Autorización firmada
                 navigate(`/solicitud-impresion/${newJob.id}`);
             } else {
-                // Ahora no se salta, va a la orden de producción interna
-                navigate(`/orden-produccion/${newJob.id}`);
+                // Flujo General: Prioridad es el Recibo/Comprobante para el cliente
+                navigate(`/recibo-abono/${newJob.id}`);
             }
         }
     };
@@ -62,7 +68,7 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <ShieldCheckIcon className="w-8 h-8 text-brand-blue" />
                                 </div>
-                                <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Nueva Orden SRI</h2>
+                                <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Nueva Orden</h2>
                                 <p className="text-slate-500 mt-2 tracking-tight">Busca un contribuyente o escanea su RUC para iniciar.</p>
                             </div>
                             <ClientSelector onSelectClient={setSelectedCliente} />
@@ -80,6 +86,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${selectedCliente.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
                                                 {selectedCliente.regimen}
                                             </span>
+                                            <span className="text-[10px] font-bold text-slate-400">{selectedCliente.ruc || selectedCliente.cedula}</span>
                                             {clientDebt > 0 && <span className="bg-red-50 text-red-600 text-[9px] font-black px-2 py-0.5 rounded border border-red-100 uppercase tracking-widest">DEUDA: {formatCurrency(clientDebt)}</span>}
                                         </div>
                                     </div>
@@ -90,24 +97,37 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* SELECTOR DE ACTIVIDAD PARA SRI */}
-                            {jobType === TrabajoTipo.SRI && clientActivities.length > 0 && (
-                                <div className="bg-slate-950 p-4 rounded-2xl flex flex-col md:flex-row items-center gap-4 animate-slide-in-up">
-                                    <div className="flex items-center gap-2 shrink-0">
+                            {/* SELECTOR DE ACTIVIDAD PARA SRI (CRÍTICO PARA SOLICITUD) */}
+                            {jobType === TrabajoTipo.SRI && (
+                                <div className="bg-slate-950 p-4 rounded-2xl flex flex-col items-start gap-3 animate-slide-in-up border border-white/5">
+                                    <div className="flex items-center gap-2 w-full">
                                         <div className="p-1.5 bg-brand-red rounded-lg"><LayersIcon className="w-3.5 h-3.5 text-white" /></div>
-                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Actividad para este documento:</span>
+                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em] flex-grow">Actividad para Autorización SRI:</span>
                                     </div>
-                                    <div className="flex flex-wrap gap-2 flex-grow overflow-x-auto custom-scrollbar pb-1">
-                                        {clientActivities.map(act => (
-                                            <button 
-                                                key={act} 
-                                                onClick={() => setActividadSeleccionada(act)}
-                                                className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all whitespace-nowrap border ${actividadSeleccionada === act ? 'bg-brand-red border-brand-red text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white'}`}
-                                            >
-                                                {act}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    
+                                    {clientActivities.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2 w-full">
+                                            {clientActivities.map(act => (
+                                                <button 
+                                                    key={act} 
+                                                    onClick={() => setActividadSeleccionada(act)}
+                                                    className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all whitespace-normal text-left max-w-full border ${actividadSeleccionada === act ? 'bg-brand-red border-brand-red text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white'}`}
+                                                >
+                                                    {act}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="w-full flex items-center gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Escriba la actividad económica principal..."
+                                                value={actividadSeleccionada}
+                                                onChange={(e) => setActividadSeleccionada(e.target.value.toUpperCase())}
+                                                className="w-full bg-white/10 border-none rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 font-bold focus:ring-1 focus:ring-brand-red uppercase"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

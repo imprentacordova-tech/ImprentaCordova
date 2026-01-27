@@ -75,7 +75,8 @@ import {
     Printer,
     Layers,
     FileStack,
-    Folder
+    Folder,
+    QrCode
 } from 'lucide-react';
 
 // Common SVG props
@@ -167,6 +168,7 @@ export const LayersIcon = Layers;
 export const FileStackIcon = FileStack;
 // Fixed: Added CheckIcon export to resolve import errors in Configuracion.tsx
 export const CheckIcon = Check;
+export const QrCodeIcon = QrCode;
 
 export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles };
 
