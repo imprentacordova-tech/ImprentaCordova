@@ -1,3 +1,4 @@
+
 import { TrabajoEstado } from './types';
 
 export const APP_NAME = "Imprenta Córdova";

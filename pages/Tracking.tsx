@@ -8,7 +8,7 @@ import {
     SearchIcon, CordovaLogo, ArrowLeftIcon, ClockIcon, CheckCircleIcon, 
     PrinterIcon, PaletteIcon, BoxIcon, MessageCircleIcon, MapPinIcon, 
     Loader2Icon, ShieldCheckIcon, PhoneIcon, EyeIcon, CheckBadgeIcon,
-    SparklesIcon, MicIcon, XIcon, InfoIcon, ArrowDownTrayIcon
+    SparklesIcon, MicIcon, XIcon, InfoIcon, ArrowDownTrayIcon, WalletIcon
 } from '../components/Icons';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 
@@ -130,7 +130,26 @@ const TrackingPage: React.FC = () => {
         } catch (e) { alert("Error al aprobar arte."); }
     };
 
-    // ... (Voice Tracking logic remains identical to previous version) ...
+    // GENERAR LINK DE COBRO (NUEVO REQUERIMIENTO)
+    const handleGeneratePaymentLink = (job: Trabajo) => {
+        const message = `*SOLICITUD DE PAGO / COBRO*
+--------------------------------
+🧾 *Orden:* #${job.orden}
+📝 *Detalle:* ${job.subtipo}
+💰 *Saldo Pendiente:* ${formatCurrency(job.saldo)}
+
+*DATOS BANCARIOS:*
+🏦 Banco Pichincha
+💳 Cta. Ahorro: 123-4567890
+👤 Imprenta Córdova
+🆔 RUC: 0702065319001
+
+📎 *Por favor adjunte su comprobante aquí para procesar su retiro.*`;
+
+        const url = `https://wa.me/593993083943?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+
     // MAESTRO FEATURE: Voice AI Control
     const startVoiceTracking = async () => {
         if (!foundJobs.length) {
@@ -357,6 +376,16 @@ const TrackingPage: React.FC = () => {
                                                 <div className="col-span-2 p-6 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-100 dark:border-red-900/30">
                                                     <span className="text-[10px] font-black text-brand-red uppercase block mb-1">Saldo a Pagar en Local</span>
                                                     <span className="text-4xl font-black text-brand-red">{formatCurrency(job.saldo)}</span>
+                                                    
+                                                    {/* BOTÓN GENERAR LINK DE COBRO */}
+                                                    {job.saldo > 0 && (
+                                                        <button 
+                                                            onClick={() => handleGeneratePaymentLink(job)}
+                                                            className="mt-4 w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-brand-blue dark:hover:bg-slate-200 transition-colors shadow-lg"
+                                                        >
+                                                            <WalletIcon className="w-4 h-4" /> Generar Link de Cobro
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

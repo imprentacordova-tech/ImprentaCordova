@@ -215,7 +215,23 @@ export const registerRetiro = async (trabajoId: string, pagoFinal: number, usuar
     throw new Error("Trabajo no encontrado");
 };
 
-export const getUsers = async (): Promise<User[]> => JSON.parse(localStorage.getItem(DB_MAP.users) || '[]');
+export const getUsers = async (): Promise<User[]> => {
+    const users = JSON.parse(localStorage.getItem(DB_MAP.users) || '[]');
+    
+    // Sembrar usuarios por defecto si no existen
+    if (users.length === 0) {
+        const defaultUsers: User[] = [
+            { id: 'u1', nombre: 'Pedro', email: 'gerencia@imprentacordova.com', rol: 'Admin', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
+            { id: 'u2', nombre: 'Roberto', email: 'diseno@imprentacordova.com', rol: 'Diseñador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false },
+            { id: 'u3', nombre: 'Aleida', email: 'ventas@imprentacordova.com', rol: 'Operador', estado: 'Activo', ultimoAcceso: new Date().toISOString(), requirePassword: false }
+        ];
+        localStorage.setItem(DB_MAP.users, JSON.stringify(defaultUsers));
+        return defaultUsers;
+    }
+    
+    return users;
+};
+
 export const getInventario = async (): Promise<InventoryItem[]> => JSON.parse(localStorage.getItem(DB_MAP.inventario) || '[]');
 export const getProveedores = async (): Promise<Proveedor[]> => JSON.parse(localStorage.getItem(DB_MAP.proveedores) || '[]');
 export const getTareasProveedor = async (): Promise<TareaProveedor[]> => JSON.parse(localStorage.getItem(DB_MAP.tareas) || '[]');
