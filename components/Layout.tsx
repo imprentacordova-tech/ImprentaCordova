@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-// Fixed: Removed duplicate alias for GlobeAltIcon as CloudIcon is now exported directly from Icons.tsx
 import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon, CordovaLogo, CloudIcon, CheckCircleIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { getTrabajos } from '../services/mockApi';
@@ -15,37 +14,37 @@ interface LayoutProps {
 
 const navGroups = [
   {
-    title: 'Navegación',
+    title: 'Principal',
     items: [
-      { path: "/dashboard", label: "Panel Principal", icon: DashboardIcon },
-      { path: "/", label: "Vista Pública", icon: GlobeAltIcon },
+      { path: "/dashboard", label: "Dashboard", icon: DashboardIcon },
+      { path: "/", label: "Sitio Público", icon: GlobeAltIcon },
     ]
   },
   {
     title: 'Producción',
     items: [
       { path: "/nuevo", label: "Nueva Orden", icon: AddIcon },
-      { path: "/diseno", label: "Área de Diseño", icon: PaletteIcon },
-      { path: "/kds", label: "Taller en Vivo", icon: KdsIcon },
-      { path: "/retiros", label: "Entregas / Caja", icon: ReceiptIcon },
+      { path: "/diseno", label: "Diseño", icon: PaletteIcon },
+      { path: "/kds", label: "Taller (KDS)", icon: KdsIcon },
+      { path: "/retiros", label: "Entregas", icon: ReceiptIcon },
     ]
   },
   {
-    title: 'Administración',
+    title: 'Gestión',
     items: [
-      { path: "/clientes", label: "Contribuyentes", icon: ClientsIcon },
+      { path: "/clientes", label: "Clientes", icon: ClientsIcon },
       { path: "/trabajos", label: "Historial", icon: DocumentIcon },
       { path: "/productos", label: "Catálogo", icon: BoxIcon },
-      { path: "/inventario", label: "Insumos", icon: SolidBoxIcon },
+      { path: "/inventario", label: "Inventario", icon: SolidBoxIcon },
     ]
   },
   {
     title: 'Sistema',
     adminOnly: true,
     items: [
-      { path: "/finanzas", label: "Reportes IA", icon: FinanceIcon },
-      { path: "/usuarios", label: "Personal", icon: UsersIcon },
-      { path: "/configuracion", label: "Configuración", icon: Cog8ToothIcon },
+      { path: "/finanzas", label: "Finanzas IA", icon: FinanceIcon },
+      { path: "/usuarios", label: "Usuarios", icon: UsersIcon },
+      { path: "/configuracion", label: "Ajustes", icon: Cog8ToothIcon },
     ]
   },
 ];
@@ -68,23 +67,23 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     }, []);
 
     return (
-      <aside className="w-72 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col h-full border-r border-slate-100 dark:border-slate-800 shadow-2xl z-20">
-        <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center gap-4">
-             <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-lg shadow-brand-blue/20">
-                <CordovaLogo className="w-8 h-8 brightness-0 invert" />
+      <aside className="w-72 bg-surface-light/80 dark:bg-brand-dark/95 backdrop-blur-xl text-slate-800 dark:text-slate-200 flex flex-col h-full border-r border-slate-200/50 dark:border-white/5 z-20 transition-all duration-300">
+        <div className="p-8 border-b border-slate-100 dark:border-white/5 flex items-center gap-4">
+             <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/30 text-white">
+                <CordovaLogo className="w-6 h-6 brightness-0 invert" />
              </div>
              <div>
-                <h2 className="text-xl font-black tracking-tighter leading-none">CÓRDOVA</h2>
-                <p className="text-[9px] font-black text-brand-red uppercase tracking-[0.3em] mt-1">E.R.P. Vision</p>
+                <h2 className="font-display font-bold text-lg leading-none tracking-tight text-slate-900 dark:text-white">CÓRDOVA</h2>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1">Vision ERP</p>
              </div>
         </div>
         
-        <nav className="flex-grow p-4 space-y-8 overflow-y-auto custom-scrollbar pt-8">
+        <nav className="flex-grow px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
           {navGroups.map(group => {
             if (group.adminOnly && user.rol !== 'Admin') return null;
             return (
-                <div key={group.title} className="space-y-2">
-                    <h3 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">{group.title}</h3>
+                <div key={group.title} className="space-y-1">
+                    <h3 className="px-4 text-[10px] font-bold text-slate-400/80 uppercase tracking-widest mb-3 font-display">{group.title}</h3>
                     <div className="space-y-1">
                         {group.items.map(item => {
                             const isActive = location.pathname === item.path;
@@ -95,19 +94,19 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                                     key={item.path}
                                     to={item.path}
                                     className={
-                                        `group w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 ${
+                                        `group w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                                             isActive
-                                                ? 'bg-brand-blue text-white shadow-xl shadow-brand-blue/20 translate-x-2'
-                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-brand-blue'
+                                                ? 'bg-white dark:bg-white/10 text-brand-blue dark:text-white shadow-soft dark:shadow-none'
+                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                                         }`
                                     }
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
-                                        <span className="tracking-wide">{item.label}</span>
+                                    <div className="flex items-center gap-3">
+                                        <item.icon className={`h-4 w-4 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-brand-blue dark:text-white' : 'text-slate-400'}`} />
+                                        <span className={`${isActive ? 'font-bold' : ''}`}>{item.label}</span>
                                     </div>
                                     {badge > 0 && (
-                                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black ${isActive ? 'bg-white text-brand-blue' : 'bg-brand-red text-white'}`}>
+                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm ${isActive ? 'bg-brand-blue text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
                                             {badge}
                                         </span>
                                     )}
@@ -120,14 +119,14 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
           })}
         </nav>
         
-        <div className="p-6 border-t border-slate-50 dark:border-slate-800">
-            <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-3xl flex items-center gap-4">
-                <div className="w-10 h-10 rounded-2xl bg-brand-blue text-white flex items-center justify-center font-black text-sm">
+        <div className="p-4 border-t border-slate-100 dark:border-white/5">
+            <div className="bg-white/50 dark:bg-white/5 p-3 rounded-2xl flex items-center gap-3 border border-slate-100 dark:border-white/5 backdrop-blur-sm">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
                     {user.nombre.charAt(0)}
                 </div>
                 <div className="min-w-0">
-                    <p className="text-xs font-black text-slate-900 dark:text-white truncate uppercase">{user.nombre}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{user.rol}</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user.nombre}</p>
+                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">{user.rol}</p>
                 </div>
             </div>
         </div>
@@ -162,43 +161,37 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: Us
     }, []);
 
     return (
-        <header className="h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl flex items-center justify-between px-8 border-b border-slate-100 dark:border-slate-800 flex-shrink-0 sticky top-0 z-30">
-            <div className="flex items-center gap-6">
-                <button onClick={onMenuClick} className="lg:hidden p-3 bg-slate-100 dark:bg-white/5 rounded-xl text-slate-600 dark:text-slate-300">
-                    <MenuIcon className="h-6 w-6" />
+        <header className="h-16 bg-white/80 dark:bg-brand-dark/80 backdrop-blur-md flex items-center justify-between px-6 border-b border-slate-200/50 dark:border-white/5 sticky top-0 z-30 transition-all duration-300">
+            <div className="flex items-center gap-4">
+                <button onClick={onMenuClick} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    <MenuIcon className="h-5 w-5" />
                 </button>
-                <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cerebro Online</p>
-                    </div>
-                    {/* Indicador Cloud */}
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-500 ${isSyncing ? 'bg-blue-50 border-blue-200 animate-pulse' : 'bg-slate-50 border-slate-100'}`}>
+                <div className="flex items-center gap-3">
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all duration-500 ${isSyncing ? 'bg-blue-50/50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-slate-50/50 border-slate-100 dark:bg-white/5 dark:border-white/5'}`}>
                         {isSyncing ? <CloudIcon className="w-3 h-3 text-brand-blue animate-bounce" /> : <CheckCircleIcon className="w-3 h-3 text-emerald-500" />}
-                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">
-                            {isSyncing ? 'Sincronizando Nube...' : 'Nube Actualizada'}
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            {isSyncing ? 'Sincronizando...' : 'Online'}
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-6">
-                <div className="hidden md:flex flex-col text-right mr-4 leading-none">
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Terminal {user.nombre.toUpperCase()}</span>
-                     <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">{new Date().toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+            <div className="flex items-center gap-4">
+                <div className="hidden md:flex flex-col text-right mr-2">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terminal</span>
+                     <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">{new Date().toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                 </div>
                 
                 <button 
                     onClick={() => setIsDark(!isDark)} 
-                    className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-brand-blue transition-all"
+                    className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-brand-blue hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
                     aria-label="Toggle Theme"
                 >
-                    {isDark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+                    {isDark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
                 </button>
 
-                <button onClick={onLogout} className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all group flex items-center gap-2">
-                    <LogoutIcon className="h-5 w-5" />
-                    <span className="hidden xl:inline text-[10px] font-black uppercase tracking-widest">Salir</span>
+                <button onClick={onLogout} className="p-2.5 rounded-xl text-slate-400 hover:text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition-all" title="Cerrar Sesión">
+                    <LogoutIcon className="h-4 w-4" />
                 </button>
             </div>
         </header>
@@ -209,13 +202,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans selection:bg-brand-blue selection:text-white">
+    <div className="flex h-screen bg-surface-light dark:bg-brand-dark overflow-hidden font-sans">
         {/* Mobile Sidebar */}
         <div className={`fixed inset-0 z-[100] lg:hidden transition-opacity duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
-            <div className={`relative w-72 h-full bg-white dark:bg-slate-900 shadow-3xl transition-transform duration-500 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
+            <div className={`relative w-72 h-full bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <Sidebar user={user} />
-                <button onClick={() => setSidebarOpen(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-brand-red"><CloseIcon className="h-6 w-6" /></button>
+                <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-brand-red"><CloseIcon className="h-5 w-5" /></button>
             </div>
         </div>
 
@@ -227,7 +220,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
         <div className="flex flex-col flex-1 w-0 overflow-hidden">
             <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
             <main className="flex-1 relative overflow-y-auto focus:outline-none p-6 lg:p-10 scroll-smooth custom-scrollbar">
-                {children}
+                <div className="max-w-7xl mx-auto w-full animate-slide-up">
+                    {children}
+                </div>
             </main>
         </div>
     </div>

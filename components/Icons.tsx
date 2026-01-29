@@ -76,7 +76,9 @@ import {
     Layers,
     FileStack,
     Folder,
-    QrCode
+    QrCode,
+    Zap,
+    CreditCard
 } from 'lucide-react';
 
 // Common SVG props
@@ -95,9 +97,7 @@ export const ArrowDownTrayIcon = Download;
 export const CheckCircleIcon = CheckCircle;
 export const Cog8ToothIcon = Settings;
 export const GlobeAltIcon = Globe;
-// Fixed: Added CloudIcon export (using Globe as established in Layout.tsx) to resolve import errors in Configuracion.tsx
 export const CloudIcon = Globe;
-// Fixed: Added FolderIcon export to resolve import errors in NuevoPedido.tsx
 export const FolderIcon = Folder;
 export const ShieldCheckIcon = ShieldCheck;
 export const EyeIcon = Eye;
@@ -114,7 +114,6 @@ export const ClientsIcon = Users;
 export const LogoutIcon = LogOut;
 export const MenuIcon = Menu;
 export const CloseIcon = X;
-// Added XIcon and MicIcon to resolve import errors in Tracking.tsx
 export const XIcon = X;
 export const MicIcon = Mic;
 export const InventoryIcon = Package;
@@ -166,9 +165,10 @@ export const MapPinIcon = MapPin;
 export const PrinterIcon = Printer;
 export const LayersIcon = Layers;
 export const FileStackIcon = FileStack;
-// Fixed: Added CheckIcon export to resolve import errors in Configuracion.tsx
 export const CheckIcon = Check;
 export const QrCodeIcon = QrCode;
+export const BoltIcon = Zap;
+export const IdentificationIcon = CreditCard;
 
 export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles };
 
