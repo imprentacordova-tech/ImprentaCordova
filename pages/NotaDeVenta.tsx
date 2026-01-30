@@ -7,9 +7,12 @@ import { formatCurrency, numeroALetras } from '../utils';
 import { 
     PrinterIcon, ArrowLeftIcon, CordovaLogo, 
     MapPinIcon, WhatsAppIcon, CheckBadgeIcon, 
-    EnvelopeIcon, PhoneIcon
+    EnvelopeIcon, PhoneIcon, ArrowDownTrayIcon, Loader2Icon
 } from '../components/Icons';
 import { getConfig, NotaDeVentaConfig } from '../services/configService';
+
+// Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
+declare const html2pdf: any;
 
 const NotaDeVentaPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
@@ -18,6 +21,7 @@ const NotaDeVentaPage: React.FC = () => {
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,7 +39,45 @@ const NotaDeVentaPage: React.FC = () => {
         fetchData();
     }, [trabajoId]);
 
-    if (loading || !trabajo || !cliente || !config) return null;
+    const generatePDF = async () => {
+        const element = document.getElementById('nota-venta-canvas');
+        if (!element || !trabajo || !cliente) return;
+
+        setIsGenerating(true);
+        
+        // Configuración exacta para A5 sin bordes blancos extraños
+        const opt = {
+            margin: 0, // Márgenes controlados por CSS padding
+            filename: `NV-${String(trabajo.orden).padStart(6,'0')}-${cliente.nombre.split(' ')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 3, // Alta resolución (3x) para que no se vea borroso
+                useCORS: true, 
+                letterRendering: true,
+                scrollY: 0
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a5', 
+                orientation: 'portrait' 
+            }
+        };
+
+        try {
+            await html2pdf().set(opt).from(element).save();
+        } catch (error) {
+            console.error("Error generando PDF", error);
+            alert("Hubo un error al generar el PDF. Intente nuevamente.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    if (loading || !trabajo || !cliente || !config) return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-900">
+            <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
+        </div>
+    );
 
     const secuencial = String(trabajo.orden).padStart(9, '0');
     const fechaEmision = new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -43,173 +85,174 @@ const NotaDeVentaPage: React.FC = () => {
 
     return (
         <div className="bg-slate-800 min-h-screen py-8 flex flex-col items-center justify-start overflow-y-auto font-sans">
-            <style>{`
-                @media print {
-                    @page { size: A5; margin: 0; }
-                    body { margin: 0; background: white; -webkit-print-color-adjust: exact; }
-                    .no-print { display: none !important; }
-                    #nota-venta-canvas { 
-                        box-shadow: none !important; 
-                        margin: 0 !important;
-                        border-radius: 0 !important;
-                        width: 148mm !important; 
-                        height: 210mm !important; 
-                        padding: 8mm !important;
-                    }
-                }
-            `}</style>
-
-            <div className="w-full max-w-[148mm] flex justify-between mb-6 no-print px-4 md:px-0">
+            {/* BARRA DE HERRAMIENTAS SUPERIOR (No sale en impresión) */}
+            <div className="w-full max-w-[148mm] flex justify-between mb-6 px-4 md:px-0 z-50">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/70 hover:text-white font-bold text-xs uppercase tracking-widest transition-colors">
                     <ArrowLeftIcon className="w-4 h-4"/> Volver
                 </button>
-                <button onClick={() => window.print()} className="bg-brand-blue text-white px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-blue-600 transition-all flex items-center gap-2">
-                    <PrinterIcon className="w-4 h-4"/> Imprimir
-                </button>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={generatePDF} 
+                        disabled={isGenerating}
+                        className="bg-white text-brand-blue px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-slate-100 transition-all flex items-center gap-2 disabled:opacity-70"
+                    >
+                        {isGenerating ? <Loader2Icon className="w-4 h-4 animate-spin"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
+                        {isGenerating ? 'Generando...' : 'Descargar PDF'}
+                    </button>
+                    <button 
+                        onClick={() => window.print()} 
+                        className="bg-brand-blue text-white px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-blue-600 transition-all flex items-center gap-2"
+                    >
+                        <PrinterIcon className="w-4 h-4"/> Imprimir
+                    </button>
+                </div>
             </div>
 
-            {/* DOCUMENTO A5 */}
-            <div id="nota-venta-canvas" className="bg-white relative flex flex-col box-border overflow-hidden shadow-2xl" 
-                style={{ width: '148mm', height: '210mm', padding: '10mm', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {/* --- LIENZO DEL DOCUMENTO (A5 EXACTO) --- */}
+            {/* Usamos dimensiones fijas en mm para asegurar que html2pdf capture exactamente lo que queremos */}
+            <div 
+                id="nota-venta-canvas" 
+                className="bg-white relative flex flex-col box-border overflow-hidden shadow-2xl" 
+                style={{ 
+                    width: '148mm', 
+                    height: '210mm', 
+                    padding: '10mm', 
+                    fontFamily: "'Plus Jakarta Sans', sans-serif" 
+                }}
+            >
                 
-                {/* FONDO / MARCA DE AGUA */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+                {/* MARCA DE AGUA SUTIL */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04] z-0">
                     <CordovaLogo className="w-64 h-64 grayscale" />
                 </div>
 
-                {/* CABECERA */}
-                <div className="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                            <CordovaLogo className="h-8 w-auto" />
-                            <div>
-                                <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Imprenta Córdova</h1>
-                                <p className="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Excelencia Gráfica</p>
+                <div className="relative z-10 flex flex-col h-full">
+                    
+                    {/* ENCABEZADO */}
+                    <div className="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
+                        <div className="flex flex-col gap-2 w-[60%]">
+                            <div className="flex items-center gap-3">
+                                <CordovaLogo className="h-10 w-auto" />
+                                <div>
+                                    <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">{config.emisorNombreComercial}</h1>
+                                    <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.2em]">Servicios Gráficos</p>
+                                </div>
+                            </div>
+                            <div className="text-[7px] text-slate-600 space-y-0.5 mt-2 font-medium leading-tight">
+                                <p className="uppercase font-bold">{config.emisorRazonSocial}</p>
+                                <p className="flex items-center gap-1"><MapPinIcon className="w-2 h-2 text-brand-red"/> {config.emisorDireccionMatriz}</p>
+                                <p className="flex items-center gap-1"><PhoneIcon className="w-2 h-2 text-brand-red"/> {config.emisorTelefono}</p>
+                                <p className="flex items-center gap-1"><EnvelopeIcon className="w-2 h-2 text-brand-red"/> {config.emisorEmail}</p>
                             </div>
                         </div>
-                        <div className="text-[7px] text-slate-500 space-y-0.5 mt-1 font-medium">
-                            <p className="flex items-center gap-1"><MapPinIcon className="w-2 h-2"/> {config.emisorDireccionMatriz}</p>
-                            <p className="flex items-center gap-1"><PhoneIcon className="w-2 h-2"/> {config.emisorTelefono}</p>
-                            <p className="flex items-center gap-1"><EnvelopeIcon className="w-2 h-2"/> {config.emisorEmail}</p>
+
+                        <div className="w-[40%] text-right">
+                            <div className="border border-slate-300 rounded-lg p-2 bg-slate-50 mb-1">
+                                <p className="text-[8px] font-bold text-slate-500 uppercase">R.U.C. {config.emisorRuc}</p>
+                                <h2 className="text-sm font-black text-brand-red uppercase my-0.5">Nota de Venta</h2>
+                                <p className="text-[11px] font-mono text-slate-900 font-bold tracking-widest">N° {config.emisorEstablecimiento}-{config.emisorPuntoEmision}-{secuencial}</p>
+                            </div>
+                            <p className="text-[6px] text-slate-400 uppercase font-bold tracking-wider">AUT. SRI: {config.autorizacionSRI}</p>
+                            <p className="text-[6px] text-slate-400 uppercase font-bold tracking-wider">{config.emisorTipoContribuyente}</p>
                         </div>
                     </div>
 
-                    <div className="text-right">
-                        <div className="border border-slate-200 rounded-lg p-2 bg-slate-50">
-                            <p className="text-[8px] font-bold text-slate-500 uppercase">R.U.C. {config.emisorRuc}</p>
-                            <h2 className="text-sm font-black text-brand-red uppercase my-0.5">Nota de Venta</h2>
-                            <p className="text-[10px] font-mono text-slate-900 font-bold">N° {config.emisorEstablecimiento}-{config.emisorPuntoEmision}-{secuencial}</p>
-                        </div>
-                        <p className="text-[6px] text-slate-400 mt-1 uppercase font-bold tracking-wider">
-                            AUT. SRI: {config.autorizacionSRI}
-                        </p>
-                        <p className="text-[6px] text-slate-400 uppercase font-bold tracking-wider">
-                            {config.emisorTipoContribuyente}
-                        </p>
-                    </div>
-                </div>
+                    {/* DATOS DEL CLIENTE */}
+                    <div className="bg-slate-50 rounded-lg p-3 mb-4 border border-slate-200 text-[8px]">
+                        <div className="grid grid-cols-12 gap-y-1">
+                            <div className="col-span-2 text-slate-500 font-bold uppercase">Cliente:</div>
+                            <div className="col-span-10 text-slate-900 font-bold uppercase truncate">{cliente.nombre}</div>
+                            
+                            <div className="col-span-2 text-slate-500 font-bold uppercase">RUC/CI:</div>
+                            <div className="col-span-4 text-slate-900 font-mono font-bold">{cliente.ruc || cliente.cedula}</div>
+                            
+                            <div className="col-span-2 text-slate-500 font-bold uppercase text-right pr-2">Fecha:</div>
+                            <div className="col-span-4 text-slate-900 font-bold">{fechaEmision}</div>
 
-                {/* DATOS DEL CLIENTE */}
-                <div className="bg-slate-50/50 rounded-lg p-3 mb-6 border border-slate-100 text-[9px]">
-                    <div className="grid grid-cols-12 gap-y-2">
-                        <div className="col-span-8">
-                            <span className="text-slate-400 font-bold uppercase block text-[7px] tracking-wider">Cliente</span>
-                            <span className="text-slate-900 font-bold uppercase text-xs block truncate pr-2">{cliente.nombre}</span>
-                        </div>
-                        <div className="col-span-4 text-right">
-                            <span className="text-slate-400 font-bold uppercase block text-[7px] tracking-wider">RUC / CI</span>
-                            <span className="text-slate-900 font-mono font-bold block">{cliente.ruc || cliente.cedula}</span>
-                        </div>
-                        <div className="col-span-8">
-                            <span className="text-slate-400 font-bold uppercase block text-[7px] tracking-wider">Dirección</span>
-                            <span className="text-slate-700 font-medium uppercase block truncate pr-2">{cliente.direccion || 'Ciudad'}</span>
-                        </div>
-                        <div className="col-span-4 text-right">
-                            <span className="text-slate-400 font-bold uppercase block text-[7px] tracking-wider">Fecha Emisión</span>
-                            <span className="text-slate-700 font-medium block">{fechaEmision}</span>
+                            <div className="col-span-2 text-slate-500 font-bold uppercase">Dirección:</div>
+                            <div className="col-span-10 text-slate-700 uppercase truncate">{cliente.direccion || 'Ciudad'}</div>
                         </div>
                     </div>
-                </div>
 
-                {/* TABLA DE DETALLES */}
-                <div className="flex-grow">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b-2 border-slate-900">
-                                <th className="py-1 text-[8px] font-black text-slate-900 uppercase w-[10%] text-center">Cant.</th>
-                                <th className="py-1 text-[8px] font-black text-slate-900 uppercase w-[60%]">Descripción</th>
-                                <th className="py-1 text-[8px] font-black text-slate-900 uppercase w-[15%] text-right">P. Unit</th>
-                                <th className="py-1 text-[8px] font-black text-slate-900 uppercase w-[15%] text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-[9px] text-slate-700">
-                            <tr className="border-b border-slate-100">
-                                <td className="py-3 text-center font-bold">{trabajo.cantidad}</td>
-                                <td className="py-3 uppercase font-medium leading-tight pr-2">
-                                    {trabajo.subtipo}
-                                </td>
-                                <td className="py-3 text-right tabular-nums">{formatCurrency(trabajo.total / trabajo.cantidad)}</td>
-                                <td className="py-3 text-right font-bold tabular-nums text-slate-900">{formatCurrency(trabajo.total)}</td>
-                            </tr>
-                            {/* Líneas vacías para llenar espacio */}
-                            {[...Array(6)].map((_, i) => (
-                                <tr key={i} className="border-b border-slate-50">
-                                    <td className="py-3">&nbsp;</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                    {/* TABLA DE DETALLES */}
+                    <div className="flex-grow">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-900 text-white">
+                                    <th className="py-1 px-2 text-[7px] font-bold uppercase w-[10%] text-center rounded-tl-md">Cant.</th>
+                                    <th className="py-1 px-2 text-[7px] font-bold uppercase w-[60%]">Descripción</th>
+                                    <th className="py-1 px-2 text-[7px] font-bold uppercase w-[15%] text-right">P. Unit</th>
+                                    <th className="py-1 px-2 text-[7px] font-bold uppercase w-[15%] text-right rounded-tr-md">Total</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* PIE DE PÁGINA Y TOTALES */}
-                <div className="mt-4">
-                    <div className="flex justify-between items-end mb-6">
-                        <div className="w-[60%] pr-4">
-                            <div className="border-t border-slate-300 pt-1 mb-1">
-                                <p className="text-[8px] text-slate-500 uppercase font-bold">Son:</p>
-                                <p className="text-[9px] text-slate-900 font-medium italic leading-tight">{totalEnLetras}</p>
-                            </div>
-                            <div className="mt-4 flex gap-2 items-center text-[7px] text-slate-400 uppercase font-bold bg-slate-50 p-2 rounded">
-                                <CheckBadgeIcon className="w-3 h-3 text-emerald-500"/>
-                                <span>Garantía de Calidad Córdova</span>
-                            </div>
-                        </div>
-                        
-                        <div className="w-[40%] bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <div className="flex justify-between items-center text-[8px] font-bold text-slate-500 mb-1">
-                                <span>SUBTOTAL</span>
-                                <span>{formatCurrency(trabajo.total)}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[8px] font-bold text-slate-500 mb-2 border-b border-slate-200 pb-1">
-                                <span>DESCUENTO</span>
-                                <span>$0.00</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm font-black text-slate-900">
-                                <span>TOTAL</span>
-                                <span>{formatCurrency(trabajo.total)}</span>
-                            </div>
-                        </div>
+                            </thead>
+                            <tbody className="text-[9px] text-slate-700">
+                                <tr className="border-b border-slate-100">
+                                    <td className="py-2 text-center font-bold align-top">{trabajo.cantidad}</td>
+                                    <td className="py-2 px-2 uppercase font-medium leading-tight align-top">
+                                        {trabajo.subtipo}
+                                    </td>
+                                    <td className="py-2 px-2 text-right align-top tabular-nums">{formatCurrency(trabajo.total / trabajo.cantidad)}</td>
+                                    <td className="py-2 px-2 text-right font-bold align-top tabular-nums text-slate-900">{formatCurrency(trabajo.total)}</td>
+                                </tr>
+                                {/* Relleno para mantener estructura visual si hay poco contenido */}
+                                {[...Array(8)].map((_, i) => (
+                                    <tr key={i}>
+                                        <td className="py-2">&nbsp;</td><td></td><td></td><td></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
-                    {/* FIRMAS */}
-                    <div className="grid grid-cols-2 gap-8 mt-4">
-                        <div className="text-center">
-                            <div className="border-t border-slate-300 w-3/4 mx-auto mb-1"></div>
-                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Firma Autorizada</p>
+                    {/* PIE DE PÁGINA */}
+                    <div className="mt-auto">
+                        <div className="flex justify-between items-end mb-6">
+                            <div className="w-[60%] pr-4">
+                                <div className="border-t border-slate-300 pt-1 mb-2">
+                                    <p className="text-[7px] text-slate-500 uppercase font-bold">Son:</p>
+                                    <p className="text-[8px] text-slate-900 font-medium italic leading-tight">{totalEnLetras}</p>
+                                </div>
+                                <div className="flex gap-2 items-center text-[6px] text-slate-400 uppercase font-bold bg-slate-50 p-1.5 rounded border border-slate-100">
+                                    <CheckBadgeIcon className="w-3 h-3 text-emerald-500"/>
+                                    <span>Documento Categorizado: NO</span>
+                                </div>
+                            </div>
+                            
+                            <div className="w-[40%]">
+                                <div className="flex justify-between items-center text-[8px] font-bold text-slate-500 mb-1">
+                                    <span>SUBTOTAL</span>
+                                    <span>{formatCurrency(trabajo.total)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-[8px] font-bold text-slate-500 mb-1">
+                                    <span>IVA 0%</span>
+                                    <span>$0.00</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-black text-slate-900 border-t border-slate-900 pt-1 mt-1">
+                                    <span>TOTAL USD</span>
+                                    <span>{formatCurrency(trabajo.total)}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-center">
-                            <div className="border-t border-slate-300 w-3/4 mx-auto mb-1"></div>
-                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Recibí Conforme</p>
-                        </div>
-                    </div>
 
-                    <div className="mt-4 text-center border-t border-slate-100 pt-2">
-                        <p className="text-[6px] text-slate-400 uppercase tracking-[0.2em] font-bold">
-                            Documento válido para su emisión hasta {config.fechaCaducidad} • Original: Adquirente / Copia: Emisor
-                        </p>
+                        {/* FIRMAS */}
+                        <div className="grid grid-cols-2 gap-8 mb-4">
+                            <div className="text-center">
+                                <div className="border-t border-slate-400 w-3/4 mx-auto mb-1"></div>
+                                <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">Firma Autorizada</p>
+                            </div>
+                            <div className="text-center">
+                                <div className="border-t border-slate-400 w-3/4 mx-auto mb-1"></div>
+                                <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">Recibí Conforme</p>
+                            </div>
+                        </div>
+
+                        {/* LEGAL */}
+                        <div className="text-center border-t border-slate-200 pt-1">
+                            <p className="text-[5px] text-slate-400 uppercase tracking-[0.1em] font-medium leading-tight">
+                                {config.imprentaNombre} • RUC {config.imprentaRuc} • Aut. {config.imprentaAutorizacion} • F. Caducidad {config.fechaCaducidad}
+                                <br/> Original: Adquirente / Copia: Emisor
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
