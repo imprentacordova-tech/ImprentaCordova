@@ -477,7 +477,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
                                     {c.nombre.charAt(0)}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-black text-white text-base tracking-tight uppercase leading-none mb-1.5 truncate">{c.nombre}</p>
+                                    <p className="font-black text-white text-base tracking-tight uppercase leading-tight mb-1.5 truncate">{c.nombre}</p>
                                     <div className="flex items-center gap-3">
                                         <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
                                             <IdentificationIcon className="w-3 h-3 opacity-40"/> {c.cedula || c.ruc} 

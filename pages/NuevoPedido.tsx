@@ -58,14 +58,14 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     return (
-        <div className="flex xl:flex-row flex-col h-[calc(100vh-100px)] gap-10 overflow-hidden animate-fade-in pb-4 px-2">
+        <div className="flex xl:flex-row flex-col xl:h-[calc(100vh-100px)] gap-10 xl:overflow-hidden animate-fade-in pb-4 px-2">
             {/* PANEL IZQUIERDO: SELECCIÓN DE PRODUCTOS (PRIMERO) */}
             <div className="flex-1 flex flex-col gap-8 overflow-hidden">
                 
                 {/* CABECERA DINÁMICA */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 glass-card-luxury p-10 rounded-[2.5rem]">
                     <div>
-                        <h2 className="text-4xl md:text-5xl font-black text-[#dce1fb] uppercase tracking-tighter mb-2 leading-none">
+                        <h2 className="text-4xl md:text-5xl font-black text-[#dce1fb] uppercase tracking-tighter mb-2 leading-tight">
                             {jobType === TrabajoTipo.SRI ? 'Emisión SRI' : 'Producción'}
                         </h2>
                         <p className="text-liquid-gold font-bold tracking-[0.3em] text-[10px] uppercase opacity-80">Selección de catálogo · Obsidian & Gold</p>
