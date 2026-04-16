@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { getClientes, getTrabajos, updateCliente } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
 import { UI_TEXT } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
@@ -74,37 +74,31 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
     );
 };
 
-// ... Rest of the file kept similar but with visual polish in the list ...
-// Se omiten los componentes repetidos InputField/ClientFormModal por brevedad en este bloque
-// pero se incluyen en el archivo final.
-
+// ... Rest of component uses useData state
 const ClientesPage: React.FC = () => {
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { clientes, trabajos, loading, addCliente, updateCliente } = useData();
     const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
     const [marketingClient, setMarketingClient] = useState<Cliente | null>(null);
     
     const location = useLocation();
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const [c, t] = await Promise.all([getClientes(), getTrabajos()]);
-            setClientes(c);
-            setTrabajos(t);
-            setLoading(false);
+        const params = new URLSearchParams(location.search);
+        const reengageId = params.get('reengage');
+        if (reengageId && clientes.length > 0) {
+            const client = clientes.find(cl => cl.id === reengageId);
+            if (client) setMarketingClient(client);
+        }
+    }, [location.search, clientes]);
 
-            // Handle reengage from dashboard
-            const params = new URLSearchParams(location.search);
-            const reengageId = params.get('reengage');
-            if (reengageId) {
-                const client = c.find(cl => cl.id === reengageId);
-                if (client) setMarketingClient(client);
-            }
-        };
-        fetchData();
-    }, [location.search]);
+    const handleSaveClient = async (client: Partial<Cliente>) => {
+        if (client.id) {
+            await updateCliente(client.id, client);
+        } else {
+            await addCliente(client as any);
+        }
+        setSelectedClient(null);
+    };
 
     return (
         <div className="space-y-8 animate-fade-in flex flex-col h-full pb-12">
@@ -114,10 +108,10 @@ const ClientesPage: React.FC = () => {
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Directorio Exclusivo</p>
                     <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Coleccionistas</h1>
                 </div>
-                <Link to="/nuevo" className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-4 px-8 rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.3em] overflow-hidden group/btn">
+                <button onClick={() => setSelectedClient({ nombre: '', email: '', telefono: [''], ruc: '', regimen: Regimen.GENERAL })} className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-4 px-8 rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.3em] overflow-hidden group/btn">
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out"></div>
                     <span className="relative z-10 flex items-center gap-2"><UserPlusIcon className="w-4 h-4"/> Añadir Coleccionista</span>
-                </Link>
+                </button>
             </div>
 
             <div className="flex-grow bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
@@ -172,8 +166,70 @@ const ClientesPage: React.FC = () => {
                     onClose={() => setMarketingClient(null)} 
                 />
             )}
-            
-            {/* Modal de edición reutilizado de la versión anterior... */}
+
+            {selectedClient && (
+                <ClientFormModal 
+                    isOpen={!!selectedClient} 
+                    onClose={() => setSelectedClient(null)} 
+                    onSave={handleSaveClient} 
+                    clientToEdit={selectedClient} 
+                />
+            )}
+        </div>
+    );
+};
+
+const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (c: Partial<Cliente>) => void; clientToEdit: Partial<Cliente> }> = ({ isOpen, onClose, onSave, clientToEdit }) => {
+    const [formData, setFormData] = useState<Partial<Cliente>>(clientToEdit);
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        if (name === 'telefono') setFormData({ ...formData, telefono: [value] });
+        else setFormData({ ...formData, [name]: value });
+    };
+
+    return (
+        <div className="fixed inset-0 bg-brand-dark/95 backdrop-blur-2xl z-[150] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-brand-dark/50 rounded-[3rem] shadow-luxury w-full max-w-xl overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
+                <div className="p-10 border-b border-white/5 flex justify-between items-center">
+                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-liquid-gold">Coleccionista</span></h2>
+                    <button onClick={onClose} className="text-slate-500 hover:text-white"><CloseIcon className="w-6 h-6" /></button>
+                </div>
+                <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 space-y-6">
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Nombre Completo / Razón Social</label>
+                        <input name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" placeholder="EJ: SANTIAGO CORDOVA" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">RUC / Cédula</label>
+                            <input name="ruc" value={formData.ruc || formData.cedula} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
+                        </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Régimen</label>
+                            <select name="regimen" value={formData.regimen} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all appearance-none">
+                                <option value={Regimen.GENERAL}>Régimen General</option>
+                                <option value={Regimen.NEGOCIO_POPULAR}>Negocio Popular (RIMPE)</option>
+                                <option value={Regimen.EMPRENDEDOR}>Emprendedor (RIMPE)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">WhatsApp / Teléfono</label>
+                            <input name="telefono" value={formData.telefono?.[0]} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
+                        </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Email (Opcional)</label>
+                            <input name="email" type="email" value={formData.email} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
+                        </div>
+                    </div>
+                    <div className="pt-6 flex justify-end gap-5">
+                        <button type="button" onClick={onClose} className="px-8 py-5 text-slate-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-white transition-all">Descartar</button>
+                        <button type="submit" className="px-10 py-5 bg-white text-brand-dark font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl shadow-luxury hover:bg-liquid-gold transition-all duration-500">Consolidar Datos</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

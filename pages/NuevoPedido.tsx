@@ -8,10 +8,14 @@ import OrderSummary from '../components/orders/OrderSummary';
 import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
 import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon, ArrowRightIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
-import { getTrabajos } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
+import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
+import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon, ArrowRightIcon } from '../components/Icons';
+import { formatCurrency } from '../utils';
 
 const NuevoPedidoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const { getClientDebt } = useData();
     const navigate = useNavigate();
     const { 
         selectedCliente, cartItems, jobType, abono, titular,
@@ -29,19 +33,15 @@ const NuevoPedidoPage: React.FC = () => {
 
     useEffect(() => {
         if (selectedCliente) {
-            getTrabajos().then(trabajos => {
-                const totalDebt = trabajos
-                    .filter(t => t.clienteId === selectedCliente.id && t.estado !== TrabajoEstado.ENTREGADO)
-                    .reduce((sum, t) => sum + t.saldo, 0);
-                setClientDebt(totalDebt);
-            });
+            setClientDebt(getClientDebt(selectedCliente.id));
+            
             // Auto-seleccionar la primera actividad si existe para evitar nulos
             if (selectedCliente.actividades) {
                 const firstAct = selectedCliente.actividades.split('|')[0];
                 if (firstAct) setActividadSeleccionada(firstAct);
             }
         }
-    }, [selectedCliente]);
+    }, [selectedCliente, getClientDebt]);
 
     const handleFinalize = async () => {
         const newJob = await finalizeOrder();

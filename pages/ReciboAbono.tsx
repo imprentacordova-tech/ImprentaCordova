@@ -61,7 +61,8 @@ const ReciboAbonoPage: React.FC = () => {
     
     const emissionDate = new Date(trabajo.fechaEntrada);
     const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.orden}`;
-    const qrSource = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(trackingUrl)}`;
+    const qrSource = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(trackingUrl)}`;
+
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 font-sans">
@@ -176,9 +177,10 @@ const ReciboAbonoPage: React.FC = () => {
                 {/* QR Rastreo */}
                 <div className="text-center mb-4">
                     <p className="text-[9px] font-bold uppercase mb-1">Escanea para rastrear pedido</p>
-                    <img src={qrSource} alt="QR Rastreo" className="w-24 h-24 mx-auto border border-black p-1" />
+                    <img src={qrSource} alt="QR Rastreo" className="w-32 h-32 mx-auto border border-black p-1 shadow-sm" />
                     <p className="text-[8px] font-mono mt-1">imprentacordova.com/tracking</p>
                 </div>
+
 
                 {/* Pie */}
                 <div className="text-center text-[8px] font-bold uppercase border-t border-black pt-2">

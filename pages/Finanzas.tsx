@@ -1,32 +1,19 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line, AreaChart, Area } from 'recharts';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, DailySales, FinancialProjection } from '../types';
 import { formatCurrency } from '../utils';
 import { DollarIcon, FinanceIcon, ClockIcon, ArrowDownTrayIcon, BoxIcon, SolidFinanceIcon, SparklesIcon, Loader2Icon } from '../components/Icons';
 import { generateFinancialProjection } from '../services/geminiService';
 
 const FinanzasPage: React.FC = () => {
-    const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { trabajos, clientes, loading } = useData();
     const [analyzing, setAnalyzing] = useState(false);
     const [aiProjection, setAiProjection] = useState<FinancialProjection | null>(null);
     
     const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const [tData, cData] = await Promise.all([getTrabajos(), getClientes()]);
-            setTrabajos(tData);
-            setClientes(cData);
-            setLoading(false);
-        };
-        fetchData();
-    }, []);
 
     const historicalSales = useMemo(() => {
         const salesMap = new Map<string, number>();

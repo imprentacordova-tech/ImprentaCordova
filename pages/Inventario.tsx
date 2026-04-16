@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { BoxIcon, InventoryIcon, ExclamationTriangleIcon, AddIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon, SearchIcon, TrashIcon, CloseIcon, ClockIcon, LayersIcon, Loader2Icon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { InventoryItem } from '../types';
-import { getInventario, createInventarioItem, updateInventarioItem, deleteInventarioItem, setInventario as saveInventarioOrder } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 
 type SortKey = keyof InventoryItem | 'valorTotal';
 
@@ -84,20 +84,10 @@ const ItemFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (i
 };
 
 const InventarioPage: React.FC = () => {
-    const [inventario, setInventario] = useState<InventoryItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { inventario, loading, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [itemToEdit, setItemToEdit] = useState<Partial<InventoryItem> | null>(null);
     const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
-
-    const fetchInventario = async () => {
-        setLoading(true);
-        const data = await getInventario();
-        setInventario(data);
-        setLoading(false);
-    };
-
-    useEffect(() => { fetchInventario(); }, []);
 
     const kpis = useMemo(() => {
         const valorTotal = inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0);
@@ -111,9 +101,8 @@ const InventarioPage: React.FC = () => {
 
     const handleSaveItem = async (item: Partial<InventoryItem>) => {
         if (item.id) await updateInventarioItem(item.id, item);
-        else await createInventarioItem(item as any);
+        else await addInventoryItem(item as any);
         setItemToEdit(null);
-        await fetchInventario();
     };
 
     return (

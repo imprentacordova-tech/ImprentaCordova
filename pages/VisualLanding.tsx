@@ -29,13 +29,79 @@ const BentoCard: React.FC<{ title: string; desc: string; icon: any; className?: 
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-10 shadow-lg group-hover:rotate-[10deg] transition-transform duration-500 ${dark ? 'bg-white/10' : 'bg-slate-50'}`}>
                 <Icon className={`w-7 h-7 ${dark ? 'text-liquid-gold' : 'text-brand-blue'}`} />
             </div>
-            <h3 className="text-3xl font-display font-black tracking-tight mb-4 leading-none">{title}</h3>
+            {/* Premium Hero Section */}
+            <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-liquid-gold/5 blur-[120px] rounded-full animate-pulse" />
+                </div>
+                
+                <div className="container mx-auto px-6 relative z-10 text-center perspective-luxury">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-boutique border-luxury mb-8"
+                    >
+                        <SparklesIcon className="w-4 h-4 text-liquid-gold animate-pulse" />
+                        <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-bold">The Gold Standard in Printing</span>
+                    </motion.div>
+
+                    <motion.h1 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1.5, delay: 0.2 }}
+                        className="text-6xl md:text-9xl font-black mb-6 tracking-tighter leading-none"
+                    >
+                        TRANSFORMANDO <br />
+                        <span className="text-gold-gradient">IDEAS EN LUJO</span>
+                    </motion.h1>
+
+                    <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.6 }}
+                        transition={{ duration: 1.5, delay: 0.5 }}
+                        className="text-xl md:text-2xl text-white max-w-3xl mx-auto mb-12 font-light leading-relaxed tracking-wide"
+                    >
+                        Imprenta Córdova: Donde la precisión técnica se encuentra con la exclusividad artesanal. 
+                        Diseño y producción de alta gama para marcas que exigen la perfección.
+                    </motion.p>
+
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, delay: 0.8 }}
+                        className="flex flex-col md:flex-row gap-6 justify-center items-center"
+                    >
+                        <button 
+                            onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="btn-luxury group"
+                        >
+                            EXPLORAR CATÁLOGO
+                            <ArrowRightIcon className="inline-block ml-3 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                        <div className="h-px w-12 bg-white/10 hidden md:block" />
+                        <div className="flex -space-x-4">
+                            {[1,2,3].map(i => (
+                                <div key={i} className="w-12 h-12 rounded-full border-2 border-brand-dark bg-slate-800 overflow-hidden">
+                                    <img src={`https://i.pravatar.cc/150?u=${i}`} alt="Client" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all cursor-pointer" />
+                                </div>
+                            ))}
+                            <div className="w-12 h-12 rounded-full border-2 border-brand-dark glass-boutique flex items-center justify-center text-[10px] font-bold text-liquid-gold">
+                                +2k
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+ mb-4 leading-none">{title}</h3>
             <p className={`text-sm leading-relaxed ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{desc}</p>
             <div className="mt-auto pt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
                 Descubrir Excelencia <ChevronRightIcon className="w-4 h-4" />
             </div>
         </div>
     </div>
+);
+
 const ServiceItem: React.FC<{ title: string; desc: string; icon: any; index: string }> = ({ title, desc, icon: Icon, index }) => (
     <div className="group border-t border-white/5 py-12 flex flex-col md:flex-row gap-10 items-start hover:bg-white/[0.02] px-6 transition-colors duration-500">
         <span className="text-4xl font-display font-black text-white/5 group-hover:text-liquid-gold/20 transition-colors duration-700">{index}</span>
@@ -54,25 +120,21 @@ const ServiceItem: React.FC<{ title: string; desc: string; icon: any; index: str
 
 const VisualLanding: React.FC = () => {
     const navigate = useNavigate();
+    const { createPublicOrder, productos: allProductos, loading: dataLoading } = useData();
     const [cartItems, setCartItems] = useState<{ producto: Producto; cantidad: number }[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [productos, setProductos] = useState<Producto[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [trackingId, setTrackingId] = useState('');
     
-    // Checkout States
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [completedOrder, setCompletedOrder] = useState<Trabajo | null>(null);
 
-    // IA Quality Tester State
     const [isTesting, setIsTesting] = useState(false);
     const [testResult, setTestResult] = useState<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Progress Bar State
     const [scrollProgress, setScrollProgress] = useState(0);
 
     useEffect(() => {
@@ -86,11 +148,10 @@ const VisualLanding: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        getProductos().then(data => {
-            setProductos(data);
-            setLoading(false);
-        });
-    }, []);
+        if (allProductos.length > 0) {
+            setProductos(allProductos);
+        }
+    }, [allProductos]);
 
     const handleAddToCart = (p: Producto) => {
         setCartItems(prev => {
@@ -107,7 +168,7 @@ const VisualLanding: React.FC = () => {
         
         setIsPlacingOrder(true);
         try {
-            const newOrder = await createPublicPedido(
+            const newOrder = await createPublicOrder(
                 { nombre: clientName, telefono: clientPhone }, 
                 cartItems
             );
@@ -134,18 +195,10 @@ const VisualLanding: React.FC = () => {
         reader.readAsDataURL(file);
     };
 
-    const handleQuickTrack = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (trackingId.trim()) {
-            navigate('/tracking'); 
-        }
-    };
-
     const subtotal = cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
 
     return (
         <div className="min-h-screen bg-brand-dark font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500">
-            {/* Barra de Progreso de lectura Luxury */}
             <div className="fixed top-0 left-0 w-full h-[1px] bg-white/5 z-[250]">
                 <div 
                     className="h-full bg-liquid-gold shadow-gold-glow transition-all duration-300 ease-out" 
@@ -153,7 +206,6 @@ const VisualLanding: React.FC = () => {
                 ></div>
             </div>
             
-            {/* --- NAVEGACIÓN ARCHAEOLOGICAL --- */}
             <nav className="fixed top-0 left-0 right-0 z-[100] bg-brand-dark/20 backdrop-blur-2xl border-b border-white/5 py-6">
                 <div className="container mx-auto px-8 flex justify-between items-center">
                     <div className="flex items-center gap-4 group cursor-pointer">
@@ -187,7 +239,6 @@ const VisualLanding: React.FC = () => {
 
             {/* --- HERO SUPREMO --- */}
             <section className="relative min-h-screen flex items-center overflow-hidden bg-brand-dark">
-                {/* Mesh animado de fondo */}
                 <div className="absolute inset-0 bg-mesh animate-mesh opacity-40 z-0"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/20 via-transparent to-brand-dark z-0"></div>
                 
@@ -226,12 +277,10 @@ const VisualLanding: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* --- ATELIER VISION AI WIDGET --- */}
                         <div className="lg:col-span-12 xl:col-span-4 relative group">
                             <div className="absolute -inset-4 bg-liquid-gold/5 rounded-[3rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                             
                             <div className="relative glass-card border-white/10 p-10 shadow-2xl overflow-hidden min-h-[500px] flex flex-col justify-center">
-                                {/* Scanner Line Animation */}
                                 {isTesting && <div className="absolute top-0 left-0 w-full h-[2px] bg-liquid-gold/50 shadow-gold-glow animate-scan z-20"></div>}
                                 
                                 {isTesting ? (
@@ -260,17 +309,6 @@ const VisualLanding: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <p className="text-[10px] font-black text-liquid-gold uppercase tracking-widest">Alertas Críticas:</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {testResult.advertencias.map((adv: string, i: number) => (
-                                                    <span key={i} className="px-3 py-1.5 bg-red-500/5 text-red-400 text-[9px] font-bold uppercase rounded-lg border border-red-500/10 backdrop-blur-md">
-                                                        {adv}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-
                                         <button onClick={() => fileInputRef.current?.click()} className="w-full py-5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-brand-dark transition-all">
                                             Repetir Diagnóstico
                                         </button>
@@ -294,17 +332,6 @@ const VisualLanding: React.FC = () => {
                                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest group-hover/drop:text-white transition-colors">Arrastrar archivo o clic para explorar</p>
                                             </div>
                                         </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-4 bg-white/[0.03] rounded-xl border border-white/5">
-                                                <p className="text-[8px] font-black text-liquid-gold uppercase tracking-widest mb-1">DPI Sugerido</p>
-                                                <p className="text-xl font-display font-black text-white">300+</p>
-                                            </div>
-                                            <div className="p-4 bg-white/[0.03] rounded-xl border border-white/5">
-                                                <p className="text-[8px] font-black text-liquid-gold uppercase tracking-widest mb-1">Color Mode</p>
-                                                <p className="text-xl font-display font-black text-white">CMYK</p>
-                                            </div>
-                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -317,7 +344,6 @@ const VisualLanding: React.FC = () => {
             <section id="experiencia" className="py-24 bg-brand-dark relative">
                 <div className="container mx-auto px-8">
                     <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        {/* Card Hero Bento */}
                         <BentoCard 
                             title="Atelier Pasaje"
                             desc="Nuestro showroom principal donde la artesanía y la tecnología convergen."
@@ -332,23 +358,6 @@ const VisualLanding: React.FC = () => {
                             icon={SparklesIcon}
                             className="md:col-span-2 lg:col-span-3"
                         />
-                        <BentoCard 
-                            title="Logística VIP"
-                            desc="Entrega concierge en todo el Cantón Pasaje y El Oro."
-                            icon={BoxIcon}
-                            className="md:col-span-2 lg:col-span-2"
-                            dark
-                        />
-                        <div className="md:col-span-2 lg:col-span-4 glass-card p-10 flex flex-col md:flex-row items-center gap-10">
-                            <div className="flex-grow space-y-4">
-                                <h3 className="text-4xl font-display font-black text-white uppercase tracking-tighter italic">Pack Emprendedor Luxury</h3>
-                                <p className="text-slate-400 text-sm">1000 Tarjetas + 1000 Volantes + Identidad Digital</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-5xl font-display font-black text-liquid-gold">$85.00</p>
-                                <button className="mt-4 px-8 py-3 bg-white text-brand-dark rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-liquid-gold transition-all">Saber Más</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -363,90 +372,68 @@ const VisualLanding: React.FC = () => {
                                 ARTE <br/> <span className="text-white/20">INDUSTRIAL</span>
                             </h2>
                         </div>
-                        <p className="text-xl text-slate-500 max-w-md font-light">
-                            Cada pedido es una obra única. Gestionamos desde la concepción creativa hasta la entrega impecable.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        <ServiceItem 
-                            title="Editorial"
-                            desc="Libros, catálogos y revistas con encuadernación de lujo y papeles de importación."
-                            icon={LayersIcon}
-                            index="01"
-                        />
-                        <ServiceItem 
-                            title="Grandes Formatos"
-                            desc="Impresión Roland 8 colores para vallas y fachadas con nitidez fotográfica."
-                            icon={PrinterIcon}
-                            index="02"
-                        />
-                        <ServiceItem 
-                            title="Legal SRI"
-                            desc="Documentación comercial autorizada con los más altos estándares de seguridad."
-                            icon={ShieldCheckIcon}
-                            index="03"
-                        />
                     </div>
                 </div>
             </section>
 
-            {/* --- CATÁLOGO DE ÉLITE --- */}
-            <section id="catalog" className="py-40 bg-white relative overflow-hidden">
-                <div className="absolute top-0 left-1/4 w-px h-full bg-slate-100 hidden lg:block"></div>
-                <div className="absolute top-0 left-2/4 w-px h-full bg-slate-100 hidden lg:block"></div>
-                <div className="absolute top-0 left-3/4 w-px h-full bg-slate-100 hidden lg:block"></div>
-
-                <div className="container mx-auto px-8 relative">
-                    <div className="flex flex-col lg:flex-row justify-between items-baseline mb-32 gap-10">
-                        <div className="space-y-4">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] block">Object D'art</span>
-                            <h2 className="text-6xl md:text-8xl font-display font-black text-brand-dark tracking-tighter uppercase leading-[0.8]">
-                                PIEZAS <br/> <span className="text-liquid-gold">SUBLIMES</span>
-                            </h2>
+            {/* Interactive Catalog Section */}
+            <section id="catalog" className="py-32 relative">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+                        <div>
+                            <h2 className="text-sm font-bold text-liquid-gold tracking-[0.5em] uppercase mb-4">Nuestro Atelier</h2>
+                            <h3 className="text-5xl md:text-7xl font-black text-white tracking-tighter">COLECCIÓN <span className="text-slate-500">2024</span></h3>
                         </div>
-                        <p className="text-xl text-slate-400 max-w-sm font-light leading-relaxed">
-                            Nuestra selección curada de productos editoriales y comerciales con terminaciones de alta gama.
+                        <p className="text-slate-400 max-w-md text-right font-light tracking-wide">
+                            Cada pieza es fabricada bajo estrictos estándares de calidad internacional, utilizando insumos certificados.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-24">
-                        {loading ? [...Array(4)].map((_, i) => (
-                            <div key={i} className="space-y-8 animate-pulse">
-                                <div className="aspect-[3/4] bg-slate-100 rounded-sm"></div>
-                                <div className="h-4 bg-slate-100 w-3/4"></div>
-                                <div className="h-4 bg-slate-100 w-1/2"></div>
-                            </div>
-                        )) : productos.slice(0, 8).map(p => (
-                            <article key={p.id} className="group relative flex flex-col cursor-pointer" onClick={() => handleAddToCart(p)}>
-                                <div className="aspect-[3/4] overflow-hidden bg-slate-50 relative mb-8">
-                                    {p.imagenUrl ? (
-                                        <img src={p.imagenUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={p.nombre}/>
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-200">
-                                            <BoxIcon className="w-16 h-16 stroke-[0.5]"/>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        {productos.map((p, idx) => (
+                            <motion.div
+                                key={p.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1 }}
+                                className="group glass-boutique overflow-hidden border-luxury"
+                            >
+                                <div className="aspect-[4/5] relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-brand-dark/20 group-hover:bg-transparent transition-colors duration-700 z-10" />
+                                    <img 
+                                        src={p.imagenUrl || 'https://images.unsplash.com/photo-1586075010683-2350bcbc085c?q=80&w=600&auto=format&fit=crop'} 
+                                        alt={p.nombre} 
+                                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[2s] ease-out grayscale group-hover:grayscale-0"
+                                    />
+                                    <div className="absolute top-6 right-6 z-20">
+                                        <div className="w-12 h-12 rounded-full glass-boutique flex items-center justify-center backdrop-blur-3xl group-hover:bg-liquid-gold group-hover:text-brand-dark transition-all duration-500 cursor-pointer" onClick={() => handleAddToCart(p)}>
+                                            <ShoppingCartIcon className="w-5 h-5" />
                                         </div>
-                                    )}
-                                    <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/40 transition-colors duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                        <span className="px-6 py-3 bg-white text-brand-dark font-black text-[9px] uppercase tracking-widest translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                                            Añadir al Pedido
+                                    </div>
+                                    <div className="absolute bottom-6 left-6 z-20">
+                                        <span className="text-[10px] font-bold text-white tracking-widest uppercase bg-brand-dark/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                                            {p.categoria}
                                         </span>
                                     </div>
-                                    {p.esSRI && (
-                                        <span className="absolute top-0 right-0 bg-liquid-gold text-brand-dark text-[8px] font-black px-4 py-2 tracking-widest uppercase">
-                                            Legal
-                                        </span>
-                                    )}
                                 </div>
-                                <div className="space-y-4">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.categoria}</p>
-                                    <h3 className="text-2xl font-display font-medium text-brand-dark leading-tight group-hover:text-liquid-gold transition-colors">{p.nombre}</h3>
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                        <span className="text-xl font-display font-black text-brand-dark">{formatCurrency(p.precio)}</span>
-                                        <div className="w-8 h-[1px] bg-slate-300 group-hover:w-12 transition-all duration-500"></div>
+                                <div className="p-10">
+                                    <h4 className="text-2xl font-black text-white mb-2 tracking-tight group-hover:text-liquid-gold transition-colors">{p.nombre}</h4>
+                                    <p className="text-slate-400 text-sm mb-8 font-light leading-relaxed line-clamp-2">{p.descripcion}</p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-3xl font-black text-white">
+                                            <span className="text-xs font-bold text-slate-500 mr-1">Desde</span>
+                                            {formatCurrency(p.precio)}
+                                        </div>
+                                        <button 
+                                            onClick={() => handleAddToCart(p)}
+                                            className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase hover:text-white transition-colors flex items-center gap-2"
+                                        >
+                                            RESERVAR <ArrowRightIcon className="w-3 h-3" />
+                                        </button>
                                     </div>
                                 </div>
-                            </article>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
@@ -675,6 +662,187 @@ const VisualLanding: React.FC = () => {
                     </div>
                 </div>
             )}
+            {/* Luxury Cart Drawer */}
+            <AnimatePresence>
+                {isCartOpen && (
+                    <>
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsCartOpen(false)}
+                            className="fixed inset-0 bg-brand-dark/80 backdrop-blur-md z-[300]"
+                        />
+                        <motion.div 
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="fixed top-0 right-0 h-full w-full md:w-[450px] glass-boutique z-[301] shadow-luxury flex flex-col p-10"
+                        >
+                            <div className="flex justify-between items-center mb-12">
+                                <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase">Tu Selección</h3>
+                                <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+                                    <CloseIcon className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="flex-grow overflow-y-auto space-y-8 pr-4">
+                                {cartItems.length === 0 ? (
+                                    <div className="h-full flex flex-col items-center justify-center opacity-40">
+                                        <ShoppingCartIcon className="w-16 h-16 mb-6 stroke-[0.5]" />
+                                        <p className="text-[10px] font-bold tracking-widest uppercase">Atelier Vacío</p>
+                                    </div>
+                                ) : (
+                                    cartItems.map((item, i) => (
+                                        <div key={i} className="flex gap-6 group">
+                                            <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
+                                                <img src={item.producto.imagenUrl || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab'} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <h4 className="text-white font-bold leading-tight mb-1">{item.producto.nombre}</h4>
+                                                <p className="text-slate-500 text-xs mb-3">{item.cantidad} unidades</p>
+                                                <p className="text-liquid-gold font-bold">{formatCurrency(item.producto.precio * item.cantidad)}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setCartItems(prev => prev.filter(p => p.producto.id !== item.producto.id))}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-300"
+                                            >
+                                                <CloseIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {cartItems.length > 0 && (
+                                <div className="pt-10 border-t border-white/5 space-y-6">
+                                    <div className="flex justify-between items-baseline">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Inversión Estimada</span>
+                                        <span className="text-3xl font-black text-white">{formatCurrency(subtotal)}</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => { setIsCartOpen(false); setIsCheckingOut(true); }}
+                                        className="w-full btn-luxury"
+                                    >
+                                        PROCEDER AL CHECKOUT
+                                    </button>
+                                </div>
+                            )}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* Luxury Checkout Modal */}
+            <AnimatePresence>
+                {isCheckingOut && (
+                    <div className="fixed inset-0 z-[400] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsCheckingOut(false)}
+                            className="absolute inset-0 bg-brand-dark/90 backdrop-blur-xl"
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative w-full max-w-2xl glass-boutique p-12 overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 p-8">
+                                <button onClick={() => setIsCheckingOut(false)} className="text-slate-500 hover:text-white transition-colors">
+                                    <CloseIcon className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            {completedOrder ? (
+                                <div className="text-center py-12">
+                                    <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                                        <CheckCircleIcon className="w-10 h-10 text-green-400" />
+                                    </div>
+                                    <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">Cotización Recibida</h3>
+                                    <p className="text-slate-400 mb-10 max-w-sm mx-auto">
+                                        Su solicitud ha sido registrada como <span className="text-liquid-gold font-bold">COTIZACIÓN #{completedOrder.id.slice(0, 6)}</span>.
+                                        Para convertirla en pedido, por favor confirme su abono vía WhatsApp.
+                                    </p>
+                                    <div className="flex flex-col gap-4">
+                                        <button 
+                                            onClick={() => {
+                                                const msg = `Hola Imprenta Córdova! Acabo de realizar una cotización web (#${completedOrder.id.slice(0,6)}) por ${formatCurrency(completedOrder.total)}. ¿Cómo procedo con el abono?`;
+                                                window.open(`https://wa.me/593985532588?text=${encodeURIComponent(msg)}`, '_blank');
+                                            }}
+                                            className="btn-luxury bg-green-600 border-none text-white hover:bg-green-500"
+                                        >
+                                            CONFIRMAR POR WHATSAPP
+                                        </button>
+                                        <button 
+                                            onClick={() => { setIsCheckingOut(false); setCompletedOrder(null); }}
+                                            className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                                        >
+                                            Finalizar Gestión
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="mb-12">
+                                        <h3 className="text-4xl font-black text-white tracking-tighter uppercase mb-4">Finalizar Solicitud</h3>
+                                        <p className="text-slate-500 font-light tracking-wide">Ingrese sus datos para recibir su cotización digital.</p>
+                                    </div>
+
+                                    <form onSubmit={handlePlaceOrder} className="space-y-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.3em]">Nombre Completo / Empresa</label>
+                                                <input 
+                                                    type="text" 
+                                                    required 
+                                                    className="input-atelier w-full" 
+                                                    placeholder="E.g. Corporación Noboa"
+                                                    value={clientName}
+                                                    onChange={e => setClientName(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.3em]">WhatsApp de Contacto</label>
+                                                <input 
+                                                    type="tel" 
+                                                    required 
+                                                    className="input-atelier w-full" 
+                                                    placeholder="+593 99 999 9999"
+                                                    value={clientPhone}
+                                                    onChange={e => setClientPhone(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="p-8 bg-white/[0.02] border border-white/5 rounded-3xl space-y-4 mb-10">
+                                            <div className="flex justify-between items-baseline opacity-60">
+                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Resumen de Inversión</span>
+                                                <span className="text-xl font-black text-white">{formatCurrency(subtotal)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-xs text-slate-500">
+                                                <span>Estado Inicial:</span>
+                                                <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 rounded-full font-black text-[9px] uppercase tracking-tighter">Cotización</span>
+                                            </div>
+                                        </div>
+
+                                        <button 
+                                            type="submit" 
+                                            disabled={isPlacingOrder}
+                                            className="w-full btn-luxury disabled:opacity-50"
+                                        >
+                                            {isPlacingOrder ? 'PROCESANDO ARQUITECTURA...' : 'SOLICITAR COTIZACIÓN PROFESIONAL'}
+                                        </button>
+                                    </form>
+                                </>
+                            )}
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

@@ -67,20 +67,25 @@ const TrackingPage: React.FC = () => {
         const q = searchParams.get('q');
         if (q) {
             setSearchQuery(q);
-            // Necesitamos envolverlo en una función asíncrona inmediata
             (async () => {
                 setSearching(true);
                 setError('');
                 try {
-                    await new Promise(r => setTimeout(r, 800)); // Simular carga
-                    const [trabajos, clientes] = await Promise.all([getTrabajos(), getClientes()]);
-                    let matches = trabajos.filter(t => String(t.orden) === q);
-                    if (matches.length > 0) {
-                        setFoundJobs(matches);
+                    const { data: matches, error: sbError } = await supabase
+                        .from('trabajos')
+                        .select('*')
+                        .eq('orden', parseInt(q))
+                        .order('fecha_entrada', { ascending: false });
+
+                    if (sbError) throw sbError;
+                    
+                    if (matches && matches.length > 0) {
+                        setFoundJobs(matches as any);
                     } else {
                         setError('Orden no encontrada. Verifique el número.');
                     }
                 } catch(e) {
+                    console.error(e);
                     setError('Error al rastrear.');
                 } finally {
                     setSearching(false);
@@ -97,28 +102,53 @@ const TrackingPage: React.FC = () => {
         setError('');
         
         try {
-            await new Promise(r => setTimeout(r, 1200));
-            const [trabajos, clientes] = await Promise.all([getTrabajos(), getClientes()]);
-            
-            let matches = trabajos.filter(t => String(t.orden) === cleanQuery);
-            if (matches.length === 0) {
-                const matchedClients = clientes.filter(c => c.telefono.some(tel => tel.includes(cleanQuery)));
-                const clientIds = matchedClients.map(c => c.id);
-                matches = trabajos.filter(t => clientIds.includes(t.clienteId));
+            // 1. Intentar buscar por número de orden (numérico)
+            const isOrderNumber = /^\d+$/.test(cleanQuery);
+            if (isOrderNumber) {
+                const { data: orderMatches } = await supabase
+                    .from('trabajos')
+                    .select('*')
+                    .eq('orden', parseInt(cleanQuery));
+                
+                if (orderMatches && orderMatches.length > 0) {
+                    setFoundJobs(orderMatches as any);
+                    setSearching(false);
+                    return;
+                }
             }
 
-            if (matches.length > 0) {
-                setFoundJobs(matches.sort((a, b) => b.orden - a.orden));
+            // 2. Si no es orden, buscar clientes por nombre o cédula/ruc
+            const { data: matchedClients } = await supabase
+                .from('clientes')
+                .select('id')
+                .or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${cleanQuery},ruc.eq.${cleanQuery}`);
+            
+            if (matchedClients && matchedClients.length > 0) {
+                const clientIds = matchedClients.map(c => c.id);
+                const { data: clientJobs } = await supabase
+                    .from('trabajos')
+                    .select('*')
+                    .in('cliente_id', clientIds)
+                    .order('orden', { ascending: false });
+                
+                if (clientJobs && clientJobs.length > 0) {
+                    setFoundJobs(clientJobs as any);
+                } else {
+                    setError('El cliente no tiene pedidos registrados.');
+                    setFoundJobs([]);
+                }
             } else {
-                setError('No encontramos pedidos activos con ese dato. Verifica tu # de orden o celular.');
+                setError('No encontramos pedidos ni clientes con ese dato.');
                 setFoundJobs([]);
             }
         } catch (err) {
-            setError('Error de conexión. Intenta de nuevo.');
+            console.error(err);
+            setError('Error de conexión con la base de datos.');
         } finally {
             setSearching(false);
         }
     };
+
 
     // MAESTRO FEATURE: Web Proofing
     const handleAprobarArte = async (trabajoId: string) => {

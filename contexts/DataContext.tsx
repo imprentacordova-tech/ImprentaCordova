@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential } from '../types';
-import * as api from '../services/mockApi';
+import { supabase } from '../services/supabase';
 
 interface DataContextType {
     clientes: Cliente[];
@@ -22,6 +21,15 @@ interface DataContextType {
     updateTrabajoStatus: (id: string, status: any, user: string) => Promise<void>;
     addProducto: (p: any) => Promise<any>;
     updateProducto: (id: string, p: any) => Promise<void>;
+    // Inventory
+    addInventoryItem: (item: any) => Promise<void>;
+    updateInventoryItem: (id: string, item: any) => Promise<void>;
+    deleteInventoryItem: (id: string) => Promise<void>;
+    // SRI Credentials
+    upsertSriCredential: (cred: SriCredential) => Promise<void>;
+    // Helpers
+    createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
+    getClientDebt: (clienteId: string) => number;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -40,101 +48,159 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [syncing, setSyncing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
-    const syncLock = useRef(false);
-
     const refreshData = useCallback(async () => {
-        if (syncLock.current) return;
-        syncLock.current = true;
         setSyncing(true);
-
         try {
-            // Intento de hidratación si el local está vacío o es la primera vez
-            const localHasData = localStorage.getItem('mockClientesData') !== null;
-            if (!localHasData) {
-                console.log("♻️ Local vacío, hidratando desde Google Sheets...");
-                await api.hydrateFromCloud();
-            }
-
             const [
-                cData, tData, pData, uData, iData, provData, taskData, sriData
+                { data: cData }, { data: tData }, { data: pData }, 
+                { data: provData }, { data: invData }, { data: sriData }
             ] = await Promise.all([
-                api.getClientes(),
-                api.getTrabajos(),
-                api.getProductos(),
-                api.getUsers(),
-                api.getInventario(),
-                api.getProveedores(),
-                api.getTareasProveedor(),
-                api.getSriCredentials()
+                supabase.from('clientes').select('*').order('creado_en', { ascending: false }),
+                supabase.from('trabajos').select('*').order('fecha_entrada', { ascending: false }),
+                supabase.from('productos').select('*').order('nombre'),
+                supabase.from('proveedores').select('*').order('nombre'),
+                supabase.from('inventario').select('*').order('item'),
+                supabase.from('sri_credentials').select('*')
             ]);
 
-            setClientes(cData);
-            setTrabajos(tData);
-            setProductos(pData);
-            setUsers(uData);
-            setInventario(iData);
-            setProveedores(provData);
-            setTareas(taskData);
-            setSriCredentials(sriData);
+            if (cData) setClientes(cData as any);
+            if (tData) setTrabajos(tData as any);
+            if (pData) setProductos(pData as any);
+            if (provData) setProveedores(provData as any);
+            if (invData) setInventario(invData as any);
+            if (sriData) setSriCredentials(sriData as any);
+            
             setError(null);
         } catch (err) {
-            console.error("Data Sync Error:", err);
-            setError("Problema de red al sincronizar datos.");
+            console.error("Supabase Sync Error:", err);
+            setError("Error al sincronizar con la base de datos.");
         } finally {
             setLoading(false);
             setSyncing(false);
-            syncLock.current = false;
         }
     }, []);
 
     useEffect(() => {
         refreshData();
-        // Sincronización automática de lectura cada 30 segundos
-        const refreshInterval = setInterval(refreshData, 30000); 
-        
-        // AUTO-BACKUP DE SEGURIDAD: Sube todo a la nube cada 5 minutos por si acaso
-        const backupInterval = setInterval(() => {
-            console.log("☁️ Realizando respaldo automático de seguridad...");
-            api.forcePushAllToCloud();
-        }, 300000); 
+
+        // Suscripción en tiempo real para cambios globales
+        const channel = supabase
+            .channel('db-all-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'trabajos' }, () => refreshData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'inventario' }, () => refreshData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => refreshData())
+            .subscribe();
 
         return () => {
-            clearInterval(refreshInterval);
-            clearInterval(backupInterval);
+            supabase.removeChannel(channel);
         };
     }, [refreshData]);
 
     const addCliente = async (clienteData: any) => {
-        const newCliente = await api.createCliente(clienteData);
-        setClientes(prev => [newCliente, ...prev]);
-        return newCliente;
+        const { data, error } = await supabase.from('clientes').insert([clienteData]).select().single();
+        if (error) throw error;
+        setClientes(prev => [data as any, ...prev]);
+        return data as any;
     };
 
-    const updateClienteState = async (id: string, data: any) => {
-        await api.updateCliente(id, data);
+    const updateCliente = async (id: string, data: any) => {
+        const { error } = await supabase.from('clientes').update(data).eq('id', id);
+        if (error) throw error;
         setClientes(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
     };
 
     const addTrabajo = async (trabajoData: any, user: string) => {
-        const newTrabajo = await api.createTrabajo(trabajoData, user);
-        setTrabajos(prev => [newTrabajo, ...prev]);
-        return newTrabajo;
+        const { data, error } = await supabase.from('trabajos').insert([{ ...trabajoData, creado_por: user }]).select().single();
+        if (error) throw error;
+        setTrabajos(prev => [data as any, ...prev]);
+        return data as any;
     };
 
-    const updateTrabajoStatusState = async (id: string, status: any, user: string) => {
-        await api.updateTrabajoStatus(id, status, user);
-        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizadoPor: user } : t));
+    const updateTrabajoStatus = async (id: string, status: any, user: string) => {
+        const { error } = await supabase.from('trabajos').update({ estado: status, actualizado_por: user }).eq('id', id);
+        if (error) throw error;
+        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizado_por: user } : t));
     };
 
     const addProducto = async (p: any) => {
-        const newP = await api.createProducto(p);
-        setProductos(prev => [newP, ...prev]);
-        return newP;
+        const { data, error } = await supabase.from('productos').insert([p]).select().single();
+        if (error) throw error;
+        setProductos(prev => [data as any, ...prev]);
+        return data as any;
     };
 
-    const updateProductoState = async (id: string, p: any) => {
-        await api.updateProducto(id, p);
+    const updateProducto = async (id: string, p: any) => {
+        const { error } = await supabase.from('productos').update(p).eq('id', id);
+        if (error) throw error;
         setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));
+    };
+
+    // Inventory Handlers
+    const addInventoryItem = async (item: any) => {
+        const { error } = await supabase.from('inventario').insert([item]);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const updateInventoryItem = async (id: string, item: any) => {
+        const { error } = await supabase.from('inventario').update(item).eq('id', id);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const deleteInventoryItem = async (id: string) => {
+        const { error } = await supabase.from('inventario').delete().eq('id', id);
+        if (error) throw error;
+        refreshData();
+    };
+
+    // SRI Handlers
+    const upsertSriCredential = async (cred: SriCredential) => {
+        const { error } = await supabase.from('sri_credentials').upsert(cred);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const createPublicOrder = async (clientData: { nombre: string, telefono: string }, items: any[]) => {
+        // 1. Buscar o Crear Cliente
+        let cliente = clientes.find(c => c.telefono?.includes(clientData.telefono) || c.nombre.toLowerCase() === clientData.nombre.toLowerCase());
+        
+        if (!cliente) {
+            cliente = await addCliente({
+                nombre: clientData.nombre.toUpperCase(),
+                telefono: [clientData.telefono],
+                cedula: '9999999999',
+                direccion: 'Pedido Web',
+                regimen: 'General'
+            });
+        }
+
+        // 2. Calcular Totales y Subtipo
+        const total = items.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
+        const subtipo = items.map(item => `${item.cantidad}x ${item.producto.nombre}`).join(', ');
+
+        // 3. Crear Trabajo como COTIZACIÓN (según requerimiento del usuario)
+        const newJob = {
+            cliente_id: cliente.id,
+            titular: cliente.nombre,
+            tipo: 'General',
+            subtipo,
+            cantidad: items.length,
+            total,
+            abono: 0,
+            saldo: total,
+            estado: 'Cotización',
+            origen: 'Web',
+            fecha_entrada: new Date().toISOString()
+        };
+
+        return await addTrabajo(newJob, 'Web/Cliente');
+    };
+
+    const getClientDebt = (clienteId: string) => {
+        return trabajos
+            .filter(t => t.cliente_id === clienteId && t.estado !== 'Entregado')
+            .reduce((sum, t) => sum + (t.saldo || 0), 0);
     };
 
     const value = {
@@ -142,12 +208,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loading, syncing, error,
         refreshData,
         addCliente,
-        updateCliente: updateClienteState,
+        updateCliente,
         addTrabajo,
-        updateTrabajoStatus: updateTrabajoStatusState,
+        updateTrabajoStatus,
         addProducto,
-        updateProducto: updateProductoState
+        updateProducto,
+        addInventoryItem,
+        updateInventoryItem,
+        deleteInventoryItem,
+        upsertSriCredential,
+        createPublicOrder,
+        getClientDebt
     };
+
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

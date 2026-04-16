@@ -1,7 +1,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
-import { createTrabajo, getSriCredentials, addSriCredential } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { getConfig } from '../services/configService';
 
 export interface CartItem {
@@ -12,6 +12,7 @@ export interface CartItem {
 }
 
 export const useOrder = (user: string) => {
+    const { addTrabajo, upsertSriCredential } = useData();
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
     const [selectedProductos, setSelectedProductos] = useState<Map<string, CartItem>>(new Map());
     const [jobType, setJobType] = useState<TrabajoTipo>(TrabajoTipo.SRI);
@@ -83,19 +84,15 @@ export const useOrder = (user: string) => {
         // MAESTRO UPDATE: Guardar clave SRI en base de datos si se ingresó una nueva
         if (sriData.claveAcceso && selectedCliente) {
             const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
-            // Si no tenía clave (hasKey false) o si la clave cambió
-            if (!sriData.hasKey) { // Simple check, ideally check if changed
-                 await addSriCredential({
-                     ruc: ruc,
-                     password: sriData.claveAcceso,
-                     origen: selectedCliente.nombre,
-                     updatedAt: new Date().toISOString()
-                 });
-                 // No necesitamos esperar confirmación visual, es background process
-            }
+            // Siempre intentamos upsert para mantener la última clave conocida
+            await upsertSriCredential({
+                ruc: ruc,
+                password: sriData.claveAcceso,
+                origen: selectedCliente.nombre
+            });
         }
 
-        const newTrabajo = await createTrabajo({
+        const newTrabajo = await addTrabajo({
             clienteId: selectedCliente.id,
             titular: titular || selectedCliente.nombre,
             tipo: jobType,
