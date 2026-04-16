@@ -44,6 +44,7 @@ const navGroups = [
     items: [
       { path: "/finanzas", label: "Finanzas IA", icon: FinanceIcon },
       { path: "/usuarios", label: "Usuarios", icon: UsersIcon },
+      { path: "/registro", label: "Registro", icon: DocumentIcon },
       { path: "/configuracion", label: "Ajustes", icon: Cog8ToothIcon },
     ]
   },

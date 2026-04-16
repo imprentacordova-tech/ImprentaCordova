@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { User } from './types';
 import { DataProvider } from './contexts/DataContext';
 import { Layout } from './components/Layout';
+import { logActivity, purgeOldEntries } from './services/activityLogService';
 
 // Pages
 import VisualLanding from './pages/VisualLanding'; // Changed from LandingPage
@@ -26,6 +27,7 @@ import SolicitudImpresionPage from './pages/SolicitudImpresion';
 import ReciboAbonoPage from './pages/ReciboAbono';
 import TrabajoDetallePage from './pages/TrabajoDetalle';
 import TrabajosPage from './pages/Trabajos';
+import RegistroActividadPage from './pages/RegistroActividad';
 
 /**
  * ProtectedRoute component to handle authenticated access.
@@ -48,14 +50,23 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : null;
   });
 
+  // Auto-purga de registros de actividad al iniciar la app
+  useEffect(() => {
+    purgeOldEntries();
+  }, []);
+
   const handleLogin = (user: User, remember: boolean) => {
     setCurrentUser(user);
     if (remember) {
       localStorage.setItem('currentUser', JSON.stringify(user));
     }
+    logActivity(user.nombre, user.rol, 'LOGIN', `Inicio de sesión exitoso`, 'Sistema');
   };
 
   const handleLogout = () => {
+    if (currentUser) {
+      logActivity(currentUser.nombre, currentUser.rol, 'LOGOUT', `Cierre de sesión`, 'Sistema');
+    }
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
   };
@@ -89,6 +100,7 @@ const App: React.FC = () => {
             <Route path="/inventario" element={<InventarioPage />} />
             <Route path="/finanzas" element={<FinanzasPage />} />
             <Route path="/usuarios" element={<GestionUsuariosPage />} />
+            <Route path="/registro" element={<RegistroActividadPage />} />
             <Route path="/configuracion" element={<ConfiguracionPage />} />
           </Route>
 
