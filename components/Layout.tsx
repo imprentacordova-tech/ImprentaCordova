@@ -16,8 +16,8 @@ const navGroups = [
   {
     title: 'Principal',
     items: [
-      { path: "/dashboard", label: "Dashboard", icon: DashboardIcon },
-      { path: "/", label: "Sitio Público", icon: GlobeAltIcon },
+      { path: "/dashboard", label: "Panel Principal", icon: DashboardIcon },
+      { path: "/", label: "Vista Pública", icon: GlobeAltIcon },
     ]
   },
   {
@@ -126,7 +126,7 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                 </div>
                 <div className="min-w-0">
                     <p className="text-[11px] font-black text-white truncate uppercase tracking-wider">{user.nombre}</p>
-                    <p className="text-[9px] font-bold text-liquid-gold uppercase tracking-widest">{user.rol}</p>
+                    <p className="text-[9px] font-bold text-liquid-gold uppercase tracking-widest">{user.rol === 'Admin' ? 'Administrador' : user.rol}</p>
                 </div>
             </div>
         </div>
@@ -167,7 +167,7 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: Us
                             {!isSyncing && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
                         </div>
                         <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isSyncing ? 'text-brand-blue' : 'text-emerald-500'}`}>
-                            {isSyncing ? 'Synchronizing Atelier' : 'Protocol Secure'}
+                            {isSyncing ? 'Sincronizando Atelier' : 'Protocolo Seguro'}
                         </span>
                     </div>
                 </div>
@@ -175,7 +175,7 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: Us
 
             <div className="flex items-center gap-8">
                 <div className="hidden md:flex flex-col text-right mr-4">
-                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Atelier Server Time</span>
+                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Hora del Servidor</span>
                      <span className="text-xs font-black text-white uppercase tracking-wider">{new Date().toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                 </div>
                 

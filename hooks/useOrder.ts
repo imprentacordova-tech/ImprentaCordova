@@ -9,11 +9,14 @@ export interface CartItem {
     cantidad: number;
     surcharge?: number;
     surchargeLabel?: string;
+    notas?: string;
+    customPrice?: number;
 }
 
 export const useOrder = (user: string) => {
-    const { addTrabajo, upsertSriCredential } = useData();
+    const { addTrabajo, upsertSriCredential, addProducto } = useData();
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+    const [tempClient, setTempClient] = useState({ nombre: '', telefono: '', cedula: '' });
     const [selectedProductos, setSelectedProductos] = useState<Map<string, CartItem>>(new Map());
     const [jobType, setJobType] = useState<TrabajoTipo>(TrabajoTipo.SRI);
     const [titular, setTitular] = useState('');
@@ -57,7 +60,8 @@ export const useOrder = (user: string) => {
 
     const orderTotal = useMemo(() => {
         return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => {
-            return total + (item.producto.precio + (item.surcharge || 0)) * item.cantidad;
+            const unitPrice = item.customPrice !== undefined ? item.customPrice : (item.producto.precio + (item.surcharge || 0));
+            return total + unitPrice * item.cantidad;
         }, 0);
     }, [selectedProductos]);
 
@@ -71,8 +75,17 @@ export const useOrder = (user: string) => {
         });
     }, []);
 
-    const finalizeOrder = async () => {
-        if (!selectedCliente || selectedProductos.size === 0) return null;
+    const finalizeOrder = async (overrideClientData?: { nombre: string, telefono: string, cedula?: string }) => {
+        const clientToUse = selectedCliente || (overrideClientData?.nombre ? { 
+            id: 'temp-' + Date.now(), 
+            nombre: overrideClientData.nombre.toUpperCase(), 
+            telefono: overrideClientData.telefono,
+            cedula: overrideClientData.cedula || '9999999999999',
+            direccion: 'PEDIDO EXPRESS',
+            regimen: Regimen.GENERAL 
+        } as Cliente : null);
+
+        if (!clientToUse || selectedProductos.size === 0) return null;
         setIsLoading(true);
         const items = Array.from(selectedProductos.values()) as CartItem[];
         
@@ -93,10 +106,10 @@ export const useOrder = (user: string) => {
         }
 
         const newTrabajo = await addTrabajo({
-            clienteId: selectedCliente.id,
-            titular: titular || selectedCliente.nombre,
+            clienteId: clientToUse.id,
+            titular: titular || clientToUse.nombre,
             tipo: jobType,
-            subtipo: items.map(i => `${i.cantidad}x ${i.producto.nombre}`).join(', '),
+            subtipo: items.map(i => `${i.cantidad}x ${i.producto.nombre}${i.notas ? ` [${i.notas}]` : ''}`).join(', '),
             cantidad: items.reduce((sum, i) => sum + i.cantidad, 0),
             total: orderTotal,
             abono,
@@ -117,8 +130,8 @@ export const useOrder = (user: string) => {
     };
 
     return {
-        selectedCliente, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, prioridad, tiempoEntrega, sriData, orderTotal, isLoading, imprimirClave, actividadSeleccionada,
-        setSelectedCliente, setJobType, setTitular, setAbono, setPrioridad, setTiempoEntrega, setSriData, setImprimirClave, setActividadSeleccionada,
+        selectedCliente, tempClient, cartItems: Array.from(selectedProductos.entries()), jobType, titular, abono, prioridad, tiempoEntrega, sriData, orderTotal, isLoading, imprimirClave, actividadSeleccionada,
+        setSelectedCliente, setTempClient, setJobType, setTitular, setAbono, setPrioridad, setTiempoEntrega, setSriData, setImprimirClave, setActividadSeleccionada,
         addProduct, removeProduct: (id: string) => setSelectedProductos(prev => { const n = new Map(prev); n.delete(id); return n; }), 
         updateQuantity: (id: string, q: number) => setSelectedProductos(prev => { 
             const n = new Map(prev); 
@@ -126,7 +139,31 @@ export const useOrder = (user: string) => {
             if (i) n.set(id, { ...(i as CartItem), cantidad: q }); 
             return n; 
         }),
+        updateItemNotes: (id: string, notes: string) => setSelectedProductos(prev => {
+            const n = new Map(prev);
+            const i = n.get(id);
+            if (i) n.set(id, { ...(i as CartItem), notas: notes });
+            return n;
+        }),
+        updateItemPrice: (id: string, price: number) => setSelectedProductos(prev => {
+            const n = new Map(prev);
+            const i = n.get(id);
+            if (i) n.set(id, { ...(i as CartItem), customPrice: price });
+            return n;
+        }),
+        saveItemAsProduct: async (itemId: string) => {
+            const item = selectedProductos.get(itemId);
+            if (item) {
+                await addProducto({
+                    nombre: item.producto.nombre,
+                    categoria: item.producto.categoria,
+                    precio: item.customPrice !== undefined ? item.customPrice : (item.producto.precio + (item.surcharge || 0)),
+                    descripcion: item.producto.descripcion || (item.notas ? `Personalizado: ${item.notas}` : ''),
+                    esSRI: item.producto.esSRI
+                });
+            }
+        },
         finalizeOrder,
-        resetOrder: () => { setSelectedCliente(null); setSelectedProductos(new Map()); setAbono(0); setJobType(TrabajoTipo.SRI); }
+        resetOrder: () => { setSelectedCliente(null); setTempClient({ nombre: '', telefono: '', cedula: '' }); setSelectedProductos(new Map()); setAbono(0); setJobType(TrabajoTipo.SRI); }
     };
 };

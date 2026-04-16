@@ -22,25 +22,25 @@ const InputField: React.FC<{
     required?: boolean;
     [key: string]: any; 
 }> = ({ label, name, value, onChange, isHighlighted, error, required, ...props }) => (
-    <div className="group">
-        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${error ? 'text-red-500' : isHighlighted ? 'text-brand-blue' : 'text-gray-400 group-focus-within:text-brand-blue'}`}>
-            {label} {required && <span className="text-red-400">*</span>} {isHighlighted && "✨"}
+    <div className="group space-y-2">
+        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${error ? 'text-brand-red' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 group-focus-within:text-liquid-gold'}`}>
+            {label} {required && <span className="text-brand-red opacity-50">*</span>} {isHighlighted && "✨"}
         </label>
         <input 
             id={name} 
             name={name} 
             value={value} 
             onChange={onChange} 
-            className={`w-full p-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:border-transparent transition-all shadow-sm font-medium text-sm
+            className={`w-full px-5 py-3.5 bg-white/5 border rounded-2xl text-white font-bold text-sm outline-none transition-all
                 ${error 
-                    ? 'border-red-300 bg-red-50 focus:ring-red-500 text-red-900' 
+                    ? 'border-brand-red/50 bg-brand-red/5 focus:ring-1 focus:ring-brand-red text-white' 
                     : isHighlighted 
-                        ? 'ring-2 ring-brand-blue/30 border-brand-blue bg-blue-50/50 dark:bg-brand-blue/10 focus:ring-brand-blue' 
-                        : 'border-gray-200 dark:border-gray-700 focus:ring-brand-blue'
+                        ? 'border-liquid-gold/50 bg-liquid-gold/5 focus:ring-1 focus:ring-liquid-gold' 
+                        : 'border-white/5 focus:border-white/20 focus:bg-white/10'
                 }`} 
             {...props} 
         />
-        {error && <p className="text-[9px] text-red-500 font-bold mt-1 uppercase tracking-wider">{error}</p>}
+        {error && <p className="text-[9px] text-brand-red font-black mt-1 uppercase tracking-widest bg-brand-red/10 px-3 py-1 rounded-lg inline-block">{error}</p>}
     </div>
 );
 
@@ -205,40 +205,46 @@ export const CreateClientModal: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[70] flex justify-center items-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-3xl w-full max-w-4xl overflow-hidden border border-white/10 flex flex-col max-h-[95vh]">
+        <div className="fixed inset-0 bg-brand-dark/95 backdrop-blur-3xl z-[70] flex justify-center items-center p-4 animate-fade-in overflow-hidden">
+            <div className="bg-brand-dark border border-white/5 rounded-[3.5rem] shadow-luxury w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] relative">
                 
+                {/* Header decorativo con gradiente */}
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-liquid-gold/5 to-transparent pointer-events-none"></div>
+
                 {/* Header con Switcher */}
-                <div className="flex flex-col p-6 border-b dark:border-gray-800 bg-gray-50 dark:bg-slate-900/50 gap-6">
+                <div className="flex flex-col p-10 gap-8 relative z-10">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h2 className="text-xl font-black text-brand-blue dark:text-white uppercase tracking-tighter">
-                                {mode === 'EXPRESS' ? 'CLIENTE RÁPIDO' : 'CONTRIBUYENTE SRI'}
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
+                                {mode === 'EXPRESS' ? 'REGISTRO DE CLIENTE RÁPIDO' : 'CONTRIBUYENTE SRI (OFICIAL)'}
                             </h2>
-                            <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">
-                                {mode === 'EXPRESS' ? 'Datos básicos para trabajos generales' : 'Registro completo para documentos autorizados'}
+                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-3 flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold' : 'bg-brand-red'} animate-pulse`}></div>
+                                {mode === 'EXPRESS' ? 'Datos indispensables para facturación genérica' : 'Expediente completo para tributación oficial'}
                             </p>
                         </div>
-                        <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full"><CloseIcon className="w-5 h-5 text-gray-400" /></button>
+                        <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
+                            <CloseIcon className="w-5 h-5 text-slate-400" />
+                        </button>
                     </div>
 
-                    <div className="bg-gray-200 dark:bg-gray-800 p-1 rounded-xl flex font-bold text-xs">
+                    <div className="bg-white/5 p-1.5 rounded-[1.8rem] flex font-black text-[10px] uppercase tracking-widest border border-white/5">
                         <button 
                             onClick={() => setMode('EXPRESS')}
-                            className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 transition-all ${mode === 'EXPRESS' ? 'bg-white dark:bg-slate-700 shadow text-brand-blue' : 'text-gray-500'}`}
+                            className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'EXPRESS' ? 'bg-white text-brand-dark shadow-luxury' : 'text-slate-500 hover:text-white'}`}
                         >
                             <BoltIcon className="w-4 h-4"/> Express (Normal)
                         </button>
                         <button 
                             onClick={() => setMode('SRI')}
-                            className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 transition-all ${mode === 'SRI' ? 'bg-white dark:bg-slate-700 shadow text-brand-red' : 'text-gray-500'}`}
+                            className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'SRI' ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}
                         >
-                            <ShieldCheckIcon className="w-4 h-4"/> Facturación SRI
+                            <ShieldCheckIcon className="w-4 h-4"/> Perfil Tributario RUC
                         </button>
                     </div>
                 </div>
                 
-                <div className="flex-grow p-8 space-y-8 overflow-y-auto custom-scrollbar">
+                <div className="flex-grow p-10 space-y-10 overflow-y-auto custom-scrollbar relative z-10">
                     
                     {/* Botón Scanner solo visible en modo SRI */}
                     {mode === 'SRI' && (
@@ -246,17 +252,20 @@ export const CreateClientModal: React.FC<{
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isScanning}
-                            className={`w-full flex flex-col items-center justify-center gap-3 py-6 rounded-[2rem] border-2 border-dashed transition-all animate-fade-in ${isScanning ? 'border-brand-blue bg-blue-50/20' : 'border-slate-200 dark:border-gray-700 bg-slate-50/50 hover:bg-white'}`}
+                            className={`w-full group relative flex flex-col items-center justify-center gap-3 py-10 rounded-[2.5rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-liquid-gold bg-liquid-gold/5' : 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'}`}
                         >
-                            {isScanning ? <Loader2Icon className="w-8 h-8 text-brand-blue animate-spin" /> : <UploadIcon className="w-8 h-8 text-brand-blue" />}
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{isScanning ? "IA Analizando Documento..." : "Auto-completar con PDF/Foto del RUC"}</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {isScanning ? <Loader2Icon className="w-10 h-10 text-liquid-gold animate-spin" /> : <UploadIcon className="w-10 h-10 text-liquid-gold opacity-50 group-hover:opacity-100 transition-all" />}
+                            <span className="text-[11px] font-black uppercase tracking-[0.4em] relative z-10">
+                                {isScanning ? "IA Analizando estructura tributaria..." : "Sincronizar con Documento RUC (PDF/Foto)"}
+                            </span>
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
                         </button>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Campos Comunes */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <InputField 
                                 label="Nombre / Razón Social" 
                                 name="nombre" 
@@ -264,17 +273,18 @@ export const CreateClientModal: React.FC<{
                                 onChange={e => setNewClienteData({...newClienteData, nombre: e.target.value.toUpperCase()})} 
                                 required 
                                 isHighlighted={highlightFields.includes('nombre')} 
-                                placeholder={mode === 'EXPRESS' ? "Ej: Juan Pérez" : "Razón Social completa"}
+                                placeholder={mode === 'EXPRESS' ? "Ej: JUAN PÉREZ" : "Especifique Razón Social completa"}
                             />
                             
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
-                                    Teléfono / Celular {mode === 'EXPRESS' && <span className="text-red-400">*</span>}
+                            <div className="group space-y-2">
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-focus-within:text-liquid-gold transition-colors">
+                                    Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-brand-red opacity-50">*</span>}
                                 </label>
-                                <div className={`flex flex-wrap gap-2 p-3 border rounded-xl bg-white dark:bg-slate-800 ${highlightFields.includes('telefono') ? 'border-brand-blue ring-1 ring-brand-blue/30' : 'border-gray-200 dark:border-gray-700'}`}>
+                                <div className={`flex flex-wrap gap-2 p-3.5 bg-white/5 border rounded-2xl transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-white/20 group-focus-within:bg-white/10'}`}>
                                     {telefonos.map((t, idx) => (
-                                        <span key={idx} className="bg-blue-50 text-brand-blue px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
-                                            {t} <button type="button" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
+                                        <span key={idx} className="bg-liquid-gold text-brand-dark px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 shadow-luxury">
+                                            <PhoneIcon className="w-3 h-3"/> {t} 
+                                            <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
                                         </span>
                                     ))}
                                     <input 
@@ -284,7 +294,7 @@ export const CreateClientModal: React.FC<{
                                         onChange={e => setCurrentTelefono(e.target.value)} 
                                         onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
                                         onBlur={() => currentTelefono && addTelefono(currentTelefono)}
-                                        className="bg-transparent border-none outline-none text-sm font-bold w-full min-w-[120px]"
+                                        className="bg-transparent border-none outline-none text-sm font-bold text-white flex-grow min-w-[150px] placeholder:text-slate-600"
                                     />
                                 </div>
                             </div>
@@ -314,16 +324,19 @@ export const CreateClientModal: React.FC<{
                                     />
                                 </div>
 
-                                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-gray-700 space-y-6">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-4">Datos Tributarios Avanzados</h3>
+                                <div className="p-8 bg-white/2 rounded-[2.5rem] border border-white/5 space-y-8 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-[80px] rounded-full pointer-events-none"></div>
+                                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] border-b border-white/5 pb-4 flex items-center gap-3">
+                                        <DocumentTextIcon className="w-4 h-4 text-liquid-gold opacity-50"/> Inteligencia Tributaria Avanzada
+                                    </h3>
                                     
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap gap-3">
                                         {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
                                             <button
                                                 key={reg}
                                                 type="button"
                                                 onClick={() => setNewClienteData(prev => ({ ...prev, regimen: reg }))}
-                                                className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase border transition-all ${newClienteData.regimen === reg ? 'border-brand-blue bg-blue-50 text-brand-blue shadow-sm' : 'border-slate-200 bg-white text-slate-400'}`}
+                                                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${newClienteData.regimen === reg ? 'border-liquid-gold bg-liquid-gold text-brand-dark shadow-gold-glow' : 'border-white/5 bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'}`}
                                             >
                                                 {reg}
                                             </button>
@@ -331,17 +344,17 @@ export const CreateClientModal: React.FC<{
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <InputField label="Dirección Matriz" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({...newClienteData, direccion: e.target.value.toUpperCase()})} isHighlighted={highlightFields.includes('direccion')} />
-                                        <InputField label="Estab. (001)" name="establecimientoPredeterminado" value={newClienteData.establecimientoPredeterminado} onChange={e => setNewClienteData({...newClienteData, establecimientoPredeterminado: e.target.value})} maxLength={3} />
-                                        <InputField label="Pto. Emisión (001)" name="puntoEmisionPredeterminado" value={newClienteData.puntoEmisionPredeterminado} onChange={e => setNewClienteData({...newClienteData, puntoEmisionPredeterminado: e.target.value})} maxLength={3} />
+                                        <InputField label="Matriz / Dirección" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({...newClienteData, direccion: e.target.value.toUpperCase()})} isHighlighted={highlightFields.includes('direccion')} />
+                                        <InputField label="Estab. (P.E)" name="establecimientoPredeterminado" value={newClienteData.establecimientoPredeterminado} onChange={e => setNewClienteData({...newClienteData, establecimientoPredeterminado: e.target.value})} maxLength={3} />
+                                        <InputField label="Punto Emisión" name="puntoEmisionPredeterminado" value={newClienteData.puntoEmisionPredeterminado} onChange={e => setNewClienteData({...newClienteData, puntoEmisionPredeterminado: e.target.value})} maxLength={3} />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Actividades Económicas</label>
-                                        <div className="flex flex-wrap gap-2 p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <div className="group space-y-2">
+                                        <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 group-focus-within:text-liquid-gold transition-colors">Actividades Económicas Habilitadas</label>
+                                        <div className="flex flex-wrap gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 group-focus-within:border-white/10 transition-all">
                                             {actividades.map((a, i) => (
-                                                <span key={i} className="bg-slate-100 text-slate-600 text-[9px] font-bold px-2 py-1 rounded flex items-center gap-1">
-                                                    {a} <button type="button" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))}>&times;</button>
+                                                <span key={i} className="bg-white/10 text-white text-[9px] font-black px-3 py-1.5 rounded-xl flex items-center gap-2 border border-white/5">
+                                                    {a} <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))}>&times;</button>
                                                 </span>
                                             ))}
                                             <input 
@@ -349,37 +362,37 @@ export const CreateClientModal: React.FC<{
                                                 value={currentActividad} 
                                                 onChange={e => setCurrentActividad(e.target.value)} 
                                                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addActividad(currentActividad))}
-                                                placeholder="Añadir actividad..."
-                                                className="bg-transparent border-none outline-none text-xs flex-grow"
+                                                placeholder="Añadir descriptor de actividad..."
+                                                className="bg-transparent border-none outline-none text-xs font-bold text-white flex-grow placeholder:text-slate-700 min-w-[200px]"
                                             />
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in pb-20">
                                 <InputField 
-                                    label="Cédula (Opcional)" 
+                                    label="DNI / Cédula (Opcional)" 
                                     name="cedulaRuc" 
                                     value={newClienteData.cedulaRuc} 
                                     onChange={e => setNewClienteData({...newClienteData, cedulaRuc: e.target.value})} 
                                     maxLength={10} 
-                                    placeholder="Solo si necesita factura simple"
+                                    placeholder="Requerido para comprobante simple"
                                 />
                                 <InputField 
-                                    label="Nota Adicional" 
+                                    label="Nota / Referencia de Entrega" 
                                     name="direccion" 
                                     value={newClienteData.direccion} 
                                     onChange={e => setNewClienteData({...newClienteData, direccion: e.target.value})} 
-                                    placeholder="Referencia, detalle..."
+                                    placeholder="Indicaciones especiales..."
                                 />
                             </div>
                         )}
 
-                        <div className="flex justify-end pt-8 gap-4 border-t dark:border-gray-800">
-                            <button type="button" onClick={onClose} className="px-8 py-4 text-slate-400 font-bold uppercase text-[10px] hover:text-slate-600 transition-colors">Cancelar</button>
-                            <button type="submit" disabled={isSaving || saveSuccess || !!rucError} className={`min-w-[240px] px-8 py-4 text-white font-black rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 uppercase text-xs ${saveSuccess ? 'bg-green-500' : mode === 'SRI' ? 'bg-brand-red hover:bg-red-800' : 'bg-brand-blue hover:bg-blue-800'} disabled:opacity-50 disabled:cursor-not-allowed`}>
-                                {isSaving ? <Loader2Icon className="animate-spin w-5 h-5"/> : saveSuccess ? <CheckCircleIcon className="w-5 h-5"/> : mode === 'SRI' ? "Guardar Contribuyente SRI" : "Crear Cliente Rápido"}
+                        <div className="absolute bottom-0 left-0 right-0 p-10 bg-brand-dark/80 backdrop-blur-xl border-t border-white/10 flex justify-end gap-6 z-20">
+                            <button type="button" onClick={onClose} className="px-10 py-5 text-slate-500 font-black uppercase text-[10px] tracking-[0.3em] hover:text-white transition-colors">Abortar</button>
+                            <button type="submit" disabled={isSaving || saveSuccess || !!rucError} className={`min-w-[320px] px-10 py-5 text-brand-dark font-black rounded-2xl shadow-luxury transition-all flex items-center justify-center gap-4 uppercase text-xs tracking-[0.2em] ${saveSuccess ? 'bg-green-500 scale-[1.02]' : 'bg-white hover:bg-liquid-gold'} disabled:opacity-30 disabled:cursor-not-allowed`}>
+                                {isSaving ? <Loader2Icon className="animate-spin w-6 h-6"/> : saveSuccess ? <CheckCircleIcon className="w-6 h-6"/> : mode === 'SRI' ? "Inscribir Contribuyente SRI" : "Habilitar Perfil Express"}
                             </button>
                         </div>
                     </form>
@@ -407,69 +420,80 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
     };
 
     return (
-        <div className="animate-fade-in w-full max-w-3xl mx-auto space-y-4">
-            <div className="flex gap-4 items-stretch">
-                <div className="relative group flex-grow">
-                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-300 group-focus-within:text-brand-blue transition-colors" />
+        <div className="animate-fade-in w-full space-y-6">
+            <div className="flex flex-col gap-4">
+                <div className="relative group">
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
                     <input 
                         type="text" 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        placeholder="Buscar Cliente..." 
-                        className="w-full pl-16 pr-8 h-full min-h-[4rem] border-none rounded-[1.5rem] bg-white dark:bg-gray-800 text-xl font-bold shadow-xl focus:ring-4 focus:ring-brand-blue/10 transition-all dark:text-white placeholder:text-slate-300" 
+                        placeholder="ID, Nombre o RUC..." 
+                        className="w-full pl-14 pr-14 py-5 bg-white/5 border border-white/5 rounded-[2rem] text-lg font-black text-white focus:bg-white/10 focus:ring-1 focus:ring-liquid-gold/30 transition-all placeholder:text-slate-600 uppercase tracking-tight" 
                     />
+                    {searchTerm && (
+                        <button onClick={() => setSearchTerm('')} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
+                            <CloseIcon className="w-5 h-5"/>
+                        </button>
+                    )}
                 </div>
                 
-                <div className="flex flex-col gap-2 flex-shrink-0">
+                <div className="grid grid-cols-2 gap-4">
                     <button 
                         onClick={() => handleOpenCreate('EXPRESS')} 
-                        className="bg-brand-blue text-white px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-2 hover:scale-105 transition-all hover:bg-blue-700"
-                        title="Para volantes, tarjetas, gigantografías..."
+                        className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
                     >
-                        <BoltIcon className="w-5 h-5" />
-                        <div className="text-left leading-none">
-                            <span className="block text-[8px] font-bold opacity-80 uppercase">Nuevo</span>
-                            <span className="block text-xs font-black uppercase">Express</span>
+                        <div className="p-3 bg-liquid-gold text-brand-dark rounded-xl shadow-gold-glow">
+                            <BoltIcon className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Nuevo Perfil</span>
+                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-liquid-gold transition-colors">Express</span>
                         </div>
                     </button>
                     
                     <button 
                         onClick={() => handleOpenCreate('SRI')} 
-                        className="bg-brand-red text-white px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-2 hover:scale-105 transition-all hover:bg-red-700"
-                        title="Para Facturas y Notas de Venta autorizadas"
+                        className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
                     >
-                        <ShieldCheckIcon className="w-5 h-5" />
-                        <div className="text-left leading-none">
-                            <span className="block text-[8px] font-bold opacity-80 uppercase">Nuevo</span>
-                            <span className="block text-xs font-black uppercase">SRI / RUC</span>
+                        <div className="p-3 bg-brand-red text-white rounded-xl shadow-red-glow">
+                            <ShieldCheckIcon className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Registro</span>
+                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-brand-red transition-colors">Oficial SRI</span>
                         </div>
                     </button>
                 </div>
             </div>
 
             {searchTerm.length > 1 && (
-                <div className="mt-4 bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-gray-700 divide-y divide-gray-50 dark:divide-gray-700 animate-slide-in-up z-20 relative">
+                <div className="bg-brand-dark/40 backdrop-blur-3xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden animate-slide-in-up divide-y divide-white/5">
                     {filteredClients.map((c) => (
-                        <div key={c.id} onClick={() => onSelectClient(c)} className="p-6 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 flex justify-between items-center transition-all group">
-                            <div className="flex items-center gap-5">
-                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center font-black text-xl shadow-sm ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-brand-blue'}`}>
+                        <div key={c.id} onClick={() => onSelectClient(c)} className="p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group relative overflow-hidden">
+                            <div className="absolute inset-y-0 left-0 w-1 bg-liquid-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="flex items-center gap-5 relative z-10">
+                                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/20 text-orange-400' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
                                     {c.nombre.charAt(0)}
                                 </div>
-                                <div>
-                                    <p className="font-black text-slate-900 dark:text-white text-lg tracking-tight uppercase leading-none mb-1">{c.nombre}</p>
-                                    <p className="text-xs text-slate-500 font-bold flex items-center gap-2 uppercase">
-                                        <IdentificationIcon className="w-3 h-3"/> {c.cedula || c.ruc} 
-                                        {c.ruc && <span className="bg-slate-100 px-1.5 rounded text-[8px] tracking-wider border border-slate-200">RUC</span>}
-                                    </p>
+                                <div className="min-w-0">
+                                    <p className="font-black text-white text-base tracking-tight uppercase leading-none mb-1.5 truncate">{c.nombre}</p>
+                                    <div className="flex items-center gap-3">
+                                        <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                            <IdentificationIcon className="w-3 h-3 opacity-40"/> {c.cedula || c.ruc} 
+                                        </p>
+                                        {c.ruc && <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5 tracking-tighter uppercase">RUC OFICIAL</span>}
+                                    </div>
                                 </div>
                             </div>
-                            <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-brand-blue transition-all group-hover:translate-x-1" />
+                            <ArrowRightIcon className="w-5 h-5 text-slate-600 group-hover:text-liquid-gold transition-all group-hover:translate-x-1" />
                         </div>
                     ))}
                     {filteredClients.length === 0 && (
-                        <div className="p-8 text-center text-slate-400">
-                            <p className="text-sm font-bold">No encontrado.</p>
-                            <button onClick={() => handleOpenCreate('EXPRESS')} className="mt-2 text-brand-blue hover:underline text-xs font-black uppercase tracking-widest">Crear como Nuevo Cliente</button>
+                        <div className="p-10 text-center space-y-4">
+                            <ExclamationTriangleIcon className="w-10 h-10 mx-auto text-slate-700 opacity-50"/>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sin coincidencias en base de datos</p>
+                            <button onClick={() => handleOpenCreate('EXPRESS')} className="text-liquid-gold hover:text-white text-[9px] font-black uppercase tracking-widest transition-colors border-b border-liquid-gold/30 pb-1">Dar de alta como nuevo cliente</button>
                         </div>
                     )}
                 </div>
@@ -479,7 +503,15 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
                 isOpen={isCreateModalOpen} 
                 onClose={() => setIsCreateModalOpen(false)} 
                 onClientCreated={(c) => { setIsCreateModalOpen(false); onSelectClient(c); }}
-                initialName={!/^\d+$/.test(searchTerm) ? searchTerm : ''}
+                initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
+                initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
+                initialMode={createMode}
+            />
+            <CreateClientModal 
+                isOpen={isCreateModalOpen} 
+                onClose={() => setIsCreateModalOpen(false)} 
+                onClientCreated={(c) => { setIsCreateModalOpen(false); onSelectClient(c); }}
+                initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
                 initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
                 initialMode={createMode}
             />

@@ -18,10 +18,10 @@ const NuevoPedidoPage: React.FC = () => {
     const { getClientDebt } = useData();
     const navigate = useNavigate();
     const { 
-        selectedCliente, cartItems, jobType, abono, titular,
+        selectedCliente, tempClient, cartItems, jobType, abono, titular,
         orderTotal, isLoading, sriData, imprimirClave, actividadSeleccionada,
-        setSelectedCliente, setJobType, setAbono, setSriData, setImprimirClave, setActividadSeleccionada, setTitular,
-        addProduct, removeProduct, updateQuantity, finalizeOrder, resetOrder
+        setSelectedCliente, setTempClient, setJobType, setAbono, setSriData, setImprimirClave, setActividadSeleccionada, setTitular,
+        addProduct, removeProduct, updateQuantity, saveItemAsProduct, finalizeOrder, resetOrder
     } = useOrder(currentUser.nombre);
 
     const [clientDebt, setClientDebt] = useState(0);
@@ -44,7 +44,7 @@ const NuevoPedidoPage: React.FC = () => {
     }, [selectedCliente, getClientDebt]);
 
     const handleFinalize = async () => {
-        const newJob = await finalizeOrder();
+        const newJob = await finalizeOrder(selectedCliente ? undefined : tempClient);
         if (newJob) {
             // --- ENRUTAMIENTO INTELIGENTE ---
             if (newJob.tipo === TrabajoTipo.SRI) {
@@ -58,122 +58,129 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     return (
-        <div className="flex xl:flex-row flex-col h-[calc(100vh-100px)] gap-6 overflow-hidden animate-fade-in pb-4">
-            <div className="flex-1 flex flex-col gap-6 overflow-hidden rounded-[3rem] bg-brand-dark/20 p-2 border border-white/5 shadow-luxury">
+        <div className="flex xl:flex-row flex-col h-[calc(100vh-100px)] gap-10 overflow-hidden animate-fade-in pb-4 px-2">
+            {/* PANEL IZQUIERDO: SELECCIÓN DE PRODUCTOS (PRIMERO) */}
+            <div className="flex-1 flex flex-col gap-8 overflow-hidden">
                 
-                <div className={`bg-brand-dark/50 backdrop-blur-xl rounded-[2.5rem] shadow-sm border border-white/5 flex-shrink-0 transition-all duration-300 ${selectedCliente ? 'p-6' : 'p-12'}`}>
+                {/* CABECERA DINÁMICA */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 glass-card-luxury p-10 rounded-[2.5rem]">
+                    <div>
+                        <h2 className="text-4xl md:text-5xl font-black text-[#dce1fb] uppercase tracking-tighter mb-2 leading-none">
+                            {jobType === TrabajoTipo.SRI ? 'Emisión SRI' : 'Producción'}
+                        </h2>
+                        <p className="text-liquid-gold font-bold tracking-[0.3em] text-[10px] uppercase opacity-80">Selección de catálogo · Obsidian & Gold</p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => setJobType(jobType === TrabajoTipo.SRI ? TrabajoTipo.GENERAL : TrabajoTipo.SRI)}
+                            className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${jobType === TrabajoTipo.SRI ? 'bg-brand-red border-brand-red text-white shadow-red-glow' : 'bg-white/5 border-white/10 text-white/60 hover:text-white'}`}
+                        >
+                            {jobType === TrabajoTipo.SRI ? 'MODO SRI ACTIVO' : 'MODO PRODUCCIÓN'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* GRILLA DE PRODUCTOS - SIEMPRE VISIBLE */}
+                <div className="flex-grow bg-brand-dark/30 backdrop-blur-xl p-10 rounded-[4rem] shadow-luxury border border-white/5 overflow-hidden flex flex-col">
+                    <ProductGrid 
+                        onProductAction={(action, p) => addProduct(p)} 
+                        productsInCart={new Map()}
+                        jobType={jobType}
+                        clientRegimen={selectedCliente?.regimen || Regimen.GENERAL}
+                        onSetJobType={setJobType}
+                    />
+                </div>
+            </div>
+
+            {/* PANEL DERECHO: CLIENTE Y RESUMEN (STICKY) */}
+            <div id="cart-panel" className="flex xl:w-[500px] w-full flex-col gap-6 relative pb-28 xl:pb-0">
+                
+                {/* IDENTIFICACIÓN DE CLIENTE (COMPACTO) */}
+                <div className="bg-brand-dark/80 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-50"></div>
+                    
                     {!selectedCliente ? (
-                        <div className="max-w-2xl mx-auto w-full">
-                            <div className="text-center mb-10">
-                                <div className="w-20 h-20 bg-liquid-gold/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-gold-glow">
-                                    <ShieldCheckIcon className="w-10 h-10 text-liquid-gold" />
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="p-3 bg-white/5 rounded-2xl border border-white/10 group-hover:border-liquid-gold/30 transition-colors">
+                                    <UserPlusIcon className="w-6 h-6 text-liquid-gold" />
                                 </div>
-                                <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Nueva Obra</h2>
-                                <p className="text-slate-400 mt-2 tracking-widest text-[10px] uppercase font-bold">Identifica al contribuyente o escanea su RUC para iniciar la creación.</p>
+                                <div>
+                                    <h4 className="text-white font-black text-sm uppercase tracking-wider">Identificación</h4>
+                                    <p className="text-slate-500 text-[9px] uppercase font-bold tracking-widest">Requerido para el recibo</p>
+                                </div>
                             </div>
                             <ClientSelector onSelectClient={setSelectedCliente} />
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-                                <div className="flex items-center gap-6">
-                                    <div className="bg-liquid-gold/20 border border-liquid-gold/30 text-liquid-gold w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-2xl shadow-gold-glow relative">
-                                        {selectedCliente.nombre.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-black text-white uppercase leading-none mb-2">{selectedCliente.nombre}</h2>
-                                        <div className="flex flex-wrap gap-2 items-center">
-                                            <span className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${selectedCliente.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/30'}`}>
-                                                {selectedCliente.regimen}
-                                            </span>
-                                            <span className="text-xs font-bold text-slate-400 tracking-wider"><span className="text-slate-600">ID /</span> {selectedCliente.ruc || selectedCliente.cedula}</span>
-                                            {clientDebt > 0 && <span className="bg-brand-red/10 text-brand-red text-[9px] font-black px-3 py-1 rounded border border-brand-red/30 uppercase tracking-widest shadow-[0_0_10px_rgba(239,68,68,0.2)]">DEUDA VIGENTE: {formatCurrency(clientDebt)}</span>}
-                                        </div>
-                                    </div>
+                        <div className="relative z-10 flex items-center justify-between">
+                            <div className="flex items-center gap-5">
+                                <div className="bg-liquid-gold/20 border border-liquid-gold/30 text-liquid-gold w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-gold-glow">
+                                    {selectedCliente.nombre.charAt(0)}
                                 </div>
-
-                                <div className="flex gap-4">
-                                    <button onClick={resetOrder} className="px-5 py-2.5 text-[9px] font-black text-slate-500 hover:text-white border border-white/10 hover:bg-white/5 rounded-xl uppercase tracking-widest transition-all">Cambiar Coleccionista</button>
+                                <div className="max-w-[220px]">
+                                    <h2 className="text-lg font-black text-white uppercase truncate">{selectedCliente.nombre}</h2>
+                                    <p className="text-[9px] font-bold text-liquid-gold tracking-widest uppercase">{selectedCliente.ruc || selectedCliente.cedula}</p>
                                 </div>
                             </div>
-
-                            {/* SELECTOR DE ACTIVIDAD PARA SRI (CRÍTICO PARA SOLICITUD) */}
-                            {jobType === TrabajoTipo.SRI && (
-                                <div className="bg-slate-950 p-4 rounded-2xl flex flex-col items-start gap-3 animate-slide-in-up border border-white/5">
-                                    <div className="flex items-center gap-2 w-full">
-                                        <div className="p-1.5 bg-brand-red rounded-lg"><LayersIcon className="w-3.5 h-3.5 text-white" /></div>
-                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em] flex-grow">Actividad para Autorización SRI:</span>
-                                    </div>
-                                    
-                                    {clientActivities.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2 w-full">
-                                            {clientActivities.map(act => (
-                                                <button 
-                                                    key={act} 
-                                                    onClick={() => setActividadSeleccionada(act)}
-                                                    className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all whitespace-normal text-left max-w-full border ${actividadSeleccionada === act ? 'bg-brand-red border-brand-red text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white'}`}
-                                                >
-                                                    {act}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="w-full flex items-center gap-2">
-                                            <input 
-                                                type="text" 
-                                                placeholder="Escriba la actividad económica principal..."
-                                                value={actividadSeleccionada}
-                                                onChange={(e) => setActividadSeleccionada(e.target.value.toUpperCase())}
-                                                className="w-full bg-white/10 border-none rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 font-bold focus:ring-1 focus:ring-brand-red uppercase"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            <button onClick={resetOrder} className="p-3 bg-white/5 hover:bg-brand-red/10 border border-white/10 hover:border-brand-red/30 rounded-xl text-slate-500 hover:text-brand-red transition-all">
+                                <CloseIcon className="w-4 h-4" />
+                            </button>
                         </div>
                     )}
                 </div>
 
-                {selectedCliente && (
-                    <div className="flex-grow bg-brand-dark/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden flex flex-col">
-                        <ProductGrid 
-                            onProductAction={(action, p) => addProduct(p)} 
-                            productsInCart={new Map()}
-                            jobType={jobType}
-                            clientRegimen={selectedCliente.regimen}
-                            onSetJobType={setJobType}
+                {/* RESUMEN DE ORDEN */}
+                <div className="flex-grow flex flex-col bg-brand-dark/80 backdrop-blur-2xl rounded-[3.5rem] shadow-2xl border border-white/10 overflow-hidden">
+                    <div className="p-8 border-b border-white/5 bg-transparent flex justify-between items-center">
+                        <h3 className="font-black text-xl tracking-tighter flex items-center gap-4 uppercase text-white">
+                            <ShoppingCartIcon className="w-7 h-7 text-liquid-gold"/> Tu Pedido
+                        </h3>
+                        {cartItems.length > 0 && <span className="bg-liquid-gold text-brand-dark px-3 py-1 rounded-full text-[10px] font-black">{cartItems.length} ITEMS</span>}
+                    </div>
+                    
+                    <div className="flex-grow overflow-hidden relative">
+                        <OrderSummary 
+                            isOpen={true} 
+                            onClose={() => {}} 
+                            cartItems={cartItems}
+                            orderTotal={orderTotal}
+                            client={selectedCliente}
+                            tempClient={tempClient}
+                            setTempClient={setTempClient}
+                            abono={abono}
+                            setAbono={setAbono}
+                            onUpdateQuantity={updateQuantity}
+                            onUpdateNotes={updateItemNotes}
+                            onUpdatePrice={updateItemPrice}
+                            onRemoveItem={removeProduct}
+                            onSaveItem={saveItemAsProduct}
+                            onFinalize={handleFinalize}
+                            isLoading={isLoading}
+                            sriData={sriData}
+                            setSriData={setSriData}
+                            imprimirClave={imprimirClave}
+                            setImprimirClave={setImprimirClave}
                         />
                     </div>
-                )}
+                </div>
             </div>
 
-            <div className="hidden xl:flex w-[450px] flex-col bg-brand-dark/80 backdrop-blur-2xl rounded-[3rem] shadow-2xl border border-white/10 overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-liquid-gold/5 to-transparent pointer-events-none"></div>
-                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-transparent relative z-10">
-                    <h3 className="font-black text-2xl tracking-tighter flex items-center gap-4 uppercase text-white">
-                        <ShoppingCartIcon className="w-8 h-8 text-liquid-gold"/> Detalle de Obra
-                    </h3>
+            {/* STICKY BOTTOM BAR MÓVIL */}
+            {cartItems.length > 0 && (
+                <div className="xl:hidden fixed bottom-4 left-4 right-4 glass-card-luxury p-4 z-50 flex justify-between items-center animate-slide-up shadow-luxury">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Estimado</span>
+                        <span className="text-2xl font-black text-white">{formatCurrency(orderTotal)}</span>
+                    </div>
+                    <button onClick={() => {
+                        document.getElementById('cart-panel')?.scrollIntoView({ behavior: 'smooth' });
+                    }} className="btn-luxury py-3 px-6 !rounded-xl">
+                        Ver Resumen
+                    </button>
                 </div>
-                <div className="flex-grow overflow-hidden">
-                    <OrderSummary 
-                        isOpen={true} 
-                        onClose={() => {}} 
-                        cartItems={cartItems}
-                        orderTotal={orderTotal}
-                        client={selectedCliente}
-                        abono={abono}
-                        setAbono={setAbono}
-                        onUpdateQuantity={updateQuantity}
-                        onRemoveItem={removeProduct}
-                        onFinalize={handleFinalize}
-                        isLoading={isLoading}
-                        sriData={sriData}
-                        setSriData={setSriData}
-                        imprimirClave={imprimirClave}
-                        setImprimirClave={setImprimirClave}
-                    />
-                </div>
-            </div>
+            )}
         </div>
     );
 };

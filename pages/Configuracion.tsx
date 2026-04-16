@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getConfig, saveConfig, NotaDeVentaConfig } from '../services/configService';
-import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, seed50Products, hydrateFromCloud, forcePushAllToCloud, testCloudConnection } from '../services/mockApi';
+import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, hydrateFromCloud, forcePushAllToCloud, testCloudConnection } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { 
     Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, 
     ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, GlobeAltIcon, 
@@ -26,13 +27,13 @@ const InputField: React.FC<{label: string, name: string, value: any, onChange: (
 );
 
 const ConfiguracionPage: React.FC = () => {
+    const { seedCatalog, syncing } = useData();
     const [config, setConfig] = useState<NotaDeVentaConfig>(getConfig());
     const [showSuccess, setShowSuccess] = useState(false);
     const [sriCredentials, setSriCredentials] = useState<SriCredential[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
     const [isImporting, setIsImporting] = useState(false);
-    const [isSeeding, setIsSeeding] = useState(false);
     const [isPushing, setIsPushing] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
     const [cloudStatus, setCloudStatus] = useState<'IDLE' | 'SYNCING' | 'ERROR' | 'CONNECTED'>('IDLE');
@@ -180,6 +181,46 @@ const ConfiguracionPage: React.FC = () => {
                         <button onClick={handlePushAll} disabled={isPushing} className="px-10 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-[10px]">
                             {isPushing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ArrowUpIcon className="w-5 h-5"/>}
                             Respaldo Inmediato
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* GESTIÓN DE CATÁLOGO */}
+            <div className="bg-white/5 rounded-[3rem] p-12 border border-white/10 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-brand-gold/5 rounded-full blur-[100px] -ml-40 -mt-40 transition-transform group-hover:scale-110 duration-1000"></div>
+                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                    <div className="flex items-center gap-10">
+                        <div className="p-8 rounded-[2.5rem] bg-brand-gold text-black shadow-2xl transition-all duration-500">
+                            <SparklesIcon className="w-14 h-14" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-4 mb-3">
+                                <h3 className="text-3xl font-black text-white uppercase tracking-tight">Catálogo Maestro</h3>
+                                <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 shadow-lg">
+                                    Luxury Edition
+                                </span>
+                            </div>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Carga institucional de 100 servicios y productos predeterminados</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                        <button 
+                            onClick={async () => {
+                                if (window.confirm("¿Deseas cargar el catálogo institucional de 100 productos?")) {
+                                    try {
+                                        await seedCatalog();
+                                        alert("✅ Catálogo Maestro Cargado Correctamente.");
+                                    } catch (e) {
+                                        alert("❌ Error en la base de datos.");
+                                    }
+                                }
+                            }} 
+                            disabled={syncing} 
+                            className="px-12 py-6 bg-brand-gold text-black font-black rounded-2xl shadow-[0_0_30px_rgba(255,191,0,0.3)] hover:bg-brand-gold/90 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.3em] text-[10px]"
+                        >
+                            {syncing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ArrowDownTrayIcon className="w-5 h-5"/>}
+                            Cargar 100 Productos
                         </button>
                     </div>
                 </div>

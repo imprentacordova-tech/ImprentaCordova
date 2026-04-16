@@ -14,11 +14,21 @@
 
 @layer components {
   .glass-atelier {
-    @apply bg-brand-dark/40 backdrop-blur-3xl border border-white/5 shadow-luxury;
+    @apply bg-brand-dark/60 backdrop-blur-3xl border border-white/5 shadow-luxury;
   }
   
   .glass-card-luxury {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-glass hover:bg-white/10 transition-all duration-700;
+    @apply bg-[#191f31] border border-white/5 rounded-2xl shadow-glass hover:bg-[#23293c] transition-all duration-700 relative overflow-hidden;
+  }
+  
+  .glass-card-luxury::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-[1px] bg-white opacity-10;
+  }
+
+  .sticky-note {
+    @apply bg-[#f2e1a6] text-[#544519] border border-[#d0c5af]/30 rounded-md shadow-paper-stack p-4 font-sans font-medium text-sm;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 10%);
   }
 
   .btn-atelier {
@@ -26,17 +36,17 @@
   }
 
   .text-gold-gradient {
-    background: linear-gradient(135deg, #FFD700 0%, #FFF8DC 50%, #D4AF37 100%);
+    background: linear-gradient(135deg, #f2ca50 0%, #FFF8DC 50%, #D4AF37 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     @apply font-black drop-shadow-sm;
   }
 
   .glass-boutique {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(12, 19, 36, 0.6);
     backdrop-filter: blur(25px) saturate(180%);
     -webkit-backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     @apply shadow-2xl rounded-[3rem];
   }
   
@@ -45,11 +55,15 @@
   }
 
   .input-atelier {
-    @apply bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:ring-1 focus:ring-liquid-gold/50 focus:border-liquid-gold outline-none transition-all duration-500 hover:bg-white/[0.05];
+    @apply bg-[#070d1f] border-transparent rounded-[1rem] px-6 py-4 text-[#dce1fb] placeholder:text-[#d0c5af] focus:ring-1 focus:ring-liquid-gold/50 focus:bg-[#2e3447] outline-none transition-all duration-500;
+  }
+  
+  .input-atelier:focus + label {
+    @apply text-liquid-gold;
   }
 
   .btn-luxury {
-    @apply relative px-10 py-5 bg-white text-brand-dark rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] overflow-hidden transition-all duration-700;
+    @apply relative px-10 py-5 bg-gradient-to-br from-liquid-gold-light to-liquid-gold text-[#3c2f00] rounded-2xl font-black text-xs uppercase tracking-[0.2em] overflow-hidden transition-all duration-700 shadow-gold-glow active:scale-95;
   }
   .btn-luxury::after {
     content: '';
@@ -59,7 +73,7 @@
     @apply translate-x-full;
   }
   .btn-luxury:hover {
-    @apply bg-liquid-gold -translate-y-1 shadow-gold-glow;
+    @apply -translate-y-1 shadow-gold-glow brightness-110;
   }
 }
 

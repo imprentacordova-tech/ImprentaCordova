@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential } from '../types';
 import { supabase } from '../services/supabase';
+import { MASTER_CATALOG } from '../services/catalogData';
 
 interface DataContextType {
     clientes: Cliente[];
@@ -21,6 +22,7 @@ interface DataContextType {
     updateTrabajoStatus: (id: string, status: any, user: string) => Promise<void>;
     addProducto: (p: any) => Promise<any>;
     updateProducto: (id: string, p: any) => Promise<void>;
+    seedCatalog: () => Promise<void>;
     // Inventory
     addInventoryItem: (item: any) => Promise<void>;
     updateInventoryItem: (id: string, item: any) => Promise<void>;
@@ -135,6 +137,22 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));
     };
 
+    const seedCatalog = async () => {
+        setSyncing(true);
+        try {
+            // Eliminar productos previos para evitar duplicados si se desea un reinicio limpio
+            // O simplemente insertar los que no existen. Aquí haremos un insert masivo.
+            const { error } = await supabase.from('productos').insert(MASTER_CATALOG);
+            if (error) throw error;
+            await refreshData();
+        } catch (err) {
+            console.error("Seeding Error:", err);
+            setError("Error al cargar el catálogo.");
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     // Inventory Handlers
     const addInventoryItem = async (item: any) => {
         const { error } = await supabase.from('inventario').insert([item]);
@@ -213,6 +231,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateTrabajoStatus,
         addProducto,
         updateProducto,
+        seedCatalog,
         addInventoryItem,
         updateInventoryItem,
         deleteInventoryItem,
