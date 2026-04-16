@@ -149,47 +149,50 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
 // --- MODALS (Kept minimal for this file context) ---
 
 const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClose: () => void }> = ({ trabajo, cliente, onClose }) => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-gray-700" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Orden #{trabajo.orden}</h2>
-                <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500"/></button>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury w-full max-w-lg overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
+            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <div>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">Orden #{trabajo.orden}</h2>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Detalle de producción</p>
+                </div>
+                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors"><CloseIcon className="w-5 h-5 text-slate-400"/></button>
             </div>
-            <div className="p-6 space-y-4">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-xl">
+            <div className="p-8 space-y-6">
+                <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center font-black text-liquid-gold text-xl">
                         {cliente?.nombre.charAt(0)}
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg">{cliente?.nombre}</h3>
-                        <p className="text-gray-500 text-sm">{cliente?.ruc || cliente?.cedula}</p>
+                        <h3 className="font-black text-white text-lg uppercase tracking-tight">{cliente?.nombre}</h3>
+                        <p className="text-slate-500 text-xs font-bold mt-0.5">{cliente?.ruc || cliente?.cedula}</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl">
+                <div className="grid grid-cols-2 gap-4 bg-white/5 p-6 rounded-2xl border border-white/5">
                     <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold">Producto</p>
-                        <p className="font-medium">{trabajo.subtipo}</p>
+                        <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Producto</p>
+                        <p className="font-bold text-white text-sm mt-1">{trabajo.subtipo}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold">Cantidad</p>
-                        <p className="font-medium">{trabajo.cantidad}</p>
+                        <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Cantidad</p>
+                        <p className="font-bold text-white text-sm mt-1">{trabajo.cantidad}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold">Total</p>
-                        <p className="font-bold text-brand-blue">{formatCurrency(trabajo.total)}</p>
+                        <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Total</p>
+                        <p className="font-black text-liquid-gold text-sm mt-1">{formatCurrency(trabajo.total)}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold">Saldo</p>
-                        <p className={`font-bold ${trabajo.saldo > 0 ? 'text-red-500' : 'text-green-500'}`}>{formatCurrency(trabajo.saldo)}</p>
+                        <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Saldo</p>
+                        <p className={`font-black text-sm mt-1 ${trabajo.saldo > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{formatCurrency(trabajo.saldo)}</p>
                     </div>
                 </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Notas de Producción</label>
-                    <textarea className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:border-gray-700 resize-none text-sm" rows={3} placeholder="Instrucciones para taller..."></textarea>
+                <div className="space-y-3">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Notas de Producción</label>
+                    <textarea className="w-full p-4 bg-black/40 border border-white/5 rounded-2xl text-sm font-bold text-white outline-none focus:ring-1 focus:ring-liquid-gold/30 resize-none placeholder:text-slate-700" rows={3} placeholder="Instrucciones para taller..."></textarea>
                 </div>
             </div>
-            <div className="p-4 bg-gray-50 dark:bg-gray-900 flex justify-end">
-                <button onClick={onClose} className="px-6 py-2 bg-brand-blue text-white font-bold rounded-lg shadow hover:bg-blue-700 transition-colors">Cerrar</button>
+            <div className="p-6 bg-white/5 flex justify-end border-t border-white/5">
+                <button onClick={onClose} className="px-8 py-3 bg-liquid-gold text-brand-dark font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-gold-glow hover:bg-white transition-all duration-500">Cerrar</button>
             </div>
         </div>
     </div>
@@ -217,11 +220,11 @@ const CameraModal: React.FC<{ trabajo: Trabajo; onClose: () => void; onCapture: 
     };
 
     return (
-        <div className="fixed inset-0 bg-black z-[60] flex flex-col justify-center items-center">
-            <video ref={videoRef} autoPlay playsInline className="w-full max-w-lg h-auto rounded-lg mb-4" />
+        <div className="fixed inset-0 bg-black z-[60] flex flex-col justify-center items-center animate-fade-in">
+            <video ref={videoRef} autoPlay playsInline className="w-full max-w-lg h-auto rounded-2xl mb-6 border border-white/10 shadow-luxury" />
             <div className="flex gap-4">
-                <button onClick={capture} className="px-8 py-4 bg-white rounded-full font-bold shadow-lg">Capturar</button>
-                <button onClick={onClose} className="px-8 py-4 bg-gray-800 text-white rounded-full font-bold">Cancelar</button>
+                <button onClick={capture} className="px-10 py-4 bg-white text-brand-dark rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-gold-glow hover:bg-liquid-gold transition-all duration-500">Capturar</button>
+                <button onClick={onClose} className="px-10 py-4 bg-white/10 text-white border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/20 transition-all duration-500">Cancelar</button>
             </div>
         </div>
     );
@@ -329,8 +332,8 @@ const KDSPage: React.FC = () => {
                     {/* Title & Search */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 w-full xl:w-auto">
                         <div>
-                            <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
-                                Atelier <span className="text-gold-gradient">Monitor</span>
+                            <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
+                                Taller <span className="text-gold-gradient">Monitor</span>
                             </h1>
                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3 ml-1">Flujo de Producción & KDS</p>
                         </div>
@@ -416,7 +419,7 @@ const KDSPage: React.FC = () => {
                                             <div className="w-12 h-12 rounded-full border border-white/20 mb-4 flex items-center justify-center">
                                                 <ClockIcon className="w-5 h-5" />
                                             </div>
-                                            <p className="text-[10px] font-black tracking-widest uppercase">Vault Empty</p>
+                                            <p className="text-[10px] font-black tracking-widest uppercase">Sin órdenes</p>
                                         </div>
                                     )}
                                 </div>

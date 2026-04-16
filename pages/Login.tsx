@@ -44,13 +44,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             navigate('/dashboard');
         }
       } else {
-        setError("Identidad no reconocida en el Atelier");
+        setError("Identidad no reconocida en el sistema");
         setKey('');
         setPassword('');
         setLoading(false);
       }
     } catch (err) {
-      setError("Error de enlace con la Bóveda");
+      setError("Error de conexión con la base de datos");
       setLoading(false);
     }
   };
@@ -78,10 +78,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     </div>
                     <div className="space-y-2">
                         <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase italic">
-                            ATELIER <span className="text-gold-gradient">SYSTEMS</span>
+                            CÓRDOVA <span className="text-gold-gradient">SYSTEMS</span>
                         </h1>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">
-                            Acceso seguro a la bóveda operativa
+                            Acceso seguro al panel operativo
                         </p>
                     </div>
                 </div>
@@ -91,7 +91,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     <div className="space-y-8">
                         {/* Key Identification */}
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-6 italic">Identity Key</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-6 italic">Identificación</label>
                             <div className="relative group">
                                 <UsersIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
                                 <input
@@ -100,14 +100,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
                                     className="input-atelier w-full pl-16 pr-6 py-6"
-                                    placeholder="Nombre del Artesano"
+                                    placeholder="Nombre del operador"
                                 />
                             </div>
                         </div>
 
                         {/* Security Signature */}
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-6 italic">Security Signature</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-6 italic">Contraseña</label>
                             <div className="relative group">
                                 <ShieldCheckIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
                                 <input
@@ -149,7 +149,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                             </div>
                         ) : (
                             <>
-                                <span className="relative z-10">Desbloquear Atelier</span>
+                                <span className="relative z-10">Ingresar al Sistema</span>
                                 <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
                             </>
                         )}
