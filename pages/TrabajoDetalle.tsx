@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
-import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo } from '../types';
+import { logActivity } from '../services/activityLogService';
+import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo, User } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { 
     ArrowLeftIcon, ReceiptIcon, DocumentTextIcon, LayersIcon, 
@@ -14,6 +15,7 @@ import {
 const TrabajoDetallePage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [loading, setLoading] = useState(true);
@@ -35,7 +37,8 @@ const TrabajoDetallePage: React.FC = () => {
 
     const handleStatusChange = async (newStatus: TrabajoEstado) => {
         if (!trabajo) return;
-        const updated = await updateTrabajoStatus(trabajo.id, newStatus, 'Admin');
+        const updated = await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
+        await logActivity(currentUser.id, 'ACTUALIZAR_ESTADO', 'TrabajoDetalle', trabajo.id, `Estado cambiado manualmente a: ${newStatus}`);
         setTrabajo(updated);
     };
 

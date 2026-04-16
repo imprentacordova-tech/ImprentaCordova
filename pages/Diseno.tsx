@@ -1,11 +1,10 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
 import { Trabajo, Cliente, TrabajoEstado, SupervisorAnalysis, User } from '../types';
-import { formatCurrency, formatDate } from '../utils';
-import { PaletteIcon, MonitorIcon, ClockIcon, CheckCircleIcon, ArrowRightIcon, EyeIcon, UploadIcon, SparklesIcon, Loader2Icon, ExclamationTriangleIcon, PrinterIcon } from '../components/Icons';
+import { PaletteIcon, SparklesIcon, Loader2Icon, PrinterIcon, EyeIcon } from '../components/Icons';
 import { useOutletContext } from 'react-router-dom';
 import { analyzeDesignWithSupervisor } from '../services/geminiService';
+import { logActivity } from '../services/activityLogService';
 
 const DisenoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -47,20 +46,21 @@ const DisenoPage: React.FC = () => {
         setAnalyzing(true);
         const result = await analyzeDesignWithSupervisor(selectedJob.fotoOriginalUrl, selectedJob.subtipo);
         setAiAnalysis(result);
+        
+        await logActivity(currentUser.id, 'ANALIZAR_DISENO', 'Diseño', selectedJob.id, `Análisis IA completado para orden #${selectedJob.orden}. Diagnóstico: ${result?.estado}`);
         setAnalyzing(false);
     };
 
     const handleSendToPrint = async () => {
         if (!selectedJob) return;
         
-        // Validación opcional: ¿Requiere análisis previo?
         if (!aiAnalysis && !window.confirm("El Supervisor IA no ha validado este diseño. ¿Enviar a impresión de todas formas?")) {
             return;
         }
 
         try {
             await updateTrabajoStatus(selectedJob.id, TrabajoEstado.PROCESO, currentUser.nombre);
-            // Feedback visual y limpieza
+            await logActivity(currentUser.id, 'ENVIAR_IMPRESION', 'Diseño', selectedJob.id, `Orden #${selectedJob.orden} enviada a producción. validado_por_ia: ${!!aiAnalysis}`);
             alert(`✅ Orden #${selectedJob.orden} enviada a Taller correctamente.`);
             setSelectedJob(null);
             fetchData();
@@ -70,72 +70,89 @@ const DisenoPage: React.FC = () => {
     };
 
     return (
-        <div className="flex h-[calc(100vh-100px)] gap-6 overflow-hidden animate-fade-in">
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] gap-8 animate-fade-in pb-10">
             {/* Left Queue */}
-            <div className="w-1/4 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
-                    <h2 className="font-bold flex items-center gap-2"><PaletteIcon className="w-5 h-5" /> Diseño</h2>
-                    <span className="bg-brand-red px-2 py-0.5 rounded text-xs">{pendingJobs.length}</span>
+            <div className="w-full lg:w-1/4 flex flex-col bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden min-h-[400px]">
+                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-brand-dark/30">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
+                        <PaletteIcon className="w-6 h-6 text-liquid-gold" />
+                        Cola Diseño
+                    </h2>
+                    <span className="bg-brand-red/20 border border-brand-red/30 px-3 py-1 rounded-lg text-brand-red font-black text-[9px] uppercase tracking-widest">{pendingJobs.length} Pendientes</span>
                 </div>
-                <div className="flex-grow overflow-y-auto p-2 space-y-2 custom-scrollbar">
-                    {pendingJobs.map(job => (
-                        <div key={job.id} onClick={() => setSelectedJob(job)} className={`p-4 rounded-xl cursor-pointer border transition-all ${selectedJob?.id === job.id ? 'bg-blue-50 border-brand-blue ring-1' : 'bg-white border-slate-100 hover:border-blue-200'}`}>
-                            <p className="font-black text-slate-800">#{job.orden}</p>
-                            <h3 className="font-bold text-brand-blue truncate">{getClientName(job.clienteId)}</h3>
-                            <p className="text-xs text-slate-500 line-clamp-1">{job.subtipo}</p>
+                <div className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    {loading ? (
+                         <div className="text-center py-10 opacity-50">
+                             <div className="w-8 h-8 border-4 border-liquid-gold/30 border-t-liquid-gold rounded-full animate-spin mx-auto mb-3"></div>
+                         </div>
+                    ) : pendingJobs.map(job => (
+                        <div key={job.id} onClick={() => setSelectedJob(job)} className={`p-5 rounded-2xl cursor-pointer transition-all duration-300 group ${selectedJob?.id === job.id ? 'bg-liquid-gold/5 border border-liquid-gold/50 shadow-gold-glow scale-105' : 'bg-brand-dark/50 border border-white/5 hover:border-liquid-gold/30 hover:-translate-y-1'}`}>
+                            <div className="flex justify-between items-end mb-2">
+                                <p className={`font-black text-lg uppercase tracking-wider ${selectedJob?.id === job.id ? 'text-liquid-gold' : 'text-slate-300 group-hover:text-white'}`}>#{job.orden}</p>
+                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">PRIORIDAD NORMAL</span>
+                            </div>
+                            <h3 className="font-bold text-sm text-white truncate uppercase mb-1">{getClientName(job.clienteId)}</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{job.subtipo}</p>
                         </div>
                     ))}
-                    {pendingJobs.length === 0 && (
-                        <div className="p-8 text-center text-slate-400 text-xs">No hay trabajos pendientes de diseño.</div>
+                    {!loading && pendingJobs.length === 0 && (
+                        <div className="p-10 text-center flex flex-col items-center opacity-50">
+                            <CheckBadgeIcon className="w-12 h-12 text-slate-500 mb-4" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-relaxed">No hay trabajos en la cola de diseño.</p>
+                        </div>
                     )}
                 </div>
             </div>
 
             {/* Workspace */}
-            <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 overflow-hidden">
+            <div className="flex-1 flex flex-col bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
                 {selectedJob ? (
-                    <div className="flex flex-col h-full">
-                        <div className="p-6 bg-white dark:bg-gray-800 border-b flex justify-between items-center">
+                    <div className="flex flex-col h-full animate-fade-in">
+                        <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-brand-dark/30">
                             <div>
-                                <h1 className="text-2xl font-black text-slate-900 dark:text-white">Orden #{selectedJob.orden}</h1>
-                                <p className="text-slate-500 text-sm">{selectedJob.subtipo}</p>
+                                <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Orden <span className="text-liquid-gold">#{selectedJob.orden}</span></h1>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">{selectedJob.subtipo} • {getClientName(selectedJob.clienteId)}</p>
                             </div>
-                            <div className="flex gap-4">
+                            <div className="flex flex-wrap gap-4 w-full md:w-auto">
                                 <button 
                                     onClick={handleRunAI}
                                     disabled={analyzing || !selectedJob.fotoOriginalUrl}
-                                    className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-all disabled:opacity-50"
+                                    className="flex-1 md:flex-none flex justify-center items-center gap-2 px-6 py-3 bg-white/5 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-white/10 hover:border-liquid-gold/50 transition-all border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed group"
                                 >
-                                    {analyzing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <SparklesIcon className="w-5 h-5"/>}
-                                    SUPERVISOR MAESTRO (IA)
+                                    {analyzing ? <Loader2Icon className="animate-spin w-5 h-5 text-liquid-gold"/> : <SparklesIcon className="w-5 h-5 text-liquid-gold group-hover:scale-110 transition-transform"/>}
+                                    <span>Análisis IA</span>
                                 </button>
                                 <button 
                                     onClick={handleSendToPrint}
-                                    className="px-6 py-2.5 bg-brand-blue text-white font-bold rounded-xl shadow-lg hover:bg-blue-800 transition-all flex items-center gap-2"
+                                    className="flex-1 md:flex-none flex justify-center items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-black text-[10px] uppercase tracking-[0.2em] border border-emerald-400/50 rounded-2xl hover:bg-emerald-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                                 >
-                                    <PrinterIcon className="w-5 h-5"/> ENVIAR A IMPRESIÓN
+                                    <PrinterIcon className="w-5 h-5"/> Enviar Taller
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex-grow p-6 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 gap-8 custom-scrollbar">
+                        <div className="flex-grow p-8 overflow-y-auto grid grid-cols-1 xl:grid-cols-12 gap-8 custom-scrollbar">
                             {/* Visual Reference */}
-                            <div className="lg:col-span-7 space-y-6">
-                                <div className="aspect-[4/3] bg-slate-200 rounded-3xl overflow-hidden shadow-inner border-4 border-white flex items-center justify-center relative group">
+                            <div className="xl:col-span-7 flex flex-col h-full min-h-[400px]">
+                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Referencia Visual</h3>
+                                <div className="flex-grow bg-brand-dark/80 rounded-[2rem] overflow-hidden border border-white/10 flex items-center justify-center relative group p-4 shadow-inner">
                                     {selectedJob.fotoOriginalUrl ? (
-                                        <img src={selectedJob.fotoOriginalUrl} className="max-w-full max-h-full object-contain" alt="Arte" />
+                                        <div className="w-full h-full rounded-2xl overflow-hidden relative">
+                                            <img src={selectedJob.fotoOriginalUrl} className="w-full h-full object-contain" alt="Arte" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-transparent pointer-events-none"></div>
+                                        </div>
                                     ) : (
-                                        <div className="text-center text-slate-400">
-                                            <EyeIcon className="w-16 h-16 mx-auto mb-2 opacity-20"/>
-                                            <p>Sin referencia visual</p>
+                                        <div className="text-center text-slate-500 flex flex-col items-center">
+                                            <EyeIcon className="w-16 h-16 mb-4 opacity-20"/>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.2em]">Sin referencia provista</p>
                                         </div>
                                     )}
                                     {analyzing && (
-                                        <div className="absolute inset-0 bg-purple-600/20 backdrop-blur-sm flex items-center justify-center">
-                                            <div className="w-full h-1 bg-white absolute top-0 animate-[scan_2s_infinite]"></div>
+                                        <div className="absolute inset-0 bg-brand-dark/80 backdrop-blur-sm flex items-center justify-center rounded-[2rem] z-10">
+                                            <div className="w-full h-1 bg-liquid-gold shadow-gold-glow absolute top-0 animate-[scan_2s_infinite]"></div>
                                             <div className="text-center text-white">
-                                                <Loader2Icon className="animate-spin w-10 h-10 mx-auto mb-4"/>
-                                                <p className="font-black tracking-widest uppercase text-xl">Escaneando Arte...</p>
+                                                <Loader2Icon className="animate-spin w-12 h-12 text-liquid-gold mx-auto mb-6"/>
+                                                <p className="font-black text-sm tracking-[0.3em] uppercase text-liquid-gold">Procesando Arte...</p>
                                             </div>
                                         </div>
                                     )}
@@ -143,49 +160,82 @@ const DisenoPage: React.FC = () => {
                             </div>
 
                             {/* Analysis Panel */}
-                            <div className="lg:col-span-5 space-y-6">
+                            <div className="xl:col-span-5 flex flex-col h-full">
+                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                    <SparklesIcon className="w-4 h-4 text-liquid-gold"/> Diagnóstico Supervisor
+                                </h3>
                                 {aiAnalysis ? (
-                                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl border-t-8 animate-slide-in-up" style={{borderColor: aiAnalysis.estado === 'VERDE' ? '#10b981' : aiAnalysis.estado === 'AMARILLO' ? '#f59e0b' : '#ef4444'}}>
-                                        <div className="flex justify-between items-center mb-6">
-                                            <h3 className="text-xl font-black text-slate-800 dark:text-white">Diagnóstico del Supervisor</h3>
-                                            <span className={`px-4 py-1 rounded-full text-xs font-black ${aiAnalysis.estado === 'VERDE' ? 'bg-green-100 text-green-700' : aiAnalysis.estado === 'AMARILLO' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                                                {aiAnalysis.estado}
+                                    <div className="flex-grow bg-brand-dark/50 border border-white/10 rounded-[2rem] p-8 shadow-luxury flex flex-col relative overflow-hidden animate-slide-up">
+                                        {/* Status Line Indicator */}
+                                        <div className="absolute top-0 left-0 w-full h-2" style={{backgroundColor: aiAnalysis.estado === 'VERDE' ? '#10b981' : aiAnalysis.estado === 'AMARILLO' ? '#f59e0b' : '#ef4444'}}></div>
+                                        
+                                        <div className="flex justify-between items-center mb-8 pt-2">
+                                            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Reporte IA</h3>
+                                            <span className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border" style={{
+                                                backgroundColor: aiAnalysis.estado === 'VERDE' ? 'rgba(16,185,129,0.1)' : aiAnalysis.estado === 'AMARILLO' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                                                color: aiAnalysis.estado === 'VERDE' ? '#34d399' : aiAnalysis.estado === 'AMARILLO' ? '#fbbf24' : '#f87171',
+                                                borderColor: aiAnalysis.estado === 'VERDE' ? 'rgba(16,185,129,0.2)' : aiAnalysis.estado === 'AMARILLO' ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)'
+                                            }}>
+                                                ESTADO {aiAnalysis.estado}
                                             </span>
                                         </div>
-                                        <p className="text-slate-600 dark:text-slate-400 font-medium mb-6 italic leading-relaxed">
+                                        
+                                        <p className="text-slate-300 text-sm font-bold mb-8 italic leading-relaxed p-6 bg-white/5 rounded-2xl border border-white/5 border-l-4 border-l-liquid-gold">
                                             "{aiAnalysis.resumen}"
                                         </p>
-                                        <div className="space-y-4">
+                                        
+                                        <div className="overflow-y-auto space-y-4 custom-scrollbar pr-2 flex-grow">
                                             {aiAnalysis.detalles.map((det, i) => (
-                                                <div key={i} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border-l-4 border-brand-blue">
-                                                    <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-1">{det.tipo}</p>
-                                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{det.descripcion}</p>
-                                                    <p className="text-xs text-slate-500">{det.sugerencia}</p>
+                                                <div key={i} className="p-6 bg-white/5 rounded-2xl border border-white/5 hover:border-liquid-gold/20 transition-colors">
+                                                    <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.2em] mb-2">{det.tipo}</p>
+                                                    <p className="text-sm font-bold text-white uppercase mb-3 leading-snug">{det.descripcion}</p>
+                                                    <p className="text-xs text-slate-400 font-medium leading-relaxed">{det.sugerencia}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-slate-800 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
-                                        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6">
-                                            <SparklesIcon className="w-10 h-10 text-purple-400" />
+                                    <div className="flex-grow flex flex-col items-center justify-center text-center p-8 bg-brand-dark/30 rounded-[2rem] border border-dashed border-white/10 opacity-70">
+                                        <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/5">
+                                            <SparklesIcon className="w-10 h-10 text-liquid-gold" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-slate-400">Control de Calidad IA</h3>
-                                        <p className="text-slate-400 text-sm mt-2">Haz clic en el botón superior para realizar un diagnóstico profesional del diseño.</p>
+                                        <h3 className="text-lg font-black text-white uppercase tracking-widest">Supervisor IA en Reposo</h3>
+                                        <p className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase mt-4 max-w-xs leading-relaxed">
+                                            Haz clic superior para inyectar diagnóstico profesional al diseño actual.
+                                        </p>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center opacity-40">
-                        <PaletteIcon className="w-24 h-24 mb-4" />
-                        <p className="text-xl font-bold uppercase tracking-widest">Selecciona una orden para comenzar</p>
+                    <div className="h-full flex flex-col items-center justify-center opacity-30 bg-brand-dark/20">
+                        <div className="w-32 h-32 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/5">
+                            <PaletteIcon className="w-12 h-12 text-liquid-gold" />
+                        </div>
+                        <p className="text-lg font-black text-white uppercase tracking-[0.3em]">Cola en Espera</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-4">Selecciona un requerimiento</p>
                     </div>
                 )}
             </div>
+            
+            {/* Componente ficticio para satisfacer dependencia de CheckBadgeIcon dentro del file */}
+            <span className="hidden">
+                {(() => {
+                    const CheckBadgeIcon = () => <svg/>; return null;
+                })()}
+            </span>
         </div>
     );
 };
+
+// Extrayendo localmente el SVG ya que vimos que no estaba en el import, para prevenir errores
+function CheckBadgeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+    </svg>
+  );
+}
 
 export default DisenoPage;

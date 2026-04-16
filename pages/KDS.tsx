@@ -6,6 +6,7 @@ import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
 import { DocumentIcon, CloseIcon, CameraIcon, ArrowUpIcon, ArrowDownIcon, ReceiptIcon, ClockIcon, FilterIcon, PhotoIcon, SearchIcon } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
+import { logActivity } from '../services/activityLogService';
 
 // --- HELPERS ---
 
@@ -311,6 +312,7 @@ const KDSPage: React.FC = () => {
         
         // API Call
         await updateTrabajoStatus(id, newStatus, currentUser.nombre);
+        await logActivity(currentUser.id, 'ACTUALIZAR_ESTADO', 'KDS', id, `Orden movida a estado: ${newStatus}`);
     };
 
     const handlePhotoSave = async (data: string) => {

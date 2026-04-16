@@ -16,21 +16,16 @@ const formatWhatsAppLink = (phone: string) => {
     return `https://wa.me/${cleanPhone}`;
 };
 
-const AgendaKpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<any>; color: 'blue' | 'orange' | 'purple' }> = ({ title, value, icon: Icon, color }) => {
-    const colors = {
-        blue: 'from-blue-500 to-blue-600',
-        orange: 'from-orange-500 to-orange-600',
-        purple: 'from-purple-500 to-purple-600',
-    };
+const AgendaKpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<any>; color: 'blue' | 'orange' | 'purple' }> = ({ title, value, icon: Icon }) => {
     return (
-        <div className={`bg-gradient-to-br ${colors[color]} text-white p-5 rounded-xl shadow-lg`}>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-luxury hover:-translate-y-2 hover:border-liquid-gold/20 transition-all duration-500 group">
             <div className="flex justify-between items-start">
                 <div>
-                    <p className="text-3xl font-bold">{value}</p>
-                    <p className="text-sm opacity-80 mt-1">{title}</p>
+                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">{title}</p>
+                     <p className="text-3xl font-black text-white mt-2 group-hover:text-gold-gradient transition-all">{value}</p>
                 </div>
-                <div className="bg-white/20 p-3 rounded-full">
-                    <Icon className="h-6 w-6" />
+                <div className="bg-white/5 p-3 rounded-full border border-white/5 group-hover:border-liquid-gold/30 transition-all">
+                    <Icon className="h-6 w-6 text-liquid-gold" />
                 </div>
             </div>
         </div>
@@ -42,16 +37,18 @@ const ConfirmationModal: React.FC<{
     onConfirm: () => void;
     onCancel: () => void;
 }> = ({ proveedor, onConfirm, onCancel }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4" onClick={onCancel}>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm" onClick={e => e.stopPropagation()}>
-             <div className="p-6 text-center">
-                 <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500" />
-                 <h3 className="mt-4 text-lg font-bold text-gray-900 dark:text-white">Confirmar Eliminación</h3>
-                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">¿Estás seguro de que quieres eliminar a <strong>{proveedor.nombre}</strong>? Esta acción no se puede deshacer.</p>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onCancel}>
+        <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/10 w-full max-w-sm animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="p-8 text-center">
+                 <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-gold-glow bg-brand-red/10 text-brand-red">
+                     <ExclamationTriangleIcon className="h-10 w-10" />
+                 </div>
+                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Confirmar Eliminación</h3>
+                 <p className="mt-4 text-sm text-slate-400 font-bold uppercase tracking-wider">¿Estás seguro de que quieres eliminar a <strong className="text-liquid-gold">{proveedor.nombre}</strong>? Esta acción no se puede deshacer.</p>
             </div>
-             <div className="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
-                 <button onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancelar</button>
-                 <button onClick={onConfirm} className="px-4 py-2 bg-brand-red text-white font-semibold rounded-lg hover:bg-red-700">Eliminar</button>
+             <div className="p-6 bg-white/5 flex justify-center gap-4 border-t border-white/5 rounded-b-[2.5rem]">
+                 <button onClick={onCancel} className="px-6 py-3 bg-white/10 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border border-white/10 hover:bg-white/20 transition-all">Cancelar</button>
+                 <button onClick={onConfirm} className="px-6 py-3 bg-brand-red text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl shadow-gold-glow hover:bg-red-500 transition-all">Eliminar</button>
             </div>
         </div>
     </div>
@@ -59,20 +56,20 @@ const ConfirmationModal: React.FC<{
 
 const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
     <div>
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
-        <input id={name} name={name} value={value} onChange={onChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600" {...props} />
+        <label htmlFor={name} className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">{label}</label>
+        <input id={name} name={name} value={value} onChange={onChange} className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white uppercase focus:border-liquid-gold/50 focus:bg-white/10 outline-none transition-all" {...props} />
     </div>
 );
 
 const InfoItem: React.FC<{icon?: React.FC<any>, label: string, value: any, link?: string}> = ({ icon: Icon, label, value, link }) => (
     <div className="flex items-start">
-        {Icon && <Icon className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />}
+        {Icon && <div className="p-2 bg-white/5 rounded-xl border border-white/5 mr-3 flex-shrink-0"><Icon className="h-4 w-4 text-liquid-gold" /></div>}
         <div>
-            <p className="font-semibold text-gray-500 dark:text-gray-400">{label}</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{label}</p>
             {link ? (
-                <a href={link} target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline break-words">{value || 'N/A'}</a>
+                <a href={link} target="_blank" rel="noopener noreferrer" className="text-liquid-gold hover:text-white transition-colors font-bold text-sm uppercase break-words">{value || 'N/A'}</a>
             ) : (
-                <p className="text-gray-800 dark:text-white break-words">{value || 'N/A'}</p>
+                <p className="text-sm font-bold text-white uppercase break-words">{value || 'N/A'}</p>
             )}
         </div>
     </div>
@@ -80,8 +77,8 @@ const InfoItem: React.FC<{icon?: React.FC<any>, label: string, value: any, link?
 
 const InfoBlock: React.FC<{label: string, value?: string}> = ({label, value}) => (
     <div>
-        <p className="font-semibold text-gray-500 dark:text-gray-400 mb-1">{label}</p>
-        <p className="text-gray-800 dark:text-white p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">{value || 'No hay información.'}</p>
+        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">{label}</p>
+        <p className="text-sm font-bold text-slate-300 p-4 bg-white/5 border border-white/5 rounded-2xl leading-relaxed">{value || 'No hay información.'}</p>
     </div>
 );
 
@@ -110,48 +107,48 @@ const ProveedorFormModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold">{formData.id ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
-                    <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500" /></button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/10 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-8 border-b border-white/5 bg-white/5">
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">{formData.id ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
+                    <button onClick={onClose} className="p-2 bg-white/5 hover:bg-brand-red/20 text-slate-400 hover:text-brand-red rounded-full transition-all border border-transparent hover:border-brand-red/30"><CloseIcon className="w-6 h-6" /></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <InputField label="Nombre del Proveedor" name="nombre" value={formData.nombre || ''} onChange={handleChange} required />
                         <InputField label="Categoría" name="categoria" value={formData.categoria || ''} onChange={handleChange} required />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <InputField label="Persona de Contacto" name="contacto" value={formData.contacto || ''} onChange={handleChange} required />
                         <InputField label="Teléfono (para WhatsApp)" name="telefono" value={formData.telefono || ''} onChange={handleChange} required />
                     </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <InputField label="Ciudad" name="ciudad" value={formData.ciudad || ''} onChange={handleChange} />
                         <InputField label="Sitio Web (ej: dominio.com)" name="website" value={formData.website || ''} onChange={handleChange} />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Productos Principales</label>
-                        <textarea name="productos" value={formData.productos || ''} onChange={handleChange} rows={2} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"></textarea>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Productos Principales</label>
+                        <textarea name="productos" value={formData.productos || ''} onChange={handleChange} rows={2} className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white uppercase focus:border-liquid-gold/50 focus:bg-white/10 outline-none transition-all resize-none"></textarea>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium">Tipo</label>
-                            <select name="tipo" value={formData.tipo || 'Producto'} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
-                                <option value="Producto">Producto</option>
-                                <option value="Servicio">Servicio</option>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Tipo</label>
+                            <select name="tipo" value={formData.tipo || 'Producto'} onChange={handleChange} className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white uppercase focus:border-liquid-gold/50 focus:bg-white/10 outline-none transition-all appearance-none cursor-pointer">
+                                <option value="Producto" className="bg-brand-dark">Producto</option>
+                                <option value="Servicio" className="bg-brand-dark">Servicio</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium">Estado</label>
-                            <select name="estado" value={formData.estado || 'Activo'} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Estado</label>
+                            <select name="estado" value={formData.estado || 'Activo'} onChange={handleChange} className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white uppercase focus:border-liquid-gold/50 focus:bg-white/10 outline-none transition-all appearance-none cursor-pointer">
+                                <option value="Activo" className="bg-brand-dark">Activo</option>
+                                <option value="Inactivo" className="bg-brand-dark">Inactivo</option>
                             </select>
                         </div>
                     </div>
-                    <div className="flex justify-end pt-4 gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancelar</button>
-                        <button type="submit" className="px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg hover:bg-blue-700">Guardar</button>
+                    <div className="flex justify-end pt-6 gap-4 border-t border-white/5">
+                        <button type="button" onClick={onClose} className="px-6 py-3 bg-white/5 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border border-white/5 hover:bg-white/10 transition-all">Cancelar</button>
+                        <button type="submit" className="px-6 py-3 bg-liquid-gold text-brand-dark font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl shadow-gold-glow hover:bg-white transition-all">Guardar Proveedor</button>
                     </div>
                 </form>
             </div>
@@ -166,17 +163,17 @@ const ProveedorDetailModal: React.FC<{
     onDelete: (p: Proveedor) => void;
 }> = ({ proveedor, onClose, onEdit, onDelete }) => {
      return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-start p-6 border-b dark:border-gray-700">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/10 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-start p-8 border-b border-white/5 bg-white/5">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{proveedor.nombre}</h2>
-                        <p className="text-sm font-semibold text-purple-600">{proveedor.categoria}</p>
+                        <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{proveedor.nombre}</h2>
+                        <p className="mt-2 inline-block px-3 py-1 bg-liquid-gold/10 border border-liquid-gold/20 text-liquid-gold rounded-lg text-[9px] font-black uppercase tracking-widest">{proveedor.categoria}</p>
                     </div>
-                    <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500 hover:text-gray-800" /></button>
+                    <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-full transition-all"><CloseIcon className="w-6 h-6" /></button>
                 </div>
-                <div className="p-6 overflow-y-auto space-y-4 text-sm">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-8 overflow-y-auto space-y-8 custom-scrollbar">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 p-6 rounded-[2rem] border border-white/5">
                         <InfoItem icon={PhoneIcon} label="Teléfono" value={proveedor.telefono} link={`tel:${proveedor.telefono}`} />
                         <InfoItem icon={EnvelopeIcon} label="Email" value={proveedor.email} link={proveedor.email ? `mailto:${proveedor.email}`: undefined} />
                         <InfoItem icon={GlobeAltIcon} label="Sitio Web" value={proveedor.website} link={proveedor.website ? `http://${proveedor.website}`: undefined} />
@@ -184,17 +181,17 @@ const ProveedorDetailModal: React.FC<{
                     </div>
                     <InfoBlock label="Productos Principales" value={proveedor.productos} />
                     <InfoBlock label="Notas" value={proveedor.notas} />
-                    <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/5">
                        <InfoItem label="Tipo" value={proveedor.tipo} />
-                       <InfoItem label="Estado" value={<span className={`px-2 py-1 text-xs font-semibold rounded-full ${proveedor.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{proveedor.estado}</span>} />
+                       <InfoItem label="Estado" value={<span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg border inline-block ${proveedor.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-brand-red/10 text-brand-red border-brand-red/20'}`}>{proveedor.estado}</span>} />
                     </div>
                 </div>
-                <div className="flex justify-end gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-b-xl mt-auto">
-                    <button onClick={() => onEdit(proveedor)} className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
-                        <PencilIcon className="h-5 w-5"/> Editar
+                <div className="flex justify-end gap-4 p-6 bg-white/5 border-t border-white/5 rounded-b-[2.5rem]">
+                    <button onClick={() => onEdit(proveedor)} className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border border-white/10 hover:bg-white/20 transition-all">
+                        <PencilIcon className="h-4 w-4"/> Editar
                     </button>
-                    <button onClick={() => onDelete(proveedor)} className="flex items-center gap-2 px-4 py-2 bg-red-100 text-brand-red font-semibold rounded-lg hover:bg-red-200">
-                        <TrashIcon className="h-5 w-5"/> Eliminar
+                    <button onClick={() => onDelete(proveedor)} className="flex items-center gap-2 px-6 py-3 bg-brand-red/10 border border-brand-red/20 text-brand-red font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-brand-red hover:text-white transition-all shadow-gold-glow">
+                        <TrashIcon className="h-4 w-4"/> Eliminar
                     </button>
                 </div>
             </div>
@@ -208,19 +205,19 @@ const ProveedorCard: React.FC<{
     onAgendar: (id: string) => void;
 }> = ({ proveedor, onViewDetails, onAgendar }) => {
     return (
-        <div onClick={() => onViewDetails(proveedor)} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 flex flex-col h-full cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div onClick={() => onViewDetails(proveedor)} className="bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2rem] shadow-luxury p-6 flex flex-col h-full cursor-pointer hover:border-liquid-gold/30 hover:-translate-y-1 transition-all duration-300 group">
             <div className="flex-grow">
-                <h3 className="font-bold text-lg text-gray-900 dark:text-white pr-8">{proveedor.nombre}</h3>
-                <p className="text-xs font-semibold text-purple-600 bg-purple-100 dark:bg-purple-900/50 dark:text-purple-300 inline-block px-2 py-0.5 rounded-full my-2">{proveedor.categoria}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{proveedor.productos}</p>
+                <h3 className="font-black text-xl text-white pr-8 uppercase tracking-tight group-hover:text-liquid-gold transition-colors">{proveedor.nombre}</h3>
+                <p className="text-[9px] font-black text-liquid-gold bg-liquid-gold/10 border border-liquid-gold/20 inline-block px-3 py-1 rounded-lg my-3 uppercase tracking-widest">{proveedor.categoria}</p>
+                <p className="text-sm font-bold text-slate-400 mb-4 line-clamp-2 uppercase leading-relaxed">{proveedor.productos}</p>
             </div>
-            <div className="mt-auto border-t dark:border-gray-700 pt-3 space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                    <a href={formatWhatsAppLink(proveedor.telefono)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1.5 text-green-600 hover:underline"><WhatsAppIcon className="w-4 h-4"/> <span>{proveedor.telefono}</span></a>
-                    {proveedor.website && <a href={`http://${proveedor.website}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-blue-600 hover:underline truncate">Website</a>}
+            <div className="mt-auto border-t border-white/5 pt-4 space-y-4">
+                <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-wider">
+                    <a href={formatWhatsAppLink(proveedor.telefono)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"><WhatsAppIcon className="w-4 h-4"/> <span>{proveedor.telefono}</span></a>
+                    {proveedor.website && <a href={`http://${proveedor.website}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-liquid-gold hover:text-white transition-colors truncate">Sitio Web</a>}
                 </div>
-                 <button onClick={(e) => { e.stopPropagation(); onAgendar(proveedor.id);}} className="w-full flex items-center justify-center gap-1.5 text-sm px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md font-semibold text-gray-700 dark:text-gray-200 transition-colors">
-                    <CalendarDaysIcon className="w-4 h-4"/> Agendar Tarea
+                 <button onClick={(e) => { e.stopPropagation(); onAgendar(proveedor.id);}} className="w-full flex items-center justify-center gap-2 text-[10px] font-black px-4 py-3 bg-white/5 hover:bg-white/10 hover:border-white/20 border border-transparent rounded-xl text-white uppercase tracking-[0.2em] transition-all">
+                    <CalendarDaysIcon className="w-4 h-4 text-liquid-gold"/> Agendar Tarea
                 </button>
             </div>
         </div>
@@ -335,13 +332,19 @@ const ProveedoresPage: React.FC = () => {
     const isTareaVencida = (tarea: TareaProveedor) => !tarea.completada && new Date(tarea.fechaVencimiento) < new Date();
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-wrap justify-between items-center gap-4">
-                <h1 className="text-3xl font-bold">Gestión de Proveedores</h1>
-                <button onClick={() => { setProveedorToEdit({}); setIsFormModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">
-                    <UserPlusIcon className="h-5 w-5" />
-                    <span>Nuevo Proveedor</span>
-                </button>
+        <div className="space-y-10 animate-fade-in pb-20">
+            <div className="p-6 lg:p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] shadow-luxury relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
+                <div className="flex flex-wrap justify-between items-end gap-6 relative z-10">
+                    <div>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 italic">Directorio</p>
+                        <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">Red de <span className="text-gold-gradient italic">Proveedores</span></h1>
+                    </div>
+                    <button onClick={() => { setProveedorToEdit({}); setIsFormModalOpen(true); }} className="flex items-center gap-2 px-6 py-3 bg-liquid-gold text-brand-dark font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl shadow-gold-glow hover:bg-white transition-all duration-500">
+                        <UserPlusIcon className="h-5 w-5" />
+                        <span>Nuevo Proveedor</span>
+                    </button>
+                </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -350,17 +353,29 @@ const ProveedoresPage: React.FC = () => {
                 <AgendaKpiCard title="Mantenimientos Pend." value={kpis.mantenimientosPendientes} icon={WrenchScrewdriverIcon} color="purple" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-4 flex flex-col">
-                    <h2 className="text-xl font-bold">Lista de Proveedores</h2>
-                     <div className="flex flex-col md:flex-row gap-4">
-                        <input type="text" placeholder="Buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-grow p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
-                        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as any)} className="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
-                            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Panel de Proveedores (Izquierda, más ancho) */}
+                <div className="lg:col-span-7 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] shadow-luxury p-8 flex flex-col h-full min-h-[600px]">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/10"><BuildingStorefrontIcon className="w-6 h-6 text-liquid-gold" /></div>
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Directorio</h2>
+                    </div>
+                     <div className="flex flex-col md:flex-row gap-4 mb-8">
+                        <div className="relative flex-grow">
+                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                            <input type="text" placeholder="BUSCAR PROVEEDOR..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:border-liquid-gold/30 focus:bg-white/10 outline-none transition-all"/>
+                        </div>
+                        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as any)} className="py-4 px-6 bg-white/5 border border-white/10 rounded-2xl text-[11px] font-black text-white uppercase tracking-widest focus:border-liquid-gold/30 focus:bg-white/10 outline-none transition-all appearance-none cursor-pointer">
+                            {categories.map(cat => <option key={cat} value={cat} className="bg-brand-dark">{cat}</option>)}
                         </select>
                     </div>
-                     <div className="overflow-auto max-h-[70vh] flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 -mr-2 pr-2">
-                        {loading ? <p>Cargando...</p> : filteredProveedores.map(p => (
+                     <div className="overflow-y-auto flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 custom-scrollbar pr-2 pb-4">
+                        {loading ? (
+                            <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-50">
+                                <div className="w-12 h-12 border-4 border-liquid-gold/30 border-t-liquid-gold rounded-full animate-spin mb-4"></div>
+                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.2em]">Cargando Directorio...</p>
+                            </div>
+                        ) : filteredProveedores.map(p => (
                             <ProveedorCard 
                                 key={p.id}
                                 proveedor={p}
@@ -371,28 +386,64 @@ const ProveedoresPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-4 flex flex-col">
-                    <h2 className="text-xl font-bold">Agenda y Mantenimiento</h2>
-                    <form ref={agendaFormRef} onSubmit={handleAddTarea} className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-2 border-dashed dark:border-gray-600">
-                        <div className="grid grid-cols-2 gap-3">
-                           <select value={newTarea.proveedorId} onChange={e => setNewTarea({...newTarea, proveedorId: e.target.value})} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required><option value="">Seleccionar Proveedor</option>{proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select>
-                           <select value={newTarea.tipo} onChange={e => setNewTarea({...newTarea, tipo: e.target.value as any})} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"><option value="General">Tarea General</option><option value="Mantenimiento">Mantenimiento</option></select>
+                {/* Panel de Agenda (Derecha) */}
+                <div className="lg:col-span-5 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] shadow-luxury flex flex-col h-full overflow-hidden">
+                    <div className="p-8 border-b border-white/5 flex items-center gap-4">
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/10"><CalendarDaysIcon className="w-6 h-6 text-liquid-gold" /></div>
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Agenda Operativa</h2>
+                    </div>
+
+                    <form ref={agendaFormRef} onSubmit={handleAddTarea} className="p-6 m-6 bg-brand-dark/50 rounded-[2rem] border border-white/10 space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                             <ClockIcon className="w-4 h-4 text-liquid-gold" />
+                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Programar Nueva</h3>
                         </div>
-                        <input type="text" placeholder="Título de la tarea..." value={newTarea.titulo} onChange={e => setNewTarea({...newTarea, titulo: e.target.value})} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required/>
-                        <textarea placeholder="Descripción adicional..." value={newTarea.descripcion} onChange={e => setNewTarea({...newTarea, descripcion: e.target.value})} rows={2} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" />
-                        <div className="flex gap-3"><input type="date" value={newTarea.fechaVencimiento} onChange={e => setNewTarea({...newTarea, fechaVencimiento: e.target.value})} className="flex-grow p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required/><button type="submit" className="px-4 py-2 bg-brand-red text-white font-semibold rounded-lg hover:bg-red-700">Agregar</button></div>
+                        <div className="grid grid-cols-2 gap-4">
+                           <select value={newTarea.proveedorId} onChange={e => setNewTarea({...newTarea, proveedorId: e.target.value})} className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white uppercase focus:border-liquid-gold/50 outline-none appearance-none" required><option value="" className="bg-brand-dark">PROVEEDOR...</option>{proveedores.map(p => <option key={p.id} value={p.id} className="bg-brand-dark">{p.nombre}</option>)}</select>
+                           <select value={newTarea.tipo} onChange={e => setNewTarea({...newTarea, tipo: e.target.value as any})} className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white uppercase focus:border-liquid-gold/50 outline-none appearance-none"><option value="General" className="bg-brand-dark">GENERAL</option><option value="Mantenimiento" className="bg-brand-dark">MANTENIMIENTO</option></select>
+                        </div>
+                        <input type="text" placeholder="TÍTULO DE LA TAREA..." value={newTarea.titulo} onChange={e => setNewTarea({...newTarea, titulo: e.target.value})} className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white uppercase focus:border-liquid-gold/50 outline-none placeholder:text-slate-600" required/>
+                        <textarea placeholder="DETALLES ADICIONALES..." value={newTarea.descripcion} onChange={e => setNewTarea({...newTarea, descripcion: e.target.value})} rows={2} className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white uppercase focus:border-liquid-gold/50 outline-none placeholder:text-slate-600 resize-none" />
+                        <div className="flex gap-4">
+                            <input type="date" value={newTarea.fechaVencimiento} onChange={e => setNewTarea({...newTarea, fechaVencimiento: e.target.value})} className="flex-grow p-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white uppercase focus:border-liquid-gold/50 outline-none [color-scheme:dark]" required/>
+                            <button type="submit" className="px-6 py-3 bg-liquid-gold text-brand-dark font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-gold-glow hover:bg-white transition-all">Programar</button>
+                        </div>
                     </form>
                     
-                    <div className="border-b border-gray-200 dark:border-gray-700"><div className="flex -mb-px"><button onClick={() => setAgendaTab('tareas')} className={`py-2 px-4 font-semibold text-sm border-b-2 ${agendaTab==='tareas' ? 'border-brand-blue text-brand-blue' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Tareas Generales</button><button onClick={() => setAgendaTab('mantenimiento')} className={`py-2 px-4 font-semibold text-sm border-b-2 ${agendaTab==='mantenimiento' ? 'border-brand-blue text-brand-blue' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Mantenimientos</button></div></div>
-                    <input type="text" placeholder="Buscar en agenda..." value={agendaSearch} onChange={e => setAgendaSearch(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
+                    <div className="px-8 border-b border-white/5">
+                        <div className="flex gap-6">
+                            <button onClick={() => setAgendaTab('tareas')} className={`py-4 font-black text-[10px] uppercase tracking-[0.2em] border-b-2 transition-all ${agendaTab==='tareas' ? 'border-liquid-gold text-liquid-gold' : 'border-transparent text-slate-500 hover:text-white'}`}>Generales</button>
+                            <button onClick={() => setAgendaTab('mantenimiento')} className={`py-4 font-black text-[10px] uppercase tracking-[0.2em] border-b-2 transition-all ${agendaTab==='mantenimiento' ? 'border-liquid-gold text-liquid-gold' : 'border-transparent text-slate-500 hover:text-white'}`}>Mantenimientos</button>
+                        </div>
+                    </div>
+                    
+                    <div className="p-6">
+                        <div className="relative">
+                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                            <input type="text" placeholder="FILTRAR AGENDA..." value={agendaSearch} onChange={e => setAgendaSearch(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:border-liquid-gold/30 outline-none"/>
+                        </div>
+                    </div>
 
-                    <div className="overflow-auto max-h-[40vh] space-y-2 flex-grow">
-                        {loading ? <p>Cargando...</p> : filteredAgendaItems.length > 0 ? filteredAgendaItems.map(t => (
-                             <div key={t.id} className={`flex items-start gap-3 p-3 rounded-md ${t.completada ? 'bg-gray-100 dark:bg-gray-800 opacity-60' : 'bg-blue-50 dark:bg-blue-900/40'}`}>
-                                <input type="checkbox" checked={t.completada} onChange={() => handleToggleTarea(t)} className="h-5 w-5 mt-1 rounded text-brand-blue focus:ring-brand-blue flex-shrink-0"/>
-                                <div className="flex-grow"><p className={`font-semibold ${t.completada ? 'line-through text-gray-500' : ''}`}>{t.titulo}</p><p className={`text-xs ${t.completada ? 'text-gray-400' : 'text-gray-500'}`}><span className="font-semibold">{getProveedorNombre(t.proveedorId)}</span> -<span className={isTareaVencida(t) ? 'text-red-500 font-bold' : ''}> Vence: {formatDate(t.fechaVencimiento)}</span></p></div>
+                    <div className="overflow-y-auto px-6 pb-6 space-y-3 flex-grow custom-scrollbar">
+                        {loading ? null : filteredAgendaItems.length > 0 ? filteredAgendaItems.map(t => (
+                             <div key={t.id} className={`flex items-start gap-4 p-5 rounded-2xl border transition-all ${t.completada ? 'bg-white/5 border-transparent opacity-50 grayscale' : 'bg-brand-dark/50 border-white/10 hover:border-liquid-gold/30 shadow-luxury'}`}>
+                                <label className="relative flex items-center cursor-pointer mt-1">
+                                    <input type="checkbox" checked={t.completada} onChange={() => handleToggleTarea(t)} className="sr-only peer" />
+                                    <div className="w-6 h-6 bg-white/5 border-2 border-white/20 rounded-md peer-checked:bg-liquid-gold peer-checked:border-liquid-gold transition-all flex items-center justify-center">
+                                        <CheckBadgeIcon className={`w-4 h-4 text-brand-dark transition-opacity ${t.completada ? 'opacity-100' : 'opacity-0'}`} />
+                                    </div>
+                                </label>
+                                <div className="flex-grow">
+                                    <p className={`font-black text-sm uppercase mb-1 leading-tight ${t.completada ? 'line-through text-slate-500' : 'text-white'}`}>{t.titulo}</p>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded border border-white/5">{getProveedorNombre(t.proveedorId)}</p>
+                                        <p className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1 ${isTareaVencida(t) ? 'text-brand-red bg-brand-red/10 px-2 py-0.5 rounded border border-brand-red/20' : t.completada ? 'text-slate-500' : 'text-liquid-gold'}`}>
+                                            <CalendarDaysIcon className="w-3 h-3" /> VENCE: {formatDate(t.fechaVencimiento)}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        )) : <p className="text-center text-gray-500 py-4">No hay {agendaTab === 'tareas' ? 'tareas' : 'mantenimientos'} que coincidan.</p>}
+                        )) : <div className="text-center py-10"><CheckBadgeIcon className="w-12 h-12 mx-auto mb-3 text-slate-600 opacity-50"/><p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Agenda Despejada.</p></div>}
                     </div>
                 </div>
             </div>
