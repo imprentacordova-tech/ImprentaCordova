@@ -9,9 +9,6 @@ import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
 import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon, ArrowRightIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
-import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
-import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon, ArrowRightIcon } from '../components/Icons';
-import { formatCurrency } from '../utils';
 
 const NuevoPedidoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -58,9 +55,9 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     return (
-        <div className="flex xl:flex-row flex-col xl:h-[calc(100vh-100px)] gap-10 xl:overflow-hidden animate-fade-in pb-4 px-2">
+        <div className="flex lg:flex-row flex-col lg:h-[calc(100vh-100px)] gap-8 animate-fade-in pb-4 px-2">
             {/* PANEL IZQUIERDO: SELECCIÓN DE PRODUCTOS (PRIMERO) */}
-            <div className="flex-1 flex flex-col gap-8 overflow-hidden">
+            <div className="flex-1 flex flex-col gap-6 overflow-hidden">
                 
                 {/* CABECERA DINÁMICA */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 glass-card-luxury p-10 rounded-[2.5rem]">
@@ -94,7 +91,7 @@ const NuevoPedidoPage: React.FC = () => {
             </div>
 
             {/* PANEL DERECHO: CLIENTE Y RESUMEN (STICKY) */}
-            <div id="cart-panel" className="flex xl:w-[500px] w-full flex-col gap-6 relative pb-28 xl:pb-0">
+            <div id="cart-panel" className="flex lg:w-[400px] 2xl:w-[450px] w-full flex-col gap-6 relative pb-28 lg:pb-0 h-full overflow-y-auto custom-scrollbar pr-2">
                 
                 {/* IDENTIFICACIÓN DE CLIENTE (COMPACTO) */}
                 <div className="bg-brand-dark/80 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden group">
@@ -121,7 +118,14 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
                                 <div className="max-w-[220px]">
                                     <h2 className="text-lg font-black text-white uppercase truncate">{selectedCliente.nombre}</h2>
-                                    <p className="text-[9px] font-bold text-liquid-gold tracking-widest uppercase">{selectedCliente.ruc || selectedCliente.cedula}</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <p className="text-[9px] font-bold text-liquid-gold tracking-widest uppercase">{selectedCliente.ruc || selectedCliente.cedula}</p>
+                                        {clientDebt > 0 && (
+                                            <span className="bg-brand-red/20 text-brand-red border border-brand-red/30 px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest animate-pulse">
+                                                Deuda: {formatCurrency(clientDebt)}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <button onClick={resetOrder} className="p-3 bg-white/5 hover:bg-brand-red/10 border border-white/10 hover:border-brand-red/30 rounded-xl text-slate-500 hover:text-brand-red transition-all">

@@ -154,11 +154,18 @@ export const useOrder = (user: string) => {
         saveItemAsProduct: async (itemId: string) => {
             const item = selectedProductos.get(itemId);
             if (item) {
+                let finalName = item.producto.nombre;
+                // Si es un item libre, intentar usar la primera línea de las notas como nombre
+                if (finalName === 'Ítem Personalizado' && item.notas) {
+                    const firstLine = item.notas.split('\n')[0].trim();
+                    if (firstLine) finalName = firstLine.substring(0, 40);
+                }
+                
                 await addProducto({
-                    nombre: item.producto.nombre,
+                    nombre: finalName,
                     categoria: item.producto.categoria,
                     precio: item.customPrice !== undefined ? item.customPrice : (item.producto.precio + (item.surcharge || 0)),
-                    descripcion: item.producto.descripcion || (item.notas ? `Personalizado: ${item.notas}` : ''),
+                    descripcion: item.notas || item.producto.descripcion || 'Producto personalizado memorizado',
                     esSRI: item.producto.esSRI
                 });
             }

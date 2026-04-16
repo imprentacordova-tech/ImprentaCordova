@@ -54,23 +54,23 @@ const TrabajosPage: React.FC = () => {
 
     return (
         <div className="space-y-8 flex flex-col h-full animate-fade-in pb-12">
-            <div className="flex flex-wrap justify-between items-end gap-4 p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[3rem] shadow-luxury relative overflow-hidden group">
+            <div className="flex flex-wrap justify-between items-end gap-4 p-6 lg:p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] shadow-luxury relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none transition-opacity group-hover:opacity-50"></div>
                 <div className="relative z-10">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Gestión Operativa</p>
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Atelier de Órdenes</h1>
+                    <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">Órdenes de Trabajo</h1>
                 </div>
                 <Link
                     to="/nuevo"
-                    className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-4 px-8 rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.3em] overflow-hidden group/btn"
+                    className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.2em] overflow-hidden group/btn"
                 >
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out"></div>
                     <span className="relative z-10 flex items-center gap-2"><AddIcon className="h-4 w-4"/> CREAR NUEVA OBRA</span>
                 </Link>
             </div>
 
-            <div className="bg-brand-dark/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 shadow-luxury">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-brand-dark/50 backdrop-blur-md p-4 lg:p-6 rounded-[1.5rem] lg:rounded-[2rem] border border-white/5 shadow-luxury">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                     <input
                         type="text"
                         placeholder="Buscar por cliente, #obra o detalle..."
@@ -100,13 +100,13 @@ const TrabajosPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex-grow bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
+            <div className="flex-grow bg-white/5 backdrop-blur-xl rounded-[2rem] lg:rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
                 <div className="overflow-x-auto h-full styled-scrollbar">
                     <table className="min-w-full divide-y divide-white/5">
                         <thead className="bg-brand-dark/80 sticky top-0 backdrop-blur-md z-10 border-b border-white/5">
                             <tr>
-                                {['Obra', 'Coleccionista (Cliente)', 'Clasificación', 'Estado Actual', 'Valoración', 'Registro', 'Creador'].map(header => (
-                                    <th key={header} scope="col" className="px-8 py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                                {['#Orden', 'Cliente', 'Tipo', 'Estado', 'Total', 'Fecha', 'Creador'].map(header => (
+                                    <th key={header} scope="col" className="px-5 lg:px-8 py-4 lg:py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">
                                         {header}
                                     </th>
                                 ))}
@@ -119,32 +119,32 @@ const TrabajosPage: React.FC = () => {
                                 filteredTrabajos.map(trabajo => {
                                     const cliente = clientes.find(c => c.id === trabajo.clienteId);
                                     return (
-                                        <tr key={trabajo.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => window.location.href=`/#/trabajos/${trabajo.id}`}>
-                                            <td className="px-8 py-5 whitespace-nowrap">
-                                                <span className="text-xl font-black text-white italic group-hover:text-liquid-gold transition-colors">
+                                        <tr key={trabajo.id} className="hover:bg-white/[0.04] transition-all duration-300 group cursor-pointer" onClick={() => window.location.href=`/#/trabajos/${trabajo.id}`}>
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
+                                                <span className="text-lg lg:text-xl font-black text-white italic group-hover:text-liquid-gold transition-colors">
                                                     #{String(trabajo.orden).padStart(5, '0')}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-5 whitespace-nowrap">
-                                                <div className="font-bold text-slate-300 uppercase tracking-tight">{cliente?.nombre || 'N/A'}</div>
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
+                                                <div className="font-bold text-slate-300 uppercase tracking-tight text-sm">{cliente?.nombre || 'N/A'}</div>
                                             </td>
-                                            <td className="px-8 py-5 whitespace-nowrap">
-                                                <span className={`px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${tipoStyles[trabajo.tipo]}`}>
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
+                                                <span className={`px-3 lg:px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${tipoStyles[trabajo.tipo]}`}>
                                                     {trabajo.tipo}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-5 whitespace-nowrap">
-                                                <span className={`px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${statusStyles[trabajo.estado].classes}`}>
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
+                                                <span className={`px-3 lg:px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${statusStyles[trabajo.estado].classes}`}>
                                                     {statusStyles[trabajo.estado].text}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-5 whitespace-nowrap">
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
                                                 <div className="text-sm font-black text-white">{formatCurrency(trabajo.total)}</div>
                                             </td>
-                                            <td className="px-8 py-5 whitespace-nowrap">
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
                                                 <div className="text-xs text-slate-500 font-bold uppercase">{formatDate(trabajo.fechaEntrada)}</div>
                                             </td>
-                                            <td className="px-8 py-5 whitespace-nowrap">
+                                            <td className="px-5 lg:px-8 py-4 lg:py-5 whitespace-nowrap">
                                                 <div className="text-xs text-slate-500 font-bold uppercase tracking-wider">{trabajo.creadoPor || 'N/A'}</div>
                                             </td>
                                         </tr>

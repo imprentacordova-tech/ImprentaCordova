@@ -102,52 +102,52 @@ const ClientesPage: React.FC = () => {
 
     return (
         <div className="space-y-8 animate-fade-in flex flex-col h-full pb-12">
-            <div className="flex flex-wrap justify-between items-end gap-4 p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[3rem] shadow-luxury relative overflow-hidden group">
+            <div className="flex flex-wrap justify-between items-end gap-4 p-6 lg:p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] shadow-luxury relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none transition-opacity group-hover:opacity-50"></div>
                 <div className="relative z-10">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Directorio Exclusivo</p>
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Coleccionistas</h1>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Directorio</p>
+                    <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">Clientes</h1>
                 </div>
-                <button onClick={() => setSelectedClient({ nombre: '', email: '', telefono: [''], ruc: '', regimen: Regimen.GENERAL })} className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-4 px-8 rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.3em] overflow-hidden group/btn">
+                <button onClick={() => setSelectedClient({ nombre: '', email: '', telefono: [''], ruc: '', regimen: Regimen.GENERAL })} className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.2em] overflow-hidden group/btn">
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out"></div>
-                    <span className="relative z-10 flex items-center gap-2"><UserPlusIcon className="w-4 h-4"/> Añadir Coleccionista</span>
+                    <span className="relative z-10 flex items-center gap-2"><UserPlusIcon className="w-4 h-4"/> Nuevo Cliente</span>
                 </button>
             </div>
 
-            <div className="flex-grow bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
+            <div className="flex-grow bg-white/5 backdrop-blur-xl rounded-[2rem] lg:rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
                 <div className="overflow-x-auto h-full styled-scrollbar">
                     <table className="min-w-full divide-y divide-white/5">
                         <thead className="bg-brand-dark/80 sticky top-0 backdrop-blur-md z-10 border-b border-white/5">
                             <tr>
-                                <th className="px-8 py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Coleccionista (Contribuyente)</th>
-                                <th className="px-8 py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Identificación</th>
-                                <th className="px-8 py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Régimen Comercial</th>
-                                <th className="px-8 py-6 text-right text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Administrar</th>
+                                <th className="px-5 lg:px-8 py-4 lg:py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Cliente</th>
+                                <th className="px-5 lg:px-8 py-4 lg:py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">RUC / Cédula</th>
+                                <th className="px-5 lg:px-8 py-4 lg:py-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Régimen</th>
+                                <th className="px-5 lg:px-8 py-4 lg:py-6 text-right text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 bg-transparent">
                             {loading ? (
-                                <tr><td colSpan={4} className="text-center py-20 text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Accediendo a la base de datos...</td></tr>
+                                <tr><td colSpan={4} className="text-center py-20 text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Cargando clientes...</td></tr>
                             ) : clientes.map(c => (
-                                <tr key={c.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="px-8 py-6">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-12 h-12 rounded-[1rem] bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center font-black text-liquid-gold shadow-gold-glow transition-transform group-hover:scale-105">{c.nombre.charAt(0)}</div>
-                                            <span className="font-bold text-white uppercase tracking-tight text-sm truncate max-w-xs">{c.nombre}</span>
+                                <tr key={c.id} className="hover:bg-white/[0.04] transition-all duration-300 group">
+                                    <td className="px-5 lg:px-8 py-4 lg:py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-[1rem] bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center font-black text-liquid-gold shadow-gold-glow transition-transform group-hover:scale-105 flex-shrink-0">{c.nombre.charAt(0)}</div>
+                                            <span className="font-bold text-white uppercase tracking-tight text-sm truncate max-w-[200px] lg:max-w-xs">{c.nombre}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6 font-mono text-sm font-bold text-slate-400">{c.ruc || c.cedula}</td>
-                                    <td className="px-8 py-6">
-                                        <span className={`px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/30'}`}>
+                                    <td className="px-5 lg:px-8 py-4 lg:py-6 font-mono text-sm font-bold text-slate-400">{c.ruc || c.cedula}</td>
+                                    <td className="px-5 lg:px-8 py-4 lg:py-6">
+                                        <span className={`px-3 lg:px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/30'}`}>
                                             {c.regimen}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-6 text-right">
-                                        <div className="flex justify-end gap-3">
-                                            <button onClick={() => setMarketingClient(c)} className="p-3 text-liquid-gold hover:bg-liquid-gold/10 hover:text-white rounded-xl transition-all border border-transparent hover:border-liquid-gold/20 shadow-sm hover:shadow-gold-glow" title="Atelier IA Marketing">
+                                    <td className="px-5 lg:px-8 py-4 lg:py-6 text-right">
+                                        <div className="flex justify-end gap-2 lg:gap-3">
+                                            <button onClick={() => setMarketingClient(c)} className="p-2.5 lg:p-3 text-liquid-gold hover:bg-liquid-gold/10 hover:text-white rounded-xl transition-all border border-transparent hover:border-liquid-gold/20 shadow-sm hover:shadow-gold-glow" title="IA Marketing">
                                                 <SparklesIcon className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => setSelectedClient(c)} className="p-3 text-slate-400 hover:bg-white/10 hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10">
+                                            <button onClick={() => setSelectedClient(c)} className="p-2.5 lg:p-3 text-slate-400 hover:bg-white/10 hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10" title="Editar">
                                                 <PencilIcon className="w-4 h-4" />
                                             </button>
                                         </div>
