@@ -13,7 +13,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
  * Identifica un producto de imprenta a partir de una foto.
  */
 export const matchProductFromImage = async (base64Image: string): Promise<any | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const dataPart = base64Image.split(',')[1];
     const mimeType = base64Image.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
@@ -57,7 +57,7 @@ export const matchProductFromImage = async (base64Image: string): Promise<any | 
  * ACTUALIZACIÓN MAESTRA: Extracción precisa de establecimientos y teléfonos.
  */
 export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const mimeMatch = base64Image.match(/^data:(.*);base64,/);
     const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
@@ -112,7 +112,7 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
  * Maestro Feature: Analiza si una imagen sirve para impresión profesional.
  */
 export const analyzeImageQualityForPrint = async (base64Image: string): Promise<any | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const dataPart = base64Image.split(',')[1];
     const mimeType = base64Image.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
@@ -146,7 +146,7 @@ export const analyzeImageQualityForPrint = async (base64Image: string): Promise<
 };
 
 export const generateMarketingPromotion = async (clientName: string, lastProducts: string[]): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const prompt = `Redacta un mensaje de WhatsApp amigable para "${clientName}" de Imprenta Córdova (Pasaje). Ofrece 10% en su próxima impresión de: ${lastProducts.join(", ")}. Usa emojis.`;
     try {
@@ -156,7 +156,7 @@ export const generateMarketingPromotion = async (clientName: string, lastProduct
 };
 
 export const chatWithCustomer = async (history: ChatMessage[], productsContext: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const systemInstruction = `Eres Córdova AI. Ayuda al cliente en Pasaje sobre: ${productsContext}`;
     try {
@@ -169,7 +169,7 @@ export const chatWithCustomer = async (history: ChatMessage[], productsContext: 
 
 export const generateFinancialProjection = async (history: DailySales[]): Promise<FinancialProjection | null> => {
     if (!history.length) return null;
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const prompt = `Analiza ventas y proyecta 30 días: ${JSON.stringify(history)}`;
     try {
@@ -194,7 +194,7 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
 };
 
 export const analyzeDesignWithSupervisor = async (designBase64: string, context: string): Promise<SupervisorAnalysis | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
     const prompt = `Supervisor de calidad. Analiza: ${context}`;
     try {
@@ -219,7 +219,7 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
 };
 
 export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   const modelId = "gemini-3-flash-preview";
   const prompt = `Copy para: ${request.businessName}, Producto: ${request.productType}, Tono: ${request.tone}.`;
   try {
