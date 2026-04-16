@@ -67,24 +67,24 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     }, []);
 
     return (
-      <aside className="w-72 bg-surface-light/80 dark:bg-brand-dark/95 backdrop-blur-xl text-slate-800 dark:text-slate-200 flex flex-col h-full border-r border-slate-200/50 dark:border-white/5 z-20 transition-all duration-300">
-        <div className="p-8 border-b border-slate-100 dark:border-white/5 flex items-center gap-4">
-             <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/30 text-white">
-                <CordovaLogo className="w-6 h-6 brightness-0 invert" />
+      <aside className="w-72 bg-slate-950 flex flex-col h-full border-r border-white/5 z-20 transition-all duration-300">
+        <div className="p-12 border-b border-white/5 flex flex-col items-center gap-6 bg-white/[0.01]">
+             <div className="w-16 h-16 bg-white text-black rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(255,255,255,0.1)] group cursor-pointer transition-transform hover:scale-105 duration-500">
+                <CordovaLogo className="w-10 h-10" />
              </div>
-             <div>
-                <h2 className="font-display font-bold text-lg leading-none tracking-tight text-slate-900 dark:text-white">CÓRDOVA</h2>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1">Vision ERP</p>
+             <div className="text-center">
+                <h1 className="font-display font-black text-2xl leading-none tracking-[0.3em] text-white">ATELIER</h1>
+                <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] mt-3">CÓRDOVA VISION</p>
              </div>
         </div>
         
-        <nav className="flex-grow px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
+        <nav className="flex-grow px-6 py-10 space-y-10 overflow-y-auto custom-scrollbar">
           {navGroups.map(group => {
             if (group.adminOnly && user.rol !== 'Admin') return null;
             return (
-                <div key={group.title} className="space-y-1">
-                    <h3 className="px-4 text-[10px] font-bold text-slate-400/80 uppercase tracking-widest mb-3 font-display">{group.title}</h3>
-                    <div className="space-y-1">
+                <div key={group.title} className="space-y-6">
+                    <h3 className="px-5 text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] font-display">{group.title}</h3>
+                    <div className="space-y-2">
                         {group.items.map(item => {
                             const isActive = location.pathname === item.path;
                             const badge = item.path === '/diseno' ? counts.design : item.path === '/retiros' ? counts.retail : 0;
@@ -94,19 +94,19 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
                                     key={item.path}
                                     to={item.path}
                                     className={
-                                        `group w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                                        `group w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all duration-500 border border-transparent ${
                                             isActive
-                                                ? 'bg-white dark:bg-white/10 text-brand-blue dark:text-white shadow-soft dark:shadow-none'
-                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                                                ? 'bg-white/5 border-liquid-gold/20 text-white shadow-gold-glow'
+                                                : 'text-slate-500 hover:bg-white/5 hover:text-white'
                                         }`
                                     }
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <item.icon className={`h-4 w-4 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-brand-blue dark:text-white' : 'text-slate-400'}`} />
-                                        <span className={`${isActive ? 'font-bold' : ''}`}>{item.label}</span>
+                                    <div className="flex items-center gap-4">
+                                        <item.icon className={`h-4 w-4 transition-all duration-500 group-hover:text-liquid-gold ${isActive ? 'text-liquid-gold' : 'text-slate-600'}`} />
+                                        <span>{item.label}</span>
                                     </div>
                                     {badge > 0 && (
-                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm ${isActive ? 'bg-brand-blue text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
+                                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${isActive ? 'bg-liquid-gold text-brand-dark' : 'bg-white/5 text-slate-500 border border-white/5'}`}>
                                             {badge}
                                         </span>
                                     )}
@@ -119,14 +119,14 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
           })}
         </nav>
         
-        <div className="p-4 border-t border-slate-100 dark:border-white/5">
-            <div className="bg-white/50 dark:bg-white/5 p-3 rounded-2xl flex items-center gap-3 border border-slate-100 dark:border-white/5 backdrop-blur-sm">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+        <div className="p-6 border-t border-white/5 bg-black/20">
+            <div className="p-4 rounded-2xl flex items-center gap-4 border border-white/5 bg-white/5 backdrop-blur-md">
+                <div className="w-10 h-10 rounded-xl bg-liquid-gold text-brand-dark flex items-center justify-center font-black text-sm shadow-gold-glow">
                     {user.nombre.charAt(0)}
                 </div>
                 <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user.nombre}</p>
-                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">{user.rol}</p>
+                    <p className="text-[11px] font-black text-white truncate uppercase tracking-wider">{user.nombre}</p>
+                    <p className="text-[9px] font-bold text-liquid-gold uppercase tracking-widest">{user.rol}</p>
                 </div>
             </div>
         </div>
@@ -135,18 +135,12 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
 };
 
 const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: User }> = ({ onMenuClick, onLogout, user }) => {
-    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
     const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
-    }, [isDark]);
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    }, []);
 
     // Listener para el motor de sincronización
     useEffect(() => {
@@ -161,37 +155,34 @@ const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: Us
     }, []);
 
     return (
-        <header className="h-16 bg-white/80 dark:bg-brand-dark/80 backdrop-blur-md flex items-center justify-between px-6 border-b border-slate-200/50 dark:border-white/5 sticky top-0 z-30 transition-all duration-300">
-            <div className="flex items-center gap-4">
-                <button onClick={onMenuClick} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+        <header className="h-24 bg-brand-dark/40 backdrop-blur-3xl flex items-center justify-between px-10 border-b border-white/5 sticky top-0 z-30 transition-all duration-300">
+            <div className="flex items-center gap-6">
+                <button onClick={onMenuClick} className="lg:hidden p-3 rounded-xl text-slate-400 hover:bg-white/5 transition-colors border border-white/5">
                     <MenuIcon className="h-5 w-5" />
                 </button>
-                <div className="flex items-center gap-3">
-                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all duration-500 ${isSyncing ? 'bg-blue-50/50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-slate-50/50 border-slate-100 dark:bg-white/5 dark:border-white/5'}`}>
-                        {isSyncing ? <CloudIcon className="w-3 h-3 text-brand-blue animate-bounce" /> : <CheckCircleIcon className="w-3 h-3 text-emerald-500" />}
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            {isSyncing ? 'Sincronizando...' : 'Online'}
+                <div className="flex items-center gap-4">
+                    <div className={`flex items-center gap-4 px-6 py-2.5 rounded-full border transition-all duration-700 backdrop-blur-md ${isSyncing ? 'bg-brand-blue/10 border-brand-blue/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]' : 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]'}`}>
+                        <div className="relative">
+                            <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-brand-blue animate-ping' : 'bg-emerald-500'} shadow-[0_0_10px_currentColor]`} />
+                            {!isSyncing && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+                        </div>
+                        <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isSyncing ? 'text-brand-blue' : 'text-emerald-500'}`}>
+                            {isSyncing ? 'Synchronizing Atelier' : 'Protocol Secure'}
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="hidden md:flex flex-col text-right mr-2">
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terminal</span>
-                     <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">{new Date().toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            <div className="flex items-center gap-8">
+                <div className="hidden md:flex flex-col text-right mr-4">
+                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Atelier Server Time</span>
+                     <span className="text-xs font-black text-white uppercase tracking-wider">{new Date().toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                 </div>
                 
-                <button 
-                    onClick={() => setIsDark(!isDark)} 
-                    className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-brand-blue hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
-                    aria-label="Toggle Theme"
-                >
-                    {isDark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
-                </button>
+                <div className="h-10 w-[1px] bg-white/5"></div>
 
-                <button onClick={onLogout} className="p-2.5 rounded-xl text-slate-400 hover:text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition-all" title="Cerrar Sesión">
-                    <LogoutIcon className="h-4 w-4" />
+                <button onClick={onLogout} className="group p-3 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all border border-transparent hover:border-red-400/20" title="Cerrar Sesión">
+                    <LogoutIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
                 </button>
             </div>
         </header>
@@ -202,13 +193,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-    <div className="flex h-screen bg-surface-light dark:bg-brand-dark overflow-hidden font-sans">
+    <div className="flex h-screen bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark">
         {/* Mobile Sidebar */}
-        <div className={`fixed inset-0 z-[100] lg:hidden transition-opacity duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
-            <div className={`relative w-72 h-full bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`fixed inset-0 z-[100] lg:hidden transition-opacity duration-700 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setSidebarOpen(false)}></div>
+            <div className={`relative w-72 h-full transition-transform duration-700 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <Sidebar user={user} />
-                <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-brand-red"><CloseIcon className="h-5 w-5" /></button>
+                <button onClick={() => setSidebarOpen(false)} className="absolute top-6 right-[-50px] p-3 text-white hover:text-liquid-gold"><CloseIcon className="h-6 w-6" /></button>
             </div>
         </div>
 
@@ -217,10 +208,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
             <Sidebar user={user} />
         </div>
 
-        <div className="flex flex-col flex-1 w-0 overflow-hidden">
+        <div className="flex flex-col flex-1 w-0 overflow-hidden relative">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-liquid-gold/5 rounded-full blur-[120px] -ml-64 -mt-64 pointer-events-none"></div>
+            
             <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
-            <main className="flex-1 relative overflow-y-auto focus:outline-none p-6 lg:p-10 scroll-smooth custom-scrollbar">
-                <div className="max-w-7xl mx-auto w-full animate-slide-up">
+            
+            <main className="flex-1 relative overflow-y-auto focus:outline-none p-8 lg:p-12 scroll-smooth custom-scrollbar z-10">
+                <div className="max-w-[1600px] mx-auto w-full animate-slide-up">
                     {children}
                 </div>
             </main>

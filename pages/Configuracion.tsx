@@ -12,14 +12,14 @@ import {
 import { SriCredential } from '../types';
 
 const InputField: React.FC<{label: string, name: string, value: any, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, [key: string]: any}> = ({ label, name, value, onChange, ...props }) => (
-    <div>
-        <label htmlFor={name} className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">{label}</label>
+    <div className="group/field">
+        <label htmlFor={name} className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1 group-focus-within/field:text-brand-blue transition-colors">{label}</label>
         <input
             id={name}
             name={name}
             value={value}
             onChange={onChange}
-            className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm focus:ring-4 focus:ring-brand-blue/10 outline-none transition-all dark:text-white font-bold text-sm"
+            className="w-full p-4 bg-black/40 border border-white/5 rounded-2xl text-sm font-black text-white outline-none focus:ring-1 focus:ring-brand-blue/30 transition-all placeholder:text-slate-800 shadow-inner"
             {...props}
         />
     </div>
@@ -139,141 +139,184 @@ const ConfiguracionPage: React.FC = () => {
     }, [sriCredentials, searchTerm]);
 
     return (
-        <div className="space-y-10 max-w-7xl mx-auto pb-32 animate-fade-in">
+    return (
+        <div className="space-y-16 max-w-7xl mx-auto pb-40 animate-fade-in">
             <div className="flex justify-between items-center">
-                <div className="flex items-center gap-6">
-                    <div className="bg-brand-blue p-5 rounded-[2.5rem] text-white shadow-2xl">
+                <div className="flex items-center gap-8">
+                    <div className="bg-white text-black p-6 rounded-[2rem] shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                         <Cog8ToothIcon className="h-10 w-10"/>
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Centro de <span className="text-brand-red">Control</span></h1>
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">Sincronización Maestra Córdova Vision</p>
+                        <h1 className="text-4xl font-black text-white tracking-tighter uppercase">
+                            Centro de <span className="text-slate-500">Control</span>
+                        </h1>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2">Configuración Maestra • Atelier Bóveda v4.0</p>
                     </div>
                 </div>
             </div>
 
             {/* PANEL DE NUBE DIAGNÓSTICO */}
-            <div className="bg-slate-900 rounded-[3rem] p-10 shadow-3xl border border-white/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+            <div className="bg-white/5 rounded-[3rem] p-12 border border-white/10 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/5 rounded-full blur-[120px] -mr-48 -mt-48 transition-transform group-hover:scale-110 duration-1000"></div>
                 <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-                    <div className="flex items-center gap-8">
-                        <div className={`p-6 rounded-[2rem] shadow-2xl ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500/20 text-emerald-400' : cloudStatus === 'ERROR' ? 'bg-rose-500/20 text-rose-400' : 'bg-brand-blue/20 text-brand-blue'}`}>
-                            <GlobeAltIcon className={`w-12 h-12 ${cloudStatus === 'SYNCING' ? 'animate-spin' : ''}`} />
+                    <div className="flex items-center gap-10">
+                        <div className={`p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500 text-black' : cloudStatus === 'ERROR' ? 'bg-rose-600 text-white' : 'bg-white text-black'}`}>
+                            <GlobeAltIcon className={`w-14 h-14 ${cloudStatus === 'SYNCING' ? 'animate-spin' : ''}`} />
                         </div>
                         <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Cerebro Online</h3>
-                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
-                                    {cloudStatus === 'CONNECTED' ? 'Enlace Activo' : cloudStatus === 'SYNCING' ? 'Sincronizando...' : 'Error de Enlace'}
+                            <div className="flex items-center gap-4 mb-3">
+                                <h3 className="text-3xl font-black text-white uppercase tracking-tight">Cerebro Integrado</h3>
+                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                    {cloudStatus === 'CONNECTED' ? 'Enlace Encriptado' : cloudStatus === 'SYNCING' ? 'Sincronizando Archivos' : 'Fallo de Red'}
                                 </span>
                             </div>
-                            <p className="text-slate-400 text-sm max-w-md">Respaldo masivo en la nube Pedro Córdova.</p>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Respaldo de alto rendimiento en Google Cloud Suite</p>
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                        <button onClick={handleTestConn} disabled={isTesting} className="px-6 py-4 bg-brand-blue text-white font-black rounded-xl shadow-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]">
-                            {isTesting ? <Loader2Icon className="animate-spin w-4 h-4"/> : <ShieldCheckIcon className="w-4 h-4"/>}
-                            Probar Conexión
+                        <button onClick={handleTestConn} disabled={isTesting} className="px-10 py-5 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-[10px]">
+                            {isTesting ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ShieldCheckIcon className="w-5 h-5"/>}
+                            Test Seguridad
                         </button>
-                        <button onClick={handlePushAll} disabled={isPushing} className="px-6 py-4 bg-emerald-500 text-white font-black rounded-xl shadow-xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]">
-                            {isPushing ? <Loader2Icon className="animate-spin w-4 h-4"/> : <ArrowUpIcon className="w-4 h-4"/>}
-                            Subir Todo
+                        <button onClick={handlePushAll} disabled={isPushing} className="px-10 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-[10px]">
+                            {isPushing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ArrowUpIcon className="w-5 h-5"/>}
+                            Respaldo Inmediato
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Configuración de Negocio */}
-            <form onSubmit={handleSaveGeneral} className="bg-white dark:bg-gray-800 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-10">
-                <div className="grid lg:grid-cols-2 gap-16">
+            <form onSubmit={handleSaveGeneral} className="bg-white/5 p-16 rounded-[3.5rem] border border-white/10 space-y-16 backdrop-blur-xl">
+                <div className="grid lg:grid-cols-2 gap-24">
                     {/* LADO IZQUIERDO: SRI EMISOR */}
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4 border-b dark:border-gray-700 pb-4">
-                            <div className="p-2 bg-brand-red rounded-xl text-white shadow-lg"><ShieldCheckIcon className="w-6 h-6" /></div>
-                            Datos del Emisor (Pedro Córdova)
+                    <div className="space-y-10">
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-6 border-b border-white/5 pb-8">
+                            <div className="p-4 bg-rose-600 rounded-2xl text-white shadow-xl"><ShieldCheckIcon className="w-8 h-8" /></div>
+                            Emisor Autorizado
                         </h2>
-                        <InputField label="Razón Social" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={e => setConfig({...config, emisorRazonSocial: e.target.value})} />
-                        <InputField label="R.U.C. Emisor" name="emisorRuc" value={config.emisorRuc} onChange={e => setConfig({...config, emisorRuc: e.target.value})} maxLength={13} />
-                        <div className="grid grid-cols-2 gap-4">
-                            <InputField label="Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} />
-                            <InputField label="Punto de Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} />
+                        <InputField label="Razón Social Fiscal" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={e => setConfig({...config, emisorRazonSocial: e.target.value})} />
+                        <InputField label="Identificación R.U.C." name="emisorRuc" value={config.emisorRuc} onChange={e => setConfig({...config, emisorRuc: e.target.value})} maxLength={13} />
+                        <div className="grid grid-cols-2 gap-6">
+                            <InputField label="Cód. Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} />
+                            <InputField label="Pto. Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} />
                         </div>
-                        <InputField label="Próximo Secuencial Global" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} />
+                        <InputField label="Folio Maestro Global" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} />
                     </div>
 
                     {/* LADO DERECHO: DATOS DE FABRICACIÓN (PIE DE IMPRENTA) */}
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-4 border-b dark:border-gray-700 pb-4">
-                            <div className="p-2 bg-brand-blue rounded-xl text-white shadow-lg"><PrinterIcon className="w-6 h-6" /></div>
-                            Pie de Imprenta (Fabricación)
+                    <div className="space-y-10">
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-6 border-b border-white/5 pb-8">
+                            <div className="p-4 bg-brand-blue rounded-2xl text-white shadow-xl"><PrinterIcon className="w-8 h-8" /></div>
+                            Sello de Fabricación
                         </h2>
-                        <div className="bg-blue-50/50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-800 space-y-5">
-                            <InputField label="Nombre de la Imprenta Autorizada" name="imprentaNombre" value={config.imprentaNombre} onChange={e => setConfig({...config, imprentaNombre: e.target.value})} />
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputField label="R.U.C. Imprenta" name="imprentaRuc" value={config.imprentaRuc} onChange={e => setConfig({...config, imprentaRuc: e.target.value})} maxLength={13} />
-                                <InputField label="Código Autorización" name="imprentaAutorizacion" value={config.imprentaAutorizacion} onChange={e => setConfig({...config, imprentaAutorizacion: e.target.value})} maxLength={4} />
+                        <div className="bg-black/40 p-10 rounded-[2.5rem] border border-white/5 space-y-8 shadow-inner">
+                            <InputField label="Fábrica Autorizada" name="imprentaNombre" value={config.imprentaNombre} onChange={e => setConfig({...config, imprentaNombre: e.target.value})} />
+                            <div className="grid grid-cols-2 gap-6">
+                                <InputField label="R.U.C. Industrial" name="imprentaRuc" value={config.imprentaRuc} onChange={e => setConfig({...config, imprentaRuc: e.target.value})} maxLength={13} />
+                                <InputField label="Nº Autorización" name="imprentaAutorizacion" value={config.imprentaAutorizacion} onChange={e => setConfig({...config, imprentaAutorizacion: e.target.value})} maxLength={4} />
                             </div>
-                            <InputField label="Teléfono / Celular Imprenta" name="imprentaTelefono" value={config.imprentaTelefono} onChange={e => setConfig({...config, imprentaTelefono: e.target.value})} />
+                            <InputField label="Línea Directa de Contacto" name="imprentaTelefono" value={config.imprentaTelefono} onChange={e => setConfig({...config, imprentaTelefono: e.target.value})} />
                         </div>
                         
                         <div>
-                             <InputField label="URL Sincronización Google Sheets" name="googleScriptUrl" value={config.googleScriptUrl} onChange={e => setConfig({...config, googleScriptUrl: e.target.value})} />
-                             <p className="text-[9px] font-black text-slate-400 uppercase mt-2">Enlace de seguridad para **Pedro Córdova**</p>
+                             <InputField label="Punto de Enlace Cloud (Bridge URL)" name="googleScriptUrl" value={config.googleScriptUrl} onChange={e => setConfig({...config, googleScriptUrl: e.target.value})} />
+                             <p className="text-[10px] font-black text-slate-600 uppercase mt-4 tracking-widest">* Endpoint exclusivo para sincronización industrial</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="pt-8 border-t dark:border-gray-700 flex justify-between items-center">
-                    {showSuccess && <span className="text-emerald-500 font-black text-[11px] animate-fade-in tracking-widest uppercase flex items-center gap-2"><CheckIcon className="w-4 h-4"/> Configuración Blindada Correctamente</span>}
-                    <button type="submit" className="px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl hover:bg-slate-950 transition-all uppercase tracking-widest text-xs">Guardar Cambios Maestros</button>
+                <div className="pt-12 border-t border-white/5 flex justify-between items-center">
+                    <div className="min-h-[20px]">
+                        {showSuccess && <span className="text-emerald-500 font-black text-[12px] animate-fade-in tracking-[0.2em] uppercase flex items-center gap-3"><CheckIcon className="w-5 h-5 shadow-sm"/> Bóveda Sincronizada</span>}
+                    </div>
+                    <button type="submit" className="group relative px-16 py-6 bg-brand-blue text-white font-black rounded-2xl shadow-3xl hover:bg-slate-900 transition-all uppercase tracking-[0.3em] text-[10px] overflow-hidden">
+                        <span className="relative z-10">Cerrar Bóveda y Guardar</span>
+                    </button>
                 </div>
             </form>
 
             {/* Bóveda SRI */}
-            <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden">
-                <div className="p-10 flex flex-col lg:flex-row justify-between items-center gap-8 border-b dark:border-white/5 relative">
-                    <div className="flex items-center gap-6 relative z-10">
-                        <div className="bg-emerald-500 p-4 rounded-3xl shadow-lg shadow-emerald-900/40 text-white">
-                            <LockClosedIcon className="w-8 h-8" />
+            <div className="bg-white/5 rounded-[4rem] border border-white/10 overflow-hidden backdrop-blur-3xl">
+                <div className="p-16 flex flex-col lg:flex-row justify-between items-center gap-8 border-b border-white/5 relative bg-white/[0.02]">
+                    <div className="flex items-center gap-10 relative z-10">
+                        <div className="bg-emerald-500 text-black p-6 rounded-[2rem] shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                            <LockClosedIcon className="w-10 h-10" />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Bóveda Maestra SRI</h2>
-                            <span className="text-emerald-500 font-black uppercase text-[10px] tracking-widest">{sriCredentials.length} CLIENTES PROTEGIDOS</span>
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Bóveda Maestra <span className="text-slate-500">SRI</span></h2>
+                            <span className="inline-block mt-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg animate-pulse">
+                                {sriCredentials.length} CLIENTES PROTEGIDOS
+                            </span>
                         </div>
                     </div>
                 </div>
-                <div className="p-10">
-                    <div className="relative group mb-8">
-                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
-                        <input type="text" placeholder="BUSCAR CLAVE POR RUC O NOMBRE..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none" />
+                <div className="p-16">
+                    <div className="relative group mb-12">
+                        <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none">
+                            <SearchIcon className="w-7 h-7 text-slate-600 group-focus-within:text-brand-blue transition-colors" />
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="DESCIFRAR RUC O NOMBRE DEL CONTRIBUYENTE..." 
+                            value={searchTerm} 
+                            onChange={e => setSearchTerm(e.target.value)} 
+                            className="w-full pl-24 pr-12 py-8 bg-black/40 border border-white/5 rounded-[2.5rem] text-xl font-black uppercase tracking-tight text-white placeholder:text-slate-800 focus:ring-1 focus:ring-brand-blue/30 transition-all outline-none shadow-inner"
+                        />
                     </div>
-                    <div className="max-h-96 overflow-y-auto custom-scrollbar rounded-2xl border border-slate-100 dark:border-white/10">
-                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-50 dark:bg-slate-950 sticky top-0 z-20 border-b dark:border-white/10">
-                                <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                                    <th className="px-8 py-4">RUC / Contribuyente</th>
-                                    <th className="px-8 py-4">Clave</th>
-                                    <th className="px-8 py-4 text-right">Acciones</th>
+
+                    <div className="max-h-[600px] overflow-y-auto custom-scrollbar rounded-[2.5rem] border border-white/5 bg-black/20">
+                         <table className="w-full text-left border-collapse overflow-hidden">
+                            <thead className="bg-white/[0.03] sticky top-0 z-20 border-b border-white/10">
+                                <tr className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em]">
+                                    <th className="px-12 py-8 font-black">Contribuyente Autorizado</th>
+                                    <th className="px-12 py-8 font-black">Token / Password</th>
+                                    <th className="px-12 py-8 text-right font-black">Protocolos</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y dark:divide-white/5">
+                            <tbody className="divide-y divide-white/5">
                                 {filteredCredentials.map(c => (
-                                    <tr key={c.ruc} className="hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-all">
-                                        <td className="px-8 py-4">
-                                            <p className="text-slate-900 dark:text-white font-black uppercase text-sm truncate">{c.origen || 'SRI Client'}</p>
-                                            <p className="text-xs font-mono font-bold text-slate-500">{c.ruc}</p>
+                                    <tr key={c.ruc} className="group/row hover:bg-white/[0.04] transition-all">
+                                        <td className="px-12 py-10">
+                                            <p className="text-white font-black uppercase text-lg tracking-tight mb-2 group-hover/row:text-brand-blue transition-colors">{c.origen || 'SRI Client'}</p>
+                                            <p className="text-[11px] font-mono font-bold text-slate-500 tracking-widest flex items-center gap-3">
+                                                <span className="w-2 h-2 rounded-full bg-slate-800"></span>
+                                                RUC {c.ruc}
+                                            </p>
                                         </td>
-                                        <td className="px-8 py-4">
-                                            <button onClick={() => togglePasswordVisibility(c.ruc)} className="text-slate-400 hover:text-brand-blue flex items-center gap-2">
-                                                {visiblePasswords.has(c.ruc) ? <span className="text-emerald-500 font-mono font-bold">{c.password}</span> : '••••••••'}
-                                                {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-4 h-4"/> : <EyeIcon className="w-4 h-4"/>}
+                                        <td className="px-12 py-10">
+                                            <button 
+                                                onClick={() => togglePasswordVisibility(c.ruc)} 
+                                                className="px-8 py-4 bg-black/20 border border-white/5 rounded-2xl text-slate-400 hover:text-white hover:border-white/10 transition-all flex items-center gap-6 shadow-inner group/pass"
+                                            >
+                                                {visiblePasswords.has(c.ruc) ? 
+                                                    <span className="text-emerald-500 font-mono font-black text-lg tracking-widest">{c.password}</span> : 
+                                                    <span className="text-slate-700 font-mono font-black text-lg tracking-widest uppercase">Encrypted</span>
+                                                }
+                                                {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-5 h-5 group-hover/pass:scale-110 transition-transform"/> : <EyeIcon className="w-5 h-5 group-hover/pass:scale-110 transition-transform"/>}
                                             </button>
                                         </td>
-                                        <td className="px-8 py-4 text-right">
-                                            <button onClick={() => deleteSriCredential(c.ruc).then(getSriCredentials).then(setSriCredentials)} className="text-slate-400 hover:text-rose-500 transition-colors"><TrashIcon className="w-4 h-4"/></button>
+                                        <td className="px-12 py-10 text-right">
+                                            <button 
+                                                onClick={() => deleteSriCredential(c.ruc).then(getSriCredentials).then(setSriCredentials)} 
+                                                className="p-4 bg-rose-500/5 text-rose-500/20 hover:bg-rose-500 hover:text-white rounded-2xl transition-all shadow-lg"
+                                                title="Revocar Acceso"
+                                            >
+                                                <TrashIcon className="w-6 h-6"/>
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
+                                {filteredCredentials.length === 0 && (
+                                    <tr>
+                                        <td colSpan={3} className="px-12 py-32 text-center">
+                                            <div className="flex flex-col items-center gap-6 opacity-20">
+                                                <ShieldCheckIcon className="w-20 h-20 text-slate-500" />
+                                                <p className="text-sm font-black text-slate-500 uppercase tracking-[0.5em]">Cero registros encriptados</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

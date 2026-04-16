@@ -90,40 +90,38 @@ const VisualStep: React.FC<{
     isLast?: boolean;
 }> = ({ title, image, subtitle, detail, cost, isLast }) => (
     <div className="flex-1 relative group w-full md:w-auto">
-        {/* Connector Line (Desktop) */}
         {!isLast && (
-            <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-1 bg-gray-200 dark:bg-gray-700 z-0"></div>
+            <div className="hidden md:block absolute top-[60px] -right-6 w-12 h-px bg-white/10 z-0"></div>
         )}
         
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 relative z-10 h-full flex flex-col">
+        <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/5 overflow-hidden hover:border-brand-blue/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl">
             {/* Image Area */}
-            <div className="h-28 w-full relative overflow-hidden bg-gray-100">
-                <img src={image} alt={title} className="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
-                    <span className="text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-                        <span className="bg-brand-blue w-4 h-4 rounded-full flex items-center justify-center text-[8px]">{title.split('.')[0]}</span>
+            <div className="h-32 w-full relative overflow-hidden bg-black">
+                <img src={image} alt={title} className="w-full h-full object-cover opacity-40 grayscale group-hover/step:grayscale-0 group-hover/step:opacity-80 transition-all duration-1000 scale-110 group-hover/step:scale-100" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex items-end p-5">
+                    <span className="text-white font-black text-[9px] uppercase tracking-[0.4em] flex items-center gap-3">
+                        <span className="bg-brand-blue w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-[0_0_20px_rgba(59,130,246,0.5)]">{title.split('.')[0]}</span>
                         {title.split('. ')[1]}
                     </span>
                 </div>
             </div>
             
             {/* Content Area */}
-            <div className="p-3 flex flex-col flex-grow">
-                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1 leading-tight">{subtitle}</h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 flex-grow">{detail}</p>
+            <div className="p-5 flex flex-col flex-grow bg-white/[0.02]">
+                <h4 className="font-black text-white text-[11px] uppercase tracking-widest mb-2 leading-tight italic">{subtitle}</h4>
+                <p className="text-[10px] text-slate-500 font-medium mb-4 flex-grow leading-relaxed">{detail}</p>
                 {cost !== undefined && (
-                    <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-2 mt-auto">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Costo</span>
-                        <span className="font-mono font-bold text-sm text-brand-blue">{formatCurrency(cost)}</span>
+                    <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-auto">
+                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Insumo</span>
+                        <span className="font-black text-xs text-brand-blue tracking-widest">{formatCurrency(cost)}</span>
                     </div>
                 )}
             </div>
         </div>
         
-        {/* Connector Arrow (Mobile) */}
         {!isLast && (
-            <div className="md:hidden flex justify-center py-2">
-                <ArrowRightIcon className="w-5 h-5 text-gray-300 transform rotate-90" />
+            <div className="md:hidden flex justify-center py-4">
+                <ArrowRightIcon className="w-6 h-6 text-white/10 transform rotate-90" />
             </div>
         )}
     </div>
@@ -353,105 +351,127 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     }, [paperId, finalW, finalH, quantity, colorsFront, colorsBack, parts, costs, hasDesign, requiresSRI, cantidadHojasBlock]);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in">
-            {/* Input Panel */}
-            <div className="lg:col-span-4 space-y-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-                        <div className="bg-brand-blue p-2 rounded-lg text-white">
-                            <WrenchScrewdriverIcon className="w-5 h-5" />
+        <div className="grid grid-col            {/* Input Panel */}
+            <div className="lg:col-span-4 space-y-8">
+                <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
+                    
+                    <div className="flex items-center gap-5 mb-10 pb-6 border-b border-white/5 relative z-10">
+                        <div className="bg-brand-blue/20 p-3 rounded-full border border-brand-blue/30 shadow-[0_0_30px_rgba(59,130,246,0.2)] text-brand-blue">
+                            <WrenchScrewdriverIcon className="w-6 h-6" />
                         </div>
-                        <h2 className="font-bold text-gray-900 dark:text-white">Configurar Trabajo</h2>
+                        <div>
+                            <h2 className="font-black text-white text-lg uppercase tracking-tighter italic">Machine Config</h2>
+                            <p className="text-[10px] text-brand-blue font-black uppercase tracking-[0.2em]">Parámetros de Producción</p>
+                        </div>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-8 relative z-10">
                         {/* Tipo de Papel */}
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Material (Fuente)</label>
-                            <select value={paperId} onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-brand-blue">
-                                {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id}>{p.nombre} ({p.ancho}x{p.alto}cm)</option>)}
-                            </select>
+                        <div className="group/field">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em] group-focus-within/field:text-brand-blue transition-colors">Material Base</label>
+                            <div className="relative">
+                                <select 
+                                    value={paperId} 
+                                    onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} 
+                                    className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white outline-none focus:ring-1 focus:ring-brand-blue/30 transition-all appearance-none cursor-pointer"
+                                >
+                                    {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-slate-900">{p.nombre.toUpperCase()}</option>)}
+                                </select>
+                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                                    <ArrowRightIcon className="w-4 h-4 rotate-90" />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Tamaño de Corte */}
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Tamaño Final (Corte)</label>
-                            <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div className="space-y-4">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Corte de Salida (Blueprint)</label>
+                            <div className="grid grid-cols-4 gap-2">
                                 {SOURCE_PAPERS.find(p=>p.id===paperId)?.tipo === 'RESMA' ? (
                                     <>
-                                        <button onClick={() => handlePresetChange('OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='OFICIO' ? 'bg-brand-blue text-white' : ''}`}>Oficio</button>
-                                        <button onClick={() => handlePresetChange('1/2_OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='1/2_OFICIO' ? 'bg-brand-blue text-white' : ''}`}>1/2 Of.</button>
-                                        <button onClick={() => handlePresetChange('1/4_OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='1/4_OFICIO' ? 'bg-brand-blue text-white' : ''}`}>1/4 Of.</button>
-                                        <button onClick={() => handlePresetChange('1/8_OFICIO')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='1/8_OFICIO' ? 'bg-brand-blue text-white' : ''}`}>1/8 Of.</button>
+                                        {['OFICIO', '1/2_OFICIO', '1/4_OFICIO', '1/8_OFICIO'].map(p => (
+                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-brand-blue text-white shadow-xl shadow-blue-900/30 border-brand-blue' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
+                                        ))}
                                     </>
                                 ) : (
                                     <>
-                                        <button onClick={() => handlePresetChange('A3')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A3' ? 'bg-brand-blue text-white' : ''}`}>A3</button>
-                                        <button onClick={() => handlePresetChange('A4')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A4' ? 'bg-brand-blue text-white' : ''}`}>A4</button>
-                                        <button onClick={() => handlePresetChange('A5')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A5' ? 'bg-brand-blue text-white' : ''}`}>A5</button>
-                                        <button onClick={() => handlePresetChange('A6')} className={`px-2 py-1 text-xs border rounded ${selectedSizePreset==='A6' ? 'bg-brand-blue text-white' : ''}`}>A6</button>
+                                        {['A3', 'A4', 'A5', 'A6'].map(p => (
+                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-brand-blue text-white shadow-xl shadow-blue-900/30 border-brand-blue' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p}</button>
+                                        ))}
                                     </>
                                 )}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-4">
                                 <div className="relative flex-1">
-                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-2 pl-6 border rounded-lg text-sm bg-gray-50" />
-                                    <span className="absolute left-2 top-2 text-xs text-gray-400">W</span>
+                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white text-center" />
+                                    <span className="absolute left-4 top-1 text-[8px] font-black text-slate-600 uppercase">Width</span>
                                 </div>
-                                <span className="text-gray-400">x</span>
+                                <span className="text-slate-700 font-bold">×</span>
                                 <div className="relative flex-1">
-                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-2 pl-6 border rounded-lg text-sm bg-gray-50" />
-                                    <span className="absolute left-2 top-2 text-xs text-gray-400">H</span>
+                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white text-center" />
+                                    <span className="absolute left-4 top-1 text-[8px] font-black text-slate-600 uppercase">Height</span>
                                 </div>
-                                <span className="text-xs text-gray-500">cm</span>
+                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">mm</span>
                             </div>
                         </div>
 
-                        {/* Cantidad */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Cantidad ({paperId === 'QUIMICO' ? 'Blocks' : 'Unidades'})</label>
-                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-2.5 font-bold text-brand-blue border border-brand-blue/30 rounded-xl focus:ring-2 focus:ring-brand-blue outline-none" />
+                        {/* Cantidad y Hojas */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="relative">
+                                <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em]">Units</label>
+                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-lg font-black text-brand-blue outline-none border-b-2 border-brand-blue/30" />
                             </div>
                             {paperId === 'QUIMICO' && (
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Hojas/Block</label>
-                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-full p-2.5 border rounded-xl text-sm">
-                                        <option value={100}>100 (Estándar)</option>
-                                        <option value={50}>50 (Medio)</option>
-                                        <option value={25}>25 (Mini)</option>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em]">Shts/Block</label>
+                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white outline-none appearance-none cursor-pointer">
+                                        <option value={100} className="bg-slate-900">100 STD</option>
+                                        <option value={50} className="bg-slate-900">50 MID</option>
+                                        <option value={25} className="bg-slate-900">25 MIN</option>
                                     </select>
                                 </div>
                             )}
                         </div>
 
                         {/* Tintas */}
-                        <div className="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl border border-gray-200 dark:border-gray-600">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tintas (Colores)</label>
-                            <div className="flex gap-4">
+                        <div className="bg-white/[0.02] p-6 rounded-[2rem] border border-white/5">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.3em]">Cromatic Dynamics</label>
+                            <div className="flex gap-6">
                                 <div className="flex-1">
-                                    <span className="text-[10px] text-gray-400 block mb-1">Frente</span>
-                                    <input type="number" min={1} max={4} value={colorsFront} onChange={e => setColorsFront(parseInt(e.target.value))} className="w-full p-1.5 border rounded text-center text-sm" />
+                                    <span className="text-[9px] font-black text-slate-600 uppercase block mb-2 tracking-widest">Anverso</span>
+                                    <input type="number" min={1} max={4} value={colorsFront} onChange={e => setColorsFront(parseInt(e.target.value))} className="w-full p-3 bg-black/40 border-none rounded-xl text-center text-sm font-black text-white" />
                                 </div>
                                 <div className="flex-1">
-                                    <span className="text-[10px] text-gray-400 block mb-1">Reverso</span>
-                                    <input type="number" min={0} max={4} value={colorsBack} onChange={e => setColorsBack(parseInt(e.target.value))} className="w-full p-1.5 border rounded text-center text-sm" />
+                                    <span className="text-[9px] font-black text-slate-600 uppercase block mb-2 tracking-widest">Reverso</span>
+                                    <input type="number" min={0} max={4} value={colorsBack} onChange={e => setColorsBack(parseInt(e.target.value))} className="w-full p-3 bg-black/40 border-none rounded-xl text-center text-sm font-black text-white" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Opciones Extra */}
-                        <div>
-                            <label className="flex items-center gap-2 text-sm text-gray-700 mb-2">
-                                <input type="checkbox" checked={hasDesign} onChange={e => setHasDesign(e.target.checked)} className="rounded text-brand-blue" />
-                                Cliente entrega diseño listo
+                        <div className="space-y-4 pt-4">
+                            <label className="flex items-center gap-4 cursor-pointer group/label">
+                                <div className="relative">
+                                    <input type="checkbox" checked={hasDesign} onChange={e => setHasDesign(e.target.checked)} className="peer hidden" />
+                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-brand-blue transition-all"></div>
+                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
+                                </div>
+                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover/label:text-white transition-colors">Diseño Suministrado</span>
                             </label>
-                            <label className="flex items-center gap-2 text-sm text-gray-700">
-                                <input type="checkbox" checked={requiresSRI} onChange={e => setRequiresSRI(e.target.checked)} disabled={paperId !== 'QUIMICO'} className="rounded text-brand-blue disabled:opacity-50" />
-                                Requiere Autorización SRI
+                            <label className="flex items-center gap-4 cursor-pointer group/label opacity-50 has-[:disabled]:opacity-20 transition-all">
+                                <div className="relative">
+                                    <input type="checkbox" checked={requiresSRI} onChange={e => setRequiresSRI(e.target.checked)} disabled={paperId !== 'QUIMICO'} className="peer hidden" />
+                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-brand-blue transition-all"></div>
+                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
+                                </div>
+                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover/label:text-white transition-colors">Integración SRI</span>
                             </label>
                         </div>
                     </div>
+                </div>
+            </div>
+</div>
                 </div>
             </div>
 
@@ -473,42 +493,43 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
                         {/* Cost Breakdown Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
-                                <p className="text-xs font-bold text-blue-400 uppercase">Papel + Merma</p>
-                                <p className="text-xl font-black text-blue-700 dark:text-blue-300">{formatCurrency(result.costPapelTotal)}</p>
+                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
+                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Papel + Merma</p>
+                                <p className="text-2xl font-black text-white">{formatCurrency(result.costPapelTotal)}</p>
                             </div>
-                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800">
-                                <p className="text-xs font-bold text-purple-400 uppercase">Pre-Prensa</p>
-                                <p className="text-xl font-black text-purple-700 dark:text-purple-300">{formatCurrency(result.costPrePrensa)}</p>
+                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
+                                <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2">Pre-Prensa</p>
+                                <p className="text-2xl font-black text-white">{formatCurrency(result.costPrePrensa)}</p>
                             </div>
-                            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800">
-                                <p className="text-xs font-bold text-orange-400 uppercase">Impresión</p>
-                                <p className="text-xl font-black text-orange-700 dark:text-orange-300">{formatCurrency(result.costImpresion)}</p>
+                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
+                                <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Impresión</p>
+                                <p className="text-2xl font-black text-white">{formatCurrency(result.costImpresion)}</p>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <p className="text-xs font-bold text-gray-400 uppercase">Acabados</p>
-                                <p className="text-xl font-black text-gray-700 dark:text-gray-300">{formatCurrency(result.costAcabados)}</p>
+                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Acabados</p>
+                                <p className="text-2xl font-black text-white">{formatCurrency(result.costAcabados)}</p>
                             </div>
                         </div>
 
                         {/* Final Price Big Card */}
-                        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl shadow-xl overflow-hidden text-white p-8 flex flex-col md:flex-row items-center justify-between">
-                            <div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Costo de Producción</p>
-                                <p className="text-2xl font-bold text-gray-300">{formatCurrency(result.costoTotalProduccion)}</p>
-                                <p className="text-xs text-gray-500 mt-2">* Incluye materiales, mano de obra y desgaste</p>
+                        <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black shadow-2xl p-10 flex flex-col md:flex-row items-center justify-between group">
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/10 blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+                            <div className="relative z-10">
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Costo de Producción</p>
+                                <p className="text-3xl font-black text-slate-300">{formatCurrency(result.costoTotalProduccion)}</p>
+                                <p className="text-[10px] text-slate-600 mt-4 uppercase tracking-wider">* Valor estimado de materiales y procesos</p>
                             </div>
                             
-                            <div className="h-16 w-px bg-gray-700 hidden md:block"></div>
+                            <div className="h-20 w-px bg-white/10 hidden md:block mx-10"></div>
 
-                            <div className="text-center md:text-right mt-6 md:mt-0">
-                                <p className="text-sm font-bold text-green-400 uppercase tracking-widest mb-1">Precio de Venta Sugerido</p>
-                                <div className="flex items-baseline gap-2 justify-center md:justify-end">
-                                    <span className="text-5xl font-black tracking-tighter text-white">{formatCurrency(result.pvp)}</span>
-                                    <span className="text-lg text-gray-400 font-medium">+ IVA</span>
+                            <div className="text-center md:text-right mt-8 md:mt-0 relative z-10">
+                                <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-2">Precio de Venta Sugerido</p>
+                                <div className="flex items-baseline gap-3 justify-center md:justify-end">
+                                    <span className="text-7xl font-black tracking-tighter text-white">{formatCurrency(result.pvp)}</span>
+                                    <span className="text-xl text-slate-500 font-medium tracking-tight">+ IVA</span>
                                 </div>
-                                <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-full text-xs font-mono">
-                                    Unitario: {formatCurrency(result.unitario)}
+                                <div className="mt-4 inline-block bg-white/5 border border-white/10 px-5 py-2 rounded-full text-xs font-black tracking-widest text-slate-400 uppercase">
+                                    Unitario: <span className="text-white">{formatCurrency(result.unitario)}</span>
                                 </div>
                             </div>
                         </div>
@@ -567,28 +588,28 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     }, [format, paperType, colorMode, sides, quantity, costs]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-fade-in">
             {/* Controls */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-gray-700">
-                <div className="flex items-center gap-3 mb-6 border-b border-purple-100 dark:border-gray-700 pb-4">
-                    <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
-                        <Sparkles className="w-6 h-6" />
+            <div className="bg-white/5 border border-white/10 p-10 rounded-3xl backdrop-blur-xl">
+                <div className="flex items-center gap-4 mb-10 border-b border-white/5 pb-8">
+                    <div className="bg-amber-500/10 p-4 rounded-2xl text-amber-500">
+                        <Sparkles className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover:scale-110" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Impresión Digital</h2>
-                        <p className="text-xs text-gray-500">Láser / Inkjet de Alta Producción</p>
+                        <h2 className="text-2xl font-black text-white tracking-tight">Impresión Digital</h2>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Precision Editorial Atelier</p>
                     </div>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-8">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Formato</label>
-                        <div className="flex gap-2">
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Formato de Salida</label>
+                        <div className="flex gap-2 p-1.5 bg-black/40 rounded-2xl">
                             {['A4', 'A3', 'SRA3'].map((f) => (
                                 <button 
                                     key={f} 
                                     onClick={() => setFormat(f as any)} 
-                                    className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${format === f ? 'bg-purple-600 text-white border-purple-600 shadow-md' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+                                    className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${format === f ? 'bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'text-slate-500 hover:text-white'}`}
                                 >
                                     {f}
                                 </button>
@@ -596,35 +617,35 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Papel</label>
-                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500">
-                                <option value="BOND">Bond 75g</option>
-                                <option value="COUCHE_115">Couché 115g</option>
-                                <option value="COUCHE_300">Couché 300g</option>
-                                <option value="ADHESIVO">Adhesivo Papel</option>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Tipo deSustrato</label>
+                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-4 bg-black/40 border-none rounded-2xl text-sm font-black text-white outline-none focus:ring-1 focus:ring-amber-500/50 appearance-none">
+                                <option value="BOND">Bond 75g (Atelier)</option>
+                                <option value="COUCHE_115">Couché 115g Premium</option>
+                                <option value="COUCHE_300">Couché 300g Luxury</option>
+                                <option value="ADHESIVO">Adhesivo Fotográfico</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Cantidad</label>
-                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500" />
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Cantidad</label>
+                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-4 bg-black/40 border-none rounded-2xl text-lg font-black text-amber-500 outline-none focus:ring-1 focus:ring-amber-500/50" />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Color</label>
-                            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${colorMode === 'COLOR' ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>Color</button>
-                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${colorMode === 'BW' ? 'bg-white shadow text-gray-800' : 'text-gray-500'}`}>B/N</button>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Modo de Color</label>
+                            <div className="flex bg-black/40 rounded-2xl p-1.5">
+                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${colorMode === 'COLOR' ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Color</button>
+                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${colorMode === 'BW' ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Escala Grises</button>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Caras</label>
-                            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                <button onClick={() => setSides(1)} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${sides === 1 ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>1 Lado</button>
-                                <button onClick={() => setSides(2)} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${sides === 2 ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>2 Lados</button>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Configuración Caras</label>
+                            <div className="flex bg-black/40 rounded-2xl p-1.5">
+                                <button onClick={() => setSides(1)} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${sides === 1 ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Sencillo</button>
+                                <button onClick={() => setSides(2)} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${sides === 2 ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Retira</button>
                             </div>
                         </div>
                     </div>
@@ -632,32 +653,32 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             </div>
 
             {/* Results */}
-            <div className="bg-gradient-to-br from-purple-700 to-indigo-800 rounded-2xl shadow-xl text-white p-8 flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+            <div className="relative rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-3xl p-12 flex flex-col justify-between group">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 blur-[80px] -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-110"></div>
                 
-                <div>
-                    <h3 className="text-purple-200 font-bold uppercase tracking-wider text-sm mb-6">Cotización Estimada</h3>
+                <div className="relative z-10">
+                    <h3 className="text-[11px] font-black text-amber-500 uppercase tracking-[0.3em] mb-10">Cotización Atelier Digital</h3>
                     
-                    <div className="space-y-4 mb-8">
-                        <div className="flex justify-between items-center border-b border-white/20 pb-2">
-                            <span className="text-sm text-purple-100">Costo Unitario</span>
-                            <span className="font-mono">{formatCurrency(calculation.unitPvp)}</span>
+                    <div className="space-y-6 mb-10">
+                        <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Valor Unitario</span>
+                            <span className="text-xl font-black text-white">{formatCurrency(calculation.unitPvp)}</span>
                         </div>
-                        <div className="flex justify-between items-center border-b border-white/20 pb-2">
-                            <span className="text-sm text-purple-100">Cantidad</span>
-                            <span className="font-mono">{quantity}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-purple-300 italic pt-2">
-                            <span>* Incluye papel y corte básico</span>
+                        <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Tiraje Inmediato</span>
+                            <span className="text-xl font-black text-white">{quantity}</span>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <p className="text-xs uppercase font-bold text-purple-300 mb-1">Total a Cobrar</p>
-                    <div className="text-5xl font-black tracking-tight flex items-baseline gap-2">
-                        {formatCurrency(calculation.totalPvp)}
-                        <span className="text-lg font-normal text-purple-300">+ IVA</span>
+                <div className="relative z-10">
+                    <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.2em] mb-4">Total Consolidado</p>
+                    <div className="flex items-baseline gap-4">
+                        <span className="text-7xl font-black tracking-tighter text-white">{formatCurrency(calculation.totalPvp)}</span>
+                        <span className="text-xl text-slate-500 font-medium tracking-tight">+ IVA</span>
+                    </div>
+                    <div className="mt-8 text-[10px] font-black text-slate-600 uppercase tracking-widest italic">
+                        * Entrega estimada en 24-48 horas laborables
                     </div>
                 </div>
             </div>
@@ -667,33 +688,42 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
 const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tabla Maestra de Papeles</h2>
-                    <button onClick={onClose}><CloseIcon className="w-6 h-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" /></button>
+        <div className="fixed inset-0 z-[100] flex justify-center items-center p-4">
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={onClose}></div>
+            <div className="bg-black border border-white/10 rounded-[2.5rem] shadow-3xl w-full max-w-4xl max-h-[85vh] flex flex-col relative animate-scale-up" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-10 border-b border-white/5">
+                    <div>
+                        <h2 className="text-3xl font-black text-white tracking-tight">Catálogo de Sustratos</h2>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-2">Especificaciones Técnicas Atelier</p>
+                    </div>
+                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all group">
+                        <CloseIcon className="w-6 h-6 transition-transform group-hover:rotate-90" />
+                    </button>
                 </div>
-                <div className="p-6 overflow-y-auto">
-                    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th className="px-6 py-3">Código</th>
-                                <th className="px-6 py-3">Nombre</th>
-                                <th className="px-6 py-3">Tipo</th>
-                                <th className="px-6 py-3">Formato</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {SOURCE_PAPERS.map((paper) => (
-                                <tr key={paper.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{paper.id}</td>
-                                    <td className="px-6 py-4">{paper.nombre}</td>
-                                    <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-xs font-bold ${paper.tipo === 'RESMA' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>{paper.tipo}</span></td>
-                                    <td className="px-6 py-4">{paper.ancho} x {paper.alto} cm</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div className="p-10 overflow-y-auto">
+                    <div className="grid gap-4">
+                        {SOURCE_PAPERS.map((paper) => (
+                            <div key={paper.id} className="group bg-white/5 border border-white/10 hover:border-brand-blue/30 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-white/[0.07]">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center border border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                        {paper.id}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black uppercase tracking-widest">{paper.nombre}</h4>
+                                        <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">{paper.ancho} x {paper.alto} cm • Gramaje Atelier</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-10">
+                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] uppercase ${paper.tipo === 'RESMA' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                        {paper.tipo}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="p-10 border-t border-white/5 flex justify-end">
+                    <button onClick={onClose} className="px-10 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-200 transition-all">Cerrar Catálogo</button>
                 </div>
             </div>
         </div>
@@ -718,25 +748,25 @@ const CalculadoraPreciosPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-gray-900 p-4 sm:p-8 font-sans pb-24">
+        <div className="min-h-screen bg-slate-950 p-4 sm:p-10 font-sans pb-32">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-                            <span className="bg-brand-blue text-white p-2 rounded-xl"><CalculatorIcon className="w-8 h-8"/></span>
-                            Cotizador Maestro
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
+                    <div className="relative">
+                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-brand-blue"></div>
+                        <h1 className="text-4xl font-black text-white tracking-tight">
+                            Ingeniería de Costos
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-14">Calculadora de producción gráfica profesional</p>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2">Precision Print Engine • Atelier v4.0</p>
                     </div>
                     
-                    <div className="flex gap-3">
-                        <button onClick={() => setShowMasterTable(true)} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm">
-                            <TableIcon className="w-4 h-4"/> Tabla Papeles
+                    <div className="flex gap-4">
+                        <button onClick={() => setShowMasterTable(true)} className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">
+                            <TableIcon className="w-4 h-4 text-brand-blue"/> Catálogo Sustratos
                         </button>
                         <button 
                             onClick={() => setMode(mode === 'CONFIG' ? 'OFFSET' : 'CONFIG')} 
-                            className={`flex items-center gap-2 px-4 py-2 font-bold text-sm rounded-lg transition-all shadow-sm border ${mode === 'CONFIG' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400'}`}
+                            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${mode === 'CONFIG' ? 'bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.2)]' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'}`}
                         >
                             <Cog8ToothIcon className={`w-4 h-4 ${mode === 'CONFIG' ? 'animate-spin-slow' : ''}`}/> Configuración
                         </button>
@@ -745,12 +775,12 @@ const CalculadoraPreciosPage: React.FC = () => {
 
                 {/* Mode Selector (Tabs) */}
                 {mode !== 'CONFIG' && (
-                    <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl mb-8 max-w-md">
-                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${mode === 'OFFSET' ? 'bg-white text-brand-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                            <PrinterIcon className="w-4 h-4"/> Offset / Imprenta
+                    <div className="flex p-2 bg-black/40 border border-white/5 rounded-2xl mb-16 max-w-sm">
+                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'OFFSET' ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                            <PrinterIcon className="w-4 h-4"/> Offset
                         </button>
-                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${mode === 'DIGITAL' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                            <Sparkles className="w-4 h-4"/> Digital / Rápido
+                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'DIGITAL' ? 'bg-amber-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                            <Sparkles className="w-4 h-4"/> Digital
                         </button>
                     </div>
                 )}
@@ -758,45 +788,43 @@ const CalculadoraPreciosPage: React.FC = () => {
                 {/* Content Area */}
                 {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
                 
-                {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
-
-                {/* Configuration Panel */}
+                        {/* Configuration Panel */}
                 {mode === 'CONFIG' && (
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-4xl mx-auto animate-fade-in">
-                        <div className="flex items-center gap-3 mb-8 border-b pb-4 dark:border-gray-700">
-                            <div className="bg-green-100 p-2 rounded-full"><DollarIcon className="w-6 h-6 text-green-600"/></div>
+                    <div className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] shadow-3xl max-w-5xl mx-auto animate-fade-in backdrop-blur-xl">
+                        <div className="flex items-center gap-6 mb-12 border-b border-white/5 pb-8">
+                            <div className="bg-emerald-500/10 p-4 rounded-2xl"><DollarIcon className="w-8 h-8 text-emerald-500"/></div>
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Base de Costos</h2>
-                                <p className="text-xs text-gray-500">Ajusta los precios de materia prima y producción.</p>
+                                <h2 className="text-2xl font-black text-white tracking-tight">Base de Costos Industriales</h2>
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Ajuste de parámetros fijos y mermas de producción</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {Object.entries(costs).map(([key, val]) => (
-                                <div key={key} className="group">
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5 tracking-wider group-focus-within:text-brand-blue transition-colors">
+                                <div key={key} className="group bg-black/40 p-6 rounded-2xl border border-white/5 hover:border-brand-blue/30 transition-all">
+                                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em] group-focus-within:text-brand-blue transition-colors">
                                         {key.replace(/_/g, ' ')}
                                     </label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-black text-lg">$</span>
                                         <input 
                                             type="number" 
                                             step="0.01" 
                                             value={val} 
                                             onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value) || 0})}
-                                            className="w-full pl-7 pr-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-mono font-bold text-gray-800 dark:text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+                                            className="w-full pl-10 pr-4 py-3 bg-transparent border-none rounded-xl font-black text-xl text-white focus:ring-0 outline-none transition-all placeholder:text-slate-800"
                                         />
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end">
-                            <button onClick={() => handleSaveConfig(costs)} className="flex items-center gap-2 bg-brand-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:-translate-y-1">
-                                <SaveIcon className="w-5 h-5"/> Guardar Cambios
+                        <div className="mt-16 pt-10 border-t border-white/10 flex justify-end">
+                            <button onClick={() => handleSaveConfig(costs)} className="group relative flex items-center gap-3 bg-white text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] overflow-hidden transition-all hover:pr-14">
+                                <span className="relative z-10">Sincronizar Costos</span>
+                                <SaveIcon className="w-5 h-5 absolute right-8 opacity-0 group-hover:opacity-100 transition-all"/>
                             </button>
                         </div>
-                    </div>
                 )}
             </div>
 

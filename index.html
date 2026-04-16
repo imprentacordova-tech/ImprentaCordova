@@ -25,17 +25,19 @@
               display: ['"Outfit"', 'sans-serif'],
             },
             colors: {
-              'brand-blue': '#0F3C85', // Azul Navy más profundo y elegante
-              'brand-red': '#C8102E',  // Rojo Cereza profesional
-              'brand-dark': '#0B1120', // Casi negro para fondos
-              'surface-light': '#F8FAFC',
-              'surface-dark': '#1E293B',
+              'brand-blue': '#0A1E40', // Azul Medianoche profundo
+              'brand-red': '#E11D48',  // Rose 600 - más vibrante y moderno
+              'brand-dark': '#030712', // Obsidian - el color de lujo por excelencia
+              'liquid-gold': '#D4AF37', // Oro clásico para acentos
+              'surface-light': '#FDFDFD',
+              'surface-dark': '#0F172A',
             },
             animation: {
-              'fade-in': 'fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-              'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'fade-in': 'fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slide-up': 'slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
               'float': 'float 6s ease-in-out infinite',
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'mesh': 'mesh 15s ease infinite',
             },
             keyframes: {
               fadeIn: {
@@ -43,18 +45,23 @@
                 '100%': { opacity: 1 },
               },
               slideUp: {
-                '0%': { opacity: 0, transform: 'translateY(20px)' },
+                '0%': { opacity: 0, transform: 'translateY(40px)' },
                 '100%': { opacity: 1, transform: 'translateY(0)' },
               },
               float: {
                 '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-10px)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              mesh: {
+                '0%': { 'background-position': '0% 50%' },
+                '50%': { 'background-position': '100% 50%' },
+                '100%': { 'background-position': '0% 50%' },
               }
             },
             boxShadow: {
-              'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-              'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
-              'glow': '0 0 20px rgba(15, 60, 133, 0.15)',
+              'luxury': '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
+              'gold-glow': '0 0 30px rgba(212, 175, 55, 0.15)',
             }
           }
         }

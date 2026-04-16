@@ -23,9 +23,9 @@ const getUrgencyLevel = (dateStr?: string): UrgencyLevel => {
 };
 
 const urgencyConfig = {
-    critical: { border: 'border-l-red-500', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-600', label: 'Urgente' },
-    warning: { border: 'border-l-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20', text: 'text-yellow-600', label: 'Próximo' },
-    safe: { border: 'border-l-green-500', bg: 'bg-white dark:bg-gray-800', text: 'text-gray-500', label: 'A tiempo' },
+    critical: { border: 'border-l-red-500', bg: 'bg-red-500/10', text: 'text-red-400', label: 'CRÍTICO' },
+    warning: { border: 'border-l-liquid-gold', bg: 'bg-liquid-gold/10', text: 'text-liquid-gold', label: 'PRIORIDAD' },
+    safe: { border: 'border-l-slate-700', bg: 'bg-white/5', text: 'text-slate-400', label: 'ESTÁNDAR' },
 };
 
 // --- COMPONENTS ---
@@ -42,7 +42,6 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
     const urgency = getUrgencyLevel(targetDate);
     const style = urgencyConfig[urgency];
     
-    // Calculate progress if dates exist
     const getProgress = () => {
         if(!targetDate) return 0;
         const start = new Date(trabajo.fechaEntrada).getTime();
@@ -65,100 +64,87 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
             }}
             onDoubleClick={() => onCardDoubleClick(trabajo)}
             className={`
-                relative group bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-3 cursor-grab active:cursor-grabbing 
-                border-l-4 ${style.border} border-t border-r border-b border-gray-100 dark:border-gray-700
-                transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-600
-                overflow-hidden
+                relative group glass-card-luxury mb-4 cursor-grab active:cursor-grabbing 
+                border-l-4 ${style.border} border-t border-r border-b border-white/5
+                transition-all duration-700 ease-in-out hover:-translate-y-2 hover:border-white/20
+                overflow-hidden p-6
             `}
         >
-            {/* Urgency Badge (Only if critical or warning) */}
-            {urgency !== 'safe' && (
-                <div className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}>
+            {/* Header: Order ID & Urgency */}
+            <div className="flex justify-between items-center mb-4">
+                <span className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">
+                    ORD-{trabajo.orden}
+                </span>
+                <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${style.bg} ${style.text} border border-white/5`}>
                     {style.label}
                 </div>
-            )}
-
-            <div className="p-4">
-                {/* Header */}
-                <div className="flex justify-between items-start mb-2">
-                    <span className="font-mono text-xs font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
-                        #{trabajo.orden}
-                    </span>
-                </div>
-
-                {/* Content */}
-                <div className="flex gap-3">
-                    <div className="flex-grow">
-                        <h4 className="font-bold text-gray-800 dark:text-white leading-tight mb-1">{cliente?.nombre || 'Cliente Desconocido'}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">{trabajo.subtipo}</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <span className="font-bold bg-blue-50 dark:bg-blue-900/30 text-brand-blue px-2 py-0.5 rounded-md">
-                                {trabajo.cantidad} uds
-                            </span>
-                            {targetDate && (
-                                <span className={`flex items-center gap-1 ${style.text}`}>
-                                    <ClockIcon className="w-3 h-3" />
-                                    {formatDate(targetDate)}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                    
-                    {/* Thumbnail Preview */}
-                    {trabajo.fotoOriginalUrl && (
-                        <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 relative group/img">
-                            <img 
-                                src={trabajo.fotoOriginalUrl} 
-                                alt="Referencia" 
-                                className="w-full h-full object-cover transition-transform group-hover/img:scale-110" 
-                            />
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                <PhotoIcon className="w-6 h-6 text-white drop-shadow-md" />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer Actions */}
-                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center opacity-80 group-hover:opacity-100 transition-opacity">
-                    <div className="flex items-center gap-2">
-                        {trabajo.estado === TrabajoEstado.ENTREGADO ? (
-                            <Link to={`/nota-de-venta/${trabajo.id}`} target="_blank" className="p-1.5 hover:bg-green-100 rounded-full text-green-600 transition-colors" title="Ver Nota">
-                                <ReceiptIcon className="w-4 h-4" />
-                            </Link>
-                        ) : (
-                            <button onClick={(e) => { e.stopPropagation(); onTakePhotoClick(trabajo); }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 transition-colors" title="Adjuntar Foto">
-                                <CameraIcon className="w-4 h-4" />
-                            </button>
-                        )}
-                    </div>
-                    
-                    {/* Financial Status */}
-                    <div className="text-right">
-                        {trabajo.saldo > 0 ? (
-                            <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                                Pend: {formatCurrency(trabajo.saldo)}
-                            </span>
-                        ) : (
-                            <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <ReceiptIcon className="w-3 h-3" /> Pagado
-                            </span>
-                        )}
-                    </div>
-                </div>
             </div>
-            
+
+            {/* Main Content */}
+            <div className="flex gap-5">
+                <div className="flex-grow">
+                    <h4 className="text-lg font-black text-white italic tracking-tight leading-none mb-1 group-hover:text-liquid-gold transition-colors">
+                        {cliente?.nombre || 'ANÓNIMO'}
+                    </h4>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-4 opacity-80 line-clamp-1">{trabajo.subtipo}</p>
+                    
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1 text-[10px] font-black text-liquid-gold/80 bg-liquid-gold/5 px-2 py-1 rounded-lg">
+                            <span className="opacity-60">{trabajo.cantidad}</span>
+                            <span className="uppercase tracking-tighter">unidades</span>
+                        </div>
+                        {targetDate && (
+                            <div className={`flex items-center gap-1.5 text-[10px] font-bold ${style.text}`}>
+                                <ClockIcon className="w-3.5 h-3.5" />
+                                <span>{formatDate(targetDate).toUpperCase()}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                
+                {/* Thumbnail Preview with Bokeh effect */}
+                {trabajo.fotoOriginalUrl && (
+                    <div className="flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border border-white/10 relative group/img shadow-2xl">
+                        <img 
+                            src={trabajo.fotoOriginalUrl} 
+                            alt="Referencia" 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover/img:scale-125" 
+                        />
+                        <div className="absolute inset-0 bg-brand-dark/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity duration-500 backdrop-blur-sm">
+                            <PhotoIcon className="w-6 h-6 text-white drop-shadow-luxury" />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Finance Status Mini Badge */}
+            <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-all duration-700 -translate-y-2 group-hover:translate-y-0">
+                {trabajo.saldo > 0 ? (
+                    <div className="flex items-center gap-1 bg-red-500/10 text-red-400 text-[8px] font-black px-2 py-1 rounded-full border border-red-500/20">
+                        PENDIENTE
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-1 bg-green-500/10 text-green-400 text-[8px] font-black px-2 py-1 rounded-full border border-green-500/20 uppercase">
+                        Liquido
+                    </div>
+                )}
+            </div>
+
             {/* Progress Bar (Visual Indicator of Time Elapsed) */}
             {targetDate && (
-                <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
+                <div className="absolute bottom-0 left-0 h-[3px] bg-white/5 w-full overflow-hidden">
                     <div 
-                        className={`h-full ${urgency === 'critical' ? 'bg-red-500' : urgency === 'warning' ? 'bg-yellow-500' : 'bg-green-500'}`} 
+                        className={`h-full transition-all duration-1000 ease-out ${
+                            urgency === 'critical' ? 'bg-gradient-to-r from-red-600 to-red-400' : 
+                            urgency === 'warning' ? 'bg-gradient-to-r from-liquid-gold to-white' : 'bg-slate-600'
+                        }`} 
                         style={{ width: `${getProgress()}%` }}
                     ></div>
                 </div>
             )}
         </div>
     );
+};
 };
 
 // --- MODALS (Kept minimal for this file context) ---
@@ -333,44 +319,49 @@ const KDSPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-gray-900/50">
+    return (
+        <div className="flex flex-col h-full overflow-hidden bg-brand-dark relative">
+            {/* Ambient Background Glow */}
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-liquid-gold/5 rounded-full blur-[150px] -ml-64 -mb-64 pointer-events-none"></div>
+
             {/* --- HEADER & FILTERS --- */}
-            <div className="flex-shrink-0 p-4 sm:p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10">
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+            <div className="flex-shrink-0 p-8 sm:p-10 relative z-10">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8">
                     
                     {/* Title & Search */}
-                    <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
-                        <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                            <span className="text-brand-blue">KDS</span> Producción
-                        </h1>
-                        <div className="relative flex-grow sm:w-64">
-                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 w-full xl:w-auto">
+                        <div>
+                            <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
+                                Atelier <span className="text-gold-gradient">Monitor</span>
+                            </h1>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3 ml-1">Flujo de Producción & KDS</p>
+                        </div>
+
+                        <div className="relative flex-grow sm:w-80 group">
+                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
                             <input 
                                 type="text" 
                                 value={filterTerm}
                                 onChange={e => setFilterTerm(e.target.value)}
-                                placeholder="Buscar orden, cliente..." 
-                                className="w-full pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-transparent focus:bg-white dark:focus:bg-gray-600 border focus:border-brand-blue rounded-lg transition-all text-sm"
+                                placeholder="LOCALIZAR ORDEN O CLIENTE..." 
+                                className="w-full pl-12 pr-6 py-4 bg-white/5 border-white/5 focus:bg-white/10 border-2 focus:border-liquid-gold/30 rounded-2xl transition-all duration-500 text-[11px] font-black tracking-widest text-white uppercase placeholder:text-slate-600 outline-none"
                             />
                         </div>
                     </div>
 
                     {/* Quick Filters (Tags) */}
-                    <div className="flex gap-2 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-hide">
+                    <div className="flex gap-4 overflow-x-auto w-full xl:w-auto pb-4 xl:pb-0 scrollbar-hide">
                         {(['Todos', 'Urgentes', 'Diseño', 'Impresión'] as FilterTag[]).map(tag => (
                             <button
                                 key={tag}
                                 onClick={() => setActiveTag(tag)}
                                 className={`
-                                    px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all
+                                    px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-500 border
                                     ${activeTag === tag 
-                                        ? 'bg-brand-blue text-white shadow-md transform scale-105' 
-                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50'}
+                                        ? 'bg-white text-brand-dark border-white shadow-gold-glow scale-105' 
+                                        : 'bg-transparent text-slate-500 border-white/5 hover:border-white/20 hover:text-white'}
                                 `}
                             >
-                                {tag === 'Urgentes' && '🔥 '}
-                                {tag === 'Diseño' && '🎨 '}
-                                {tag === 'Impresión' && '🖨️ '}
                                 {tag}
                             </button>
                         ))}
@@ -379,8 +370,8 @@ const KDSPage: React.FC = () => {
             </div>
 
             {/* --- KANBAN BOARD --- */}
-            <div className="flex-grow overflow-x-auto overflow-y-hidden p-4 sm:p-6">
-                <div className="flex h-full gap-6 min-w-[1000px]">
+            <div className="flex-grow overflow-x-auto overflow-y-hidden px-8 sm:px-10 pb-10">
+                <div className="flex h-full gap-8 min-w-[1200px]">
                     {Object.keys(columns).map((status) => {
                         const colStatus = status as TrabajoEstado;
                         const isDragOver = draggedOverColumn === colStatus;
@@ -389,30 +380,30 @@ const KDSPage: React.FC = () => {
                             <div 
                                 key={status}
                                 className={`
-                                    flex-1 min-w-[280px] flex flex-col rounded-2xl transition-colors duration-300
-                                    ${isDragOver ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-brand-blue' : 'bg-gray-100 dark:bg-gray-800/50'}
+                                    flex-1 min-w-[320px] flex flex-col rounded-[2.5rem] transition-all duration-700
+                                    ${isDragOver ? 'bg-liquid-gold/10 ring-2 ring-liquid-gold/30 scale-[1.02]' : 'bg-white/5 backdrop-blur-sm border border-white/5'}
                                 `}
                                 onDragOver={(e) => e.preventDefault()}
                                 onDragEnter={() => setDraggedOverColumn(colStatus)}
                                 onDrop={(e) => handleDrop(e, colStatus)}
                             >
                                 {/* Column Header */}
-                                <div className="p-4 flex justify-between items-center border-b border-gray-200/50 dark:border-gray-700/50">
-                                    <h3 className="font-bold text-gray-700 dark:text-white uppercase tracking-wider text-sm flex items-center gap-2">
-                                        <div className={`w-3 h-3 rounded-full ${
-                                            status === 'Pendiente' ? 'bg-yellow-400' :
+                                <div className="p-8 flex justify-between items-center border-b border-white/5">
+                                    <h3 className="font-black text-white uppercase tracking-[0.3em] text-[10px] flex items-center gap-3">
+                                        <div className={`w-2 h-2 rounded-full shadow-gold-glow ${
+                                            status === 'Pendiente' ? 'bg-amber-400' :
                                             status === 'En Diseño' ? 'bg-purple-400' :
-                                            status === 'En Proceso' ? 'bg-blue-500' : 'bg-green-500'
+                                            status === 'En Proceso' ? 'bg-liquid-gold' : 'bg-green-400'
                                         }`}></div>
                                         {status}
                                     </h3>
-                                    <span className="bg-white dark:bg-gray-700 px-2 py-0.5 rounded-md text-xs font-bold text-gray-500 dark:text-gray-300 shadow-sm">
+                                    <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-black text-liquid-gold/60 border border-white/5">
                                         {columns[status].length}
                                     </span>
                                 </div>
 
                                 {/* Cards Container */}
-                                <div className="flex-grow overflow-y-auto p-3 custom-scrollbar">
+                                <div className="flex-grow overflow-y-auto p-6 space-y-2 custom-scrollbar">
                                     {columns[status].map(trabajo => (
                                         <KanbanCard 
                                             key={trabajo.id} 
@@ -423,8 +414,11 @@ const KDSPage: React.FC = () => {
                                         />
                                     ))}
                                     {columns[status].length === 0 && (
-                                        <div className="h-32 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl m-2">
-                                            <p className="text-gray-400 text-sm font-medium">Sin trabajos</p>
+                                        <div className="h-48 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2rem] opacity-30 grayscale italic scale-95 transition-all">
+                                            <div className="w-12 h-12 rounded-full border border-white/20 mb-4 flex items-center justify-center">
+                                                <ClockIcon className="w-5 h-5" />
+                                            </div>
+                                            <p className="text-[10px] font-black tracking-widest uppercase">Vault Empty</p>
                                         </div>
                                     )}
                                 </div>
@@ -451,6 +445,7 @@ const KDSPage: React.FC = () => {
             )}
         </div>
     );
+};
 };
 
 export default KDSPage;

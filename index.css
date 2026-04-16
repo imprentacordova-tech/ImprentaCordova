@@ -13,16 +13,28 @@
 }
 
 @layer components {
-  .glass-panel {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-glass;
+  .glass-atelier {
+    @apply bg-brand-dark/40 backdrop-blur-3xl border border-white/5 shadow-luxury;
   }
   
-  .btn-primary {
-    @apply bg-brand-blue text-white font-bold rounded-xl shadow-lg hover:bg-blue-800 transition-all active:scale-95 duration-300 hover:shadow-glow;
+  .glass-card-luxury {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-glass hover:bg-white/10 transition-all duration-700;
   }
 
-  .input-modern {
-    @apply bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all duration-300;
+  .btn-atelier {
+    @apply px-8 py-4 bg-brand-dark border border-white/5 text-slate-400 rounded-2xl font-bold text-[10px] uppercase tracking-[0.3em] transition-all duration-500 hover:border-liquid-gold hover:text-white hover:shadow-gold-glow active:scale-95;
+  }
+
+  .text-gold-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-liquid-gold via-white to-liquid-gold/50 animate-fade-in;
+  }
+  
+  .border-luxury {
+    @apply border-white/5 hover:border-liquid-gold/20 transition-colors duration-500;
+  }
+
+  .input-atelier {
+    @apply bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:ring-1 focus:ring-liquid-gold/50 focus:border-liquid-gold outline-none transition-all duration-300;
   }
 }
 
@@ -49,8 +61,18 @@
 }
 
 .animate-scan {
-  animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.5), transparent);
+  animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.3), transparent);
+}
+
+.bg-mesh {
+  background-color: #030712;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(15, 60, 133, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(225, 29, 72, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(212, 175, 55, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
+  background-size: 200% 200%;
 }
 
 /* Transiciones de Página */
