@@ -139,7 +139,6 @@ const ConfiguracionPage: React.FC = () => {
     }, [sriCredentials, searchTerm]);
 
     return (
-    return (
         <div className="space-y-16 max-w-7xl mx-auto pb-40 animate-fade-in">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-8">

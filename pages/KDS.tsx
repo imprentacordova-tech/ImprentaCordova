@@ -145,7 +145,6 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
         </div>
     );
 };
-};
 
 // --- MODALS (Kept minimal for this file context) ---
 
@@ -319,7 +318,6 @@ const KDSPage: React.FC = () => {
     };
 
     return (
-    return (
         <div className="flex flex-col h-full overflow-hidden bg-brand-dark relative">
             {/* Ambient Background Glow */}
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-liquid-gold/5 rounded-full blur-[150px] -ml-64 -mb-64 pointer-events-none"></div>
@@ -445,7 +443,6 @@ const KDSPage: React.FC = () => {
             )}
         </div>
     );
-};
 };
 
 export default KDSPage;
