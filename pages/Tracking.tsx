@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getTrabajos, getClientes, aprobarArte } from '../services/mockApi';
-import { Trabajo, Cliente, TrabajoEstado } from '../types';
+import { Trabajo, TrabajoEstado } from '../types';
 import { formatCurrency } from '../utils';
 import { 
     SearchIcon, CordovaLogo, ArrowLeftIcon, ClockIcon, CheckCircleIcon, 
@@ -155,8 +154,13 @@ const TrackingPage: React.FC = () => {
     const handleAprobarArte = async (trabajoId: string) => {
         if (!window.confirm("¿Confirma que el diseño es correcto y desea enviarlo a impresión?")) return;
         try {
-            const updated = await aprobarArte(trabajoId);
-            setFoundJobs(prev => prev.map(j => j.id === trabajoId ? updated : j));
+            const { data, error } = await supabase.from('trabajos')
+                .update({ arte_aprobado: true })
+                .eq('id', trabajoId)
+                .select()
+                .single();
+            if (error) throw error;
+            setFoundJobs(prev => prev.map(j => j.id === trabajoId ? { ...j, arteAprobado: true } : j));
             alert("✅ Arte aprobado. El taller ha sido notificado.");
         } catch (e) { alert("Error al aprobar arte."); }
     };

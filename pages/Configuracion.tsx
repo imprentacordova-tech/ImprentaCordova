@@ -29,78 +29,50 @@ const InputField: React.FC<{label: string, name: string, value: any, onChange: (
     </div>
 );
 
+const DEFAULT_CONFIG = {
+    emisorRazonSocial: 'IMPRENTA CORDOVA',
+    emisorRuc: '1104212564001',
+    emisorEstablecimiento: '001',
+    emisorPuntoEmision: '001',
+    secuencialInicio: 1,
+    imprentaNombre: 'IMPRENTA CORDOVA',
+    imprentaRuc: '1104212564001',
+    imprentaAutorizacion: '1111',
+    imprentaTelefono: '0987654321',
+    googleScriptUrl: ''
+};
+
 const ConfiguracionPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { seedCatalog, syncing } = useData();
-    const [config, setConfig] = useState<NotaDeVentaConfig>(getConfig());
+    const { 
+        config: cloudConfig, updateConfig, 
+        sriCredentials, deleteSriCredential, bulkAddSriCredentials, 
+        seedCatalog, syncing 
+    } = useData();
+    
+    const [localConfig, setLocalConfig] = useState<any>(cloudConfig || DEFAULT_CONFIG);
     const [showSuccess, setShowSuccess] = useState(false);
-    const [sriCredentials, setSriCredentials] = useState<SriCredential[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
     const [isImporting, setIsImporting] = useState(false);
-    const [isPushing, setIsPushing] = useState(false);
-    const [isTesting, setIsTesting] = useState(false);
-    const [cloudStatus, setCloudStatus] = useState<'IDLE' | 'SYNCING' | 'ERROR' | 'CONNECTED'>('IDLE');
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Sync local state when cloud config arrives
     useEffect(() => {
-        getSriCredentials().then(setSriCredentials);
-        if (config.googleScriptUrl.includes('macros')) setCloudStatus('CONNECTED');
-    }, []);
+        if (cloudConfig) setLocalConfig(cloudConfig);
+    }, [cloudConfig]);
 
-    const handleSaveGeneral = (e: React.FormEvent) => {
+    const handleSaveGeneral = async (e: React.FormEvent) => {
         e.preventDefault();
-        saveConfig(config);
-        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Actualizó la configuración general del sistema', 'Sistema');
-        setShowSuccess(true);
-        if (config.googleScriptUrl.includes('macros')) setCloudStatus('CONNECTED');
-        setTimeout(() => setShowSuccess(false), 3000);
-    };
-
-    const handleTestConn = async () => {
-        saveConfig(config);
-        setIsTesting(true);
-        const result = await testCloudConnection(config.googleScriptUrl);
-        setIsTesting(false);
-        
-        if (result.success) {
-            alert(result.message);
-            setCloudStatus('CONNECTED');
-        } else {
-            alert("❌ FALLO DE CONEXIÓN:\n\n" + result.message);
-            setCloudStatus('ERROR');
+        try {
+            await updateConfig(localConfig);
+            logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Actualizó la configuración general del sistema en Supabase', 'Sistema');
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+        } catch (error) {
+            alert("Error al guardar en la nube.");
         }
-    };
-
-    const handleSyncNow = async () => {
-        setCloudStatus('SYNCING');
-        const success = await hydrateFromCloud();
-        setCloudStatus(success ? 'CONNECTED' : 'ERROR');
-        if (success) {
-            alert("✅ ¡Sincronización Exitosa! Los datos se han descargado de la nube.");
-            window.location.reload();
-        } else {
-            alert("❌ ERROR DE DESCARGA.");
-        }
-    };
-
-    const handlePushAll = async () => {
-        if (!window.confirm("¿Deseas subir todos los datos locales a Google Sheets ahora mismo?")) return;
-        setIsPushing(true);
-        await forcePushAllToCloud();
-        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Ejecutó respaldo manual a la nube (Push All)', 'Sistema');
-        setIsPushing(false);
-        alert("✅ Respaldo enviado a la nube correctamente.");
-    };
-
-    const togglePasswordVisibility = (ruc: string) => {
-        setVisiblePasswords(prev => {
-            const next = new Set(prev);
-            if (next.has(ruc)) next.delete(ruc);
-            else next.add(ruc);
-            return next;
-        });
     };
 
     const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,16 +102,24 @@ const ConfiguracionPage: React.FC = () => {
             });
 
             if (creds.length > 0) {
-                const updated = await bulkAddSriCredentials(creds);
-                setSriCredentials(updated);
-                alert(`Importación exitosa: ${creds.length} claves.`);
+                await bulkAddSriCredentials(creds);
+                alert(`Importación exitosa: ${creds.length} claves registradas en Supabase.`);
             }
         } catch (error) { alert("Error al procesar CSV."); } finally { setIsImporting(false); e.target.value = ''; }
     };
 
+    const togglePasswordVisibility = (ruc: string) => {
+        setVisiblePasswords(prev => {
+            const next = new Set(prev);
+            if (next.has(ruc)) next.delete(ruc);
+            else next.add(ruc);
+            return next;
+        });
+    };
+
     const filteredCredentials = useMemo(() => {
         const lower = searchTerm.toLowerCase();
-        return sriCredentials.filter(c => 
+        return (sriCredentials || []).filter(c => 
             c.ruc.includes(searchTerm) || 
             (c.origen || '').toLowerCase().includes(lower)
         ).slice(0, 50);
@@ -156,38 +136,7 @@ const ConfiguracionPage: React.FC = () => {
                         <h1 className="text-4xl font-black text-white tracking-tighter uppercase">
                             Centro de <span className="text-slate-500">Control</span>
                         </h1>
-                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2">Configuración Maestra • Atelier Bóveda v4.0</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* PANEL DE NUBE DIAGNÓSTICO */}
-            <div className="bg-white/5 rounded-[3rem] p-12 border border-white/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/5 rounded-full blur-[120px] -mr-48 -mt-48 transition-transform group-hover:scale-110 duration-1000"></div>
-                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-                    <div className="flex items-center gap-10">
-                        <div className={`p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500 text-black' : cloudStatus === 'ERROR' ? 'bg-rose-600 text-white' : 'bg-white text-black'}`}>
-                            <GlobeAltIcon className={`w-14 h-14 ${cloudStatus === 'SYNCING' ? 'animate-spin' : ''}`} />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-4 mb-3">
-                                <h3 className="text-3xl font-black text-white uppercase tracking-tight">Cerebro Integrado</h3>
-                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${cloudStatus === 'CONNECTED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
-                                    {cloudStatus === 'CONNECTED' ? 'Enlace Encriptado' : cloudStatus === 'SYNCING' ? 'Sincronizando Archivos' : 'Fallo de Red'}
-                                </span>
-                            </div>
-                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Respaldo de alto rendimiento en Google Cloud Suite</p>
-                        </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                        <button onClick={handleTestConn} disabled={isTesting} className="px-10 py-5 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-[10px]">
-                            {isTesting ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ShieldCheckIcon className="w-5 h-5"/>}
-                            Test Seguridad
-                        </button>
-                        <button onClick={handlePushAll} disabled={isPushing} className="px-10 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-[10px]">
-                            {isPushing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ArrowUpIcon className="w-5 h-5"/>}
-                            Respaldo Inmediato
-                        </button>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2">Configuración Cloud • Imprenta Córdova v5.0</p>
                     </div>
                 </div>
             </div>
@@ -202,32 +151,32 @@ const ConfiguracionPage: React.FC = () => {
                         </div>
                         <div>
                             <div className="flex items-center gap-4 mb-3">
-                                <h3 className="text-3xl font-black text-white uppercase tracking-tight">Catálogo Maestro</h3>
+                                <h3 className="text-3xl font-black text-white uppercase tracking-tight">Catálogo Industrial</h3>
                                 <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 shadow-lg">
-                                    Luxury Edition
+                                    Supabase Master
                                 </span>
                             </div>
-                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Carga institucional de 100 servicios y productos predeterminados</p>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Sincroniza el catálogo institucional de servicios y productos en la nube</p>
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                         <button 
                             onClick={async () => {
-                                if (window.confirm("¿Deseas cargar el catálogo institucional de 100 productos?")) {
+                                if (window.confirm("¿Deseas cargar el catálogo institucional de 100+ productos a Supabase?")) {
                                     try {
                                         await seedCatalog();
-                                        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Cargó el catálogo institucional (100 productos)', 'Sistema');
-                                        alert("✅ Catálogo Maestro Cargado Correctamente.");
+                                        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Sincronizó catálogo institucional en la nube', 'Sistema');
+                                        alert("✅ Catálogo Maestro Sincronizado Correctamente.");
                                     } catch (e) {
-                                        alert("❌ Error en la base de datos.");
+                                        alert("❌ Error al conectar con Supabase.");
                                     }
                                 }
                             }} 
                             disabled={syncing} 
                             className="px-12 py-6 bg-brand-gold text-black font-black rounded-2xl shadow-[0_0_30px_rgba(255,191,0,0.3)] hover:bg-brand-gold/90 transition-all flex items-center justify-center gap-4 uppercase tracking-[0.3em] text-[10px]"
                         >
-                            {syncing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <ArrowDownTrayIcon className="w-5 h-5"/>}
-                            Cargar 100 Productos
+                            {syncing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <CloudIcon className="w-5 h-5"/>}
+                            Sincronizar 100+ Productos
                         </button>
                     </div>
                 </div>
@@ -242,13 +191,13 @@ const ConfiguracionPage: React.FC = () => {
                             <div className="p-4 bg-rose-600 rounded-2xl text-white shadow-xl"><ShieldCheckIcon className="w-8 h-8" /></div>
                             Emisor Autorizado
                         </h2>
-                        <InputField label="Razón Social Fiscal" name="emisorRazonSocial" value={config.emisorRazonSocial} onChange={e => setConfig({...config, emisorRazonSocial: e.target.value})} />
-                        <InputField label="Identificación R.U.C." name="emisorRuc" value={config.emisorRuc} onChange={e => setConfig({...config, emisorRuc: e.target.value})} maxLength={13} />
+                        <InputField label="Razón Social Fiscal" name="emisorRazonSocial" value={localConfig.emisorRazonSocial} onChange={e => setLocalConfig({...localConfig, emisorRazonSocial: e.target.value})} />
+                        <InputField label="Identificación R.U.C." name="emisorRuc" value={localConfig.emisorRuc} onChange={e => setLocalConfig({...localConfig, emisorRuc: e.target.value})} maxLength={13} />
                         <div className="grid grid-cols-2 gap-6">
-                            <InputField label="Cód. Establecimiento" name="emisorEstablecimiento" value={config.emisorEstablecimiento} onChange={e => setConfig({...config, emisorEstablecimiento: e.target.value})} maxLength={3} />
-                            <InputField label="Pto. Emisión" name="emisorPuntoEmision" value={config.emisorPuntoEmision} onChange={e => setConfig({...config, emisorPuntoEmision: e.target.value})} maxLength={3} />
+                            <InputField label="Cód. Establecimiento" name="emisorEstablecimiento" value={localConfig.emisorEstablecimiento} onChange={e => setLocalConfig({...localConfig, emisorEstablecimiento: e.target.value})} maxLength={3} />
+                            <InputField label="Pto. Emisión" name="emisorPuntoEmision" value={localConfig.emisorPuntoEmision} onChange={e => setLocalConfig({...localConfig, emisorPuntoEmision: e.target.value})} maxLength={3} />
                         </div>
-                        <InputField label="Folio Maestro Global" type="number" name="secuencialInicio" value={config.secuencialInicio} onChange={e => setConfig({...config, secuencialInicio: parseInt(e.target.value) || 1})} />
+                        <InputField label="Folio Maestro Global" type="number" name="secuencialInicio" value={localConfig.secuencialInicio} onChange={e => setLocalConfig({...localConfig, secuencialInicio: parseInt(e.target.value) || 1})} />
                     </div>
 
                     {/* LADO DERECHO: DATOS DE FABRICACIÓN (PIE DE IMPRENTA) */}
@@ -258,27 +207,29 @@ const ConfiguracionPage: React.FC = () => {
                             Sello de Fabricación
                         </h2>
                         <div className="bg-black/40 p-10 rounded-[2.5rem] border border-white/5 space-y-8 shadow-inner">
-                            <InputField label="Fábrica Autorizada" name="imprentaNombre" value={config.imprentaNombre} onChange={e => setConfig({...config, imprentaNombre: e.target.value})} />
+                            <InputField label="Fábrica Autorizada" name="imprentaNombre" value={localConfig.imprentaNombre} onChange={e => setLocalConfig({...localConfig, imprentaNombre: e.target.value})} />
                             <div className="grid grid-cols-2 gap-6">
-                                <InputField label="R.U.C. Industrial" name="imprentaRuc" value={config.imprentaRuc} onChange={e => setConfig({...config, imprentaRuc: e.target.value})} maxLength={13} />
-                                <InputField label="Nº Autorización" name="imprentaAutorizacion" value={config.imprentaAutorizacion} onChange={e => setConfig({...config, imprentaAutorizacion: e.target.value})} maxLength={4} />
+                                <InputField label="R.U.C. Industrial" name="imprentaRuc" value={localConfig.imprentaRuc} onChange={e => setLocalConfig({...localConfig, imprentaRuc: e.target.value})} maxLength={13} />
+                                <InputField label="Nº Autorización" name="imprentaAutorizacion" value={localConfig.imprentaAutorizacion} onChange={e => setLocalConfig({...localConfig, imprentaAutorizacion: e.target.value})} maxLength={4} />
                             </div>
-                            <InputField label="Línea Directa de Contacto" name="imprentaTelefono" value={config.imprentaTelefono} onChange={e => setConfig({...config, imprentaTelefono: e.target.value})} />
+                            <InputField label="Línea Directa de Contacto" name="imprentaTelefono" value={localConfig.imprentaTelefono} onChange={e => setLocalConfig({...localConfig, imprentaTelefono: e.target.value})} />
                         </div>
                         
-                        <div>
-                             <InputField label="Punto de Enlace Cloud (Bridge URL)" name="googleScriptUrl" value={config.googleScriptUrl} onChange={e => setConfig({...config, googleScriptUrl: e.target.value})} />
-                             <p className="text-[10px] font-black text-slate-600 uppercase mt-4 tracking-widest">* Endpoint exclusivo para sincronización industrial</p>
+                        <div className="p-8 bg-brand-blue/5 border border-brand-blue/10 rounded-[2rem]">
+                             <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <CloudIcon className="w-4 h-4"/> Estado Perpetuo
+                             </p>
+                             <p className="text-xs font-bold text-slate-400">Los cambios se sincronizan en tiempo real con Supabase Cloud y afectan a todos los terminales.</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="pt-12 border-t border-white/5 flex justify-between items-center">
                     <div className="min-h-[20px]">
-                        {showSuccess && <span className="text-emerald-500 font-black text-[12px] animate-fade-in tracking-[0.2em] uppercase flex items-center gap-3"><CheckIcon className="w-5 h-5 shadow-sm"/> Bóveda Sincronizada</span>}
+                        {showSuccess && <span className="text-emerald-500 font-black text-[12px] animate-fade-in tracking-[0.2em] uppercase flex items-center gap-3"><CheckCircleIcon className="w-5 h-5 shadow-sm"/> Bóveda Cloud Sincronizada</span>}
                     </div>
                     <button type="submit" className="group relative px-16 py-6 bg-brand-blue text-white font-black rounded-2xl shadow-3xl hover:bg-slate-900 transition-all uppercase tracking-[0.3em] text-[10px] overflow-hidden">
-                        <span className="relative z-10">Cerrar Bóveda y Guardar</span>
+                        <span className="relative z-10">Guardar en la Nube</span>
                     </button>
                 </div>
             </form>
@@ -293,9 +244,16 @@ const ConfiguracionPage: React.FC = () => {
                         <div>
                             <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Bóveda Maestra <span className="text-slate-500">SRI</span></h2>
                             <span className="inline-block mt-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-black uppercase text-[10px] tracking-[0.2em] shadow-lg animate-pulse">
-                                {sriCredentials.length} CLIENTES PROTEGIDOS
+                                {(sriCredentials || []).length} CLIENTES PROTEGIDOS
                             </span>
                         </div>
+                    </div>
+                    <div className="flex items-center gap-4 relative z-10">
+                         <input type="file" ref={fileInputRef} onChange={handleImportCSV} className="hidden" accept=".csv" />
+                         <button onClick={() => fileInputRef.current?.click()} disabled={isImporting} className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-[10px]">
+                            {isImporting ? <Loader2Icon className="animate-spin w-4 h-4"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
+                            Importar Claves CSV
+                         </button>
                     </div>
                 </div>
                 <div className="p-16">
@@ -305,7 +263,7 @@ const ConfiguracionPage: React.FC = () => {
                         </div>
                         <input 
                             type="text" 
-                            placeholder="DESCIFRAR RUC O NOMBRE DEL CONTRIBUYENTE..." 
+                            placeholder="BUSCAR RUC O CONTRIBUYENTE..." 
                             value={searchTerm} 
                             onChange={e => setSearchTerm(e.target.value)} 
                             className="w-full pl-24 pr-12 py-8 bg-black/40 border border-white/5 rounded-[2.5rem] text-xl font-black uppercase tracking-tight text-white placeholder:text-slate-800 focus:ring-1 focus:ring-brand-blue/30 transition-all outline-none shadow-inner"
@@ -316,16 +274,16 @@ const ConfiguracionPage: React.FC = () => {
                          <table className="w-full text-left border-collapse overflow-hidden">
                             <thead className="bg-white/[0.03] sticky top-0 z-20 border-b border-white/10">
                                 <tr className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em]">
-                                    <th className="px-12 py-8 font-black">Contribuyente Autorizado</th>
-                                    <th className="px-12 py-8 font-black">Token / Password</th>
-                                    <th className="px-12 py-8 text-right font-black">Protocolos</th>
+                                    <th className="px-12 py-8 font-black">Contribuyente</th>
+                                    <th className="px-12 py-8 font-black">Token Acceso</th>
+                                    <th className="px-12 py-8 text-right font-black">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {filteredCredentials.map(c => (
                                     <tr key={c.ruc} className="group/row hover:bg-white/[0.04] transition-all">
                                         <td className="px-12 py-10">
-                                            <p className="text-white font-black uppercase text-lg tracking-tight mb-2 group-hover/row:text-brand-blue transition-colors">{c.origen || 'SRI Client'}</p>
+                                            <p className="text-white font-black uppercase text-lg tracking-tight mb-2 group-hover/row:text-brand-blue transition-colors">{c.origen || 'Cliente SRI'}</p>
                                             <p className="text-[11px] font-mono font-bold text-slate-500 tracking-widest flex items-center gap-3">
                                                 <span className="w-2 h-2 rounded-full bg-slate-800"></span>
                                                 RUC {c.ruc}
@@ -338,16 +296,19 @@ const ConfiguracionPage: React.FC = () => {
                                             >
                                                 {visiblePasswords.has(c.ruc) ? 
                                                     <span className="text-emerald-500 font-mono font-black text-lg tracking-widest">{c.password}</span> : 
-                                                    <span className="text-slate-700 font-mono font-black text-lg tracking-widest uppercase">Encrypted</span>
+                                                    <span className="text-slate-700 font-mono font-black text-lg tracking-widest uppercase">Encriptado</span>
                                                 }
                                                 {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-5 h-5 group-hover/pass:scale-110 transition-transform"/> : <EyeIcon className="w-5 h-5 group-hover/pass:scale-110 transition-transform"/>}
                                             </button>
                                         </td>
                                         <td className="px-12 py-10 text-right">
                                             <button 
-                                                onClick={() => deleteSriCredential(c.ruc).then(getSriCredentials).then(setSriCredentials)} 
+                                                onClick={() => {
+                                                    if(window.confirm(`¿Seguro que deseas eliminar el acceso para ${c.ruc}?`)) {
+                                                        deleteSriCredential(c.ruc);
+                                                    }
+                                                }} 
                                                 className="p-4 bg-rose-500/5 text-rose-500/20 hover:bg-rose-500 hover:text-white rounded-2xl transition-all shadow-lg"
-                                                title="Revocar Acceso"
                                             >
                                                 <TrashIcon className="w-6 h-6"/>
                                             </button>
@@ -359,17 +320,16 @@ const ConfiguracionPage: React.FC = () => {
                                         <td colSpan={3} className="px-12 py-32 text-center">
                                             <div className="flex flex-col items-center gap-6 opacity-20">
                                                 <ShieldCheckIcon className="w-20 h-20 text-slate-500" />
-                                                <p className="text-sm font-black text-slate-500 uppercase tracking-[0.5em]">Cero registros encriptados</p>
+                                                <p className="text-sm font-black text-slate-500 uppercase tracking-[0.5em]">Bóveda Vacía</p>
                                             </div>
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
-                        </table>
+                         </table>
                     </div>
                 </div>
             </div>
-        </div>
     );
 };
 

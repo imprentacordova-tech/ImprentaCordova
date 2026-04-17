@@ -1,37 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
-import { getConfig, NotaDeVentaConfig } from '../services/configService';
 import { MapPinIcon, PhoneIcon, PrinterIcon, CordovaLogo, ClockIcon, ReceiptIcon, WhatsAppIcon, QrCodeIcon } from '../components/Icons';
 
 const ReciboAbonoPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
+    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
-    const [loading, setLoading] = useState(true);
     // Default to Thermal for quick receipts
     const [isThermal, setIsThermal] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!trabajoId) return;
-            setLoading(true);
-            setConfig(getConfig());
-            const [trabajosData, clientesData] = await Promise.all([getTrabajos(), getClientes()]);
-            const currentTrabajo = trabajosData.find(t => t.id === trabajoId);
-            if (currentTrabajo) {
-                setTrabajo(currentTrabajo);
-                const currentCliente = clientesData.find(c => c.id === currentTrabajo.clienteId);
-                setCliente(currentCliente || null);
-            }
-            setLoading(false);
-        };
-        fetchData();
-    }, [trabajoId]);
+        if (!trabajoId || dataLoading) return;
+        const currentTrabajo = trabajos.find(t => t.id === trabajoId);
+        if (currentTrabajo) {
+            setTrabajo(currentTrabajo);
+            setCliente(clientes.find(c => c.id === currentTrabajo.clienteId) || null);
+        }
+    }, [trabajoId, trabajos, clientes, dataLoading]);
+
+    // Mapeo de config para los campos que la plantilla necesita
+    const config = {
+        emisorRuc: cloudConfig?.emisorRuc || cloudConfig?.imprentaRuc || '0702065319001',
+        emisorDireccionMatriz: 'Colón y Sucre, Pasaje, El Oro',
+        emisorTelefono: cloudConfig?.imprentaTelefono || '0993083943',
+    };
 
     const handlePrint = () => {
         window.print();
@@ -51,7 +48,7 @@ const ReciboAbonoPage: React.FC = () => {
         }
     };
 
-    if (loading || !config) {
+    if (dataLoading) {
         return <div className="text-center p-10 font-sans text-gray-500">Generando recibo...</div>;
     }
 

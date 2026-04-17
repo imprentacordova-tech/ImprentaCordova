@@ -1,39 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
     Loader2Icon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
-import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
 declare const html2pdf: any;
 
 const SolicitudImpresionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
+    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!trabajoId) return;
-            setLoading(true);
-            setConfig(getConfig());
-            const [trabajosData, clientesData] = await Promise.all([getTrabajos(), getClientes()]);
-            const currentTrabajo = trabajosData.find(t => t.id === trabajoId);
-            if (currentTrabajo) {
-                setTrabajo(currentTrabajo);
-                setCliente(clientesData.find(c => c.id === currentTrabajo.clienteId) || null);
-            }
-            setLoading(false);
-        };
-        fetchData();
-    }, [trabajoId]);
+        if (!trabajoId || dataLoading) return;
+        const currentTrabajo = trabajos.find(t => t.id === trabajoId);
+        if (currentTrabajo) {
+            setTrabajo(currentTrabajo);
+            setCliente(clientes.find(c => c.id === currentTrabajo.clienteId) || null);
+        }
+    }, [trabajoId, trabajos, clientes, dataLoading]);
+
+    // Mapeo de config para la plantilla
+    const config = {
+        emisorDireccionMatriz: 'Colón e/ Sucre y Av. Rocafuerte',
+        emisorTelefono: cloudConfig?.imprentaTelefono || '0993083943 • 0962585172',
+        emisorRuc: cloudConfig?.emisorRuc || cloudConfig?.imprentaRuc || '0702065319001',
+        imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '8634',
+        emisorEmail: 'imprentacordova@gmail.com',
+    };
 
     const handleDownloadPdf = () => {
         const element = document.getElementById('documento-maestro-sri');

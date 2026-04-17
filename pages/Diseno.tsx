@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, SupervisorAnalysis, User } from '../types';
 import { PaletteIcon, SparklesIcon, Loader2Icon, PrinterIcon, EyeIcon } from '../components/Icons';
 import { useOutletContext } from 'react-router-dom';
@@ -8,31 +8,16 @@ import { logActivity } from '../services/activityLogService';
 
 const DisenoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
-    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const { trabajos, clientes, loading, updateTrabajoStatus } = useData();
     const [selectedJob, setSelectedJob] = useState<Trabajo | null>(null);
-    const [loading, setLoading] = useState(true);
     
     // AI States
     const [analyzing, setAnalyzing] = useState(false);
     const [aiAnalysis, setAiAnalysis] = useState<SupervisorAnalysis | null>(null);
 
-    const fetchData = async () => {
-        setLoading(true);
-        const [jobsData, clientsData] = await Promise.all([getTrabajos(), getClientes()]);
-        setTrabajos(jobsData);
-        setClientes(clientsData);
-        setLoading(false);
-    };
-
     useEffect(() => {
-        fetchData();
         setAiAnalysis(null);
     }, [selectedJob]);
-
-    useEffect(() => {
-        fetchData();
-    }, []);
 
     const pendingJobs = trabajos.filter(t => 
         t.estado === TrabajoEstado.PENDIENTE || 
@@ -54,7 +39,7 @@ const DisenoPage: React.FC = () => {
     const handleSendToPrint = async () => {
         if (!selectedJob) return;
         
-        if (!aiAnalysis && !window.confirm("El Supervisor IA no ha validado este diseño. ¿Enviar a impresión de todas formas?")) {
+        if (!aiAnalysis && !window.confirm("¿El Supervisor IA no ha validado este diseño. ¿Enviar a impresión de todas formas?")) {
             return;
         }
 
@@ -63,7 +48,6 @@ const DisenoPage: React.FC = () => {
             logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'CAMBIO_ESTADO', `Orden #${selectedJob.orden} enviada a producción. validado_por_ia: ${!!aiAnalysis}`, 'Diseño');
             alert(`✅ Orden #${selectedJob.orden} enviada a Taller correctamente.`);
             setSelectedJob(null);
-            fetchData();
         } catch (error) {
             alert("Error al mover el trabajo a producción.");
         }

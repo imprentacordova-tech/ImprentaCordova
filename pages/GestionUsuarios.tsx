@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getUsers, updateUser, createUser } from '../services/mockApi';
+import { supabase } from '../services/supabase';
 import { User } from '../types';
 import { useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
@@ -187,20 +187,16 @@ const GestionUsuariosPage: React.FC = () => {
 
     const fetchUsers = async () => {
         setLoading(true);
-        const usersData = await getUsers();
-        setUsers(usersData);
+        const { data, error } = await supabase.from('usuarios').select('*').order('nombre', { ascending: true });
+        if (!error && data) setUsers(data as User[]);
         setLoading(false);
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+    useEffect(() => { fetchUsers(); }, []);
     
     const requestSort = (key: SortKey) => {
         let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
+        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
         setSortConfig({ key, direction });
     };
 
@@ -224,10 +220,10 @@ const GestionUsuariosPage: React.FC = () => {
 
     const handleSaveUser = async (user: Partial<User>) => {
         if (user.id) {
-            await updateUser(user.id, user);
+            await supabase.from('usuarios').update(user).eq('id', user.id);
             logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `Modificó al usuario ${user.nombre} (${user.rol})`, 'Seguridad');
         } else {
-            await createUser(user as any);
+            await supabase.from('usuarios').insert([user]);
             logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_CREADO', `Creó nuevo usuario: ${user.nombre} con rol ${user.rol}`, 'Seguridad');
         }
         setEditingUser(null);
@@ -237,8 +233,7 @@ const GestionUsuariosPage: React.FC = () => {
     const handleToggleStatus = async () => {
         if (!userToToggle) return;
         const newStatus = userToToggle.estado === 'Activo' ? 'Inactivo' : 'Activo';
-        await updateUser(userToToggle.id, { estado: newStatus });
-        
+        await supabase.from('usuarios').update({ estado: newStatus }).eq('id', userToToggle.id);
         logActivity(
             currentUser.nombre, 
             currentUser.rol, 
@@ -246,7 +241,6 @@ const GestionUsuariosPage: React.FC = () => {
             `${newStatus === 'Activo' ? 'Activó' : 'Desactivó'} al usuario ${userToToggle.nombre}`, 
             'Seguridad'
         );
-
         setUserToToggle(null);
         await fetchUsers();
     };

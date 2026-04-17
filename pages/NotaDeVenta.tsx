@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente } from '../types';
 import { formatCurrency, numeroALetras } from '../utils';
 import { 
@@ -9,7 +9,6 @@ import {
     MapPinIcon, WhatsAppIcon, CheckBadgeIcon, 
     EnvelopeIcon, PhoneIcon, ArrowDownTrayIcon, Loader2Icon
 } from '../components/Icons';
-import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
 // Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
 declare const html2pdf: any;
@@ -17,27 +16,37 @@ declare const html2pdf: any;
 const NotaDeVentaPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
+    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
-    const [loading, setLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!trabajoId) return;
-            setLoading(true);
-            setConfig(getConfig());
-            const [tData, cData] = await Promise.all([getTrabajos(), getClientes()]);
-            const current = tData.find(t => t.id === trabajoId);
-            if (current) {
-                setTrabajo(current);
-                setCliente(cData.find(c => c.id === current.clienteId) || null);
-            }
-            setLoading(false);
-        };
-        fetchData();
-    }, [trabajoId]);
+        if (!trabajoId || dataLoading) return;
+        const current = trabajos.find(t => t.id === trabajoId);
+        if (current) {
+            setTrabajo(current);
+            setCliente(clientes.find(c => c.id === current.clienteId) || null);
+        }
+    }, [trabajoId, trabajos, clientes, dataLoading]);
+
+    // Mapear config de Supabase al formato esperado por la plantilla
+    const config = cloudConfig ? {
+        emisorNombreComercial: cloudConfig.imprentaNombre || 'IMPRENTA CORDOVA',
+        emisorRazonSocial: cloudConfig.emisorRazonSocial || 'IMPRENTA CORDOVA',
+        emisorRuc: cloudConfig.emisorRuc || '1104212564001',
+        emisorEstablecimiento: cloudConfig.emisorEstablecimiento || '001',
+        emisorPuntoEmision: cloudConfig.emisorPuntoEmision || '001',
+        emisorDireccionMatriz: 'Colón y Sucre, Pasaje, El Oro',
+        emisorTelefono: cloudConfig.imprentaTelefono || '',
+        emisorEmail: '',
+        autorizacionSRI: cloudConfig.imprentaAutorizacion || '',
+        emisorTipoContribuyente: 'CONTRIBUYENTE RIMPE',
+        imprentaNombre: cloudConfig.imprentaNombre || 'IMPRENTA CORDOVA',
+        imprentaRuc: cloudConfig.imprentaRuc || '',
+        imprentaAutorizacion: cloudConfig.imprentaAutorizacion || '',
+        fechaCaducidad: '31/12/2026',
+    } : null;
 
     const generatePDF = async () => {
         const element = document.getElementById('nota-venta-canvas');
@@ -73,7 +82,7 @@ const NotaDeVentaPage: React.FC = () => {
         }
     };
 
-    if (loading || !trabajo || !cliente || !config) return (
+    if (dataLoading || !trabajo || !cliente || !config) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-900">
             <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
         </div>

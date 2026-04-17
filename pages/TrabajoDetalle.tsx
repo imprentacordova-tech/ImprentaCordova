@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { getTrabajos, getClientes, updateTrabajoStatus } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { logActivity } from '../services/activityLogService';
 import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo, User } from '../types';
 import { formatCurrency, formatDate } from '../utils';
@@ -16,30 +16,30 @@ const TrabajoDetallePage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
     const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const { trabajos, clientes, loading, updateTrabajoStatus } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetch = async () => {
-            if (!trabajoId) return;
-            setLoading(true);
-            const [tData, cData] = await Promise.all([getTrabajos(), getClientes()]);
-            const current = tData.find(t => t.id === trabajoId);
-            if (current) {
-                setTrabajo(current);
-                setCliente(cData.find(c => c.id === current.clienteId) || null);
-            }
-            setLoading(false);
-        };
-        fetch();
-    }, [trabajoId]);
+        if (!trabajoId || loading) return;
+        const current = trabajos.find(t => t.id === trabajoId);
+        if (current) {
+            setTrabajo(current);
+            setCliente(clientes.find(c => c.id === current.clienteId) || null);
+        }
+    }, [trabajoId, trabajos, clientes, loading]);
+
+    // Sincronizar cambio de estado local cuando el contexto se actualiza
+    useEffect(() => {
+        if (!trabajoId) return;
+        const current = trabajos.find(t => t.id === trabajoId);
+        if (current) setTrabajo(current);
+    }, [trabajos, trabajoId]);
 
     const handleStatusChange = async (newStatus: TrabajoEstado) => {
         if (!trabajo) return;
-        const updated = await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
+        await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
         await logActivity(currentUser.id, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Estado cambiado manualmente a: ${newStatus}`, 'TrabajoDetalle');
-        setTrabajo(updated);
     };
 
     if (loading) return <div className="flex h-screen items-center justify-center"><Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" /></div>;

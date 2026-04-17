@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
 import { useData } from '../contexts/DataContext';
-import { getConfig } from '../services/configService';
 import { logTransaction } from '../services/financialLedgerService';
 
 export interface CartItem {

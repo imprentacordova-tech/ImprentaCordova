@@ -1,7 +1,4 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { getProductos, createProducto, updateProducto, deleteProducto, bulkCreateProductos } from '../services/mockApi';
-import { Producto } from '../types';
+import { Producto, User } from '../types';
 import { 
     BoxIcon, CloseIcon, PencilIcon, TrashIcon, PhotoIcon, 
     SparklesIcon, TableIcon, CheckCircleIcon, ArrowRightIcon, 
@@ -11,7 +8,7 @@ import {
 import { formatCurrency } from '../utils';
 import { useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
-import { User } from '../types';
+import { useData } from '../contexts/DataContext';
 
 const SIZES = ["1/8 Oficio", "1/4 Oficio", "1/2 Oficio", "Oficio"];
 const PRESENTATIONS = [
@@ -383,8 +380,7 @@ const ProductCard: React.FC<{
 
 const ProductosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const [productos, setProductos] = useState<Producto[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { productos, loading, createProducto, updateProducto, deleteProducto, bulkCreateProductos } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('Todas');
     const [productToEdit, setProductToEdit] = useState<Producto | null>(null);
@@ -392,42 +388,36 @@ const ProductosPage: React.FC = () => {
     const [isMgmtModalOpen, setIsMgmtModalOpen] = useState(false);
     const [viewingProduct, setViewingProduct] = useState<Producto | null>(null);
 
-    const fetchProductos = async () => {
-        setLoading(true);
-        const data = await getProductos();
-        setProductos(data);
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchProductos();
-    }, []);
-
     const categories = useMemo(() => ['Todas', ...new Set(productos.map(p => p.categoria))], [productos]);
     const filteredProductos = useMemo(() => {
         return productos.filter(p => {
             const matchesCategory = categoryFilter === 'Todas' || p.categoria === categoryFilter;
-            const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = (p.nombre || '').toLowerCase().includes(searchTerm.toLowerCase());
             return matchesCategory && matchesSearch;
-        }).sort((a, b) => a.nombre.localeCompare(b.nombre));
+        }).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
     }, [productos, searchTerm, categoryFilter]);
 
     const handleSave = async (product: Producto | Producto[]) => {
-        if (Array.isArray(product)) {
-            await bulkCreateProductos(product);
-            logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Generó ${product.length} productos mediante matriz`, 'Catálogo');
-        } else {
-            if (product.id && !product.id.startsWith('preview')) {
-                await updateProducto(product.id, product);
-                logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_MODIFICADO', `Modificó el producto: ${product.nombre}`, 'Catálogo');
+        try {
+            if (Array.isArray(product)) {
+                await bulkCreateProductos(product);
+                logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Generó ${product.length} productos mediante matriz`, 'Catálogo');
             } else {
-                await createProducto(product);
-                logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Creó un nuevo producto: ${product.nombre}`, 'Catálogo');
+                if (product.id && !product.id.startsWith('preview')) {
+                    await updateProducto(product.id, product);
+                    logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_MODIFICADO', `Modificó el producto: ${product.nombre}`, 'Catálogo');
+                } else {
+                    const { id, ...cleanProduct } = product as any;
+                    await createProducto(cleanProduct);
+                    logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Creó un nuevo producto: ${product.nombre}`, 'Catálogo');
+                }
             }
+            setIsMgmtModalOpen(false);
+            setProductToEdit(null);
+        } catch (error) {
+            console.error("Error saving product:", error);
+            alert("Error al guardar producto. Revisa la consola.");
         }
-        await fetchProductos();
-        setIsMgmtModalOpen(false);
-        setProductToEdit(null);
     };
     
     const handleDeleteConfirm = async () => {
@@ -435,7 +425,6 @@ const ProductosPage: React.FC = () => {
             const name = productToDelete.nombre;
             await deleteProducto(productToDelete.id);
             logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_MODIFICADO', `Eliminó el producto: ${name}`, 'Catálogo');
-            await fetchProductos();
             setProductToDelete(null);
             setViewingProduct(null);
         }

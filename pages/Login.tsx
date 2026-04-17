@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { User } from '../types';
-import { getUsers } from '../services/mockApi';
+import { supabase } from '../services/supabase';
 import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon, Loader2Icon, EyeIcon, EyeSlashIcon, ExclamationTriangleIcon } from '../components/Icons';
 
 interface LoginProps {
@@ -25,23 +25,44 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Delay más largo para sensación de "desbloqueo"
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const users = await getUsers();
-      const validUser = users.find(u => u.nombre.toLowerCase() === key.toLowerCase() && u.estado === 'Activo');
+      // Consulta directa a Supabase (reemplaza getUsers de mockApi)
+      const { data: usersData, error: sbError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('estado', 'Activo');
+
+      if (sbError) throw sbError;
+
+      const validUser = usersData?.find(
+        (u: any) => u.nombre.toLowerCase() === key.toLowerCase()
+      );
 
       if (validUser) {
-        if (validUser.requirePassword) {
-            if (validUser.password === password) {
-                onLoginSuccess(validUser, remember);
-                navigate('/dashboard');
-            } else {
-                setError("Acceso denegado: Signature mismatch");
-                setLoading(false);
-            }
-        } else {
-            onLoginSuccess(validUser, remember);
+        // Mapear a formato User del sistema
+        const user: User = {
+          id: validUser.id,
+          nombre: validUser.nombre,
+          rol: validUser.rol,
+          estado: validUser.estado,
+          avatar: validUser.avatar,
+          requirePassword: validUser.require_password,
+          password: validUser.password,
+          permisos: validUser.permisos || [],
+        };
+
+        if (user.requirePassword) {
+          if (user.password === password) {
+            onLoginSuccess(user, remember);
             navigate('/dashboard');
+          } else {
+            setError("Acceso denegado: Signature mismatch");
+            setLoading(false);
+          }
+        } else {
+          onLoginSuccess(user, remember);
+          navigate('/dashboard');
         }
       } else {
         setError("Identidad no reconocida en el sistema");
@@ -50,6 +71,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         setLoading(false);
       }
     } catch (err) {
+      console.error(err);
       setError("Error de conexión con la base de datos");
       setLoading(false);
     }

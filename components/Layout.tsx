@@ -4,7 +4,7 @@ import { NavLink, useLocation, Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon, CordovaLogo, CloudIcon, CheckCircleIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
-import { getTrabajos } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -54,20 +54,12 @@ const navGroups = [
 
 const Sidebar: React.FC<{ user: User }> = ({ user }) => {
     const location = useLocation();
-    const [counts, setCounts] = useState({ design: 0, retail: 0 });
+    const { trabajos } = useData();
 
-    useEffect(() => {
-        const fetchCount = async () => {
-            const trabajos = await getTrabajos();
-            setCounts({
-                design: trabajos.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)).length,
-                retail: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length
-            });
-        };
-        fetchCount();
-        const interval = setInterval(fetchCount, 20000);
-        return () => clearInterval(interval);
-    }, []);
+    const counts = {
+        design: trabajos.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)).length,
+        retail: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length,
+    };
 
     return (
       <aside className="w-72 bg-slate-950 flex flex-col h-full border-r border-white/5 z-20 transition-all duration-300">

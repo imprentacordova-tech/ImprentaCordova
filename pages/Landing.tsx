@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
     ShieldCheckIcon, UsersIcon, BoxIcon, PhoneIcon, ShoppingCartIcon, 
@@ -9,7 +9,7 @@ import {
     Loader2Icon, WalletIcon, ExclamationTriangleIcon, LayersIcon, WhatsAppIcon,
     PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon
 } from '../components/Icons';
-import { getProductos, createPublicPedido } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
 import { Producto, TrabajoEstado, TrabajoTipo, Regimen } from '../types';
 import { formatCurrency } from '../utils';
@@ -40,24 +40,12 @@ const ServiceCard: React.FC<{ title: string; desc: string; icon: any; color: str
 const LandingPage: React.FC = () => {
     const [cartItems, setCartItems] = useState<{ producto: Producto; cantidad: number }[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [productos, setProductos] = useState<Producto[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { productos, loading } = useData();
     
     // IA Quality Tester State
     const [isTesting, setIsTesting] = useState(false);
     const [testResult, setTestResult] = useState<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Cotizador Rápido State
-    const [calcQty, setCalcQty] = useState(1);
-    const [calcPrice, setCalcPrice] = useState(15);
-
-    useEffect(() => {
-        getProductos().then(data => {
-            setProductos(data);
-            setLoading(false);
-        });
-    }, []);
 
     const handleAddToCart = (p: Producto) => {
         setCartItems(prev => {

@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { getTrabajos, getClientes, registerRetiro } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { 
@@ -9,34 +9,21 @@ import {
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
     ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon
 } from '../components/Icons';
-import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
 const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const navigate = useNavigate();
-    const [allTrabajos, setAllTrabajos] = useState<Trabajo[]>([]);
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { trabajos, clientes, loading, registerRetiro } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
 
-    const fetchData = async () => {
-        setLoading(true);
-        const [t, c] = await Promise.all([getTrabajos(), getClientes()]);
-        setAllTrabajos(t);
-        setClientes(c);
-        setLoading(false);
-    };
-
-    useEffect(() => { fetchData(); }, []);
-
     const filtered = useMemo(() => {
         const lower = searchTerm.toLowerCase();
-        return allTrabajos.filter(t => t.estado === TrabajoEstado.VITRINA).filter(t => {
+        return trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).filter(t => {
             const c = clientes.find(cl => cl.id === t.clienteId);
             return searchTerm === '' || String(t.orden).includes(lower) || c?.nombre.toLowerCase().includes(lower);
         });
-    }, [allTrabajos, clientes, searchTerm]);
+    }, [trabajos, clientes, searchTerm]);
 
     const handleConfirmRetiro = async (pagoFinal: number) => {
         if (!selectedTrabajo) return;

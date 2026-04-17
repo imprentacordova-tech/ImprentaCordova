@@ -197,7 +197,7 @@ Estos archivos son documentos de impresión y DEBEN mantener fondo blanco:
 
 El sistema incluye un módulo de auditoría tipo blockchain que registra TODAS las acciones de los usuarios:
 - **Servicio**: `services/activityLogService.ts`
-- **Almacenamiento**: `localStorage` bajo la clave `imprenta_activity_log`
+- **Almacenamiento**: Nube (Supabase) con redundancia local en `localStorage` (Legado) bajo la clave `imprenta_activity_log`
 - **Auto-purga**: Los registros de más de 3 meses se eliminan automáticamente al iniciar la app
 - **Acciones rastreadas**: Login, Logout, Crear/Editar órdenes, Cambios de estado KDS, Retiros, Cambios de configuración, Gestión de usuarios
 

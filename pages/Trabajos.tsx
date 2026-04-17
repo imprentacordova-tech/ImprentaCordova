@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, TrabajoTipo } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { AddIcon } from '../components/Icons';
@@ -19,23 +19,10 @@ const tipoStyles: { [key in TrabajoTipo]: string } = {
 };
 
 const TrabajosPage: React.FC = () => {
-    const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { trabajos, clientes, loading } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [tipoFilter, setTipoFilter] = useState<TrabajoTipo | 'Todos'>('Todos');
     const [estadoFilter, setEstadoFilter] = useState<TrabajoEstado | 'Todos'>('Todos');
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const [trabajosData, clientesData] = await Promise.all([getTrabajos(), getClientes()]);
-            setTrabajos(trabajosData);
-            setClientes(clientesData);
-            setLoading(false);
-        };
-        fetchData();
-    }, []);
 
     const filteredTrabajos = useMemo(() => {
         const lowercasedSearchTerm = searchTerm.toLowerCase();

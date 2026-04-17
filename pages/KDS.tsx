@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
-import { getTrabajos, getClientes, updateTrabajoStatus, updateTrabajoPhoto } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
 import { DocumentIcon, CloseIcon, CameraIcon, ArrowUpIcon, ArrowDownIcon, ReceiptIcon, ClockIcon, FilterIcon, PhotoIcon, SearchIcon } from '../components/Icons';
@@ -237,8 +237,8 @@ type FilterTag = 'Todos' | 'Urgentes' | 'Diseño' | 'Impresión';
 
 const KDSPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
-    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const { trabajos, clientes, updateTrabajoStatus, updateTrabajoPhoto } = useData();
+    
     const [filterTerm, setFilterTerm] = useState('');
     const [activeTag, setActiveTag] = useState<FilterTag>('Todos');
     const [draggedOverColumn, setDraggedOverColumn] = useState<TrabajoEstado | null>(null);
@@ -247,17 +247,7 @@ const KDSPage: React.FC = () => {
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
     const [cameraTarget, setCameraTarget] = useState<Trabajo | null>(null);
 
-    // Initial Load
-    useEffect(() => {
-        const load = async () => {
-            const [t, c] = await Promise.all([getTrabajos(), getClientes()]);
-            setTrabajos(t);
-            setClientes(c);
-        };
-        load();
-        const interval = setInterval(load, 30000); // Auto-refresh 30s
-        return () => clearInterval(interval);
-    }, []);
+    // Initial Load - Removed manual fetch, handled by useData
 
     // Filter Logic
     const filteredTrabajos = useMemo(() => {
@@ -306,9 +296,6 @@ const KDSPage: React.FC = () => {
         setDraggedOverColumn(null);
         const id = e.dataTransfer.getData("trabajoId");
         if (!id) return;
-
-        // Optimistic Update
-        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: newStatus, actualizadoPor: currentUser.nombre } : t));
         
         // API Call
         await updateTrabajoStatus(id, newStatus, currentUser.nombre);
@@ -319,7 +306,6 @@ const KDSPage: React.FC = () => {
         if (!cameraTarget) return;
         await updateTrabajoPhoto(cameraTarget.id, data);
         logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'FOTO_CAPTURADA', `Referencia capturada para Orden ${cameraTarget.orden}`, 'KDS');
-        setTrabajos(prev => prev.map(t => t.id === cameraTarget.id ? { ...t, fotoOriginalUrl: data } : t));
         setCameraTarget(null);
     };
 

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTrabajos, getClientes } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo } from '../types';
 import { 
     PrinterIcon, ArrowLeftIcon, CordovaLogo, 
@@ -11,33 +11,28 @@ import {
     UsersIcon, CalendarDaysIcon, SparklesIcon
 } from '../components/Icons';
 import { formatDate, formatCurrency } from '../utils';
-import { getConfig, NotaDeVentaConfig } from '../services/configService';
 
 const OrdenProduccionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
+    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [config, setConfig] = useState<NotaDeVentaConfig | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!trabajoId) return;
-            setLoading(true);
-            setConfig(getConfig());
-            const [tData, cData] = await Promise.all([getTrabajos(), getClientes()]);
-            const current = tData.find(t => t.id === trabajoId);
-            if (current) {
-                setTrabajo(current);
-                setCliente(cData.find(c => c.id === current.clienteId) || null);
-            }
-            setLoading(false);
-        };
-        fetchData();
-    }, [trabajoId]);
+        if (!trabajoId || dataLoading) return;
+        const current = trabajos.find(t => t.id === trabajoId);
+        if (current) {
+            setTrabajo(current);
+            setCliente(clientes.find(c => c.id === current.clienteId) || null);
+        }
+    }, [trabajoId, trabajos, clientes, dataLoading]);
 
-    if (loading || !trabajo || !cliente || !config) return (
+    const config = cloudConfig ? {
+        emisorDireccionMatriz: 'Colón y Sucre, Pasaje, El Oro',
+    } : { emisorDireccionMatriz: 'Colón y Sucre, Pasaje' };
+
+    if (dataLoading || !trabajo || !cliente) return (
         <div className="flex h-screen items-center justify-center bg-slate-100">
             <Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" />
         </div>
