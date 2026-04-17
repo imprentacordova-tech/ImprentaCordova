@@ -57,6 +57,7 @@ import {
     BadgeCheck, 
     Send, 
     Info, 
+    Upload,
     FileCheck, 
     CalendarDays, 
     Calendar,
