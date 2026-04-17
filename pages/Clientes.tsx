@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
 import { UI_TEXT } from '../constants';
@@ -76,6 +76,7 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
 
 // ... Rest of component uses useData state
 const ClientesPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: any }>();
     const { clientes, trabajos, loading, addCliente, updateCliente } = useData();
     const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
     const [marketingClient, setMarketingClient] = useState<Cliente | null>(null);
@@ -94,8 +95,10 @@ const ClientesPage: React.FC = () => {
     const handleSaveClient = async (client: Partial<Cliente>) => {
         if (client.id) {
             await updateCliente(client.id, client);
+            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'EDITAR_CLIENTE', `Cliente editado: ${client.nombre}`, 'Clientes');
         } else {
             await addCliente(client as any);
+            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CREAR_CLIENTE', `Nuevo cliente creado: ${client.nombre}`, 'Clientes');
         }
         setSelectedClient(null);
     };

@@ -62,7 +62,7 @@ import {
     CalendarDays, 
     Calendar,
     TrendingDown,
-    Banknotes,
+    Banknote,
     RefreshCcw,
     Scale,
     Wrench, 
@@ -176,7 +176,7 @@ export const BoltIcon = Zap;
 export const IdentificationIcon = CreditCard;
 export const ArrowTrendingUpIcon = TrendingUp;
 export const ArrowTrendingDownIcon = TrendingDown;
-export const BanknotesIcon = Banknotes;
+export const BanknotesIcon = Banknote;
 export const CalendarIcon = Calendar;
 export const MagnifyingGlassIcon = Search;
 export const PlusIcon = Plus;

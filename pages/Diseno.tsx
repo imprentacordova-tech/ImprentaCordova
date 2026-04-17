@@ -47,7 +47,7 @@ const DisenoPage: React.FC = () => {
         const result = await analyzeDesignWithSupervisor(selectedJob.fotoOriginalUrl, selectedJob.subtipo);
         setAiAnalysis(result);
         
-        await logActivity(currentUser.id, currentUser.rol || 'Diseñador', 'ARTE_APROBADO', `Análisis IA completado para orden #${selectedJob.orden}. Diagnóstico: ${result?.estado}`, 'Diseño');
+        logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'ARTE_APROBADO', `Análisis IA completado para orden #${selectedJob.orden}. Diagnóstico: ${result?.estado}`, 'Diseño');
         setAnalyzing(false);
     };
 
@@ -60,7 +60,7 @@ const DisenoPage: React.FC = () => {
 
         try {
             await updateTrabajoStatus(selectedJob.id, TrabajoEstado.PROCESO, currentUser.nombre);
-            await logActivity(currentUser.id, currentUser.rol || 'Diseñador', 'CAMBIO_ESTADO', `Orden #${selectedJob.orden} enviada a producción. validado_por_ia: ${!!aiAnalysis}`, 'Diseño');
+            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'CAMBIO_ESTADO', `Orden #${selectedJob.orden} enviada a producción. validado_por_ia: ${!!aiAnalysis}`, 'Diseño');
             alert(`✅ Orden #${selectedJob.orden} enviada a Taller correctamente.`);
             setSelectedJob(null);
             fetchData();

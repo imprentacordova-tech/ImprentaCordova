@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { getActivityLog, getLogStats, purgeOldEntries, exportLogAsCSV, ActivityEntry, ActivityAction } from '../services/activityLogService';
+import { useOutletContext } from 'react-router-dom';
+import { getActivityLog, getLogStats, purgeOldEntries, exportLogAsCSV, ActivityEntry, ActivityAction, logActivity } from '../services/activityLogService';
 import { 
     ClockIcon, SearchIcon, ArrowDownTrayIcon, TrashIcon, ShieldCheckIcon, 
     Loader2Icon, ExclamationTriangleIcon, CheckCircleIcon, UsersIcon,
@@ -31,6 +31,7 @@ const ACTION_LABELS: Record<ActivityAction, { label: string; color: string }> = 
 };
 
 const RegistroActividadPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: any }>();
     const [log, setLog] = useState<ActivityEntry[]>([]);
     const [stats, setStats] = useState<ReturnType<typeof getLogStats> | null>(null);
     const [loading, setLoading] = useState(true);
@@ -90,6 +91,7 @@ const RegistroActividadPage: React.FC = () => {
 
     const handleExportCSV = () => {
         const csv = exportLogAsCSV();
+        logActivity(currentUser.nombre, currentUser.rol || 'Administrador', 'SYNC_CLOUD', 'Exportación de log a CSV realizada', 'Auditoría');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

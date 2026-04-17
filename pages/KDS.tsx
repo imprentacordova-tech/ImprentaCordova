@@ -312,12 +312,13 @@ const KDSPage: React.FC = () => {
         
         // API Call
         await updateTrabajoStatus(id, newStatus, currentUser.nombre);
-        await logActivity(currentUser.id, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} movida a estado: ${newStatus}`, 'KDS');
+        logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} movida a estado: ${newStatus}`, 'KDS');
     };
 
     const handlePhotoSave = async (data: string) => {
         if (!cameraTarget) return;
         await updateTrabajoPhoto(cameraTarget.id, data);
+        logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'FOTO_CAPTURADA', `Referencia capturada para Orden ${cameraTarget.orden}`, 'KDS');
         setTrabajos(prev => prev.map(t => t.id === cameraTarget.id ? { ...t, fotoOriginalUrl: data } : t));
         setCameraTarget(null);
     };

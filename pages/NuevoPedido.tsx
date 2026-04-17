@@ -9,6 +9,7 @@ import { User, Producto, Regimen, TrabajoEstado, TrabajoTipo } from '../types';
 import { CloseIcon, ShoppingCartIcon, UserPlusIcon, ShieldCheckIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, KeyIcon, SparklesIcon, CordovaLogo, LayersIcon, ArrowRightIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
+import { logActivity } from '../services/activityLogService';
 
 const NuevoPedidoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -44,6 +45,15 @@ const NuevoPedidoPage: React.FC = () => {
         try {
             const newJob = await finalizeOrder(selectedCliente ? undefined : tempClient);
             if (newJob) {
+                // Log the activity
+                logActivity(
+                    currentUser.nombre,
+                    currentUser.rol || 'Operador',
+                    'CREAR_ORDEN',
+                    `Orden #${newJob.id.slice(-6)} para ${selectedCliente?.nombre || tempClient?.nombre}`,
+                    'Nuevo Pedido'
+                );
+
                 // --- ENRUTAMIENTO INTELIGENTE ---
                 if (newJob.tipo === TrabajoTipo.SRI) {
                     // Flujo SRI: Prioridad es la Solicitud de Autorización firmada
