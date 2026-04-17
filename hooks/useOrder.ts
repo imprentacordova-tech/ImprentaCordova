@@ -1,8 +1,8 @@
-
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
 import { useData } from '../contexts/DataContext';
 import { getConfig } from '../services/configService';
+import { logTransaction } from '../services/financialLedgerService';
 
 export interface CartItem {
     producto: Producto;
@@ -14,9 +14,9 @@ export interface CartItem {
 }
 
 export const useOrder = (user: string) => {
-    const { addTrabajo, upsertSriCredential, addProducto } = useData();
+    const { addTrabajo, upsertSriCredential, addProducto, sriCredentials } = useData();
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-    const [tempClient, setTempClient] = useState({ nombre: '', telefono: '', cedula: '' });
+    const [tempClient, setTempClient] = useState({ nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL });
     const [selectedProductos, setSelectedProductos] = useState<Map<string, CartItem>>(new Map());
     const [jobType, setJobType] = useState<TrabajoTipo>(TrabajoTipo.SRI);
     const [titular, setTitular] = useState('');
@@ -37,9 +37,9 @@ export const useOrder = (user: string) => {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const checkSriKey = async () => {
+        const checkSriKey = () => {
             if (selectedCliente) {
-                const creds = await getSriCredentials();
+                const creds = sriCredentials;
                 const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
                 const cred = creds.find(c => c.ruc === ruc);
                 
@@ -56,7 +56,7 @@ export const useOrder = (user: string) => {
             }
         };
         checkSriKey();
-    }, [selectedCliente]);
+    }, [selectedCliente, sriCredentials]);
 
     const orderTotal = useMemo(() => {
         return Array.from(selectedProductos.values()).reduce((total: number, item: CartItem) => {
@@ -76,57 +76,83 @@ export const useOrder = (user: string) => {
     }, []);
 
     const finalizeOrder = async (overrideClientData?: { nombre: string, telefono: string, cedula?: string }) => {
-        const clientToUse = selectedCliente || (overrideClientData?.nombre ? { 
-            id: 'temp-' + Date.now(), 
-            nombre: overrideClientData.nombre.toUpperCase(), 
-            telefono: overrideClientData.telefono,
-            cedula: overrideClientData.cedula || '9999999999999',
-            direccion: 'PEDIDO EXPRESS',
-            regimen: Regimen.GENERAL 
-        } as Cliente : null);
+        try {
+            const clientToUse = selectedCliente || (overrideClientData?.nombre ? { 
+                id: 'temp-' + Date.now(), 
+                nombre: overrideClientData.nombre.toUpperCase(), 
+                telefono: [overrideClientData.telefono],
+                cedula: overrideClientData.cedula || '9999999999999',
+                direccion: 'PEDIDO EXPRESS',
+                regimen: Regimen.GENERAL,
+                creadoEn: new Date().toISOString()
+            } as Cliente : null);
 
-        if (!clientToUse || selectedProductos.size === 0) return null;
-        setIsLoading(true);
-        const items = Array.from(selectedProductos.values()) as CartItem[];
-        
-        // Calcular fecha de entrega real
-        const deliveryDate = new Date();
-        const hoursToAdd = tiempoEntrega === '24h' ? 24 : 48;
-        deliveryDate.setHours(deliveryDate.getHours() + hoursToAdd);
+            if (!clientToUse || selectedProductos.size === 0) {
+                console.warn('FinalizeOrder aborted: No client or empty cart', { clientToUse, productsSize: selectedProductos.size });
+                return null;
+            }
 
-        // MAESTRO UPDATE: Guardar clave SRI en base de datos si se ingresó una nueva
-        if (sriData.claveAcceso && selectedCliente) {
-            const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
-            // Siempre intentamos upsert para mantener la última clave conocida
-            await upsertSriCredential({
-                ruc: ruc,
-                password: sriData.claveAcceso,
-                origen: selectedCliente.nombre
-            });
+            setIsLoading(true);
+            const items = Array.from(selectedProductos.values()) as CartItem[];
+            
+            // Calcular fecha de entrega real
+            const deliveryDate = new Date();
+            const hoursToAdd = tiempoEntrega === '24h' ? 24 : 48;
+            deliveryDate.setHours(deliveryDate.getHours() + hoursToAdd);
+
+            // MAESTRO UPDATE: Guardar clave SRI en base de datos si se ingresó una nueva
+            if (sriData.claveAcceso && selectedCliente) {
+                const ruc = (selectedCliente.ruc || selectedCliente.cedula).replace(/\D/g, '');
+                try {
+                    await upsertSriCredential({
+                        ruc: ruc,
+                        password: sriData.claveAcceso,
+                        origen: selectedCliente.nombre
+                    });
+                } catch (sriError) {
+                    console.error('Failed to sync SRI credentials', sriError);
+                    // No bloqueamos el pedido por error en guardado de clave
+                }
+            }
+
+            const newTrabajo = await addTrabajo({
+                clienteId: clientToUse.id,
+                titular: titular || clientToUse.nombre,
+                tipo: jobType,
+                subtipo: items.map(i => `${i.cantidad}x ${i.producto.nombre}${i.notas ? ` [${i.notas}]` : ''}`).join(', '),
+                cantidad: items.reduce((sum, i) => sum + i.cantidad, 0),
+                total: orderTotal,
+                abono,
+                prioridad,
+                estado: TrabajoEstado.PENDIENTE,
+                fechaEntrega: deliveryDate.toISOString(),
+                tiempoEntregaEstimado: tiempoEntrega,
+                establecimiento: sriData.establecimiento,
+                puntoEmision: sriData.puntoEmision,
+                claveAcceso: sriData.claveAcceso,
+                estadoClave: sriData.claveAcceso ? 'LISTA' : 'PENDIENTE',
+                imprimirClave,
+                actividadSeleccionada
+            }, user);
+
+            // REGISTRO EN LIBRO DIARIO (LEDGER)
+            if (abono > 0) {
+                logTransaction(
+                    'INGRESO',
+                    abono,
+                    `ABONO INICIAL: ${clientToUse.nombre} - ORDEN #${newTrabajo.orden}`,
+                    user,
+                    newTrabajo.id
+                );
+            }
+            
+            setIsLoading(false);
+            return newTrabajo;
+        } catch (error) {
+            setIsLoading(false);
+            console.error('CRITICAL: Error in finalizeOrder', error);
+            throw error; // Re-throw so the UI can handle it via the mutation's onError or catch
         }
-
-        const newTrabajo = await addTrabajo({
-            clienteId: clientToUse.id,
-            titular: titular || clientToUse.nombre,
-            tipo: jobType,
-            subtipo: items.map(i => `${i.cantidad}x ${i.producto.nombre}${i.notas ? ` [${i.notas}]` : ''}`).join(', '),
-            cantidad: items.reduce((sum, i) => sum + i.cantidad, 0),
-            total: orderTotal,
-            abono,
-            prioridad,
-            estado: TrabajoEstado.PENDIENTE,
-            fechaEntrega: deliveryDate.toISOString(),
-            tiempoEntregaEstimado: tiempoEntrega,
-            establecimiento: sriData.establecimiento,
-            puntoEmision: sriData.puntoEmision,
-            claveAcceso: sriData.claveAcceso,
-            estadoClave: sriData.claveAcceso ? 'LISTA' : 'PENDIENTE',
-            imprimirClave,
-            actividadSeleccionada
-        }, user);
-        
-        setIsLoading(false);
-        return newTrabajo;
     };
 
     return {
@@ -171,6 +197,6 @@ export const useOrder = (user: string) => {
             }
         },
         finalizeOrder,
-        resetOrder: () => { setSelectedCliente(null); setTempClient({ nombre: '', telefono: '', cedula: '' }); setSelectedProductos(new Map()); setAbono(0); setJobType(TrabajoTipo.SRI); }
+        resetOrder: () => { setSelectedCliente(null); setTempClient({ nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL }); setSelectedProductos(new Map()); setAbono(0); setJobType(TrabajoTipo.SRI); }
     };
 };

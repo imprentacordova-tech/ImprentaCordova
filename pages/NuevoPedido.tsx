@@ -18,7 +18,7 @@ const NuevoPedidoPage: React.FC = () => {
         selectedCliente, tempClient, cartItems, jobType, abono, titular,
         orderTotal, isLoading, sriData, imprimirClave, actividadSeleccionada,
         setSelectedCliente, setTempClient, setJobType, setAbono, setSriData, setImprimirClave, setActividadSeleccionada, setTitular,
-        addProduct, removeProduct, updateQuantity, saveItemAsProduct, finalizeOrder, resetOrder
+        addProduct, removeProduct, updateQuantity, updateItemNotes, updateItemPrice, saveItemAsProduct, finalizeOrder, resetOrder
     } = useOrder(currentUser.nombre);
 
     const [clientDebt, setClientDebt] = useState(0);
@@ -41,16 +41,21 @@ const NuevoPedidoPage: React.FC = () => {
     }, [selectedCliente, getClientDebt]);
 
     const handleFinalize = async () => {
-        const newJob = await finalizeOrder(selectedCliente ? undefined : tempClient);
-        if (newJob) {
-            // --- ENRUTAMIENTO INTELIGENTE ---
-            if (newJob.tipo === TrabajoTipo.SRI) {
-                // Flujo SRI: Prioridad es la Solicitud de Autorización firmada
-                navigate(`/solicitud-impresion/${newJob.id}`);
-            } else {
-                // Flujo General: Prioridad es el Recibo/Comprobante para el cliente
-                navigate(`/recibo-abono/${newJob.id}`);
+        try {
+            const newJob = await finalizeOrder(selectedCliente ? undefined : tempClient);
+            if (newJob) {
+                // --- ENRUTAMIENTO INTELIGENTE ---
+                if (newJob.tipo === TrabajoTipo.SRI) {
+                    // Flujo SRI: Prioridad es la Solicitud de Autorización firmada
+                    navigate(`/solicitud-impresion/${newJob.id}`);
+                } else {
+                    // Flujo General: Prioridad es el Recibo/Comprobante para el cliente
+                    navigate(`/recibo-abono/${newJob.id}`);
+                }
             }
+        } catch (error: any) {
+            console.error('Finalize order failed:', error);
+            alert(`Error al guardar el pedido: ${error.message || 'Error desconocido'}`);
         }
     };
 
@@ -152,7 +157,7 @@ const NuevoPedidoPage: React.FC = () => {
                             orderTotal={orderTotal}
                             client={selectedCliente}
                             tempClient={tempClient}
-                            setTempClient={setTempClient}
+                            setTempClient={(data: any) => setTempClient({ ...tempClient, ...data })}
                             abono={abono}
                             setAbono={setAbono}
                             onUpdateQuantity={updateQuantity}

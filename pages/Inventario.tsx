@@ -100,7 +100,7 @@ const InventarioPage: React.FC = () => {
     [inventario, searchTerm]);
 
     const handleSaveItem = async (item: Partial<InventoryItem>) => {
-        if (item.id) await updateInventarioItem(item.id, item);
+        if (item.id) await updateInventoryItem(item.id, item);
         else await addInventoryItem(item as any);
         setItemToEdit(null);
     };

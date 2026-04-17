@@ -34,6 +34,8 @@ const navGroups = [
     items: [
       { path: "/clientes", label: "Clientes", icon: ClientsIcon },
       { path: "/trabajos", label: "Historial", icon: DocumentIcon },
+      { path: "/cuentas", label: "Cuentas", icon: FinanceIcon },
+      { path: "/proveedores", label: "Proveedores", icon: UsersIcon },
       { path: "/productos", label: "Catálogo", icon: BoxIcon },
       { path: "/inventario", label: "Inventario", icon: SolidBoxIcon },
     ]
@@ -44,7 +46,7 @@ const navGroups = [
     items: [
       { path: "/finanzas", label: "Finanzas IA", icon: FinanceIcon },
       { path: "/usuarios", label: "Usuarios", icon: UsersIcon },
-      { path: "/registro", label: "Registro", icon: DocumentIcon },
+      { path: "/registro", label: "Auditoría", icon: DocumentIcon },
       { path: "/configuracion", label: "Ajustes", icon: Cog8ToothIcon },
     ]
   },

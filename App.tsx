@@ -19,6 +19,7 @@ import ProductosPage from './pages/Productos';
 import InventarioPage from './pages/Inventario';
 import GestionUsuariosPage from './pages/GestionUsuarios';
 import RetirosPage from './pages/Retiros';
+import ProveedoresPage from './pages/Proveedores';
 import DisenoPage from './pages/Diseno';
 import TrackingPage from './pages/Tracking';
 import OrdenProduccionPage from './pages/OrdenProduccion';
@@ -28,6 +29,7 @@ import ReciboAbonoPage from './pages/ReciboAbono';
 import TrabajoDetallePage from './pages/TrabajoDetalle';
 import TrabajosPage from './pages/Trabajos';
 import RegistroActividadPage from './pages/RegistroActividad';
+import CuentasPage from './pages/Cuentas';
 
 /**
  * ProtectedRoute component to handle authenticated access.
@@ -98,8 +100,10 @@ const App: React.FC = () => {
             <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />
             <Route path="/productos" element={<ProductosPage />} />
             <Route path="/inventario" element={<InventarioPage />} />
+            <Route path="/proveedores" element={<ProveedoresPage />} />
             <Route path="/finanzas" element={<FinanzasPage />} />
             <Route path="/usuarios" element={<GestionUsuariosPage />} />
+            <Route path="/cuentas" element={<CuentasPage />} />
             <Route path="/registro" element={<RegistroActividadPage />} />
             <Route path="/configuracion" element={<ConfiguracionPage />} />
           </Route>

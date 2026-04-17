@@ -392,10 +392,14 @@ export const createPublicPedido = async (clientData: { nombre: string, telefono:
 };
 
 export const forcePushAllToCloud = async () => {
-    const config = getConfig();
-    if (!config.googleScriptUrl || !config.googleScriptUrl.includes('macros')) return;
     try {
-        window.dispatchEvent(new CustomEvent('cloud-sync-active'));
+        const config = getConfig();
+        if (!config.googleScriptUrl || !config.googleScriptUrl.includes('macros')) return;
+
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cloud-sync-active'));
+        }
+
         const dataToExport = {
             trabajos: JSON.parse(localStorage.getItem(DB_MAP.trabajos) || '[]'),
             clientes: JSON.parse(localStorage.getItem(DB_MAP.clientes) || '[]'),
@@ -405,14 +409,28 @@ export const forcePushAllToCloud = async () => {
             proveedores: JSON.parse(localStorage.getItem(DB_MAP.proveedores) || '[]'),
             tareas: JSON.parse(localStorage.getItem(DB_MAP.tareas) || '[]')
         };
-        await fetch(config.googleScriptUrl, {
+
+        const response = await fetch(config.googleScriptUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'FULL_BACKUP', payload: dataToExport, timestamp: new Date().toISOString() })
+            body: JSON.stringify({ 
+                action: 'FULL_BACKUP', 
+                payload: dataToExport, 
+                timestamp: new Date().toISOString(),
+                userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server'
+            })
         });
-        setTimeout(() => window.dispatchEvent(new CustomEvent('cloud-sync-idle')), 800);
-    } catch (e) { window.dispatchEvent(new CustomEvent('cloud-sync-idle')); }
+
+        if (typeof window !== 'undefined') {
+            setTimeout(() => window.dispatchEvent(new CustomEvent('cloud-sync-idle')), 800);
+        }
+    } catch (e) { 
+        console.error('CRITICAL SYNC ERROR:', e);
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cloud-sync-idle')); 
+        }
+    }
 };
 export const hydrateFromCloud = async (): Promise<boolean> => {
     const config = getConfig();

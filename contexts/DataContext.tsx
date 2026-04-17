@@ -217,7 +217,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const getClientDebt = (clienteId: string) => {
         return trabajos
-            .filter(t => t.cliente_id === clienteId && t.estado !== 'Entregado')
+            .filter(t => t.clienteId === clienteId && t.estado !== 'Entregado')
             .reduce((sum, t) => sum + (t.saldo || 0), 0);
     };
 

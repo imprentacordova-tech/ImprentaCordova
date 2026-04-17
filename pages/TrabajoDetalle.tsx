@@ -38,7 +38,7 @@ const TrabajoDetallePage: React.FC = () => {
     const handleStatusChange = async (newStatus: TrabajoEstado) => {
         if (!trabajo) return;
         const updated = await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
-        await logActivity(currentUser.id, 'ACTUALIZAR_ESTADO', 'TrabajoDetalle', trabajo.id, `Estado cambiado manualmente a: ${newStatus}`);
+        await logActivity(currentUser.id, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Estado cambiado manualmente a: ${newStatus}`, 'TrabajoDetalle');
         setTrabajo(updated);
     };
 

@@ -507,14 +507,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
                 initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
                 initialMode={createMode}
             />
-            <CreateClientModal 
-                isOpen={isCreateModalOpen} 
-                onClose={() => setIsCreateModalOpen(false)} 
-                onClientCreated={(c) => { setIsCreateModalOpen(false); onSelectClient(c); }}
-                initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
-                initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
-                initialMode={createMode}
-            />
         </div>
     );
 };

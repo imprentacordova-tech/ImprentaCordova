@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { Cliente } from '../../types';
+import { Cliente, Regimen } from '../../types';
 import { formatCurrency } from '../../utils';
 import { 
     TrashIcon, CheckCircleIcon, Loader2Icon, WalletIcon, 
     ShieldCheckIcon, KeyIcon, ArrowRightIcon, 
     ClockIcon, SparklesIcon, UserPlusIcon, CheckBadgeIcon
 } from '../Icons';
-import { CartItem } from '../../hooks/useOrder';
+import { type CartItem } from '../../hooks/useOrder';
 
 interface OrderSummaryProps {
     isOpen: boolean;
@@ -15,8 +15,8 @@ interface OrderSummaryProps {
     cartItems: [string, CartItem][];
     orderTotal: number;
     client: Cliente | null;
-    tempClient?: { nombre: string, telefono: string };
-    setTempClient?: (data: { nombre: string, telefono: string }) => void;
+    tempClient?: { nombre: string, telefono: string, cedula?: string, regimen?: Regimen };
+    setTempClient?: (data: { nombre: string, telefono: string, cedula?: string, regimen?: Regimen }) => void;
     abono: number;
     setAbono: (val: number) => void;
     prioridad?: 'Normal' | 'Urgente';
@@ -160,7 +160,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                             type="text" 
                                             placeholder="NOMBRE DEL CLIENTE..."
                                             value={tempClient?.nombre || ''}
-                                            onChange={(e) => setTempClient?.({ ...tempClient!, nombre: e.target.value.toUpperCase() })}
+                                            onChange={(e) => setTempClient?.({ 
+                                                nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
+                                                ...tempClient, 
+                                                nombre: e.target.value.toUpperCase() 
+                                            })}
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white placeholder-slate-600 font-black tracking-wider focus:border-brand-blue/50 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none"
                                         />
                                     </div>
@@ -169,7 +173,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                             type="tel" 
                                             placeholder="WHATSAPP / CELULAR..."
                                             value={tempClient?.telefono || ''}
-                                            onChange={(e) => setTempClient?.({ ...tempClient!, telefono: e.target.value })}
+                                            onChange={(e) => setTempClient?.({ 
+                                                nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
+                                                ...tempClient, 
+                                                telefono: e.target.value 
+                                            })}
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white placeholder-slate-600 font-black tracking-wider focus:border-brand-blue/50 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none font-mono"
                                         />
                                     </div>
@@ -178,7 +186,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                             type="text" 
                                             placeholder="CÉDULA O RUC..."
                                             value={tempClient?.cedula || ''}
-                                            onChange={(e) => setTempClient?.({ ...tempClient!, cedula: e.target.value })}
+                                            onChange={(e) => setTempClient?.({ 
+                                                nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
+                                                ...tempClient, 
+                                                cedula: e.target.value 
+                                            })}
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white placeholder-slate-600 font-black tracking-wider focus:border-brand-blue/50 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none font-mono"
                                         />
                                     </div>

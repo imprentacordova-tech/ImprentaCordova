@@ -21,4 +21,14 @@ const Footer: React.FC = () => {
               Más de una década brindando soluciones de impresión de calidad en Pasaje. 
               Tecnología Roland para gigantografías y gestión autorizada del SRI.
             </p>
-            <div className="inline-block bg-slate-900 px-3 py-1
+            <div className="inline-block bg-slate-900 px-3 py-1 rounded-full text-xs font-semibold text-slate-300">
+              Servicio Autorizado
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

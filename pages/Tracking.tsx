@@ -11,6 +11,7 @@ import {
     SparklesIcon, MicIcon, XIcon, InfoIcon, ArrowDownTrayIcon, WalletIcon
 } from '../components/Icons';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
+import { supabase } from '../services/supabase';
 
 // --- UTILS PARA LIVE API ---
 function encode(bytes: Uint8Array) {
@@ -237,7 +238,7 @@ const TrackingPage: React.FC = () => {
                 config: {
                     responseModalities: [Modality.AUDIO],
                     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
-                    systemInstruction: `Eres el asistente de voz de Imprenta Córdova Pasaje. Responde de forma breve y amable. Los pedidos actuales del cliente son: ${jobContext}. El cliente está en Pasaje, El Oro. Habla español de Ecuador.`
+                    systemInstruction: { parts: [{ text: `Eres el asistente de voz de Imprenta Córdova Pasaje. Responde de forma breve y amable. Los pedidos actuales del cliente son: ${jobContext}. El cliente está en Pasaje, El Oro. Habla español de Ecuador.` }] }
                 }
             });
 

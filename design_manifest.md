@@ -16,6 +16,7 @@ Este documento establece las reglas fundamentales para el desarrollo de la inter
 > 4. **NUNCA** introducir `rounded-full` en contenedores/cards grandes. Usar `rounded-2xl` o `rounded-[2.5rem]`.
 > 5. **NUNCA** eliminar ni simplificar el hook `useOrder.ts` ni la captura de `tempClient` (cedula, telefono, nombre).
 > 6. **NUNCA** modificar los archivos de documentos de impresión (NotaDeVenta, ReciboAbono, OrdenProduccion, SolicitudImpresion) — esos SÍ son claros para imprimir en papel.
+> 7. **NUNCA** proponer el desarrollo de módulos de "Libros" o "Editoriales". La imprenta NO fabrica libros.
 
 ---
 
@@ -133,6 +134,22 @@ className="p-6 bg-white/5 flex justify-end border-t border-white/5"
 - **Enrutamiento Post-Orden**: 
   - `TrabajoTipo.SRI` → `/solicitud-impresion`
   - `TrabajoTipo.GENERAL` → `/recibo-abono`
+
+---
+
+## 7. Contexto de Negocio (Métricas Críticas)
+
+> [!IMPORTANT]
+> **Alto Tráfico**: La imprenta recibe un promedio de **50 clientes diarios**. Cualquier funcionalidad nueva debe pasar la prueba del "clic mínimo". Si toma más de 30 segundos registrar una orden, el sistema ha fallado.
+
+### Mix de Productos (Pareto)
+- **30% Notas de Venta (SRI)**: El corazón administrativo. Requiere precisión legal (Régimen vs Documento) y descuento de inventario automático.
+- **70% Imprenta Comercial**: Tarjetas de presentación, volantes, folletos, sobres. **NO SE HACEN LIBROS.**
+
+### El Ciclo de Renovación (50% del Negocio)
+La mitad de los clientes diarios son recurrentes que vienen a **renovar su talonario**. 
+- **CorelDRAW**: El diseño "maestro" vive en archivos de Corel de años anteriores. 
+- **Función de la App**: La app NO es para diseñar. Su función es permitir encontrar rápidamente el pedido anterior (Historial) para clonar los datos y autorizar la nueva impresión.
 
 ---
 

@@ -7,7 +7,7 @@ import { getConfig } from '../../services/configService';
 import { 
     SearchIcon, ShieldCheckIcon, AddIcon, 
     RulerIcon, SparklesIcon, LayersIcon, 
-    BoxIcon, MonitorIcon, ExclamationTriangleIcon
+    BoxIcon, MonitorIcon, ExclamationTriangleIcon, CordovaLogo
 } from '../Icons';
 
 interface ProductGridProps {
@@ -74,7 +74,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                 map.set(baseName, {
                     name: baseName,
                     categoria: p.categoria || 'General',
-                    esSRI: p.tipo_trabajo === TrabajoTipo.SRI,
+                    esSRI: !!p.esSRI,
                     sizes: new Set(),
                     items: []
                 });
@@ -142,14 +142,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                         <button onClick={() => onSetJobType(TrabajoTipo.SRI)} className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.SRI ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}>Talonarios SRI</button>
                         <button onClick={() => onSetJobType(TrabajoTipo.GENERAL)} className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.GENERAL ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' : 'text-slate-500 hover:text-white'}`}>Papelería General</button>
                     </div>
-                    {jobType === TrabajoTipo.SRI && clientRegimen && (
-                        <div className={`px-4 py-2 rounded-xl border flex items-center gap-3 ${clientRegimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-brand-blue/10 border-brand-blue/20 text-brand-blue'}`}>
-                            <ShieldCheckIcon className="w-4 h-4 shadow-sm"/>
-                            <span className="text-[9px] font-black uppercase tracking-[0.15em]">
-                                MODO: {clientRegimen === Regimen.NEGOCIO_POPULAR ? 'NOTAS DE VENTA' : 'FACTURAS CONTINGENCIA'}
-                            </span>
-                        </div>
-                    )}
                 </div>
                 <div className="relative flex-grow max-w-sm">
                     <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
@@ -161,7 +153,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                 <div className="w-full xl:w-[320px] overflow-y-auto space-y-2.5 pr-3 custom-scrollbar">
                     {/* BOTÓN ITEM LIBRE */}
                     <button 
-                        onClick={() => onAddProduct({ id: `custom-${Date.now()}`, nombre: 'Ítem Personalizado', categoria: 'Varios', precio: 1.00, descripcion: 'Especifique en notas' })}
+                        onClick={() => onProductAction('add', { id: `custom-${Date.now()}`, nombre: 'Ítem Personalizado', categoria: 'Varios', precio: 1.00, descripcion: 'Especifique en notas', esSRI: jobType === TrabajoTipo.SRI })}
                         className="w-full text-left p-5 rounded-[1.8rem] border transition-all relative group overflow-hidden bg-brand-dark/40 border-dashed border-liquid-gold/50 hover:border-liquid-gold shadow-[0_0_15px_-3px_rgba(212,175,55,0.1)]"
                     >
                         <div className="flex items-center gap-4 relative z-10">

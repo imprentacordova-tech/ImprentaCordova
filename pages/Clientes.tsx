@@ -108,7 +108,7 @@ const ClientesPage: React.FC = () => {
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Directorio</p>
                     <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">Clientes</h1>
                 </div>
-                <button onClick={() => setSelectedClient({ nombre: '', email: '', telefono: [''], ruc: '', regimen: Regimen.GENERAL })} className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.2em] overflow-hidden group/btn">
+                <button onClick={() => setSelectedClient({ id: '', nombre: '', email: '', telefono: [''], ruc: '', cedula: '', regimen: Regimen.GENERAL, creadoEn: new Date().toISOString() })} className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.2em] overflow-hidden group/btn">
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out"></div>
                     <span className="relative z-10 flex items-center gap-2"><UserPlusIcon className="w-4 h-4"/> Nuevo Cliente</span>
                 </button>

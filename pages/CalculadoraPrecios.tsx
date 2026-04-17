@@ -351,7 +351,8 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     }, [paperId, finalW, finalH, quantity, colorsFront, colorsBack, parts, costs, hasDesign, requiresSRI, cantidadHojasBlock]);
 
     return (
-        <div className="grid grid-col            {/* Input Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Input Panel */}
             <div className="lg:col-span-4 space-y-8">
                 <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
@@ -469,9 +470,6 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             </label>
                         </div>
                     </div>
-                </div>
-            </div>
-</div>
                 </div>
             </div>
 
@@ -787,8 +785,9 @@ const CalculadoraPreciosPage: React.FC = () => {
 
                 {/* Content Area */}
                 {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
+                {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
                 
-                        {/* Configuration Panel */}
+                {/* Configuration Panel */}
                 {mode === 'CONFIG' && (
                     <div className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] shadow-3xl max-w-5xl mx-auto animate-fade-in backdrop-blur-xl">
                         <div className="flex items-center gap-6 mb-12 border-b border-white/5 pb-8">
@@ -825,6 +824,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                                 <SaveIcon className="w-5 h-5 absolute right-8 opacity-0 group-hover:opacity-100 transition-all"/>
                             </button>
                         </div>
+                    </div>
                 )}
             </div>
 
