@@ -22,6 +22,9 @@ import {
     Loader2Icon
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
+import { useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
+import { User } from '../types';
 
 // --- MODAL DE REGISTRO MANUAL ---
 const TransactionFormModal: React.FC<{
@@ -75,6 +78,7 @@ const TYPE_COLORS: Record<TransactionType, { label: string; color: string; icon:
 };
 
 const CuentasPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const [ledger, setLedger] = useState<FinancialEntry[]>([]);
     const [balance, setBalance] = useState(getLedgerBalance());
     const [loading, setLoading] = useState(true);
@@ -119,7 +123,14 @@ const CuentasPage: React.FC = () => {
     const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
     const handleAddTransaction = (tipo: TransactionType, monto: number, detalle: string) => {
-        logTransaction(tipo, monto, detalle, 'PEDRO'); // Asumiendo 'PEDRO' por ahora
+        logTransaction(tipo, monto, detalle, currentUser.nombre);
+        logActivity(
+            currentUser.nombre, 
+            currentUser.rol, 
+            'FINANZAS_MODIFICADA', 
+            `Registró un ${tipo.toLowerCase()} manual por ${formatCurrency(monto)}: ${detalle}`, 
+            'Finanzas'
+        );
         refreshData();
     };
 
@@ -136,6 +147,7 @@ const CuentasPage: React.FC = () => {
         a.href = url;
         a.download = `libro_diario_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
+        logActivity(currentUser.nombre, currentUser.rol, 'FINANZAS_MODIFICADA', 'Exportó el libro diario inmutable a CSV', 'Finanzas');
     };
 
     return (

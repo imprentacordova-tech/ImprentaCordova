@@ -3,6 +3,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getConfig, saveConfig, NotaDeVentaConfig } from '../services/configService';
 import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, hydrateFromCloud, forcePushAllToCloud, testCloudConnection } from '../services/mockApi';
 import { useData } from '../contexts/DataContext';
+import { useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
+import { User } from '../types';
 import { 
     Cog8ToothIcon, CheckCircleIcon, ShieldCheckIcon, AddIcon, TrashIcon, 
     ArrowDownTrayIcon, KeyIcon, SearchIcon, Loader2Icon, GlobeAltIcon, 
@@ -27,6 +30,7 @@ const InputField: React.FC<{label: string, name: string, value: any, onChange: (
 );
 
 const ConfiguracionPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const { seedCatalog, syncing } = useData();
     const [config, setConfig] = useState<NotaDeVentaConfig>(getConfig());
     const [showSuccess, setShowSuccess] = useState(false);
@@ -48,6 +52,7 @@ const ConfiguracionPage: React.FC = () => {
     const handleSaveGeneral = (e: React.FormEvent) => {
         e.preventDefault();
         saveConfig(config);
+        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Actualizó la configuración general del sistema', 'Sistema');
         setShowSuccess(true);
         if (config.googleScriptUrl.includes('macros')) setCloudStatus('CONNECTED');
         setTimeout(() => setShowSuccess(false), 3000);
@@ -84,6 +89,7 @@ const ConfiguracionPage: React.FC = () => {
         if (!window.confirm("¿Deseas subir todos los datos locales a Google Sheets ahora mismo?")) return;
         setIsPushing(true);
         await forcePushAllToCloud();
+        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Ejecutó respaldo manual a la nube (Push All)', 'Sistema');
         setIsPushing(false);
         alert("✅ Respaldo enviado a la nube correctamente.");
     };
@@ -210,6 +216,7 @@ const ConfiguracionPage: React.FC = () => {
                                 if (window.confirm("¿Deseas cargar el catálogo institucional de 100 productos?")) {
                                     try {
                                         await seedCatalog();
+                                        logActivity(currentUser.nombre, currentUser.rol, 'CONFIG_ACTUALIZADA', 'Cargó el catálogo institucional (100 productos)', 'Sistema');
                                         alert("✅ Catálogo Maestro Cargado Correctamente.");
                                     } catch (e) {
                                         alert("❌ Error en la base de datos.");

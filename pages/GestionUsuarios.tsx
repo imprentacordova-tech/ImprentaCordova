@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getUsers, updateUser, createUser } from '../services/mockApi';
 import { User } from '../types';
+import { useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
 import { UsersIcon, UserPlusIcon, ExclamationTriangleIcon, PencilIcon, SearchIcon, CloseIcon, ArrowUpIcon, ArrowDownIcon, ShieldCheckIcon } from '../components/Icons';
 import { formatDate } from '../utils';
 
@@ -174,6 +176,7 @@ const SortableHeader: React.FC<{
 
 
 const GestionUsuariosPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -222,8 +225,10 @@ const GestionUsuariosPage: React.FC = () => {
     const handleSaveUser = async (user: Partial<User>) => {
         if (user.id) {
             await updateUser(user.id, user);
+            logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `Modificó al usuario ${user.nombre} (${user.rol})`, 'Seguridad');
         } else {
             await createUser(user as any);
+            logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_CREADO', `Creó nuevo usuario: ${user.nombre} con rol ${user.rol}`, 'Seguridad');
         }
         setEditingUser(null);
         await fetchUsers();
@@ -233,6 +238,15 @@ const GestionUsuariosPage: React.FC = () => {
         if (!userToToggle) return;
         const newStatus = userToToggle.estado === 'Activo' ? 'Inactivo' : 'Activo';
         await updateUser(userToToggle.id, { estado: newStatus });
+        
+        logActivity(
+            currentUser.nombre, 
+            currentUser.rol, 
+            'USUARIO_MODIFICADO', 
+            `${newStatus === 'Activo' ? 'Activó' : 'Desactivó'} al usuario ${userToToggle.nombre}`, 
+            'Seguridad'
+        );
+
         setUserToToggle(null);
         await fetchUsers();
     };

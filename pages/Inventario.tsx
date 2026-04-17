@@ -3,8 +3,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 // FIX: Added missing Loader2Icon to imports
 import { BoxIcon, InventoryIcon, ExclamationTriangleIcon, AddIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon, SearchIcon, TrashIcon, CloseIcon, ClockIcon, LayersIcon, Loader2Icon } from '../components/Icons';
 import { formatCurrency } from '../utils';
-import { InventoryItem } from '../types';
+import { InventoryItem, User } from '../types';
 import { useData } from '../contexts/DataContext';
+import { useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
 
 type SortKey = keyof InventoryItem | 'valorTotal';
 
@@ -84,6 +86,7 @@ const ItemFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (i
 };
 
 const InventarioPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const { inventario, loading, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [itemToEdit, setItemToEdit] = useState<Partial<InventoryItem> | null>(null);
@@ -100,8 +103,13 @@ const InventarioPage: React.FC = () => {
     [inventario, searchTerm]);
 
     const handleSaveItem = async (item: Partial<InventoryItem>) => {
-        if (item.id) await updateInventoryItem(item.id, item);
-        else await addInventoryItem(item as any);
+        if (item.id) {
+            await updateInventoryItem(item.id, item);
+            logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', `Ajustó stock/detalles de: ${item.item}`, 'Inventario');
+        } else {
+            await addInventoryItem(item as any);
+            logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', `Agregó nuevo material al inventario: ${item.item}`, 'Inventario');
+        }
         setItemToEdit(null);
     };
 

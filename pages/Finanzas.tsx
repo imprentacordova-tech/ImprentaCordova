@@ -2,12 +2,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line, AreaChart, Area } from 'recharts';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, Cliente, TrabajoEstado, DailySales, FinancialProjection } from '../types';
+import { Trabajo, Cliente, TrabajoEstado, DailySales, FinancialProjection, User } from '../types';
 import { formatCurrency } from '../utils';
+import { useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
 import { DollarIcon, FinanceIcon, ClockIcon, ArrowDownTrayIcon, BoxIcon, SolidFinanceIcon, SparklesIcon, Loader2Icon } from '../components/Icons';
 import { generateFinancialProjection } from '../services/geminiService';
 
 const FinanzasPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const { trabajos, clientes, loading } = useData();
     const [analyzing, setAnalyzing] = useState(false);
     const [aiProjection, setAiProjection] = useState<FinancialProjection | null>(null);
@@ -32,6 +35,7 @@ const FinanzasPage: React.FC = () => {
         const history = historicalSales.slice(-60);
         const projection = await generateFinancialProjection(history);
         setAiProjection(projection);
+        logActivity(currentUser.nombre, currentUser.rol, 'FINANZAS_MODIFICADA', 'Ejecutó análisis financiero con Inteligencia Atelier (Gemini AI)', 'Finanzas');
         setAnalyzing(false);
     };
 

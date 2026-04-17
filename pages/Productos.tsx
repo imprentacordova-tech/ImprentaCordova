@@ -9,6 +9,9 @@ import {
     LayersIcon, FileStackIcon, ShieldCheckIcon, RulerIcon 
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
+import { useOutletContext } from 'react-router-dom';
+import { logActivity } from '../services/activityLogService';
+import { User } from '../types';
 
 const SIZES = ["1/8 Oficio", "1/4 Oficio", "1/2 Oficio", "Oficio"];
 const PRESENTATIONS = [
@@ -379,6 +382,7 @@ const ProductCard: React.FC<{
 };
 
 const ProductosPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: User }>();
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -411,11 +415,14 @@ const ProductosPage: React.FC = () => {
     const handleSave = async (product: Producto | Producto[]) => {
         if (Array.isArray(product)) {
             await bulkCreateProductos(product);
+            logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Generó ${product.length} productos mediante matriz`, 'Catálogo');
         } else {
             if (product.id && !product.id.startsWith('preview')) {
                 await updateProducto(product.id, product);
+                logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_MODIFICADO', `Modificó el producto: ${product.nombre}`, 'Catálogo');
             } else {
                 await createProducto(product);
+                logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Creó un nuevo producto: ${product.nombre}`, 'Catálogo');
             }
         }
         await fetchProductos();
@@ -425,7 +432,9 @@ const ProductosPage: React.FC = () => {
     
     const handleDeleteConfirm = async () => {
         if (productToDelete) {
+            const name = productToDelete.nombre;
             await deleteProducto(productToDelete.id);
+            logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_MODIFICADO', `Eliminó el producto: ${name}`, 'Catálogo');
             await fetchProductos();
             setProductToDelete(null);
             setViewingProduct(null);
