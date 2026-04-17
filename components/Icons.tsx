@@ -57,9 +57,13 @@ import {
     BadgeCheck, 
     Send, 
     Info, 
-    Upload, 
     FileCheck, 
     CalendarDays, 
+    Calendar,
+    TrendingDown,
+    Banknotes,
+    RefreshCcw,
+    Scale,
     Wrench, 
     Ruler, 
     Table, 
@@ -169,6 +173,14 @@ export const CheckIcon = Check;
 export const QrCodeIcon = QrCode;
 export const BoltIcon = Zap;
 export const IdentificationIcon = CreditCard;
+export const ArrowTrendingUpIcon = TrendingUp;
+export const ArrowTrendingDownIcon = TrendingDown;
+export const BanknotesIcon = Banknotes;
+export const CalendarIcon = Calendar;
+export const MagnifyingGlassIcon = Search;
+export const PlusIcon = Plus;
+export const ArrowPathIcon = RefreshCcw;
+export const ScaleIcon = Scale;
 
 export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles };
 

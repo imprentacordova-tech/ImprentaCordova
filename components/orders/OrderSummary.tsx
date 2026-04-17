@@ -161,7 +161,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                             placeholder="NOMBRE DEL CLIENTE..."
                                             value={tempClient?.nombre || ''}
                                             onChange={(e) => setTempClient?.({ 
-                                                nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
+                                                telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
                                                 ...tempClient, 
                                                 nombre: e.target.value.toUpperCase() 
                                             })}
@@ -174,7 +174,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                             placeholder="WHATSAPP / CELULAR..."
                                             value={tempClient?.telefono || ''}
                                             onChange={(e) => setTempClient?.({ 
-                                                nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
+                                                nombre: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
                                                 ...tempClient, 
                                                 telefono: e.target.value 
                                             })}
@@ -187,7 +187,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                             placeholder="CÉDULA O RUC..."
                                             value={tempClient?.cedula || ''}
                                             onChange={(e) => setTempClient?.({ 
-                                                nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL, // Default baseline
+                                                nombre: '', telefono: '', regimen: Regimen.GENERAL, // Default baseline
                                                 ...tempClient, 
                                                 cedula: e.target.value 
                                             })}
