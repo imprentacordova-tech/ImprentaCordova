@@ -20,7 +20,8 @@ export default {
         'ink-black': '#1b1d0e', // on_surface variant
       },
       fontFamily: {
-        'display': ['Manrope', 'Outfit', 'Playfair Display', 'serif'],
+        'display': ['Manrope', 'Outfit', 'sans-serif'],
+        'editorial': ['Playfair Display', 'serif'],
         'sans': ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
