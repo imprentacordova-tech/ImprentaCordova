@@ -27,9 +27,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Consulta directa a Supabase (reemplaza getUsers de mockApi)
+      // Consulta directa a Supabase
       const { data: usersData, error: sbError } = await supabase
-        .from('usuarios')
+        .from('users')
         .select('*')
         .eq('estado', 'Activo');
 

@@ -3,7 +3,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Producto, TrabajoTipo, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { formatCurrency } from '../../utils';
-import { getConfig } from '../../services/configService';
 import { 
     SearchIcon, ShieldCheckIcon, AddIcon, 
     RulerIcon, SparklesIcon, LayersIcon, 
@@ -19,14 +18,14 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCart, jobType, clientRegimen, onSetJobType }) => {
-    const { productos } = useData();
+    const { productos, config } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBaseName, setSelectedBaseName] = useState<string | null>(null);
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedQty, setSelectedQty] = useState<string | null>(null);
     
     const [perforar, setPerforar] = useState(false);
-    const config = getConfig();
+    // config is now provided by useData()
 
     useEffect(() => {
         setSelectedSize(null);
@@ -131,7 +130,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
 
     const currentPrice = useMemo(() => {
         if (!selectedProductObject) return 0;
-        return selectedProductObject.precio + (perforar ? config.costoPerforado : 0);
+        return selectedProductObject.precio + (perforar ? (config?.costoPerforado || 0.5) : 0);
     }, [selectedProductObject, perforar]);
 
     return (
@@ -257,7 +256,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                                     if (!selectedProductObject) return;
                                                     onProductAction('add', { 
                                                         ...selectedProductObject, 
-                                                        surcharge: perforar ? config.costoPerforado : 0, 
+                                                        surcharge: perforar ? (config?.costoPerforado || 0.5) : 0, 
                                                         surchargeLabel: perforar ? "+ Perforado" : "" 
                                                     });
                                                     setSelectedQty(null);

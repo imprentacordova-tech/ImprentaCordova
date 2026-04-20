@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { getConfig, saveConfig, NotaDeVentaConfig } from '../services/configService';
-import { getSriCredentials, addSriCredential, bulkAddSriCredentials, deleteSriCredential, hydrateFromCloud, forcePushAllToCloud, testCloudConnection } from '../services/mockApi';
 import { useData } from '../contexts/DataContext';
 import { useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
@@ -330,6 +328,7 @@ const ConfiguracionPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+        </div>
     );
 };
 

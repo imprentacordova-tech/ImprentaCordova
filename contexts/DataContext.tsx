@@ -40,6 +40,14 @@ interface DataContextType {
     createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
     getClientDebt: (clienteId: string) => number;
     syncFromLocalStorage: () => Promise<void>;
+    
+    // Proveedores & Tareas
+    addProveedor: (p: any) => Promise<void>;
+    updateProveedor: (id: string, p: any) => Promise<void>;
+    deleteProveedor: (id: string) => Promise<void>;
+    createTareaProveedor: (t: any) => Promise<void>;
+    updateTareaProveedor: (id: string, t: any) => Promise<void>;
+    deleteTareaProveedor: (id: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -370,6 +378,57 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setConfig(data);
     };
 
+    const addProveedor = async (p: any) => {
+        const { error } = await supabase.from('proveedores').insert([p]);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const updateProveedor = async (id: string, p: any) => {
+        const { error } = await supabase.from('proveedores').update(p).eq('id', id);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const deleteProveedor = async (id: string) => {
+        const { error } = await supabase.from('proveedores').delete().eq('id', id);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const createTareaProveedor = async (t: any) => {
+        const dbData = {
+            proveedor_id: t.proveedorId,
+            titulo: t.titulo,
+            tipo: t.tipo,
+            descripcion: t.descripcion,
+            fecha_vencimiento: t.fechaVencimiento,
+            completada: t.completada ?? false
+        };
+        const { error } = await supabase.from('tareas_proveedor').insert([dbData]);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const updateTareaProveedor = async (id: string, t: any) => {
+        const dbData = {
+            titulo: t.titulo,
+            tipo: t.tipo,
+            descripcion: t.descripcion,
+            fecha_vencimiento: t.fechaVencimiento,
+            completada: t.completada
+        };
+        const { error } = await supabase.from('tareas_proveedor').update(dbData).eq('id', id);
+        if (error) throw error;
+        refreshData();
+    };
+
+    const deleteTareaProveedor = async (id: string) => {
+        const { error } = await supabase.from('tareas_proveedor').delete().eq('id', id);
+        if (error) throw error;
+        refreshData();
+    };
+
     const value = {
         clientes, trabajos, productos, users, inventario, proveedores, tareas, sriCredentials, config,
         loading, syncing, error,
@@ -378,7 +437,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         seedCatalog, addInventoryItem, updateInventoryItem, deleteInventoryItem, 
         upsertSriCredential, bulkAddSriCredentials, deleteSriCredential, updateConfig,
         updateTrabajoPhoto, registerRetiro, aprobarArte,
-        createPublicOrder, getClientDebt, syncFromLocalStorage
+        createPublicOrder, getClientDebt, syncFromLocalStorage,
+        addProveedor, updateProveedor, deleteProveedor, 
+        createTareaProveedor, updateTareaProveedor, deleteTareaProveedor
     };
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

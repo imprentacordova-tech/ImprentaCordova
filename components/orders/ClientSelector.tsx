@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Cliente, Regimen } from '../../types';
-import { createCliente, getMasterActividades } from '../../services/mockApi';
 import { useData } from '../../contexts/DataContext';
 import { extractClientFromImage } from '../../services/geminiService';
 import { validarIdentificacionEC } from '../../utils';
@@ -175,6 +174,7 @@ export const CreateClientModal: React.FC<{
         }
     };
 
+    const { addCliente } = useData();
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -189,7 +189,7 @@ export const CreateClientModal: React.FC<{
         const finalId = newClienteData.cedulaRuc || '9999999999';
 
         setIsSaving(true);
-        const newCliente = await createCliente({ 
+        const newCliente = await addCliente({ 
             ...newClienteData,
             cedula: finalId, // Asegurar que siempre viaje algo
             ruc: mode === 'SRI' ? newClienteData.cedulaRuc : undefined,

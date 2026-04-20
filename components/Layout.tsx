@@ -130,23 +130,11 @@ const Sidebar: React.FC<{ user: User }> = ({ user }) => {
 };
 
 const Header: React.FC<{ onMenuClick: () => void, onLogout: () => void, user: User }> = ({ onMenuClick, onLogout, user }) => {
-    const [isSyncing, setIsSyncing] = useState(false);
+    const { syncing: isSyncing } = useData();
 
     useEffect(() => {
         document.documentElement.classList.add('dark');
         localStorage.setItem('theme', 'dark');
-    }, []);
-
-    // Listener para el motor de sincronización
-    useEffect(() => {
-        const startSync = () => setIsSyncing(true);
-        const endSync = () => setIsSyncing(false);
-        window.addEventListener('cloud-sync-active', startSync);
-        window.addEventListener('cloud-sync-idle', endSync);
-        return () => {
-            window.removeEventListener('cloud-sync-active', startSync);
-            window.removeEventListener('cloud-sync-idle', endSync);
-        };
     }, []);
 
     return (

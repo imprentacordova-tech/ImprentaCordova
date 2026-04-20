@@ -48,7 +48,7 @@ const SolicitudImpresionPage: React.FC = () => {
         html2pdf().from(element).set(opt).save();
     };
 
-    if (loading || !config || !trabajo || !cliente) return (
+    if (dataLoading || !config || !trabajo || !cliente) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-100">
             <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
         </div>

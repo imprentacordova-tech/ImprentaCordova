@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Proveedor, TareaProveedor } from '../types';
-import { getProveedores, createProveedor, updateProveedor, deleteProveedor, getTareasProveedor, createTareaProveedor, updateTareaProveedor } from '../services/mockApi';
+import { useData } from '../contexts/DataContext';
 import { BuildingStorefrontIcon, UserPlusIcon, SearchIcon, CloseIcon, PencilIcon, TrashIcon, WhatsAppIcon, ExclamationTriangleIcon, PhoneIcon, CheckBadgeIcon, ClockIcon, WrenchScrewdriverIcon, CalendarDaysIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon } from '../components/Icons';
 import { formatDate } from '../utils';
 
@@ -226,9 +226,18 @@ const ProveedorCard: React.FC<{
 
 
 const ProveedoresPage: React.FC = () => {
-    const [proveedores, setProveedores] = useState<Proveedor[]>([]);
-    const [tareas, setTareas] = useState<TareaProveedor[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { 
+        proveedores, 
+        tareas, 
+        loading, 
+        addProveedor, 
+        updateProveedor, 
+        deleteProveedor, 
+        createTareaProveedor, 
+        updateTareaProveedor, 
+        deleteTareaProveedor 
+    } = useData();
+    
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('Todos');
     const [agendaSearch, setAgendaSearch] = useState('');
@@ -242,18 +251,6 @@ const ProveedoresPage: React.FC = () => {
     const [newTarea, setNewTarea] = useState<Omit<TareaProveedor, 'id' | 'completada'>>({ proveedorId: '', titulo: '', tipo: 'General', descripcion: '', fechaVencimiento: '' });
 
     const agendaFormRef = useRef<HTMLFormElement>(null);
-
-    const fetchData = async () => {
-        setLoading(true);
-        const [provData, tareasData] = await Promise.all([getProveedores(), getTareasProveedor()]);
-        setProveedores(provData);
-        setTareas(tareasData);
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
 
     const kpis = useMemo(() => ({
         totalProveedores: proveedores.length,
@@ -288,12 +285,14 @@ const ProveedoresPage: React.FC = () => {
         agendaFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
-    const handleSaveProveedor = async (proveedor: Partial<Proveedor>) => {
-        if (proveedor.id) await updateProveedor(proveedor.id, proveedor);
-        else await createProveedor(proveedor as Omit<Proveedor, 'id' | 'creadoEn'>);
+    const handleSaveProveedor = async (proveedorData: Partial<Proveedor>) => {
+        if (proveedorData.id) {
+            await updateProveedor(proveedorData.id, proveedorData);
+        } else {
+            await addProveedor(proveedorData as Omit<Proveedor, 'id' | 'creadoEn'>);
+        }
         setIsFormModalOpen(false);
         setProveedorToEdit(null);
-        await fetchData();
     };
     
     const handleEditRequest = (proveedor: Proveedor) => {
@@ -311,7 +310,6 @@ const ProveedoresPage: React.FC = () => {
         if (proveedorToDelete) {
             await deleteProveedor(proveedorToDelete.id);
             setProveedorToDelete(null);
-            await fetchData();
         }
     };
 
@@ -320,12 +318,10 @@ const ProveedoresPage: React.FC = () => {
         if (!newTarea.proveedorId || !newTarea.titulo || !newTarea.fechaVencimiento) return;
         await createTareaProveedor(newTarea);
         setNewTarea({ proveedorId: '', titulo: '', tipo: 'General', descripcion: '', fechaVencimiento: '' });
-        await fetchData();
     };
 
     const handleToggleTarea = async (tarea: TareaProveedor) => {
         await updateTareaProveedor(tarea.id, { completada: !tarea.completada });
-        await fetchData();
     };
     
     const getProveedorNombre = (id: string) => proveedores.find(p => p.id === id)?.nombre || 'N/A';

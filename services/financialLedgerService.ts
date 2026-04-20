@@ -1,8 +1,10 @@
+import { supabase } from './supabase';
+
 /**
  * Financial Ledger Service — Sistema de Libro Diario Inmutable (Bitcoin-style)
  * 
  * Registra ingresos y egresos de dinero con integridad vía hashes encadenados.
- * Auto-purga registros de más de 3 meses para optimizar almacenamiento.
+ * Ahora persiste en Supabase para acceso global.
  */
 
 export type TransactionType = 'INGRESO' | 'EGRESO';
@@ -18,9 +20,6 @@ export interface FinancialEntry {
     hash: string; // Hash encadenado
 }
 
-const STORAGE_KEY = 'imprenta_financial_ledger';
-const MAX_AGE_DAYS = 90;
-
 /**
  * Genera un hash simple para encadenar transacciones.
  */
@@ -35,10 +34,26 @@ function generateHash(data: string, previousHash: string): string {
     return Math.abs(hash).toString(16).padStart(8, '0');
 }
 
-export const getFinancialLedger = (): FinancialEntry[] => {
+export const getFinancialLedger = async (limit = 100): Promise<FinancialEntry[]> => {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        const { data, error } = await supabase
+            .from('financial_ledger')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+
+        return (data || []).map(row => ({
+            id: row.id,
+            timestamp: row.created_at,
+            tipo: row.type === 'income' ? 'INGRESO' : 'EGRESO',
+            monto: Number(row.amount),
+            detalle: row.description,
+            referenciaId: row.reference_id,
+            usuario: row.user_name || 'Sistema',
+            hash: row.hash || '00000000'
+        }));
     } catch {
         return [];
     }
@@ -47,69 +62,65 @@ export const getFinancialLedger = (): FinancialEntry[] => {
 /**
  * Registra un nuevo movimiento en el libro diario.
  */
-export const logTransaction = (
+export const logTransaction = async (
     tipo: TransactionType,
     monto: number,
     detalle: string,
     usuario: string,
     referenciaId?: string
-): void => {
+): Promise<void> => {
     try {
-        const ledger = getFinancialLedger();
-        const previousHash = ledger.length > 0 ? ledger[ledger.length - 1].hash : '00000000';
+        // Obtener el último hash para el encadenamiento
+        const { data: lastEntry } = await supabase
+            .from('financial_ledger')
+            .select('hash')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        const previousHash = lastEntry?.hash || '00000000';
         
         const timestamp = new Date().toISOString();
         const entryData = `${tipo}|${monto}|${detalle}|${timestamp}|${usuario}`;
         const hash = generateHash(entryData, previousHash);
 
-        const newEntry: FinancialEntry = {
-            id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
-            timestamp,
-            tipo,
-            monto,
-            detalle,
-            referenciaId,
-            usuario,
-            hash
-        };
+        const { error } = await supabase
+            .from('financial_ledger')
+            .insert([{
+                type: tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: monto,
+                description: detalle,
+                user_name: usuario,
+                reference_id: referenciaId,
+                hash: hash,
+                date: new Date().toISOString().split('T')[0]
+            }]);
 
-        ledger.push(newEntry);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(ledger));
-        console.log(`[FinancialLedger] ${tipo} registrado: $${monto} - ${detalle}`);
+        if (error) throw error;
+        console.log(`[FinancialLedger] ${tipo} registrado en la nube: $${monto}`);
     } catch (error) {
         console.error('[FinancialLedger] Error logging transaction:', error);
     }
 };
 
 /**
- * Limpia transacciones con más de 90 días de antigüedad.
+ * Purga automática no es necesaria con Supabase Cloud, 
+ * pero mantenemos la firma para compatibilidad.
  */
-export const purgeOldTransactions = (): number => {
-    try {
-        const ledger = getFinancialLedger();
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - MAX_AGE_DAYS);
-        
-        const filtered = ledger.filter(entry => new Date(entry.timestamp) >= cutoff);
-        const purged = ledger.length - filtered.length;
-        
-        if (purged > 0) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-            console.log(`[FinancialLedger] Purga automática: ${purged} registros eliminados.`);
-        }
-        return purged;
-    } catch {
-        return 0;
-    }
+export const purgeOldTransactions = async (): Promise<number> => {
+    return 0;
 };
 
 /**
- * Obtiene el balance actual (Ingresos - Egresos) de los datos en el ledger.
+ * Obtiene el balance actual (Ingresos - Egresos) de Supabase.
  */
-export const getLedgerBalance = () => {
-    const ledger = getFinancialLedger();
-    const ingresos = ledger.filter(e => e.tipo === 'INGRESO').reduce((sum, e) => sum + e.monto, 0);
-    const egresos = ledger.filter(e => e.tipo === 'EGRESO').reduce((sum, e) => sum + e.monto, 0);
+export const getLedgerBalance = async () => {
+    const { data: ingresosData } = await supabase.from('financial_ledger').select('amount').eq('type', 'income');
+    const { data: egresosData } = await supabase.from('financial_ledger').select('amount').eq('type', 'expense');
+
+    const ingresos = (ingresosData || []).reduce((sum, e) => sum + Number(e.amount), 0);
+    const egresos = (egresosData || []).reduce((sum, e) => sum + Number(e.amount), 0);
+    
     return {
         ingresos,
         egresos,

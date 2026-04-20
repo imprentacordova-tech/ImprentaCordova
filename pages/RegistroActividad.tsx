@@ -41,15 +41,18 @@ const RegistroActividadPage: React.FC = () => {
     const [page, setPage] = useState(0);
     const ITEMS_PER_PAGE = 50;
 
-    const refreshData = () => {
+    const refreshData = async () => {
         setLoading(true);
-        const purged = purgeOldEntries(); // Auto-purga al entrar
-        const allLog = getActivityLog();
-        setLog(allLog.reverse()); // Más recientes primero
-        setStats(getLogStats());
-        setLoading(false);
-        if (purged > 0) {
-            console.log(`[RegistroActividad] Se purgaron ${purged} registros antiguos.`);
+        try {
+            await purgeOldEntries(); // Auto-purga al entrar
+            const allLog = await getActivityLog();
+            setLog(allLog); // Los servicios ya los ordenan por timestamp desc
+            const logStats = await getLogStats();
+            setStats(logStats as any);
+        } catch (error) {
+            console.error('[RegistroActividad] Error refreshing data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -90,7 +93,7 @@ const RegistroActividadPage: React.FC = () => {
     const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
     const handleExportCSV = () => {
-        const csv = exportLogAsCSV();
+        const csv = exportLogAsCSV(log);
         logActivity(currentUser.nombre, currentUser.rol || 'Administrador', 'SYNC_CLOUD', 'Exportación de log a CSV realizada', 'Auditoría');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);

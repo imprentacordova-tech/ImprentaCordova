@@ -1,3 +1,4 @@
+import React, { useState, useMemo, useEffect } from 'react';
 import { Producto, User } from '../types';
 import { 
     BoxIcon, CloseIcon, PencilIcon, TrashIcon, PhotoIcon, 

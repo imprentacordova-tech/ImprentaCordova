@@ -1,10 +1,10 @@
+import { supabase } from './supabase';
+
 /**
  * Activity Log Service — Sistema de Registro de Actividad tipo Blockchain
  * 
  * Registra TODOS los movimientos de usuarios en el sistema.
- * Auto-purga registros de más de 3 meses para no saturar almacenamiento.
- * 
- * Almacenamiento: localStorage bajo 'imprenta_activity_log'
+ * Ahora persiste en Supabase para acceso global.
  */
 
 export interface ActivityEntry {
@@ -39,14 +39,15 @@ export type ActivityAction =
   | 'ABONO_REGISTRADO'
   | 'ARTE_APROBADO'
   | 'FOTO_CAPTURADA'
+  | 'CREAR_PROVEEDOR'
+  | 'EDITAR_PROVEEDOR'
+  | 'BORRAR_PROVEEDOR'
+  | 'AGENDAR_TAREA'
+  | 'COMPLETAR_TAREA'
   | 'ACCESO_MODULO';
-
-const STORAGE_KEY = 'imprenta_activity_log';
-const MAX_AGE_DAYS = 90; // 3 meses
 
 /**
  * Genera un hash simple encadenado (simula blockchain).
- * Cada entry depende del hash de la anterior.
  */
 function generateHash(data: string, previousHash: string): string {
   let hash = 0;
@@ -54,164 +55,176 @@ function generateHash(data: string, previousHash: string): string {
   for (let i = 0; i < combined.length; i++) {
     const char = combined.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash |= 0; // Convert to 32bit integer
+    hash |= 0;
   }
   return Math.abs(hash).toString(16).padStart(8, '0');
 }
 
 /**
- * Genera un ID único para cada entrada
+ * Obtiene las entradas del log desde Supabase
  */
-function generateId(): string {
-  return Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8);
-}
-
-/**
- * Obtiene todas las entries del log
- */
-export function getActivityLog(): ActivityEntry[] {
+export async function getActivityLog(limit = 100): Promise<ActivityEntry[]> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+    const { data, error } = await supabase
+      .from('activity_log')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    return (data || []).map(row => ({
+      id: row.id,
+      timestamp: row.timestamp,
+      usuario: row.user_name,
+      rol: row.rol || 'Operador', // Campo opcional en DB
+      accion: row.action as ActivityAction,
+      detalle: row.details,
+      modulo: row.module,
+      ip: row.ip_address,
+      hash: row.hash,
+    }));
+  } catch (err) {
+    console.error('[ActivityLog] Error al obtener logs:', err);
     return [];
   }
 }
 
 /**
- * Registra una nueva actividad en el log.
- * Se encadena con el hash anterior (blockchain-style).
+ * Registra una nueva actividad.
  */
-export function logActivity(
+export async function logActivity(
   usuario: string,
   rol: string, 
   accion: ActivityAction,
   detalle: string,
   modulo: string
-): void {
+): Promise<void> {
   try {
-    const log = getActivityLog();
-    const previousHash = log.length > 0 ? log[log.length - 1].hash : '00000000';
-    
-    const entryData = `${usuario}|${accion}|${detalle}|${new Date().toISOString()}`;
+    // Para el hash blockchain, necesitamos el último hash registrado
+    const { data: lastEntry } = await supabase
+      .from('activity_log')
+      .select('hash')
+      .order('timestamp', { ascending: false })
+      .limit(1)
+      .single();
+
+    const previousHash = lastEntry?.hash || '00000000';
+    const timestamp = new Date().toISOString();
+    const entryData = `${usuario}|${accion}|${detalle}|${timestamp}`;
     const hash = generateHash(entryData, previousHash);
 
-    const entry: ActivityEntry = {
-      id: generateId(),
-      timestamp: new Date().toISOString(),
-      usuario,
-      rol,
-      accion,
-      detalle,
-      modulo,
-      hash,
-    };
+    const { error } = await supabase
+      .from('activity_log')
+      .insert([{
+        user_name: usuario,
+        rol: rol,
+        action: accion,
+        details: detalle,
+        module: modulo,
+        hash: hash,
+        timestamp: timestamp
+      }]);
 
-    log.push(entry);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+    if (error) throw error;
   } catch (e) {
     console.warn('[ActivityLog] Error al registrar:', e);
   }
 }
 
 /**
- * Auto-purga: Elimina registros de más de 3 meses.
- * Debe ejecutarse al iniciar la app.
+ * Auto-purga: Ahora manejado opcionalmente o por cron en Supabase.
+ * Aquí mantenemos la compatibilidad de firma.
  */
-export function purgeOldEntries(): number {
-  try {
-    const log = getActivityLog();
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - MAX_AGE_DAYS);
-    
-    const filtered = log.filter(entry => new Date(entry.timestamp) >= cutoff);
-    const purged = log.length - filtered.length;
-    
-    if (purged > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-      console.log(`[ActivityLog] Purgados ${purged} registros antiguos (>90 días).`);
-    }
-    
-    return purged;
-  } catch {
-    return 0;
-  }
-}
-
-/**
- * Obtiene estadísticas del log
- */
-export function getLogStats(): {
-  totalEntries: number;
-  uniqueUsers: number;
-  todayEntries: number;
-  storageUsedKB: number;
-  oldestEntry: string | null;
-  newestEntry: string | null;
-} {
-  const log = getActivityLog();
-  const today = new Date().toISOString().split('T')[0];
-  const todayEntries = log.filter(e => e.timestamp.startsWith(today)).length;
-  const users = new Set(log.map(e => e.usuario));
-  const raw = localStorage.getItem(STORAGE_KEY) || '';
+export async function purgeOldEntries(): Promise<number> {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 90);
   
-  return {
-    totalEntries: log.length,
-    uniqueUsers: users.size,
-    todayEntries,
-    storageUsedKB: Math.round(new Blob([raw]).size / 1024),
-    oldestEntry: log.length > 0 ? log[0].timestamp : null,
-    newestEntry: log.length > 0 ? log[log.length - 1].timestamp : null,
-  };
+  const { count, error } = await supabase
+    .from('activity_log')
+    .delete({ count: 'exact' })
+    .lt('timestamp', cutoff.toISOString());
+
+  if (error) return 0;
+  return count || 0;
 }
 
 /**
- * Filtra el log por criterios
+ * Filtra el log por criterios en Supabase
  */
-export function filterLog(filters: {
+export async function filterLog(filters: {
   usuario?: string;
   accion?: ActivityAction;
   modulo?: string;
   desde?: string;
   hasta?: string;
-}): ActivityEntry[] {
-  let log = getActivityLog();
+}): Promise<ActivityEntry[]> {
+  let query = supabase.from('activity_log').select('*');
   
-  if (filters.usuario) {
-    log = log.filter(e => e.usuario.toLowerCase().includes(filters.usuario!.toLowerCase()));
-  }
-  if (filters.accion) {
-    log = log.filter(e => e.accion === filters.accion);
-  }
-  if (filters.modulo) {
-    log = log.filter(e => e.modulo === filters.modulo);
-  }
-  if (filters.desde) {
-    log = log.filter(e => e.timestamp >= filters.desde!);
-  }
-  if (filters.hasta) {
-    log = log.filter(e => e.timestamp <= filters.hasta!);
-  }
+  if (filters.usuario) query = query.ilike('user_name', `%${filters.usuario}%`);
+  if (filters.accion) query = query.eq('action', filters.accion);
+  if (filters.modulo) query = query.eq('module', filters.modulo);
+  if (filters.desde) query = query.gte('timestamp', filters.desde);
+  if (filters.hasta) query = query.lte('timestamp', filters.hasta);
   
-  return log;
+  const { data, error } = await query.order('timestamp', { ascending: false });
+
+  if (error) return [];
+  
+  return (data || []).map(row => ({
+    id: row.id,
+    timestamp: row.timestamp,
+    usuario: row.user_name,
+    rol: row.rol || 'Operador',
+    accion: row.action as ActivityAction,
+    detalle: row.details,
+    modulo: row.module,
+    hash: row.hash,
+  }));
 }
 
 /**
- * Exporta el log como CSV
+ * Obtiene estadísticas básicas
  */
-export function exportLogAsCSV(): string {
-  const log = getActivityLog();
-  const header = 'Fecha,Hora,Usuario,Rol,Acción,Detalle,Módulo,Hash\n';
-  const rows = log.map(e => {
-    const date = new Date(e.timestamp);
-    return `${date.toLocaleDateString('es-EC')},${date.toLocaleTimeString('es-EC')},${e.usuario},${e.rol},${e.accion},"${e.detalle}",${e.modulo},${e.hash}`;
-  }).join('\n');
-  return header + rows;
+export async function getLogStats() {
+  const { count: total } = await supabase.from('activity_log').select('*', { count: 'exact', head: true });
+  
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const { count: todayEntries } = await supabase
+    .from('activity_log')
+    .select('*', { count: 'exact', head: true })
+    .gte('timestamp', today.toISOString());
+
+  return {
+    totalEntries: total || 0,
+    uniqueUsers: 0, // Requeriría un query más complejo para contar distintos
+    todayEntries: todayEntries || 0,
+    storageUsedKB: 0, // No aplicable directamente a Supabase storage
+    oldestEntry: null,
+    newestEntry: null,
+  };
 }
 
 /**
- * Limpia todo el log (acción destructiva)
+ * Convierte un array de entradas a formato CSV.
  */
-export function clearLog(): void {
-  localStorage.removeItem(STORAGE_KEY);
+export function exportLogAsCSV(entries: ActivityEntry[]): string {
+  if (!entries || entries.length === 0) return 'Fecha,Usuario,Acción,Detalle,Módulo,Hash';
+  
+  const headers = ['Fecha', 'Usuario', 'Acción', 'Detalle', 'Módulo', 'Hash'];
+  const rows = entries.map(e => [
+    new Date(e.timestamp).toLocaleString('es-EC'),
+    e.usuario,
+    e.accion,
+    `"${e.detalle.replace(/"/g, '""')}"`,
+    e.modulo,
+    e.hash
+  ]);
+  
+  return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+}
+
+export async function clearLog(): Promise<void> {
+  await supabase.from('activity_log').delete().neq('id', '0'); // Dangerous but requested
 }

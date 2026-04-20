@@ -1,7 +1,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon, ArrowRightIcon, BoxIcon } from '../components/Icons';
+import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon, ArrowRightIcon, BoxIcon, Loader2Icon } from '../components/Icons';
 import { formatCurrency } from '../utils';
+import { supabase } from '../services/supabase';
+import { logActivity } from '../services/activityLogService';
+import { useOutletContext } from 'react-router-dom';
 
 // --- TIPOS Y ESTADOS ---
 
@@ -730,19 +733,83 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 // --- MAIN PAGE ---
 const CalculadoraPreciosPage: React.FC = () => {
+    const { currentUser } = useOutletContext<{ currentUser: any }>();
     const [mode, setMode] = useState<Mode>('OFFSET');
     const [costs, setCosts] = useState<CostConfig>(DEFAULT_COSTS);
     const [showMasterTable, setShowMasterTable] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const saved = localStorage.getItem('imprenta_costos_config');
-        if (saved) setCosts(JSON.parse(saved));
+        const fetchConfig = async () => {
+            setLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('app_config')
+                    .select('data')
+                    .eq('id', 1)
+                    .single();
+                
+                if (data && data.data) {
+                    // Combinar defaults con los valores de la DB para asegurar que todos los campos existan
+                    const dbCosts = data.data;
+                    const mergedCosts = { ...DEFAULT_COSTS };
+                    
+                    // Solo sobreescribir si el campo existe en la interfaz CostConfig
+                    Object.keys(DEFAULT_COSTS).forEach(key => {
+                        if (dbCosts[key] !== undefined) {
+                            (mergedCosts as any)[key] = dbCosts[key];
+                        }
+                    });
+                    
+                    setCosts(mergedCosts);
+                }
+            } catch (err) {
+                console.warn('[Calculadora] No se pudo cargar config de Supabase, usando defaults:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchConfig();
     }, []);
 
-    const handleSaveConfig = (newCosts: CostConfig) => {
-        setCosts(newCosts);
-        localStorage.setItem('imprenta_costos_config', JSON.stringify(newCosts));
-        setMode('OFFSET');
+    const handleSaveConfig = async (newCosts: CostConfig) => {
+        setLoading(true);
+        try {
+            // Obtener config actual para no borrar otros campos (como SRI data)
+            const { data: currentConfig } = await supabase
+                .from('app_config')
+                .select('data')
+                .eq('id', 1)
+                .single();
+
+            const updatedData = {
+                ...(currentConfig?.data || {}),
+                ...newCosts
+            };
+
+            const { error } = await supabase
+                .from('app_config')
+                .update({ data: updatedData, updated_at: new Date().toISOString() })
+                .eq('id', 1);
+
+            if (error) throw error;
+
+            setCosts(newCosts);
+            await logActivity(
+                currentUser?.nombre || 'Admin',
+                currentUser?.rol || 'Administrador',
+                'CAMBIO_CONFIG',
+                'Actualización de parámetros de costos industriales',
+                'Producción'
+            );
+            setMode('OFFSET');
+        } catch (err) {
+            console.error('[Calculadora] Error al guardar config:', err);
+            alert('Error al guardar la configuración en la nube');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
