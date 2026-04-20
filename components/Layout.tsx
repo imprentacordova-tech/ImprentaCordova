@@ -5,6 +5,7 @@ import { APP_NAME } from '../constants';
 import { KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon, InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon, BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon, GlobeAltIcon, PaletteIcon, SunIcon, MoonIcon, CordovaLogo, CloudIcon, CheckCircleIcon } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
+import { SEO } from './SEO';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -177,6 +178,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
 
     return (
     <div className="flex h-screen bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark">
+        <SEO title="Imprenta Córdova | Backend Administrativo" />
         {/* Mobile Sidebar */}
         <div className={`fixed inset-0 z-[100] lg:hidden transition-opacity duration-700 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setSidebarOpen(false)}></div>

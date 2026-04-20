@@ -13,6 +13,7 @@ import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
 import { Producto, Trabajo } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
+import { SEO } from '../components/SEO';
 
 // --- COMPONENTS ---
 
@@ -132,6 +133,10 @@ const VisualLanding: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-brand-dark font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500">
+            <SEO 
+                title="Imprenta Córdova | Excelencia Gráfica y Publicidad"
+                description="Elevamos la identidad de tu marca a través de tecnología Roland High-Fidelity. Servicios de gigantografías, encuadernación, facturas físicas y más."
+            />
             {/* Scroll Progress Bar */}
             <div className="fixed top-0 left-0 w-full h-[1px] bg-white/5 z-[250]">
                 <div 

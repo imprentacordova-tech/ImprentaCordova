@@ -11,6 +11,7 @@ import {
 } from '../components/Icons';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 import { supabase } from '../services/supabase';
+import { SEO } from '../components/SEO';
 
 // --- UTILS PARA LIVE API ---
 function encode(bytes: Uint8Array) {
@@ -261,6 +262,10 @@ const TrackingPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-brand-blue selection:text-white pb-32">
+            <SEO 
+                title="Tracking de Pedidos | Imprenta Córdova"
+                description="Rastrea el estado de tu pedido en tiempo real. Ingresa tu número de orden o celular para conocer el estado actual de tu solicitud en Imprenta Córdova."
+            />
             <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800 py-4 px-6 sticky top-0 z-50">
                 <div className="container mx-auto flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-2">
