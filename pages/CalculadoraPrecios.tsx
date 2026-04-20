@@ -97,13 +97,13 @@ const VisualStep: React.FC<{
             <div className="hidden md:block absolute top-[60px] -right-6 w-12 h-px bg-white/10 z-0"></div>
         )}
         
-        <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/5 overflow-hidden hover:border-brand-blue/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/5 overflow-hidden hover:border-liquid-gold/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl">
             {/* Image Area */}
             <div className="h-32 w-full relative overflow-hidden bg-black">
                 <img src={image} alt={title} className="w-full h-full object-cover opacity-40 grayscale group-hover/step:grayscale-0 group-hover/step:opacity-80 transition-all duration-1000 scale-110 group-hover/step:scale-100" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex items-end p-5">
                     <span className="text-white font-black text-[9px] uppercase tracking-[0.4em] flex items-center gap-3">
-                        <span className="bg-brand-blue w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-[0_0_20px_rgba(59,130,246,0.5)]">{title.split('.')[0]}</span>
+                        <span className="bg-liquid-gold w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-[0_0_20px_rgba(212,175,55,0.5)]">{title.split('.')[0]}</span>
                         {title.split('. ')[1]}
                     </span>
                 </div>
@@ -116,7 +116,7 @@ const VisualStep: React.FC<{
                 {cost !== undefined && (
                     <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-auto">
                         <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Insumo</span>
-                        <span className="font-black text-xs text-brand-blue tracking-widest">{formatCurrency(cost)}</span>
+                        <span className="font-black text-xs text-liquid-gold tracking-widest">{formatCurrency(cost)}</span>
                     </div>
                 )}
             </div>
@@ -358,27 +358,27 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             {/* Input Panel */}
             <div className="lg:col-span-4 space-y-8">
                 <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
                     
                     <div className="flex items-center gap-5 mb-10 pb-6 border-b border-white/5 relative z-10">
-                        <div className="bg-brand-blue/20 p-3 rounded-full border border-brand-blue/30 shadow-[0_0_30px_rgba(59,130,246,0.2)] text-brand-blue">
+                        <div className="bg-liquid-gold/20 p-3 rounded-full border border-liquid-gold/30 shadow-[0_0_30px_rgba(212,175,55,0.2)] text-liquid-gold">
                             <WrenchScrewdriverIcon className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="font-black text-white text-lg uppercase tracking-tighter italic">Machine Config</h2>
-                            <p className="text-[10px] text-brand-blue font-black uppercase tracking-[0.2em]">Parámetros de Producción</p>
+                            <h2 className="font-editorial font-bold text-liquid-gold text-2xl uppercase tracking-tighter italic">Machine Config</h2>
+                            <p className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.2em]">Parámetros de Producción</p>
                         </div>
                     </div>
 
                     <div className="space-y-8 relative z-10">
                         {/* Tipo de Papel */}
                         <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em] group-focus-within/field:text-brand-blue transition-colors">Material Base</label>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em] group-focus-within/field:text-liquid-gold transition-colors">Material Base</label>
                             <div className="relative">
                                 <select 
                                     value={paperId} 
                                     onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} 
-                                    className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white outline-none focus:ring-1 focus:ring-brand-blue/30 transition-all appearance-none cursor-pointer"
+                                    className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white outline-none focus:ring-1 focus:ring-liquid-gold/30 transition-all appearance-none cursor-pointer"
                                 >
                                     {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-slate-900">{p.nombre.toUpperCase()}</option>)}
                                 </select>
@@ -395,13 +395,13 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                                 {SOURCE_PAPERS.find(p=>p.id===paperId)?.tipo === 'RESMA' ? (
                                     <>
                                         {['OFICIO', '1/2_OFICIO', '1/4_OFICIO', '1/8_OFICIO'].map(p => (
-                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-brand-blue text-white shadow-xl shadow-blue-900/30 border-brand-blue' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
+                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-liquid-gold text-white shadow-xl shadow-gold-glow border-liquid-gold' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
                                         ))}
                                     </>
                                 ) : (
                                     <>
                                         {['A3', 'A4', 'A5', 'A6'].map(p => (
-                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-brand-blue text-white shadow-xl shadow-blue-900/30 border-brand-blue' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p}</button>
+                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-liquid-gold text-white shadow-xl shadow-gold-glow border-liquid-gold' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p}</button>
                                         ))}
                                     </>
                                 )}
@@ -424,7 +424,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                         <div className="grid grid-cols-2 gap-6">
                             <div className="relative">
                                 <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em]">Units</label>
-                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-lg font-black text-brand-blue outline-none border-b-2 border-brand-blue/30" />
+                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-lg font-black text-liquid-gold outline-none border-b-2 border-liquid-gold/30" />
                             </div>
                             {paperId === 'QUIMICO' && (
                                 <div>
@@ -458,7 +458,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             <label className="flex items-center gap-4 cursor-pointer group/label">
                                 <div className="relative">
                                     <input type="checkbox" checked={hasDesign} onChange={e => setHasDesign(e.target.checked)} className="peer hidden" />
-                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-brand-blue transition-all"></div>
+                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-liquid-gold transition-all"></div>
                                     <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
                                 </div>
                                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover/label:text-white transition-colors">Diseño Suministrado</span>
@@ -466,7 +466,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             <label className="flex items-center gap-4 cursor-pointer group/label opacity-50 has-[:disabled]:opacity-20 transition-all">
                                 <div className="relative">
                                     <input type="checkbox" checked={requiresSRI} onChange={e => setRequiresSRI(e.target.checked)} disabled={paperId !== 'QUIMICO'} className="peer hidden" />
-                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-brand-blue transition-all"></div>
+                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-liquid-gold transition-all"></div>
                                     <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
                                 </div>
                                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover/label:text-white transition-colors">Integración SRI</span>
@@ -495,15 +495,15 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                         {/* Cost Breakdown Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Papel + Merma</p>
+                                <p className="text-[10px] font-black text-text-liquid-gold uppercase tracking-widest mb-2">Papel + Merma</p>
                                 <p className="text-2xl font-black text-white">{formatCurrency(result.costPapelTotal)}</p>
                             </div>
                             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2">Pre-Prensa</p>
+                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-2">Pre-Prensa</p>
                                 <p className="text-2xl font-black text-white">{formatCurrency(result.costPrePrensa)}</p>
                             </div>
                             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Impresión</p>
+                                <p className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-2">Impresión</p>
                                 <p className="text-2xl font-black text-white">{formatCurrency(result.costImpresion)}</p>
                             </div>
                             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
@@ -514,7 +514,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
                         {/* Final Price Big Card */}
                         <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black shadow-2xl p-10 flex flex-col md:flex-row items-center justify-between group">
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/10 blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-liquid-gold/10 blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
                             <div className="relative z-10">
                                 <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Costo de Producción</p>
                                 <p className="text-3xl font-black text-slate-300">{formatCurrency(result.costoTotalProduccion)}</p>
@@ -524,7 +524,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             <div className="h-20 w-px bg-white/10 hidden md:block mx-10"></div>
 
                             <div className="text-center md:text-right mt-8 md:mt-0 relative z-10">
-                                <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-2">Precio de Venta Sugerido</p>
+                                <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.2em] mb-2">Precio de Venta Sugerido</p>
                                 <div className="flex items-baseline gap-3 justify-center md:justify-end">
                                     <span className="text-7xl font-black tracking-tighter text-white">{formatCurrency(result.pvp)}</span>
                                     <span className="text-xl text-slate-500 font-medium tracking-tight">+ IVA</span>
@@ -593,11 +593,11 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
             {/* Controls */}
             <div className="bg-white/5 border border-white/10 p-10 rounded-3xl backdrop-blur-xl">
                 <div className="flex items-center gap-4 mb-10 border-b border-white/5 pb-8">
-                    <div className="bg-amber-500/10 p-4 rounded-2xl text-amber-500">
+                    <div className="bg-liquid-gold/10 p-4 rounded-2xl text-liquid-gold">
                         <Sparkles className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover:scale-110" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-black text-white tracking-tight">Impresión Digital</h2>
+                        <h2 className="font-editorial font-bold text-liquid-gold text-3xl tracking-tight italic">Impresión Digital</h2>
                         <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Precision Editorial Atelier</p>
                     </div>
                 </div>
@@ -610,7 +610,7 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                                 <button 
                                     key={f} 
                                     onClick={() => setFormat(f as any)} 
-                                    className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${format === f ? 'bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${format === f ? 'bg-liquid-gold text-black shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'text-slate-500 hover:text-white'}`}
                                 >
                                     {f}
                                 </button>
@@ -621,7 +621,7 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Tipo deSustrato</label>
-                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-4 bg-black/40 border-none rounded-2xl text-sm font-black text-white outline-none focus:ring-1 focus:ring-amber-500/50 appearance-none">
+                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-4 bg-black/40 border-none rounded-2xl text-sm font-black text-white outline-none focus:ring-1 focus:ring-liquid-gold/50 appearance-none">
                                 <option value="BOND">Bond 75g (Atelier)</option>
                                 <option value="COUCHE_115">Couché 115g Premium</option>
                                 <option value="COUCHE_300">Couché 300g Luxury</option>
@@ -630,7 +630,7 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                         </div>
                         <div>
                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Cantidad</label>
-                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-4 bg-black/40 border-none rounded-2xl text-lg font-black text-amber-500 outline-none focus:ring-1 focus:ring-amber-500/50" />
+                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-4 bg-black/40 border-none rounded-2xl text-lg font-black text-liquid-gold outline-none focus:ring-1 focus:ring-liquid-gold/50" />
                         </div>
                     </div>
 
@@ -655,10 +655,10 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
             {/* Results */}
             <div className="relative rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-3xl p-12 flex flex-col justify-between group">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 blur-[80px] -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-110"></div>
+                <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/10 blur-[80px] -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-110"></div>
                 
                 <div className="relative z-10">
-                    <h3 className="text-[11px] font-black text-amber-500 uppercase tracking-[0.3em] mb-10">Cotización Atelier Digital</h3>
+                    <h3 className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.3em] mb-10">Cotización Atelier Digital</h3>
                     
                     <div className="space-y-6 mb-10">
                         <div className="flex justify-between items-center border-b border-white/5 pb-4">
@@ -704,7 +704,7 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="p-10 overflow-y-auto">
                     <div className="grid gap-4">
                         {SOURCE_PAPERS.map((paper) => (
-                            <div key={paper.id} className="group bg-white/5 border border-white/10 hover:border-brand-blue/30 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-white/[0.07]">
+                            <div key={paper.id} className="group bg-white/5 border border-white/10 hover:border-liquid-gold/30 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-white/[0.07]">
                                 <div className="flex items-center gap-6">
                                     <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center border border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                                         {paper.id}
@@ -715,7 +715,7 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-10">
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] uppercase ${paper.tipo === 'RESMA' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] uppercase ${paper.tipo === 'RESMA' ? 'bg-liquid-gold/10 text-liquid-gold' : 'bg-liquid-gold/10 text-liquid-gold'}`}>
                                         {paper.tipo}
                                     </span>
                                 </div>
@@ -818,7 +818,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
                     <div className="relative">
-                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-brand-blue"></div>
+                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-liquid-gold"></div>
                         <h1 className="text-4xl font-black text-white tracking-tight">
                             Ingeniería de Costos
                         </h1>
@@ -827,7 +827,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                     
                     <div className="flex gap-4">
                         <button onClick={() => setShowMasterTable(true)} className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">
-                            <TableIcon className="w-4 h-4 text-brand-blue"/> Catálogo Sustratos
+                            <TableIcon className="w-4 h-4 text-liquid-gold"/> Catálogo Sustratos
                         </button>
                         <button 
                             onClick={() => setMode(mode === 'CONFIG' ? 'OFFSET' : 'CONFIG')} 
@@ -841,10 +841,10 @@ const CalculadoraPreciosPage: React.FC = () => {
                 {/* Mode Selector (Tabs) */}
                 {mode !== 'CONFIG' && (
                     <div className="flex p-2 bg-black/40 border border-white/5 rounded-2xl mb-16 max-w-sm">
-                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'OFFSET' ? 'bg-brand-blue text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'OFFSET' ? 'bg-liquid-gold text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
                             <PrinterIcon className="w-4 h-4"/> Offset
                         </button>
-                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'DIGITAL' ? 'bg-amber-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'DIGITAL' ? 'bg-liquid-gold text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
                             <Sparkles className="w-4 h-4"/> Digital
                         </button>
                     </div>
@@ -858,17 +858,17 @@ const CalculadoraPreciosPage: React.FC = () => {
                 {mode === 'CONFIG' && (
                     <div className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] shadow-3xl max-w-5xl mx-auto animate-fade-in backdrop-blur-xl">
                         <div className="flex items-center gap-6 mb-12 border-b border-white/5 pb-8">
-                            <div className="bg-emerald-500/10 p-4 rounded-2xl"><DollarIcon className="w-8 h-8 text-emerald-500"/></div>
+                            <div className="bg-liquid-gold/10 p-4 rounded-2xl"><DollarIcon className="w-8 h-8 text-liquid-gold"/></div>
                             <div>
-                                <h2 className="text-2xl font-black text-white tracking-tight">Base de Costos Industriales</h2>
+                                <h2 className="font-editorial font-bold text-liquid-gold text-3xl tracking-tight italic">Base de Costos Industriales</h2>
                                 <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Ajuste de parámetros fijos y mermas de producción</p>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {Object.entries(costs).map(([key, val]) => (
-                                <div key={key} className="group bg-black/40 p-6 rounded-2xl border border-white/5 hover:border-brand-blue/30 transition-all">
-                                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em] group-focus-within:text-brand-blue transition-colors">
+                                <div key={key} className="group bg-black/40 p-6 rounded-2xl border border-white/5 hover:border-liquid-gold/30 transition-all">
+                                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em] group-focus-within:text-liquid-gold transition-colors">
                                         {key.replace(/_/g, ' ')}
                                     </label>
                                     <div className="relative">
