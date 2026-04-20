@@ -107,11 +107,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (tData) setTrabajos(tData.map(mapDBTrabajo) as any);
             if (pData) {
                 setProductos(pData as any);
-                // Auto-seed if empty and not already seeding
+                // Auto-seed si el catálogo está vacío y NO estamos ya en un auto-seed
                 if (pData.length === 0 && !isAutoSeed) {
-                    console.log("📦 Catálogo vacío detectado. Sincronizando catálogo maestro...");
-                    await seedCatalog(true);
-                    return; 
+                    console.log("📦 Catálogo vacío detectado. Sincronización requerida.");
                 }
             }
             if (provData) setProveedores(provData as any);
@@ -128,7 +126,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setLoading(false);
             setSyncing(false);
         }
-    }, [seedCatalog]);
+    }, []);
 
     const deductInventory = async (trabajo: any) => {
         const subtipo = (trabajo.subtipo || "").toUpperCase();
@@ -253,7 +251,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await refreshData();
     };
 
-    const seedCatalog = useCallback(async (isAuto = false) => {
+    const seedCatalog = useCallback(async () => {
         setSyncing(true);
         try {
             const dbCatalog = MASTER_CATALOG.map(p => ({
@@ -266,10 +264,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 unit: p.unit ?? null,
                 is_popular: p.isPopular ?? false
             }));
-            // upsert con ON CONFLICT en 'nombre' para evitar duplicados al re-sync
             const { error } = await supabase.from('productos').upsert(dbCatalog, { onConflict: 'nombre' });
             if (error) throw error;
-            await refreshData(true);
+            
+            // Refrescar datos después de un pequeño delay para asegurar propagación en DB
+            setTimeout(() => refreshData(true), 500);
         } catch (err) { 
             console.error("Seed Error:", err);
             setError("Error al cargar el catálogo."); 
