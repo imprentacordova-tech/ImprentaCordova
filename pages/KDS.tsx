@@ -125,7 +125,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
                         PENDIENTE
                     </div>
                 ) : (
-                    <div className="flex items-center gap-1 bg-green-500/10 text-green-400 text-[8px] font-black px-2 py-1 rounded-full border border-green-500/20 uppercase">
+                    <div className="flex items-center gap-1 bg-white/5 text-slate-300 text-[8px] font-black px-2 py-1 rounded-full border border-white/10 uppercase">
                         Liquido
                     </div>
                 )}
@@ -154,7 +154,7 @@ const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClo
         <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury w-full max-w-lg overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
             <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
                 <div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">Orden #{trabajo.orden}</h2>
+                    <h2 className="text-3xl font-editorial font-bold text-liquid-gold uppercase tracking-tight italic">Orden #{trabajo.orden}</h2>
                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Detalle de producción</p>
                 </div>
                 <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors"><CloseIcon className="w-5 h-5 text-slate-400"/></button>
@@ -184,7 +184,7 @@ const TrabajoDetalleModal: React.FC<{ trabajo: Trabajo; cliente?: Cliente; onClo
                     </div>
                     <div>
                         <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Saldo</p>
-                        <p className={`font-black text-sm mt-1 ${trabajo.saldo > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{formatCurrency(trabajo.saldo)}</p>
+                        <p className={`font-black text-sm mt-1 ${trabajo.saldo > 0 ? 'text-red-400' : 'text-white'}`}>{formatCurrency(trabajo.saldo)}</p>
                     </div>
                 </div>
                 <div className="space-y-3">
@@ -321,7 +321,7 @@ const KDSPage: React.FC = () => {
                     {/* Title & Search */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 w-full xl:w-auto">
                         <div>
-                            <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
+                            <h1 className="text-5xl lg:text-6xl font-editorial font-bold text-white tracking-tight uppercase italic leading-none">
                                 Taller <span className="text-gold-gradient">Monitor</span>
                             </h1>
                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3 ml-1">Flujo de Producción & KDS</p>
@@ -381,9 +381,9 @@ const KDSPage: React.FC = () => {
                                 <div className="p-8 flex justify-between items-center border-b border-white/5">
                                     <h3 className="font-black text-white uppercase tracking-[0.3em] text-[10px] flex items-center gap-3">
                                         <div className={`w-2 h-2 rounded-full shadow-gold-glow ${
-                                            status === 'Pendiente' ? 'bg-amber-400' :
-                                            status === 'En Diseño' ? 'bg-purple-400' :
-                                            status === 'En Proceso' ? 'bg-liquid-gold' : 'bg-green-400'
+                                            status === 'Pendiente' ? 'bg-white/40' :
+                                            status === 'En Diseño' ? 'bg-liquid-gold/50' :
+                                            status === 'En Proceso' ? 'bg-liquid-gold' : 'bg-liquid-gold shadow-gold-glow'
                                         }`}></div>
                                         {status}
                                     </h3>

@@ -48,7 +48,7 @@ const FinanzasPage: React.FC = () => {
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">
+                    <h1 className="text-5xl lg:text-6xl font-editorial font-bold text-white tracking-tight uppercase italic">
                         Atelier <span className="text-gold-gradient">Finanzas</span>
                     </h1>
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-2 ml-1">Análisis de Capital & Proyecciones IA</p>
@@ -169,7 +169,7 @@ const FinanzasPage: React.FC = () => {
             {/* Real Data Chart */}
             <div className="bg-white/5 backdrop-blur-xl p-12 rounded-[3.5rem] border border-white/5">
                 <div className="flex justify-between items-center mb-12">
-                     <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Tracking Real de Operaciones</h3>
+                     <h3 className="text-3xl font-editorial font-bold text-liquid-gold uppercase tracking-tight italic">Tracking Real de Operaciones</h3>
                      <div className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center">
                         <SolidFinanceIcon className="w-4 h-4 text-slate-600" />
                      </div>

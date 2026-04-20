@@ -99,7 +99,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                         <CordovaLogo className="h-12 w-12 object-contain" />
                     </div>
                     <div className="space-y-2">
-                        <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase italic">
+                        <h1 className="text-5xl lg:text-6xl font-editorial font-bold text-white tracking-tight uppercase italic">
                             CÓRDOVA <span className="text-gold-gradient">SYSTEMS</span>
                         </h1>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">
