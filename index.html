@@ -14,7 +14,7 @@
     <!-- FUENTES PREMIUM -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Epilogue:ital,wght@0,700;0,900;1,700;1,900&family=Manrope:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -23,16 +23,18 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-              display: ['"Outfit"', 'sans-serif'],
+              sans: ['"Manrope"', 'sans-serif'],
+              display: ['"Epilogue"', 'sans-serif'],
+              editorial: ['"Outfit"', 'sans-serif'],
             },
             colors: {
-              'brand-blue': '#0A1E40', // Azul Medianoche profundo
-              'brand-red': '#E11D48',  // Rose 600 - más vibrante y moderno
-              'brand-dark': '#030712', // Obsidian - el color de lujo por excelencia
-              'liquid-gold': '#D4AF37', // Oro clásico para acentos
-              'surface-light': '#FDFDFD',
-              'surface-dark': '#0F172A',
+              'brand-blue': '#0A1E40', 
+              'brand-red': '#E11D48',  
+              'brand-dark': '#0c1324', // Unified Obsidian from Stitch
+              'liquid-gold': '#D4AF37', 
+              'gold-bright': '#f2ca50', // Stitch primary
+              'surface-light': '#F8FAFC',
+              'surface-dark': '#0c1324',
             },
             animation: {
               'fade-in': 'fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
@@ -40,30 +42,19 @@
               'float': 'float 6s ease-in-out infinite',
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'mesh': 'mesh 15s ease infinite',
+              'scan': 'scan 3s linear infinite',
             },
             keyframes: {
-              fadeIn: {
-                '0%': { opacity: 0 },
-                '100%': { opacity: 1 },
-              },
-              slideUp: {
-                '0%': { opacity: 0, transform: 'translateY(40px)' },
-                '100%': { opacity: 1, transform: 'translateY(0)' },
-              },
-              float: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-20px)' },
-              },
-              mesh: {
-                '0%': { 'background-position': '0% 50%' },
-                '50%': { 'background-position': '100% 50%' },
-                '100%': { 'background-position': '0% 50%' },
-              }
+              fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+              slideUp: { '0%': { opacity: 0, transform: 'translateY(40px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+              float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+              mesh: { '0%': { 'background-position': '0% 50%' }, '50%': { 'background-position': '100% 50%' }, '100%': { 'background-position': '0% 50%' } },
+              scan: { '0%': { top: '0%' }, '100%': { top: '100%' } }
             },
             boxShadow: {
-              'luxury': '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-              'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
-              'gold-glow': '0 0 30px rgba(212, 175, 55, 0.15)',
+              'luxury': '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+              'gold-glow': '0 0 40px rgba(212, 175, 55, 0.12)',
+              'gold-glow-soft': '0 0 20px rgba(212, 175, 55, 0.08)',
             }
           }
         }

@@ -18,43 +18,43 @@ import { SEO } from '../components/SEO';
 // --- COMPONENTS ---
 
 const StatCard: React.FC<{ label: string; value: string; sub: string }> = ({ label, value, sub }) => (
-    <div className="text-center p-6 md:p-8 glass-card border-none group">
-        <p className="text-[9px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] mb-4 opacity-70 group-hover:opacity-100 transition-opacity">{label}</p>
-        <p className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter mb-2 group-hover:scale-110 transition-transform duration-700">{value}</p>
-        <p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">{sub}</p>
+    <div className="text-center p-8 transition-all duration-700 bg-white/[0.01] hover:bg-white/[0.03] group rounded-3xl">
+        <p className="text-[10px] font-black text-gold-bright uppercase tracking-[0.5em] mb-4 opacity-50 group-hover:opacity-100 transition-opacity">{label}</p>
+        <p className="text-5xl md:text-7xl font-display italic font-black text-white tracking-tighter mb-2 group-hover:scale-105 transition-transform duration-1000">{value}</p>
+        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">{sub}</p>
     </div>
 );
 
 const BentoCard: React.FC<{ title: string; desc: string; icon: any; className?: string; image?: string; dark?: boolean }> = ({ title, desc, icon: Icon, className = "", image, dark }) => (
-    <div className={`group relative overflow-hidden rounded-[2rem] transition-all duration-1000 hover:-translate-y-2 hover:shadow-luxury ${className} ${dark ? 'bg-brand-dark text-white border-white/5' : 'bg-white text-brand-dark border-transparent'} border`}>
-        {image && <div className="absolute inset-0 z-0 opacity-40 group-hover:opacity-60 transition-opacity duration-1000 scale-105 group-hover:scale-100"><img src={image} className="w-full h-full object-cover grayscale mix-blend-multiply group-hover:grayscale-0 transition-all duration-1000" alt="" /></div>}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-dark/20 to-brand-dark/90 z-0 pointer-events-none"></div>
-        <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-end">
-            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-2xl backdrop-blur-md group-hover:rotate-[15deg] transition-all duration-500 scale-95 group-hover:scale-100 ${dark ? 'bg-white/5 border border-white/10' : 'bg-brand-dark/5 border border-brand-dark/10'}`}>
-                <Icon className={`w-5 h-5 md:w-6 md:h-6 ${dark ? 'text-liquid-gold' : 'text-brand-dark'}`} />
+    <div className={`group relative overflow-hidden rounded-[2.5rem] transition-all duration-1000 hover:shadow-luxury ${className} ${dark ? 'bg-[#0e1729] text-white' : 'bg-white text-brand-dark'}`}>
+        {image && <div className="absolute inset-0 z-0 opacity-20 group-hover:opacity-40 transition-all duration-1000 scale-110 group-hover:scale-100"><img src={image} className="w-full h-full object-cover grayscale mix-blend-overlay" alt="" /></div>}
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent z-0 pointer-events-none"></div>
+        <div className="relative z-10 p-10 h-full flex flex-col justify-end">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-10 transition-all duration-700 group-hover:rotate-[15deg] group-hover:scale-110 ${dark ? 'bg-white/5 border border-white/10' : 'bg-brand-dark/5 border border-brand-dark/10'}`}>
+                <Icon className={`w-6 h-6 ${dark ? 'text-gold-bright' : 'text-brand-dark'}`} />
             </div>
-            <h3 className={`text-3xl md:text-5xl font-display font-black mb-3 md:mb-4 leading-[0.9] tracking-tighter ${dark ? 'text-white' : 'text-brand-dark'}`}>{title}</h3>
-            <p className={`text-xs md:text-sm font-light leading-relaxed max-w-sm ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{desc}</p>
-            <div className="mt-6 md:mt-8 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-y-4 group-hover:translate-y-0 text-liquid-gold">
-                <span>Descubrir la Excelencia</span> <ArrowRightIcon className="w-4 h-4" />
+            <h3 className={`text-4xl md:text-6xl font-display italic font-black mb-4 leading-[0.85] tracking-tighter ${dark ? 'text-white' : 'text-brand-dark'}`}>{title}</h3>
+            <p className={`text-sm font-light leading-relaxed max-w-sm ${dark ? 'text-slate-400' : 'text-slate-600'}`}>{desc}</p>
+            <div className="mt-8 flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-x-[-20px] group-hover:translate-x-0 text-gold-bright">
+                <span>Explorar Atelier</span> <ArrowRightIcon className="w-4 h-4" />
             </div>
         </div>
     </div>
 );
 
 const ServiceItem: React.FC<{ title: string; desc: string; icon: any; index: string }> = ({ title, desc, icon: Icon, index }) => (
-    <div className="group border-t border-white/10 py-16 flex flex-col md:flex-row gap-12 items-start hover:bg-white/[0.02] px-6 transition-all duration-700 relative overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-liquid-gold scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-top"></div>
-        <span className="text-5xl font-display font-black text-white/5 group-hover:text-liquid-gold/20 transition-colors duration-700 w-16">{index}</span>
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-liquid-gold border border-white/5 group-hover:rotate-[15deg] group-hover:scale-110 transition-all duration-500 shadow-xl backdrop-blur-sm">
-            <Icon className="w-6 h-6" />
+    <div className="group py-20 flex flex-col md:flex-row gap-12 items-start hover:bg-white/[0.015] px-10 transition-all duration-1000 relative overflow-hidden rounded-[2rem]">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-20 w-1 bg-gold-bright scale-y-0 group-hover:scale-y-100 transition-transform duration-700 origin-center"></div>
+        <span className="text-6xl font-display italic font-black text-white/5 group-hover:text-gold-bright/20 transition-colors duration-1000 w-24">{index}</span>
+        <div className="w-20 h-20 rounded-2xl bg-white/[0.03] flex items-center justify-center text-gold-bright transition-all duration-700 group-hover:rotate-[15deg] group-hover:scale-110 shadow-2xl backdrop-blur-3xl border border-white/5">
+            <Icon className="w-8 h-8" />
         </div>
-        <div className="flex-grow space-y-2 md:space-y-4">
-            <h3 className="text-2xl md:text-4xl font-display font-black text-white tracking-tighter uppercase">{title}</h3>
-            <p className="text-sm md:text-base font-light text-slate-400 max-w-2xl leading-relaxed">{desc}</p>
+        <div className="flex-grow space-y-4">
+            <h3 className="text-3xl md:text-5xl font-display italic font-black text-white tracking-tighter uppercase leading-[0.9]">{title}</h3>
+            <p className="text-base font-light text-slate-400 max-w-2xl leading-relaxed">{desc}</p>
         </div>
-        <button className="hidden md:flex items-center justify-center w-16 h-16 rounded-full border border-white/10 text-white/30 group-hover:text-liquid-gold group-hover:border-liquid-gold transition-all duration-500 hover:bg-liquid-gold hover:text-brand-dark">
-            <ArrowRightIcon className="w-6 h-6 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+        <button className="hidden md:flex items-center justify-center w-20 h-20 rounded-full bg-white/5 text-white/20 group-hover:text-gold-bright transition-all duration-700 hover:bg-gold-bright hover:text-brand-dark hover:scale-110 group-hover:shadow-gold-glow">
+            <ArrowRightIcon className="w-8 h-8 -rotate-45 group-hover:rotate-0 transition-transform duration-700" />
         </button>
     </div>
 );
@@ -156,12 +156,12 @@ const VisualLanding: React.FC = () => {
             <nav className="fixed top-0 left-0 right-0 z-[100] bg-brand-dark/40 backdrop-blur-3xl border-b border-white/5 py-4 lg:py-6 transition-all duration-300">
                 <div className="container mx-auto px-6 lg:px-8 flex justify-between items-center">
                     <div className="flex items-center gap-3 lg:gap-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <div className="bg-white p-1.5 lg:p-2 rounded-xl shadow-gold-glow group-hover:rotate-12 transition-transform duration-500">
-                            <CordovaLogo className="h-5 lg:h-7 w-auto text-brand-dark" />
+                        <div className="bg-white p-2 rounded-xl shadow-gold-glow group-hover:scale-110 transition-all duration-700">
+                            <CordovaLogo className="h-6 lg:h-8 w-auto text-brand-dark" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xl lg:text-2xl font-display font-black text-white tracking-tighter uppercase leading-none">CÓRDOVA</span>
-                            <span className="text-[6px] lg:text-[8px] font-black text-liquid-gold uppercase tracking-[0.5em] mt-1">Atelier Gráfico</span>
+                            <h1 className="text-xl lg:text-3xl font-display italic font-black text-white tracking-tighter uppercase leading-none">CÓRDOVA</h1>
+                            <span className="text-[8px] lg:text-[10px] font-black text-gold-bright uppercase tracking-[0.6em] mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Atelier Gráfico</span>
                         </div>
                     </div>
                     
@@ -181,8 +181,8 @@ const VisualLanding: React.FC = () => {
                                 </span>
                             )}
                         </button>
-                        <Link to="/login" className="hidden md:flex px-5 py-2.5 lg:px-6 lg:py-3 bg-white text-brand-dark rounded-xl text-[8px] lg:text-[9px] font-black uppercase tracking-widest hover:bg-liquid-gold transition-all shadow-xl active:scale-95">
-                            Privado
+                        <Link to="/login" className="hidden md:flex px-6 py-3 border border-white/10 hover:border-gold-bright/50 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all hover:bg-white/[0.05] active:scale-95 group">
+                            <span className="group-hover:text-gold-bright transition-colors">Privado</span>
                         </Link>
                         <button 
                             className="lg:hidden p-2 text-white/70 hover:text-liquid-gold transition-colors focus:outline-none"
@@ -237,10 +237,10 @@ const VisualLanding: React.FC = () => {
                                 initial={{ opacity: 0, y: 40 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 1.5, delay: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                                className="text-6xl md:text-[7rem] lg:text-[8.5rem] font-display font-black text-white leading-[0.9] md:leading-[0.8] tracking-tighter"
+                                className="text-7xl md:text-[8rem] lg:text-[11rem] font-display font-black italic text-white leading-[0.8] tracking-tighter"
                             >
                                 IMPRESIÓN <br/>
-                                <span className="font-editorial text-liquid-gold italic font-normal tracking-normal text-glow">DE AUTOR.</span>
+                                <span className="font-editorial text-gold-bright not-italic font-normal tracking-normal text-glow opacity-80">DE AUTOR.</span>
                             </motion.h1>
 
                             <motion.p 
@@ -310,32 +310,30 @@ const VisualLanding: React.FC = () => {
                                         <button onClick={() => fileInputRef.current?.click()} className="w-full py-5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-brand-dark transition-all">
                                             Repetir Diagnóstico
                                         </button>
-                                    </div>
                                 ) : (
                                     <div className="space-y-12 text-center xl:text-left">
-                                        <div className="flex flex-col xl:flex-row items-center gap-8">
-                                            <div className="w-20 h-20 bg-liquid-gold/10 p-1 rounded-full flex items-center justify-center border border-liquid-gold/20 shadow-gold-glow animate-float">
-                                                <div className="w-full h-full bg-brand-dark rounded-full flex items-center justify-center">
-                                                    <SparklesIcon className="w-8 h-8 text-liquid-gold"/>
+                                        <div className="flex flex-col xl:flex-row items-center gap-10">
+                                            <div className="w-24 h-24 bg-gold-bright/5 p-1 rounded-3xl flex items-center justify-center border border-gold-bright/10 group-hover:shadow-gold-glow transition-all duration-1000 animate-float">
+                                                <div className="w-full h-full bg-brand-dark rounded-2xl flex items-center justify-center">
+                                                    <SparklesIcon className="w-10 h-10 text-gold-bright animate-pulse"/>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <h3 className="text-4xl font-display font-black text-white leading-none tracking-tight">VISION <span className="font-editorial italic font-normal text-liquid-gold">A.I.</span></h3>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Auditoría Algorítmica de Calidad</p>
+                                                <h3 className="text-5xl md:text-6xl font-display font-black italic text-white leading-none tracking-tight">VISION <span className="font-editorial not-italic font-normal text-gold-bright opacity-60">A.I.</span></h3>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Auditoría de CMYK Avanzada</p>
                                             </div>
                                         </div>
 
-                                        <div onClick={() => fileInputRef.current?.click()} className="group/drop relative p-16 border border-white/10 rounded-[2.5rem] hover:border-liquid-gold/40 transition-all duration-700 cursor-pointer overflow-hidden bg-white/[0.01]">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/0 via-liquid-gold/5 to-liquid-gold/0 opacity-0 group-hover/drop:opacity-100 transition-opacity duration-1000"></div>
-                                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/50 to-transparent transform -translate-x-full group-hover/drop:translate-x-full transition-transform duration-1000"></div>
+                                        <div onClick={() => fileInputRef.current?.click()} className="group/drop relative p-20 bg-white/[0.015] rounded-[3rem] hover:bg-white/[0.035] transition-all duration-1000 cursor-pointer overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gold-bright/40 shadow-gold-glow-soft animate-scan opacity-0 group-hover/drop:opacity-100 transition-opacity"></div>
                                             
                                             <div className="relative text-center space-y-6">
-                                                <div className="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center group-hover/drop:bg-liquid-gold group-hover/drop:shadow-gold-glow transition-all duration-500">
-                                                    <UploadIcon className="w-6 h-6 text-slate-500 group-hover/drop:text-brand-dark transition-colors" />
+                                                <div className="w-20 h-20 mx-auto rounded-full bg-white/5 flex items-center justify-center group-hover/drop:scale-110 transition-transform duration-700">
+                                                    <UploadIcon className="w-8 h-8 text-slate-500 group-hover/drop:text-gold-bright transition-colors" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xl font-display font-bold text-white mb-2">Importar Archivo Maestro</p>
-                                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Formatos SOPORTADOS: JPG, PNG, WEBP</p>
+                                                    <p className="text-2xl font-display font-black italic text-white mb-2">Importar Archivo</p>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-60">Píxeles que definen su marca</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -413,18 +411,18 @@ const VisualLanding: React.FC = () => {
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
                 
                 <div className="container mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
-                        <div className="space-y-4">
-                            <h2 className="text-[10px] font-black text-liquid-gold tracking-[0.5em] uppercase flex items-center gap-4">
-                                <span className="w-10 h-px bg-liquid-gold"></span>
-                                Nuestro Atelier
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-32 gap-16">
+                        <div className="space-y-6">
+                            <h2 className="text-[10px] font-black text-gold-bright tracking-[0.6em] uppercase flex items-center gap-6">
+                                <span className="w-12 h-px bg-gold-bright shadow-gold-glow"></span>
+                                Catálogo Selección
                             </h2>
-                            <h3 className="text-6xl md:text-[5rem] font-black text-white tracking-tighter leading-[0.85]">
-                                COLECCIÓN <br/> <span className="font-editorial text-slate-500 italic font-normal">2026</span>
+                            <h3 className="text-7xl md:text-[9rem] font-display italic font-black text-white tracking-tighter leading-[0.8] uppercase flex flex-col">
+                                PIEZAS <span className="text-white/20 not-italic font-editorial font-normal">DE EXHIBICIÓN</span>
                             </h3>
                         </div>
-                        <p className="text-slate-400 max-w-sm text-right font-light tracking-wide italic pb-2 text-lg">
-                            Cada pieza es fabricada bajo estrictos estándares de calidad, utilizando insumos certificados de alta gama y técnicas de impresión de precisión.
+                        <p className="text-slate-500 max-w-sm text-right font-light tracking-wide italic pb-4 text-xl border-r border-gold-bright/20 pr-10">
+                            Excelencia materializada en gran formato. Cada impresión es sometida a una auditoría cromática bajo luz normalizada.
                         </p>
                     </div>
 
@@ -436,44 +434,38 @@ const VisualLanding: React.FC = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-100px" }}
                                 transition={{ delay: idx * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                                className="group relative overflow-hidden bg-brand-dark rounded-[2.5rem] border border-white/5 hover:border-liquid-gold/30 transition-all duration-1000 shadow-2xl hover:shadow-gold-glow flex flex-col"
+                                className="group relative overflow-hidden bg-[#0e1729] rounded-[3rem] transition-all duration-1000 shadow-2xl hover:shadow-gold-glow-soft flex flex-col"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-dark/50 to-brand-dark z-10 pointer-events-none"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent z-10 pointer-events-none"></div>
                                 
                                 <div className="aspect-[3/4] relative overflow-hidden bg-white/5">
                                     <img 
                                         src={p.imagenUrl || 'https://images.unsplash.com/photo-1586075010683-2350bcbc085c?q=80&w=800&auto=format&fit=crop'} 
                                         alt={p.nombre} 
-                                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[2s] ease-out mix-blend-luminosity group-hover:mix-blend-normal opacity-60 group-hover:opacity-100"
+                                        className="w-full h-full object-cover transform scale-110 group-hover:scale-100 transition-transform duration-[3s] ease-out opacity-20 group-hover:opacity-100 grayscale group-hover:grayscale-0"
                                     />
                                     
-                                    <div className="absolute top-6 right-6 z-20 flex flex-col gap-3">
-                                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:bg-liquid-gold group-hover:text-brand-dark group-hover:border-liquid-gold transition-all duration-500 cursor-pointer shadow-xl transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100" onClick={() => handleAddToCart(p)}>
-                                            <ShoppingCartIcon className="w-5 h-5" />
+                                    <div className="absolute top-10 right-10 z-20">
+                                        <div className="w-16 h-16 rounded-3xl bg-brand-dark/80 backdrop-blur-3xl flex items-center justify-center text-white/50 group-hover:bg-gold-bright group-hover:text-brand-dark transition-all duration-700 cursor-pointer shadow-2xl" onClick={() => handleAddToCart(p)}>
+                                            <ShoppingCartIcon className="w-6 h-6" />
                                         </div>
-                                    </div>
-                                    
-                                    <div className="absolute top-6 left-6 z-20">
-                                        <span className="text-[8px] font-black text-white tracking-[0.3em] uppercase px-4 py-2 rounded-full border border-white/20 backdrop-blur-md bg-brand-dark/50">
-                                            {p.categoria}
-                                        </span>
                                     </div>
                                 </div>
 
-                                <div className="p-10 relative z-20 flex-grow flex flex-col -mt-32">
-                                    <h4 className="text-3xl font-display font-black text-white mb-4 tracking-tighter group-hover:text-liquid-gold transition-colors duration-500 leading-none">{p.nombre}</h4>
-                                    <p className="text-slate-400 text-sm mb-10 font-light leading-relaxed line-clamp-3 md:line-clamp-2">{p.descripcion}</p>
+                                <div className="p-12 relative z-20 flex-grow flex flex-col -mt-32">
+                                    <h4 className="text-4xl font-display font-black italic text-white mb-4 tracking-tighter group-hover:text-gold-bright transition-all duration-700 leading-[0.85]">{p.nombre}</h4>
+                                    <p className="text-slate-500 text-sm mb-12 font-light leading-relaxed line-clamp-2 italic">"{p.descripcion}"</p>
                                     
-                                    <div className="mt-auto pt-8 border-t border-white/10 flex items-center justify-between">
-                                        <div className="text-2xl font-black text-white flex items-baseline gap-2">
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Desde</span>
+                                    <div className="mt-auto pt-10 border-t border-white/5 flex items-center justify-between">
+                                        <div className="text-3xl font-display font-black text-white flex items-baseline gap-3">
+                                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest not-italic">Cotización</span>
                                             {formatCurrency(p.precio)}
                                         </div>
                                         <button 
                                             onClick={() => handleAddToCart(p)}
-                                            className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/50 group-hover:border-liquid-gold group-hover:text-liquid-gold transition-all duration-500 hover:bg-liquid-gold hover:text-brand-dark"
+                                            className="w-14 h-14 rounded-full bg-white/[0.03] flex items-center justify-center text-white/20 group-hover:bg-gold-bright group-hover:text-brand-dark group-hover:shadow-gold-glow transition-all duration-700"
                                         >
-                                            <ArrowRightIcon className="w-4 h-4 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+                                            <ArrowRightIcon className="w-5 h-5 -rotate-45 group-hover:rotate-0 transition-transform duration-700" />
                                         </button>
                                     </div>
                                 </div>
@@ -572,17 +564,17 @@ const VisualLanding: React.FC = () => {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="relative bg-white h-full w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden" 
+                            className="relative bg-brand-dark h-full w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border-l border-white/5" 
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Header del Carrito */}
-                            <div className="p-10 border-b border-slate-100 flex justify-between items-center">
+                            <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
                                 <div className="space-y-1">
-                                    <h2 className="text-2xl font-display font-black text-brand-dark uppercase tracking-tighter">Tu Selección</h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Curated Cart</p>
+                                    <h2 className="text-2xl font-display font-black text-white uppercase tracking-tighter">Tu Selección</h2>
+                                    <p className="text-[10px] font-black text-gold-bright uppercase tracking-[0.3em]">Curated Cart</p>
                                 </div>
                                 <button onClick={() => { setIsCartOpen(false); setIsCheckingOut(false); setCompletedOrder(null); }} className="group p-4 hover:rotate-90 transition-transform duration-500">
-                                    <CloseIcon className="w-6 h-6 text-slate-300 group-hover:text-brand-dark transition-colors"/>
+                                    <CloseIcon className="w-6 h-6 text-slate-500 group-hover:text-white transition-colors"/>
                                 </button>
                             </div>
                             
@@ -591,52 +583,52 @@ const VisualLanding: React.FC = () => {
                                     <div className="text-center space-y-10 py-20 animate-slide-up">
                                         <div className="relative inline-block">
                                             <div className="absolute inset-0 bg-liquid-gold/20 rounded-full blur-2xl animate-pulse"></div>
-                                            <div className="relative w-24 h-24 bg-brand-dark flex items-center justify-center rounded-sm">
-                                                <CheckBadgeIcon className="w-12 h-12 text-liquid-gold"/>
+                                            <div className="relative w-24 h-24 bg-white/5 flex items-center justify-center rounded-sm">
+                                                <CheckBadgeIcon className="w-12 h-12 text-gold-bright"/>
                                             </div>
                                         </div>
                                         <div className="space-y-4">
-                                            <h3 className="text-4xl font-display font-black uppercase text-brand-dark tracking-tighter">PROCESADO</h3>
-                                            <p className="text-slate-500 font-light text-lg">Su orden ha sido registrada en nuestro atelier.</p>
+                                            <h3 className="text-4xl font-display font-black uppercase text-white tracking-tighter">PROCESADO</h3>
+                                            <p className="text-slate-400 font-light text-lg">Su orden ha sido registrada en nuestro atelier.</p>
                                         </div>
-                                        <div className="bg-slate-50 p-8 border border-slate-100 flex flex-col items-center gap-2">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tracking ID</p>
-                                            <p className="text-5xl font-display font-black text-brand-dark tracking-tighter">#{completedOrder.orden}</p>
+                                        <div className="bg-white/[0.03] p-8 border border-white/5 flex flex-col items-center gap-2">
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tracking ID</p>
+                                            <p className="text-5xl font-display font-black text-white tracking-tighter">#{completedOrder.orden}</p>
                                         </div>
                                         <button 
                                             onClick={() => window.open(generateWhatsAppLink('0993083943', `Hola Imprenta Córdova, acabo de generar el pedido #${completedOrder.orden} desde la web.`), '_blank')}
-                                            className="w-full py-6 bg-brand-dark text-white font-black text-[10px] uppercase tracking-[0.4em] hover:bg-liquid-gold hover:text-brand-dark transition-all flex items-center justify-center gap-4 group"
+                                            className="w-full py-6 bg-gold-bright text-brand-dark font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white hover:text-brand-dark transition-all flex items-center justify-center gap-4 group"
                                         >
                                             Sincronizar vía WhatsApp <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-2 transition-transform"/>
                                         </button>
                                     </div>
                                 ) : cartItems.length === 0 ? (
                                     <div className="text-center py-40 flex flex-col items-center space-y-8 opacity-20">
-                                        <BoxIcon className="w-20 h-20 stroke-[0.5]"/>
-                                        <p className="font-display text-2xl uppercase tracking-tighter">Bolsa Vacía</p>
+                                        <BoxIcon className="w-20 h-20 stroke-[0.5] text-white"/>
+                                        <p className="font-display text-2xl uppercase tracking-tighter text-white">Bolsa Vacía</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-12">
                                         {cartItems.map(item => (
                                             <div key={item.producto.id} className="flex gap-8 group">
-                                                <div className="w-24 h-32 bg-slate-50 overflow-hidden flex-shrink-0">
+                                                <div className="w-24 h-32 bg-white/[0.03] overflow-hidden flex-shrink-0 border border-white/5">
                                                     {item.producto.imagenUrl ? (
-                                                        <img src={item.producto.imagenUrl} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                        <img src={item.producto.imagenUrl} className="w-full h-full object-cover transition-transform group-hover:scale-110 opacity-60 group-hover:opacity-100" />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-slate-200">
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-700">
                                                             <BoxIcon className="w-8 h-8 stroke-[0.5]"/>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="flex-grow flex flex-col justify-center space-y-2">
                                                     <div className="flex justify-between items-start">
-                                                        <h4 className="text-lg font-display font-medium text-brand-dark uppercase tracking-tight">{item.producto.nombre}</h4>
-                                                        <button onClick={() => setCartItems(cartItems.filter(i => i.producto.id !== item.producto.id))} className="text-slate-300 hover:text-red-500 transition-colors">
-                                                            <TrashIcon className="w-4 h-4 text-slate-300 hover:text-brand-dark transition-colors"/>
+                                                        <h4 className="text-lg font-display font-medium text-white uppercase tracking-tight">{item.producto.nombre}</h4>
+                                                        <button onClick={() => setCartItems(cartItems.filter(i => i.producto.id !== item.producto.id))} className="text-slate-600 hover:text-red-500 transition-colors">
+                                                            <TrashIcon className="w-4 h-4"/>
                                                         </button>
                                                     </div>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.cantidad} UNIDAD(ES)</p>
-                                                    <p className="text-xl font-display font-black text-brand-dark">{formatCurrency(item.producto.precio)}</p>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.cantidad} UNIDAD(ES)</p>
+                                                    <p className="text-xl font-display font-black text-gold-bright">{formatCurrency(item.producto.precio)}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -690,17 +682,17 @@ const VisualLanding: React.FC = () => {
                                     
                                     {isCheckingOut ? (
                                         <div className="flex gap-4">
-                                            <button onClick={() => setIsCheckingOut(false)} className="px-8 py-5 border border-slate-200 text-brand-dark font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all">Atrás</button>
+                                            <button onClick={() => setIsCheckingOut(false)} className="px-8 py-5 border border-white/10 text-white font-black text-[9px] uppercase tracking-widest hover:bg-white/5 transition-all rounded-2xl active:scale-95">Atrás</button>
                                             <button 
                                                 onClick={handlePlaceOrder} 
                                                 disabled={isPlacingOrder || !clientName || !clientPhone} 
-                                                className="flex-grow py-5 bg-liquid-gold text-brand-dark font-black text-[9px] uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed"
+                                                className="flex-grow py-5 bg-gold-bright text-brand-dark font-black text-[9px] uppercase tracking-[0.2em] hover:shadow-gold-glow transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed rounded-2xl active:scale-95 shadow-2xl"
                                             >
-                                                {isPlacingOrder ? <Loader2Icon className="animate-spin w-4 h-4"/> : 'Confirmar Pedido'}
+                                                {isPlacingOrder ? <Loader2Icon className="animate-spin w-4 h-4"/> : 'Finalizar Transacción'}
                                             </button>
                                         </div>
                                     ) : (
-                                        <button onClick={() => setIsCheckingOut(true)} className="w-full py-6 bg-brand-dark text-white font-black text-[10px] uppercase tracking-[0.4em] hover:bg-liquid-gold hover:text-brand-dark transition-all flex items-center justify-center gap-4 group">
+                                        <button onClick={() => setIsCheckingOut(true)} className="w-full py-6 bg-gold-bright text-brand-dark font-black text-[10px] uppercase tracking-[0.4em] hover:shadow-gold-glow transition-all flex items-center justify-center gap-4 group rounded-2xl shadow-2xl active:scale-95">
                                             Avanzar al Atelier <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-2 transition-transform"/>
                                         </button>
                                     )}

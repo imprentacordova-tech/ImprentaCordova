@@ -66,7 +66,7 @@ const FooterLink: React.FC<{ href: string; label: string }> = ({ href, label }) 
 );
 
 const ColumnTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <h4 className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.5em] mb-8">{children}</h4>
+    <h4 className="text-[9px] font-black text-gold-bright uppercase tracking-[0.5em] mb-8 italic">{children}</h4>
 );
 
 // ── Main Footer ───────────────────────────────────────────────────────────────
@@ -77,8 +77,8 @@ const Footer: React.FC = () => {
         <footer className="relative bg-brand-dark border-t border-white/5 overflow-hidden">
 
             {/* Ambient glow */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-liquid-gold/4 blur-[140px] rounded-full pointer-events-none" />
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gold-bright/4 blur-[140px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-bright/20 to-transparent" />
 
             {/* ── CTA Banner ── */}
             <div className="border-b border-white/5 bg-white/[0.015]">
@@ -91,35 +91,35 @@ const Footer: React.FC = () => {
                         className="flex flex-col lg:flex-row items-center justify-between gap-10"
                     >
                         <div className="text-center lg:text-left space-y-4">
-                            <div className="inline-flex items-center gap-2 text-liquid-gold">
-                                <SparklesIcon className="w-4 h-4 animate-pulse" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.5em]">Atención Inmediata · Pasaje, El Oro</span>
+                            <div className="inline-flex items-center gap-2 text-gold-bright">
+                                <SparklesIcon className="w-4 h-4" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.5em] italic text-gold-bright/60">Atención Pyme · Pasaje, El Oro</span>
                             </div>
-                            <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none">
-                                ¿Listo para imprimir?
+                            <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none italic uppercase">
+                                ¿Listo para <br className="hidden md:block"/> <span className="text-white/20 not-italic font-editorial font-normal">IMPRIMIR?</span>
                             </h2>
-                            <p className="text-slate-500 max-w-md font-light">
-                                Contáctanos por WhatsApp y recibe tu cotización en minutos. Sin formularios, sin esperas.
+                            <p className="text-slate-500 max-w-md font-light text-sm italic">
+                                Contáctanos por WhatsApp y recibe tu cotización en minutos. Protocolos de alta fidelidad garantizados.
                             </p>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+                         <div className="flex flex-col sm:flex-row gap-4 shrink-0">
                             <a
                                 href="https://wa.me/593993083943"
                                 target="_blank"
                                 rel="noreferrer"
-                                className="group px-10 py-5 bg-liquid-gold text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white hover:shadow-gold-glow hover:scale-105 transition-all duration-300 flex items-center gap-3 active:scale-95"
+                                className="group px-12 py-6 bg-gold-bright text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:shadow-gold-glow-strong transition-all duration-700 flex items-center gap-4 active:scale-95 italic"
                             >
                                 <WhatsAppIcon className="w-5 h-5" />
-                                <span>Escribir Ahora</span>
-                                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                <span>Canal Directo</span>
+                                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                             </a>
                             <a
                                 href="tel:+593993083943"
-                                className="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center gap-3"
+                                className="px-12 py-6 bg-white/5 border border-white/10 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/10 hover:border-white/20 transition-all duration-500 flex items-center gap-4 italic"
                             >
-                                <PhoneIcon className="w-4 h-4 text-liquid-gold" />
-                                <span>Llamar</span>
+                                <PhoneIcon className="w-4 h-4 text-gold-bright" />
+                                <span>Voice Link</span>
                             </a>
                         </div>
                     </motion.div>
@@ -131,14 +131,14 @@ const Footer: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-14 lg:gap-8">
 
                     {/* Brand col */}
-                    <div className="lg:col-span-4 space-y-8">
+                     <div className="lg:col-span-4 space-y-8">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.06)] shrink-0">
-                                <CordovaLogo className="w-10 h-10" />
+                            <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-[1.2rem] flex items-center justify-center shadow-lg shrink-0">
+                                <CordovaLogo className="w-9 h-9" />
                             </div>
-                            <div>
-                                <h3 className="font-display font-black text-xl text-white tracking-tight leading-none">IMPRENTA</h3>
-                                <h3 className="font-display font-black text-xl text-liquid-gold tracking-tight leading-none">CÓRDOVA</h3>
+                            <div className="leading-none">
+                                <h3 className="font-display font-black text-2xl text-white tracking-tighter italic uppercase">CORDOVA</h3>
+                                <h3 className="font-display font-black text-[10px] text-gold-bright/60 tracking-[0.5em] uppercase">Atelier</h3>
                             </div>
                         </div>
 
@@ -147,14 +147,14 @@ const Footer: React.FC = () => {
                         </p>
 
                         {/* Badges */}
-                        <div className="flex flex-wrap gap-3">
+                         <div className="flex flex-wrap gap-3">
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/8 rounded-full backdrop-blur-md">
-                                <ShieldCheckIcon className="w-3.5 h-3.5 text-liquid-gold" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SRI Autorizado</span>
+                                <ShieldCheckIcon className="w-3.5 h-3.5 text-gold-bright" />
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">SRI Autorizado</span>
                             </div>
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/8 rounded-full backdrop-blur-md">
-                                <PrinterIcon className="w-3.5 h-3.5 text-liquid-gold" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Roland Certified</span>
+                                <PrinterIcon className="w-3.5 h-3.5 text-gold-bright" />
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Roland Certified</span>
                             </div>
                         </div>
 
@@ -189,29 +189,29 @@ const Footer: React.FC = () => {
                             <ColumnTitle>Contacto</ColumnTitle>
                             <ul className="space-y-5">
                                 <li className="flex items-start gap-4">
-                                    <div className="w-8 h-8 rounded-xl bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center shrink-0 mt-0.5">
-                                        <MapPinIcon className="w-3.5 h-3.5 text-liquid-gold" />
+                                    <div className="w-8 h-8 rounded-xl bg-gold-bright/10 border border-gold-bright/20 flex items-center justify-center shrink-0 mt-0.5">
+                                        <MapPinIcon className="w-3.5 h-3.5 text-gold-bright" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1">Dirección</p>
+                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1 italic">Dirección</p>
                                         <p className="text-slate-300 text-sm font-light leading-snug">Calle Colón e/ Sucre<br />Diagonal al Parque Central<br />Pasaje · El Oro, Ecuador</p>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-4">
-                                    <div className="w-8 h-8 rounded-xl bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center shrink-0 mt-0.5">
-                                        <PhoneIcon className="w-3.5 h-3.5 text-liquid-gold" />
+                                    <div className="w-8 h-8 rounded-xl bg-gold-bright/10 border border-gold-bright/20 flex items-center justify-center shrink-0 mt-0.5">
+                                        <PhoneIcon className="w-3.5 h-3.5 text-gold-bright" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1">Teléfono</p>
+                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1 italic">Teléfono</p>
                                         <a href="tel:+593993083943" className="text-slate-300 text-sm font-light hover:text-white transition-colors">+593 993 083 943</a>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-4">
-                                    <div className="w-8 h-8 rounded-xl bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center shrink-0 mt-0.5">
-                                        <ClockIcon className="w-3.5 h-3.5 text-liquid-gold" />
+                                    <div className="w-8 h-8 rounded-xl bg-gold-bright/10 border border-gold-bright/20 flex items-center justify-center shrink-0 mt-0.5">
+                                        <ClockIcon className="w-3.5 h-3.5 text-gold-bright" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2">Horario de Atención</p>
+                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 italic">Horario de Atención</p>
                                         <div className="space-y-1.5">
                                             {schedule.map(({ day, hours }) => (
                                                 <div key={day} className="flex items-center justify-between gap-6 text-[11px]">

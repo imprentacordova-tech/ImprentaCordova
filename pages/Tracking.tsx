@@ -247,12 +247,12 @@ const TrackingPage: React.FC = () => {
                     className="mb-24 text-center"
                 >
                     <div className="inline-flex items-center gap-4 px-6 py-2 bg-white/[0.03] border border-white/10 rounded-full mb-10 shadow-inner">
-                        <GlobeAltIcon className="w-5 h-5 text-liquid-gold animate-spin-slow" />
+                        <GlobeAltIcon className="w-5 h-5 text-gold-bright animate-spin-slow" />
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Cordova Vision Link Active</span>
                     </div>
-                    <h1 className="text-6xl md:text-8xl lg:text-[9rem] font-black text-white mb-8 uppercase tracking-tighter leading-[0.8] italic group">
-                        Live <br/>
-                        <span className="text-gold-gradient drop-shadow-gold text-glow-gold">Tracking</span>
+                    <h1 className="text-6xl md:text-8xl lg:text-[11rem] font-black text-white mb-8 uppercase tracking-tighter leading-[0.8] italic group">
+                        LIVE <br/>
+                        <span className="text-white/20 not-italic font-editorial font-normal">TRACKING</span>
                     </h1>
                     <p className="text-slate-400 text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed font-medium tracking-tight">
                         Interfaz síncrona de monitoreo industrial. Ingrese su firma de pedido para inicializar el protocolo de rastreo.
@@ -285,9 +285,9 @@ const TrackingPage: React.FC = () => {
                                 <button 
                                     type="submit"
                                     disabled={searching}
-                                    className="w-full md:w-auto h-full px-16 py-8 bg-white text-black rounded-[2.2rem] font-black text-xs tracking-[0.4em] uppercase hover:bg-liquid-gold transition-all duration-700 flex items-center justify-center gap-4 shadow-luxury active:scale-95 disabled:opacity-40"
+                                    className="w-full md:w-auto h-full px-16 py-8 bg-gold-bright text-brand-dark rounded-[2.2rem] font-black text-xs tracking-[0.4em] uppercase hover:bg-white hover:shadow-gold-glow-strong transition-all duration-700 flex items-center justify-center gap-4 shadow-luxury active:scale-95 disabled:opacity-40"
                                 >
-                                    {searching ? <Loader2Icon className="w-6 h-6 animate-spin"/> : <>SINCRONIZAR</>}
+                                    {searching ? <Loader2Icon className="w-6 h-6 animate-spin"/> : <>Sincronizar</>}
                                 </button>
                             </div>
                         </div>
@@ -330,14 +330,14 @@ const TrackingPage: React.FC = () => {
                                 {/* ── CABECERA H-FI ── */}
                                 <div className="p-12 lg:p-20 border-b border-white/5 bg-black/40 flex flex-col xl:flex-row justify-between items-center gap-14 relative z-10">
                                     <div className="flex items-center gap-10">
-                                        <div className="w-24 h-24 bg-white/[0.03] border-2 border-white/5 rounded-[2.5rem] flex items-center justify-center shadow-inner group-hover:border-liquid-gold/40 transition-all duration-1000">
-                                            <CpuIcon className="w-12 h-12 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:animate-pulse transition-all duration-700"/>
+                                        <div className="w-24 h-24 bg-white/[0.03] border-2 border-white/5 rounded-[2.5rem] flex items-center justify-center shadow-inner group-hover:border-gold-bright/40 transition-all duration-1000">
+                                            <CpuIcon className="w-12 h-12 text-gold-bright/30 group-hover:text-gold-bright group-hover:animate-pulse transition-all duration-700"/>
                                         </div>
                                         <div className="space-y-2 text-center xl:text-left">
                                             <div className="flex items-center justify-center xl:justify-start gap-4">
                                                 <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] italic">Artifact Signature</span>
-                                                <div className="w-1.5 h-1.5 bg-liquid-gold rounded-full shadow-gold-glow-sm"></div>
-                                                <span className="text-[10px] font-black text-liquid-gold/60 uppercase tracking-[0.5em] italic">{job.tipo.toUpperCase()}</span>
+                                                <div className="w-1.5 h-1.5 bg-gold-bright rounded-full shadow-gold-glow-sm"></div>
+                                                <span className="text-[10px] font-black text-gold-bright/60 uppercase tracking-[0.5em] italic">{job.tipo.toUpperCase()}</span>
                                             </div>
                                             <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter leading-none italic uppercase">
                                                 #{String(job.orden).padStart(5, '0')}
@@ -437,7 +437,7 @@ const TrackingPage: React.FC = () => {
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(currentStepIdx / (statusSteps.length - 1)) * 100}%` }}
                                                 transition={{ duration: 2.5, ease: "circOut" }}
-                                                className="h-full bg-liquid-gold shadow-gold-glow-strong"
+                                                className="h-full bg-gold-bright shadow-gold-glow-strong"
                                             />
                                         </div>
                                         {/* Node Units */}
@@ -467,7 +467,7 @@ const TrackingPage: React.FC = () => {
                                                             {isCurrent && (
                                                                 <motion.div 
                                                                     layoutId="active-node-indicator"
-                                                                    className="w-1.5 h-1.5 bg-liquid-gold rounded-full shadow-gold-glow"
+                                                                    className="w-1.5 h-1.5 bg-gold-bright rounded-full shadow-gold-glow"
                                                                 />
                                                             )}
                                                         </div>
@@ -486,12 +486,12 @@ const TrackingPage: React.FC = () => {
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                                                 <div className="p-10 bg-white/[0.02] border border-white/5 rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-4 italic group-hover/val:text-liquid-gold transition-colors">Gross Valuation</span>
-                                                    <span className="text-5xl font-black text-white italic tracking-tighter truncate">{formatCurrency(job.total)}</span>
+                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-4 italic group-hover/val:text-gold-bright transition-colors">Gross Valuation</span>
+                                                    <span className="text-5xl font-black text-white italic tracking-tighter truncate font-epilogue">{formatCurrency(job.total)}</span>
                                                 </div>
                                                 <div className="p-10 bg-white/[0.02] border border-white/5 rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
                                                     <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-4 italic group-hover/val:text-emerald-500 transition-colors">Flux Injected</span>
-                                                    <span className="text-5xl font-black text-emerald-500 italic tracking-tighter truncate">{formatCurrency(job.abono)}</span>
+                                                    <span className="text-5xl font-black text-emerald-500 italic tracking-tighter truncate font-epilogue">{formatCurrency(job.abono)}</span>
                                                 </div>
                                             </div>
                                             
@@ -504,14 +504,14 @@ const TrackingPage: React.FC = () => {
                                                         <span className={`text-[12px] font-black uppercase tracking-[0.8em] block mb-2 italic ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500 animate-pulse'}`}>
                                                             {job.saldo > 0 ? 'Residual Credit' : 'Balance Finalized'}
                                                         </span>
-                                                        <span className={`text-7xl lg:text-8xl font-black italic tracking-tighter text-glow truncate ${job.saldo > 0 ? 'text-white' : 'text-emerald-400'}`}>
+                                                        <span className={`text-7xl lg:text-8xl font-black italic tracking-tighter text-glow truncate font-epilogue ${job.saldo > 0 ? 'text-white' : 'text-emerald-400'}`}>
                                                             {formatCurrency(job.saldo)}
                                                         </span>
                                                     </div>
                                                     {job.saldo > 0 && (
                                                         <button 
                                                             onClick={() => handleGeneratePaymentLink(job)}
-                                                            className="px-16 py-8 bg-white text-black rounded-[2rem] font-black text-[12px] uppercase tracking-[0.6em] flex items-center justify-center gap-5 hover:bg-liquid-gold transition-all duration-[1.5s] shadow-luxury active:scale-95 group/pay italic"
+                                                            className="px-16 py-8 bg-white text-black rounded-[2rem] font-black text-[12px] uppercase tracking-[0.6em] flex items-center justify-center gap-5 hover:bg-gold-bright transition-all duration-[1.5s] shadow-luxury active:scale-95 group/pay italic"
                                                         >
                                                             INJECT ASSET <ArrowRightIcon className="w-6 h-6 group-hover/pay:translate-x-3 transition-transform" />
                                                         </button>

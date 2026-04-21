@@ -28,7 +28,7 @@ const MobileLink: React.FC<{
         className="group flex items-center justify-between px-6 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/[0.05] border border-transparent hover:border-white/8 transition-all duration-300"
     >
         <span className="text-[12px] font-black uppercase tracking-[0.25em]">{name}</span>
-        <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 text-liquid-gold transition-all duration-300" />
+        <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 text-gold-bright transition-all duration-300" />
     </motion.a>
 );
 
@@ -68,13 +68,14 @@ const Navbar: React.FC = () => {
     return (
         <>
             {/* ── Top announcement bar ── */}
-            <div className="fixed top-0 inset-x-0 z-[60] h-9 bg-liquid-gold flex items-center justify-center">
-                <div className="flex items-center gap-3 text-brand-dark">
-                    <SparklesIcon className="w-3 h-3 animate-pulse" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.5em]">
-                        Imprenta Autorizada SRI · Pasaje, El Oro · +593 993 083 943
+            <div className="fixed top-0 inset-x-0 z-[60] h-9 bg-brand-dark border-b border-white/5 flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-gold-bright/5 animate-pulse"></div>
+                <div className="relative flex items-center gap-6 text-gold-bright/60">
+                    <SparklesIcon className="w-3 h-3" />
+                    <span className="text-[8px] font-black uppercase tracking-[0.6em] italic">
+                        Imprenta Autorizada SRI · Pasaje, El Oro · <span className="text-white">EST. 1990</span>
                     </span>
-                    <SparklesIcon className="w-3 h-3 animate-pulse" />
+                    <SparklesIcon className="w-3 h-3" />
                 </div>
             </div>
 
@@ -95,12 +96,12 @@ const Navbar: React.FC = () => {
                             className="group flex items-center gap-4 shrink-0"
                             aria-label="Imprenta Córdova — Inicio"
                         >
-                            <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.06)] group-hover:shadow-[0_0_30px_rgba(212,175,55,0.25)] group-hover:scale-105 transition-all duration-500">
-                                <CordovaLogo className="w-8 h-8" />
+                            <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center group-hover:border-gold-bright/20 group-hover:shadow-gold-glow transition-all duration-500">
+                                <CordovaLogo className="w-7 h-7" />
                             </div>
                             <div className="flex flex-col leading-none">
-                                <span className="font-display font-black text-lg text-white tracking-tight">IMPRENTA</span>
-                                <span className="font-display font-black text-[13px] text-liquid-gold tracking-[0.2em]">CÓRDOVA</span>
+                                <span className="font-display font-black text-xl italic text-white tracking-tighter">CORDOVA</span>
+                                <span className="font-display font-black text-[10px] text-gold-bright/60 tracking-[0.4em] uppercase">Atelier</span>
                             </div>
                         </a>
 
@@ -117,7 +118,7 @@ const Navbar: React.FC = () => {
                                     >
                                         {link.name}
                                         {/* Underline on hover */}
-                                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-0 bg-liquid-gold group-hover:w-3/4 transition-all duration-500 rounded-full" />
+                                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-0 bg-gold-bright group-hover:w-3/4 transition-all duration-500 rounded-full shadow-gold-glow" />
                                     </Tag>
                                 );
                             })}
@@ -132,15 +133,15 @@ const Navbar: React.FC = () => {
                                 <ShieldCheckIcon className="w-3.5 h-3.5 text-brand-red" />
                                 SRI
                             </a>
-                            <a
+                             <a
                                 href="https://wa.me/593993083943"
                                 target="_blank"
                                 rel="noreferrer"
-                                className="group px-8 py-2.5 bg-liquid-gold text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:shadow-gold-glow hover:scale-105 transition-all duration-300 flex items-center gap-2 active:scale-95"
+                                className="group px-8 py-3 bg-gold-bright text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:shadow-gold-glow-strong transition-all duration-500 flex items-center gap-3 active:scale-95"
                             >
-                                <WhatsAppIcon className="w-3.5 h-3.5" />
-                                <span>Cotizar Ahora</span>
-                                <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                                <WhatsAppIcon className="w-4 h-4" />
+                                <span>Atelier Direct</span>
+                                <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                             </a>
                         </div>
 
