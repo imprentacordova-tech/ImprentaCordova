@@ -1,104 +1,284 @@
-import React from 'react';
-import { FileText, Printer, Calculator, Book, Stamp, Ticket } from 'lucide-react';
-import { ServiceItem } from '../types';
 
-const services: ServiceItem[] = [
-  {
-    id: '1',
-    title: 'Gigantografías HD',
-    description: 'Impresión en gran formato con tecnología Roland. Lonas, banners y vinilos de alta definición y durabilidad.',
-    iconName: 'Printer',
-    imageUrl: 'https://images.unsplash.com/photo-1520697517317-6767553cc51a?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: '2',
-    title: 'Imprenta Autorizada SRI',
-    description: 'Facturas, Notas de Venta, Retenciones, Liquidaciones de compra y Guías de remisión.',
-    iconName: 'FileText',
-    imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: '3',
-    title: 'Gestión Tributaria',
-    description: 'Declaraciones de IVA (Mensual/Semestral), Impuesto a la Renta, Anexos, RUC y RISE.',
-    iconName: 'Calculator',
-    imageUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: '4',
-    title: 'Juegos y Eventos',
-    description: 'Tablas de Bingo, Rifas numeradas, Boletos y Tickets para tus eventos sociales.',
-    iconName: 'Ticket',
-    imageUrl: 'https://images.unsplash.com/photo-1533561052669-829984e9da82?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: '5',
-    title: 'Empastados y Tesis',
-    description: 'Encuadernación profesional de libros, tesis de grado y archivos contables con acabados de lujo.',
-    iconName: 'Book',
-    imageUrl: 'https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: '6',
-    title: 'Sellos y Oficina',
-    description: 'Sellos automáticos y de madera, personalizados al instante. Material de oficina en general.',
-    iconName: 'Stamp',
-    imageUrl: 'https://images.unsplash.com/photo-1620641974338-9cb5585b14f8?auto=format&fit=crop&q=80&w=400'
-  }
+import React from 'react';
+import { motion } from 'framer-motion';
+import {
+    PrinterIcon, ShieldCheckIcon, CalculatorIcon, SparklesIcon,
+    LayersIcon, PaletteIcon, ArrowRightIcon, ReceiptIcon
+} from './Icons';
+
+// ── Service data ─────────────────────────────────────────────────────────────
+const services = [
+    {
+        id: '1',
+        index: '01',
+        title: 'Gigantografías HD',
+        subtitle: 'Gran Formato Roland',
+        description:
+            'Lonas, banners y vinilos con tecnología Roland High-Fidelity. Colores saturados que resisten sol, lluvia y el paso del tiempo.',
+        icon: PrinterIcon,
+        imageUrl: 'https://images.unsplash.com/photo-1520697517317-6767553cc51a?auto=format&fit=crop&q=80&w=800',
+        accent: 'text-liquid-gold',
+        glow: 'shadow-gold-glow',
+        featured: true,
+    },
+    {
+        id: '2',
+        index: '02',
+        title: 'Imprenta Autorizada SRI',
+        subtitle: 'Documentos con Validez Fiscal',
+        description:
+            'Facturas, Notas de Venta, Retenciones, Liquidaciones de compra y Guías de remisión. Autorizados y con numeración SRI.',
+        icon: ShieldCheckIcon,
+        imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=800',
+        accent: 'text-brand-red',
+        glow: 'shadow-[0_0_20px_rgba(225,29,72,0.3)]',
+        featured: false,
+    },
+    {
+        id: '3',
+        index: '03',
+        title: 'Gestión Tributaria',
+        subtitle: 'IVA · Renta · Anexos',
+        description:
+            'Declaraciones de IVA Mensual y Semestral, Impuesto a la Renta, Anexos Transaccionales, RUC y RISE. Tus cifras en orden.',
+        icon: CalculatorIcon,
+        imageUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=800',
+        accent: 'text-blue-400',
+        glow: 'shadow-[0_0_20px_rgba(96,165,250,0.2)]',
+        featured: false,
+    },
+    {
+        id: '4',
+        index: '04',
+        title: 'Material Publicitario',
+        subtitle: 'Tarjetas · Volantes · Dípticos',
+        description:
+            'Desde tarjetas de presentación premium hasta folletos corporativos. Diseño estratégico para que tu marca cause primera impresión.',
+        icon: PaletteIcon,
+        imageUrl: 'https://images.unsplash.com/photo-1586075010683-2350bcbc085c?auto=format&fit=crop&q=80&w=800',
+        accent: 'text-purple-400',
+        glow: 'shadow-[0_0_20px_rgba(167,139,250,0.2)]',
+        featured: false,
+    },
+    {
+        id: '5',
+        index: '05',
+        title: 'Acabados Premium',
+        subtitle: 'Troquelado · Barniz UV · Laminado',
+        description:
+            'Terminaciones que elevan cualquier pieza al nivel de obra de arte. Lacados mate, brillos selectivos y relieves táctiles.',
+        icon: SparklesIcon,
+        imageUrl: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&q=80&w=800',
+        accent: 'text-liquid-gold',
+        glow: 'shadow-gold-glow',
+        featured: false,
+    },
+    {
+        id: '6',
+        index: '06',
+        title: 'Sellos y Encuadernación',
+        subtitle: 'Tesis · Archivos · Sellos Express',
+        description:
+            'Sellos automáticos y de madera al instante, empastados de tesis y encuadernación de archivos contables con acabados de lujo.',
+        icon: LayersIcon,
+        imageUrl: 'https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&q=80&w=800',
+        accent: 'text-emerald-400',
+        glow: 'shadow-[0_0_20px_rgba(52,211,153,0.2)]',
+        featured: false,
+    },
 ];
 
-const IconMap: Record<string, React.ElementType> = {
-  Printer,
-  FileText,
-  Calculator,
-  Ticket,
-  Book,
-  Stamp
+// ── Animation variants ────────────────────────────────────────────────────────
+const containerVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.1 } },
 };
 
-const Services: React.FC = () => {
-  return (
-    <section id="services" className="py-20 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-sm md:text-base text-orange-600 font-bold tracking-wide uppercase">Nuestras Especialidades</h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-blue-900 sm:text-4xl">
-            Soluciones Gráficas & Tributarias
-          </p>
-          <p className="mt-4 max-w-2xl text-xl text-slate-600 mx-auto">
-            En Imprenta Córdova no solo imprimimos, te ayudamos a cumplir con tus obligaciones y destacar tu marca.
-          </p>
+const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+};
+
+// ── Featured card (large) ─────────────────────────────────────────────────────
+const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, description, icon: Icon, imageUrl, accent, glow }) => (
+    <motion.div
+        variants={itemVariants}
+        className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 hover:border-liquid-gold/20 transition-all duration-1000 shadow-luxury hover:-translate-y-2 min-h-[520px] flex flex-col justify-end cursor-default"
+    >
+        {/* Background image */}
+        <div className="absolute inset-0 z-0">
+            <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-cover opacity-25 mix-blend-luminosity group-hover:opacity-40 group-hover:scale-105 transition-all duration-[2s] ease-out"
+            />
+        </div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/70 to-transparent z-10 pointer-events-none" />
+        {/* Gold glow on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/0 to-liquid-gold/0 group-hover:from-liquid-gold/5 group-hover:to-transparent transition-all duration-1000 z-10 pointer-events-none" />
+
+        <div className="relative z-20 p-10 lg:p-14 space-y-6">
+            {/* Icon + badge */}
+            <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:${glow} transition-all duration-500`}>
+                    <Icon className={`w-7 h-7 ${accent}`} />
+                </div>
+                <span className={`text-[9px] font-black uppercase tracking-[0.5em] ${accent} opacity-70`}>{subtitle}</span>
+            </div>
+
+            <div>
+                <h3 className="text-4xl lg:text-5xl font-display font-black text-white tracking-tighter leading-none mb-4">
+                    {title}
+                </h3>
+                <p className="text-slate-400 text-base font-light leading-relaxed max-w-md">
+                    {description}
+                </p>
+            </div>
+
+            {/* CTA */}
+            <div className="pt-2 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 group-hover:text-liquid-gold transition-colors duration-500">
+                <span>Solicitar Cotización</span>
+                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+        </div>
+    </motion.div>
+);
+
+// ── Compact card ──────────────────────────────────────────────────────────────
+const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
+    index, title, subtitle, description, icon: Icon, imageUrl, accent, glow, delay = 0,
+}) => (
+    <motion.div
+        variants={itemVariants}
+        className="group relative overflow-hidden rounded-[2rem] border border-white/5 hover:border-white/15 transition-all duration-700 shadow-luxury hover:-translate-y-2 flex flex-col"
+    >
+        {/* Image */}
+        <div className="relative h-44 overflow-hidden shrink-0">
+            <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-cover opacity-20 mix-blend-luminosity group-hover:opacity-35 group-hover:scale-110 transition-all duration-[2s] ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-brand-dark/90 pointer-events-none" />
+            {/* Index number */}
+            <span className="absolute top-5 left-6 text-5xl font-display font-black text-white/5 group-hover:text-liquid-gold/10 transition-colors duration-700 leading-none">
+                {index}
+            </span>
+            {/* Icon */}
+            <div className={`absolute bottom-5 right-5 w-11 h-11 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md flex items-center justify-center group-hover:${glow} group-hover:border-white/20 transition-all duration-500`}>
+                <Icon className={`w-5 h-5 ${accent}`} />
+            </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service) => {
-            const Icon = IconMap[service.iconName];
-            return (
-              <div key={service.id} className="bg-white rounded-xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 group hover:-translate-y-1">
-                <div className="h-48 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-blue-900/20 group-hover:bg-blue-900/0 transition-all z-10" />
-                  <img 
-                    src={service.imageUrl} 
-                    alt={service.title} 
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="p-3 bg-orange-100 rounded-lg text-orange-600 mr-4 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-xl font-bold text-blue-900">{service.title}</h3>
-                  </div>
-                  <p className="text-slate-600 leading-relaxed">{service.description}</p>
-                </div>
-              </div>
-            );
-          })}
+        {/* Body */}
+        <div className="p-8 flex-grow flex flex-col gap-3 bg-brand-dark border-t border-white/5">
+            <p className={`text-[9px] font-black uppercase tracking-[0.4em] ${accent} opacity-60`}>{subtitle}</p>
+            <h3 className="text-2xl font-display font-black text-white tracking-tighter leading-tight group-hover:text-liquid-gold transition-colors duration-500">
+                {title}
+            </h3>
+            <p className="text-slate-500 text-sm font-light leading-relaxed flex-grow">
+                {description}
+            </p>
+            <div className="pt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-700 group-hover:text-liquid-gold transition-colors duration-500 border-t border-white/5 mt-2">
+                <span>Ver detalle</span>
+                <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
         </div>
-      </div>
-    </section>
-  );
+    </motion.div>
+);
+
+// ── Main component ────────────────────────────────────────────────────────────
+const Services: React.FC = () => {
+    const [featured, ...rest] = services;
+
+    return (
+        <section id="services" className="py-32 lg:py-40 bg-brand-dark relative overflow-hidden">
+            {/* Ambient background orbs */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-liquid-gold/3 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-brand-red/3 blur-[120px] rounded-full pointer-events-none" />
+
+            <div className="container mx-auto px-6 lg:px-10 relative z-10">
+
+                {/* ── Section header ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-80px' }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    className="mb-20 lg:mb-28 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 border-l-2 border-liquid-gold pl-10"
+                >
+                    <div className="space-y-5">
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">
+                            Servicios Especializados
+                        </p>
+                        <h2 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white leading-[0.85] tracking-tighter uppercase">
+                            ARTE{' '}
+                            <br />
+                            <span className="text-white/15">INDUSTRIAL</span>
+                        </h2>
+                    </div>
+                    <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed italic pb-2 lg:text-right">
+                        Desde la primera impresión hasta el acabado final, cada detalle es una declaración de intención hacia la excelencia.
+                    </p>
+                </motion.div>
+
+                {/* ── Bento grid ── */}
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-60px' }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+                >
+                    {/* Featured card spans full width on mobile, 1 col on lg */}
+                    <div className="md:col-span-2 lg:col-span-1 lg:row-span-2">
+                        <FeaturedCard {...featured} />
+                    </div>
+
+                    {/* 5 compact cards */}
+                    {rest.map((service) => (
+                        <CompactCard key={service.id} {...service} />
+                    ))}
+                </motion.div>
+
+                {/* ── Bottom CTA strip ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="mt-20 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8"
+                >
+                    <div className="text-center md:text-left space-y-2">
+                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">¿Tienes un proyecto en mente?</p>
+                        <p className="text-2xl font-display font-black text-white tracking-tight">
+                            Cuéntanos y lo hacemos realidad.
+                        </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+                        <a
+                            href="https://wa.me/593993083943"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="group px-10 py-4 bg-liquid-gold text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white hover:shadow-gold-glow hover:scale-105 transition-all duration-300 flex items-center gap-3 active:scale-95"
+                        >
+                            <ReceiptIcon className="w-4 h-4" />
+                            Solicitar Cotización
+                            <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </a>
+                        <a
+                            href="#sri"
+                            className="px-10 py-4 bg-white/5 border border-white/10 text-white rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center gap-3"
+                        >
+                            <ShieldCheckIcon className="w-4 h-4 text-brand-red" />
+                            Documentos SRI
+                        </a>
+                    </div>
+                </motion.div>
+            </div>
+        </section>
+    );
 };
 
 export default Services;

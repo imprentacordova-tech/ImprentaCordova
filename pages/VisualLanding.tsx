@@ -393,7 +393,7 @@ const VisualLanding: React.FC = () => {
                 <div className="container mx-auto px-8">
                     <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-24 border-l-2 border-liquid-gold pl-10">
                         <div className="space-y-6">
-                            <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">Curated Services</p>
+                            <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">Servicios Especializados</p>
                             <h2 className="text-5xl md:text-8xl font-display font-black text-white leading-[0.8] tracking-tighter uppercase">
                                 ARTE <br/> <span className="text-white/20">INDUSTRIAL</span>
                             </h2>
@@ -497,7 +497,7 @@ const VisualLanding: React.FC = () => {
                                 </div>
                                 <div className="space-y-1">
                                     <h2 className="text-4xl font-display font-black tracking-tighter uppercase text-white leading-none">CÓRDOVA</h2>
-                                    <p className="text-[10px] font-black tracking-[0.6em] text-liquid-gold uppercase opacity-80">Heritage Excellence</p>
+                                    <p className="text-[10px] font-black tracking-[0.6em] text-liquid-gold uppercase opacity-80">Herencia de Excelencia</p>
                                 </div>
                             </div>
                             <h3 className="text-4xl md:text-6xl font-display font-black text-white/90 leading-[0.9] tracking-tighter uppercase">
@@ -546,7 +546,7 @@ const VisualLanding: React.FC = () => {
                     </div>
 
                     <div className="pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10 text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">
-                        <p>&copy; 2025 IMPRENTA CÓRDOVA. ARCHIVE OF EXCELLENCE.</p>
+                        <p>&copy; 2026 IMPRENTA CÓRDOVA. ARCHIVO DE EXCELENCIA.</p>
                         <div className="flex gap-12">
                             <a href="#" className="hover:text-white transition-colors focus:outline-none">Privacy Policy</a>
                             <a href="#" className="hover:text-white transition-colors focus:outline-none">Terms of Service</a>

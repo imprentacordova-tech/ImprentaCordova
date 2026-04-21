@@ -402,9 +402,13 @@ export const CreateClientModal: React.FC<{
     );
 };
 
-interface ClientSelectorProps { onSelectClient: (cliente: Cliente) => void; }
 
-const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
+interface ClientSelectorProps { 
+    onSelect: (cliente: Cliente) => void; 
+    selectedId?: string;
+}
+
+const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId }) => {
     const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -470,8 +474,8 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
             {searchTerm.length > 1 && (
                 <div className="bg-brand-dark/40 backdrop-blur-3xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden animate-slide-in-up divide-y divide-white/5">
                     {filteredClients.map((c) => (
-                        <div key={c.id} onClick={() => onSelectClient(c)} className="p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group relative overflow-hidden">
-                            <div className="absolute inset-y-0 left-0 w-1 bg-liquid-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div key={c.id} onClick={() => onSelect(c)} className={`p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === c.id ? 'bg-liquid-gold/10' : ''}`}>
+                            <div className={`absolute inset-y-0 left-0 w-1 bg-liquid-gold transition-opacity ${selectedId === c.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
                             <div className="flex items-center gap-5 relative z-10">
                                 <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/20 text-orange-400' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
                                     {c.nombre.charAt(0)}
@@ -502,7 +506,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelectClient }) => {
             <CreateClientModal 
                 isOpen={isCreateModalOpen} 
                 onClose={() => setIsCreateModalOpen(false)} 
-                onClientCreated={(c) => { setIsCreateModalOpen(false); onSelectClient(c); }}
+                onClientCreated={(c) => { setIsCreateModalOpen(false); onSelect(c); }}
                 initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
                 initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
                 initialMode={createMode}

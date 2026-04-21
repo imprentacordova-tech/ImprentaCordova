@@ -189,25 +189,38 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setClientes(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
     };
 
-    const addTrabajo = async (trabajoData: any, user: string) => {
+    const addTrabajo = async (trabajoData: any, user: string, imageFile?: File | null) => {
         const dbData = {
             cliente_id: trabajoData.clienteId || trabajoData.cliente_id,
             titular: trabajoData.titular,
-            tipo: trabajoData.tipo,
-            subtipo: trabajoData.subtipo,
-            cantidad: trabajoData.cantidad,
-            total: trabajoData.total,
-            abono: trabajoData.abono,
-            saldo: trabajoData.saldo,
+            tipo: trabajoData.servicio || trabajoData.tipo,
+            subtipo: trabajoData.detalle || trabajoData.subtipo,
+            cantidad: trabajoData.cantidad || 1,
+            total: trabajoData.precio || trabajoData.total,
+            abono: trabajoData.abono || 0,
+            saldo: trabajoData.saldo || 0,
             estado: trabajoData.estado || TrabajoEstado.PENDIENTE,
+            prioridad: trabajoData.prioridad || 'Normal',
             creado_por: user,
-            origen: trabajoData.origen || 'Interno'
+            origen: trabajoData.origen || 'Interno',
+            fecha_entrada: trabajoData.fechaEntrada || new Date().toISOString()
         };
+        
+        // TODO: Implementar subida de imagen si imageFile existe y hay bucket configurado
+        // if (imageFile) { ... }
+
         const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         if (error) throw error;
-        await deductInventory(dbData);
-        setTrabajos(prev => [mapDBTrabajo(data), ...prev]);
-        return mapDBTrabajo(data);
+        
+        try {
+            await deductInventory(dbData);
+        } catch (invErr) {
+            console.error("Error al descontar inventario:", invErr);
+        }
+
+        const mapped = mapDBTrabajo(data);
+        setTrabajos(prev => [mapped, ...prev]);
+        return mapped;
     };
 
     const updateTrabajoStatus = async (id: string, status: TrabajoEstado, user: string) => {

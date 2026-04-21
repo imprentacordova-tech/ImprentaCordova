@@ -1,87 +1,38 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { CalculatorIcon, CheckCircleIcon, CloseIcon, InfoIcon, FileText, Sparkles, RulerIcon, Cog8ToothIcon, ShieldCheckIcon, MonitorIcon, TableIcon, DollarIcon, SaveIcon, PrinterIcon, WrenchScrewdriverIcon, ExclamationTriangleIcon, ArrowRightIcon, BoxIcon, Loader2Icon } from '../components/Icons';
-import { formatCurrency } from '../utils';
-import { supabase } from '../services/supabase';
-import { logActivity } from '../services/activityLogService';
 import { useOutletContext } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabase';
+import { 
+    WrenchScrewdriverIcon, PrinterIcon, SparklesIcon, 
+    TableCellsIcon as TableIcon, Cog8ToothIcon, 
+    ChevronRightIcon, ExclamationTriangleIcon,
+    CurrencyDollarIcon as DollarIcon, ArrowRightIcon,
+    ClockIcon, ShieldCheckIcon, CpuIcon, RocketLaunchIcon,
+    BeakerIcon, DocumentDuplicateIcon as DocumentIcon,
+    CircleStackIcon
+} from '@heroicons/react/24/solid';
+import { formatCurrency } from '../utils';
+import { logActivity } from '../services/activityLogService';
+import { SOURCE_PAPERS, DEFAULT_COSTS } from '../constants';
+import { CostConfig } from '../types';
 
-// --- TIPOS Y ESTADOS ---
-
-type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG';
-
-// --- 1. CONFIGURACIÓN DE COSTOS (PERSONALIZADA ECUADOR) ---
-interface CostConfig {
-    // Materia Prima (Papeles)
-    COSTO_RESMA_QUIMICO_ORIG: number; // Paquete 500h Oficio
-    COSTO_RESMA_QUIMICO_COPIA: number; // Paquete 500h Oficio
-    COSTO_RESMA_BOND: number;         // Paquete 500h Oficio
-    COSTO_PLIEGO_COUCHE_300: number;  // Precio por unidad (de paquete de 100)
-    COSTO_PLIEGO_ADHESIVO: number;    // Precio por unidad
-    
-    // Pre-Prensa
-    COSTO_DISENO_SRI: number;         // Costo fijo servicio
-    COSTO_PLACA_POLIESTER: number;    // Costo por placa (master)
-    COSTO_PLACA_CTP: number;          // Costo por chapa metalica
-    
-    // Impresión
-    COSTO_ARRANQUE: number;           // Puesta a punto
-    COSTO_MILLAR_IMPRESION: number;   // Mano de obra x 1000
-    
-    // Digital
-    CLICK_DIGITAL_A3: number;
-    CLICK_DIGITAL_BN: number;
-    
-    // Acabados
-    COSTO_NUMERACION: number;         // Por millar
-    COSTO_BLOCK_ENCOLADO: number;     // Por unidad de block
-    COSTO_CORTE: number;              // Fijo
-    
-    // Rentabilidad
-    MARGEN_GANANCIA: number;          // 0.30 - 1.00
-}
-
-const DEFAULT_COSTS: CostConfig = {
-    // Datos del usuario (Actualizados según prompt)
-    COSTO_RESMA_QUIMICO_ORIG: 47.00,
-    COSTO_RESMA_QUIMICO_COPIA: 46.00,
-    COSTO_RESMA_BOND: 4.50,
-    COSTO_PLIEGO_COUCHE_300: 0.51, // $51 el paquete de 100 pliegos
-    COSTO_PLIEGO_ADHESIVO: 1.10,
-    
-    COSTO_DISENO_SRI: 5.00,
-    COSTO_PLACA_POLIESTER: 3.00,
-    COSTO_PLACA_CTP: 6.00,
-    
-    COSTO_ARRANQUE: 10.00,
-    COSTO_MILLAR_IMPRESION: 4.00,
-    
-    CLICK_DIGITAL_A3: 0.40,
-    CLICK_DIGITAL_BN: 0.10,
-    
-    COSTO_NUMERACION: 4.00,
-    COSTO_BLOCK_ENCOLADO: 0.15,
-    COSTO_CORTE: 1.50,
-    
-    MARGEN_GANANCIA: 0.40 // 40% ganancia neta objetivo
+// --- ANIMATION VARIANTS ---
+const fadeInUp = {
+    initial: { opacity: 0, y: 30, scale: 0.98 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
 };
 
-// --- 2. MODELO DE PAPELES (FUENTE) ---
-interface SourcePaper {
-    id: string;
-    nombre: string;
-    tipo: 'RESMA' | 'PLIEGO';
-    ancho: number;
-    alto: number;
-    costoBaseKey: keyof CostConfig;
-}
+const staggerContainer = {
+    animate: {
+        transition: {
+            staggerChildren: 0.08
+        }
+    }
+};
 
-const SOURCE_PAPERS: SourcePaper[] = [
-    { id: 'QUIMICO', nombre: 'Papel Químico (Autocopiativo)', tipo: 'RESMA', ancho: 21.6, alto: 33, costoBaseKey: 'COSTO_RESMA_QUIMICO_ORIG' },
-    { id: 'BOND', nombre: 'Papel Bond 75g', tipo: 'RESMA', ancho: 21.6, alto: 33, costoBaseKey: 'COSTO_RESMA_BOND' },
-    { id: 'COUCHE_300', nombre: 'Couché 300g (Glosy)', tipo: 'PLIEGO', ancho: 90, alto: 130, costoBaseKey: 'COSTO_PLIEGO_COUCHE_300' },
-    { id: 'ADHESIVO', nombre: 'Adhesivo Brillante', tipo: 'PLIEGO', ancho: 70, alto: 100, costoBaseKey: 'COSTO_PLIEGO_ADHESIVO' },
-];
+// --- TYPES ---
+type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG';
 
 // --- COMPONENTE VISUAL STEP ---
 const VisualStep: React.FC<{
@@ -92,42 +43,41 @@ const VisualStep: React.FC<{
     cost?: number;
     isLast?: boolean;
 }> = ({ title, image, subtitle, detail, cost, isLast }) => (
-    <div className="flex-1 relative group w-full md:w-auto">
+    <motion.div 
+        variants={fadeInUp}
+        className="flex-1 relative group w-full lg:w-auto"
+    >
         {!isLast && (
-            <div className="hidden md:block absolute top-[60px] -right-6 w-12 h-px bg-white/10 z-0"></div>
+            <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-[1px] bg-white/10 z-0"></div>
         )}
         
-        <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/5 overflow-hidden hover:border-liquid-gold/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 overflow-hidden hover:border-liquid-gold/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl relative">
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
             {/* Image Area */}
-            <div className="h-32 w-full relative overflow-hidden bg-black">
-                <img src={image} alt={title} className="w-full h-full object-cover opacity-40 grayscale group-hover/step:grayscale-0 group-hover/step:opacity-80 transition-all duration-1000 scale-110 group-hover/step:scale-100" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex items-end p-5">
-                    <span className="text-white font-black text-[9px] uppercase tracking-[0.4em] flex items-center gap-3">
-                        <span className="bg-liquid-gold w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-[0_0_20px_rgba(212,175,55,0.5)]">{title.split('.')[0]}</span>
+            <div className="h-40 w-full relative overflow-hidden bg-black/40">
+                <img src={image} alt={title} className="w-full h-full object-cover opacity-10 grayscale group-hover/step:grayscale-0 group-hover/step:opacity-40 transition-all duration-1000 scale-125 group-hover/step:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent flex items-end p-8">
+                    <span className="text-white font-black text-[10px] uppercase tracking-[0.4em] flex items-center gap-4">
+                        <span className="bg-liquid-gold w-8 h-8 rounded-full flex items-center justify-center text-[12px] text-brand-dark shadow-gold-glow-sm">{title.split('.')[0]}</span>
                         {title.split('. ')[1]}
                     </span>
                 </div>
             </div>
             
             {/* Content Area */}
-            <div className="p-5 flex flex-col flex-grow bg-white/[0.02]">
-                <h4 className="font-black text-white text-[11px] uppercase tracking-widest mb-2 leading-tight italic">{subtitle}</h4>
-                <p className="text-[10px] text-slate-500 font-medium mb-4 flex-grow leading-relaxed">{detail}</p>
+            <div className="p-8 flex flex-col flex-grow bg-white/[0.01]">
+                <h4 className="font-editorial font-bold text-white text-lg mb-3 leading-none italic group-hover/step:text-liquid-gold transition-colors">{subtitle}</h4>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mb-6 flex-grow leading-relaxed italic">{detail}</p>
                 {cost !== undefined && (
-                    <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-auto">
-                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Insumo</span>
-                        <span className="font-black text-xs text-liquid-gold tracking-widest">{formatCurrency(cost)}</span>
+                    <div className="flex justify-between items-center border-t border-white/5 pt-6 mt-auto">
+                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">Insumo Valorizado</span>
+                        <span className="font-black text-sm text-white tracking-widest group-hover/step:text-liquid-gold transition-colors">{formatCurrency(cost)}</span>
                     </div>
                 )}
             </div>
         </div>
-        
-        {!isLast && (
-            <div className="md:hidden flex justify-center py-4">
-                <ArrowRightIcon className="w-6 h-6 text-white/10 transform rotate-90" />
-            </div>
-        )}
-    </div>
+    </motion.div>
 );
 
 // --- COMPONENTE VISUAL DE PROCESO (PIPELINE) ---
@@ -142,83 +92,79 @@ const ProductionPipeline: React.FC<{
     printCost: number;
 }> = ({ sourceName, sourceType, sourceSize, cutSize, cutsPerUnit, prePressCost, materialCost, printCost }) => {
     
-    // URLs de imágenes visuales para cada paso
     const images = {
-        input: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=400", // Resma de papel
-        prepress: "https://images.unsplash.com/photo-1626785774573-4b7993143a2d?auto=format&fit=crop&q=80&w=400", // Placas/Diseño
-        print: "https://i.imgur.com/AUvl1wF.png", // Máquina Offset (Roland)
-        finish: "https://i.imgur.com/cKqbnJj.jpeg" // Producto Terminado (Papelería)
+        input: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=600",
+        prepress: "https://images.unsplash.com/photo-1626785774573-4b7993143a2d?auto=format&fit=crop&q=80&w=600",
+        print: "https://images.unsplash.com/photo-1619551734325-81372338c237?auto=format&fit=crop&q=80&w=600",
+        finish: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600"
     };
 
     return (
-        <div className="w-full py-4">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
+        <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="w-full"
+        >
+            <div className="flex flex-col lg:flex-row gap-6 justify-between">
                 <VisualStep 
-                    title="1. Entrada" 
+                    title="1. Sustrato" 
                     image={images.input} 
                     subtitle={sourceName} 
-                    detail={`${sourceType === 'RESMA' ? 'Resma (500h)' : 'Pliego'} • ${sourceSize}`}
+                    detail={`${sourceType} • PHYSICAL MATRIZ • ${sourceSize}`}
                     cost={materialCost}
                 />
                 <VisualStep 
-                    title="2. Pre-Prensa" 
+                    title="2. Profiling" 
                     image={images.prepress} 
-                    subtitle="Diseño & Placas" 
-                    detail="Autorización SRI + Placa Poliéster/CTP"
+                    subtitle="Perfil Offset" 
+                    detail="Insumo Técnico • CTP / Poliéster"
                     cost={prePressCost}
                 />
                 <VisualStep 
-                    title="3. Ejecución" 
+                    title="3. Printing" 
                     image={images.print} 
-                    subtitle="Impresión Offset" 
-                    detail="Tiraje en máquina + Puesta a punto"
+                    subtitle="Chasis Mecánico" 
+                    detail="Ejecución de Tiraje Industrial"
                     cost={printCost}
                 />
                 <VisualStep 
-                    title="4. Salida" 
+                    title="4. Finishes" 
                     image={images.finish} 
-                    subtitle="Producto Final" 
-                    detail={`Formato ${cutSize} (${cutsPerUnit} cortes p/${sourceType === 'RESMA' ? 'hoja' : 'pliego'})`}
+                    subtitle="Arquitectura" 
+                    detail={`${cutSize} (${cutsPerUnit} imps/hoja)`}
                     isLast
                 />
             </div>
-        </div>
+        </motion.div>
     );
 };
 
 // --- CALCULADORA OFFSET ---
 const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
-    // Inputs
     const [paperId, setPaperId] = useState('QUIMICO');
-    
-    // Tamaños Predefinidos para selección rápida
     const [selectedSizePreset, setSelectedSizePreset] = useState('1/4_OFICIO');
     const [finalW, setFinalW] = useState(10.5);
     const [finalH, setFinalH] = useState(14.8);
-    
-    const [quantity, setQuantity] = useState(100); // Blocks o Unidades
-    const [cantidadHojasBlock, setCantidadHojasBlock] = useState(100); // 100, 50, 25
+    const [quantity, setQuantity] = useState(100);
+    const [cantidadHojasBlock, setCantidadHojasBlock] = useState(100);
     const [colorsFront, setColorsFront] = useState(1); 
     const [colorsBack, setColorsBack] = useState(0);
-    const [parts, setParts] = useState(2); // 1 Original + 1 Copia
-    const [hasDesign, setHasDesign] = useState(false); // Ya tiene diseño?
+    const [parts, setParts] = useState(2);
+    const [hasDesign, setHasDesign] = useState(false);
     const [requiresSRI, setRequiresSRI] = useState(true);
 
-    // Manejo de tamaños predefinidos
     const handlePresetChange = (val: string) => {
         setSelectedSizePreset(val);
         const currentPaper = SOURCE_PAPERS.find(p => p.id === paperId);
-        
         if (currentPaper?.tipo === 'RESMA') {
-            // Base Oficio (21.6 x 33)
             switch(val) {
                 case 'OFICIO': setFinalW(21.6); setFinalH(33); break;
                 case '1/2_OFICIO': setFinalW(21.6); setFinalH(16.5); break;
-                case '1/4_OFICIO': setFinalW(10.8); setFinalH(16.5); break; // Aprox notas venta
+                case '1/4_OFICIO': setFinalW(10.8); setFinalH(16.5); break;
                 case '1/8_OFICIO': setFinalW(10.8); setFinalH(8.25); break;
             }
         } else {
-            // Base Pliego o A4 Standard
             switch(val) {
                 case 'A3': setFinalW(29.7); setFinalH(42); break;
                 case 'A4': setFinalW(21); setFinalH(29.7); break;
@@ -228,318 +174,259 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
         }
     };
 
-    // --- MOTOR DE CÁLCULO ---
     const result = useMemo(() => {
         const paper = SOURCE_PAPERS.find(p => p.id === paperId) || SOURCE_PAPERS[0];
-        
-        // 1. Cálculo de Cortes (Imposición)
-        // Margen técnico de pinza y refile
         const marginY = 1.0; 
         const marginX = 0.5;
-        
         const usableW = paper.ancho - marginX;
         const usableH = paper.alto - marginY;
-
-        // Opción A: Normal
-        const colsA = Math.floor(usableW / finalW);
-        const rowsA = Math.floor(usableH / finalH);
-        const cutsA = colsA * rowsA;
-
-        // Opción B: Rotado
-        const colsB = Math.floor(usableW / finalH);
-        const rowsB = Math.floor(usableH / finalW);
-        const cutsB = colsB * rowsB;
-
+        const cutsA = Math.floor(usableW / (finalW/10)) * Math.floor(usableH / (finalH/10));
+        const cutsB = Math.floor(usableW / (finalH/10)) * Math.floor(usableH / (finalW/10));
         const cutsPerUnit = Math.max(cutsA, cutsB);
-        
         if (cutsPerUnit === 0) return null;
 
-        // 2. Cálculo de Material (Papel)
         let totalSheetsNeeded = 0;
         let costPapelTotal = 0;
 
         if (paper.id === 'QUIMICO') {
-            // Lógica Especial: Resmas separadas (Original + Copias)
-            // blocks * hojas_por_block = total juegos
             const totalJuegos = quantity * cantidadHojasBlock; 
             const bajadasNecesarias = Math.ceil(totalJuegos / cutsPerUnit);
-            
-            // Merma (10% + 20 hojas base para arranque)
             const merma = Math.ceil(bajadasNecesarias * 0.10) + 20; 
             const totalBajadasConMerma = bajadasNecesarias + merma;
-
-            // Precio por hoja individual (sacado del precio de resma de 500)
             const costoHojaOriginal = costs.COSTO_RESMA_QUIMICO_ORIG / 500;
             const costoHojaCopia = costs.COSTO_RESMA_QUIMICO_COPIA / 500;
-            
-            // Costo Material = (Hojas Orig * Costo) + (Hojas Copia * Num Copias * Costo)
-            const costoTotalOrig = totalBajadasConMerma * costoHojaOriginal;
-            const costoTotalCopia = totalBajadasConMerma * (parts - 1) * costoHojaCopia;
-            
-            costPapelTotal = costoTotalOrig + costoTotalCopia;
-            totalSheetsNeeded = totalBajadasConMerma * parts; // Total hojas físicas pasadas por máquina
-
+            costPapelTotal = (totalBajadasConMerma * costoHojaOriginal) + (totalBajadasConMerma * (parts - 1) * costoHojaCopia);
+            totalSheetsNeeded = totalBajadasConMerma * parts;
         } else if (paper.tipo === 'RESMA') {
-            // Bond, etc. Venta por millar o resma
-            const totalUnidades = quantity; // Volantes
-            const bajadas = Math.ceil(totalUnidades / cutsPerUnit);
+            const bajadas = Math.ceil(quantity / cutsPerUnit);
             const merma = Math.ceil(bajadas * 0.10) + 30;
             const totalHojas = bajadas + merma;
-            
-            const costoHoja = costs[paper.costoBaseKey] / 500;
-            costPapelTotal = totalHojas * costoHoja;
+            costPapelTotal = totalHojas * (costs[paper.costoBaseKey as keyof CostConfig] / 500);
             totalSheetsNeeded = totalHojas;
-
         } else {
-            // Pliego (Couché, Adhesivo)
-            const totalUnidades = quantity;
-            const bajadas = Math.ceil(totalUnidades / cutsPerUnit);
-            const merma = Math.ceil(bajadas * 0.10) + 5; // Menos merma en pliego grande proporcionalmente
+            const bajadas = Math.ceil(quantity / cutsPerUnit);
+            const merma = Math.ceil(bajadas * 0.10) + 5;
             const totalPliegos = bajadas + merma;
-            
-            // CORRECCION: El usuario dijo "$51 el paquete de 100". Entonces unitario es 0.51.
-            costPapelTotal = totalPliegos * costs[paper.costoBaseKey];
+            costPapelTotal = totalPliegos * costs[paper.costoBaseKey as keyof CostConfig];
             totalSheetsNeeded = totalPliegos;
         }
 
-        // 3. Pre-Prensa
         let costPrePrensa = 0;
-        if (!hasDesign) {
-            costPrePrensa += requiresSRI ? costs.COSTO_DISENO_SRI : 5.00; // Diseño básico
-        }
-        
-        // Placas: Poliester para tirajes cortos (< 2000), CTP para largos o alta calidad
-        // Lógica simple: Si es químico o bond corto tiraje -> Poliester.
+        if (!hasDesign) costPrePrensa += requiresSRI ? costs.COSTO_DISENO_SRI : 5.00;
         const numPlacas = colorsFront + colorsBack;
-        const costoPlacaUnit = (quantity > 2000 || paper.id === 'COUCHE_300') ? costs.COSTO_PLACA_CTP : costs.COSTO_PLACA_POLIESTER;
-        
-        const costPlacas = numPlacas * costoPlacaUnit;
-        costPrePrensa += costPlacas;
+        const costingPlaca = (quantity > 2000 || paper.id === 'COUCHE_300') ? costs.COSTO_PLACA_CTP : costs.COSTO_PLACA_POLIESTER;
+        costPrePrensa += (numPlacas * costingPlaca);
 
-        // 4. Impresión
         const millares = Math.ceil(totalSheetsNeeded / 1000);
-        const tiros = millares * (colorsFront + colorsBack); // Aproximación simple de tiros
-        // En offset pequeño, se cobra a veces por "quemado" o "arranque" mas millar.
-        // Aquí simplificamos: Arranque + (Millares * Costo)
+        const tiros = millares * (colorsFront + colorsBack);
         const costImpresion = costs.COSTO_ARRANQUE + (tiros * costs.COSTO_MILLAR_IMPRESION);
 
-        // 5. Acabados
-        let costAcabados = costs.COSTO_CORTE; // Siempre hay refile
+        let costAcabados = costs.COSTO_CORTE;
         if (paper.id === 'QUIMICO') {
-            costAcabados += (quantity * costs.COSTO_BLOCK_ENCOLADO); // Encolado de blocks
-            costAcabados += (millares * costs.COSTO_NUMERACION); // Numeración
+            costAcabados += (quantity * costs.COSTO_BLOCK_ENCOLADO) + (millares * costs.COSTO_NUMERACION);
         }
 
-        // 6. Totales
         const costoTotalProduccion = costPapelTotal + costPrePrensa + costImpresion + costAcabados;
-        const utilidadEsperada = costoTotalProduccion * costs.MARGEN_GANANCIA;
-        // Ajuste de mercado: Si es muy bajo, subir al mínimo.
-        let pvp = costoTotalProduccion + utilidadEsperada;
-        
-        // Regla de mínimos (ej. un ciento de facturas no baja de $15-$18)
+        let pvp = costoTotalProduccion * (1 + costs.MARGEN_GANANCIA);
         if (paper.id === 'QUIMICO' && quantity === 1 && pvp < 15) pvp = 15;
 
-        return {
-            paper,
-            cutsPerUnit,
-            costPapelTotal,
-            costPrePrensa,
-            costImpresion,
-            costAcabados,
-            costoTotalProduccion,
-            pvp,
-            unitario: pvp / quantity
-        };
-
+        return { paper, cutsPerUnit, costPapelTotal, costPrePrensa, costImpresion, costAcabados, costoTotalProduccion, pvp, unitario: pvp / quantity };
     }, [paperId, finalW, finalH, quantity, colorsFront, colorsBack, parts, costs, hasDesign, requiresSRI, cantidadHojasBlock]);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             {/* Input Panel */}
-            <div className="lg:col-span-4 space-y-8">
-                <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
+            <motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="lg:col-span-4 space-y-10"
+            >
+                <div className="glass-boutique p-12 relative overflow-hidden group shadow-2xl rounded-[3.5rem] border border-white/10">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-liquid-gold/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-liquid-gold/10 transition-all duration-1000" />
                     
-                    <div className="flex items-center gap-5 mb-10 pb-6 border-b border-white/5 relative z-10">
-                        <div className="bg-liquid-gold/20 p-3 rounded-full border border-liquid-gold/30 shadow-[0_0_30px_rgba(212,175,55,0.2)] text-liquid-gold">
-                            <WrenchScrewdriverIcon className="w-6 h-6" />
+                    <div className="flex items-center gap-8 mb-14 pb-10 border-b border-white/5 relative z-10">
+                        <div className="bg-liquid-gold/10 p-5 rounded-[2rem] border border-liquid-gold/20 shadow-gold-glow-soft text-liquid-gold">
+                            <CpuIcon className="w-8 h-8" />
                         </div>
-                        <div>
-                            <h2 className="font-editorial font-bold text-liquid-gold text-2xl uppercase tracking-tighter italic">Machine Config</h2>
-                            <p className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.2em]">Parámetros de Producción</p>
+                        <div className="space-y-1">
+                            <h2 className="font-editorial font-bold text-white text-3xl tracking-tighter italic">Technical Core</h2>
+                            <p className="text-[10px] text-liquid-gold/60 font-black uppercase tracking-[0.5em]">Parámetros de Ingeniería</p>
                         </div>
                     </div>
 
-                    <div className="space-y-8 relative z-10">
+                    <div className="space-y-12 relative z-10">
                         {/* Tipo de Papel */}
-                        <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em] group-focus-within/field:text-liquid-gold transition-colors">Material Base</label>
-                            <div className="relative">
+                        <div className="space-y-5">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2 italic">Physical Substrate</label>
+                            <div className="relative group">
                                 <select 
                                     value={paperId} 
                                     onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} 
-                                    className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white outline-none focus:ring-1 focus:ring-liquid-gold/30 transition-all appearance-none cursor-pointer"
+                                    className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-sm font-black text-white outline-none focus:border-liquid-gold/40 transition-all appearance-none cursor-pointer group-hover:bg-black/80 tracking-widest uppercase italic"
                                 >
-                                    {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-slate-900">{p.nombre.toUpperCase()}</option>)}
+                                    {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-brand-dark">{p.nombre.toUpperCase()}</option>)}
                                 </select>
-                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
-                                    <ArrowRightIcon className="w-4 h-4 rotate-90" />
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700">
+                                    <ChevronRightIcon className="w-5 h-5 rotate-90" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Tamaño de Corte */}
-                        <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Corte de Salida (Blueprint)</label>
-                            <div className="grid grid-cols-4 gap-2">
+                        <div className="space-y-6">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2 italic">Artifact Geometry</label>
+                            <div className="grid grid-cols-2 gap-4">
                                 {SOURCE_PAPERS.find(p=>p.id===paperId)?.tipo === 'RESMA' ? (
-                                    <>
-                                        {['OFICIO', '1/2_OFICIO', '1/4_OFICIO', '1/8_OFICIO'].map(p => (
-                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-liquid-gold text-white shadow-xl shadow-gold-glow border-liquid-gold' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
-                                        ))}
-                                    </>
+                                    ['OFICIO', '1/2_OFICIO', '1/4_OFICIO', '1/8_OFICIO'].map(p => (
+                                        <button key={p} onClick={() => handlePresetChange(p)} className={`py-5 text-[10px] font-black uppercase tracking-widest border-2 rounded-2xl transition-all duration-700 ${selectedSizePreset===p ? 'bg-white text-black border-white shadow-luxury scale-105' : 'bg-white/[0.02] text-slate-500 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
+                                    ))
                                 ) : (
-                                    <>
-                                        {['A3', 'A4', 'A5', 'A6'].map(p => (
-                                            <button key={p} onClick={() => handlePresetChange(p)} className={`px-2 py-3 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${selectedSizePreset===p ? 'bg-liquid-gold text-white shadow-xl shadow-gold-glow border-liquid-gold' : 'bg-black/20 text-slate-500 border-white/5 hover:border-white/20'}`}>{p}</button>
-                                        ))}
-                                    </>
+                                    ['A3', 'A4', 'A5', 'A6'].map(p => (
+                                        <button key={p} onClick={() => handlePresetChange(p)} className={`py-5 text-[10px] font-black uppercase tracking-widest border-2 rounded-2xl transition-all duration-700 ${selectedSizePreset===p ? 'bg-white text-black border-white shadow-luxury scale-105' : 'bg-white/[0.02] text-slate-500 border-white/5 hover:border-white/20'}`}>{p}</button>
+                                    ))
                                 )}
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-4 bg-black/40 p-4 rounded-3xl border border-white/5">
                                 <div className="relative flex-1">
-                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white text-center" />
-                                    <span className="absolute left-4 top-1 text-[8px] font-black text-slate-600 uppercase">Width</span>
+                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full h-14 bg-transparent border-none text-center text-white font-black text-lg outline-none" />
+                                    <span className="absolute left-4 top-1 text-[9px] font-black text-slate-700 uppercase">Width</span>
                                 </div>
-                                <span className="text-slate-700 font-bold">×</span>
+                                <div className="w-[1px] h-10 bg-white/5" />
                                 <div className="relative flex-1">
-                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white text-center" />
-                                    <span className="absolute left-4 top-1 text-[8px] font-black text-slate-600 uppercase">Height</span>
+                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full h-14 bg-transparent border-none text-center text-white font-black text-lg outline-none" />
+                                    <span className="absolute left-4 top-1 text-[9px] font-black text-slate-700 uppercase">Height</span>
                                 </div>
-                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">mm</span>
+                                <span className="pr-4 text-[10px] font-black text-slate-800 italic">mm</span>
                             </div>
                         </div>
 
-                        {/* Cantidad y Hojas */}
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="relative">
-                                <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em]">Units</label>
-                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-lg font-black text-liquid-gold outline-none border-b-2 border-liquid-gold/30" />
-                            </div>
-                            {paperId === 'QUIMICO' && (
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.3em]">Shts/Block</label>
-                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-full p-5 bg-black/40 border-none rounded-2xl text-[13px] font-bold text-white outline-none appearance-none cursor-pointer">
-                                        <option value={100} className="bg-slate-900">100 STD</option>
-                                        <option value={50} className="bg-slate-900">50 MID</option>
-                                        <option value={25} className="bg-slate-900">25 MIN</option>
+                        {/* Volumen */}
+                        <div className="space-y-5">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2 italic">Scale of Production</label>
+                            <div className="flex gap-4">
+                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="flex-1 p-7 bg-black/60 border-2 border-white/5 rounded-3xl text-4xl font-black text-liquid-gold outline-none focus:border-liquid-gold/40 transition-all text-center placeholder:text-slate-900" placeholder="0" />
+                                {paperId === 'QUIMICO' && (
+                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-1/3 bg-black/60 border-2 border-white/5 rounded-3xl text-[11px] font-black text-white p-2 outline-none appearance-none text-center cursor-pointer uppercase italic">
+                                        <option value={100}>100 PPS</option>
+                                        <option value={50}>50 PPS</option>
+                                        <option value={25}>25 PPS</option>
                                     </select>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Tintas */}
-                        <div className="bg-white/[0.02] p-6 rounded-[2rem] border border-white/5">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.3em]">Cromatic Dynamics</label>
-                            <div className="flex gap-6">
-                                <div className="flex-1">
-                                    <span className="text-[9px] font-black text-slate-600 uppercase block mb-2 tracking-widest">Anverso</span>
-                                    <input type="number" min={1} max={4} value={colorsFront} onChange={e => setColorsFront(parseInt(e.target.value))} className="w-full p-3 bg-black/40 border-none rounded-xl text-center text-sm font-black text-white" />
-                                </div>
-                                <div className="flex-1">
-                                    <span className="text-[9px] font-black text-slate-600 uppercase block mb-2 tracking-widest">Reverso</span>
-                                    <input type="number" min={0} max={4} value={colorsBack} onChange={e => setColorsBack(parseInt(e.target.value))} className="w-full p-3 bg-black/40 border-none rounded-xl text-center text-sm font-black text-white" />
-                                </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Opciones Extra */}
-                        <div className="space-y-4 pt-4">
-                            <label className="flex items-center gap-4 cursor-pointer group/label">
+                        {/* Acabados Rápidos */}
+                        <div className="pt-10 space-y-6 border-t border-white/5">
+                            <label className="flex items-center gap-6 cursor-pointer group/toggle">
                                 <div className="relative">
                                     <input type="checkbox" checked={hasDesign} onChange={e => setHasDesign(e.target.checked)} className="peer hidden" />
-                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-liquid-gold transition-all"></div>
-                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
+                                    <div className="w-14 h-8 bg-white/5 rounded-full border-2 border-white/5 peer-checked:bg-liquid-gold peer-checked:border-liquid-gold transition-all duration-700 shadow-inner" />
+                                    <div className="absolute left-1.5 top-1.5 w-5 h-5 bg-slate-700 rounded-full transition-all duration-700 peer-checked:translate-x-6 peer-checked:bg-brand-dark peer-checked:shadow-luxury" />
                                 </div>
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover/label:text-white transition-colors">Diseño Suministrado</span>
-                            </label>
-                            <label className="flex items-center gap-4 cursor-pointer group/label opacity-50 has-[:disabled]:opacity-20 transition-all">
-                                <div className="relative">
-                                    <input type="checkbox" checked={requiresSRI} onChange={e => setRequiresSRI(e.target.checked)} disabled={paperId !== 'QUIMICO'} className="peer hidden" />
-                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-liquid-gold transition-all"></div>
-                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
-                                </div>
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover/label:text-white transition-colors">Integración SRI</span>
+                                <span className="text-[11px] font-black text-slate-600 group-hover/toggle:text-white transition-colors uppercase tracking-[0.3em] italic">Pre-Architected Art</span>
                             </label>
                         </div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Results Panel */}
-            <div className="lg:col-span-8 space-y-6">
+            <div className="lg:col-span-8 space-y-12">
                 {result ? (
                     <>
-                        {/* Visual Process Pipeline */}
                         <ProductionPipeline 
                             sourceName={result.paper.nombre}
                             sourceType={result.paper.tipo}
                             sourceSize={`${result.paper.ancho}x${result.paper.alto} cm`}
-                            cutSize={`${finalW}x${finalH} cm`}
+                            cutSize={`${finalW}x${finalH} mm`}
                             cutsPerUnit={result.cutsPerUnit}
                             prePressCost={result.costPrePrensa}
                             materialCost={result.costPapelTotal}
                             printCost={result.costImpresion}
                         />
 
-                        {/* Cost Breakdown Cards */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-text-liquid-gold uppercase tracking-widest mb-2">Papel + Merma</p>
-                                <p className="text-2xl font-black text-white">{formatCurrency(result.costPapelTotal)}</p>
-                            </div>
-                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-2">Pre-Prensa</p>
-                                <p className="text-2xl font-black text-white">{formatCurrency(result.costPrePrensa)}</p>
-                            </div>
-                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-2">Impresión</p>
-                                <p className="text-2xl font-black text-white">{formatCurrency(result.costImpresion)}</p>
-                            </div>
-                            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Acabados</p>
-                                <p className="text-2xl font-black text-white">{formatCurrency(result.costAcabados)}</p>
-                            </div>
+                        {/* Financial Metrics */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                            {[
+                                { label: 'Sustrates Inventory', val: result.costPapelTotal, icon: CircleStackIcon },
+                                { label: 'Pre-Production', val: result.costPrePrensa, icon: BeakerIcon },
+                                { label: 'Machine Tirage', val: result.costImpresion, icon: RocketLaunchIcon },
+                                { label: 'Final Execution', val: result.costAcabados, icon: DocumentIcon }
+                            ].map((item, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 + (i * 0.1) }}
+                                    className="bg-white/[0.02] border-2 border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl hover:bg-white/[0.05] hover:border-white/10 transition-all cursor-crosshair group/metric"
+                                >
+                                    <item.icon className="w-5 h-5 text-slate-700 mb-6 group-hover/metric:text-liquid-gold transition-colors duration-500" />
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4 italic leading-tight">{item.label}</p>
+                                    <p className="text-2xl font-black text-white tracking-tighter italic">{formatCurrency(item.val)}</p>
+                                </motion.div>
+                            ))}
                         </div>
 
-                        {/* Final Price Big Card */}
-                        <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black shadow-2xl p-10 flex flex-col md:flex-row items-center justify-between group">
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-liquid-gold/10 blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-                            <div className="relative z-10">
-                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Costo de Producción</p>
-                                <p className="text-3xl font-black text-slate-300">{formatCurrency(result.costoTotalProduccion)}</p>
-                                <p className="text-[10px] text-slate-600 mt-4 uppercase tracking-wider">* Valor estimado de materiales y procesos</p>
+                        {/* Sugerencia Big Card */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                            className="relative rounded-[4.5rem] overflow-hidden bg-[#0c0c0c] border border-white/10 shadow-gold-glow-strong p-16 flex flex-col md:flex-row items-center justify-between group"
+                        >
+                            <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
+                            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-liquid-gold/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-liquid-gold/5 blur-[100px] pointer-events-none"></div>
+                            
+                            <div className="relative z-10 w-full md:w-auto space-y-10">
+                                <div className="inline-flex items-center gap-4 px-6 py-2 bg-white/5 rounded-full border border-white/10">
+                                    <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow"></div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Atelier Financial Matrix</span>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] mb-4 italic">Liquid Operating Cost</p>
+                                    <p className="text-5xl font-black text-white tracking-tighter italic opacity-60 decoration-liquid-gold/20 underline underline-offset-8 decoration-1">{formatCurrency(result.costoTotalProduccion)}</p>
+                                </div>
+                                <p className="text-[10px] text-slate-700 uppercase tracking-[0.4em] italic font-bold max-w-[200px] leading-relaxed">Structural valuation for industrial synchronization</p>
                             </div>
                             
-                            <div className="h-20 w-px bg-white/10 hidden md:block mx-10"></div>
+                            <div className="h-64 w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent hidden md:block mx-16" />
 
-                            <div className="text-center md:text-right mt-8 md:mt-0 relative z-10">
-                                <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.2em] mb-2">Precio de Venta Sugerido</p>
-                                <div className="flex items-baseline gap-3 justify-center md:justify-end">
-                                    <span className="text-7xl font-black tracking-tighter text-white">{formatCurrency(result.pvp)}</span>
-                                    <span className="text-xl text-slate-500 font-medium tracking-tight">+ IVA</span>
+                            <div className="text-center md:text-right mt-16 md:mt-0 relative z-10 w-full md:w-auto">
+                                <div className="space-y-1 mb-10">
+                                    <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] mb-4 italic ml-auto max-w-fit">Recommended Market Value</p>
+                                    <div className="flex items-baseline gap-6 justify-center md:justify-end">
+                                        <motion.span 
+                                            key={result.pvp}
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="text-9xl font-display font-black text-white tracking-tighter italic text-glow-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]"
+                                        >
+                                            {formatCurrency(result.pvp)}
+                                        </motion.span>
+                                        <span className="text-3xl text-slate-700 font-bold tracking-tighter italic opacity-40 uppercase">+ Net</span>
+                                    </div>
                                 </div>
-                                <div className="mt-4 inline-block bg-white/5 border border-white/10 px-5 py-2 rounded-full text-xs font-black tracking-widest text-slate-400 uppercase">
-                                    Unitario: <span className="text-white">{formatCurrency(result.unitario)}</span>
+                                <div className="flex flex-col md:flex-row gap-6 items-center justify-end">
+                                    <div className="px-8 py-4 bg-black/60 border border-white/5 rounded-3xl text-[11px] font-black tracking-[0.4em] text-slate-500 uppercase italic shadow-inner">
+                                        Per Unit: <span className="text-white ml-3 font-bold">{formatCurrency(result.unitario)}</span>
+                                    </div>
+                                    <button className="px-14 py-8 bg-white text-black rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.6em] shadow-luxury transition-all hover:bg-liquid-gold hover:scale-110 active:scale-95 flex items-center gap-4 group/btn overflow-hidden">
+                                        <SparklesIcon className="w-5 h-5 group-hover:animate-pulse" />
+                                        Initialize Protocol
+                                    </button>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300">
-                        <ExclamationTriangleIcon className="w-16 h-16 text-gray-300 mb-4" />
-                        <p className="text-gray-500 font-medium">El tamaño de corte es mayor al material base.</p>
-                        <p className="text-sm text-gray-400">Verifica las medidas ingresadas.</p>
+                    <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white/[0.02] rounded-[4rem] border-2 border-dashed border-rose-500/10 p-24 text-center group">
+                        <div className="w-32 h-32 bg-rose-500/10 rounded-full flex items-center justify-center mb-12 border-2 border-rose-500/20 shadow-glow-rose group-hover:scale-110 transition-transform duration-700">
+                            <ExclamationTriangleIcon className="w-14 h-14 text-rose-500/50" />
+                        </div>
+                        <h4 className="text-4xl font-editorial font-bold text-white mb-6 italic tracking-tighter">Geometric Constraint Violated</h4>
+                        <p className="text-slate-600 font-black max-w-sm uppercase text-[12px] tracking-[0.4em] leading-loose italic">The declared artifact geometry exceeds physical matrix boundaries. Re-calibrate spatial coordinates.</p>
                     </div>
                 )}
             </div>
@@ -547,9 +434,8 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     );
 };
 
-// --- CALCULADORA DIGITAL (NUEVA IMPLEMENTACIÓN) ---
+// --- CALCULADORA DIGITAL ---
 const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
-    // Inputs
     const [format, setFormat] = useState<'A4' | 'A3' | 'SRA3'>('A3');
     const [paperType, setPaperType] = useState('COUCHE_150');
     const [colorMode, setColorMode] = useState<'COLOR' | 'BW'>('COLOR');
@@ -557,183 +443,218 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     const [quantity, setQuantity] = useState(10);
 
     const calculation = useMemo(() => {
-        // Factors
         let clickCost = colorMode === 'COLOR' ? costs.CLICK_DIGITAL_A3 : costs.CLICK_DIGITAL_BN;
-        
-        // A4 is roughly half the cost of A3 in terms of master clicks, typically charged as A3/2 or separate counter
         if (format === 'A4') clickCost = clickCost * 0.6; 
         
-        // Paper Cost Factors
         let sheetCost = 0;
         switch (paperType) {
             case 'BOND': sheetCost = costs.COSTO_RESMA_BOND / 500; break; 
-            case 'COUCHE_115': sheetCost = (costs.COSTO_PLIEGO_COUCHE_300 / 4) * 0.8; break; // Estimado vs 300g
-            case 'COUCHE_300': sheetCost = costs.COSTO_PLIEGO_COUCHE_300 / 4; break; // 1 pliego = 4 A3 aprox
+            case 'COUCHE_115': sheetCost = (costs.COSTO_PLIEGO_COUCHE_300 / 4) * 0.8; break;
+            case 'COUCHE_300': sheetCost = costs.COSTO_PLIEGO_COUCHE_300 / 4; break;
             case 'ADHESIVO': sheetCost = costs.COSTO_PLIEGO_ADHESIVO / 4; break;
             default: sheetCost = 0.10;
         }
 
-        // Calculation
-        const totalClicks = quantity * sides;
-        const totalPaper = quantity; 
-        
-        const productionCost = (totalClicks * clickCost) + (totalPaper * sheetCost);
+        const productionCost = ((quantity * sides) * clickCost) + (quantity * sheetCost);
         const pvp = productionCost * (1 + costs.MARGEN_GANANCIA);
         
-        return {
-            unitCost: productionCost / quantity,
-            totalCost: productionCost,
-            unitPvp: pvp / quantity,
-            totalPvp: pvp
-        };
+        return { unitCost: productionCost / quantity, totalCost: productionCost, unitPvp: pvp / quantity, totalPvp: pvp };
     }, [format, paperType, colorMode, sides, quantity, costs]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-fade-in">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Controls */}
-            <div className="bg-white/5 border border-white/10 p-10 rounded-3xl backdrop-blur-xl">
-                <div className="flex items-center gap-4 mb-10 border-b border-white/5 pb-8">
-                    <div className="bg-liquid-gold/10 p-4 rounded-2xl text-liquid-gold">
-                        <Sparkles className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover:scale-110" />
+            <motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="glass-boutique p-14 rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden"
+            >
+                <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 blur-[100px] -mr-32 -mt-32"></div>
+                
+                <div className="flex items-center gap-8 mb-16 border-b border-white/5 pb-10 relative z-10">
+                    <div className="bg-liquid-gold/10 p-5 rounded-[2rem] border border-liquid-gold/20 shadow-gold-glow-soft text-liquid-gold">
+                        <RocketLaunchIcon className="w-10 h-10" />
                     </div>
-                    <div>
-                        <h2 className="font-editorial font-bold text-liquid-gold text-3xl tracking-tight italic">Impresión Digital</h2>
-                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Precision Editorial Atelier</p>
+                    <div className="space-y-1">
+                        <h2 className="font-editorial font-bold text-white text-4xl tracking-tighter italic">Digital Flux</h2>
+                        <p className="text-[11px] text-liquid-gold/60 font-black uppercase tracking-[0.5em]">On-Demand Performance</p>
                     </div>
                 </div>
 
-                <div className="space-y-8">
-                    <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Formato de Salida</label>
-                        <div className="flex gap-2 p-1.5 bg-black/40 rounded-2xl">
+                <div className="space-y-14 relative z-10">
+                    <div className="space-y-6">
+                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Format Magnitude</label>
+                        <div className="flex gap-4 p-2 bg-black/60 rounded-[2.5rem] border-2 border-white/5">
                             {['A4', 'A3', 'SRA3'].map((f) => (
-                                <button 
-                                    key={f} 
-                                    onClick={() => setFormat(f as any)} 
-                                    className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${format === f ? 'bg-liquid-gold text-black shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'text-slate-500 hover:text-white'}`}
-                                >
-                                    {f}
-                                </button>
+                                <button key={f} onClick={() => setFormat(f as any)} className={`flex-1 py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all duration-700 italic ${format === f ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>{f}</button>
                             ))}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Tipo deSustrato</label>
-                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-4 bg-black/40 border-none rounded-2xl text-sm font-black text-white outline-none focus:ring-1 focus:ring-liquid-gold/50 appearance-none">
-                                <option value="BOND">Bond 75g (Atelier)</option>
-                                <option value="COUCHE_115">Couché 115g Premium</option>
-                                <option value="COUCHE_300">Couché 300g Luxury</option>
-                                <option value="ADHESIVO">Adhesivo Fotográfico</option>
+                    <div className="grid grid-cols-2 gap-10">
+                        <div className="space-y-6">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Media Type</label>
+                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-[12px] font-black text-white outline-none focus:border-liquid-gold/50 appearance-none cursor-pointer tracking-widest uppercase italic">
+                                <option value="BOND" className="bg-[#0a0a0a]">Bond 75g Basic</option>
+                                <option value="COUCHE_115" className="bg-[#0a0a0a]">Couché 115g Pro</option>
+                                <option value="COUCHE_300" className="bg-[#0a0a0a]">Couché 300g Heavy</option>
+                                <option value="ADHESIVO" className="bg-[#0a0a0a]">Adhesivo Gloss</option>
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Cantidad</label>
-                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-4 bg-black/40 border-none rounded-2xl text-lg font-black text-liquid-gold outline-none focus:ring-1 focus:ring-liquid-gold/50" />
+                        <div className="space-y-6">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Iteration</label>
+                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-3xl font-black text-liquid-gold outline-none text-center focus:border-liquid-gold/40 transition-all placeholder:text-slate-900" />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Modo de Color</label>
-                            <div className="flex bg-black/40 rounded-2xl p-1.5">
-                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${colorMode === 'COLOR' ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Color</button>
-                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${colorMode === 'BW' ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Escala Grises</button>
+                    <div className="space-y-6">
+                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Electrostatic Modality</label>
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="flex bg-black/60 rounded-[2rem] p-2 border-2 border-white/5">
+                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${colorMode === 'COLOR' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Chroma Full</button>
+                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${colorMode === 'BW' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Monotone</button>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Configuración Caras</label>
-                            <div className="flex bg-black/40 rounded-2xl p-1.5">
-                                <button onClick={() => setSides(1)} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${sides === 1 ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Sencillo</button>
-                                <button onClick={() => setSides(2)} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${sides === 2 ? 'bg-white text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>Retira</button>
+                            <div className="flex bg-black/60 rounded-[2rem] p-2 border-2 border-white/5">
+                                <button onClick={() => setSides(1)} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${sides === 1 ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Simplex</button>
+                                <button onClick={() => setSides(2)} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${sides === 2 ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Dúplex Pro</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Results */}
-            <div className="relative rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-3xl p-12 flex flex-col justify-between group">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/10 blur-[80px] -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-110"></div>
+            <motion.div 
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="relative rounded-[4rem] overflow-hidden bg-[#0c0c0c] border border-white/10 shadow-gold-glow p-16 flex flex-col justify-between group"
+            >
+                <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-liquid-gold/5 blur-[120px] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-[3s]" />
                 
                 <div className="relative z-10">
-                    <h3 className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.3em] mb-10">Cotización Atelier Digital</h3>
-                    
-                    <div className="space-y-6 mb-10">
-                        <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Valor Unitario</span>
-                            <span className="text-xl font-black text-white">{formatCurrency(calculation.unitPvp)}</span>
+                    <div className="flex justify-between items-start mb-20">
+                        <div className="space-y-2">
+                            <h3 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Consolidated <br/> <span className="text-gold-gradient text-6xl">Statement</span></h3>
+                            <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic mt-6">Laser Fusion Cost Calibration Protocol</p>
                         </div>
-                        <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Tiraje Inmediato</span>
-                            <span className="text-xl font-black text-white">{quantity}</span>
+                        <CpuIcon className="w-12 h-12 text-liquid-gold/20 animate-pulse" />
+                    </div>
+                    
+                    <div className="space-y-8 mb-20">
+                        <div className="flex justify-between items-center bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/10 shadow-inner group/val hover:border-white/20 transition-all">
+                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Unit Valuation</span>
+                            <span className="text-4xl font-black text-white italic group-hover:text-liquid-gold transition-colors">{formatCurrency(calculation.unitPvp)}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/10 shadow-inner group/val hover:border-white/20 transition-all">
+                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Iterated tiraje</span>
+                            <span className="text-4xl font-black text-white italic">{quantity} <span className="text-lg text-slate-700 tracking-tighter ml-3 font-bold opacity-40">UNITS</span></span>
                         </div>
                     </div>
                 </div>
 
-                <div className="relative z-10">
-                    <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.2em] mb-4">Total Consolidado</p>
-                    <div className="flex items-baseline gap-4">
-                        <span className="text-7xl font-black tracking-tighter text-white">{formatCurrency(calculation.totalPvp)}</span>
-                        <span className="text-xl text-slate-500 font-medium tracking-tight">+ IVA</span>
+                <div className="relative z-10 pt-14 border-t-2 border-white/5">
+                    <p className="text-[12px] font-black text-liquid-gold/40 uppercase tracking-[0.8em] mb-6 italic ml-auto max-w-fit">Industrial Net Subtotal</p>
+                    <div className="flex items-baseline gap-6 justify-end">
+                        <motion.span 
+                            key={calculation.totalPvp}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-9xl font-display font-black text-white tracking-tighter italic text-glow drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                        >
+                            {formatCurrency(calculation.totalPvp)}
+                        </motion.span>
+                        <span className="text-3xl text-slate-800 font-black tracking-widest uppercase opacity-40 italic">+ TAX</span>
                     </div>
-                    <div className="mt-8 text-[10px] font-black text-slate-600 uppercase tracking-widest italic">
-                        * Entrega estimada en 24-48 horas laborables
+                    <div className="mt-16 flex items-center justify-between">
+                         <div className="flex items-center gap-4 text-emerald-500/60 font-black text-[11px] uppercase tracking-[0.5em] italic">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-glow"></div>
+                            Priority Flux Established
+                         </div>
+                         <button className="flex items-center gap-4 text-liquid-gold font-black text-[12px] uppercase tracking-[0.4em] hover:translate-x-4 transition-all duration-700 group/link">
+                            Execute Dispatch <ArrowRightIcon className="w-5 h-5 group-hover:animate-bounce-x" />
+                         </button>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };
 
 const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     return (
-        <div className="fixed inset-0 z-[100] flex justify-center items-center p-4">
-            <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={onClose}></div>
-            <div className="bg-black border border-white/10 rounded-[2.5rem] shadow-3xl w-full max-w-4xl max-h-[85vh] flex flex-col relative animate-scale-up" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-10 border-b border-white/5">
-                    <div>
-                        <h2 className="text-3xl font-black text-white tracking-tight">Catálogo de Sustratos</h2>
-                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-2">Especificaciones Técnicas Atelier</p>
+        <div className="fixed inset-0 z-[200] flex justify-center items-center p-8">
+            <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                className="absolute inset-0 bg-black/98 backdrop-blur-3xl" 
+                onClick={onClose} 
+            />
+            <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 40 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="bg-[#0a0a0a] border border-white/10 rounded-[4rem] shadow-gold-glow-strong w-full max-w-5xl max-h-[90vh] flex flex-col relative z-20 overflow-hidden" 
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="flex justify-between items-center p-14 border-b border-white/5 relative overflow-hidden bg-white/[0.01]">
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
+                    <div className="relative z-10">
+                        <h2 className="text-5xl font-black text-white tracking-tighter italic uppercase">Substrate <span className="text-liquid-gold">Catalog</span></h2>
+                        <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.5em] mt-3 italic">Technical Matrix Specification • Atelier Core</p>
                     </div>
-                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all group">
+                    <button onClick={onClose} className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all group border border-white/5 relative z-10">
                         <CloseIcon className="w-6 h-6 transition-transform group-hover:rotate-90" />
                     </button>
                 </div>
-                <div className="p-10 overflow-y-auto">
-                    <div className="grid gap-4">
-                        {SOURCE_PAPERS.map((paper) => (
-                            <div key={paper.id} className="group bg-white/5 border border-white/10 hover:border-liquid-gold/30 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-white/[0.07]">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center border border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                        {paper.id}
+                
+                <div className="p-14 overflow-y-auto custom-scrollbar flex-grow">
+                    <div className="grid gap-6">
+                        {SOURCE_PAPERS.map((paper, i) => (
+                            <motion.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.05 }}
+                                key={paper.id} 
+                                className="group bg-white/[0.02] border-2 border-white/5 hover:border-liquid-gold/40 p-8 rounded-3xl flex items-center justify-between transition-all duration-700 hover:bg-black/60 shadow-inner"
+                            >
+                                <div className="flex items-center gap-10">
+                                    <div className="w-20 h-20 rounded-2xl bg-black flex flex-col items-center justify-center border-2 border-white/5 text-[10px] font-black text-slate-700 uppercase tracking-[0.2em] group-hover:border-liquid-gold/20 transition-colors">
+                                        <DocumentIcon className="w-6 h-6 mb-1 opacity-20" />
+                                        {paper.id.split('_')[0]}
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-black uppercase tracking-widest">{paper.nombre}</h4>
-                                        <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">{paper.ancho} x {paper.alto} cm • Gramaje Atelier</p>
+                                        <h4 className="text-white font-black text-xl tracking-tighter uppercase italic group-hover:text-liquid-gold transition-colors">{paper.nombre}</h4>
+                                        <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-[0.3em] italic font-bold">
+                                            {paper.ancho} x {paper.alto} cm • Industrial Calibrated Substrate
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-10">
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] uppercase ${paper.tipo === 'RESMA' ? 'bg-liquid-gold/10 text-liquid-gold' : 'bg-liquid-gold/10 text-liquid-gold'}`}>
-                                        {paper.tipo}
-                                    </span>
+                                <div className="flex items-center gap-14">
+                                    <div className="text-right">
+                                        <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mb-1 italic">Process Type</p>
+                                        <span className="text-xs font-black text-white tracking-[0.4em] uppercase italic group-hover:text-white transition-colors">{paper.tipo}</span>
+                                    </div>
+                                    <div className="w-px h-10 bg-white/5"></div>
+                                    <span className="bg-liquid-gold/10 text-liquid-gold px-6 py-2 rounded-full text-[9px] font-black tracking-[0.5em] uppercase border border-liquid-gold/20 shadow-glow-sm">SGN-ACTIVE</span>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
-                <div className="p-10 border-t border-white/5 flex justify-end">
-                    <button onClick={onClose} className="px-10 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-200 transition-all">Cerrar Catálogo</button>
+                
+                <div className="p-14 border-t border-white/5 flex justify-end bg-white/[0.01]">
+                    <button onClick={onClose} className="px-16 py-8 bg-white text-black rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.6em] hover:bg-liquid-gold transition-all shadow-luxury active:scale-95">Disengage Catalog</button>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };
 
 // --- MAIN PAGE ---
 const CalculadoraPreciosPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: any }>();
+    const context = useOutletContext<{ currentUser: any }>();
+    const currentUser = context?.currentUser;
+    
     const [mode, setMode] = useState<Mode>('OFFSET');
     const [costs, setCosts] = useState<CostConfig>(DEFAULT_COSTS);
     const [showMasterTable, setShowMasterTable] = useState(false);
@@ -750,11 +671,9 @@ const CalculadoraPreciosPage: React.FC = () => {
                     .single();
                 
                 if (data && data.data) {
-                    // Combinar defaults con los valores de la DB para asegurar que todos los campos existan
                     const dbCosts = data.data;
                     const mergedCosts = { ...DEFAULT_COSTS };
                     
-                    // Solo sobreescribir si el campo existe en la interfaz CostConfig
                     Object.keys(DEFAULT_COSTS).forEach(key => {
                         if (dbCosts[key] !== undefined) {
                             (mergedCosts as any)[key] = dbCosts[key];
@@ -776,7 +695,6 @@ const CalculadoraPreciosPage: React.FC = () => {
     const handleSaveConfig = async (newCosts: CostConfig) => {
         setLoading(true);
         try {
-            // Obtener config actual para no borrar otros campos (como SRI data)
             const { data: currentConfig } = await supabase
                 .from('app_config')
                 .select('data')
@@ -813,91 +731,137 @@ const CalculadoraPreciosPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 p-4 sm:p-10 font-sans pb-32">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen p-8 sm:p-14 relative overflow-hidden flex flex-col bg-[#050505]">
+            <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
+            
+            {/* Cinematic Background */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+                <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-liquid-gold/[0.02] blur-[150px] animate-pulse"></div>
+                <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.01] blur-[150px]"></div>
+            </div>
+
+            <div className="max-w-[1600px] mx-auto w-full flex-grow flex flex-col pt-10">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
-                    <div className="relative">
-                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-liquid-gold"></div>
-                        <h1 className="text-4xl font-black text-white tracking-tight">
-                            Ingeniería de Costos
-                        </h1>
-                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2">Precision Print Engine • Atelier v4.0</p>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-20 relative z-10">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-[2px] bg-liquid-gold/40"></div>
+                            <span className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.8em]">Precision Print Engine v4.0</span>
+                        </div>
+                        <motion.h1 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="text-7xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-none"
+                        >
+                            Cost <span className="text-gold-gradient">Engineering</span>
+                        </motion.h1>
                     </div>
                     
-                    <div className="flex gap-4">
-                        <button onClick={() => setShowMasterTable(true)} className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">
-                            <TableIcon className="w-4 h-4 text-liquid-gold"/> Catálogo Sustratos
+                    <div className="flex gap-6">
+                        <button onClick={() => setShowMasterTable(true)} className="group flex items-center gap-4 px-10 py-6 bg-white/[0.02] border-2 border-white/5 text-white font-black text-[11px] uppercase tracking-[0.5em] rounded-[1.8rem] hover:bg-white/[0.05] hover:border-white/10 transition-all shadow-luxury">
+                            <TableIcon className="w-5 h-5 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors"/> Matrix Catalog
                         </button>
                         <button 
                             onClick={() => setMode(mode === 'CONFIG' ? 'OFFSET' : 'CONFIG')} 
-                            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${mode === 'CONFIG' ? 'bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.2)]' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'}`}
+                            className={`group flex items-center gap-4 px-10 py-6 rounded-[1.8rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all border-2 shadow-luxury ${mode === 'CONFIG' ? 'bg-white text-black border-white scale-105' : 'bg-white/[0.02] text-white border-white/5 hover:border-white/10'}`}
                         >
-                            <Cog8ToothIcon className={`w-4 h-4 ${mode === 'CONFIG' ? 'animate-spin-slow' : ''}`}/> Configuración
+                            <Cog8ToothIcon className={`w-5 h-5 ${mode === 'CONFIG' ? 'animate-spin-slow' : 'text-slate-700'}`}/> Calibration
                         </button>
                     </div>
                 </div>
 
                 {/* Mode Selector (Tabs) */}
                 {mode !== 'CONFIG' && (
-                    <div className="flex p-2 bg-black/40 border border-white/5 rounded-2xl mb-16 max-w-sm">
-                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'OFFSET' ? 'bg-liquid-gold text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
-                            <PrinterIcon className="w-4 h-4"/> Offset
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex p-2 bg-black/60 border-2 border-white/5 rounded-[2.5rem] mb-20 max-w-md shadow-2xl relative z-10"
+                    >
+                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-5 px-10 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-4 italic ${mode === 'OFFSET' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>
+                            <PrinterIcon className="w-5 h-5"/> Offset
                         </button>
-                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${mode === 'DIGITAL' ? 'bg-liquid-gold text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
-                            <Sparkles className="w-4 h-4"/> Digital
+                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-5 px-10 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-4 italic ${mode === 'DIGITAL' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>
+                            <RocketLaunchIcon className="w-5 h-5"/> Digital
                         </button>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* Content Area */}
-                {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
-                {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
-                
-                {/* Configuration Panel */}
-                {mode === 'CONFIG' && (
-                    <div className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] shadow-3xl max-w-5xl mx-auto animate-fade-in backdrop-blur-xl">
-                        <div className="flex items-center gap-6 mb-12 border-b border-white/5 pb-8">
-                            <div className="bg-liquid-gold/10 p-4 rounded-2xl"><DollarIcon className="w-8 h-8 text-liquid-gold"/></div>
-                            <div>
-                                <h2 className="font-editorial font-bold text-liquid-gold text-3xl tracking-tight italic">Base de Costos Industriales</h2>
-                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Ajuste de parámetros fijos y mermas de producción</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {Object.entries(costs).map(([key, val]) => (
-                                <div key={key} className="group bg-black/40 p-6 rounded-2xl border border-white/5 hover:border-liquid-gold/30 transition-all">
-                                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em] group-focus-within:text-liquid-gold transition-colors">
-                                        {key.replace(/_/g, ' ')}
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-black text-lg">$</span>
-                                        <input 
-                                            type="number" 
-                                            step="0.01" 
-                                            value={val} 
-                                            onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value) || 0})}
-                                            className="w-full pl-10 pr-4 py-3 bg-transparent border-none rounded-xl font-black text-xl text-white focus:ring-0 outline-none transition-all placeholder:text-slate-800"
-                                        />
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={mode}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.6 }}
+                        className="relative z-10 pb-20"
+                    >
+                        {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
+                        {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
+                        
+                        {/* Configuration Panel */}
+                        {mode === 'CONFIG' && (
+                            <div className="bg-[#0c0c0c] border border-white/10 p-16 md:p-24 rounded-[4.5rem] shadow-gold-glow-strong max-w-[1200px] mx-auto relative overflow-hidden backdrop-blur-3xl">
+                                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-liquid-gold/[0.03] blur-[150px] -mr-32 -mt-32"></div>
+                                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-slate-500/[0.03] blur-[120px] -ml-20 -mb-20"></div>
+                                
+                                <div className="flex items-center gap-10 mb-20 border-b-2 border-white/5 pb-14 relative z-10">
+                                    <div className="bg-liquid-gold/10 p-6 rounded-[2rem] border-2 border-liquid-gold/20 shadow-glow-sm">
+                                        <DollarIcon className="w-10 h-10 text-liquid-gold"/>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h2 className="font-editorial font-bold text-white text-4xl tracking-tighter italic">Industrial Base Calibration</h2>
+                                        <p className="text-[12px] font-black text-slate-600 uppercase tracking-[0.6em] mt-2 italic">Ajuste de parámetros fijos y mermas de producción</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
 
-                        <div className="mt-16 pt-10 border-t border-white/10 flex justify-end">
-                            <button onClick={() => handleSaveConfig(costs)} className="group relative flex items-center gap-3 bg-white text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] overflow-hidden transition-all hover:pr-14">
-                                <span className="relative z-10">Sincronizar Costos</span>
-                                <SaveIcon className="w-5 h-5 absolute right-8 opacity-0 group-hover:opacity-100 transition-all"/>
-                            </button>
-                        </div>
-                    </div>
-                )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
+                                    {Object.entries(costs).map(([key, val]) => (
+                                        <motion.div 
+                                            whileHover={{ y: -5 }}
+                                            key={key} 
+                                            className="group bg-black/40 p-8 rounded-[2.5rem] border-2 border-white/5 hover:border-liquid-gold/30 transition-all duration-700 shadow-inner"
+                                        >
+                                            <label className="block text-[10px] font-black text-slate-700 uppercase mb-5 tracking-[0.4em] group-focus-within:text-liquid-gold transition-colors italic">
+                                                {key.replace(/_/g, ' ')}
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-800 font-black text-2xl group-focus-within:text-liquid-gold transition-colors">$</span>
+                                                <input 
+                                                    type="number" 
+                                                    step="0.01" 
+                                                    value={val} 
+                                                    onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value) || 0})}
+                                                    className="w-full pl-14 pr-6 py-6 bg-transparent border-none rounded-[1.8rem] font-black text-3xl text-white focus:ring-0 outline-none transition-all placeholder:text-slate-900 group-hover:translate-x-2 transition-transform duration-700"
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-24 pt-16 border-t-2 border-white/5 flex justify-end relative z-10">
+                                    <button 
+                                        onClick={() => handleSaveConfig(costs)} 
+                                        className="group relative flex items-center gap-6 bg-white text-black px-20 py-8 rounded-[2.5rem] font-black text-[13px] uppercase tracking-[0.6em] overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-luxury"
+                                    >
+                                        <span className="relative z-10 group-hover:mr-10 transition-all duration-700">Sync Master Costs</span>
+                                        <RocketLaunchIcon className="w-8 h-8 absolute right-10 opacity-0 group-hover:opacity-100 transition-all duration-1000 rotate-45"/>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
             {showMasterTable && <MasterTableModal onClose={() => setShowMasterTable(false)} />}
         </div>
     );
 };
+
+// --- ICONS (Placeholder components since they were imported but might be missing in original file) ---
+const CloseIcon = ({ className }: { className?: string }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+);
 
 export default CalculadoraPreciosPage;
