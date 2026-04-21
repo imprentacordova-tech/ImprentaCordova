@@ -146,8 +146,20 @@ const GestionUsuariosPage: React.FC = () => {
 
     const fetchUsers = async () => {
         setLoading(true);
-        const { data, error } = await supabase.from('usuarios').select('*').order('nombre', { ascending: true });
-        if (!error && data) setUsers(data as User[]);
+        const { data, error } = await supabase.from('users').select('*').order('nombre', { ascending: true });
+        if (!error && data) {
+            const mappedUsers = data.map((u: any) => ({
+                id: u.id,
+                nombre: u.nombre,
+                email: u.email,
+                rol: u.rol,
+                estado: u.estado,
+                ultimoAcceso: u.ultimo_acceso,
+                requirePassword: u.require_password,
+                password: u.password
+            }));
+            setUsers(mappedUsers as User[]);
+        }
         setLoading(false);
     };
 
@@ -178,11 +190,20 @@ const GestionUsuariosPage: React.FC = () => {
     }, [users, searchTerm, sortConfig]);
 
     const handleSaveUser = async (user: Partial<User>) => {
+        const dbUser = {
+            nombre: user.nombre,
+            email: user.email,
+            rol: user.rol,
+            estado: user.estado,
+            require_password: user.requirePassword,
+            password: user.password
+        };
+
         if (user.id) {
-            await supabase.from('usuarios').update(user).eq('id', user.id);
+            await supabase.from('users').update(dbUser).eq('id', user.id);
             logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `Modificó al usuario ${user.nombre}`, 'Seguridad');
         } else {
-            await supabase.from('usuarios').insert([user]);
+            await supabase.from('users').insert([dbUser]);
             logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_CREADO', `Creó usuario: ${user.nombre}`, 'Seguridad');
         }
         setEditingUser(null);
@@ -282,7 +303,7 @@ const GestionUsuariosPage: React.FC = () => {
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" checked={user.estado === 'Activo'} onChange={async () => {
                                                 const newStatus = user.estado === 'Activo' ? 'Inactivo' : 'Activo';
-                                                await supabase.from('usuarios').update({ estado: newStatus }).eq('id', user.id);
+                                                await supabase.from('users').update({ estado: newStatus }).eq('id', user.id);
                                                 logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `${newStatus === 'Activo' ? 'Activó' : 'Desactivó'} a ${user.nombre}`, 'Seguridad');
                                                 fetchUsers();
                                             }} className="sr-only peer" />
