@@ -152,7 +152,6 @@ const VisualLanding: React.FC = () => {
             </div>
             
             {/* Premium Navigation */}
-            {/* Premium Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-[100] bg-brand-dark/40 backdrop-blur-3xl border-b border-white/5 py-4 lg:py-6 transition-all duration-300">
                 <div className="container mx-auto px-6 lg:px-8 flex justify-between items-center">
                     <div className="flex items-center gap-3 lg:gap-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
@@ -310,6 +309,7 @@ const VisualLanding: React.FC = () => {
                                         <button onClick={() => fileInputRef.current?.click()} className="w-full py-5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-brand-dark transition-all">
                                             Repetir Diagnóstico
                                         </button>
+                                    </div>
                                 ) : (
                                     <div className="space-y-12 text-center xl:text-left">
                                         <div className="flex flex-col xl:flex-row items-center gap-10">
