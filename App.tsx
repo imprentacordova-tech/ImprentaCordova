@@ -59,9 +59,7 @@ const App: React.FC = () => {
 
   const handleLogin = (user: User, remember: boolean) => {
     setCurrentUser(user);
-    if (remember) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-    }
+    localStorage.setItem('currentUser', JSON.stringify(user));
     logActivity(user.nombre, user.rol, 'LOGIN', `Inicio de sesión exitoso`, 'Sistema');
   };
 
