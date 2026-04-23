@@ -439,8 +439,12 @@ html.light body {
 
 /* Background overrides */
 html.light .bg-brand-dark, 
+html.light .bg-brand-dark\/60,
 html.light .bg-slate-950,
 html.light .bg-slate-900,
+html.light .bg-black\/20,
+html.light .bg-black\/40,
+html.light .bg-black\/60,
 html.light .bg-\[\#050811\],
 html.light .bg-cinematic-mesh {
   background-color: #f8fafc !important;
@@ -450,6 +454,10 @@ html.light .bg-cinematic-mesh {
 html.light .bg-\[\#191f31\],
 html.light .bg-slate-800,
 html.light .bg-white\/5,
+html.light .bg-white\/10,
+html.light .bg-white\/\[0\.01\],
+html.light .bg-white\/\[0\.03\],
+html.light .bg-white\/\[0\.04\],
 html.light .glass-card-luxury {
   background-color: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
