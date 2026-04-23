@@ -217,16 +217,14 @@ const NuevoPedidoPage: React.FC = () => {
                                                     </div>
                                                 </div>
 
-                                                {sriMode === 'RENOVACION' && (
-                                                    <div className="space-y-6">
-                                                        <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Clave SRI (Acceso)</label>
-                                                        <input 
-                                                            type="text" value={sriClave} onChange={e => setSriClave(e.target.value)}
-                                                            placeholder="Contraseña del contribuyente..."
-                                                            className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
-                                                        />
-                                                    </div>
-                                                )}
+                                                <div className="space-y-6">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Clave SRI (Acceso)</label>
+                                                    <input 
+                                                        type="text" value={sriClave} onChange={e => setSriClave(e.target.value)}
+                                                        placeholder="Contraseña del contribuyente..."
+                                                        className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
+                                                    />
+                                                </div>
                                             </div>
 
                                             <div className="space-y-6">

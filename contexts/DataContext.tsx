@@ -70,6 +70,41 @@ const mapDBTrabajo = (t: any): Trabajo => ({
     arteAprobado: t.arte_aprobado
 });
 
+// Mapping for Clientes
+const mapDBCliente = (c: any): Cliente => ({
+    id: c.id,
+    cedula: c.cedula,
+    ruc: c.ruc,
+    nombre: c.nombre,
+    nombreComercial: c.nombre_comercial,
+    actividades: c.actividades,
+    direccion: c.direccion,
+    notas: c.notas,
+    telefono: c.telefono || [],
+    email: c.email,
+    creadoEn: c.creado_en,
+    regimen: c.regimen,
+    establecimientoPredeterminado: c.establecimiento_predeterminado,
+    puntoEmisionPredeterminado: c.punto_emision_predeterminado,
+    numEstablecimientosOpen: c.num_establecimientos_open
+});
+
+const mapClienteToDB = (c: any) => ({
+    cedula: c.cedula,
+    ruc: c.ruc,
+    nombre: c.nombre,
+    nombre_comercial: c.nombreComercial,
+    actividades: c.actividades,
+    direccion: c.direccion,
+    notas: c.notas,
+    telefono: c.telefono,
+    email: c.email,
+    regimen: c.regimen,
+    establecimiento_predeterminado: c.establecimientoPredeterminado,
+    punto_emision_predeterminado: c.puntoEmisionPredeterminado,
+    num_establecimientos_open: c.numEstablecimientosOpen
+});
+
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
@@ -103,7 +138,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 supabase.from('app_config').select('data').eq('id', 1).maybeSingle()
             ]);
 
-            if (cData) setClientes(cData as any);
+            if (cData) setClientes(cData.map(mapDBCliente) as any);
             if (tData) setTrabajos(tData.map(mapDBTrabajo) as any);
             if (pData) {
                 setProductos(pData as any);
@@ -152,11 +187,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const localClientes = JSON.parse(localStorage.getItem(keys.clientes) || '[]');
             const localTrabajos = JSON.parse(localStorage.getItem(keys.trabajos) || '[]');
             if (localClientes.length > 0) {
-                const upsertData = localClientes.map((c: any) => ({ id: c.id, cedula: c.cedula, nombre: c.nombre, telefono: c.telefono, regimen: c.regimen, direccion: c.direccion }));
+                const upsertData = localClientes.map((c: any) => mapClienteToDB(c));
                 await supabase.from('clientes').upsert(upsertData);
             }
             if (localTrabajos.length > 0) {
-                const upsertTrabajos = localTrabajos.map((t: any) => ({ cliente_id: t.clienteId, titular: t.titular, tipo: t.tipo, subtipo: t.subtipo, total: t.total, abono: t.abono, saldo: t.saldo, estado: t.estado, creado_por: t.creadoPor }));
+                const upsertTrabajos = localTrabajos.map((t: any) => ({ 
+                    cliente_id: t.clienteId, 
+                    titular: t.titular, 
+                    tipo: t.tipo, 
+                    subtipo: t.subtipo, 
+                    total: t.total, 
+                    abono: t.abono, 
+                    saldo: t.saldo, 
+                    estado: t.estado, 
+                    creado_por: t.creadoPor 
+                }));
                 await supabase.from('trabajos').insert(upsertTrabajos);
             }
             Object.values(keys).forEach(k => localStorage.removeItem(k));
@@ -177,14 +222,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [refreshData]);
 
     const addCliente = async (clienteData: any) => {
-        const { data, error } = await supabase.from('clientes').insert([clienteData]).select().single();
+        const dbReadyData = mapClienteToDB(clienteData);
+        const { data, error } = await supabase.from('clientes').insert([dbReadyData]).select().single();
         if (error) throw error;
-        setClientes(prev => [data as any, ...prev]);
-        return data as any;
+        const mapped = mapDBCliente(data);
+        setClientes(prev => [mapped, ...prev]);
+        return mapped;
     };
 
     const updateCliente = async (id: string, data: any) => {
-        const { error } = await supabase.from('clientes').update(data).eq('id', id);
+        const dbReadyData = mapClienteToDB(data);
+        const { error } = await supabase.from('clientes').update(dbReadyData).eq('id', id);
         if (error) throw error;
         setClientes(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
     };
@@ -206,11 +254,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             fecha_entrada: trabajoData.fechaEntrada || new Date().toISOString()
         };
         
-        // TODO: Implementar subida de imagen si imageFile existe y hay bucket configurado
-        // if (imageFile) { ... }
-
         const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         if (error) throw error;
+
         
         try {
             await deductInventory(dbData);

@@ -79,7 +79,7 @@ const App: React.FC = () => {
         <Routes>
           {/* Public Routes - NOW USING PREMIUM VISUAL LANDING */}
           <Route path="/" element={<VisualLanding />} />
-          <Route path="/login" element={<LoginPage onLoginSuccess={handleLogin} />} />
+          <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <LoginPage onLoginSuccess={handleLogin} />} />
           <Route path="/tracking" element={<TrackingPage />} />
           
           {/* Internal Print Views (No Navigation Layout) */}

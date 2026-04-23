@@ -397,9 +397,14 @@ export const CreateClientModal: React.FC<{
                             </div>
                         )}
 
+                        {rucError && mode === 'EXPRESS' && (
+                            <div className="bg-brand-red/10 border border-brand-red/20 p-4 rounded-2xl mb-4 text-center">
+                                <p className="text-[10px] text-brand-red font-black uppercase tracking-widest">{rucError}</p>
+                            </div>
+                        )}
                         <div className="absolute bottom-0 left-0 right-0 p-10 bg-brand-dark/80 backdrop-blur-xl border-t border-white/10 flex justify-end gap-6 z-20">
                             <button type="button" onClick={onClose} className="px-10 py-5 text-slate-500 font-black uppercase text-[10px] tracking-[0.3em] hover:text-white transition-colors">Abortar</button>
-                            <button type="submit" disabled={isSaving || saveSuccess || !!rucError} className={`min-w-[320px] px-10 py-5 text-brand-dark font-black rounded-2xl shadow-luxury transition-all flex items-center justify-center gap-4 uppercase text-xs tracking-[0.2em] ${saveSuccess ? 'bg-green-500 scale-[1.02]' : 'bg-white hover:bg-liquid-gold'} disabled:opacity-30 disabled:cursor-not-allowed`}>
+                            <button type="submit" disabled={isSaving || saveSuccess || (mode === 'SRI' && !!rucError)} className={`min-w-[320px] px-10 py-5 text-brand-dark font-black rounded-2xl shadow-luxury transition-all flex items-center justify-center gap-4 uppercase text-xs tracking-[0.2em] ${saveSuccess ? 'bg-green-500 scale-[1.02]' : 'bg-white hover:bg-liquid-gold'} disabled:opacity-30 disabled:cursor-not-allowed`}>
                                 {isSaving ? <Loader2Icon className="animate-spin w-6 h-6"/> : saveSuccess ? <CheckCircleIcon className="w-6 h-6"/> : mode === 'SRI' ? "Inscribir Contribuyente SRI" : "Habilitar Perfil Express"}
                             </button>
                         </div>
@@ -451,7 +456,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                     )}
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <button 
                         onClick={() => handleOpenCreate('EXPRESS')} 
                         className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
@@ -482,12 +487,12 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                         onClick={onSkip}
                         className="flex-1 bg-white/2 hover:bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
                     >
-                        <div className="p-3 bg-slate-800 text-slate-400 rounded-xl">
-                            <LayersIcon className="w-5 h-5" />
+                        <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all shadow-glow">
+                            <SparklesIcon className="w-5 h-5" />
                         </div>
                         <div className="text-left">
-                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Solo Consulta</span>
-                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-slate-300 transition-colors">Ver Catálogo</span>
+                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Acceso Directo</span>
+                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-blue-400 transition-colors">Trabajos Generales</span>
                         </div>
                     </button>
                 </div>

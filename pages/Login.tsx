@@ -4,7 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { User } from '../types';
 import { supabase } from '../services/supabase';
-import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon, Loader2Icon, EyeIcon, EyeSlashIcon, ExclamationTriangleIcon } from '../components/Icons';
+import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon, Loader2Icon, EyeIcon, EyeSlashIcon, ExclamationTriangleIcon, LockIcon } from '../components/Icons';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoginProps {
   onLoginSuccess: (user: User, remember: boolean) => void;
@@ -25,7 +26,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulacin de handshake de seguridad
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // ACCESO DE EMERGENCIA PARA PEDRO (Fallback si la DB falla)
       if (key.toLowerCase() === 'pedro' && !password) {
@@ -53,7 +55,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       );
 
       if (validUser) {
-        // Mapear a formato User del sistema
         const user: User = {
           id: validUser.id,
           nombre: validUser.nombre,
@@ -70,7 +71,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             onLoginSuccess(user, remember);
             navigate('/dashboard');
           } else {
-            setError("Acceso denegado: Signature mismatch");
+            setError("ACCESO DENEGADO: SIGNATURE MISMATCH");
             setLoading(false);
           }
         } else {
@@ -78,84 +79,94 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           navigate('/dashboard');
         }
       } else {
-        setError("Identidad no reconocida en el sistema");
+        setError("IDENTIDAD NO RECONOCIDA EN EL NCLEO");
         setKey('');
         setPassword('');
         setLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError("Error de conexión con la base de datos");
+      setError("FALLO CRTICO: ERROR DE CONEXIN");
       setLoading(false);
     }
   };
 
   return (
-     <div className="min-h-screen flex items-center justify-center bg-brand-dark relative overflow-hidden font-sans selection:bg-gold-bright selection:text-brand-dark">
-        {/* Cinematic Background Elements */}
-        <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center mix-blend-overlay opacity-20 grayscale"></div>
-             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold-bright/30 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold-bright/30 to-transparent"></div>
+    <div className="min-h-screen flex bg-[#050811] relative overflow-hidden font-sans selection:bg-gold-bright selection:text-brand-dark">
+        
+        {/* LEFT COLUMN: FORM */}
+        <div className="w-full lg:w-[45%] flex flex-col justify-center relative z-10 px-6 md:px-16 lg:px-24">
             
-             {/* Moving Light Blobs */}
-            <div className="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] bg-gold-bright/5 rounded-full blur-[120px] animate-pulse"></div>
-            <div className="absolute -bottom-[20%] -right-[10%] w-[600px] h-[600px] bg-brand-dark/50 rounded-full blur-[120px]"></div>
-        </div>
-
-        <div className="relative z-10 w-full max-w-xl px-6 lg:px-0 animate-fade-in-up">
-            <div className="bg-white/5 backdrop-blur-[40px] border border-white/10 rounded-[4rem] p-12 lg:p-20 shadow-luxury transition-all duration-700 hover:border-gold-bright/20">
-                
-                 <div className="text-center mb-16 space-y-6">
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2.5rem] bg-brand-dark border border-white/5 mb-6 group-hover:border-gold-bright/40 transition-all shadow-xl">
-                        <CordovaLogo className="h-12 w-12 object-contain" />
-                    </div>
-                    <div className="space-y-4">
-                        <h1 className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter uppercase italic leading-none">
+            <motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-[480px] mx-auto"
+            >
+                {/* Header Content */}
+                <div className="mb-12 space-y-6">
+                    <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 mb-2 shadow-2xl relative group"
+                    >
+                        <div className="absolute inset-0 bg-gold-bright/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <CordovaLogo className="h-8 w-8 object-contain relative z-10" />
+                    </motion.div>
+                    
+                    <div className="space-y-3">
+                        <h1 className="text-4xl md:text-5xl font-display font-black text-white tracking-tighter uppercase italic leading-none">
                             CENTRAL <br/>
-                            <span className="text-white/20 not-italic font-editorial font-normal">PROTOCOL</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright not-italic font-editorial font-normal">PROTOCOL</span>
                         </h1>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">
-                            Secure Operative Terminal
-                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="h-[1px] w-8 bg-gold-bright/30"></div>
+                            <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">
+                                Secure Operative Terminal
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleLogin} className="space-y-10">
-                    <div className="space-y-8">
-                        {/* Key Identification */}
-                         <div className="space-y-3">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] ml-8 italic">Operator Identity</label>
-                            <div className="relative group">
-                                <UsersIcon className="absolute left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-gold-bright transition-colors" />
+                {/* Main Identity Form */}
+                <form onSubmit={handleLogin} className="space-y-8 relative">
+                    <div className="space-y-6">
+                        {/* Operator Input */}
+                        <div className="space-y-3 group">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">Operator ID</label>
+                            <div className="relative">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-gold-bright transition-colors">
+                                    <UsersIcon className="h-5 w-5" />
+                                </div>
                                 <input
                                     type="text"
                                     required
+                                    autoFocus
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
-                                    className="w-full bg-white/[0.03] border border-white/10 focus:border-gold-bright/40 rounded-[2rem] pl-16 pr-6 py-8 text-white font-medium focus:ring-0 transition-all"
-                                    placeholder="Enter identifier"
+                                    className="w-full bg-white/[0.02] border border-white/10 focus:border-gold-bright/40 rounded-2xl pl-16 pr-6 py-6 text-white font-medium focus:ring-4 focus:ring-gold-bright/5 transition-all placeholder:text-slate-700 outline-none shadow-inner"
+                                    placeholder="Enter identifier..."
                                 />
                             </div>
                         </div>
 
-                        {/* Security Signature */}
-                         <div className="space-y-3">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] ml-8 italic">Security Signature</label>
-                            <div className="relative group">
-                                <ShieldCheckIcon className="absolute left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-gold-bright transition-colors" />
+                        {/* Signature Input */}
+                        <div className="space-y-3 group">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">Security Signature</label>
+                            <div className="relative">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-gold-bright transition-colors">
+                                    <LockIcon className="h-5 w-5" />
+                                </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-white/[0.03] border border-white/10 focus:border-gold-bright/40 rounded-[2rem] pl-16 pr-20 py-8 text-white font-medium focus:ring-0 transition-all"
+                                    className="w-full bg-white/[0.02] border border-white/10 focus:border-gold-bright/40 rounded-2xl pl-16 pr-20 py-6 text-white font-medium focus:ring-4 focus:ring-gold-bright/5 transition-all placeholder:text-slate-700 outline-none shadow-inner"
                                     placeholder="••••••••••••"
                                 />
-                                 <button
+                                <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-500 hover:text-gold-bright transition-colors"
+                                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 hover:text-gold-bright transition-colors tap-none p-2"
                                 >
                                     {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                                 </button>
@@ -163,53 +174,133 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                         </div>
                     </div>
 
-                    {/* Feedback Errors */}
-                    {error && (
-                        <div className="bg-red-500/10 border border-red-500/30 p-5 rounded-3xl flex items-center gap-4 animate-shake">
-                            <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
-                            <p className="text-xs text-red-200 font-bold uppercase tracking-wider">{error}</p>
-                        </div>
-                    )}
-
-                    {/* Action Button */}
-                     <button
-                        type="submit"
-                        disabled={loading || !key}
-                        className="group relative w-full flex items-center justify-center gap-4 py-8 bg-gold-bright text-brand-dark rounded-[2rem] font-black text-[10px] uppercase tracking-[0.5em] overflow-hidden transition-all duration-700 hover:bg-white hover:shadow-gold-glow-strong disabled:opacity-50 disabled:cursor-not-allowed shadow-luxury"
-                    >
-                        {loading ? (
-                            <div className="flex items-center gap-3 italic">
-                                <Loader2Icon className="animate-spin h-5 w-5" />
-                                <span>Verifying...</span>
-                            </div>
-                        ) : (
-                            <>
-                                <span className="relative z-10 italic">Initalize Session</span>
-                                <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                            </>
+                    {/* Error Display */}
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="bg-red-500/5 border border-red-500/20 p-4 rounded-2xl flex items-center gap-4 animate-shake mt-4">
+                                    <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                        <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
+                                    </div>
+                                    <p className="text-[10px] text-red-200 font-black uppercase tracking-widest">{error}</p>
+                                </div>
+                            </motion.div>
                         )}
-                    </button>
+                    </AnimatePresence>
+
+                    {/* Submit Section */}
+                    <div className="pt-2">
+                        <button
+                            type="submit"
+                            disabled={loading || !key}
+                            className="group relative w-full flex items-center justify-center gap-4 py-6 bg-gold-bright text-brand-dark rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] overflow-hidden transition-all duration-500 hover:bg-white hover:shadow-gold-glow-strong disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-luxury tap-none"
+                        >
+                            {loading ? (
+                                <div className="flex items-center gap-3 italic">
+                                    <Loader2Icon className="animate-spin h-5 w-5" />
+                                    <span>Verificando...</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <span className="relative z-10 italic">Inicializar Sesión</span>
+                                    <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                </>
+                            )}
+                            
+                            {/* Reflection effect */}
+                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                        </button>
+                    </div>
                 </form>
 
-                 <div className="mt-12 text-center">
+                {/* Footer Navigation */}
+                <div className="mt-10 relative z-10">
                     <Link 
                         to="/" 
-                        className="text-[9px] font-black text-slate-500 hover:text-gold-bright uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 group italic"
+                        className="inline-flex items-center gap-3 text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-[0.2em] transition-all group italic"
                     >
-                        <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
-                        Regresar a la Galería Pública
+                        <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
+                        <span>Regresar a la Galería Pública</span>
                     </Link>
                 </div>
+                
+                {/* System Logs Footer */}
+                <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-40">
+                    <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Núcleo Activo</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">v2.6 Hyperion Engine</span>
+                        <ShieldCheckIcon className="w-3.5 h-3.5 text-gold-bright" />
+                    </div>
+                </div>
+
+            </motion.div>
+        </div>
+
+        {/* RIGHT COLUMN: VISUAL/CINEMATIC AMBIENCE */}
+        <div className="hidden lg:block lg:w-[55%] relative overflow-hidden bg-brand-dark border-l border-white/5">
+            {/* Background Texture */}
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center mix-blend-overlay opacity-30 grayscale"></div>
+            
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050811] via-transparent to-[#050811]/50"></div>
+
+            {/* Scanning Line */}
+            <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
+                <div className="w-full h-[2px] bg-gold-bright animate-scan absolute shadow-[0_0_15px_rgba(242,202,80,0.5)]"></div>
             </div>
 
-            {/* Terminal Footprint */}
-            <div className="mt-12 flex justify-between px-10 items-center animate-pulse">
-                <div className="flex items-center gap-4">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-[0.5em]">Terminal Secura: {new Date().getHours()}:{new Date().getMinutes()}</span>
-                </div>
-                <div className="h-[1px] w-20 bg-white/10"></div>
-                <span className="text-[8px] font-bold text-slate-600 uppercase tracking-[0.5em]">v2.5 Atelier Engine</span>
+            {/* Glowing Orbs */}
+            <motion.div 
+                animate={{ 
+                    scale: [1, 1.1, 1],
+                    opacity: [0.2, 0.4, 0.2],
+                    x: [0, 30, 0],
+                    y: [0, -20, 0]
+                }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gold-bright/10 rounded-full blur-[100px]"
+            />
+            <motion.div 
+                animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.1, 0.2, 0.1],
+                    x: [0, -40, 0],
+                    y: [0, 40, 0]
+                }}
+                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-white/5 rounded-full blur-[120px]"
+            />
+
+            {/* Premium Centerpiece */}
+            <div className="absolute inset-0 flex items-center justify-center flex-col text-center p-20 z-10">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                >
+                    <CordovaLogo className="w-32 h-32 md:w-48 md:h-48 text-gold-bright drop-shadow-[0_0_30px_rgba(242,202,80,0.3)] opacity-80" />
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                    className="mt-12 max-w-lg"
+                >
+                    <h2 className="text-3xl font-display font-black text-white tracking-widest uppercase italic mb-6">
+                        Imprenta <span className="text-gold-bright">Córdova</span>
+                    </h2>
+                    <p className="text-slate-400 font-medium leading-relaxed text-sm">
+                        Plataforma de gestión operativa avanzada. Optimización de procesos, seguimiento de producción y control financiero centralizado en tiempo real.
+                    </p>
+                </motion.div>
             </div>
         </div>
     </div>

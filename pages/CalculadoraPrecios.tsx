@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +12,7 @@ import {
     BeakerIcon, DocumentDuplicateIcon as DocumentIcon,
     CircleStackIcon
 } from '@heroicons/react/24/solid';
+import { CloseIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { logActivity } from '../services/activityLogService';
 import { SOURCE_PAPERS, DEFAULT_COSTS } from '../constants';
@@ -51,28 +53,28 @@ const VisualStep: React.FC<{
             <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-[1px] bg-white/10 z-0"></div>
         )}
         
-        <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 overflow-hidden hover:border-liquid-gold/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl relative">
+        <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/10 overflow-hidden hover:border-liquid-gold/30 transition-all duration-700 h-full flex flex-col group/step shadow-2xl relative">
             <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             
             {/* Image Area */}
-            <div className="h-40 w-full relative overflow-hidden bg-black/40">
+            <div className="h-44 w-full relative overflow-hidden bg-black/40">
                 <img src={image} alt={title} className="w-full h-full object-cover opacity-10 grayscale group-hover/step:grayscale-0 group-hover/step:opacity-40 transition-all duration-1000 scale-125 group-hover/step:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent flex items-end p-8">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent flex items-end p-8">
                     <span className="text-white font-black text-[10px] uppercase tracking-[0.4em] flex items-center gap-4">
-                        <span className="bg-liquid-gold w-8 h-8 rounded-full flex items-center justify-center text-[12px] text-brand-dark shadow-gold-glow-sm">{title.split('.')[0]}</span>
+                        <span className="bg-liquid-gold w-9 h-9 rounded-full flex items-center justify-center text-[13px] text-black shadow-gold-glow-sm font-black">{title.split('.')[0]}</span>
                         {title.split('. ')[1]}
                     </span>
                 </div>
             </div>
             
             {/* Content Area */}
-            <div className="p-8 flex flex-col flex-grow bg-white/[0.01]">
-                <h4 className="font-editorial font-bold text-white text-lg mb-3 leading-none italic group-hover/step:text-liquid-gold transition-colors">{subtitle}</h4>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mb-6 flex-grow leading-relaxed italic">{detail}</p>
+            <div className="p-10 flex flex-col flex-grow bg-white/[0.01]">
+                <h4 className="font-bold text-white text-xl mb-4 leading-none italic group-hover/step:text-liquid-gold transition-colors tracking-tighter uppercase">{subtitle}</h4>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-8 flex-grow leading-relaxed italic">{detail}</p>
                 {cost !== undefined && (
-                    <div className="flex justify-between items-center border-t border-white/5 pt-6 mt-auto">
-                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">Insumo Valorizado</span>
-                        <span className="font-black text-sm text-white tracking-widest group-hover/step:text-liquid-gold transition-colors">{formatCurrency(cost)}</span>
+                    <div className="flex justify-between items-center border-t border-white/5 pt-8 mt-auto">
+                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">Valorización Técnica</span>
+                        <span className="font-black text-lg text-white tracking-tighter group-hover/step:text-liquid-gold transition-colors italic">{formatCurrency(cost)}</span>
                     </div>
                 )}
             </div>
@@ -106,33 +108,33 @@ const ProductionPipeline: React.FC<{
             animate="animate"
             className="w-full"
         >
-            <div className="flex flex-col lg:flex-row gap-6 justify-between">
+            <div className="flex flex-col lg:flex-row gap-8 justify-between">
                 <VisualStep 
                     title="1. Sustrato" 
                     image={images.input} 
                     subtitle={sourceName} 
-                    detail={`${sourceType} • PHYSICAL MATRIZ • ${sourceSize}`}
+                    detail={`${sourceType} • MATRIZ FÍSICA • ${sourceSize}`}
                     cost={materialCost}
                 />
                 <VisualStep 
-                    title="2. Profiling" 
+                    title="2. Pre-Impresión" 
                     image={images.prepress} 
-                    subtitle="Perfil Offset" 
-                    detail="Insumo Técnico • CTP / Poliéster"
+                    subtitle="Profiling Offset" 
+                    detail="INSUMO TÉCNICO • CTP / POLIÉSTER"
                     cost={prePressCost}
                 />
                 <VisualStep 
-                    title="3. Printing" 
+                    title="3. Ejecución" 
                     image={images.print} 
                     subtitle="Chasis Mecánico" 
-                    detail="Ejecución de Tiraje Industrial"
+                    detail="TIRAJE INDUSTRIAL • CALIBRACIÓN"
                     cost={printCost}
                 />
                 <VisualStep 
-                    title="4. Finishes" 
+                    title="4. Arquitectura" 
                     image={images.finish} 
-                    subtitle="Arquitectura" 
-                    detail={`${cutSize} (${cutsPerUnit} imps/hoja)`}
+                    subtitle="Acabado Final" 
+                    detail={`${cutSize} (${cutsPerUnit} IMPS/HOJA)`}
                     isLast
                 />
             </div>
@@ -235,37 +237,37 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Input Panel */}
+            {/* Panel de Entradas */}
             <motion.div 
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
                 className="lg:col-span-4 space-y-10"
             >
-                <div className="glass-boutique p-12 relative overflow-hidden group shadow-2xl rounded-[3.5rem] border border-white/10">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-liquid-gold/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-liquid-gold/10 transition-all duration-1000" />
+                <div className="glass-card-luxury p-12 relative overflow-hidden group shadow-3xl rounded-[3.5rem] border border-white/10">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-liquid-gold/5 rounded-full blur-[90px] -mr-24 -mt-24 group-hover:bg-liquid-gold/15 transition-all duration-1000" />
                     
-                    <div className="flex items-center gap-8 mb-14 pb-10 border-b border-white/5 relative z-10">
-                        <div className="bg-liquid-gold/10 p-5 rounded-[2rem] border border-liquid-gold/20 shadow-gold-glow-soft text-liquid-gold">
+                    <div className="flex items-center gap-8 mb-16 pb-12 border-b border-white/5 relative z-10">
+                        <div className="bg-liquid-gold/10 p-5 rounded-2xl border border-liquid-gold/20 shadow-gold-glow-soft text-liquid-gold">
                             <CpuIcon className="w-8 h-8" />
                         </div>
                         <div className="space-y-1">
-                            <h2 className="font-editorial font-bold text-white text-3xl tracking-tighter italic">Technical Core</h2>
-                            <p className="text-[10px] text-liquid-gold/60 font-black uppercase tracking-[0.5em]">Parámetros de Ingeniería</p>
+                            <h2 className="font-bold text-white text-3xl tracking-tighter italic uppercase">Núcleo <span className="text-liquid-gold">Técnico</span></h2>
+                            <p className="text-[10px] text-liquid-gold/40 font-black uppercase tracking-[0.5em]">Parámetros de Ingeniería</p>
                         </div>
                     </div>
 
                     <div className="space-y-12 relative z-10">
-                        {/* Tipo de Papel */}
+                        {/* Sustrato */}
                         <div className="space-y-5">
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2 italic">Physical Substrate</label>
+                            <label className="block text-[11px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2 italic">Sustrato Físico</label>
                             <div className="relative group">
                                 <select 
                                     value={paperId} 
                                     onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} 
                                     className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-sm font-black text-white outline-none focus:border-liquid-gold/40 transition-all appearance-none cursor-pointer group-hover:bg-black/80 tracking-widest uppercase italic"
                                 >
-                                    {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-brand-dark">{p.nombre.toUpperCase()}</option>)}
+                                    {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-slate-950">{p.nombre.toUpperCase()}</option>)}
                                 </select>
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700">
                                     <ChevronRightIcon className="w-5 h-5 rotate-90" />
@@ -273,44 +275,44 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             </div>
                         </div>
 
-                        {/* Tamaño de Corte */}
+                        {/* Dimensiones */}
                         <div className="space-y-6">
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2 italic">Artifact Geometry</label>
+                            <label className="block text-[11px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2 italic">Geometría del Artefacto</label>
                             <div className="grid grid-cols-2 gap-4">
                                 {SOURCE_PAPERS.find(p=>p.id===paperId)?.tipo === 'RESMA' ? (
                                     ['OFICIO', '1/2_OFICIO', '1/4_OFICIO', '1/8_OFICIO'].map(p => (
-                                        <button key={p} onClick={() => handlePresetChange(p)} className={`py-5 text-[10px] font-black uppercase tracking-widest border-2 rounded-2xl transition-all duration-700 ${selectedSizePreset===p ? 'bg-white text-black border-white shadow-luxury scale-105' : 'bg-white/[0.02] text-slate-500 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
+                                        <button key={p} onClick={() => handlePresetChange(p)} className={`py-5 text-[10px] font-black uppercase tracking-widest border-2 rounded-2xl transition-all duration-700 ${selectedSizePreset===p ? 'bg-white text-black border-white shadow-luxury scale-105' : 'bg-white/[0.02] text-slate-600 border-white/5 hover:border-white/20'}`}>{p.replace('_OFICIO', '')}</button>
                                     ))
                                 ) : (
                                     ['A3', 'A4', 'A5', 'A6'].map(p => (
-                                        <button key={p} onClick={() => handlePresetChange(p)} className={`py-5 text-[10px] font-black uppercase tracking-widest border-2 rounded-2xl transition-all duration-700 ${selectedSizePreset===p ? 'bg-white text-black border-white shadow-luxury scale-105' : 'bg-white/[0.02] text-slate-500 border-white/5 hover:border-white/20'}`}>{p}</button>
+                                        <button key={p} onClick={() => handlePresetChange(p)} className={`py-5 text-[10px] font-black uppercase tracking-widest border-2 rounded-2xl transition-all duration-700 ${selectedSizePreset===p ? 'bg-white text-black border-white shadow-luxury scale-105' : 'bg-white/[0.02] text-slate-600 border-white/5 hover:border-white/20'}`}>{p}</button>
                                     ))
                                 )}
                             </div>
                             <div className="flex items-center gap-4 bg-black/40 p-4 rounded-3xl border border-white/5">
                                 <div className="relative flex-1">
-                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full h-14 bg-transparent border-none text-center text-white font-black text-lg outline-none" />
-                                    <span className="absolute left-4 top-1 text-[9px] font-black text-slate-700 uppercase">Width</span>
+                                    <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full h-14 bg-transparent border-none text-center text-white font-black text-xl outline-none" />
+                                    <span className="absolute left-4 top-1 text-[9px] font-black text-slate-700 uppercase">Ancho</span>
                                 </div>
                                 <div className="w-[1px] h-10 bg-white/5" />
                                 <div className="relative flex-1">
-                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full h-14 bg-transparent border-none text-center text-white font-black text-lg outline-none" />
-                                    <span className="absolute left-4 top-1 text-[9px] font-black text-slate-700 uppercase">Height</span>
+                                    <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full h-14 bg-transparent border-none text-center text-white font-black text-xl outline-none" />
+                                    <span className="absolute left-4 top-1 text-[9px] font-black text-slate-700 uppercase">Alto</span>
                                 </div>
                                 <span className="pr-4 text-[10px] font-black text-slate-800 italic">mm</span>
                             </div>
                         </div>
 
-                        {/* Volumen */}
+                        {/* Volumen de Producción */}
                         <div className="space-y-5">
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2 italic">Scale of Production</label>
+                            <label className="block text-[11px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2 italic">Escala de Producción</label>
                             <div className="flex gap-4">
-                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="flex-1 p-7 bg-black/60 border-2 border-white/5 rounded-3xl text-4xl font-black text-liquid-gold outline-none focus:border-liquid-gold/40 transition-all text-center placeholder:text-slate-900" placeholder="0" />
+                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="flex-1 p-7 bg-black/60 border-2 border-white/5 rounded-3xl text-4xl font-black text-liquid-gold outline-none focus:border-liquid-gold/40 transition-all text-center placeholder:text-slate-900 shadow-inner" placeholder="0" />
                                 {paperId === 'QUIMICO' && (
                                     <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-1/3 bg-black/60 border-2 border-white/5 rounded-3xl text-[11px] font-black text-white p-2 outline-none appearance-none text-center cursor-pointer uppercase italic">
-                                        <option value={100}>100 PPS</option>
-                                        <option value={50}>50 PPS</option>
-                                        <option value={25}>25 PPS</option>
+                                        <option value={100}>100 HJS</option>
+                                        <option value={50}>50 HJS</option>
+                                        <option value={25}>25 HJS</option>
                                     </select>
                                 )}
                             </div>
@@ -322,16 +324,16 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                                 <div className="relative">
                                     <input type="checkbox" checked={hasDesign} onChange={e => setHasDesign(e.target.checked)} className="peer hidden" />
                                     <div className="w-14 h-8 bg-white/5 rounded-full border-2 border-white/5 peer-checked:bg-liquid-gold peer-checked:border-liquid-gold transition-all duration-700 shadow-inner" />
-                                    <div className="absolute left-1.5 top-1.5 w-5 h-5 bg-slate-700 rounded-full transition-all duration-700 peer-checked:translate-x-6 peer-checked:bg-brand-dark peer-checked:shadow-luxury" />
+                                    <div className="absolute left-1.5 top-1.5 w-5 h-5 bg-slate-700 rounded-full transition-all duration-700 peer-checked:translate-x-6 peer-checked:bg-black peer-checked:shadow-luxury" />
                                 </div>
-                                <span className="text-[11px] font-black text-slate-600 group-hover/toggle:text-white transition-colors uppercase tracking-[0.3em] italic">Pre-Architected Art</span>
+                                <span className="text-[11px] font-black text-slate-700 group-hover/toggle:text-white transition-colors uppercase tracking-[0.3em] italic">Arte Digital Finalizado</span>
                             </label>
                         </div>
                     </div>
                 </div>
             </motion.div>
 
-            {/* Results Panel */}
+            {/* Panel de Resultados */}
             <div className="lg:col-span-8 space-y-12">
                 {result ? (
                     <>
@@ -346,87 +348,87 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             printCost={result.costImpresion}
                         />
 
-                        {/* Financial Metrics */}
+                        {/* Métricas Financieras */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
-                                { label: 'Sustrates Inventory', val: result.costPapelTotal, icon: CircleStackIcon },
-                                { label: 'Pre-Production', val: result.costPrePrensa, icon: BeakerIcon },
-                                { label: 'Machine Tirage', val: result.costImpresion, icon: RocketLaunchIcon },
-                                { label: 'Final Execution', val: result.costAcabados, icon: DocumentIcon }
+                                { label: 'Logística de Sustratos', val: result.costPapelTotal, icon: CircleStackIcon },
+                                { label: 'Pre-Impresión Taller', val: result.costPrePrensa, icon: BeakerIcon },
+                                { label: 'Tiraje Industrial', val: result.costImpresion, icon: RocketLaunchIcon },
+                                { label: 'Acabados de Atelier', val: result.costAcabados, icon: DocumentIcon }
                             ].map((item, i) => (
                                 <motion.div 
                                     key={i}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.5 + (i * 0.1) }}
-                                    className="bg-white/[0.02] border-2 border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl hover:bg-white/[0.05] hover:border-white/10 transition-all cursor-crosshair group/metric"
+                                    className="bg-white/[0.02] border border-white/5 p-10 rounded-[3rem] backdrop-blur-3xl hover:bg-white/[0.05] hover:border-liquid-gold/20 transition-all cursor-crosshair group/metric shadow-xl"
                                 >
-                                    <item.icon className="w-5 h-5 text-slate-700 mb-6 group-hover/metric:text-liquid-gold transition-colors duration-500" />
+                                    <item.icon className="w-5 h-5 text-slate-700 mb-8 group-hover/metric:text-liquid-gold transition-colors duration-500" />
                                     <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4 italic leading-tight">{item.label}</p>
                                     <p className="text-2xl font-black text-white tracking-tighter italic">{formatCurrency(item.val)}</p>
                                 </motion.div>
                             ))}
                         </div>
 
-                        {/* Sugerencia Big Card */}
+                        {/* Card Maestro de PVP */}
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                            className="relative rounded-[4.5rem] overflow-hidden bg-[#0c0c0c] border border-white/10 shadow-gold-glow-strong p-16 flex flex-col md:flex-row items-center justify-between group"
+                            className="relative rounded-[4.5rem] overflow-hidden bg-slate-950/80 border border-white/10 shadow-gold-glow-strong p-16 flex flex-col md:flex-row items-center justify-between group"
                         >
                             <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
-                            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-liquid-gold/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-                            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-liquid-gold/5 blur-[100px] pointer-events-none"></div>
+                            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-liquid-gold/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-liquid-gold/5 blur-[120px] pointer-events-none"></div>
                             
-                            <div className="relative z-10 w-full md:w-auto space-y-10">
-                                <div className="inline-flex items-center gap-4 px-6 py-2 bg-white/5 rounded-full border border-white/10">
+                            <div className="relative z-10 w-full md:w-auto space-y-12">
+                                <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-white/5 rounded-full border border-white/10">
                                     <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow"></div>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Atelier Financial Matrix</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Matriz de Rendimiento Atelier</span>
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] mb-4 italic">Liquid Operating Cost</p>
-                                    <p className="text-5xl font-black text-white tracking-tighter italic opacity-60 decoration-liquid-gold/20 underline underline-offset-8 decoration-1">{formatCurrency(result.costoTotalProduccion)}</p>
+                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] mb-4 italic">Costo Operativo Líquido</p>
+                                    <p className="text-5xl font-black text-white tracking-tighter italic opacity-40 decoration-liquid-gold/20 underline underline-offset-8 decoration-1">{formatCurrency(result.costoTotalProduccion)}</p>
                                 </div>
-                                <p className="text-[10px] text-slate-700 uppercase tracking-[0.4em] italic font-bold max-w-[200px] leading-relaxed">Structural valuation for industrial synchronization</p>
+                                <p className="text-[10px] text-slate-800 uppercase tracking-[0.4em] italic font-black max-w-[220px] leading-relaxed">Sincronización estructural para optimización de recursos industriales</p>
                             </div>
                             
-                            <div className="h-64 w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent hidden md:block mx-16" />
+                            <div className="h-72 w-[1px] bg-gradient-to-b from-transparent via-white/5 to-transparent hidden md:block mx-20" />
 
-                            <div className="text-center md:text-right mt-16 md:mt-0 relative z-10 w-full md:w-auto">
-                                <div className="space-y-1 mb-10">
-                                    <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] mb-4 italic ml-auto max-w-fit">Recommended Market Value</p>
-                                    <div className="flex items-baseline gap-6 justify-center md:justify-end">
+                            <div className="text-center md:text-right mt-20 md:mt-0 relative z-10 w-full md:w-auto">
+                                <div className="space-y-4 mb-12">
+                                    <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] mb-6 italic ml-auto max-w-fit">Valor de Mercado Sugerido</p>
+                                    <div className="flex items-baseline gap-8 justify-center md:justify-end">
                                         <motion.span 
                                             key={result.pvp}
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="text-9xl font-display font-black text-white tracking-tighter italic text-glow-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]"
+                                            className="text-9xl font-black text-white tracking-tighter italic drop-shadow-[0_0_40px_rgba(212,175,55,0.4)]"
                                         >
                                             {formatCurrency(result.pvp)}
                                         </motion.span>
-                                        <span className="text-3xl text-slate-700 font-bold tracking-tighter italic opacity-40 uppercase">+ Net</span>
+                                        <span className="text-4xl text-slate-800 font-black tracking-tighter italic opacity-40 uppercase">+ IVA</span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col md:flex-row gap-6 items-center justify-end">
-                                    <div className="px-8 py-4 bg-black/60 border border-white/5 rounded-3xl text-[11px] font-black tracking-[0.4em] text-slate-500 uppercase italic shadow-inner">
-                                        Per Unit: <span className="text-white ml-3 font-bold">{formatCurrency(result.unitario)}</span>
+                                <div className="flex flex-col md:flex-row gap-8 items-center justify-end">
+                                    <div className="px-10 py-5 bg-black/60 border border-white/5 rounded-3xl text-[11px] font-black tracking-[0.4em] text-slate-500 uppercase italic shadow-inner">
+                                        Costo Unitario: <span className="text-white ml-4 font-black">{formatCurrency(result.unitario)}</span>
                                     </div>
-                                    <button className="px-14 py-8 bg-white text-black rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.6em] shadow-luxury transition-all hover:bg-liquid-gold hover:scale-110 active:scale-95 flex items-center gap-4 group/btn overflow-hidden">
-                                        <SparklesIcon className="w-5 h-5 group-hover:animate-pulse" />
-                                        Initialize Protocol
+                                    <button className="px-16 py-8 bg-white text-black rounded-[2.8rem] font-black text-[13px] uppercase tracking-[0.6em] shadow-luxury transition-all hover:bg-liquid-gold hover:scale-105 active:scale-95 flex items-center gap-5 group/btn overflow-hidden">
+                                        <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                        Inicializar Protocolo
                                     </button>
                                 </div>
                             </div>
                         </motion.div>
                     </>
                 ) : (
-                    <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white/[0.02] rounded-[4rem] border-2 border-dashed border-rose-500/10 p-24 text-center group">
-                        <div className="w-32 h-32 bg-rose-500/10 rounded-full flex items-center justify-center mb-12 border-2 border-rose-500/20 shadow-glow-rose group-hover:scale-110 transition-transform duration-700">
-                            <ExclamationTriangleIcon className="w-14 h-14 text-rose-500/50" />
+                    <div className="h-full min-h-[550px] flex flex-col items-center justify-center bg-white/[0.01] rounded-[4rem] border-2 border-dashed border-rose-500/10 p-24 text-center group">
+                        <div className="w-36 h-36 bg-rose-500/5 rounded-full flex items-center justify-center mb-14 border border-rose-500/10 shadow-glow-rose group-hover:scale-110 transition-transform duration-1000">
+                            <ExclamationTriangleIcon className="w-16 h-16 text-rose-500/40" />
                         </div>
-                        <h4 className="text-4xl font-editorial font-bold text-white mb-6 italic tracking-tighter">Geometric Constraint Violated</h4>
-                        <p className="text-slate-600 font-black max-w-sm uppercase text-[12px] tracking-[0.4em] leading-loose italic">The declared artifact geometry exceeds physical matrix boundaries. Re-calibrate spatial coordinates.</p>
+                        <h4 className="text-4xl font-bold text-white mb-8 italic tracking-tighter uppercase">Restricción Geométrica Detectada</h4>
+                        <p className="text-slate-700 font-black max-w-sm uppercase text-[12px] tracking-[0.5em] leading-loose italic">El formato declarado excede las fronteras físicas de la matriz seleccionada. Re-calibre las coordenadas espaciales.</p>
                     </div>
                 )}
             </div>
@@ -463,116 +465,116 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Controls */}
+            {/* Controles */}
             <motion.div 
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="glass-boutique p-14 rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden"
+                className="glass-card-luxury p-14 rounded-[3.5rem] border border-white/10 shadow-3xl relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 blur-[100px] -mr-32 -mt-32"></div>
+                <div className="absolute top-0 right-0 w-72 h-72 bg-liquid-gold/5 blur-[110px] -mr-36 -mt-36"></div>
                 
-                <div className="flex items-center gap-8 mb-16 border-b border-white/5 pb-10 relative z-10">
-                    <div className="bg-liquid-gold/10 p-5 rounded-[2rem] border border-liquid-gold/20 shadow-gold-glow-soft text-liquid-gold">
+                <div className="flex items-center gap-8 mb-16 border-b border-white/5 pb-12 relative z-10">
+                    <div className="bg-liquid-gold/10 p-5 rounded-2xl border border-liquid-gold/20 shadow-gold-glow-soft text-liquid-gold">
                         <RocketLaunchIcon className="w-10 h-10" />
                     </div>
                     <div className="space-y-1">
-                        <h2 className="font-editorial font-bold text-white text-4xl tracking-tighter italic">Digital Flux</h2>
-                        <p className="text-[11px] text-liquid-gold/60 font-black uppercase tracking-[0.5em]">On-Demand Performance</p>
+                        <h2 className="font-bold text-white text-4xl tracking-tighter italic uppercase">Flujo <span className="text-liquid-gold">Digital</span></h2>
+                        <p className="text-[11px] text-liquid-gold/40 font-black uppercase tracking-[0.5em]">Rendimiento On-Demand</p>
                     </div>
                 </div>
 
-                <div className="space-y-14 relative z-10">
+                <div className="space-y-16 relative z-10">
                     <div className="space-y-6">
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Format Magnitude</label>
-                        <div className="flex gap-4 p-2 bg-black/60 rounded-[2.5rem] border-2 border-white/5">
+                        <label className="block text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] ml-2 italic">Magnitud del Formato</label>
+                        <div className="flex gap-4 p-2.5 bg-black/60 rounded-[2.8rem] border-2 border-white/5 shadow-inner">
                             {['A4', 'A3', 'SRA3'].map((f) => (
-                                <button key={f} onClick={() => setFormat(f as any)} className={`flex-1 py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all duration-700 italic ${format === f ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>{f}</button>
+                                <button key={f} onClick={() => setFormat(f as any)} className={`flex-1 py-5 rounded-[2.2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all duration-700 italic ${format === f ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>{f}</button>
                             ))}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-10">
                         <div className="space-y-6">
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Media Type</label>
-                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-[12px] font-black text-white outline-none focus:border-liquid-gold/50 appearance-none cursor-pointer tracking-widest uppercase italic">
-                                <option value="BOND" className="bg-[#0a0a0a]">Bond 75g Basic</option>
-                                <option value="COUCHE_115" className="bg-[#0a0a0a]">Couché 115g Pro</option>
-                                <option value="COUCHE_300" className="bg-[#0a0a0a]">Couché 300g Heavy</option>
-                                <option value="ADHESIVO" className="bg-[#0a0a0a]">Adhesivo Gloss</option>
+                            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] ml-2 italic">Tipo de Sustrato</label>
+                            <select value={paperType} onChange={e => setPaperType(e.target.value)} className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-[12px] font-black text-white outline-none focus:border-liquid-gold/50 appearance-none cursor-pointer tracking-widest uppercase italic shadow-inner">
+                                <option value="BOND" className="bg-slate-950">Bond 75g Estandar</option>
+                                <option value="COUCHE_115" className="bg-slate-950">Couché 115g Pro</option>
+                                <option value="COUCHE_300" className="bg-slate-950">Couché 300g Heavy</option>
+                                <option value="ADHESIVO" className="bg-slate-950">Adhesivo Glossy</option>
                             </select>
                         </div>
                         <div className="space-y-6">
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Iteration</label>
-                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-3xl font-black text-liquid-gold outline-none text-center focus:border-liquid-gold/40 transition-all placeholder:text-slate-900" />
+                            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] ml-2 italic">Iteración de Tiraje</label>
+                            <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} className="w-full p-6 bg-black/60 border-2 border-white/5 rounded-3xl text-3xl font-black text-liquid-gold outline-none text-center focus:border-liquid-gold/40 transition-all placeholder:text-slate-900 shadow-inner" />
                         </div>
                     </div>
 
                     <div className="space-y-6">
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-[0.6em] ml-2 italic">Electrostatic Modality</label>
+                        <label className="block text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] ml-2 italic">Modalidad Electrostática</label>
                         <div className="grid grid-cols-2 gap-6">
-                            <div className="flex bg-black/60 rounded-[2rem] p-2 border-2 border-white/5">
-                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${colorMode === 'COLOR' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Chroma Full</button>
-                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${colorMode === 'BW' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Monotone</button>
+                            <div className="flex bg-black/60 rounded-[2.2rem] p-2.5 border-2 border-white/5 shadow-inner">
+                                <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all italic ${colorMode === 'COLOR' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Chroma Full</button>
+                                <button onClick={() => setColorMode('BW')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all italic ${colorMode === 'BW' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Monocromo</button>
                             </div>
-                            <div className="flex bg-black/60 rounded-[2rem] p-2 border-2 border-white/5">
-                                <button onClick={() => setSides(1)} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${sides === 1 ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Simplex</button>
-                                <button onClick={() => setSides(2)} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl transition-all italic ${sides === 2 ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Dúplex Pro</button>
+                            <div className="flex bg-black/60 rounded-[2.2rem] p-2.5 border-2 border-white/5 shadow-inner">
+                                <button onClick={() => setSides(1)} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all italic ${sides === 1 ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Simplex</button>
+                                <button onClick={() => setSides(2)} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all italic ${sides === 2 ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Duplex Pro</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </motion.div>
 
-            {/* Results */}
+            {/* Resultados */}
             <motion.div 
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="relative rounded-[4rem] overflow-hidden bg-[#0c0c0c] border border-white/10 shadow-gold-glow p-16 flex flex-col justify-between group"
+                className="relative rounded-[4rem] overflow-hidden bg-slate-950/50 border border-white/10 shadow-gold-glow p-16 flex flex-col justify-between group"
             >
                 <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-liquid-gold/5 blur-[120px] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-[3s]" />
+                <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-liquid-gold/5 blur-[130px] -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-[4s]" />
                 
                 <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-20">
-                        <div className="space-y-2">
-                            <h3 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Consolidated <br/> <span className="text-gold-gradient text-6xl">Statement</span></h3>
-                            <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic mt-6">Laser Fusion Cost Calibration Protocol</p>
+                    <div className="flex justify-between items-start mb-24">
+                        <div className="space-y-4">
+                            <h3 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Declaración <br/> <span className="text-gold-gradient text-6xl">Consolidada</span></h3>
+                            <p className="text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] italic mt-8">Protocolo de Calibración Láser v4.1</p>
                         </div>
-                        <CpuIcon className="w-12 h-12 text-liquid-gold/20 animate-pulse" />
+                        <CpuIcon className="w-14 h-14 text-liquid-gold/10 animate-pulse" />
                     </div>
                     
-                    <div className="space-y-8 mb-20">
-                        <div className="flex justify-between items-center bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/10 shadow-inner group/val hover:border-white/20 transition-all">
-                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Unit Valuation</span>
+                    <div className="space-y-8 mb-24">
+                        <div className="flex justify-between items-center bg-white/[0.01] p-10 rounded-[3rem] border border-white/5 shadow-inner group/val hover:border-white/10 transition-all">
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-[0.4em] italic leading-none">Valuación Unitaria</span>
                             <span className="text-4xl font-black text-white italic group-hover:text-liquid-gold transition-colors">{formatCurrency(calculation.unitPvp)}</span>
                         </div>
-                        <div className="flex justify-between items-center bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/10 shadow-inner group/val hover:border-white/20 transition-all">
-                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Iterated tiraje</span>
-                            <span className="text-4xl font-black text-white italic">{quantity} <span className="text-lg text-slate-700 tracking-tighter ml-3 font-bold opacity-40">UNITS</span></span>
+                        <div className="flex justify-between items-center bg-white/[0.01] p-10 rounded-[3rem] border border-white/5 shadow-inner group/val hover:border-white/10 transition-all">
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-[0.4em] italic leading-none">Iteración de Tiraje</span>
+                            <span className="text-4xl font-black text-white italic">{quantity} <span className="text-xl text-slate-800 tracking-tighter ml-4 font-black opacity-40">UNIDADES</span></span>
                         </div>
                     </div>
                 </div>
 
-                <div className="relative z-10 pt-14 border-t-2 border-white/5">
-                    <p className="text-[12px] font-black text-liquid-gold/40 uppercase tracking-[0.8em] mb-6 italic ml-auto max-w-fit">Industrial Net Subtotal</p>
-                    <div className="flex items-baseline gap-6 justify-end">
+                <div className="relative z-10 pt-16 border-t border-white/5">
+                    <p className="text-[12px] font-black text-liquid-gold/30 uppercase tracking-[0.8em] mb-8 italic ml-auto max-w-fit">Subtotal Industrial Neto</p>
+                    <div className="flex items-baseline gap-8 justify-end">
                         <motion.span 
                             key={calculation.totalPvp}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-9xl font-display font-black text-white tracking-tighter italic text-glow drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                            className="text-9xl font-black text-white tracking-tighter italic drop-shadow-[0_0_40px_rgba(255,255,255,0.08)]"
                         >
                             {formatCurrency(calculation.totalPvp)}
                         </motion.span>
-                        <span className="text-3xl text-slate-800 font-black tracking-widest uppercase opacity-40 italic">+ TAX</span>
+                        <span className="text-4xl text-slate-800 font-black tracking-widest uppercase opacity-40 italic">+ TAX</span>
                     </div>
-                    <div className="mt-16 flex items-center justify-between">
-                         <div className="flex items-center gap-4 text-emerald-500/60 font-black text-[11px] uppercase tracking-[0.5em] italic">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-glow"></div>
-                            Priority Flux Established
+                    <div className="mt-20 flex items-center justify-between">
+                         <div className="flex items-center gap-5 text-emerald-500/50 font-black text-[11px] uppercase tracking-[0.6em] italic">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-glow"></div>
+                            Flujo de Prioridad Establecido
                          </div>
-                         <button className="flex items-center gap-4 text-liquid-gold font-black text-[12px] uppercase tracking-[0.4em] hover:translate-x-4 transition-all duration-700 group/link">
-                            Execute Dispatch <ArrowRightIcon className="w-5 h-5 group-hover:animate-bounce-x" />
+                         <button className="flex items-center gap-5 text-liquid-gold font-black text-[13px] uppercase tracking-[0.5em] hover:translate-x-6 transition-all duration-700 group/link">
+                            Ejecutar Despacho <ArrowRightIcon className="w-6 h-6 group-hover:animate-bounce-x" />
                          </button>
                     </div>
                 </div>
@@ -593,57 +595,57 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <motion.div 
                 initial={{ scale: 0.9, opacity: 0, y: 40 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-[#0a0a0a] border border-white/10 rounded-[4rem] shadow-gold-glow-strong w-full max-w-5xl max-h-[90vh] flex flex-col relative z-20 overflow-hidden" 
+                className="bg-slate-950 border border-white/10 rounded-[4.5rem] shadow-gold-glow-strong w-full max-w-5xl max-h-[90vh] flex flex-col relative z-20 overflow-hidden" 
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-14 border-b border-white/5 relative overflow-hidden bg-white/[0.01]">
+                <div className="flex justify-between items-center p-16 border-b border-white/5 relative overflow-hidden bg-white/[0.01]">
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
                     <div className="relative z-10">
-                        <h2 className="text-5xl font-black text-white tracking-tighter italic uppercase">Substrate <span className="text-liquid-gold">Catalog</span></h2>
-                        <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.5em] mt-3 italic">Technical Matrix Specification • Atelier Core</p>
+                        <h2 className="text-5xl font-black text-white tracking-tighter italic uppercase">Catálogo de <span className="text-liquid-gold">Sustratos</span></h2>
+                        <p className="text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] mt-5 italic">Especificación de Matriz Técnica • Atelier Core</p>
                     </div>
-                    <button onClick={onClose} className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all group border border-white/5 relative z-10">
+                    <button onClick={onClose} className="w-16 h-16 flex items-center justify-center rounded-[2rem] bg-white/5 text-slate-600 hover:text-white hover:bg-white/10 transition-all group border border-white/5 relative z-10">
                         <CloseIcon className="w-6 h-6 transition-transform group-hover:rotate-90" />
                     </button>
                 </div>
                 
-                <div className="p-14 overflow-y-auto custom-scrollbar flex-grow">
-                    <div className="grid gap-6">
+                <div className="p-16 overflow-y-auto custom-scrollbar flex-grow bg-noise/5">
+                    <div className="grid gap-8">
                         {SOURCE_PAPERS.map((paper, i) => (
                             <motion.div 
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 key={paper.id} 
-                                className="group bg-white/[0.02] border-2 border-white/5 hover:border-liquid-gold/40 p-8 rounded-3xl flex items-center justify-between transition-all duration-700 hover:bg-black/60 shadow-inner"
+                                className="group bg-white/[0.01] border border-white/5 hover:border-liquid-gold/30 p-10 rounded-[2.5rem] flex items-center justify-between transition-all duration-700 hover:bg-black shadow-inner"
                             >
-                                <div className="flex items-center gap-10">
-                                    <div className="w-20 h-20 rounded-2xl bg-black flex flex-col items-center justify-center border-2 border-white/5 text-[10px] font-black text-slate-700 uppercase tracking-[0.2em] group-hover:border-liquid-gold/20 transition-colors">
-                                        <DocumentIcon className="w-6 h-6 mb-1 opacity-20" />
+                                <div className="flex items-center gap-12">
+                                    <div className="w-24 h-24 rounded-3xl bg-black flex flex-col items-center justify-center border-2 border-white/5 text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] group-hover:border-liquid-gold/20 transition-colors">
+                                        <DocumentIcon className="w-8 h-8 mb-2 opacity-10" />
                                         {paper.id.split('_')[0]}
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-black text-xl tracking-tighter uppercase italic group-hover:text-liquid-gold transition-colors">{paper.nombre}</h4>
-                                        <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-[0.3em] italic font-bold">
-                                            {paper.ancho} x {paper.alto} cm • Industrial Calibrated Substrate
+                                        <h4 className="text-white font-black text-2xl tracking-tighter uppercase italic group-hover:text-liquid-gold transition-colors">{paper.nombre}</h4>
+                                        <p className="text-[10px] text-slate-700 mt-4 uppercase tracking-[0.4em] italic font-black leading-none">
+                                            {paper.ancho} x {paper.alto} cm • Sustrato Industrial Calibrado
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-14">
+                                <div className="flex items-center gap-16">
                                     <div className="text-right">
-                                        <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mb-1 italic">Process Type</p>
-                                        <span className="text-xs font-black text-white tracking-[0.4em] uppercase italic group-hover:text-white transition-colors">{paper.tipo}</span>
+                                        <p className="text-[9px] font-black text-slate-800 uppercase tracking-widest mb-2 italic">Procesamiento</p>
+                                        <span className="text-[11px] font-black text-white tracking-[0.5em] uppercase italic group-hover:text-white transition-colors">{paper.tipo}</span>
                                     </div>
-                                    <div className="w-px h-10 bg-white/5"></div>
-                                    <span className="bg-liquid-gold/10 text-liquid-gold px-6 py-2 rounded-full text-[9px] font-black tracking-[0.5em] uppercase border border-liquid-gold/20 shadow-glow-sm">SGN-ACTIVE</span>
+                                    <div className="w-[1px] h-12 bg-white/5"></div>
+                                    <span className="bg-liquid-gold/5 text-liquid-gold px-7 py-2.5 rounded-full text-[9px] font-black tracking-[0.6em] uppercase border border-liquid-gold/10 shadow-gold-glow-sm">SGN-ACTIVO</span>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                 </div>
                 
-                <div className="p-14 border-t border-white/5 flex justify-end bg-white/[0.01]">
-                    <button onClick={onClose} className="px-16 py-8 bg-white text-black rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.6em] hover:bg-liquid-gold transition-all shadow-luxury active:scale-95">Disengage Catalog</button>
+                <div className="p-16 border-t border-white/5 flex justify-end bg-white/[0.01]">
+                    <button onClick={onClose} className="px-16 py-8 bg-white text-black rounded-[2.8rem] font-black text-[12px] uppercase tracking-[0.6em] hover:bg-liquid-gold transition-all shadow-luxury active:scale-95">Desactivar Catálogo</button>
                 </div>
             </motion.div>
         </div>
@@ -734,59 +736,59 @@ const CalculadoraPreciosPage: React.FC = () => {
         <div className="min-h-screen p-8 sm:p-14 relative overflow-hidden flex flex-col bg-[#050505]">
             <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
             
-            {/* Cinematic Background */}
+            {/* Fondo Cinematográfico */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-liquid-gold/[0.02] blur-[150px] animate-pulse"></div>
+                <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-liquid-gold/[0.03] blur-[160px] animate-pulse"></div>
                 <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.01] blur-[150px]"></div>
             </div>
 
             <div className="max-w-[1600px] mx-auto w-full flex-grow flex flex-col pt-10">
-                {/* Header */}
+                {/* Cabecera */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-20 relative z-10">
                     <div className="space-y-6">
                         <div className="flex items-center gap-6">
                             <div className="w-16 h-[2px] bg-liquid-gold/40"></div>
-                            <span className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.8em]">Precision Print Engine v4.0</span>
+                            <span className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.8em]">Precision Print Engine v4.1</span>
                         </div>
                         <motion.h1 
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="text-7xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-none"
+                            className="text-7xl lg:text-9xl font-black text-white tracking-tighter uppercase italic leading-none"
                         >
-                            Cost <span className="text-gold-gradient">Engineering</span>
+                            Ingeniería de <span className="text-gold-gradient">Costos</span>
                         </motion.h1>
                     </div>
                     
-                    <div className="flex gap-6">
-                        <button onClick={() => setShowMasterTable(true)} className="group flex items-center gap-4 px-10 py-6 bg-white/[0.02] border-2 border-white/5 text-white font-black text-[11px] uppercase tracking-[0.5em] rounded-[1.8rem] hover:bg-white/[0.05] hover:border-white/10 transition-all shadow-luxury">
-                            <TableIcon className="w-5 h-5 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors"/> Matrix Catalog
+                    <div className="flex gap-8">
+                        <button onClick={() => setShowMasterTable(true)} className="group flex items-center gap-5 px-12 py-7 bg-white/[0.02] border-2 border-white/5 text-white font-black text-[11px] uppercase tracking-[0.5em] rounded-[2rem] hover:bg-white/[0.05] hover:border-liquid-gold/20 transition-all shadow-luxury">
+                            <TableIcon className="w-5 h-5 text-liquid-gold/30 group-hover:text-liquid-gold transition-colors"/> Catálogo de Matriz
                         </button>
                         <button 
                             onClick={() => setMode(mode === 'CONFIG' ? 'OFFSET' : 'CONFIG')} 
-                            className={`group flex items-center gap-4 px-10 py-6 rounded-[1.8rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all border-2 shadow-luxury ${mode === 'CONFIG' ? 'bg-white text-black border-white scale-105' : 'bg-white/[0.02] text-white border-white/5 hover:border-white/10'}`}
+                            className={`group flex items-center gap-5 px-12 py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all border-2 shadow-luxury ${mode === 'CONFIG' ? 'bg-white text-black border-white scale-105' : 'bg-white/[0.02] text-white border-white/5 hover:border-white/10'}`}
                         >
-                            <Cog8ToothIcon className={`w-5 h-5 ${mode === 'CONFIG' ? 'animate-spin-slow' : 'text-slate-700'}`}/> Calibration
+                            <Cog8ToothIcon className={`w-5 h-5 ${mode === 'CONFIG' ? 'animate-spin-slow' : 'text-slate-700'}`}/> Calibración
                         </button>
                     </div>
                 </div>
 
-                {/* Mode Selector (Tabs) */}
+                {/* Selector de Modo (Tabs) */}
                 {mode !== 'CONFIG' && (
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="flex p-2 bg-black/60 border-2 border-white/5 rounded-[2.5rem] mb-20 max-w-md shadow-2xl relative z-10"
+                        className="flex p-2.5 bg-black/60 border-2 border-white/5 rounded-[3rem] mb-20 max-w-md shadow-3xl relative z-10"
                     >
-                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-5 px-10 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-4 italic ${mode === 'OFFSET' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>
+                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-5 px-12 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-5 italic ${mode === 'OFFSET' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-700 hover:text-white'}`}>
                             <PrinterIcon className="w-5 h-5"/> Offset
                         </button>
-                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-5 px-10 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-4 italic ${mode === 'DIGITAL' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-600 hover:text-white'}`}>
+                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-5 px-12 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-5 italic ${mode === 'DIGITAL' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-700 hover:text-white'}`}>
                             <RocketLaunchIcon className="w-5 h-5"/> Digital
                         </button>
                     </motion.div>
                 )}
 
-                {/* Content Area */}
+                {/* Área de Contenido */}
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={mode}
@@ -794,61 +796,40 @@ const CalculadoraPreciosPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.6 }}
-                        className="relative z-10 pb-20"
+                        className="relative z-10 pb-32"
                     >
                         {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
                         {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
-                        
-                        {/* Configuration Panel */}
                         {mode === 'CONFIG' && (
-                            <div className="bg-[#0c0c0c] border border-white/10 p-16 md:p-24 rounded-[4.5rem] shadow-gold-glow-strong max-w-[1200px] mx-auto relative overflow-hidden backdrop-blur-3xl">
-                                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-liquid-gold/[0.03] blur-[150px] -mr-32 -mt-32"></div>
-                                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-slate-500/[0.03] blur-[120px] -ml-20 -mb-20"></div>
-                                
-                                <div className="flex items-center gap-10 mb-20 border-b-2 border-white/5 pb-14 relative z-10">
-                                    <div className="bg-liquid-gold/10 p-6 rounded-[2rem] border-2 border-liquid-gold/20 shadow-glow-sm">
-                                        <DollarIcon className="w-10 h-10 text-liquid-gold"/>
-                                    </div>
+                            <motion.div 
+                                initial={{ opacity: 0, y: 40 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="glass-card-luxury p-16 rounded-[4rem] border border-white/10 shadow-3xl"
+                            >
+                                <div className="flex justify-between items-center mb-16 pb-12 border-b border-white/5">
                                     <div className="space-y-2">
-                                        <h2 className="font-editorial font-bold text-white text-4xl tracking-tighter italic">Industrial Base Calibration</h2>
-                                        <p className="text-[12px] font-black text-slate-600 uppercase tracking-[0.6em] mt-2 italic">Ajuste de parámetros fijos y mermas de producción</p>
+                                        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">Calibración de <span className="text-liquid-gold">Costos Bases</span></h2>
+                                        <p className="text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] italic">Protocolo de Ajuste Financiero Maestro</p>
+                                    </div>
+                                    <div className="flex gap-6">
+                                        <button onClick={() => setMode('OFFSET')} className="px-10 py-5 text-[10px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
+                                        <button onClick={() => handleSaveConfig(costs)} className="px-12 py-5 bg-liquid-gold text-black rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-gold-glow">Guardar Matriz</button>
                                     </div>
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                                     {Object.entries(costs).map(([key, val]) => (
-                                        <motion.div 
-                                            whileHover={{ y: -5 }}
-                                            key={key} 
-                                            className="group bg-black/40 p-8 rounded-[2.5rem] border-2 border-white/5 hover:border-liquid-gold/30 transition-all duration-700 shadow-inner"
-                                        >
-                                            <label className="block text-[10px] font-black text-slate-700 uppercase mb-5 tracking-[0.4em] group-focus-within:text-liquid-gold transition-colors italic">
-                                                {key.replace(/_/g, ' ')}
-                                            </label>
-                                            <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-800 font-black text-2xl group-focus-within:text-liquid-gold transition-colors">$</span>
-                                                <input 
-                                                    type="number" 
-                                                    step="0.01" 
-                                                    value={val} 
-                                                    onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value) || 0})}
-                                                    className="w-full pl-14 pr-6 py-6 bg-transparent border-none rounded-[1.8rem] font-black text-3xl text-white focus:ring-0 outline-none transition-all placeholder:text-slate-900 group-hover:translate-x-2 transition-transform duration-700"
-                                                />
-                                            </div>
-                                        </motion.div>
+                                        <div key={key} className="space-y-4">
+                                            <label className="block text-[9px] font-black text-slate-700 uppercase tracking-widest ml-1">{key.replace(/_/g, ' ')}</label>
+                                            <input 
+                                                type="number" step="0.0001" 
+                                                value={val} 
+                                                onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value)})}
+                                                className="w-full p-5 bg-black/40 border border-white/5 rounded-2xl text-white font-black text-lg outline-none focus:border-liquid-gold/30 transition-all shadow-inner"
+                                            />
+                                        </div>
                                     ))}
                                 </div>
-
-                                <div className="mt-24 pt-16 border-t-2 border-white/5 flex justify-end relative z-10">
-                                    <button 
-                                        onClick={() => handleSaveConfig(costs)} 
-                                        className="group relative flex items-center gap-6 bg-white text-black px-20 py-8 rounded-[2.5rem] font-black text-[13px] uppercase tracking-[0.6em] overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-luxury"
-                                    >
-                                        <span className="relative z-10 group-hover:mr-10 transition-all duration-700">Sync Master Costs</span>
-                                        <RocketLaunchIcon className="w-8 h-8 absolute right-10 opacity-0 group-hover:opacity-100 transition-all duration-1000 rotate-45"/>
-                                    </button>
-                                </div>
-                            </div>
+                            </motion.div>
                         )}
                     </motion.div>
                 </AnimatePresence>
@@ -858,10 +839,5 @@ const CalculadoraPreciosPage: React.FC = () => {
         </div>
     );
 };
-
-// --- ICONS (Placeholder components since they were imported but might be missing in original file) ---
-const CloseIcon = ({ className }: { className?: string }) => (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-);
 
 export default CalculadoraPreciosPage;
