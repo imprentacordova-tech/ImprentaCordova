@@ -173,3 +173,39 @@
   -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
+
+/* --- MOBILE APP OPTIMIZATIONS --- */
+@layer utilities {
+  .tap-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.shadow-gold-glow-strong {
+  box-shadow: 0 20px 50px -12px rgba(212, 175, 55, 0.4), 0 0 20px -5px rgba(212, 175, 55, 0.2);
+}
+
+.mobile-app-shadow {
+  box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.8);
+}

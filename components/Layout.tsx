@@ -12,6 +12,7 @@ import {
 import { User, TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
 import { SEO } from './SEO';
+import { MobileFloatingNav } from './MobileFloatingNav';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -352,11 +353,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
 
                 <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
 
-                <main className="flex-1 relative overflow-y-auto focus:outline-none p-8 lg:p-12 scroll-smooth custom-scrollbar z-10">
+                <main className="flex-1 relative overflow-y-auto focus:outline-none p-8 lg:p-12 pb-40 lg:pb-12 scroll-smooth custom-scrollbar z-10">
                     <div className="max-w-[1600px] mx-auto w-full animate-slide-up">
                         {children}
                     </div>
                 </main>
+
+                <MobileFloatingNav />
             </div>
         </div>
     );

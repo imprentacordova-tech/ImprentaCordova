@@ -189,17 +189,23 @@ export const CreateClientModal: React.FC<{
         const finalId = newClienteData.cedulaRuc || '9999999999';
 
         setIsSaving(true);
-        const newCliente = await addCliente({ 
-            ...newClienteData,
-            cedula: finalId, // Asegurar que siempre viaje algo
-            ruc: mode === 'SRI' ? newClienteData.cedulaRuc : undefined,
-            actividades: actividades.join('|'),
-            telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : ['0990000000']),
-            // Limpiar datos SRI si es modo express
-            regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
-        });
-        setSaveSuccess(true);
-        setTimeout(() => onClientCreated(newCliente), 800);
+        try {
+            const newCliente = await addCliente({ 
+                ...newClienteData,
+                cedula: finalId, // Asegurar que siempre viaje algo
+                ruc: mode === 'SRI' ? newClienteData.cedulaRuc : undefined,
+                actividades: actividades.join('|'),
+                telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : ['0990000000']),
+                // Limpiar datos SRI si es modo express
+                regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
+            });
+            setSaveSuccess(true);
+            setTimeout(() => onClientCreated(newCliente), 800);
+        } catch (err: any) {
+            console.error("Error al registrar cliente:", err);
+            setIsSaving(false);
+            setRucError(err.message || 'Error en la conexión con la base de datos');
+        }
     };
 
     if (!isOpen) return null;
@@ -230,12 +236,14 @@ export const CreateClientModal: React.FC<{
 
                     <div className="bg-white/5 p-1.5 rounded-[1.8rem] flex font-black text-[10px] uppercase tracking-widest border border-white/5">
                         <button 
+                            type="button"
                             onClick={() => setMode('EXPRESS')}
                             className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'EXPRESS' ? 'bg-white text-brand-dark shadow-luxury' : 'text-slate-500 hover:text-white'}`}
                         >
                             <BoltIcon className="w-4 h-4"/> Express (Normal)
                         </button>
                         <button 
+                            type="button"
                             onClick={() => setMode('SRI')}
                             className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'SRI' ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}
                         >
@@ -244,7 +252,7 @@ export const CreateClientModal: React.FC<{
                     </div>
                 </div>
                 
-                <div className="flex-grow p-10 space-y-10 overflow-y-auto custom-scrollbar relative z-10">
+                <div className="flex-grow p-10 space-y-10 overflow-y-auto custom-scrollbar relative z-10 pb-40">
                     
                     {/* Botón Scanner solo visible en modo SRI */}
                     {mode === 'SRI' && (
@@ -370,7 +378,7 @@ export const CreateClientModal: React.FC<{
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in pb-20">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
                                 <InputField 
                                     label="DNI / Cédula (Opcional)" 
                                     name="cedulaRuc" 
@@ -404,11 +412,12 @@ export const CreateClientModal: React.FC<{
 
 
 interface ClientSelectorProps { 
-    onSelect: (cliente: Cliente) => void; 
+    onSelect: (cliente: Cliente | null) => void; 
     selectedId?: string;
+    onSkip?: () => void;
 }
 
-const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId }) => {
+const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, onSkip }) => {
     const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -442,7 +451,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId })
                     )}
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <button 
                         onClick={() => handleOpenCreate('EXPRESS')} 
                         className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
@@ -466,6 +475,19 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId })
                         <div className="text-left">
                             <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Registro</span>
                             <span className="block text-[11px] font-black uppercase text-white group-hover:text-brand-red transition-colors">Oficial SRI</span>
+                        </div>
+                    </button>
+
+                    <button 
+                        onClick={onSkip}
+                        className="flex-1 bg-white/2 hover:bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
+                    >
+                        <div className="p-3 bg-slate-800 text-slate-400 rounded-xl">
+                            <LayersIcon className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Solo Consulta</span>
+                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-slate-300 transition-colors">Ver Catálogo</span>
                         </div>
                     </button>
                 </div>

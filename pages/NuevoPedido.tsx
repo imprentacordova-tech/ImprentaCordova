@@ -32,23 +32,55 @@ const NuevoPedidoPage: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    // SRI specific states
+    const [isSriOrder, setIsSriOrder] = useState(false);
+    const [sriMode, setSriMode] = useState<'NUEVO' | 'RENOVACION'>('RENOVACION');
+    const [sriClave, setSriClave] = useState('');
+    const [sriActividad, setSriActividad] = useState('');
+    const [taxStatus, setTaxStatus] = useState<'AL_DIA' | 'PENDIENTE' | 'DESCONOCIDO'>('DESCONOCIDO');
+    const [quickName, setQuickName] = useState(''); // Para cuando saltan el cliente
+
     const canAdvance = () => {
-        if (step === 1) return !!cliente;
-        if (step === 2) return !!servicio && !!detalle;
-        if (step === 3) return precio > 0 && abono >= 0;
+        if (step === 1) return true; // Permitimos avanzar siempre (identidad opcional inicialmente)
+        if (step === 2) {
+            if (!servicio || !detalle) return false;
+            if (isSriOrder) {
+                if (sriMode === 'RENOVACION' && !sriClave) return false;
+                if (!sriActividad) return false;
+            }
+            return true;
+        }
+        if (step === 3) {
+            // En el último paso, si no hay cliente, DEBEMOS tener al menos un nombre rápido
+            if (!cliente && !quickName) return false;
+            return precio > 0 && abono >= 0;
+        }
         return true;
     };
 
     const handleCreateOrder = async () => {
-        if (!cliente || !servicio) return;
         setLoading(true);
         setError(null);
         try {
+            let finalCliente = cliente;
+            
+            // Si no hay cliente, crear uno Express al vuelo
+            if (!finalCliente) {
+                finalCliente = await addCliente({
+                    nombre: quickName.toUpperCase(),
+                    cedula: '9999999999',
+                    regimen: 'General',
+                    direccion: 'Pasaje, El Oro'
+                });
+            }
+
             const result = await addTrabajo({
-                titular: cliente.nombre,
-                clienteId: cliente.id || '',
+                titular: finalCliente.nombre,
+                clienteId: finalCliente.id || '',
                 servicio: servicio.nombre,
-                detalle,
+                detalle: isSriOrder 
+                    ? `[SRI ${sriMode}] ${sriActividad} | ${detalle}` 
+                    : detalle,
                 precio,
                 abono,
                 saldo: precio - abono,
@@ -56,14 +88,18 @@ const NuevoPedidoPage: React.FC = () => {
                 estado: TrabajoEstado.PENDIENTE,
                 fechaEntrada: new Date().toISOString(),
                 responsable: currentUser.nombre,
-                origen: 'Local'
+                origen: 'Local',
+                // Metadata SRI
+                es_sri: isSriOrder,
+                estado_clave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
+                actividad_seleccionada: isSriOrder ? sriActividad : null
             }, currentUser.nombre, imageFile);
 
             await logActivity(
                 currentUser.nombre, 
                 currentUser.rol || 'Administrador', 
                 'CREAR_ORDEN', 
-                `Misión desplegada: Orden #${result.orden} para ${cliente.nombre}`, 
+                `Misión desplegada: Orden #${result.orden} para ${finalCliente.nombre}`, 
                 'Ventas'
             );
             
@@ -84,22 +120,22 @@ const NuevoPedidoPage: React.FC = () => {
     ];
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-16 pb-40 px-6 sm:px-14 pt-10">
+        <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-40 px-4 sm:px-8 lg:px-14 pt-6 md:pt-10">
             {/* --- TRANSLUCENT STEPPER --- */}
-            <div className="flex justify-between items-center bg-white/[0.01] backdrop-blur-3xl p-10 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="flex justify-between items-center bg-white/[0.01] backdrop-blur-3xl p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden group no-scrollbar overflow-x-auto">
                 <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.03] via-transparent to-liquid-gold/[0.03]"></div>
                 {steps.map((s, idx) => (
                     <React.Fragment key={s.id}>
-                        <div className="flex flex-col items-center gap-4 relative z-10">
-                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-700 border-2 ${
+                        <div className="flex flex-col items-center gap-3 md:gap-4 relative z-10 flex-shrink-0">
+                            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 border-2 ${
                                 step >= s.id ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 border-white/10 text-slate-600'
                             } ${step === s.id ? 'scale-110' : ''}`}>
-                                <s.icon className={`w-7 h-7 ${step === s.id ? 'animate-pulse' : ''}`} />
+                                <s.icon className={`w-5 h-5 md:w-7 md:h-7 ${step === s.id ? 'animate-pulse' : ''}`} />
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-[0.4em] italic ${step >= s.id ? 'text-white' : 'text-slate-700'}`}>{s.label}</span>
+                            <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] italic ${step >= s.id ? 'text-white' : 'text-slate-700'}`}>{s.label}</span>
                         </div>
                         {idx < steps.length - 1 && (
-                            <div className="flex-1 h-[1px] bg-white/5 mx-10 relative">
+                            <div className="flex-1 min-w-[20px] h-[1px] bg-white/5 mx-4 md:mx-10 relative">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: step > s.id ? '100%' : '0%' }}
@@ -118,16 +154,20 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 1 && (
                             <motion.div 
                                 key="step1" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-14 lg:p-20 rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-8 md:p-14 lg:p-20 rounded-[3rem] md:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                                <div className="space-y-4 mb-14">
-                                    <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 01</p>
-                                    <h2 className="text-6xl font-black text-white uppercase tracking-tighter italic">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
-                                    <p className="text-slate-500 text-sm font-bold uppercase tracking-widest italic">Seleccione el titular para la nueva misión de producción.</p>
+                                <div className="space-y-4 mb-10 md:mb-14">
+                                    <p className="text-[10px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 01</p>
+                                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
+                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest italic">Seleccione el titular o salte directamente a la cotización.</p>
                                 </div>
-                                <div className="bg-black/40 p-2 rounded-[2.5rem] border border-white/5 shadow-inner">
-                                    <ClientSelector onSelect={setCliente} selectedId={cliente?.id} />
+                                <div className="bg-black/40 p-2 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 shadow-inner">
+                                    <ClientSelector 
+                                        onSelect={(c) => { setCliente(c); if(c) setStep(2); }} 
+                                        selectedId={cliente?.id} 
+                                        onSkip={() => setStep(2)}
+                                    />
                                 </div>
                             </motion.div>
                         )}
@@ -135,15 +175,95 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 2 && (
                             <motion.div 
                                 key="step2" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-14 lg:p-20 rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-8 md:p-14 lg:p-20 rounded-[3rem] md:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
-                                <div className="space-y-4 mb-14">
-                                    <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 02</p>
-                                    <h2 className="text-6xl font-black text-white uppercase tracking-tighter italic">Arquitectura del <span className="text-gold-gradient">Servicio</span></h2>
+                                <div className="space-y-4 mb-10 md:mb-14">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
+                                        <div>
+                                            <p className="text-[10px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 02</p>
+                                            <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Arquitectura del <span className="text-gold-gradient">Servicio</span></h2>
+                                        </div>
+                                        <button 
+                                            onClick={() => setIsSriOrder(!isSriOrder)}
+                                            className={`w-full sm:w-auto px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all border ${isSriOrder ? 'bg-brand-red border-brand-red text-white shadow-red-glow' : 'border-white/10 text-slate-500 hover:text-white'} tap-none`}
+                                        >
+                                            {isSriOrder ? '✓ TRABAJO SRI' : 'MODO SRI?'}
+                                        </button>
+                                    </div>
                                 </div>
+
                                 <div className="grid grid-cols-1 gap-12">
                                     <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
                                     
+                                    {isSriOrder && (
+                                        <div className="bg-brand-red/5 p-10 rounded-[3rem] border border-brand-red/20 space-y-10 animate-fade-in">
+                                            <div className="flex items-center gap-6">
+                                                <ShieldCheckIcon className="w-8 h-8 text-brand-red" />
+                                                <h3 className="text-lg font-black text-white uppercase tracking-widest italic">Validación Tributaria Obligatoria</h3>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div className="space-y-6">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Tipo de Trámite</label>
+                                                    <div className="flex gap-4 p-1.5 bg-black/40 rounded-2xl border border-white/5">
+                                                        {['NUEVO', 'RENOVACION'].map(m => (
+                                                            <button 
+                                                                key={m} onClick={() => setSriMode(m as any)}
+                                                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${sriMode === m ? 'bg-brand-red text-white shadow-luxury' : 'text-slate-600 hover:text-white'}`}
+                                                            >
+                                                                {m}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {sriMode === 'RENOVACION' && (
+                                                    <div className="space-y-6">
+                                                        <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Clave SRI (Acceso)</label>
+                                                        <input 
+                                                            type="text" value={sriClave} onChange={e => setSriClave(e.target.value)}
+                                                            placeholder="Contraseña del contribuyente..."
+                                                            className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-6">
+                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Actividad a Imprimir en Talonario</label>
+                                                <select 
+                                                    value={sriActividad} 
+                                                    onChange={e => setSriActividad(e.target.value)}
+                                                    className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all appearance-none"
+                                                >
+                                                    <option value="">Seleccione actividad...</option>
+                                                    {cliente?.actividades ? cliente.actividades.split('|').map((a, i) => (
+                                                        <option key={i} value={a}>{a}</option>
+                                                    )) : (
+                                                        <>
+                                                            <option value="SERVICIOS PROFESIONALES">SERVICIOS PROFESIONALES</option>
+                                                            <option value="VENTA AL POR MENOR">VENTA AL POR MENOR</option>
+                                                            <option value="ACTIVIDADES DE CONSTRUCCIÓN">ACTIVIDADES DE CONSTRUCCIÓN</option>
+                                                        </>
+                                                    )}
+                                                </select>
+                                            </div>
+
+                                            <div className="flex items-center gap-6 p-6 bg-black/40 rounded-2xl border border-white/5">
+                                                <div className="flex-1">
+                                                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Estado de Impuesto a la Renta</p>
+                                                    <p className="text-xs font-black text-white italic">{taxStatus === 'AL_DIA' ? '✓ AL DÍA CON EL FISCO' : taxStatus === 'PENDIENTE' ? '⚠ REQUIERE REGULARIZACIÓN' : 'CONSULTA PENDIENTE'}</p>
+                                                </div>
+                                                <button 
+                                                    onClick={() => setTaxStatus('AL_DIA')}
+                                                    className="px-6 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[9px] font-black uppercase text-slate-400 transition-all"
+                                                >
+                                                    Verificar Ahora
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="space-y-6">
                                         <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Memorándum del Proyecto</label>
                                         <textarea 
@@ -185,6 +305,20 @@ const NuevoPedidoPage: React.FC = () => {
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-12">
+                                        {!cliente && (
+                                            <div className="bg-liquid-gold/10 p-10 rounded-[2.5rem] border border-liquid-gold/20 space-y-6 animate-pulse-slow">
+                                                <label className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em] ml-4 italic">Identidad para el Recibo</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={quickName} 
+                                                    onChange={e => setQuickName(e.target.value)}
+                                                    placeholder="Nombre del cliente..."
+                                                    className="w-full px-8 py-5 bg-black/60 border-2 border-liquid-gold/30 rounded-2xl text-xl font-black text-white outline-none placeholder:text-slate-700 shadow-luxury"
+                                                />
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Se creará un perfil Express automáticamente con este nombre.</p>
+                                            </div>
+                                        )}
+
                                         <div className="space-y-6">
                                             <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Valor Total de Misión</label>
                                             <div className="relative group">
@@ -312,8 +446,9 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="space-y-3">
                                     <p className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em] italic leading-none">Titular Asignado</p>
                                     <h3 className="text-3xl font-black text-white uppercase tracking-tight italic group-hover:text-liquid-gold transition-colors duration-500">
-                                        {cliente?.nombre || <span className="text-slate-800 opacity-40 italic">Esperando Identidad...</span>}
+                                        {cliente?.nombre || quickName || <span className="text-slate-800 opacity-40 italic">Cotización Anónima...</span>}
                                     </h3>
+                                    {isSriOrder && <span className="inline-block bg-brand-red/20 text-brand-red text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-tighter mt-2 border border-brand-red/10 animate-pulse">✓ FLUJO OFICIAL SRI</span>}
                                 </div>
 
                                 <div className="space-y-3">
@@ -321,6 +456,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     {servicio ? (
                                         <div className="flex flex-col gap-3">
                                             <span className="text-2xl font-black text-white italic uppercase tracking-tighter">{servicio.nombre}</span>
+                                            {isSriOrder && <p className="text-brand-red text-[10px] font-black uppercase tracking-widest italic">Actividad: {sriActividad || 'PENDIENTE'}</p>}
                                             {detalle && <p className="text-slate-500 text-[13px] font-bold italic line-clamp-3 leading-relaxed uppercase">{detalle}</p>}
                                         </div>
                                     ) : (

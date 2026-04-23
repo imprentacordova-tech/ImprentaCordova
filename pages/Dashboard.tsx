@@ -104,32 +104,32 @@ const DashboardPage: React.FC = () => {
         <div className="max-w-[1600px] mx-auto space-y-12 pb-20">
             
             {/* --- TOP BAR / QUICK ACTIONS --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 px-2 md:px-0">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase italic">
                             Bienvenido, <span className="text-gold-gradient">{currentUser.nombre.split(' ')[0]}</span>
                         </h1>
-                        <span className="px-3 py-1 bg-liquid-gold/10 text-liquid-gold text-[9px] font-black rounded-lg border border-liquid-gold/20 uppercase tracking-widest italic">
+                        <span className="px-3 py-1 bg-liquid-gold/10 text-liquid-gold text-[8px] md:text-[9px] font-black rounded-lg border border-liquid-gold/20 uppercase tracking-widest italic">
                             {currentUser.rol}
                         </span>
                     </div>
-                    <p className="text-slate-500 text-sm font-medium tracking-tight">
-                        Hay <span className="text-white font-bold">{stats.totalActivos} trabajos activos</span> en el flujo de producción hoy.
+                    <p className="text-slate-500 text-xs md:text-sm font-medium tracking-tight">
+                        Hay <span className="text-white font-bold">{stats.totalActivos} trabajos activos</span> hoy.
                     </p>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                     <button 
                         onClick={() => navigate('/nuevo')} 
-                        className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-liquid-gold transition-all duration-500 shadow-xl active:scale-95"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-liquid-gold transition-all duration-500 shadow-xl active:scale-95 tap-none"
                     >
                         <AddIcon className="w-4 h-4" />
                         Nueva Orden
                     </button>
                     <button 
                         onClick={() => setIsClientModalOpen(true)} 
-                        className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white/10 transition-all duration-500 active:scale-95"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all duration-500 active:scale-95 tap-none"
                     >
                         <UserPlusIcon className="w-4 h-4 text-liquid-gold" />
                         Nuevo Cliente
