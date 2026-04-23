@@ -386,6 +386,4 @@ const InventarioPage: React.FC = () => {
         </motion.div>
     );
 };
-
 export default InventarioPage;
-efault InventarioPage;
