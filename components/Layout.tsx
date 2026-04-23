@@ -229,8 +229,10 @@ const Header: React.FC<{
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
         } else {
             document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
         }
         localStorage.setItem('theme', theme);
     }, [theme]);
