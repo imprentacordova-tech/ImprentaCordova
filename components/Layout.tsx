@@ -33,7 +33,7 @@ const navGroups = [
         items: [
             { path: '/nuevo',    label: 'Nueva Orden', icon: AddIcon    },
             { path: '/diseno',   label: 'Diseño',       icon: PaletteIcon },
-            { path: '/kds',      label: 'Taller (KDS)', icon: KdsIcon     },
+            { path: '/kds',      label: 'Producción',   icon: KdsIcon     },
             { path: '/retiros',  label: 'Entregas',     icon: ReceiptIcon },
         ],
     },
@@ -45,7 +45,7 @@ const navGroups = [
             { path: '/cuentas',     label: 'Cuentas',    icon: FinanceIcon   },
             { path: '/proveedores', label: 'Proveedores',icon: UsersIcon     },
             { path: '/productos',   label: 'Catálogo',   icon: BoxIcon       },
-            { path: '/inventario',  label: 'Inventario', icon: SolidBoxIcon  },
+            { path: '/inventario',  label: 'Insumos',    icon: SolidBoxIcon  },
         ],
     },
     {
@@ -62,22 +62,22 @@ const navGroups = [
 
 // Map de rutas → título legible para el breadcrumb del header
 const PAGE_TITLES: Record<string, string> = {
-    '/dashboard':     'Panel Principal',
+    '/dashboard':     'Panel de Control',
     '/':              'Vista Pública',
     '/nuevo':         'Nueva Orden',
     '/diseno':        'Mesa de Diseño',
-    '/kds':           'Taller · KDS',
-    '/retiros':       'Entregas',
-    '/clientes':      'Clientes',
-    '/trabajos':      'Historial de Trabajos',
-    '/cuentas':       'Cuentas',
-    '/proveedores':   'Proveedores',
-    '/productos':     'Catálogo de Productos',
-    '/inventario':    'Inventario',
-    '/finanzas':      'Finanzas IA',
-    '/usuarios':      'Gestión de Usuarios',
-    '/registro':      'Auditoría de Actividad',
-    '/configuracion': 'Configuración',
+    '/kds':           'Control de Producción',
+    '/retiros':       'Entregas y Retiros',
+    '/clientes':      'Gestión de Clientes',
+    '/trabajos':      'Historial de Ordenes',
+    '/cuentas':       'Cuentas por Cobrar',
+    '/proveedores':   'Gestión de Proveedores',
+    '/productos':     'Catálogo de Servicios',
+    '/inventario':    'Existencias de Bodega',
+    '/finanzas':      'Análisis Financiero IA',
+    '/usuarios':      'Control de Acceso',
+    '/registro':      'Auditoría de Sistema',
+    '/configuracion': 'Ajustes del Sistema',
 };
 
 // ── Hook: reloj en tiempo real ────────────────────────────────────────────────
@@ -121,8 +121,8 @@ const Sidebar: React.FC<{
                     <CordovaLogo className="w-10 h-10" />
                 </div>
                 <div className="text-center">
-                    <h1 className="font-display font-black text-2xl leading-none tracking-[0.3em] text-white">ATELIER</h1>
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] mt-2">CÓRDOVA VISION</p>
+                    <h1 className="font-display font-black text-2xl leading-none tracking-[0.3em] text-white uppercase">Córdova</h1>
+                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] mt-2">Gestión Administrativa</p>
                 </div>
             </div>
 
