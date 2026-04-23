@@ -26,7 +26,6 @@ const navGroups = [
         title: 'Principal',
         items: [
             { path: '/dashboard', label: 'Panel de Control', icon: DashboardIcon },
-            { path: '/',          label: 'Vista Pública',   icon: GlobeAltIcon  },
         ],
     },
     {
@@ -223,10 +222,22 @@ const Header: React.FC<{
 
     const pageTitle = PAGE_TITLES[location.pathname] ?? 'Atelier';
 
+    const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+        return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+    });
+
     useEffect(() => {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    }, []);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    };
 
     const timeStr = now.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     const dateStr = now.toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -280,6 +291,15 @@ const Header: React.FC<{
                     <span className="text-base font-black text-white tracking-wider tabular-nums leading-none">{timeStr}</span>
                     <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{dateStr}</span>
                 </div>
+
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggleTheme}
+                    className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-liquid-gold hover:border-liquid-gold/50 transition-all duration-300"
+                    title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+                >
+                    {theme === 'dark' ? <SparklesIcon className="w-5 h-5" /> : <SolidBoxIcon className="w-5 h-5" />}
+                </button>
 
                 <div className="h-8 w-px bg-white/5 hidden md:block" />
 
