@@ -7,7 +7,7 @@ import { formatCurrency, numeroALetras } from '../utils';
 import { 
     PrinterIcon, ArrowLeftIcon, CordovaLogo, 
     MapPinIcon, WhatsAppIcon, CheckBadgeIcon, 
-    EnvelopeIcon, PhoneIcon, ArrowDownTrayIcon, Loader2Icon
+    EnvelopeIcon, PhoneIcon, ArrowDownTrayIcon, Loader2Icon, InfoIcon
 } from '../components/Icons';
 
 // Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
