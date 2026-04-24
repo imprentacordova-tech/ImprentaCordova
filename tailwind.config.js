@@ -2,6 +2,7 @@
 export default {
   content: [
     "./index.html",
+    "./index.tsx",
     "./App.tsx",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -10,24 +11,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-dark': '#0c1324', // Update from Obsidian & Gold background
-        'liquid-gold': '#D4AF37', // Custom Liquid gold
-        'liquid-gold-light': '#f2ca50',
-        'luxury-slate': '#191f31', // surface_container
+        'brand-blue': '#0A1E40', 
+        'brand-red': '#E11D48',  
+        'brand-dark': '#0c1324', // Unified Obsidian from Stitch
+        'liquid-gold': '#D4AF37', 
+        'gold-bright': '#f2ca50', // Stitch primary
+        'surface-light': '#F8FAFC',
+        'surface-dark': '#0c1324',
+        'luxury-slate': '#191f31',
         'accent-blue': '#bfcdff',
-        'paper-cream': '#fbfbe2', // Cordova Gilt background
-        'paper-white': '#ffffff', // Lowest surface
-        'ink-black': '#1b1d0e', // on_surface variant
       },
       fontFamily: {
-        'display': ['Manrope', 'Outfit', 'sans-serif'],
-        'editorial': ['Playfair Display', 'serif'],
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Manrope"', 'sans-serif'],
+        display: ['"Epilogue"', 'sans-serif'],
+        editorial: ['"Outfit"', 'sans-serif'],
       },
       boxShadow: {
-        'luxury': '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        'gold-glow': '0 0 20px rgba(212, 175, 55, 0.3)',
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Darkened for asphalt effect
+        'luxury': '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+        'gold-glow': '0 0 40px rgba(212, 175, 55, 0.12)',
+        'gold-glow-soft': '0 0 20px rgba(212, 175, 55, 0.08)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
         'paper-stack': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
       },
       animation: {
