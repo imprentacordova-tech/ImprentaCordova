@@ -16,10 +16,10 @@ export const MobileFloatingNav: React.FC = () => {
 
     const navItems = [
         { path: '/dashboard', icon: DashboardIcon, label: 'Inicio' },
-        { path: '/kds', icon: KdsIcon, label: 'Producción' },
+        { path: '/produccion', icon: KdsIcon, label: 'Impresión' },
         { path: '/nuevo', icon: AddIcon, label: 'Nueva', primary: true },
-        { path: '/clientes', icon: ClientsIcon, label: 'Clientes' },
-        { path: '/configuracion', icon: Cog8ToothIcon, label: 'Ajustes' },
+        { path: '/kds', icon: KdsIcon, label: 'Flujo' },
+        { path: '/retiros', icon: ClientsIcon, label: 'Entregas' },
     ];
 
     return (

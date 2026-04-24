@@ -41,15 +41,16 @@ const StatItem: React.FC<{ label: string; value: string | number; sub?: string; 
 );
 
 // --- WORKFLOW STAGE ---
-const WorkflowStage: React.FC<{ label: string; count: number; icon: any; active?: boolean; delay?: number }> = ({ 
-    label, count, icon: Icon, active, delay = 0 
+const WorkflowStage: React.FC<{ label: string; count: number; icon: any; active?: boolean; delay?: number; onClick?: () => void }> = ({ 
+    label, count, icon: Icon, active, delay = 0, onClick 
 }) => (
     <motion.div 
+        onClick={onClick}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay, duration: 0.5 }}
-        className={`flex-1 min-w-[140px] p-6 rounded-3xl border transition-all duration-500 flex flex-col items-center gap-3 text-center ${
-            active ? 'bg-liquid-gold/5 border-liquid-gold/20 shadow-gold-glow-soft' : 'bg-white/[0.01] border-white/5 grayscale hover:grayscale-0 hover:bg-white/[0.03]'
+        className={`flex-1 min-w-[140px] p-6 rounded-3xl border transition-all duration-500 flex flex-col items-center gap-3 text-center cursor-pointer ${
+            active ? 'bg-liquid-gold/5 border-liquid-gold/20 shadow-gold-glow-soft hover:bg-liquid-gold/10 hover:-translate-y-1' : 'bg-white/[0.01] border-white/5 grayscale hover:grayscale-0 hover:bg-white/[0.03] hover:-translate-y-1'
         }`}
     >
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-liquid-gold text-black' : 'bg-white/5 text-slate-500'}`}>
@@ -172,10 +173,10 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-6 relative z-10">
-                    <WorkflowStage label="Pendientes" count={stats.stages[TrabajoEstado.PENDIENTE]} icon={ClockIcon} active={stats.stages[TrabajoEstado.PENDIENTE] > 5} delay={0.1} />
-                    <WorkflowStage label="Diseño" count={stats.stages[TrabajoEstado.EN_DISENO]} icon={PaletteIcon} active={stats.stages[TrabajoEstado.EN_DISENO] > 0} delay={0.2} />
-                    <WorkflowStage label="Producción" count={stats.stages[TrabajoEstado.PROCESO]} icon={PrinterIcon} active={stats.stages[TrabajoEstado.PROCESO] > 0} delay={0.3} />
-                    <WorkflowStage label="En Vitrina" count={stats.stages[TrabajoEstado.VITRINA]} icon={SolidBoxIcon} active={stats.stages[TrabajoEstado.VITRINA] > 0} delay={0.4} />
+                    <WorkflowStage label="Pendientes" count={stats.stages[TrabajoEstado.PENDIENTE]} icon={ClockIcon} active={stats.stages[TrabajoEstado.PENDIENTE] > 5} delay={0.1} onClick={() => navigate('/trabajos')} />
+                    <WorkflowStage label="Diseño" count={stats.stages[TrabajoEstado.EN_DISENO]} icon={PaletteIcon} active={stats.stages[TrabajoEstado.EN_DISENO] > 0} delay={0.2} onClick={() => navigate('/diseno')} />
+                    <WorkflowStage label="Producción" count={stats.stages[TrabajoEstado.PROCESO]} icon={PrinterIcon} active={stats.stages[TrabajoEstado.PROCESO] > 0} delay={0.3} onClick={() => navigate('/produccion')} />
+                    <WorkflowStage label="En Vitrina" count={stats.stages[TrabajoEstado.VITRINA]} icon={SolidBoxIcon} active={stats.stages[TrabajoEstado.VITRINA] > 0} delay={0.4} onClick={() => navigate('/retiros')} />
                 </div>
             </div>
 

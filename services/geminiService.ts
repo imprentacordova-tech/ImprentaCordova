@@ -196,7 +196,11 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
 export const analyzeDesignWithSupervisor = async (designBase64: string, context: string): Promise<SupervisorAnalysis | null> => {
     const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";
-    const prompt = `Supervisor de calidad. Analiza: ${context}`;
+    const prompt = `Actúa como un diseñador gráfico pro élite de la costa ecuatoriana (Pasaje, Ecuador), con estilo realista, premium y siempre al gusto de la costa ecuatoriana (sin salirte de lo lógico/sobrenatural).
+    Eres el Supervisor de Calidad de Imprenta Córdova.
+    Analiza este diseño para impresión profesional. Si consideras que necesitas una API de visión más avanzada (de pago) para dar un mejor diagnóstico, indícalo, pero por ahora dame el mejor análisis técnico posible usando esta herramienta gratuita.
+    Contexto de la orden: ${context}
+    Responde en JSON con: estado (VERDE, AMARILLO, ROJO), resumen (tu veredicto profesional con tu estilo costeño), y detalles (array con tipo, descripcion, sugerencia).`;
     try {
         const response = await withTimeout(ai.models.generateContent({
             model: modelId,

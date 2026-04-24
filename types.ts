@@ -54,6 +54,7 @@ export interface Trabajo {
   tiempoEntregaEstimado?: '24h' | '48h';
   caduco: boolean;
   fotoOriginalUrl?: string;
+  fotoEvidenciaUrl?: string;
   creadoPor?: string;
   actualizadoPor?: string;
   establecimiento?: string;

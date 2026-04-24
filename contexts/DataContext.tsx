@@ -35,6 +35,7 @@ interface DataContextType {
     deleteSriCredential: (ruc: string) => Promise<void>;
     updateConfig: (data: any) => Promise<void>;
     updateTrabajoPhoto: (id: string, url: string) => Promise<void>;
+    updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
     registerRetiro: (id: string, pagoFinal: number, user: string) => Promise<Trabajo>;
     aprobarArte: (id: string) => Promise<Trabajo>;
     createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
@@ -62,6 +63,7 @@ const mapDBTrabajo = (t: any): Trabajo => ({
     creadoPor: t.creado_por,
     actualizadoPor: t.actualizado_por,
     fotoOriginalUrl: t.foto_original_url,
+    fotoEvidenciaUrl: t.foto_evidencia_url,
     estadoClave: t.estado_clave,
     imprimirClave: t.imprimir_clave,
     esRenovacion: t.es_renovacion,
@@ -387,6 +389,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (error) throw error;
     };
 
+    const updateTrabajoEvidencia = async (id: string, url: string) => {
+        const { error } = await supabase.from('trabajos').update({ foto_evidencia_url: url }).eq('id', id);
+        if (error) throw error;
+    };
+
     const registerRetiro = async (id: string, pagoFinal: number, user: string): Promise<Trabajo> => {
         const { data, error } = await supabase.from('trabajos')
             .update({ 
@@ -506,7 +513,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         addProducto, createProducto, updateProducto, deleteProducto, bulkCreateProductos,
         seedCatalog, addInventoryItem, updateInventoryItem, deleteInventoryItem, 
         upsertSriCredential, bulkAddSriCredentials, deleteSriCredential, updateConfig,
-        updateTrabajoPhoto, registerRetiro, aprobarArte,
+        updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, aprobarArte,
         createPublicOrder, getClientDebt, syncFromLocalStorage,
         addProveedor, updateProveedor, deleteProveedor, 
         createTareaProveedor, updateTareaProveedor, deleteTareaProveedor

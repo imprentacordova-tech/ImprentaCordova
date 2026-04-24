@@ -28,8 +28,8 @@ const RetirosPage: React.FC = () => {
     const handleConfirmRetiro = async (pagoFinal: number) => {
         if (!selectedTrabajo) return;
         const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
-        // Automatización: Redirigir inmediatamente a la Nota de Venta para impresión
-        navigate(`/nota-de-venta/${updated.id}`);
+        // Automatización: Redirigir inmediatamente al comprobante PDF
+        navigate(`/recibo-epson/${updated.id}`);
     };
 
     const notifyClient = (trabajo: Trabajo) => {

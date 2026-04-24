@@ -7,7 +7,7 @@ import {
     InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon,
     BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon,
     GlobeAltIcon, PaletteIcon, CordovaLogo, CheckCircleIcon,
-    ArrowPathIcon, SparklesIcon, BoltIcon, ChevronRightIcon,
+    ArrowPathIcon, SparklesIcon, BoltIcon, ChevronRightIcon, PrinterIcon,
 } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
@@ -31,10 +31,11 @@ const navGroups = [
     {
         title: 'Taller',
         items: [
-            { path: '/nuevo',    label: 'Nueva Orden',  icon: AddIcon    },
-            { path: '/diseno',   label: 'Diseño',        icon: PaletteIcon },
-            { path: '/kds',      label: 'Producción',    icon: KdsIcon     },
-            { path: '/retiros',  label: 'Entregas',      icon: ReceiptIcon },
+            { path: '/nuevo',      label: 'Nueva Orden',   icon: AddIcon    },
+            { path: '/diseno',     label: 'Diseño',        icon: PaletteIcon },
+            { path: '/produccion', label: 'Impresión',     icon: PrinterIcon },
+            { path: '/kds',        label: 'Control KDS',   icon: KdsIcon     },
+            { path: '/retiros',    label: 'Entregas',      icon: ReceiptIcon },
         ],
     },
     {
@@ -66,7 +67,8 @@ const PAGE_TITLES: Record<string, string> = {
     '/':              'Vista Pública',
     '/nuevo':         'Nueva Orden de Trabajo',
     '/diseno':        'Estación de Diseño',
-    '/kds':           'Control de Producción',
+    '/produccion':    'Estación de Impresión',
+    '/kds':           'Control de Flujo',
     '/retiros':       'Entregas y Retiros',
     '/clientes':      'Directorio de Clientes',
     '/trabajos':      'Historial de Órdenes',
@@ -104,6 +106,7 @@ const Sidebar: React.FC<{
         design: trabajos.filter(t =>
             [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)
         ).length,
+        produccion: trabajos.filter(t => t.estado === TrabajoEstado.PROCESO).length,
         retail: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length,
     };
 
@@ -153,6 +156,7 @@ const Sidebar: React.FC<{
                                 const isActive = location.pathname === item.path;
                                 const badge =
                                     item.path === '/diseno'  ? counts.design  :
+                                    item.path === '/produccion' ? counts.produccion :
                                     item.path === '/retiros' ? counts.retail  : 0;
 
                                 return (

@@ -21,6 +21,7 @@ import GestionUsuariosPage from './pages/GestionUsuarios';
 import RetirosPage from './pages/Retiros';
 import ProveedoresPage from './pages/Proveedores';
 import DisenoPage from './pages/Diseno';
+import ProduccionPage from './pages/Produccion';
 import TrackingPage from './pages/Tracking';
 import OrdenProduccionPage from './pages/OrdenProduccion';
 import NotaDeVentaPage from './pages/NotaDeVenta';
@@ -93,6 +94,7 @@ const App: React.FC = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/nuevo" element={<NuevoPedidoPage />} />
             <Route path="/diseno" element={<DisenoPage />} />
+            <Route path="/produccion" element={<ProduccionPage />} />
             <Route path="/kds" element={<KDSPage />} />
             <Route path="/retiros" element={<RetirosPage />} />
             <Route path="/clientes" element={<ClientesPage />} />
