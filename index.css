@@ -441,10 +441,13 @@ html.light .bg-brand-dark,
 html.light .bg-brand-dark\/60,
 html.light .bg-brand-dark\/40,
 html.light .bg-brand-dark\/20,
+html.light .bg-brand-dark\/10,
 html.light .bg-brand-dark\/90,
 html.light .bg-slate-950,
 html.light .bg-slate-900,
 html.light .bg-black,
+html.light .bg-black\/5,
+html.light .bg-black\/10,
 html.light .bg-black\/20,
 html.light .bg-black\/30,
 html.light .bg-black\/40,
@@ -455,7 +458,9 @@ html.light .bg-\[\#050811\],
 html.light .bg-\[\#0c1324\],
 html.light .bg-\[\#070d1f\],
 html.light .bg-\[\#191f31\],
+html.light .bg-\[\#0a0a0a\],
 html.light .bg-\[\#0a0a0a\]\/80,
+html.light .bg-\[\#0a0a0a\]\/40,
 html.light .bg-cinematic-mesh {
   background-color: #ffffff !important;
   background-image: none !important;
@@ -499,13 +504,14 @@ html.light .text-slate-100,
 html.light .text-slate-200,
 html.light .text-slate-300,
 html.light .text-slate-400,
+html.light .text-slate-500,
+html.light .text-slate-600,
+html.light .text-slate-700,
 html.light [class*="text-white"],
-html.light [class*="text-slate-100"],
-html.light [class*="text-slate-200"],
-html.light [class*="text-slate-300"],
+html.light [class*="text-slate-"],
 html.light [class*="hover:text-white"]:hover,
 html.light [class*="group-hover:text-white"] {
-  color: #0f172a !important;
+  color: #1e293b !important;
 }
 
 html.light .text-slate-500,

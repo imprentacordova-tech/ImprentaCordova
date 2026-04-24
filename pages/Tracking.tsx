@@ -57,7 +57,7 @@ const TrackingPage: React.FC = () => {
     const [searching, setSearching] = useState(false);
     const [error, setError] = useState('');
     
-    // MAESTRO FEATURE: Voice Tracking States
+    const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
     const [isVoiceActive, setIsVoiceActive] = useState(false);
     const [voiceStatus, setVoiceStatus] = useState('Esperando...');
     const [liveSession, setLiveSession] = useState<any>(null);
@@ -80,13 +80,12 @@ const TrackingPage: React.FC = () => {
                         const { data, error } = await supabase.from('trabajos').select('*').eq('id', q);
                         if (!error && data && data.length > 0) {
                             setFoundJobs(data as Trabajo[]);
+                            setSelectedJobId(data[0].id);
                             setSearchQuery("");
                         } else {
                             setError('No se encontró el pedido solicitado.');
                         }
                     } else {
-                        // For security, do not auto-search by order number from URL.
-                        // Clients must use the search bar with their ID/RUC.
                         console.warn("Rastreo automático solo vía ID único.");
                     }
                 } catch(e) {
@@ -107,19 +106,17 @@ const TrackingPage: React.FC = () => {
         setFoundJobs([]);
         
         try {
-            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
             if (isUUID) {
                 const { data: orderMatches } = await supabase
                     .from('trabajos').select('*').eq('id', cleanQuery);
                 if (orderMatches && orderMatches.length > 0) {
                     setFoundJobs(orderMatches as any);
+                    setSelectedJobId(orderMatches[0].id);
                     setSearching(false);
                     return;
                 }
             }
 
-            // Only allow CEDULA/RUC searches, explicitly avoiding order numbers.
-            // If they type a number, we treat it as CEDULA/RUC.
             if (!isUUID) {
                 const { data: matchedClients } = await supabase
                     .from('clientes').select('id')
@@ -132,6 +129,7 @@ const TrackingPage: React.FC = () => {
                         .in('cliente_id', clientIds).order('orden', { ascending: false });
                     if (clientJobs && clientJobs.length > 0) {
                         setFoundJobs(clientJobs as any);
+                        setSelectedJobId(clientJobs[0].id);
                     } else {
                         setError('El cliente no tiene pedidos registrados.');
                     }
@@ -315,258 +313,241 @@ const TrackingPage: React.FC = () => {
                     )}
                 </AnimatePresence>
 
+                {/* ── JOB SELECTOR (Console Style) ── */}
+                {foundJobs.length > 1 && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-16"
+                    >
+                        <div className="flex items-center gap-4 mb-6 px-4">
+                            <div className="w-2 h-2 bg-liquid-gold rounded-full animate-pulse"></div>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Multi-Order Detection Link</span>
+                        </div>
+                        <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar px-4 -mx-4">
+                            {foundJobs.map((job) => (
+                                <button
+                                    key={job.id}
+                                    onClick={() => setSelectedJobId(job.id)}
+                                    className={`shrink-0 px-8 py-5 rounded-[2rem] border-2 transition-all duration-700 flex flex-col gap-1 items-start min-w-[240px] relative overflow-hidden group/item ${
+                                        selectedJobId === job.id 
+                                            ? 'bg-liquid-gold border-liquid-gold text-brand-dark shadow-gold-glow' 
+                                            : 'bg-white/[0.02] border-white/10 text-slate-400 hover:border-white/30'
+                                    }`}
+                                >
+                                    {selectedJobId === job.id && (
+                                        <motion.div layoutId="active-selector" className="absolute inset-0 bg-white/20 -z-10" />
+                                    )}
+                                    <div className="flex items-center justify-between w-full">
+                                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${selectedJobId === job.id ? 'text-brand-dark/60' : 'text-slate-600'}`}>ID: {job.orden}</span>
+                                        {job.estado === TrabajoEstado.VITRINA && <SparklesIcon className="w-3 h-3 animate-pulse" />}
+                                    </div>
+                                    <span className="text-sm font-black truncate w-full italic uppercase tracking-tighter">{job.subtipo}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* ── RESULTS ── */}
-                <div className="space-y-20">
-                    {foundJobs.map((job, jobIdx) => {
+                <div className="space-y-16">
+                    {foundJobs.filter(j => !selectedJobId || j.id === selectedJobId).map((job) => {
                         const currentStepIdx = statusSteps.findIndex(s => s.value === job.estado);
                         const isDesigning = job.estado === TrabajoEstado.EN_DISENO || job.estado === TrabajoEstado.PENDIENTE;
                         const isDelivered = job.estado === TrabajoEstado.ENTREGADO;
                         const isReady = job.estado === TrabajoEstado.VITRINA;
                         
+                        // Fake complex hash for "premium complexity" feel
+                        const satelliteHash = `SAT-LINK-XQ-${job.id.substring(0, 8).toUpperCase()}-${job.id.substring(24).toUpperCase()}-NODE-CORE`;
+                        
                         return (
                             <motion.div 
                                 key={job.id} 
-                                initial={{ opacity: 0, y: 100 }}
+                                initial={{ opacity: 0, y: 40 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 1, delay: jobIdx * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                                className="bg-white/[0.01] border border-white/5 rounded-[4rem] overflow-hidden backdrop-blur-3xl shadow-luxury relative group"
+                                transition={{ duration: 0.8 }}
+                                className="bg-[#0a0a0a]/40 border border-white/5 rounded-[3.5rem] overflow-hidden backdrop-blur-3xl shadow-2xl relative group"
                             >
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
-                                <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
+                                {/* ── SATELLITE HASH OVERLAY (User requested long URLs/Complexity) ── */}
+                                <div className="absolute top-4 right-12 hidden md:flex items-center gap-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                                    <div className="w-1 h-1 bg-liquid-gold rounded-full animate-ping"></div>
+                                    <span className="text-[7px] font-mono font-bold text-liquid-gold tracking-[0.3em] uppercase">{satelliteHash}</span>
+                                </div>
 
-                                {/* ── CABECERA H-FI ── */}
-                                <div className="p-6 sm:p-12 lg:p-20 border-b border-white/5 bg-black/40 flex flex-col xl:flex-row justify-between items-center gap-8 xl:gap-14 relative z-10">
-                                    <div className="flex items-center gap-10">
-                                        <div className="w-24 h-24 bg-white/[0.03] border-2 border-white/5 rounded-[2.5rem] flex items-center justify-center shadow-inner group-hover:border-gold-bright/40 transition-all duration-1000">
-                                            <CpuIcon className="w-12 h-12 text-gold-bright/30 group-hover:text-gold-bright group-hover:animate-pulse transition-all duration-700"/>
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
+                                
+                                {/* ── CABECERA ── */}
+                                <div className="p-8 sm:p-14 border-b border-white/5 bg-black/20 flex flex-col sm:flex-row justify-between items-center gap-8 relative z-10">
+                                    <div className="flex items-center gap-8">
+                                        <div className="w-20 h-20 bg-liquid-gold/10 rounded-[2rem] flex items-center justify-center border border-liquid-gold/20 shadow-inner group-hover:rotate-12 transition-transform duration-700">
+                                            <CpuIcon className="w-10 h-10 text-liquid-gold"/>
                                         </div>
-                                        <div className="space-y-2 text-center xl:text-left">
-                                            <div className="flex items-center justify-center xl:justify-start gap-4">
-                                                <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] italic">Artifact Signature</span>
-                                                <div className="w-1.5 h-1.5 bg-gold-bright rounded-full shadow-gold-glow-sm"></div>
-                                                <span className="text-[10px] font-black text-gold-bright/60 uppercase tracking-[0.5em] italic">{job.tipo.toUpperCase()}</span>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-[10px] font-black text-gold-bright uppercase tracking-[0.5em] italic">{job.tipo}</span>
+                                                <div className="w-1.5 h-1.5 bg-white/10 rounded-full"></div>
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">{formatDate(job.fecha)}</span>
                                             </div>
-                                            <h2 className="text-4xl sm:text-6xl md:text-7xl font-black text-white tracking-tighter leading-none italic uppercase">
-                                                #{String(job.orden).padStart(5, '0')}
+                                            <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tighter italic uppercase leading-none">
+                                                ORDEN <span className="text-white/20 not-italic">#</span>{String(job.orden).padStart(5, '0')}
                                             </h2>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-6 flex-wrap justify-center">
-                                        {isDelivered && (
-                                            <a 
-                                                href={`/#/nota-de-venta/${job.id}`} 
-                                                target="_blank" 
-                                                className="flex items-center gap-5 px-10 py-6 bg-white/5 border border-white/10 text-white rounded-3xl font-black text-[11px] uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-700 shadow-luxury italic hover:scale-105 active:scale-95"
-                                            >
-                                                <ArrowDownTrayIcon className="w-5 h-5"/> Descargar Comprobante
-                                            </a>
-                                        )}
-                                        <div className={`px-12 py-6 rounded-3xl border text-[12px] font-black uppercase tracking-[0.4em] flex items-center gap-4 italic transition-all duration-1000 ${
-                                            isReady  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-glow-emerald' :
-                                            isDelivered ? 'bg-slate-800/10 border-slate-700 text-slate-500' :
-                                            'bg-liquid-gold/10 border-liquid-gold/30 text-liquid-gold'
-                                        }`}>
-                                            {isReady && <SparklesIcon className="w-5 h-5 animate-pulse" />}
-                                            {isReady ? '¡LISTO PARA RETIRAR!' : job.estado.toUpperCase()}
-                                        </div>
+                                    <div className={`px-10 py-5 rounded-2xl border text-[11px] font-black uppercase tracking-[0.4em] flex items-center gap-4 italic transition-all duration-1000 ${
+                                        isReady  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-gold-glow' :
+                                        isDelivered ? 'bg-slate-800/20 border-slate-700 text-slate-500' :
+                                        'bg-liquid-gold/10 border-liquid-gold/30 text-liquid-gold animate-pulse'
+                                    }`}>
+                                        {isReady && <BoltIcon className="w-4 h-4 text-emerald-400" />}
+                                        {isReady ? 'LISTO PARA RETIRO' : job.estado.toUpperCase()}
                                     </div>
                                 </div>
 
-                                {/* ── VISUAL PROOFING ── */}
-                                {isDesigning && job.fotoOriginalUrl && (
-                                    <div className="p-6 sm:p-12 lg:p-20 bg-liquid-gold/[0.01] border-b border-white/5 relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-liquid-gold/[0.02] blur-[150px] -mr-40 -mt-40 pointer-events-none" />
-                                        
-                                        <div className="flex flex-col lg:flex-row gap-20 items-center relative z-10">
-                                            <motion.div 
-                                                whileHover={{ scale: 1.02 }}
-                                                className="relative w-full lg:w-3/5 aspect-video bg-black/60 rounded-[3rem] overflow-hidden border-2 border-white/5 group/img shadow-2xl transition-all duration-1000 group-hover/img:border-liquid-gold/20"
-                                            >
-                                                <img 
-                                                    src={job.fotoOriginalUrl} 
-                                                    className="w-full h-full object-contain p-10 group-hover/img:scale-110 transition-transform duration-[2s] opacity-80 group-hover/img:opacity-100 grayscale-[0.5] group-hover/img:grayscale-0" 
-                                                    alt="Vista Previa" 
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                                    <EyeIcon className="w-4 h-4 text-liquid-gold" />
-                                                    <span className="text-[10px] font-black text-white uppercase tracking-widest italic">Inspection Deck</span>
-                                                </div>
-                                            </motion.div>
-                                            <div className="flex-1 space-y-10">
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="p-3 bg-liquid-gold/20 rounded-2xl border border-liquid-gold/30">
-                                                            <CheckBadgeIcon className="w-8 h-8 text-liquid-gold shadow-gold-glow-sm" />
-                                                        </div>
-                                                        <h3 className="text-[13px] font-black uppercase tracking-[0.5em] text-white italic">AUTORIZACIÓN DE DISEÑO</h3>
+                                {/* ── CONTENIDO ── */}
+                                <div className="p-8 sm:p-14 lg:p-20 grid lg:grid-cols-2 gap-20 relative z-10">
+                                    
+                                    {/* COLUMNA IZQUIERDA */}
+                                    <div className="space-y-14">
+                                        {isDesigning && job.fotoOriginalUrl ? (
+                                            <div className="space-y-10">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                                                        <PaletteIcon className="w-4 h-4 text-liquid-gold" />
                                                     </div>
-                                                    <p className="text-lg text-slate-500 font-medium leading-relaxed italic">
-                                                        Por favor revise su diseño. Si todo está correcto, presione el botón para iniciar la producción.
-                                                    </p>
+                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.5em] text-white italic">Protocolo de Diseño Visual</h3>
+                                                </div>
+                                                <div className="relative group/img aspect-square bg-black/60 rounded-[3rem] overflow-hidden border border-white/5 shadow-gold-glow-soft">
+                                                    <img src={job.fotoOriginalUrl} className="w-full h-full object-contain p-8 group-hover/img:scale-110 transition-transform duration-[2s]" alt="Vista Previa" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-700 flex items-end justify-center pb-12">
+                                                        <button 
+                                                            onClick={() => window.open(job.fotoOriginalUrl, '_blank')}
+                                                            className="px-10 py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-4 shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                                        >
+                                                            <EyeIcon className="w-5 h-5"/> ANALIZAR ARTE
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 {!job.arte_aprobado ? (
                                                     <button 
                                                         onClick={() => handleAprobarArte(job.id)}
-                                                        className="group/auth w-full py-8 bg-white text-black rounded-[2.5rem] font-black text-[12px] tracking-[0.5em] uppercase hover:bg-liquid-gold hover:shadow-gold-glow-strong transition-all duration-1000 flex items-center justify-center gap-6 active:scale-95 relative overflow-hidden"
+                                                        className="w-full py-8 bg-gold-gradient text-brand-dark rounded-[2.5rem] font-black text-[12px] tracking-[0.5em] uppercase hover:shadow-gold-glow-strong hover:scale-[1.02] transition-all duration-700 flex items-center justify-center gap-6 shadow-luxury"
                                                     >
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/auth:translate-x-full transition-transform duration-[1.5s]"></div>
-                                                        <ShieldCheckIcon className="w-7 h-7 group-hover/auth:scale-125 transition-transform duration-700" />
-                                                        APROBAR PARA IMPRESIÓN
+                                                        <CheckBadgeIcon className="w-6 h-6" /> VALIDAR Y PROCEDER
                                                     </button>
                                                 ) : (
-                                                    <div className="p-8 bg-emerald-500/5 border border-emerald-500/20 text-emerald-400 rounded-[2.5rem] flex items-center justify-center gap-6 font-black text-[12px] uppercase tracking-[0.6em] italic shadow-glow-emerald">
-                                                        <CheckCircleIcon className="w-7 h-7"/> DISEÑO APROBADO ✅
+                                                    <div className="py-8 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-[2.5rem] flex items-center justify-center gap-6 font-black text-[12px] uppercase tracking-[0.5em] italic shadow-glow-emerald">
+                                                        <ShieldCheckIcon className="w-6 h-6 animate-pulse"/> PROTOCOLO APROBADO
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── TRAJECTORY MATRIX ── */}
-                                <div className="p-6 sm:p-12 lg:p-24 relative overflow-hidden">
-                                    <div className="flex flex-col md:flex-row items-center justify-between mb-16 sm:mb-24 gap-6">
-                                        <div className="flex items-center gap-4 sm:gap-6">
-                                            <ActivityIcon className="w-6 h-6 sm:w-8 sm:h-8 text-liquid-gold/40 animate-pulse" />
-                                            <p className="text-[10px] sm:text-[12px] font-black text-slate-600 uppercase tracking-[0.8em] italic text-center sm:text-left">Estado del Pedido</p>
-                                        </div>
-                                        <span className="text-[9px] sm:text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] italic bg-white/5 px-6 py-2 rounded-full border border-white/10 outline-gold-glow-soft">
-                                            {Math.round((currentStepIdx / (statusSteps.length - 1)) * 100)}% COMPLETADO
-                                        </span>
-                                    </div>
-                                    
-                                    <div className="relative mb-16 sm:mb-24 px-4 sm:px-10 overflow-x-auto pb-6 custom-scrollbar">
-                                        <div className="min-w-[500px] relative">
-                                            {/* Cinematic Track */}
-                                            <div className="absolute top-[30px] sm:top-[40px] left-10 sm:left-20 right-10 sm:right-20 h-[2px] bg-white/5 rounded-full overflow-hidden">
-                                            <motion.div 
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${(currentStepIdx / (statusSteps.length - 1)) * 100}%` }}
-                                                transition={{ duration: 2.5, ease: "circOut" }}
-                                                className="h-full bg-gold-bright shadow-gold-glow-strong"
-                                            />
-                                        </div>
-                                        {/* Node Units */}
-                                        <div className="relative flex justify-between">
-                                            {statusSteps.map((step, idx) => {
-                                                const isCompleted = idx <= currentStepIdx;
-                                                const isCurrent = idx === currentStepIdx;
-                                                const Icon = step.icon;
-                                                return (
-                                                    <div key={step.value} className="flex flex-col items-center gap-8 group/node">
-                                                        <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center z-10 border-2 transition-all duration-1000 ${
-                                                            isCurrent
-                                                                ? 'bg-white text-black border-white shadow-gold-glow-strong scale-125'
-                                                                : isCompleted
-                                                                ? 'bg-white/10 border-white/20 text-white scale-110'
-                                                                : 'bg-black/80 border-white/5 text-slate-800 opacity-20'
-                                                        }`}>
-                                                            <Icon className={`w-8 h-8 transition-all duration-700 ${isCurrent ? 'animate-pulse scale-110' : ''}`} />
-                                                        </div>
-                                                        <div className="flex flex-col items-center space-y-2">
-                                                            <span className={`text-[10px] font-black uppercase tracking-[0.4em] text-center transition-all duration-700 ${
-                                                                isCurrent ? 'text-white' :
-                                                                isCompleted ? 'text-slate-500' : 'text-slate-900'
-                                                            }`}>
-                                                                {step.label}
-                                                            </span>
-                                                            {isCurrent && (
-                                                                <motion.div 
-                                                                    layoutId="active-node-indicator"
-                                                                    className="w-1.5 h-1.5 bg-gold-bright rounded-full shadow-gold-glow"
-                                                                />
-                                                            )}
-                                                        </div>
+                                        ) : (
+                                            <div className="space-y-10">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                                                        <InfoIcon className="w-4 h-4 text-liquid-gold" />
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
+                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.5em] text-white italic">Especificaciones de Manufactura</h3>
+                                                </div>
+                                                <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-10 space-y-8 shadow-inner">
+                                                    <div className="flex justify-between items-center pb-8 border-b border-white/5">
+                                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">SISTEMA / PRODUCTO</span>
+                                                        <span className="text-lg font-black text-white italic tracking-tighter uppercase">{job.subtipo}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center pb-8 border-b border-white/5">
+                                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">CARGA NOMINAL</span>
+                                                        <span className="text-lg font-black text-white italic tracking-tighter uppercase">{job.cantidad} UNIDADES</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">VECTOR DE ESTADO</span>
+                                                        <span className="text-lg font-black text-liquid-gold italic tracking-tighter uppercase">{job.estado}</span>
+                                                    </div>
+                                                </div>
+                                                {isDelivered && (
+                                                    <a href={`/#/nota-de-venta/${job.id}`} target="_blank" className="flex items-center justify-center gap-6 w-full py-8 bg-white/5 border border-white/10 text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.5em] hover:bg-white hover:text-black transition-all duration-700 shadow-luxury italic group">
+                                                        <ArrowDownTrayIcon className="w-6 h-6 group-hover:-translate-y-1 transition-transform"/> DESCARGAR CERTIFICADO
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
 
-                                {/* ── FINANCIAL FLUX ── */}
-                                    <div className="grid lg:grid-cols-12 gap-10 sm:gap-16 pt-12 sm:pt-20 border-t border-white/5 items-stretch">
-                                        <div className="lg:col-span-7 space-y-12">
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-12 h-[2px] bg-white/10"></div>
-                                                <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic leading-none">Detalle de Pago</p>
+                                    {/* COLUMNA DERECHA */}
+                                    <div className="space-y-14">
+                                        <div className="space-y-10">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                                                    <ActivityIcon className="w-4 h-4 text-liquid-gold animate-pulse" />
+                                                </div>
+                                                <h3 className="text-[11px] font-black uppercase tracking-[0.5em] text-white italic">Vector de Seguimiento</h3>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
-                                                <div className="p-6 sm:p-10 bg-white/[0.02] border border-white/5 rounded-[2rem] sm:rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-gold-bright transition-colors">Valor Total</span>
-                                                    <span className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter truncate font-epilogue">{formatCurrency(job.total)}</span>
-                                                </div>
-                                                <div className="p-6 sm:p-10 bg-white/[0.02] border border-white/5 rounded-[2rem] sm:rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-emerald-500 transition-colors">Abono Realizado</span>
-                                                    <span className="text-3xl sm:text-5xl font-black text-emerald-500 italic tracking-tighter truncate font-epilogue">{formatCurrency(job.abono)}</span>
-                                                </div>
+                                            <div className="flex justify-between items-end gap-3 h-32 relative">
+                                                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -z-10"></div>
+                                                {statusSteps.map((step, idx) => {
+                                                    const isCompleted = idx <= currentStepIdx;
+                                                    const isCurrent = idx === currentStepIdx;
+                                                    const Icon = step.icon;
+                                                    return (
+                                                        <div key={step.value} className="flex-1 flex flex-col items-center gap-6 relative group/step">
+                                                            <div className={`w-full h-2 rounded-full absolute -top-4 transition-all duration-[2s] ${isCompleted ? 'bg-liquid-gold shadow-gold-glow' : 'bg-white/5'}`} />
+                                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all duration-700 relative ${
+                                                                isCurrent ? 'bg-white border-white text-black scale-125 shadow-gold-glow-strong z-20' :
+                                                                isCompleted ? 'bg-liquid-gold/20 border-liquid-gold/40 text-liquid-gold z-10' : 'bg-black border-white/10 text-slate-800'
+                                                            }`}>
+                                                                <Icon className="w-6 h-6" />
+                                                                {isCurrent && <div className="absolute -inset-2 bg-white/20 rounded-[1.5rem] animate-ping -z-10"></div>}
+                                                            </div>
+                                                            <span className={`text-[9px] font-black uppercase tracking-tighter text-center transition-colors duration-700 ${isCurrent ? 'text-white' : 'text-slate-600'}`}>{step.label}</span>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
-                                            
-                                            <div className={`p-8 sm:p-10 lg:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] border-2 relative overflow-hidden group/saldo h-fit transition-all duration-1000 ${job.saldo > 0 ? 'bg-rose-500/[0.03] border-rose-500/20 shadow-glow-rose/10' : 'bg-emerald-500/[0.03] border-emerald-500/20 shadow-glow-emerald/10'}`}>
-                                                <div className={`absolute top-0 right-0 p-8 sm:p-12 opacity-[0.02] group-hover/saldo:opacity-10 transition-all duration-1000 scale-125 ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                    <WalletIcon className="w-32 h-32 sm:w-40 sm:h-40" />
+                                        </div>
+
+                                        <div className="space-y-10">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                                                    <WalletIcon className="w-4 h-4 text-liquid-gold" />
                                                 </div>
-                                                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10">
-                                                    <div className="space-y-2 sm:space-y-4 text-center md:text-left">
-                                                        <span className={`text-[10px] sm:text-[12px] font-black uppercase tracking-[0.8em] block mb-1 sm:mb-2 italic ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500 animate-pulse'}`}>
-                                                            {job.saldo > 0 ? 'Saldo Pendiente' : 'PAGO COMPLETADO ✅'}
+                                                <h3 className="text-[11px] font-black uppercase tracking-[0.5em] text-white italic">Balance del Portafolio</h3>
+                                            </div>
+                                            <div className={`p-12 rounded-[3rem] border-2 transition-all duration-1000 group/wallet relative overflow-hidden ${job.saldo > 0 ? 'bg-rose-500/[0.03] border-rose-500/20' : 'bg-emerald-500/[0.03] border-emerald-500/20'}`}>
+                                                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover/wallet:scale-150 transition-transform duration-[3s]">
+                                                    <GlobeAltIcon className="w-32 h-32 text-white" />
+                                                </div>
+                                                <div className="flex justify-between items-center relative z-10">
+                                                    <div className="space-y-2">
+                                                        <span className={`text-[10px] font-black uppercase tracking-[0.4em] ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                            {job.saldo > 0 ? 'CRÉDITO PENDIENTE' : 'LIQUIDACIÓN EXITOSA'}
                                                         </span>
-                                                        <span className={`text-5xl sm:text-7xl lg:text-8xl font-black italic tracking-tighter text-glow truncate font-epilogue ${job.saldo > 0 ? 'text-white' : 'text-emerald-400'}`}>
+                                                        <p className={`text-6xl sm:text-7xl font-black italic tracking-tighter leading-none ${job.saldo > 0 ? 'text-white' : 'text-emerald-400 shadow-glow-emerald'}`}>
                                                             {formatCurrency(job.saldo)}
-                                                        </span>
+                                                        </p>
                                                     </div>
                                                     {job.saldo > 0 && (
                                                         <button 
                                                             onClick={() => handleGeneratePaymentLink(job)}
-                                                            className="px-16 py-8 bg-white text-black rounded-[2rem] font-black text-[12px] uppercase tracking-[0.6em] flex items-center justify-center gap-5 hover:bg-gold-bright transition-all duration-[1.5s] shadow-luxury active:scale-95 group/pay italic"
+                                                            className="w-20 h-20 bg-white text-black rounded-3xl flex items-center justify-center hover:bg-liquid-gold hover:scale-110 transition-all duration-700 active:scale-90 shadow-2xl group/btn"
                                                         >
-                                                            INJECT ASSET <ArrowRightIcon className="w-6 h-6 group-hover/pay:translate-x-3 transition-transform" />
+                                                            <ArrowRightIcon className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
                                                         </button>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
 
-                                        <div className="lg:col-span-5 flex flex-col gap-8">
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-12 h-[2px] bg-white/10"></div>
-                                                <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic leading-none">Extraction Point</p>
-                                            </div>
-                                            <div className="flex-1 bg-black/40 border border-white/10 rounded-[2.5rem] sm:rounded-[3.5rem] p-8 sm:p-12 lg:p-16 relative overflow-hidden flex flex-col justify-between group/loc hover:border-liquid-gold/30 transition-all duration-1000 shadow-2xl">
-                                                <div className="absolute top-0 right-0 p-12 opacity-[0.02] group-hover/loc:opacity-10 transition-all duration-1000 scale-150">
-                                                    <MapPinIcon className="w-48 h-48 text-liquid-gold" />
-                                                </div>
-                                                
-                                                <div className="space-y-8 relative z-10">
-                                                    <div className="w-20 h-20 bg-white/[0.03] border-2 border-white/5 rounded-[2rem] flex items-center justify-center group-hover/loc:border-liquid-gold/40 transition-all duration-1000">
-                                                        <MapPinIcon className="w-10 h-10 text-liquid-gold animate-bounce-slow"/>
-                                                    </div>
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-4xl font-black text-white uppercase tracking-tighter italic">ATELIER PASAJE</h4>
-                                                        <p className="text-lg text-slate-500 font-medium leading-relaxed italic uppercase tracking-tight">
-                                                            Calle Colón e/ Sucre y Rocafuerte.<br/>Sect: 07-01-05 • Oro.
-                                                        </p>
-                                                    </div>
-                                                </div>
 
-                                                <div className="pt-14 space-y-5 relative z-10">
-                                                    <button 
-                                                        onClick={() => window.open('https://wa.me/593993083943')} 
-                                                        className="w-full py-6 bg-emerald-500/10 border-2 border-emerald-500/30 text-emerald-400 rounded-[1.8rem] font-black text-[11px] uppercase tracking-[0.5em] hover:bg-emerald-500 hover:text-white transition-all duration-700 flex items-center justify-center gap-4 italic shadow-inner"
-                                                    >
-                                                        <MessageCircleIcon className="w-6 h-6"/> TERMINAL UPLINK
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => window.open('https://maps.app.goo.gl/3Yc1Y4jM8R6v4jA87')}
-                                                        className="w-full py-6 bg-white/5 border-2 border-white/5 text-slate-800 hover:text-white rounded-[1.8rem] font-black text-[11px] uppercase tracking-[0.5em] hover:bg-white/10 transition-all duration-700 flex items-center justify-center gap-4 italic"
-                                                    >
-                                                        <MapPinIcon className="w-5 h-5"/> COORDINATES
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                {/* ── FOOTER COORDINATES ── */}
+                                <div className="px-12 py-8 bg-black/40 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6">
+                                    <div className="flex items-center gap-4">
+                                        <MapPinIcon className="w-5 h-5 text-slate-700" />
+                                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">Recoger en: Atelier Pasaje - Calle Colón e/ Sucre y Rocafuerte</p>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button onClick={() => window.open('https://maps.app.goo.gl/3Yc1Y4jM8R6v4jA87')} className="text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">MAPS</button>
+                                        <button onClick={() => window.open('https://wa.me/593993083943')} className="text-[9px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors">WHATSAPP</button>
                                     </div>
                                 </div>
                             </motion.div>
