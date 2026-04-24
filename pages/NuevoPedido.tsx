@@ -175,13 +175,13 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 1 && (
                             <motion.div 
                                 key="step1" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-8 md:p-14 lg:p-20 rounded-[3rem] md:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                                <div className="space-y-4 mb-10 md:mb-14">
-                                    <p className="text-[10px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 01</p>
-                                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
-                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest italic">Seleccione el titular o salte directamente a la cotización.</p>
+                                <div className="space-y-4 mb-8 md:mb-14">
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 01</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
+                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione el titular o salte directamente a la cotización.</p>
                                 </div>
                                 <div className="bg-black/40 p-2 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 shadow-inner">
                                     <ClientSelector 
@@ -196,13 +196,13 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 2 && (
                             <motion.div 
                                 key="step2" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-8 md:p-14 lg:p-20 rounded-[3rem] md:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="space-y-4 mb-10 md:mb-14">
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
                                         <div>
-                                            <p className="text-[10px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 02</p>
-                                            <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Arquitectura del <span className="text-gold-gradient">Servicio</span></h2>
+                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 02</p>
+                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Matriz de <span className="text-gold-gradient">Especificación</span></h2>
                                         </div>
                                         <button 
                                             onClick={() => setIsSriOrder(!isSriOrder)}
@@ -213,8 +213,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-12">
-                                <div className="grid grid-cols-1 gap-12">
+                                <div className="grid grid-cols-1 gap-8 md:gap-12">
                                     <AnimatePresence mode="wait">
                                         {!servicio ? (
                                             <motion.div
@@ -348,11 +347,11 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 3 && (
                             <motion.div 
                                 key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-14 lg:p-20 rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
-                                <div className="space-y-4 mb-14">
-                                    <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">Step 03</p>
-                                    <h2 className="text-6xl font-black text-white uppercase tracking-tighter italic">Asignación <span className="text-gold-gradient">Financiera</span></h2>
+                                <div className="space-y-4 mb-8 md:mb-14">
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 03</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Asignación <span className="text-gold-gradient">Financiera</span></h2>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -372,23 +371,23 @@ const NuevoPedidoPage: React.FC = () => {
                                         )}
 
                                         <div className="space-y-6">
-                                            <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Valor Total de Misión</label>
+                                            <label className="text-[10px] md:text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Valor Total de Misión</label>
                                             <div className="relative group">
-                                                <div className="absolute inset-y-0 left-10 flex items-center text-liquid-gold text-4xl font-black italic">$</div>
+                                                <div className="absolute inset-y-0 left-6 md:left-10 flex items-center text-liquid-gold text-2xl md:text-4xl font-black italic">$</div>
                                                 <input 
                                                     type="number" value={precio} onChange={e => setPrecio(Number(e.target.value))}
-                                                    className="w-full pl-20 pr-10 py-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2.5rem] text-5xl font-black text-white outline-none transition-all duration-700 shadow-inner italic"
+                                                    className="w-full pl-14 md:pl-20 pr-6 md:pr-10 py-6 md:py-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2rem] md:rounded-[2.5rem] text-3xl md:text-5xl font-black text-white outline-none transition-all duration-700 shadow-inner italic"
                                                 />
                                             </div>
                                         </div>
                                         
                                         <div className="space-y-6">
-                                            <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Abono Inicial (Flujo de Entrada)</label>
+                                            <label className="text-[10px] md:text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Abono Inicial (Flujo de Entrada)</label>
                                             <div className="relative group">
-                                                <div className="absolute inset-y-0 left-10 flex items-center text-emerald-500 text-4xl font-black italic">$</div>
+                                                <div className="absolute inset-y-0 left-6 md:left-10 flex items-center text-emerald-500 text-2xl md:text-4xl font-black italic">$</div>
                                                 <input 
                                                     type="number" value={abono} onChange={e => setAbono(Number(e.target.value))}
-                                                    className="w-full pl-20 pr-10 py-10 bg-black/60 border-2 border-white/5 focus:border-emerald-500/30 rounded-[2.5rem] text-5xl font-black text-emerald-500 outline-none transition-all duration-700 shadow-inner italic"
+                                                    className="w-full pl-14 md:pl-20 pr-6 md:pr-10 py-6 md:py-10 bg-black/60 border-2 border-white/5 focus:border-emerald-500/30 rounded-[2rem] md:rounded-[2.5rem] text-3xl md:text-5xl font-black text-emerald-500 outline-none transition-all duration-700 shadow-inner italic"
                                                 />
                                             </div>
                                         </div>
@@ -417,15 +416,15 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 4 && (
                             <motion.div 
                                 key="step4" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                                className="bg-emerald-500/5 backdrop-blur-3xl p-24 rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
+                                className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-8 md:space-y-12 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-noise opacity-[0.05]"></div>
-                                <div className="w-48 h-48 bg-emerald-500 rounded-[3.5rem] flex items-center justify-center mx-auto shadow-glow shadow-emerald-500/40 relative z-10">
-                                    <RocketLaunchIcon className="w-24 h-24 text-black animate-float" />
+                                <div className="w-32 h-32 md:w-48 md:h-48 bg-emerald-500 rounded-[2.5rem] md:rounded-[3.5rem] flex items-center justify-center mx-auto shadow-glow shadow-emerald-500/40 relative z-10">
+                                    <RocketLaunchIcon className="w-16 h-16 md:w-24 md:h-24 text-black animate-float" />
                                 </div>
-                                <div className="space-y-6 relative z-10">
-                                    <h2 className="text-7xl font-black text-white uppercase tracking-tighter italic">Misión <span className="text-emerald-500">Desplegada</span></h2>
-                                    <p className="text-xl text-slate-400 font-medium max-w-lg mx-auto tracking-tight">El pedido ha sido sincronizado con el KDS y el núcleo central de producción.</p>
+                                <div className="space-y-4 md:space-y-6 relative z-10">
+                                    <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic leading-none">Misión <span className="text-emerald-500">Desplegada</span></h2>
+                                    <p className="text-sm md:text-xl text-slate-400 font-medium max-w-lg mx-auto tracking-tight leading-relaxed">El pedido ha sido sincronizado con el KDS y el núcleo central de producción.</p>
                                 </div>
                                 <div className="flex flex-col md:flex-row justify-center items-center gap-6 mt-8 relative z-10">
                                     {createdTrabajoId && (

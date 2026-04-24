@@ -122,13 +122,13 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 md:gap-10">
                 {/* Specification Matrix */}
-                <div className="xl:col-span-8 space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="xl:col-span-8 space-y-6 md:space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                         {/* Primary Quantity & Size */}
-                        <div className="space-y-8 bg-white/[0.02] p-8 rounded-[2rem] border border-white/5 group/box hover:border-liquid-gold/20 transition-colors">
-                            <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3 group-hover/box:text-liquid-gold transition-colors">
+                        <div className="space-y-6 md:space-y-8 bg-white/[0.02] p-6 md:p-8 rounded-[2rem] border border-white/5 group/box hover:border-liquid-gold/20 transition-colors">
+                            <h4 className="text-[9px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3 group-hover/box:text-liquid-gold transition-colors">
                                 <LayersIcon className="w-4 h-4" /> Dimensiones & Volumen
                             </h4>
                             <div className="grid grid-cols-2 gap-6">
@@ -165,8 +165,8 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                         </div>
 
                         {/* Material & Duplication */}
-                        <div className="space-y-8 bg-white/[0.02] p-8 rounded-[2rem] border border-white/5 group/box hover:border-liquid-gold/20 transition-colors">
-                            <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3 group-hover/box:text-liquid-gold transition-colors">
+                        <div className="space-y-6 md:space-y-8 bg-white/[0.02] p-6 md:p-8 rounded-[2rem] border border-white/5 group/box hover:border-liquid-gold/20 transition-colors">
+                            <h4 className="text-[9px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3 group-hover/box:text-liquid-gold transition-colors">
                                 <FileTextIcon className="w-4 h-4" /> Material & Copias
                             </h4>
                             <div className="space-y-6">
@@ -200,9 +200,9 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                     </div>
 
                     {/* Advanced Industrial Options */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-white/[0.01] p-8 rounded-[2.5rem] border border-white/5 space-y-6">
-                            <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                        <div className="bg-white/[0.01] p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 space-y-4 md:space-y-6">
+                            <h4 className="text-[9px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3">
                                 <SparklesIcon className="w-4 h-4 text-liquid-gold" /> Acabado Elite
                             </h4>
                             <div className="flex flex-wrap gap-2">
@@ -217,8 +217,8 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                             </div>
                         </div>
 
-                        <div className="bg-white/[0.01] p-8 rounded-[2.5rem] border border-white/5 space-y-6">
-                            <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3">
+                        <div className="bg-white/[0.01] p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 space-y-4 md:space-y-6">
+                            <h4 className="text-[9px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3">
                                 <MonitorIcon className="w-4 h-4 text-liquid-gold" /> Cromatismo
                             </h4>
                             <div className="flex flex-wrap gap-2">
@@ -235,15 +235,15 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                     </div>
 
                     {/* Mechanical Processes */}
-                    <div className="bg-black/40 p-10 rounded-[3rem] border border-white/5 space-y-8">
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3">
+                    <div className="bg-black/40 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-white/5 space-y-6 md:space-y-8">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <h4 className="text-[9px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-3">
                                 <CpuIcon className="w-4 h-4 text-liquid-gold" /> Procesos Mecánicos
                             </h4>
-                            <div className="flex gap-4">
+                            <div className="flex gap-2 md:gap-4 w-full sm:w-auto">
                                 <button 
                                     onClick={() => setNumerado(!numerado)}
-                                    className={`px-6 py-3 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                                    className={`flex-1 sm:flex-none px-4 py-2 md:px-6 md:py-3 rounded-xl border text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all ${
                                         numerado ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'bg-black/40 border-white/5 text-slate-500'
                                     }`}
                                 >
@@ -251,7 +251,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                 </button>
                                 <button 
                                     onClick={() => setPerforado(!perforado)}
-                                    className={`px-6 py-3 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                                    className={`flex-1 sm:flex-none px-4 py-2 md:px-6 md:py-3 rounded-xl border text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all ${
                                         perforado ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'bg-black/40 border-white/5 text-slate-500'
                                     }`}
                                 >
@@ -299,47 +299,47 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                 </div>
 
                 {/* Concierge Summary & Action */}
-                <div className="xl:col-span-4 flex flex-col h-full">
-                    <div className="flex-grow p-10 bg-gradient-to-b from-liquid-gold/15 to-transparent rounded-[4rem] border border-liquid-gold/30 flex flex-col relative group overflow-hidden shadow-gold-glow-strong">
+                <div className="xl:col-span-4 flex flex-col h-full mt-4 xl:mt-0">
+                    <div className="flex-grow p-6 md:p-10 bg-gradient-to-b from-liquid-gold/15 to-transparent rounded-[2.5rem] md:rounded-[4rem] border border-liquid-gold/30 flex flex-col relative group overflow-hidden shadow-gold-glow-strong">
                         <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:opacity-20 transition-all duration-1000 scale-150">
-                            <MonitorIcon className="w-48 h-48 text-liquid-gold" />
+                            <MonitorIcon className="w-32 h-32 md:w-48 md:h-48 text-liquid-gold" />
                         </div>
 
-                        <div className="relative z-10 space-y-12">
+                        <div className="relative z-10 space-y-8 md:space-y-12">
                             <div className="space-y-2">
-                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic leading-none">Matriz de Ejecución</p>
-                                <div className="h-[1px] w-16 bg-liquid-gold/40"></div>
+                                <p className="text-[9px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic leading-none">Matriz de Ejecución</p>
+                                <div className="h-[1px] w-12 md:w-16 bg-liquid-gold/40"></div>
                             </div>
 
-                            <div className="space-y-8">
-                                <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 uppercase tracking-widest italic">
+                            <div className="space-y-6 md:space-y-8">
+                                <div className="flex justify-between items-center text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest italic">
                                     <span>Valor Base:</span>
                                     <span className="text-white">${(unitPrice * cantidad).toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 uppercase tracking-widest italic">
+                                <div className="flex justify-between items-center text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest italic">
                                     <span>Factor Industrial:</span>
                                     <span className="text-emerald-500">+${(total - (unitPrice * cantidad)).toFixed(2)}</span>
                                 </div>
-                                <div className="pt-10 border-t border-white/10">
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-6 italic">Inversión Final Proyectada</p>
-                                    <div className="flex items-baseline gap-4">
-                                        <span className="text-xl font-black text-liquid-gold italic">USD</span>
-                                        <span className="text-7xl font-black text-white tracking-tighter drop-shadow-gold italic">
+                                <div className="pt-6 md:pt-10 border-t border-white/10">
+                                    <p className="text-[9px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest mb-4 md:mb-6 italic">Inversión Final Proyectada</p>
+                                    <div className="flex flex-wrap items-baseline gap-2 md:gap-4">
+                                        <span className="text-sm md:text-xl font-black text-liquid-gold italic">USD</span>
+                                        <span className="text-4xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-gold italic">
                                             ${total.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-6 pt-14">
+                            <div className="space-y-4 md:space-y-6 pt-6 md:pt-14">
                                 <button
                                     onClick={handleConfirm}
-                                    className="w-full py-8 bg-liquid-gold rounded-[2rem] flex items-center justify-center gap-6 text-black font-black uppercase tracking-[0.4em] text-[12px] shadow-gold-glow hover:scale-[1.03] active:scale-95 transition-all duration-700"
+                                    className="w-full py-6 md:py-8 bg-liquid-gold rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center gap-4 md:gap-6 text-black font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-[12px] shadow-gold-glow hover:scale-[1.03] active:scale-95 transition-all duration-700"
                                 >
-                                    Fijar Especificación <ArrowRightIcon className="w-6 h-6" />
+                                    Fijar Especificación <ArrowRightIcon className="w-5 h-5 md:w-6 h-6" />
                                 </button>
                                 <div className="flex flex-col items-center gap-2">
-                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Protocolo de seguridad activo</p>
+                                    <p className="text-[8px] md:text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] md:tracking-[0.4em] italic">Protocolo de seguridad activo</p>
                                     <div className="flex gap-1">
                                         <div className="w-1 h-1 bg-liquid-gold rounded-full animate-pulse"></div>
                                         <div className="w-1 h-1 bg-liquid-gold rounded-full animate-pulse delay-75"></div>
