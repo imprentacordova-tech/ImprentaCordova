@@ -106,6 +106,8 @@ const TrackingPage: React.FC = () => {
         setFoundJobs([]);
         
         try {
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
+            
             if (isUUID) {
                 const { data: orderMatches } = await supabase
                     .from('trabajos').select('*').eq('id', cleanQuery);
@@ -117,25 +119,25 @@ const TrackingPage: React.FC = () => {
                 }
             }
 
-            if (!isUUID) {
-                const { data: matchedClients } = await supabase
-                    .from('clientes').select('id')
-                    .or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${cleanQuery},ruc.eq.${cleanQuery}`);
-                
-                if (matchedClients && matchedClients.length > 0) {
-                    const clientIds = matchedClients.map(c => c.id);
-                    const { data: clientJobs } = await supabase
-                        .from('trabajos').select('*')
-                        .in('cliente_id', clientIds).order('orden', { ascending: false });
-                    if (clientJobs && clientJobs.length > 0) {
-                        setFoundJobs(clientJobs as any);
-                        setSelectedJobId(clientJobs[0].id);
-                    } else {
-                        setError('El cliente no tiene pedidos registrados.');
-                    }
+            const { data: matchedClients } = await supabase
+                .from('clientes').select('id')
+                .or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${cleanQuery},ruc.eq.${cleanQuery}`);
+            
+            if (matchedClients && matchedClients.length > 0) {
+                const clientIds = matchedClients.map(c => c.id);
+                const { data: clientJobs } = await supabase
+                    .from('trabajos').select('*')
+                    .in('cliente_id', clientIds).order('orden', { ascending: false });
+                if (clientJobs && clientJobs.length > 0) {
+                    setFoundJobs(clientJobs as any);
+                    setSelectedJobId(clientJobs[0].id);
                 } else {
-                    setError('No encontramos pedidos ni clientes con ese dato.');
+                    setError('El cliente no tiene pedidos registrados.');
                 }
+            } else if (!isUUID) {
+                setError('No encontramos pedidos ni clientes con ese dato.');
+            } else {
+                setError('ID de rastreo no encontrado.');
             }
         } catch (err) {
             console.error(err);
@@ -255,12 +257,12 @@ const TrackingPage: React.FC = () => {
                         <GlobeAltIcon className="w-5 h-5 text-gold-bright animate-spin-slow" />
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Sistema de Rastreo en Tiempo Real</span>
                     </div>
-                    <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[11rem] font-black text-white mb-4 sm:mb-8 uppercase tracking-tighter leading-[0.8] italic group">
-                        MI <br/>
-                        <span className="text-white/20 not-italic font-editorial font-normal">PEDIDO</span>
+                    <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-black text-white mb-4 sm:mb-8 uppercase tracking-tighter leading-[0.8] italic group">
+                        TRACKING <br/>
+                        <span className="text-liquid-gold not-italic font-editorial font-normal">SATELLITE</span>
                     </h1>
-                    <p className="text-slate-400 text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed font-medium tracking-tight">
-                        Consulte el estado exacto de su trabajo. Ingrese su cédula para visualizar sus órdenes activas.
+                    <p className="text-slate-400 text-base md:text-lg max-w-xl mx-auto leading-relaxed font-medium tracking-tight opacity-80">
+                        Acceso directo a la red de producción. Sincronice su terminal para visualizar el despliegue de sus órdenes.
                     </p>
                 </motion.div>
 
@@ -318,31 +320,31 @@ const TrackingPage: React.FC = () => {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-16"
+                        className="mb-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-4 sm:p-8 backdrop-blur-xl"
                     >
-                        <div className="flex items-center gap-4 mb-6 px-4">
-                            <div className="w-2 h-2 bg-liquid-gold rounded-full animate-pulse"></div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Multi-Order Detection Link</span>
+                        <div className="flex items-center justify-between mb-6 px-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-2 h-2 bg-liquid-gold rounded-full animate-pulse"></div>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Múltiples terminales detectadas</span>
+                            </div>
+                            <span className="text-[9px] font-mono text-slate-600">{foundJobs.length} NODOS ACTIVOS</span>
                         </div>
-                        <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar px-4 -mx-4">
+                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar px-2">
                             {foundJobs.map((job) => (
                                 <button
                                     key={job.id}
                                     onClick={() => setSelectedJobId(job.id)}
-                                    className={`shrink-0 px-8 py-5 rounded-[2rem] border-2 transition-all duration-700 flex flex-col gap-1 items-start min-w-[240px] relative overflow-hidden group/item ${
+                                    className={`shrink-0 px-6 py-4 rounded-2xl border transition-all duration-500 flex flex-col gap-1 items-start min-w-[200px] relative overflow-hidden group/item ${
                                         selectedJobId === job.id 
                                             ? 'bg-liquid-gold border-liquid-gold text-brand-dark shadow-gold-glow' 
-                                            : 'bg-white/[0.02] border-white/10 text-slate-400 hover:border-white/30'
+                                            : 'bg-white/[0.03] border-white/5 text-slate-400 hover:border-white/20'
                                     }`}
                                 >
-                                    {selectedJobId === job.id && (
-                                        <motion.div layoutId="active-selector" className="absolute inset-0 bg-white/20 -z-10" />
-                                    )}
-                                    <div className="flex items-center justify-between w-full">
-                                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${selectedJobId === job.id ? 'text-brand-dark/60' : 'text-slate-600'}`}>ID: {job.orden}</span>
+                                    <div className="flex items-center justify-between w-full mb-1">
+                                        <span className={`text-[8px] font-mono ${selectedJobId === job.id ? 'text-brand-dark/70' : 'text-slate-600'}`}>ORD-{job.orden}</span>
                                         {job.estado === TrabajoEstado.VITRINA && <SparklesIcon className="w-3 h-3 animate-pulse" />}
                                     </div>
-                                    <span className="text-sm font-black truncate w-full italic uppercase tracking-tighter">{job.subtipo}</span>
+                                    <span className="text-[11px] font-black truncate w-full uppercase tracking-tight">{job.subtipo}</span>
                                 </button>
                             ))}
                         </div>
@@ -368,10 +370,20 @@ const TrackingPage: React.FC = () => {
                                 transition={{ duration: 0.8 }}
                                 className="bg-[#0a0a0a]/40 border border-white/5 rounded-[3.5rem] overflow-hidden backdrop-blur-3xl shadow-2xl relative group"
                             >
-                                {/* ── SATELLITE HASH OVERLAY (User requested long URLs/Complexity) ── */}
-                                <div className="absolute top-4 right-12 hidden md:flex items-center gap-3 opacity-20 group-hover:opacity-40 transition-opacity">
-                                    <div className="w-1 h-1 bg-liquid-gold rounded-full animate-ping"></div>
-                                    <span className="text-[7px] font-mono font-bold text-liquid-gold tracking-[0.3em] uppercase">{satelliteHash}</span>
+                                {/* ── SATELLITE HASH OVERLAY ── */}
+                                <div className="absolute top-6 right-10 hidden md:flex flex-col items-end gap-1 opacity-20 group-hover:opacity-60 transition-all duration-1000">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 bg-liquid-gold rounded-full animate-pulse"></div>
+                                        <span className="text-[8px] font-mono font-bold text-liquid-gold tracking-[0.2em] uppercase">ENLACE SEGURO ACTIVO</span>
+                                    </div>
+                                    <span className="text-[7px] font-mono text-slate-500 select-all cursor-pointer hover:text-white transition-colors" 
+                                          onClick={() => {
+                                              const longUrl = `${window.location.origin}${window.location.pathname}#/tracking?q=${job.id}&auth_node=${btoa(job.id).substring(0,32)}&security_token=${satelliteHash}`;
+                                              navigator.clipboard.writeText(longUrl);
+                                              alert("Enlace seguro copiado al portapapeles.");
+                                          }}>
+                                        {satelliteHash}
+                                    </span>
                                 </div>
 
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
