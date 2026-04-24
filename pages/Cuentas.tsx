@@ -165,7 +165,7 @@ const TransactionFormModal: React.FC<{
 const CuentasPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const [ledger, setLedger] = useState<FinancialEntry[]>([]);
-    const [balance, setBalance] = useState(getLedgerBalance());
+    const [balance, setBalance] = useState({ ingresos: 0, egresos: 0, total: 0 });
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('');
@@ -173,13 +173,14 @@ const CuentasPage: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const ITEMS_PER_PAGE = 30;
 
-    const refreshData = () => {
+    const refreshData = async () => {
         setLoading(true);
-        purgeOldTransactions();
-        const data = getFinancialLedger();
+        await purgeOldTransactions();
+        const data = await getFinancialLedger();
         setLedger([...data].reverse());
-        setBalance(getLedgerBalance());
-        setTimeout(() => setLoading(false), 800);
+        const bal = await getLedgerBalance();
+        setBalance(bal);
+        setLoading(false);
     };
 
     useEffect(() => { refreshData(); }, []);

@@ -64,7 +64,10 @@ const TrabajoDetallePage: React.FC = () => {
                     )}
 
                     <button onClick={() => window.open(`/#/recibo-abono/${trabajo.id}`, '_blank')} className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm hover:bg-white/10 transition-all flex items-center gap-2">
-                        <ReceiptIcon className="w-4 h-4 text-slate-400" /> Recibo Abono
+                        <ReceiptIcon className="w-4 h-4 text-slate-400" /> Ticket 80mm
+                    </button>
+                    <button onClick={() => window.open(`/#/recibo-epson/${trabajo.id}`, '_blank')} className="px-6 py-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm hover:bg-blue-500/20 transition-all flex items-center gap-2">
+                        <PrinterIcon className="w-4 h-4" /> Recibo Epson
                     </button>
 
                     {(trabajo.estado === TrabajoEstado.VITRINA || trabajo.estado === TrabajoEstado.ENTREGADO) && (

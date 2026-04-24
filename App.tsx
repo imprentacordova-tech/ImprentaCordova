@@ -26,6 +26,7 @@ import OrdenProduccionPage from './pages/OrdenProduccion';
 import NotaDeVentaPage from './pages/NotaDeVenta';
 import SolicitudImpresionPage from './pages/SolicitudImpresion';
 import ReciboAbonoPage from './pages/ReciboAbono';
+import ReciboEpsonPage from './pages/ReciboEpson';
 import TrabajoDetallePage from './pages/TrabajoDetalle';
 import TrabajosPage from './pages/Trabajos';
 import RegistroActividadPage from './pages/RegistroActividad';
@@ -85,6 +86,7 @@ const App: React.FC = () => {
           <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
           <Route path="/orden-produccion/:trabajoId" element={<OrdenProduccionPage />} />
           <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
+          <Route path="/recibo-epson/:trabajoId" element={<ReciboEpsonPage />} />
 
           {/* Protected Administration Routes */}
           <Route element={<ProtectedRoute user={currentUser} onLogout={handleLogout} />}>

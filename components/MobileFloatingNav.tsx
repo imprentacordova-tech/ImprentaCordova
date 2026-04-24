@@ -28,10 +28,10 @@ export const MobileFloatingNav: React.FC = () => {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-                className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between w-full max-w-md relative overflow-hidden"
+                className="bg-white/90 dark:bg-[#000000]/40 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between w-full max-w-md relative overflow-hidden transition-colors duration-500"
             >
                 {/* Ambient glow background */}
-                <div className="absolute inset-0 bg-gradient-to-t from-liquid-gold/10 to-transparent pointer-events-none opacity-50"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-liquid-gold/5 dark:from-liquid-gold/10 to-transparent pointer-events-none opacity-50"></div>
                 
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
@@ -45,7 +45,7 @@ export const MobileFloatingNav: React.FC = () => {
                                     relative -top-6 w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 transform
                                     ${isActive 
                                         ? 'bg-liquid-gold text-black shadow-[0_0_30px_rgba(212,175,55,0.4)] scale-110 rotate-0' 
-                                        : 'bg-white text-black hover:bg-liquid-gold shadow-2xl scale-100 hover:scale-105'
+                                        : 'bg-slate-100 dark:bg-white text-slate-800 dark:text-black hover:bg-liquid-gold dark:hover:bg-liquid-gold shadow-xl dark:shadow-2xl scale-100 hover:scale-105'
                                     }
                                 `}
                             >
@@ -57,7 +57,7 @@ export const MobileFloatingNav: React.FC = () => {
                                     {isActive && (
                                         <motion.div 
                                             layoutId="primary-glow"
-                                            className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse"
+                                            className="absolute inset-0 rounded-2xl bg-white/20 dark:bg-white/20 animate-pulse"
                                         />
                                     )}
                                 </motion.div>

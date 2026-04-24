@@ -141,7 +141,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (cData) setClientes(cData.map(mapDBCliente) as any);
             if (tData) setTrabajos(tData.map(mapDBTrabajo) as any);
             if (pData) {
-                setProductos(pData as any);
+                const mappedProducts = pData.map((p: any) => ({
+                    id: p.id,
+                    nombre: p.nombre,
+                    descripcion: p.descripcion,
+                    precio: p.precio,
+                    categoria: p.categoria,
+                    esSRI: p.es_sri ?? false,
+                    imagenUrl: p.imagen_url,
+                    specs: p.specs,
+                    unit: p.unit,
+                    isPopular: p.is_popular ?? false
+                }));
+                setProductos(mappedProducts as any);
                 // Auto-seed si el catálogo está vacío y NO estamos ya en un auto-seed
                 if (pData.length === 0 && !isAutoSeed) {
                     console.log("📦 Catálogo vacío detectado. Sincronización requerida.");

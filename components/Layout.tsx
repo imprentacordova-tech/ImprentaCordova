@@ -113,7 +113,7 @@ const Sidebar: React.FC<{
     };
 
     return (
-        <aside className="w-72 bg-slate-950 flex flex-col h-full border-r border-white/5 z-20 transition-all duration-300">
+        <aside className="w-72 bg-white dark:bg-slate-950 flex flex-col h-full border-r border-slate-200 dark:border-white/5 z-20 transition-all duration-300">
 
             {/* ── Logo / Brand ── */}
             <div className="p-10 border-b border-white/5 flex flex-col items-center gap-5 bg-white/[0.01] shrink-0">
@@ -121,8 +121,8 @@ const Sidebar: React.FC<{
                     <CordovaLogo className="w-10 h-10" />
                 </div>
                 <div className="text-center">
-                    <h1 className="font-display font-black text-2xl leading-none tracking-[0.3em] text-white uppercase">Córdova</h1>
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] mt-2">Gestión Administrativa</p>
+                    <h1 className="font-display font-black text-2xl leading-none tracking-[0.3em] text-slate-900 dark:text-white uppercase">Córdova</h1>
+                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.5em] mt-2">Gestión Administrativa</p>
                 </div>
             </div>
 
@@ -162,8 +162,8 @@ const Sidebar: React.FC<{
                                         onClick={onClose}
                                         className={`group flex items-center justify-between px-5 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all duration-400 border ${
                                             isActive
-                                                ? 'bg-white/5 border-liquid-gold/20 text-white shadow-gold-glow'
-                                                : 'border-transparent text-slate-500 hover:bg-white/[0.04] hover:text-white hover:border-white/5'
+                                                ? 'bg-slate-100 dark:bg-white/5 border-liquid-gold/20 text-slate-900 dark:text-white shadow-gold-glow'
+                                                : 'border-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:hover:border-white/5'
                                         }`}
                                     >
                                         <div className="flex items-center gap-4">
@@ -184,14 +184,14 @@ const Sidebar: React.FC<{
             </nav>
 
             {/* ── User card + Logout ── */}
-            <div className="p-6 border-t border-white/5 bg-black/20 shrink-0">
-                <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-md">
+            <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/20 shrink-0">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.03] backdrop-blur-md">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-liquid-gold text-brand-dark flex items-center justify-center font-black text-sm shadow-gold-glow shrink-0">
                             {user.nombre.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-black text-white truncate uppercase tracking-wider">{user.nombre}</p>
+                            <p className="text-[11px] font-black text-slate-900 dark:text-white truncate uppercase tracking-wider">{user.nombre}</p>
                             <p className="text-[9px] font-bold text-liquid-gold uppercase tracking-widest">
                                 {user.rol === 'Admin' ? 'Administrador' : user.rol}
                             </p>
@@ -245,7 +245,7 @@ const Header: React.FC<{
     const dateStr = now.toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' });
 
     return (
-        <header className="h-20 bg-brand-dark/60 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
+        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
 
             {/* LEFT: hamburger + page title */}
             <div className="flex items-center gap-5">
@@ -258,8 +258,8 @@ const Header: React.FC<{
                 </button>
 
                 <div className="hidden sm:block">
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-0.5">Módulo Activo</p>
-                    <h2 className="text-sm font-display font-black text-white tracking-tight leading-none">{pageTitle}</h2>
+                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.4em] mb-0.5">Módulo Activo</p>
+                    <h2 className="text-sm font-display font-black text-slate-900 dark:text-white tracking-tight leading-none">{pageTitle}</h2>
                 </div>
             </div>
 
@@ -290,20 +290,20 @@ const Header: React.FC<{
             <div className="flex items-center gap-5">
                 {/* Live clock */}
                 <div className="hidden md:flex flex-col items-end gap-0.5">
-                    <span className="text-base font-black text-white tracking-wider tabular-nums leading-none">{timeStr}</span>
-                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{dateStr}</span>
+                    <span className="text-base font-black text-slate-900 dark:text-white tracking-wider tabular-nums leading-none">{timeStr}</span>
+                    <span className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.3em]">{dateStr}</span>
                 </div>
 
                 {/* Theme Toggle */}
                 <button
                     onClick={toggleTheme}
-                    className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-liquid-gold hover:border-liquid-gold/50 transition-all duration-300"
+                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-liquid-gold dark:hover:text-liquid-gold hover:border-liquid-gold/50 transition-all duration-300"
                     title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
                 >
                     {theme === 'dark' ? <SparklesIcon className="w-5 h-5" /> : <SolidBoxIcon className="w-5 h-5" />}
                 </button>
 
-                <div className="h-8 w-px bg-white/5 hidden md:block" />
+                <div className="h-8 w-px bg-slate-200 dark:bg-white/5 hidden md:block" />
 
                 {/* Logout (visible en header solo en mobile) */}
                 <button
@@ -339,7 +339,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     }, [sidebarOpen]);
 
     return (
-        <div className="flex h-screen bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark">
+        <div className="flex h-screen bg-slate-50 dark:bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500">
             <SEO title="Imprenta Córdova | Backend Administrativo" includeLocalBusiness={false} robots={false} />
 
             {/* ── Mobile Sidebar Overlay ── */}

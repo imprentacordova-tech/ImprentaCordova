@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { refreshData, addTrabajo } = useData();
+    const { refreshData, addTrabajo, addCliente } = useData();
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
@@ -31,6 +31,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
 
     // SRI specific states
     const [isSriOrder, setIsSriOrder] = useState(false);
@@ -43,7 +44,7 @@ const NuevoPedidoPage: React.FC = () => {
     const canAdvance = () => {
         if (step === 1) return true; // Permitimos avanzar siempre (identidad opcional inicialmente)
         if (step === 2) {
-            if (!servicio || !detalle) return false;
+            if (!servicio) return false;
             if (isSriOrder) {
                 if (sriMode === 'RENOVACION' && !sriClave) return false;
                 if (!sriActividad) return false;
@@ -67,7 +68,7 @@ const NuevoPedidoPage: React.FC = () => {
             // Si no hay cliente, crear uno Express al vuelo
             if (!finalCliente) {
                 finalCliente = await addCliente({
-                    nombre: quickName.toUpperCase(),
+                    nombre: (quickName || 'CONSUMIDOR FINAL').toUpperCase(),
                     cedula: '9999999999',
                     regimen: 'General',
                     direccion: 'Pasaje, El Oro'
@@ -95,17 +96,21 @@ const NuevoPedidoPage: React.FC = () => {
                 actividad_seleccionada: isSriOrder ? sriActividad : null
             }, currentUser.nombre, imageFile);
 
-            await logActivity(
+            // Fire-and-forget: no bloquear si la tabla activity_log no existe
+            logActivity(
                 currentUser.nombre, 
                 currentUser.rol || 'Administrador', 
                 'CREAR_ORDEN', 
                 `Misión desplegada: Orden #${result.orden} para ${finalCliente.nombre}`, 
                 'Ventas'
-            );
+            ).catch(() => {});
             
-            await refreshData();
+            // Refresh sin bloquear
+            refreshData().catch(() => {});
+            setCreatedTrabajoId(result.id);
             setStep(4); // Success step
         } catch (err: any) {
+            console.error('[NuevoPedido] Error:', err);
             setError(err.message || 'Error al desplegar la misión.');
         } finally {
             setLoading(false);
@@ -373,12 +378,39 @@ const NuevoPedidoPage: React.FC = () => {
                                     <h2 className="text-7xl font-black text-white uppercase tracking-tighter italic">Misión <span className="text-emerald-500">Desplegada</span></h2>
                                     <p className="text-xl text-slate-400 font-medium max-w-lg mx-auto tracking-tight">El pedido ha sido sincronizado con el KDS y el núcleo central de producción.</p>
                                 </div>
-                                <button 
-                                    onClick={() => navigate('/dashboard')}
-                                    className="px-20 py-8 bg-white text-black rounded-[2.5rem] font-black text-sm uppercase tracking-[0.8em] shadow-luxury hover:bg-emerald-500 transition-all duration-1000 active:scale-95 relative z-10"
-                                >
-                                    Retornar al Comando
-                                </button>
+                                <div className="flex flex-col md:flex-row justify-center items-center gap-6 mt-8 relative z-10">
+                                    {createdTrabajoId && (
+                                        <>
+                                            <button 
+                                                onClick={() => window.open(`/#/recibo/${createdTrabajoId}`, '_blank')}
+                                                className="px-10 py-6 bg-liquid-gold text-black rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] shadow-gold-glow hover:scale-105 transition-all duration-500 active:scale-95 flex items-center gap-3"
+                                            >
+                                                <PrinterIcon className="w-5 h-5" /> Recibo Térmico
+                                            </button>
+                                            <button 
+                                                onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')}
+                                                className="px-10 py-6 bg-white text-black rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] shadow-luxury hover:bg-slate-200 transition-all duration-500 active:scale-95 flex items-center gap-3"
+                                            >
+                                                <PrinterIcon className="w-5 h-5" /> Recibo Epson
+                                            </button>
+                                        </>
+                                    )}
+                                    <button 
+                                        onClick={() => {
+                                            setStep(1);
+                                            setCliente(null);
+                                            setServicio(null);
+                                            setDetalle('');
+                                            setPrecio(0);
+                                            setAbono(0);
+                                            setImageFile(null);
+                                            setCreatedTrabajoId(null);
+                                        }}
+                                        className="px-10 py-6 bg-transparent border-2 border-white/20 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] hover:bg-white/10 transition-all duration-500 active:scale-95"
+                                    >
+                                        Nueva Orden
+                                    </button>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
