@@ -359,11 +359,7 @@ const KDSPage: React.FC = () => {
                                 <motion.div 
                                     key={status}
                                     initial={{ opacity: 0, x: 20 }}
-                                    animate={{ 
-                                        opacity: 1, 
-                                        x: 0,
-                                        display: (window.innerWidth < 1024 && !isVisibleOnMobile) ? 'none' : 'flex'
-                                    }}
+                                    animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.05 }}
                                     className={`
                                         flex-1 min-w-full lg:min-w-[360px] flex flex-col bg-white/[0.01] backdrop-blur-md transition-all duration-500 border border-white/5 rounded-[2.5rem] overflow-hidden
