@@ -429,84 +429,182 @@
 
 /* --- LIGHT MODE GLOBAL OVERRIDES --- */
 html.light {
-  background-color: #f8fafc;
+  background-color: #ffffff;
   color: #0f172a;
 }
 html.light body {
-  background-color: #f8fafc;
+  background-color: #ffffff;
   color: #0f172a;
 }
 
-/* Background overrides */
+/* Background overrides - Dark to Light */
 html.light .bg-brand-dark, 
 html.light .bg-brand-dark\/60,
+html.light .bg-brand-dark\/40,
+html.light .bg-brand-dark\/90,
 html.light .bg-slate-950,
 html.light .bg-slate-900,
+html.light .bg-black,
 html.light .bg-black\/20,
+html.light .bg-black\/30,
 html.light .bg-black\/40,
+html.light .bg-black\/50,
 html.light .bg-black\/60,
+html.light .bg-black\/80,
 html.light .bg-\[\#050811\],
+html.light .bg-\[\#0c1324\],
+html.light .bg-\[\#070d1f\],
+html.light .bg-\[\#191f31\],
+html.light .bg-\[\#0a0a0a\]\/80,
 html.light .bg-cinematic-mesh {
-  background-color: #f8fafc !important;
+  background-color: #ffffff !important;
   background-image: none !important;
 }
 
-html.light .bg-\[\#191f31\],
-html.light .bg-slate-800,
-html.light .bg-white\/5,
-html.light .bg-white\/10,
+/* Background overrides - White Opacity to Soft Gray */
 html.light .bg-white\/\[0\.01\],
+html.light .bg-white\/\[0\.02\],
 html.light .bg-white\/\[0\.03\],
 html.light .bg-white\/\[0\.04\],
-html.light .glass-card-luxury {
-  background-color: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05) !important;
+html.light .bg-white\/\[0\.05\],
+html.light .bg-white\/5,
+html.light .bg-white\/8,
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .bg-white\/20,
+html.light .bg-white\/30,
+html.light .bg-white\/40 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Border overrides */
 html.light .border-white\/5,
+html.light .border-white\/8,
 html.light .border-white\/10,
 html.light .border-white\/20 {
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Text overrides */
-html.light .text-white {
+html.light .text-white,
+html.light .text-white\/90,
+html.light .text-white\/80,
+html.light .text-white\/70,
+html.light .text-white\/60,
+html.light .text-white\/50,
+html.light .text-slate-50,
+html.light .text-slate-100,
+html.light .text-slate-200,
+html.light .text-slate-300 {
   color: #0f172a !important;
 }
+
 html.light .text-slate-400,
-html.light .text-slate-500 {
+html.light .text-slate-500,
+html.light .text-slate-600 {
   color: #475569 !important;
 }
-html.light .text-slate-300 {
-  color: #334155 !important;
+
+html.light .text-liquid-gold,
+html.light .text-gold-bright,
+html.light .text-glow-gold {
+  color: #854d0e !important; /* Gold más oscuro para contraste en blanco */
 }
 
-/* Glow and shadow fixes */
-html.light .shadow-luxury, 
-html.light .shadow-glass {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+/* Fix for buttons with white text by default */
+html.light .bg-white .text-white,
+html.light .bg-slate-50 .text-white,
+html.light .bg-slate-100 .text-white {
+  color: #0f172a !important;
 }
 
-/* Fix glass effects */
+/* Ensure icons have contrast in light mode if they were white */
+html.light svg.text-white,
+html.light svg.text-slate-100,
+html.light svg.text-slate-200 {
+  color: #0f172a !important;
+}
+
+html.light .icon-gold {
+    color: #854d0e !important;
+}
+
+/* Special components */
 html.light .glass-atelier, 
-html.light .glass-boutique {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-color: rgba(0, 0, 0, 0.05) !important;
+html.light .glass-boutique,
+html.light .glass-card-luxury {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(20px) !important;
 }
 
-/* Ensure inputs in light mode are legible */
+    /* Premium Mobile Utilities */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .mb-safe {
+        margin-bottom: env(safe-area-inset-bottom);
+    }
+    .bottom-safe {
+        bottom: env(safe-area-inset-bottom);
+    }
+
+    /* KDS Light Mode Overrides */
+    html.light .kds-card {
+        background: #ffffff !important;
+        border-color: rgba(15, 23, 42, 0.1) !important;
+    }
+    html.light .kds-text-primary {
+        color: #0f172a !important;
+    }
+    html.light .kds-text-secondary {
+        color: #64748b !important;
+    }
+
+/* Custom Scrollbar Premium */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(155, 155, 155, 0.2);
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 html.light .input-atelier {
   background-color: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
   color: #0f172a !important;
 }
-html.light .input-atelier:focus {
-  background-color: #f8fafc !important;
-  border-color: #D4AF37 !important;
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2) !important;
-}
+
 html.light .input-atelier::placeholder {
   color: #94a3b8 !important;
+}
+
+html.light .shadow-luxury, 
+html.light .shadow-glass,
+html.light .shadow-mobile-app-shadow {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Additional specific overrides for interactive elements */
+html.light .hover\:bg-white\/10:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .divide-white\/5 > * + * {
+    border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .ring-white\/10 {
+    --tw-ring-color: rgba(0, 0, 0, 0.1) !important;
 }

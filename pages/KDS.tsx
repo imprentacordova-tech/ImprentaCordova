@@ -38,11 +38,12 @@ const urgencyConfig = {
 interface KanbanCardProps {
   trabajo: Trabajo;
   cliente?: Cliente;
-  onCardDoubleClick: (trabajo: Trabajo) => void;
+  onCardClick: (trabajo: Trabajo) => void;
   onTakePhotoClick: (trabajo: Trabajo) => void;
+  onStatusChange: (id: string, newStatus: TrabajoEstado) => void;
 }
 
-const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleClick, onTakePhotoClick }) => {
+const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, onTakePhotoClick, onStatusChange }) => {
     const targetDate = trabajo.fechaEntrega || trabajo.fechaVencimiento;
     const urgency = getUrgencyLevel(targetDate);
     const style = urgencyConfig[urgency];
@@ -57,13 +58,23 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
         return Math.min(100, Math.max(0, (elapsed / total) * 100));
     };
 
+    const statusFlow = [
+        TrabajoEstado.PENDIENTE,
+        TrabajoEstado.EN_DISENO,
+        TrabajoEstado.PROCESO,
+        TrabajoEstado.VITRINA,
+        TrabajoEstado.ENTREGADO
+    ];
+
+    const nextStatus = statusFlow[statusFlow.indexOf(trabajo.estado) + 1];
+
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            whileHover={{ y: -4, transition: { duration: 0.3 } }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            whileHover={{ y: -4 }}
             draggable
             onDragStart={(e) => {
                 e.dataTransfer.setData("trabajoId", trabajo.id);
@@ -72,11 +83,11 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
             onDragEnd={(e) => {
                 e.currentTarget.classList.remove('opacity-40');
             }}
-            onDoubleClick={() => onCardDoubleClick(trabajo)}
+            onClick={() => onCardClick(trabajo)}
             className={`
-                relative group bg-[#0A0A0A] mb-5 cursor-grab active:cursor-grabbing 
-                border-l-2 ${style.border} border-t border-r border-b border-white/5
-                transition-all duration-500 rounded-3xl overflow-hidden p-8
+                relative group kds-card mb-5 cursor-pointer
+                border-l-2 ${style.border} border-t border-r border-b border-slate-200/50 dark:border-white/5
+                transition-all duration-500 rounded-3xl overflow-hidden p-6 md:p-8
                 hover:border-white/10 hover:shadow-2xl hover:shadow-black/50
             `}
         >
@@ -87,8 +98,10 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
                         ORD-{String(trabajo.orden).padStart(5, '0')}
                     </span>
                 </div>
-                <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic ${style.bg} ${style.text} border border-white/5 backdrop-blur-md`}>
-                    {style.label}
+                <div className="flex items-center gap-2">
+                    <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic ${style.bg} ${style.text} border border-white/5 backdrop-blur-md`}>
+                        {style.label}
+                    </div>
                 </div>
             </div>
 
@@ -96,19 +109,19 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
             <div className="flex gap-6 relative z-10">
                 <div className="flex-grow min-w-0 space-y-4">
                     <div>
-                        <h4 className="text-xl font-black text-white italic tracking-tighter leading-none mb-2 group-hover:text-liquid-gold transition-colors truncate uppercase">
+                        <h4 className="text-lg md:text-xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none mb-2 group-hover:text-liquid-gold transition-colors truncate uppercase">
                             {cliente?.nombre || 'Consumidor Final'}
                         </h4>
                         <div className="flex items-center gap-2">
-                             <div className="w-1 h-1 rounded-full bg-slate-700"></div>
-                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-80 italic">{trabajo.subtipo}</p>
+                             <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest opacity-80 italic">{trabajo.subtipo}</p>
                         </div>
                     </div>
                     
                     <div className="flex items-center gap-5">
-                        <div className="flex items-center gap-2.5 text-[10px] font-black text-white bg-white/[0.03] px-4 py-2 rounded-xl border border-white/5 uppercase tracking-widest italic">
+                        <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.03] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 uppercase tracking-widest italic">
                             <LayersIcon className="w-3.5 h-3.5 text-liquid-gold/60" />
-                            <span>{trabajo.cantidad} <span className="text-slate-600">UNID.</span></span>
+                            <span>{trabajo.cantidad} <span className="text-slate-500 dark:text-slate-600">UNID.</span></span>
                         </div>
                         {targetDate && (
                             <div className={`flex items-center gap-2.5 text-[10px] font-black ${style.text} uppercase tracking-widest italic`}>
@@ -139,23 +152,35 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardDoubleC
                 </div>
             </div>
 
-            {/* Footer info */}
+            {/* Footer info & Quick Action */}
             <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5 relative z-10">
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
-                    </div>
-                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest italic">Expediente Activo</span>
+                <div className="flex items-center gap-3">
+                    {trabajo.saldo > 0 ? (
+                        <div className="flex items-center gap-2 text-rose-500 text-[8px] font-black uppercase tracking-widest italic bg-rose-500/5 px-3 py-1 rounded-lg border border-rose-500/10">
+                           <BoltIcon className="w-3 h-3 animate-pulse" /> {formatCurrency(trabajo.saldo)}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 text-emerald-500 text-[8px] font-black uppercase tracking-widest italic bg-emerald-500/5 px-3 py-1 rounded-lg border border-emerald-500/10">
+                            <CheckBadgeIcon className="w-3 h-3" /> Liquidado
+                        </div>
+                    )}
                 </div>
-                {trabajo.saldo > 0 ? (
-                    <div className="flex items-center gap-2 text-rose-500 text-[8px] font-black uppercase tracking-widest italic bg-rose-500/5 px-3 py-1 rounded-lg border border-rose-500/10">
-                       <BoltIcon className="w-3 h-3 animate-pulse" /> Saldo: {formatCurrency(trabajo.saldo)}
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-2 text-emerald-500 text-[8px] font-black uppercase tracking-widest italic bg-emerald-500/5 px-3 py-1 rounded-lg border border-emerald-500/10">
-                        <CheckBadgeIcon className="w-3 h-3" /> Liquidado
-                    </div>
-                )}
+
+                {/* Mobile Quick Status Switcher */}
+                <div className="lg:hidden flex items-center gap-2">
+                    {nextStatus && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.navigator.vibrate) window.navigator.vibrate(50);
+                                onStatusChange(trabajo.id, nextStatus);
+                            }}
+                            className="flex items-center gap-2 bg-liquid-gold text-brand-dark px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest italic shadow-lg active:scale-90 transition-all"
+                        >
+                            <ArrowRightIcon className="w-3 h-3" /> {nextStatus}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Progress line */}
@@ -244,10 +269,10 @@ const KDSPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#050505] relative select-none overflow-hidden">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#050505] relative select-none overflow-hidden">
             
             {/* --- CABECERA --- */}
-            <div className="flex-shrink-0 p-8 lg:p-12 relative z-10 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+            <div className="flex-shrink-0 p-8 lg:p-12 relative z-10 border-b border-slate-200 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-xl">
                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
                     
                     <div className="space-y-4">
@@ -255,7 +280,7 @@ const KDSPage: React.FC = () => {
                             <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow"></div>
                             <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">Taller de Producción Digital</span>
                         </div>
-                        <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-none">
+                        <h1 className="text-5xl lg:text-8xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-none">
                             Control de <span className="text-gold-gradient">Flujo</span>
                         </h1>
                     </div>
@@ -270,7 +295,7 @@ const KDSPage: React.FC = () => {
                                 value={filterTerm}
                                 onChange={e => setFilterTerm(e.target.value)}
                                 placeholder="BUSCAR POR ORDEN O CLIENTE..." 
-                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-5 pl-14 pr-6 text-[11px] font-bold uppercase tracking-widest text-white placeholder:text-slate-700 focus:border-liquid-gold/20 outline-none transition-all italic backdrop-blur-md"
+                                className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl py-5 pl-14 pr-6 text-[11px] font-bold uppercase tracking-widest text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-700 focus:border-liquid-gold/20 outline-none transition-all italic backdrop-blur-md"
                             />
                         </div>
 
@@ -303,7 +328,7 @@ const KDSPage: React.FC = () => {
                                 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap italic flex items-center gap-3
                                 ${activeMobileTab === status 
                                     ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' 
-                                    : 'text-slate-500 bg-white/5'}
+                                    : 'text-slate-500 bg-white/50 dark:bg-white/5'}
                             `}
                         >
                             {status}
@@ -352,7 +377,7 @@ const KDSPage: React.FC = () => {
                                                 status === 'En Diseño' ? 'bg-blue-500' :
                                                 status === 'En Proceso' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500'
                                             }`} />
-                                            <h3 className="font-black text-white uppercase tracking-[0.2em] text-[12px] italic">
+                                            <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] text-[12px] italic">
                                                 {status}
                                             </h3>
                                         </div>
@@ -369,8 +394,9 @@ const KDSPage: React.FC = () => {
                                                     key={trabajo.id} 
                                                     trabajo={trabajo} 
                                                     cliente={clientes.find(c => c.id === trabajo.clienteId)}
-                                                    onCardDoubleClick={setSelectedTrabajo}
+                                                    onCardClick={setSelectedTrabajo}
                                                     onTakePhotoClick={setCameraTarget}
+                                                    onStatusChange={handleStatusChange}
                                                 />
                                             ))}
                                         </AnimatePresence>
@@ -391,97 +417,79 @@ const KDSPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- MODAL DE DETALLE --- */}
-            <AnimatePresence>
+            {/* --- MODAL DE DETALLE (BOTTOM SHEET EN MÓVIL) --- */}
+            <BottomSheet 
+                isOpen={!!selectedTrabajo} 
+                onClose={() => setSelectedTrabajo(null)} 
+                title={`ORD-${selectedTrabajo?.orden || ''}`}
+            >
                 {selectedTrabajo && (
-                    <div className="fixed inset-0 z-[500] flex justify-center items-center p-6">
-                        <motion.div 
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-                            className="absolute inset-0 bg-black/95 backdrop-blur-2xl" 
-                            onClick={() => setSelectedTrabajo(null)} 
-                        />
-                        <motion.div 
-                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="bg-[#050505] w-full max-w-2xl overflow-hidden relative z-10 border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.8)] rounded-[3rem]" 
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-liquid-gold/10 rounded-xl">
-                                            <CpuIcon className="w-5 h-5 text-liquid-gold" />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Hoja de <span className="text-liquid-gold">Ruta</span></h2>
-                                    </div>
-                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] italic ml-1">Protocolo de Producción ORD-{selectedTrabajo.orden}</p>
-                                </div>
-                                <button onClick={() => setSelectedTrabajo(null)} className="p-4 bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white rounded-2xl transition-all border border-white/5"><CloseIcon className="w-5 h-5"/></button>
+                    <div className="space-y-8 pb-10">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 rounded-2xl bg-liquid-gold text-brand-dark flex items-center justify-center font-black text-2xl italic shadow-gold-glow">
+                                {clientes.find(c => c.id === selectedTrabajo.clienteId)?.nombre.charAt(0).toUpperCase()}
                             </div>
-                            
-                            <div className="p-10 space-y-10">
-                                <div className="flex items-center gap-8">
-                                    <div className="w-20 h-20 rounded-[2rem] bg-white text-black flex items-center justify-center font-black text-3xl italic shadow-2xl">
-                                        {clientes.find(c => c.id === selectedTrabajo.clienteId)?.nombre.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="font-black text-white text-3xl uppercase tracking-tighter italic leading-none">{clientes.find(c => c.id === selectedTrabajo.clienteId)?.nombre}</h3>
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-liquid-gold text-[10px] font-black tracking-[0.3em] uppercase italic">Socio Comercial</span>
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-glow animate-pulse"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-8 p-10 rounded-[2.5rem] bg-white/[0.01] border border-white/5 backdrop-blur-md">
-                                    <div className="space-y-6">
-                                        <div>
-                                            <p className="text-[10px] text-slate-700 uppercase font-black tracking-[0.3em] mb-2 italic">Especificación Técnica</p>
-                                            <p className="font-black text-white text-xl uppercase italic leading-tight tracking-tight">{selectedTrabajo.subtipo}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-slate-700 uppercase font-black tracking-[0.3em] mb-2 italic">Volumen de Orden</p>
-                                            <p className="font-black text-white text-xl italic tracking-tight">{selectedTrabajo.cantidad} <span className="text-slate-600">UNIDADES</span></p>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-6 text-right">
-                                        <div>
-                                            <p className="text-[10px] text-slate-700 uppercase font-black tracking-[0.3em] mb-2 italic">Inversión Total</p>
-                                            <p className="font-black text-liquid-gold text-4xl italic tracking-tighter">{formatCurrency(selectedTrabajo.total)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-slate-700 uppercase font-black tracking-[0.3em] mb-2 italic">Estado de Cartera</p>
-                                            <p className={`font-black text-[12px] tracking-[0.2em] uppercase italic px-4 py-1.5 rounded-xl inline-block ${selectedTrabajo.saldo > 0 ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-                                                {selectedTrabajo.saldo > 0 ? `Pendiente: ${formatCurrency(selectedTrabajo.saldo)}` : 'LIQUIDADO'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-slate-700 uppercase tracking-[0.4em] flex items-center gap-4 ml-1 italic">
-                                        <InfoIcon className="w-4 h-4 text-liquid-gold"/> Notas de Taller
-                                    </label>
-                                    <div className="bg-black/40 border border-white/5 rounded-[2rem] p-8 text-[14px] font-medium text-slate-400 leading-relaxed italic min-h-[120px] shadow-inner">
-                                        {selectedTrabajo.observaciones || "Sin especificaciones adicionales registradas para este proyecto."}
-                                    </div>
-                                </div>
+                            <div>
+                                <h3 className="font-black text-slate-900 dark:text-white text-2xl uppercase tracking-tighter italic leading-none">
+                                    {clientes.find(c => c.id === selectedTrabajo.clienteId)?.nombre}
+                                </h3>
+                                <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic mt-1">Socio Comercial Activo</p>
                             </div>
+                        </div>
 
-                            <div className="p-10 bg-white/[0.01] border-t border-white/5">
-                                <button 
-                                    onClick={() => setSelectedTrabajo(null)} 
-                                    className="w-full bg-white text-black py-6 rounded-[1.5rem] font-black uppercase text-[11px] tracking-[0.4em] hover:bg-liquid-gold transition-all active:scale-[0.98] italic shadow-2xl"
-                                >
-                                    Cerrar Expediente
-                                </button>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl">
+                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1 italic">Servicio</p>
+                                <p className="font-black text-slate-900 dark:text-white text-sm uppercase italic truncate">{selectedTrabajo.subtipo}</p>
                             </div>
-                        </motion.div>
+                            <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl">
+                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1 italic">Cantidad</p>
+                                <p className="font-black text-slate-900 dark:text-white text-sm italic">{selectedTrabajo.cantidad} UNID.</p>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl space-y-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Inversión Total</span>
+                                <span className="text-xl font-black text-slate-900 dark:text-white italic">{formatCurrency(selectedTrabajo.total)}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-white/5">
+                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Saldo Pendiente</span>
+                                <span className={`text-xl font-black italic ${selectedTrabajo.saldo > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                    {formatCurrency(selectedTrabajo.saldo)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] ml-1 italic flex items-center gap-2">
+                                <InfoIcon className="w-3 h-3 text-liquid-gold"/> Especificaciones de Taller
+                            </label>
+                            <div className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-3xl p-6 text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic min-h-[100px]">
+                                {selectedTrabajo.observaciones || "Sin especificaciones técnicas adicionales."}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                             <button 
+                                onClick={() => setSelectedTrabajo(null)} 
+                                className="bg-slate-100 dark:bg-white/5 text-slate-500 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic"
+                            >
+                                Regresar
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    // Navegar a edición o algo similar
+                                    setSelectedTrabajo(null);
+                                }} 
+                                className="bg-liquid-gold text-brand-dark py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic shadow-lg"
+                            >
+                                Modificar
+                            </button>
+                        </div>
                     </div>
                 )}
-            </AnimatePresence>
+            </BottomSheet>
 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
