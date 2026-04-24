@@ -283,6 +283,7 @@ export const BuildingStorefrontIcon = Store;
 // ─────────────────────────────────────────────────────────────────────────────
 // MISC / LEGACY (mantener compatibilidad con el resto del proyecto)
 // ─────────────────────────────────────────────────────────────────────────────
+export const SettingsIcon        = Settings;
 export const Cog8ToothIcon        = Settings;
 export const HeartIconSolid       = Heart;
 export const FileDigitIcon        = FileDigit;
