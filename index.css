@@ -218,8 +218,7 @@
   .shadow-gold-glow-soft {
     box-shadow: 0 0 30px -10px rgba(212, 175, 55, 0.15);
   }
-    @apply absolute inset-x-0 top-0 h-[1px] bg-white opacity-10;
-  }
+
 
   .sticky-note {
     @apply bg-[#f2e1a6] text-[#544519] border border-[#d0c5af]/30 rounded-md shadow-paper-stack p-4 font-sans font-medium text-sm;
