@@ -31,22 +31,22 @@ const NotaDeVentaPage: React.FC = () => {
     }, [trabajoId, trabajos, clientes, dataLoading]);
 
     // Mapear config de Supabase al formato esperado por la plantilla
-    const config = cloudConfig ? {
-        emisorNombreComercial: cloudConfig.imprentaNombre || 'IMPRENTA CORDOVA',
-        emisorRazonSocial: cloudConfig.emisorRazonSocial || 'IMPRENTA CORDOVA',
-        emisorRuc: cloudConfig.emisorRuc || '1104212564001',
-        emisorEstablecimiento: cloudConfig.emisorEstablecimiento || '001',
-        emisorPuntoEmision: cloudConfig.emisorPuntoEmision || '001',
+    const config = {
+        emisorNombreComercial: cloudConfig?.imprentaNombre || 'IMPRENTA CORDOVA',
+        emisorRazonSocial: cloudConfig?.emisorRazonSocial || 'IMPRENTA CORDOVA',
+        emisorRuc: cloudConfig?.emisorRuc || '1104212564001',
+        emisorEstablecimiento: cloudConfig?.emisorEstablecimiento || '001',
+        emisorPuntoEmision: cloudConfig?.emisorPuntoEmision || '001',
         emisorDireccionMatriz: 'Colón y Sucre, Pasaje, El Oro',
-        emisorTelefono: cloudConfig.imprentaTelefono || '',
+        emisorTelefono: cloudConfig?.imprentaTelefono || '',
         emisorEmail: '',
-        autorizacionSRI: cloudConfig.imprentaAutorizacion || '',
+        autorizacionSRI: cloudConfig?.imprentaAutorizacion || '',
         emisorTipoContribuyente: 'CONTRIBUYENTE RIMPE',
-        imprentaNombre: cloudConfig.imprentaNombre || 'IMPRENTA CORDOVA',
-        imprentaRuc: cloudConfig.imprentaRuc || '',
-        imprentaAutorizacion: cloudConfig.imprentaAutorizacion || '',
+        imprentaNombre: cloudConfig?.imprentaNombre || 'IMPRENTA CORDOVA',
+        imprentaRuc: cloudConfig?.imprentaRuc || '',
+        imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '',
         fechaCaducidad: '31/12/2026',
-    } : null;
+    };
 
     const generatePDF = async () => {
         const element = document.getElementById('nota-venta-canvas');
@@ -92,9 +92,25 @@ const NotaDeVentaPage: React.FC = () => {
         }
     };
 
-    if (dataLoading || !trabajo || !cliente || !config) return (
+    if (dataLoading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-900">
             <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
+        </div>
+    );
+
+    if (!trabajo || !cliente) return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 gap-6 p-8 text-center">
+            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <InfoIcon className="w-10 h-10 text-liquid-gold opacity-50" />
+            </div>
+            <h2 className="text-white font-black text-2xl uppercase tracking-tighter italic">Documento No Encontrado</h2>
+            <p className="text-slate-400 text-sm max-w-xs italic">La orden solicitada no existe o ha sido eliminada del sistema.</p>
+            <button 
+                onClick={() => navigate('/trabajos')} 
+                className="bg-liquid-gold text-brand-dark px-8 py-3 rounded-2xl font-black uppercase text-[11px] tracking-widest italic shadow-lg"
+            >
+                Volver a Trabajos
+            </button>
         </div>
     );
 

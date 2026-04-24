@@ -6,7 +6,7 @@ import { KANBAN_COLUMNS } from '../constants';
 import { 
     CloseIcon, ClockIcon, SearchIcon, LayersIcon, 
     CheckBadgeIcon, ActivityIcon, CpuIcon,
-    BoltIcon, HistoryIcon, BoxIcon, CameraIcon, InfoIcon
+    BoltIcon, HistoryIcon, BoxIcon, CameraIcon, InfoIcon, ArrowRightIcon
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';
@@ -251,15 +251,20 @@ const KDSPage: React.FC = () => {
         return cols;
     }, [filteredTrabajos]);
 
-    const handleDrop = async (e: React.DragEvent, newStatus: TrabajoEstado) => {
+    const handleStatusChange = React.useCallback(async (id: string, newStatus: TrabajoEstado) => {
+        if (!currentUser) return;
+        await updateTrabajoStatus(id, newStatus, currentUser.nombre);
+        logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} cambiada a: ${newStatus}`, 'Producción');
+    }, [updateTrabajoStatus, currentUser]);
+
+    const handleDrop = React.useCallback(async (e: React.DragEvent, newStatus: TrabajoEstado) => {
         e.preventDefault();
         setDraggedOverColumn(null);
         const id = e.dataTransfer.getData("trabajoId");
         if (!id) return;
         
-        await updateTrabajoStatus(id, newStatus, currentUser.nombre);
-        logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} movida a: ${newStatus}`, 'Producción');
-    };
+        await handleStatusChange(id, newStatus);
+    }, [handleStatusChange]);
 
     const handlePhotoSave = async (data: string) => {
         if (!cameraTarget) return;
@@ -320,7 +325,7 @@ const KDSPage: React.FC = () => {
 
                 {/* Mobile Tab Selector */}
                 <div className="lg:hidden mt-8 flex gap-2 bg-white/5 p-1.5 rounded-2xl overflow-x-auto no-scrollbar border border-white/5">
-                    {Object.keys(KANBAN_COLUMNS).map((status) => (
+                    {KANBAN_COLUMNS.map((status) => (
                         <button
                             key={status}
                             onClick={() => setActiveMobileTab(status as TrabajoEstado)}
@@ -344,7 +349,7 @@ const KDSPage: React.FC = () => {
             <div className="flex-grow overflow-x-auto lg:overflow-x-auto overflow-y-hidden p-4 lg:p-10 custom-scrollbar-h relative z-10">
                 <div className="flex h-full gap-6 lg:min-w-[1400px] w-full">
                     <AnimatePresence mode="popLayout">
-                        {Object.keys(columns).map((status, index) => {
+                        {KANBAN_COLUMNS.filter(s => s !== TrabajoEstado.ENTREGADO).map((status, index) => {
                             const colStatus = status as TrabajoEstado;
                             
                             // On mobile, only show the active tab
