@@ -45,8 +45,8 @@ async function decodeAudioData(data: Uint8Array, ctx: AudioContext, sampleRate: 
 const statusSteps = [
     { label: 'Recibido',  value: TrabajoEstado.PENDIENTE,  icon: ClockIcon         },
     { label: 'Diseño',    value: TrabajoEstado.EN_DISENO,  icon: PaletteIcon       },
-    { label: 'En Taller', value: TrabajoEstado.PROCESO,    icon: PrinterIcon       },
-    { label: 'Terminado', value: TrabajoEstado.VITRINA,    icon: CheckCircleIcon   },
+    { label: 'Producción', value: TrabajoEstado.PROCESO,   icon: PrinterIcon       },
+    { label: 'Listo para Retiro', value: TrabajoEstado.VITRINA, icon: CheckCircleIcon },
     { label: 'Entregado', value: TrabajoEstado.ENTREGADO,  icon: BoxIcon           },
 ];
 
@@ -74,25 +74,23 @@ const TrackingPage: React.FC = () => {
                 setSearching(true);
                 setError('');
                 try {
-                    let query = supabase.from('trabajos').select('*').order('fecha_entrada', { ascending: false });
                     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(q);
+                    
                     if (isUUID) {
-                        query = query.eq('id', q);
-                    } else if (/^\d+$/.test(q)) {
-                        query = query.eq('orden', parseInt(q));
+                        const { data, error } = await supabase.from('trabajos').select('*').eq('id', q);
+                        if (!error && data && data.length > 0) {
+                            setFoundJobs(data as Trabajo[]);
+                            setSearchQuery("");
+                        } else {
+                            setError('No se encontró el pedido solicitado.');
+                        }
                     } else {
-                        query = query.eq('id', 'invalid-query'); // No results if it's neither
-                    }
-                    const { data: matches, error: sbError } = await query;
-                    if (sbError) throw sbError;
-                    if (matches && matches.length > 0) {
-                        setFoundJobs(matches as any);
-                    } else {
-                        setError('Orden no encontrada. Verifique el número de comprobante.');
+                        // For security, do not auto-search by order number from URL.
+                        // Clients must use the search bar with their ID/RUC.
+                        console.warn("Rastreo automático solo vía ID único.");
                     }
                 } catch(e) {
                     console.error(e);
-                    setError('Error al rastrear. Intente nuevamente.');
                 } finally {
                     setSearching(false);
                 }
@@ -257,14 +255,14 @@ const TrackingPage: React.FC = () => {
                 >
                     <div className="inline-flex items-center gap-4 px-6 py-2 bg-white/[0.03] border border-white/10 rounded-full mb-10 shadow-inner">
                         <GlobeAltIcon className="w-5 h-5 text-gold-bright animate-spin-slow" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Cordova Vision Link Active</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Sistema de Rastreo en Tiempo Real</span>
                     </div>
-                    <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[11rem] font-black text-white mb-4 sm:mb-8 uppercase tracking-tighter leading-[0.8] italic group">
-                        LIVE <br/>
-                        <span className="text-white/20 not-italic font-editorial font-normal">TRACKING</span>
+                    <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[11rem] font-black text-white mb-4 sm:mb-8 uppercase tracking-tighter leading-[0.8] italic group">
+                        MI <br/>
+                        <span className="text-white/20 not-italic font-editorial font-normal">PEDIDO</span>
                     </h1>
-                    <p className="text-slate-400 text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed font-medium tracking-tight">
-                        Interfaz síncrona de monitoreo industrial. Ingrese su firma de pedido para inicializar el protocolo de rastreo.
+                    <p className="text-slate-400 text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed font-medium tracking-tight">
+                        Consulte el estado exacto de su trabajo. Ingrese su cédula para visualizar sus órdenes activas.
                     </p>
                 </motion.div>
 
@@ -361,7 +359,7 @@ const TrackingPage: React.FC = () => {
                                                 target="_blank" 
                                                 className="flex items-center gap-5 px-10 py-6 bg-white/5 border border-white/10 text-white rounded-3xl font-black text-[11px] uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-700 shadow-luxury italic hover:scale-105 active:scale-95"
                                             >
-                                                <ArrowDownTrayIcon className="w-5 h-5"/> Export Certificate
+                                                <ArrowDownTrayIcon className="w-5 h-5"/> Descargar Comprobante
                                             </a>
                                         )}
                                         <div className={`px-12 py-6 rounded-3xl border text-[12px] font-black uppercase tracking-[0.4em] flex items-center gap-4 italic transition-all duration-1000 ${
@@ -370,7 +368,7 @@ const TrackingPage: React.FC = () => {
                                             'bg-liquid-gold/10 border-liquid-gold/30 text-liquid-gold'
                                         }`}>
                                             {isReady && <SparklesIcon className="w-5 h-5 animate-pulse" />}
-                                            {isReady ? 'Ready for Dispatch' : job.estado.toUpperCase()}
+                                            {isReady ? '¡LISTO PARA RETIRAR!' : job.estado.toUpperCase()}
                                         </div>
                                     </div>
                                 </div>
@@ -402,10 +400,10 @@ const TrackingPage: React.FC = () => {
                                                         <div className="p-3 bg-liquid-gold/20 rounded-2xl border border-liquid-gold/30">
                                                             <CheckBadgeIcon className="w-8 h-8 text-liquid-gold shadow-gold-glow-sm" />
                                                         </div>
-                                                        <h3 className="text-[13px] font-black uppercase tracking-[0.5em] text-white italic">Neural Proofing Protocol</h3>
+                                                        <h3 className="text-[13px] font-black uppercase tracking-[0.5em] text-white italic">AUTORIZACIÓN DE DISEÑO</h3>
                                                     </div>
                                                     <p className="text-lg text-slate-500 font-medium leading-relaxed italic">
-                                                        Hemos procesado el prototipo digital de su orden. El sistema requiere autorización del nodo titular para proceder a la materialización industrial.
+                                                        Por favor revise su diseño. Si todo está correcto, presione el botón para iniciar la producción.
                                                     </p>
                                                 </div>
                                                 {!job.arte_aprobado ? (
@@ -415,11 +413,11 @@ const TrackingPage: React.FC = () => {
                                                     >
                                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/auth:translate-x-full transition-transform duration-[1.5s]"></div>
                                                         <ShieldCheckIcon className="w-7 h-7 group-hover/auth:scale-125 transition-transform duration-700" />
-                                                        AUTHORIZE PRODUCTION
+                                                        APROBAR PARA IMPRESIÓN
                                                     </button>
                                                 ) : (
                                                     <div className="p-8 bg-emerald-500/5 border border-emerald-500/20 text-emerald-400 rounded-[2.5rem] flex items-center justify-center gap-6 font-black text-[12px] uppercase tracking-[0.6em] italic shadow-glow-emerald">
-                                                        <CheckCircleIcon className="w-7 h-7"/> PROTOCOL AUTHORIZED BY CLIENT
+                                                        <CheckCircleIcon className="w-7 h-7"/> DISEÑO APROBADO ✅
                                                     </div>
                                                 )}
                                             </div>
@@ -432,10 +430,10 @@ const TrackingPage: React.FC = () => {
                                     <div className="flex flex-col md:flex-row items-center justify-between mb-16 sm:mb-24 gap-6">
                                         <div className="flex items-center gap-4 sm:gap-6">
                                             <ActivityIcon className="w-6 h-6 sm:w-8 sm:h-8 text-liquid-gold/40 animate-pulse" />
-                                            <p className="text-[10px] sm:text-[12px] font-black text-slate-600 uppercase tracking-[0.8em] italic text-center sm:text-left">Flow Trajectory Matrix</p>
+                                            <p className="text-[10px] sm:text-[12px] font-black text-slate-600 uppercase tracking-[0.8em] italic text-center sm:text-left">Estado del Pedido</p>
                                         </div>
                                         <span className="text-[9px] sm:text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] italic bg-white/5 px-6 py-2 rounded-full border border-white/10 outline-gold-glow-soft">
-                                            {Math.round((currentStepIdx / (statusSteps.length - 1)) * 100)}% SYNCHRONIZED
+                                            {Math.round((currentStepIdx / (statusSteps.length - 1)) * 100)}% COMPLETADO
                                         </span>
                                     </div>
                                     
@@ -493,15 +491,15 @@ const TrackingPage: React.FC = () => {
                                         <div className="lg:col-span-7 space-y-12">
                                             <div className="flex items-center gap-6">
                                                 <div className="w-12 h-[2px] bg-white/10"></div>
-                                                <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic leading-none">Fiscal Intelligence Unit</p>
+                                                <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic leading-none">Detalle de Pago</p>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
                                                 <div className="p-6 sm:p-10 bg-white/[0.02] border border-white/5 rounded-[2rem] sm:rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-gold-bright transition-colors">Gross Valuation</span>
+                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-gold-bright transition-colors">Valor Total</span>
                                                     <span className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter truncate font-epilogue">{formatCurrency(job.total)}</span>
                                                 </div>
                                                 <div className="p-6 sm:p-10 bg-white/[0.02] border border-white/5 rounded-[2rem] sm:rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-emerald-500 transition-colors">Flux Injected</span>
+                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-emerald-500 transition-colors">Abono Realizado</span>
                                                     <span className="text-3xl sm:text-5xl font-black text-emerald-500 italic tracking-tighter truncate font-epilogue">{formatCurrency(job.abono)}</span>
                                                 </div>
                                             </div>
@@ -513,7 +511,7 @@ const TrackingPage: React.FC = () => {
                                                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10">
                                                     <div className="space-y-2 sm:space-y-4 text-center md:text-left">
                                                         <span className={`text-[10px] sm:text-[12px] font-black uppercase tracking-[0.8em] block mb-1 sm:mb-2 italic ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500 animate-pulse'}`}>
-                                                            {job.saldo > 0 ? 'Residual Credit' : 'Balance Finalized'}
+                                                            {job.saldo > 0 ? 'Saldo Pendiente' : 'PAGO COMPLETADO ✅'}
                                                         </span>
                                                         <span className={`text-5xl sm:text-7xl lg:text-8xl font-black italic tracking-tighter text-glow truncate font-epilogue ${job.saldo > 0 ? 'text-white' : 'text-emerald-400'}`}>
                                                             {formatCurrency(job.saldo)}

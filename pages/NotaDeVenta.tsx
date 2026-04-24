@@ -52,31 +52,41 @@ const NotaDeVentaPage: React.FC = () => {
         const element = document.getElementById('nota-venta-canvas');
         if (!element || !trabajo || !cliente) return;
 
+        if (typeof html2pdf === 'undefined') {
+            alert("El motor de PDF aún se está cargando. Por favor, espere un segundo e intente de nuevo.");
+            return;
+        }
+
         setIsGenerating(true);
         
-        // Configuración exacta para A5 sin bordes blancos extraños
+        // Configuración optimizada para rendimiento y calidad (Escala 2 es suficiente para nitidez)
         const opt = {
-            margin: 0, // Márgenes controlados por CSS padding
+            margin: 0,
             filename: `NV-${String(trabajo.orden).padStart(6,'0')}-${cliente.nombre.split(' ')[0]}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
-                scale: 3, // Alta resolución (3x) para que no se vea borroso
+                scale: 2, // Reducido de 3 a 2 para mayor velocidad en móviles sin perder nitidez
                 useCORS: true, 
                 letterRendering: true,
-                scrollY: 0
+                scrollY: 0,
+                logging: false
             },
             jsPDF: { 
                 unit: 'mm', 
                 format: 'a5', 
-                orientation: 'portrait' 
+                orientation: 'portrait',
+                compress: true
             }
         };
 
         try {
+            // Pequeño delay para asegurar que el DOM esté estable
+            await new Promise(resolve => setTimeout(resolve, 100));
             await html2pdf().set(opt).from(element).save();
         } catch (error) {
             console.error("Error generando PDF", error);
-            alert("Hubo un error al generar el PDF. Intente nuevamente.");
+            alert("Hubo un error al generar el PDF. El sistema intentará abrir la ventana de impresión del navegador.");
+            window.print();
         } finally {
             setIsGenerating(false);
         }

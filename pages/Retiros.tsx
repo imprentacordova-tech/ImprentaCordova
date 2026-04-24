@@ -14,22 +14,34 @@ const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const navigate = useNavigate();
     const { trabajos, clientes, loading, registerRetiro } = useData();
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const filtered = useMemo(() => {
         const lower = searchTerm.toLowerCase();
-        return trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).filter(t => {
-            const c = clientes.find(cl => cl.id === t.clienteId);
-            return searchTerm === '' || String(t.orden).includes(lower) || c?.nombre.toLowerCase().includes(lower);
-        });
+        // Optimización: Crear un mapa de búsqueda para acceso O(1)
+        const clientMap = new Map(clientes.map(c => [c.id, c.nombre.toLowerCase()]));
+        
+        return trabajos
+            .filter(t => t.estado === TrabajoEstado.VITRINA)
+            .filter(t => {
+                const clientName = clientMap.get(t.clienteId) || '';
+                return searchTerm === '' || 
+                       String(t.orden).includes(lower) || 
+                       clientName.includes(lower);
+            });
     }, [trabajos, clientes, searchTerm]);
-
-    const handleConfirmRetiro = async (pagoFinal: number) => {
-        if (!selectedTrabajo) return;
-        const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
-        // Automatización: Redirigir inmediatamente al comprobante PDF
-        navigate(`/nota-de-venta/${updated.id}`);
+        if (!selectedTrabajo || isProcessing) return;
+        setIsProcessing(true);
+        try {
+            const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
+            // Automatización: Redirigir inmediatamente al comprobante PDF
+            navigate(`/nota-de-venta/${updated.id}`);
+        } catch (error) {
+            console.error("Error al registrar retiro:", error);
+            alert("Error al procesar el retiro. Intente de nuevo.");
+            setIsProcessing(false);
+        }
     };
 
     const notifyClient = (trabajo: Trabajo) => {
