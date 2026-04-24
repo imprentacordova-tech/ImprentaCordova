@@ -20,7 +20,7 @@ import {
     GalleryHorizontal, Images, FileImage, Building2, Globe2, Shield,
     TruckIcon as Truck, Package2, Boxes, ScanLine, Rocket, Cpu, Flag,
     CloudUpload, Eraser, User, Database, Sliders, Layers as LayersLucide,
-    TrendingUp as TrendingUpLucide, History, Server, Fingerprint
+    TrendingUp as TrendingUpLucide, History, Server, Fingerprint, Command
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -233,6 +233,7 @@ export const MinimizeIcon     = Minimize2;
 export const CircleStackIcon  = Database;
 export const AdjustmentsHorizontalIcon = Sliders;
 export const CubeTransparentIcon = Box;
+export const CommandIcon          = Command;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LUCIDE ALIASES — Taller / Producción
