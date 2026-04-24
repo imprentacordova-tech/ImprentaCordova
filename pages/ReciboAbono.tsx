@@ -36,7 +36,7 @@ const ReciboAbonoPage: React.FC = () => {
 
     const handleWhatsAppShare = () => {
         if (!trabajo || !cliente) return;
-        const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.orden}`;
+        const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
         const message = `🧾 *RECIBO DE CAJA - IMPRENTA CÓRDOVA*\n\nEstimado ${cliente.nombre},\nSu orden *#${trabajo.orden}* ha sido ingresada exitosamente.\n\n📝 *Detalle:* ${trabajo.subtipo}\n💰 *Total:* ${formatCurrency(trabajo.total)}\n✅ *Abono:* ${formatCurrency(trabajo.abono)}\n📉 *Saldo:* ${formatCurrency(trabajo.saldo)}\n\n🔍 *Rastree su pedido aquí:* ${trackingUrl}\n\nGracias por su preferencia.`;
         
         // Priorizar celular del cliente, sino usar el del sistema para demo
@@ -57,7 +57,7 @@ const ReciboAbonoPage: React.FC = () => {
     }
     
     const emissionDate = new Date(trabajo.fechaEntrada);
-    const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.orden}`;
+    const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
     const qrSource = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(trackingUrl)}`;
 
 

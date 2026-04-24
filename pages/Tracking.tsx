@@ -74,11 +74,16 @@ const TrackingPage: React.FC = () => {
                 setSearching(true);
                 setError('');
                 try {
-                    const { data: matches, error: sbError } = await supabase
-                        .from('trabajos')
-                        .select('*')
-                        .eq('orden', parseInt(q))
-                        .order('fecha_entrada', { ascending: false });
+                    let query = supabase.from('trabajos').select('*').order('fecha_entrada', { ascending: false });
+                    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(q);
+                    if (isUUID) {
+                        query = query.eq('id', q);
+                    } else if (/^\d+$/.test(q)) {
+                        query = query.eq('orden', parseInt(q));
+                    } else {
+                        query = query.eq('id', 'invalid-query'); // No results if it's neither
+                    }
+                    const { data: matches, error: sbError } = await query;
                     if (sbError) throw sbError;
                     if (matches && matches.length > 0) {
                         setFoundJobs(matches as any);
@@ -104,10 +109,10 @@ const TrackingPage: React.FC = () => {
         setFoundJobs([]);
         
         try {
-            const isOrderNumber = /^\d+$/.test(cleanQuery);
-            if (isOrderNumber) {
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
+            if (isUUID) {
                 const { data: orderMatches } = await supabase
-                    .from('trabajos').select('*').eq('orden', parseInt(cleanQuery));
+                    .from('trabajos').select('*').eq('id', cleanQuery);
                 if (orderMatches && orderMatches.length > 0) {
                     setFoundJobs(orderMatches as any);
                     setSearching(false);
@@ -115,22 +120,26 @@ const TrackingPage: React.FC = () => {
                 }
             }
 
-            const { data: matchedClients } = await supabase
-                .from('clientes').select('id')
-                .or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${cleanQuery},ruc.eq.${cleanQuery}`);
-            
-            if (matchedClients && matchedClients.length > 0) {
-                const clientIds = matchedClients.map(c => c.id);
-                const { data: clientJobs } = await supabase
-                    .from('trabajos').select('*')
-                    .in('cliente_id', clientIds).order('orden', { ascending: false });
-                if (clientJobs && clientJobs.length > 0) {
-                    setFoundJobs(clientJobs as any);
+            // Only allow CEDULA/RUC searches, explicitly avoiding order numbers.
+            // If they type a number, we treat it as CEDULA/RUC.
+            if (!isUUID) {
+                const { data: matchedClients } = await supabase
+                    .from('clientes').select('id')
+                    .or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${cleanQuery},ruc.eq.${cleanQuery}`);
+                
+                if (matchedClients && matchedClients.length > 0) {
+                    const clientIds = matchedClients.map(c => c.id);
+                    const { data: clientJobs } = await supabase
+                        .from('trabajos').select('*')
+                        .in('cliente_id', clientIds).order('orden', { ascending: false });
+                    if (clientJobs && clientJobs.length > 0) {
+                        setFoundJobs(clientJobs as any);
+                    } else {
+                        setError('El cliente no tiene pedidos registrados.');
+                    }
                 } else {
-                    setError('El cliente no tiene pedidos registrados.');
+                    setError('No encontramos pedidos ni clientes con ese dato.');
                 }
-            } else {
-                setError('No encontramos pedidos ni clientes con ese dato.');
             }
         } catch (err) {
             console.error(err);
@@ -250,7 +259,7 @@ const TrackingPage: React.FC = () => {
                         <GlobeAltIcon className="w-5 h-5 text-gold-bright animate-spin-slow" />
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Cordova Vision Link Active</span>
                     </div>
-                    <h1 className="text-6xl md:text-8xl lg:text-[11rem] font-black text-white mb-8 uppercase tracking-tighter leading-[0.8] italic group">
+                    <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[11rem] font-black text-white mb-4 sm:mb-8 uppercase tracking-tighter leading-[0.8] italic group">
                         LIVE <br/>
                         <span className="text-white/20 not-italic font-editorial font-normal">TRACKING</span>
                     </h1>
@@ -271,21 +280,21 @@ const TrackingPage: React.FC = () => {
                         <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/40 via-transparent to-liquid-gold/10 rounded-[3rem] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-1000 blur-xl pointer-events-none" />
                         
                         <div className="relative flex flex-col md:flex-row items-stretch bg-[#0a0a0a]/80 backdrop-blur-3xl border border-white/10 rounded-[3rem] overflow-hidden shadow-luxury transition-all duration-700">
-                            <div className="pl-10 pr-6 flex items-center shrink-0">
-                                <SearchIcon className="w-7 h-7 text-slate-700 group-focus-within:text-glow-gold transition-colors" />
+                            <div className="pl-6 md:pl-10 pr-4 md:pr-6 flex items-center shrink-0">
+                                <SearchIcon className="w-6 h-6 md:w-7 md:h-7 text-slate-700 group-focus-within:text-glow-gold transition-colors" />
                             </div>
                             <input 
                                 type="text" 
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="N° DE ORDEN, CÉDULA O RUC..." 
-                                className="flex-1 py-10 pr-10 bg-transparent text-white text-2xl font-black placeholder:text-slate-800 outline-none uppercase tracking-widest italic"
+                                placeholder="CÉDULA O RUC..." 
+                                className="flex-1 py-6 md:py-10 pr-6 md:pr-10 bg-transparent text-white text-lg sm:text-xl md:text-2xl font-black placeholder:text-slate-600 outline-none uppercase tracking-widest italic"
                             />
-                            <div className="p-4">
+                            <div className="p-2 md:p-4 w-full md:w-auto">
                                 <button 
                                     type="submit"
                                     disabled={searching}
-                                    className="w-full md:w-auto h-full px-16 py-8 bg-gold-bright text-brand-dark rounded-[2.2rem] font-black text-xs tracking-[0.4em] uppercase hover:bg-white hover:shadow-gold-glow-strong transition-all duration-700 flex items-center justify-center gap-4 shadow-luxury active:scale-95 disabled:opacity-40"
+                                    className="w-full md:w-auto h-full px-8 py-5 md:px-16 md:py-8 bg-gold-bright text-brand-dark rounded-[2.2rem] font-black text-xs tracking-[0.4em] uppercase hover:bg-white hover:shadow-gold-glow-strong transition-all duration-700 flex items-center justify-center gap-4 shadow-luxury active:scale-95 disabled:opacity-40"
                                 >
                                     {searching ? <Loader2Icon className="w-6 h-6 animate-spin"/> : <>Sincronizar</>}
                                 </button>
@@ -328,7 +337,7 @@ const TrackingPage: React.FC = () => {
                                 <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
 
                                 {/* ── CABECERA H-FI ── */}
-                                <div className="p-12 lg:p-20 border-b border-white/5 bg-black/40 flex flex-col xl:flex-row justify-between items-center gap-14 relative z-10">
+                                <div className="p-6 sm:p-12 lg:p-20 border-b border-white/5 bg-black/40 flex flex-col xl:flex-row justify-between items-center gap-8 xl:gap-14 relative z-10">
                                     <div className="flex items-center gap-10">
                                         <div className="w-24 h-24 bg-white/[0.03] border-2 border-white/5 rounded-[2.5rem] flex items-center justify-center shadow-inner group-hover:border-gold-bright/40 transition-all duration-1000">
                                             <CpuIcon className="w-12 h-12 text-gold-bright/30 group-hover:text-gold-bright group-hover:animate-pulse transition-all duration-700"/>
@@ -339,7 +348,7 @@ const TrackingPage: React.FC = () => {
                                                 <div className="w-1.5 h-1.5 bg-gold-bright rounded-full shadow-gold-glow-sm"></div>
                                                 <span className="text-[10px] font-black text-gold-bright/60 uppercase tracking-[0.5em] italic">{job.tipo.toUpperCase()}</span>
                                             </div>
-                                            <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter leading-none italic uppercase">
+                                            <h2 className="text-4xl sm:text-6xl md:text-7xl font-black text-white tracking-tighter leading-none italic uppercase">
                                                 #{String(job.orden).padStart(5, '0')}
                                             </h2>
                                         </div>
@@ -368,7 +377,7 @@ const TrackingPage: React.FC = () => {
 
                                 {/* ── VISUAL PROOFING ── */}
                                 {isDesigning && job.fotoOriginalUrl && (
-                                    <div className="p-12 lg:p-20 bg-liquid-gold/[0.01] border-b border-white/5 relative overflow-hidden">
+                                    <div className="p-6 sm:p-12 lg:p-20 bg-liquid-gold/[0.01] border-b border-white/5 relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-liquid-gold/[0.02] blur-[150px] -mr-40 -mt-40 pointer-events-none" />
                                         
                                         <div className="flex flex-col lg:flex-row gap-20 items-center relative z-10">
@@ -419,20 +428,21 @@ const TrackingPage: React.FC = () => {
                                 )}
 
                                 {/* ── TRAJECTORY MATRIX ── */}
-                                <div className="p-12 lg:p-24 relative overflow-hidden">
-                                    <div className="flex flex-col md:flex-row items-center justify-between mb-24 gap-6">
-                                        <div className="flex items-center gap-6">
-                                            <ActivityIcon className="w-8 h-8 text-liquid-gold/40 animate-pulse" />
-                                            <p className="text-[12px] font-black text-slate-600 uppercase tracking-[0.8em] italic">Flow Trajectory Matrix</p>
+                                <div className="p-6 sm:p-12 lg:p-24 relative overflow-hidden">
+                                    <div className="flex flex-col md:flex-row items-center justify-between mb-16 sm:mb-24 gap-6">
+                                        <div className="flex items-center gap-4 sm:gap-6">
+                                            <ActivityIcon className="w-6 h-6 sm:w-8 sm:h-8 text-liquid-gold/40 animate-pulse" />
+                                            <p className="text-[10px] sm:text-[12px] font-black text-slate-600 uppercase tracking-[0.8em] italic text-center sm:text-left">Flow Trajectory Matrix</p>
                                         </div>
-                                        <span className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] italic bg-white/5 px-6 py-2 rounded-full border border-white/10 outline-gold-glow-soft">
+                                        <span className="text-[9px] sm:text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] italic bg-white/5 px-6 py-2 rounded-full border border-white/10 outline-gold-glow-soft">
                                             {Math.round((currentStepIdx / (statusSteps.length - 1)) * 100)}% SYNCHRONIZED
                                         </span>
                                     </div>
                                     
-                                    <div className="relative mb-24 px-10">
-                                        {/* Cinematic Track */}
-                                        <div className="absolute top-[40px] left-20 right-20 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                                    <div className="relative mb-16 sm:mb-24 px-4 sm:px-10 overflow-x-auto pb-6 custom-scrollbar">
+                                        <div className="min-w-[500px] relative">
+                                            {/* Cinematic Track */}
+                                            <div className="absolute top-[30px] sm:top-[40px] left-10 sm:left-20 right-10 sm:right-20 h-[2px] bg-white/5 rounded-full overflow-hidden">
                                             <motion.div 
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(currentStepIdx / (statusSteps.length - 1)) * 100}%` }}
@@ -476,35 +486,36 @@ const TrackingPage: React.FC = () => {
                                             })}
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* ── FINANCIAL FLUX ── */}
-                                    <div className="grid lg:grid-cols-12 gap-16 pt-20 border-t border-white/5 items-stretch">
+                                {/* ── FINANCIAL FLUX ── */}
+                                    <div className="grid lg:grid-cols-12 gap-10 sm:gap-16 pt-12 sm:pt-20 border-t border-white/5 items-stretch">
                                         <div className="lg:col-span-7 space-y-12">
                                             <div className="flex items-center gap-6">
                                                 <div className="w-12 h-[2px] bg-white/10"></div>
                                                 <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic leading-none">Fiscal Intelligence Unit</p>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-                                                <div className="p-10 bg-white/[0.02] border border-white/5 rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-4 italic group-hover/val:text-gold-bright transition-colors">Gross Valuation</span>
-                                                    <span className="text-5xl font-black text-white italic tracking-tighter truncate font-epilogue">{formatCurrency(job.total)}</span>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
+                                                <div className="p-6 sm:p-10 bg-white/[0.02] border border-white/5 rounded-[2rem] sm:rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
+                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-gold-bright transition-colors">Gross Valuation</span>
+                                                    <span className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter truncate font-epilogue">{formatCurrency(job.total)}</span>
                                                 </div>
-                                                <div className="p-10 bg-white/[0.02] border border-white/5 rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
-                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-4 italic group-hover/val:text-emerald-500 transition-colors">Flux Injected</span>
-                                                    <span className="text-5xl font-black text-emerald-500 italic tracking-tighter truncate font-epilogue">{formatCurrency(job.abono)}</span>
+                                                <div className="p-6 sm:p-10 bg-white/[0.02] border border-white/5 rounded-[2rem] sm:rounded-[3rem] shadow-inner group/val hover:bg-white/[0.04] transition-all">
+                                                    <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-2 sm:mb-4 italic group-hover/val:text-emerald-500 transition-colors">Flux Injected</span>
+                                                    <span className="text-3xl sm:text-5xl font-black text-emerald-500 italic tracking-tighter truncate font-epilogue">{formatCurrency(job.abono)}</span>
                                                 </div>
                                             </div>
                                             
-                                            <div className={`p-10 lg:p-14 rounded-[3.5rem] border-2 relative overflow-hidden group/saldo h-fit transition-all duration-1000 ${job.saldo > 0 ? 'bg-rose-500/[0.03] border-rose-500/20 shadow-glow-rose/10' : 'bg-emerald-500/[0.03] border-emerald-500/20 shadow-glow-emerald/10'}`}>
-                                                <div className={`absolute top-0 right-0 p-12 opacity-[0.02] group-hover/saldo:opacity-10 transition-all duration-1000 scale-125 ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                    <WalletIcon className="w-40 h-40" />
+                                            <div className={`p-8 sm:p-10 lg:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] border-2 relative overflow-hidden group/saldo h-fit transition-all duration-1000 ${job.saldo > 0 ? 'bg-rose-500/[0.03] border-rose-500/20 shadow-glow-rose/10' : 'bg-emerald-500/[0.03] border-emerald-500/20 shadow-glow-emerald/10'}`}>
+                                                <div className={`absolute top-0 right-0 p-8 sm:p-12 opacity-[0.02] group-hover/saldo:opacity-10 transition-all duration-1000 scale-125 ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                    <WalletIcon className="w-32 h-32 sm:w-40 sm:h-40" />
                                                 </div>
-                                                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
-                                                    <div className="space-y-4 text-center md:text-left">
-                                                        <span className={`text-[12px] font-black uppercase tracking-[0.8em] block mb-2 italic ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500 animate-pulse'}`}>
+                                                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10">
+                                                    <div className="space-y-2 sm:space-y-4 text-center md:text-left">
+                                                        <span className={`text-[10px] sm:text-[12px] font-black uppercase tracking-[0.8em] block mb-1 sm:mb-2 italic ${job.saldo > 0 ? 'text-rose-500' : 'text-emerald-500 animate-pulse'}`}>
                                                             {job.saldo > 0 ? 'Residual Credit' : 'Balance Finalized'}
                                                         </span>
-                                                        <span className={`text-7xl lg:text-8xl font-black italic tracking-tighter text-glow truncate font-epilogue ${job.saldo > 0 ? 'text-white' : 'text-emerald-400'}`}>
+                                                        <span className={`text-5xl sm:text-7xl lg:text-8xl font-black italic tracking-tighter text-glow truncate font-epilogue ${job.saldo > 0 ? 'text-white' : 'text-emerald-400'}`}>
                                                             {formatCurrency(job.saldo)}
                                                         </span>
                                                     </div>
@@ -525,7 +536,7 @@ const TrackingPage: React.FC = () => {
                                                 <div className="w-12 h-[2px] bg-white/10"></div>
                                                 <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em] italic leading-none">Extraction Point</p>
                                             </div>
-                                            <div className="flex-1 bg-black/40 border border-white/10 rounded-[3.5rem] p-12 lg:p-16 relative overflow-hidden flex flex-col justify-between group/loc hover:border-liquid-gold/30 transition-all duration-1000 shadow-2xl">
+                                            <div className="flex-1 bg-black/40 border border-white/10 rounded-[2.5rem] sm:rounded-[3.5rem] p-8 sm:p-12 lg:p-16 relative overflow-hidden flex flex-col justify-between group/loc hover:border-liquid-gold/30 transition-all duration-1000 shadow-2xl">
                                                 <div className="absolute top-0 right-0 p-12 opacity-[0.02] group-hover/loc:opacity-10 transition-all duration-1000 scale-150">
                                                     <MapPinIcon className="w-48 h-48 text-liquid-gold" />
                                                 </div>

@@ -39,7 +39,7 @@ const OrdenProduccionPage: React.FC = () => {
     );
 
     // QR para seguimiento web
-    const trackingUrl = `${window.location.origin}/#/tracking?order=${trabajo.orden}`;
+    const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
     const qrSource = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(trackingUrl)}`;
 
     const dtRetiro = new Date(trabajo.fechaEntrada);

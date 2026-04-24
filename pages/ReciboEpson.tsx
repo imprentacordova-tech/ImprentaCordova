@@ -61,7 +61,7 @@ const ReciboEpsonPage: React.FC = () => {
 
     const handleWhatsApp = () => {
         if (!trabajo || !cliente) return;
-        const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.orden}`;
+        const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
         const msg = `🧾 *COMPROBANTE - IMPRENTA CÓRDOVA*\n\n` +
             `Estimado/a *${cliente.nombre}*,\n` +
             `Su orden *#${trabajo.orden}* ha sido registrada.\n\n` +
@@ -89,7 +89,7 @@ const ReciboEpsonPage: React.FC = () => {
     );
 
     const fecha = new Date(trabajo.fechaEntrada);
-    const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.orden}`;
+    const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=H&data=${encodeURIComponent(trackingUrl)}`;
     const ordenStr = String(trabajo.orden).padStart(6, '0');
 

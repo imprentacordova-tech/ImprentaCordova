@@ -397,7 +397,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const registerRetiro = async (id: string, pagoFinal: number, user: string): Promise<Trabajo> => {
         const { data, error } = await supabase.from('trabajos')
             .update({ 
-                pago_final: pagoFinal, 
+                saldo: 0, 
                 estado: TrabajoEstado.ENTREGADO, 
                 actualizado_por: user 
             })
