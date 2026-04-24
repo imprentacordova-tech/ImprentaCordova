@@ -29,7 +29,7 @@ const RetirosPage: React.FC = () => {
         if (!selectedTrabajo) return;
         const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
         // Automatización: Redirigir inmediatamente al comprobante PDF
-        navigate(`/recibo-epson/${updated.id}`);
+        navigate(`/nota-de-venta/${updated.id}`);
     };
 
     const notifyClient = (trabajo: Trabajo) => {
