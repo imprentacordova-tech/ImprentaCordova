@@ -56,6 +56,25 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId 
         return counts;
     }, [productos]);
 
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+
+    // Scroll to top when category or search changes, and on mount
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [activeCategory, searchTerm]);
+
+    // Force scroll top on mount to fix user reported issue
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (scrollRef.current) {
+                scrollRef.current.scrollTop = 0;
+            }
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <div className="space-y-6">
             {/* Buscador */}
@@ -109,28 +128,31 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId 
                 )}
             </div>
 
-            {/* Grilla de Productos - Estilo Menú Visual */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+            {/* Grilla de Productos - Estilo Menú Visual Compacto */}
+            <div 
+                ref={scrollRef}
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar p-1"
+            >
                 <AnimatePresence mode="popLayout">
                     {filtered.map(p => {
                         const isSelected = selectedId === p.id;
                         return (
                             <motion.button
                                 layout
-                                initial={{ opacity: 0, scale: 0.92 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.92 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.2 }}
                                 key={p.id}
                                 onClick={() => onSelect(p)}
-                                className={`relative rounded-2xl border transition-all text-left flex flex-col overflow-hidden group ${
+                                className={`relative rounded-2xl border transition-all text-left flex flex-col overflow-hidden group min-h-[160px] ${
                                     isSelected
                                     ? 'border-liquid-gold shadow-[0_0_25px_rgba(212,175,55,0.25)] ring-1 ring-liquid-gold/50' 
-                                    : 'border-white/5 hover:border-white/20 bg-black/30'
+                                    : 'border-white/5 hover:border-white/20 bg-black/40'
                                 }`}
                             >
-                                {/* Imagen del producto */}
-                                <div className={`relative w-full h-28 overflow-hidden ${isSelected ? 'bg-liquid-gold/10' : 'bg-white/[0.02]'}`}>
+                                {/* Imagen del producto - Compacta */}
+                                <div className={`relative w-full h-20 overflow-hidden ${isSelected ? 'bg-liquid-gold/10' : 'bg-white/[0.02]'}`}>
                                     {p.imagenUrl ? (
                                         <img 
                                             src={p.imagenUrl} 

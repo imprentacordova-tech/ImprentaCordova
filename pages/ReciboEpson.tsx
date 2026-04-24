@@ -1,19 +1,36 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente } from '../types';
-import { formatCurrency, generateWhatsAppLink } from '../utils';
-import { ArrowLeftIcon, PrinterIcon, WhatsAppIcon, CordovaLogo, Loader2Icon, ArrowDownTrayIcon } from '../components/Icons';
+import { 
+    PrinterIcon, ArrowLeftIcon, ArrowDownTrayIcon, 
+    WhatsAppIcon, Loader2Icon, FileTextIcon,
+    ShieldCheckIcon, CheckCircleIcon
+} from '../components/Icons';
+import html2pdf from 'html2pdf.js';
 
-declare const html2pdf: any;
+// --- UTILS & LOGOS ---
+const formatCurrency = (val: number) => 
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+
+const generateWhatsAppLink = (phone: string, message: string) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    const finalPhone = cleanPhone.startsWith('593') ? cleanPhone : `593${cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone}`;
+    return `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
+};
+
+const CordovaLogo = ({ className }: { className?: string }) => (
+    <div className={`flex items-center justify-center bg-black rounded-lg ${className}`}>
+        <span className="text-white font-black text-[10px] italic tracking-tighter">IC</span>
+    </div>
+);
 
 /**
- * ReciboEpson — Comprobante de trabajo diseñado para impresora Epson de tinta
- * Formato: Media Carta (5.5" x 8.5" / 140mm x 216mm)
- * Estilo: Profesional, a color, con branding Córdova
+ * ReciboEpson — Comprobante de trabajo diseñado para impresora Epson de tinta/impacto
+ * Formato: Medio Oficio (8.5" x 6.5" / 216mm x 165mm) - DOBLE COPIA
+ * Estilo: Elite Concierge, minimalista y funcional.
  */
-const ReciboEpsonPage: React.FC = () => {
+const ReciboEpson: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
     const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
@@ -46,14 +63,13 @@ const ReciboEpsonPage: React.FC = () => {
         try {
             await html2pdf().set({
                 margin: 0,
-                filename: `Recibo-${String(trabajo.orden).padStart(6, '0')}-${cliente?.nombre.split(' ')[0] || 'Cliente'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
+                filename: `Elite-Recibo-${String(trabajo.orden).padStart(6, '0')}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
                 html2canvas: { scale: 3, useCORS: true, scrollY: 0 },
-                jsPDF: { unit: 'mm', format: [140, 216], orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: [216, 165], orientation: 'landscape' }
             }).from(element).save();
         } catch (err) {
             console.error("Error generando PDF:", err);
-            alert("Error al generar el PDF.");
         } finally {
             setIsGenerating(false);
         }
@@ -62,227 +78,245 @@ const ReciboEpsonPage: React.FC = () => {
     const handleWhatsApp = () => {
         if (!trabajo || !cliente) return;
         const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
-        const msg = `🧾 *COMPROBANTE - IMPRENTA CÓRDOVA*\n\n` +
+        const msg = `*ELITE_PROTOCOL - COMPROBANTE*\n\n` +
             `Estimado/a *${cliente.nombre}*,\n` +
-            `Su orden *#${trabajo.orden}* ha sido registrada.\n\n` +
-            `📝 ${trabajo.subtipo}\n` +
-            `💰 Total: ${formatCurrency(trabajo.total)}\n` +
-            `✅ Abono: ${formatCurrency(trabajo.abono)}\n` +
-            `📉 Saldo: ${formatCurrency(trabajo.saldo)}\n\n` +
-            `🔍 Rastree aquí: ${trackingUrl}\n\n` +
-            `Gracias por su preferencia. 🖨️`;
+            `Su orden *#${trabajo.orden}* está en sistema.\n\n` +
+            `📦 ${trabajo.subtipo}\n` +
+            `💰 Saldo Pendiente: ${formatCurrency(trabajo.saldo)}\n\n` +
+            `🔍 Rastreo en Tiempo Real: ${trackingUrl}\n\n` +
+            `Imprenta Córdova - Excelencia Industrial.`;
         const phone = cliente.telefono?.[0] || '';
         if (phone) window.open(generateWhatsAppLink(phone, msg), '_blank');
-        else alert("El cliente no tiene teléfono registrado.");
+        else alert("Cliente sin contacto.");
     };
 
-    if (dataLoading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100">
-            <Loader2Icon className="w-10 h-10 text-blue-600 animate-spin" />
-        </div>
-    );
-
-    if (!trabajo || !cliente) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100">
-            <p className="text-red-500 font-bold">No se encontró el trabajo o el cliente.</p>
-        </div>
-    );
+    if (dataLoading) return <div className="h-screen bg-slate-900 flex items-center justify-center"><Loader2Icon className="animate-spin text-gold-500" /></div>;
+    if (!trabajo || !cliente) return <div className="h-screen bg-slate-900 flex items-center justify-center text-white">404_DATA_NOT_FOUND</div>;
 
     const fecha = new Date(trabajo.fechaEntrada);
     const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
-    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=H&data=${encodeURIComponent(trackingUrl)}`;
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(trackingUrl)}`;
     const ordenStr = String(trabajo.orden).padStart(6, '0');
 
     return (
-        <div className="min-h-screen bg-slate-200 flex flex-col items-center py-8" style={{ fontFamily: "'Segoe UI', 'Arial', sans-serif" }}>
-            {/* Print Styles */}
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center py-10 print:p-0 print:bg-white">
             <style>{`
                 @media print {
-                    @page { size: 140mm 216mm; margin: 0; }
-                    body { margin: 0; background: white; }
+                    @page { size: 216mm 165mm; margin: 0; }
+                    body { margin: 0; -webkit-print-color-adjust: exact; }
                     .no-print { display: none !important; }
-                    #recibo-epson-canvas { box-shadow: none !important; }
+                    #recibo-epson-canvas { box-shadow: none !important; transform: none !important; }
+                }
+                .recibo-font { font-family: 'Inter', 'Segoe UI', sans-serif; }
+                .gold-border { border: 1px solid #D4AF37; }
+                .perforation { border-top: 2px dashed #e2e8f0; position: relative; }
+                .perforation::after {
+                    content: '✂️ CORTE PARA SEPARAR COPIAS';
+                    position: absolute;
+                    top: -6px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: white;
+                    padding: 0 12px;
+                    font-size: 7px;
+                    font-weight: 900;
+                    color: #94a3b8;
+                    letter-spacing: 0.1em;
                 }
             `}</style>
 
             {/* Toolbar */}
-            <div className="no-print mb-6 flex flex-wrap items-center justify-center gap-3">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-xs uppercase tracking-widest transition-colors">
-                    <ArrowLeftIcon className="w-4 h-4"/> Volver
-                </button>
-                <button onClick={handleWhatsApp} className="flex items-center gap-2 bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-green-600 transition-all">
-                    <WhatsAppIcon className="w-4 h-4"/> WhatsApp
-                </button>
-                <button onClick={handleDownloadPDF} disabled={isGenerating} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-700 transition-all disabled:opacity-60">
-                    {isGenerating ? <Loader2Icon className="w-4 h-4 animate-spin"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
-                    {isGenerating ? 'Generando...' : 'Descargar PDF'}
-                </button>
-                <button onClick={handlePrint} className="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-slate-700 transition-all">
-                    <PrinterIcon className="w-4 h-4"/> Imprimir
-                </button>
+            <div className="no-print mb-8 flex gap-4 bg-white p-4 rounded-3xl shadow-xl border border-slate-200">
+                <button onClick={() => navigate(-1)} className="p-3 hover:bg-slate-100 rounded-2xl transition-all"><ArrowLeftIcon className="w-5 h-5 text-slate-600"/></button>
+                <button onClick={handleWhatsApp} className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-green-600 transition-all"><WhatsAppIcon className="w-4 h-4"/> WhatsApp</button>
+                <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-black transition-all"><ArrowDownTrayIcon className="w-4 h-4"/> PDF</button>
+                <button onClick={handlePrint} className="flex items-center gap-2 bg-amber-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-amber-600 transition-all shadow-gold-glow"><PrinterIcon className="w-4 h-4"/> Imprimir</button>
             </div>
 
-            {/* ========= CANVAS DEL RECIBO ========= */}
+            {/* Canvas: 216mm x 165mm (Landscape approach for double copy on vertical sheet) */}
+            {/* If the user has "hojas perforadas por la mitad", and it's medio oficio, then it's 2 parts. */}
             <div 
-                id="recibo-epson-canvas" 
-                className="bg-white shadow-2xl overflow-hidden relative"
-                style={{ width: '140mm', minHeight: '216mm', padding: '0' }}
+                id="recibo-epson-canvas"
+                className="bg-white shadow-2xl overflow-hidden recibo-font flex flex-col"
+                style={{ width: '216mm', height: '165mm', padding: '0' }}
             >
-                {/* === HEADER BAND === */}
-                <div style={{ background: 'linear-gradient(135deg, #0A1E40 0%, #1a3a6b 50%, #0A1E40 100%)', padding: '7mm 8mm', color: 'white', position: 'relative', overflow: 'hidden' }}>
-                    {/* Decorative circles */}
-                    <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(212,175,55,0.1)' }}></div>
-                    <div style={{ position: 'absolute', bottom: '-10px', left: '30px', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }}></div>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 10 }}>
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                <CordovaLogo className="h-7 w-auto" style={{ filter: 'brightness(10)' }} />
-                                <div>
-                                    <h1 style={{ fontSize: '15px', fontWeight: 900, letterSpacing: '-0.5px', margin: 0, lineHeight: 1 }}>{config.nombre}</h1>
-                                    <p style={{ fontSize: '7px', fontWeight: 700, opacity: 0.6, letterSpacing: '2px', margin: 0, textTransform: 'uppercase' }}>Servicios Gráficos Profesionales</p>
-                                </div>
-                            </div>
-                            <div style={{ fontSize: '7px', opacity: 0.5, fontWeight: 600, marginTop: '4px' }}>
-                                RUC: {config.ruc} • {config.direccion} • Tel: {config.telefono}
-                            </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <div style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '8px', padding: '4px 10px' }}>
-                                <p style={{ fontSize: '7px', fontWeight: 800, color: '#D4AF37', letterSpacing: '2px', margin: 0, textTransform: 'uppercase' }}>Comprobante</p>
-                                <p style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '-1px', margin: 0, color: '#D4AF37' }}>#{ordenStr}</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="flex-1 flex flex-col p-[6mm]">
+                    <ReceiptBlock type="CLIENTE" trabajo={trabajo} cliente={cliente} config={config} ordenStr={ordenStr} fecha={fecha} qrSrc={qrSrc} />
                 </div>
-
-                {/* === GOLD ACCENT LINE === */}
-                <div style={{ height: '3px', background: 'linear-gradient(to right, #D4AF37, #f2ca50, #D4AF37)' }}></div>
-
-                {/* === BODY === */}
-                <div style={{ padding: '6mm 8mm' }}>
-                    
-                    {/* Client Info */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5mm', gap: '4mm' }}>
-                        <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '7px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3px' }}>Cliente</p>
-                            <p style={{ fontSize: '12px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.3px', textTransform: 'uppercase' }}>{cliente.nombre}</p>
-                            <p style={{ fontSize: '9px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
-                                {cliente.ruc || cliente.cedula || 'Consumidor Final'}
-                            </p>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <p style={{ fontSize: '7px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3px' }}>Fecha</p>
-                            <p style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>
-                                {fecha.toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </p>
-                            <p style={{ fontSize: '8px', color: '#64748b', fontWeight: 600 }}>
-                                {fecha.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div style={{ height: '1px', background: '#e2e8f0', margin: '3mm 0' }}></div>
-
-                    {/* Detail Table */}
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '5mm' }}>
-                        <thead>
-                            <tr style={{ background: '#f8fafc' }}>
-                                <th style={{ fontSize: '7px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '4px 6px', textAlign: 'center', borderBottom: '2px solid #e2e8f0', width: '12%' }}>Cant.</th>
-                                <th style={{ fontSize: '7px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '4px 6px', textAlign: 'left', borderBottom: '2px solid #e2e8f0', width: '58%' }}>Descripción</th>
-                                <th style={{ fontSize: '7px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '4px 6px', textAlign: 'right', borderBottom: '2px solid #e2e8f0', width: '15%' }}>P.Unit</th>
-                                <th style={{ fontSize: '7px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '4px 6px', textAlign: 'right', borderBottom: '2px solid #e2e8f0', width: '15%' }}>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style={{ fontSize: '10px', fontWeight: 700, padding: '6px', textAlign: 'center', color: '#0f172a' }}>{trabajo.cantidad}</td>
-                                <td style={{ fontSize: '10px', fontWeight: 600, padding: '6px', color: '#0f172a', textTransform: 'uppercase', lineHeight: 1.3 }}>{trabajo.subtipo}</td>
-                                <td style={{ fontSize: '10px', fontWeight: 600, padding: '6px', textAlign: 'right', color: '#475569' }}>{formatCurrency(trabajo.total / (trabajo.cantidad || 1))}</td>
-                                <td style={{ fontSize: '10px', fontWeight: 800, padding: '6px', textAlign: 'right', color: '#0f172a' }}>{formatCurrency(trabajo.total)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    {/* Totals Box */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <div style={{ width: '55%', background: '#f8fafc', borderRadius: '8px', padding: '4mm', border: '1px solid #e2e8f0' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                                <span style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Total</span>
-                                <span style={{ fontSize: '9px', fontWeight: 800, color: '#0f172a' }}>{formatCurrency(trabajo.total)}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                                <span style={{ fontSize: '9px', fontWeight: 700, color: '#22c55e', textTransform: 'uppercase' }}>Abono</span>
-                                <span style={{ fontSize: '9px', fontWeight: 800, color: '#22c55e' }}>- {formatCurrency(trabajo.abono)}</span>
-                            </div>
-                            <div style={{ height: '1px', background: '#0A1E40', margin: '3px 0' }}></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '10px', fontWeight: 900, color: '#0A1E40', textTransform: 'uppercase', letterSpacing: '-0.3px' }}>Saldo</span>
-                                <span style={{ fontSize: '16px', fontWeight: 900, color: trabajo.saldo > 0 ? '#ef4444' : '#22c55e', letterSpacing: '-0.5px' }}>
-                                    {formatCurrency(trabajo.saldo)}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Estado Badge */}
-                    <div style={{ textAlign: 'center', margin: '5mm 0 3mm 0' }}>
-                        <span style={{
-                            display: 'inline-block',
-                            fontSize: '8px',
-                            fontWeight: 900,
-                            textTransform: 'uppercase',
-                            letterSpacing: '2px',
-                            padding: '4px 16px',
-                            borderRadius: '20px',
-                            background: trabajo.saldo <= 0 ? '#dcfce7' : '#fef3c7',
-                            color: trabajo.saldo <= 0 ? '#16a34a' : '#d97706',
-                            border: `1px solid ${trabajo.saldo <= 0 ? '#86efac' : '#fde68a'}`
-                        }}>
-                            {trabajo.saldo <= 0 ? '✅ PAGADO EN SU TOTALIDAD' : '⏳ PENDIENTE DE PAGO'}
-                        </span>
-                    </div>
-
-                    {/* QR + Tracking */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4mm', margin: '4mm 0', padding: '3mm', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                        <img src={qrSrc} alt="QR" style={{ width: '22mm', height: '22mm', border: '1px solid #e2e8f0', borderRadius: '4px' }} />
-                        <div>
-                            <p style={{ fontSize: '8px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Rastree su pedido</p>
-                            <p style={{ fontSize: '7px', color: '#64748b', fontWeight: 600, lineHeight: 1.4 }}>
-                                Escanee el código QR o visite nuestra web para conocer el estado actualizado de su orden en tiempo real.
-                            </p>
-                            <p style={{ fontSize: '7px', fontWeight: 700, color: '#0A1E40', marginTop: '2px' }}>imprentacordova.net/tracking</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* === FOOTER === */}
-                <div style={{ 
-                    borderTop: '1px solid #e2e8f0',
-                    padding: '3mm 8mm 4mm 8mm',
-                    marginTop: 'auto'
-                }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                        <div>
-                            <div style={{ borderTop: '1px solid #94a3b8', width: '35mm', marginBottom: '2px' }}></div>
-                            <p style={{ fontSize: '6px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Firma Autorizada</p>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <div style={{ borderTop: '1px solid #94a3b8', width: '35mm', marginBottom: '2px', marginLeft: 'auto' }}></div>
-                            <p style={{ fontSize: '6px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Recibí Conforme</p>
-                        </div>
-                    </div>
-                    <div style={{ textAlign: 'center', marginTop: '4mm' }}>
-                        <p style={{ fontSize: '6px', color: '#94a3b8', fontWeight: 600, lineHeight: 1.5, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Documento sin validez tributaria • Conserve este comprobante hasta retirar su pedido
-                            <br/>Revise su diseño antes de aprobar la impresión • {config.nombre}
-                        </p>
-                    </div>
+                
+                <div className="perforation"></div>
+                
+                <div className="flex-1 flex flex-col p-[6mm]">
+                    <ReceiptBlock type="OPERADOR" trabajo={trabajo} cliente={cliente} config={config} ordenStr={ordenStr} fecha={fecha} qrSrc={qrSrc} />
                 </div>
             </div>
         </div>
     );
 };
 
-export default ReciboEpsonPage;
+const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc }: any) => {
+    let specs: any = null;
+    try {
+        if (trabajo.detalle.includes('| SPECS: ')) {
+            specs = JSON.parse(trabajo.detalle.split('| SPECS: ')[1]);
+        }
+    } catch(e) {}
+
+    const cleanDetail = trabajo.detalle.split('| SPECS:')[0];
+    const isOperator = type === 'OPERADOR';
+
+    return (
+        <div className={`flex-1 flex flex-col gap-2 relative ${isOperator ? 'bg-slate-50/40' : ''} border border-slate-100 rounded-3xl p-4 shadow-sm`}>
+            {/* Watermark Copy Indicator */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] font-black text-[80px] -rotate-12 select-none pointer-events-none uppercase tracking-[0.2em] text-slate-900">
+                {isOperator ? 'PRODUCCIÓN' : 'CLIENTE'}
+            </div>
+
+            {/* Header section */}
+            <div className="flex justify-between items-start border-b border-slate-100 pb-2 mb-2">
+                <div className="flex items-center gap-3">
+                    <CordovaLogo className="w-10 h-10" />
+                    <div>
+                        <h1 className="text-[14px] font-black text-slate-900 tracking-tighter uppercase leading-none">{config.nombre}</h1>
+                        <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{config.ruc} • {config.direccion}</p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <div className={`px-4 py-1.5 rounded-xl flex flex-col items-end ${isOperator ? 'bg-slate-800' : 'bg-black'} text-white`}>
+                        <span className="text-[6px] font-black uppercase tracking-[0.3em] opacity-50">ORDEN_CONTROL</span>
+                        <span className="text-[18px] font-black tracking-tighter leading-none">#{ordenStr}</span>
+                    </div>
+                    <p className="text-[6px] font-black text-slate-400 mt-1 uppercase tracking-widest italic">{isOperator ? 'COPIA OPERADOR' : 'ORIGINAL CLIENTE'}</p>
+                </div>
+            </div>
+
+            {/* Main Data Grid */}
+            <div className="grid grid-cols-12 gap-3">
+                {/* Remitente */}
+                <div className="col-span-4 space-y-2">
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest block mb-1">Entidad_Cliente</span>
+                        <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{cliente.nombre}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">Cédula / RUC</span>
+                            <p className="text-[9px] font-bold text-slate-900 truncate">{cliente.cedula || cliente.ruc || '9999999999'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Industrial Specifications Matrix */}
+                <div className="col-span-8 grid grid-cols-4 gap-2">
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm col-span-2">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TIPO DE TRABAJO</span>
+                        <p className="text-[9px] font-black text-slate-900 uppercase truncate">{trabajo.servicio}</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">CANTIDAD</span>
+                        <p className="text-[11px] font-black text-slate-900 uppercase">{trabajo.cantidad} UNID.</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TAMAÑO</span>
+                        <p className="text-[9px] font-black text-slate-900 uppercase truncate">{specs?.tamano || 'N/A'}</p>
+                    </div>
+                    
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TIPO DE PAPEL</span>
+                        <p className="text-[8px] font-black text-slate-900 uppercase truncate">{specs?.tipoPapel || 'BOND'}</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TINTAS / COLOR</span>
+                        <p className="text-[8px] font-black text-slate-900 uppercase truncate">{specs?.tintas || 'F. COLOR'}</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">COPIAS</span>
+                        <p className="text-[8px] font-black text-slate-900 uppercase truncate">{specs?.copias?.replace('Original y ', '') || 'S/N'}</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">ENTREGA</span>
+                        <p className="text-[8px] font-black text-brand-red uppercase truncate">{trabajo.prioridad}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Industrial Detail & Mechanicals */}
+            <div className="flex-1 grid grid-cols-12 gap-3 mt-1">
+                <div className="col-span-8 bg-white p-3 rounded-2xl border border-slate-100 flex flex-col shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-2 opacity-5">
+                        <FileTextIcon className="w-12 h-12" />
+                    </div>
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.3em]">TEXTO Y ESPECIFICACIONES</span>
+                        {specs?.numerado !== 'No' && (
+                            <span className="text-[7px] font-black text-white uppercase bg-slate-900 px-2 py-0.5 rounded-md">
+                                NUMERADO: {specs?.numerado}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1 italic">
+                        {cleanDetail || 'TRABAJO SEGÚN ARTE FINAL APROBADO POR EL CLIENTE.'}
+                    </p>
+                    
+                    <div className="mt-2 grid grid-cols-3 gap-2 border-t border-slate-50 pt-2">
+                        <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 border rounded-sm ${specs?.perforado === 'Sí' ? 'bg-black' : 'border-slate-300'}`}></div>
+                            <span className="text-[6px] font-black text-slate-600 uppercase">Perforado</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 border rounded-sm ${specs?.acabado !== 'Ninguno' ? 'bg-black' : 'border-slate-300'}`}></div>
+                            <span className="text-[6px] font-black text-slate-600 uppercase">{specs?.acabado || 'Acabado'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 border border-slate-300 rounded-sm"></div>
+                            <span className="text-[6px] font-black text-slate-600 uppercase">Troquel</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={`col-span-4 rounded-2xl p-4 text-white flex flex-col justify-between shadow-lg ${isOperator ? 'bg-slate-800' : 'bg-slate-950'}`}>
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between items-center opacity-70">
+                            <span className="text-[6px] font-black uppercase tracking-widest italic">VALOR TOTAL</span>
+                            <span className="text-[9px] font-black">{formatCurrency(trabajo.precio)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-emerald-400">
+                            <span className="text-[6px] font-black uppercase tracking-widest italic">ABONO</span>
+                            <span className="text-[9px] font-black">-{formatCurrency(trabajo.abono)}</span>
+                        </div>
+                        <div className="h-[0.5px] bg-white/10 my-1"></div>
+                        <div className="flex flex-col items-end">
+                            <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest mb-0.5 italic">SALDO PENDIENTE</span>
+                            <span className="text-[20px] font-black text-amber-400 tracking-tighter leading-none">${trabajo.saldo.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between gap-2 bg-white/5 p-1.5 rounded-xl border border-white/5">
+                        <img src={qrSrc} alt="QR" className="w-8 h-8 bg-white p-0.5 rounded-lg" />
+                        <div className="text-[5px] font-black text-white/40 uppercase tracking-tighter leading-none text-right italic">
+                            RASTREO_VIRTUAL<br/>ELITE_CORE_v4.0
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Signature Matrix */}
+            <div className="flex justify-between items-end mt-2 px-2">
+                <div className="text-center w-28">
+                    <div className="h-[0.5px] bg-slate-300 w-full mb-1"></div>
+                    <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest italic">Responsable: {trabajo.responsable}</p>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                    <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase italic">Imprenta Córdova 2026</p>
+                    <div className="text-[5px] font-black bg-slate-100 text-slate-500 px-3 py-0.5 rounded-full uppercase tracking-widest">{fecha.toLocaleDateString()}</div>
+                </div>
+                <div className="text-center w-28">
+                    <div className="h-[0.5px] bg-slate-300 w-full mb-1"></div>
+                    <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest italic">Recibí Conforme</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ReciboEpson;

@@ -12,6 +12,7 @@ import {
 } from '../components/Icons';
 import ClientSelector from '../components/orders/ClientSelector';
 import ServiceSelector from '../components/orders/ServiceSelector';
+import ProductConfigurator from '../components/orders/ProductConfigurator';
 import PhotoCapture from '../components/orders/PhotoCapture';
 import PriceCalculatorDisplay from '../components/orders/PriceCalculatorDisplay';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,6 +33,21 @@ const NuevoPedidoPage: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
+    const [configuracion, setConfiguracion] = useState<any>(null);
+
+    // Auto-scroll to top on step or service change - Aggressive reset
+    useEffect(() => {
+        // Reset full page scroll
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTo(0, 0);
+        
+        // Ensure the transition is smooth for the user
+        const timer = setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
+        
+        return () => clearTimeout(timer);
+    }, [step, servicio]);
 
     // SRI specific states
     const [isSriOrder, setIsSriOrder] = useState(false);
@@ -54,7 +70,7 @@ const NuevoPedidoPage: React.FC = () => {
         if (step === 3) {
             // En el último paso, si no hay cliente, DEBEMOS tener al menos un nombre rápido
             if (!cliente && !quickName) return false;
-            return precio > 0 && abono >= 0;
+            return precio > 0;
         }
         return true;
     };
@@ -80,8 +96,8 @@ const NuevoPedidoPage: React.FC = () => {
                 clienteId: finalCliente.id || '',
                 servicio: servicio.nombre,
                 detalle: isSriOrder 
-                    ? `[SRI ${sriMode}] ${sriActividad} | ${detalle}` 
-                    : detalle,
+                    ? `[SRI ${sriMode}] ${sriActividad} | ${detalle}${configuracion ? ` | SPECS: ${JSON.stringify(configuracion.especificaciones)}` : ''}` 
+                    : `${detalle}${configuracion ? ` | SPECS: ${JSON.stringify(configuracion.especificaciones)}` : ''}`,
                 precio,
                 abono,
                 saldo: precio - abono,
@@ -198,15 +214,44 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-12">
-                                    <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
+                                <div className="grid grid-cols-1 gap-12">
+                                    <AnimatePresence mode="wait">
+                                        {!servicio ? (
+                                            <motion.div
+                                                key="selector"
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                            >
+                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key="configurator"
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                            >
+                                                <ProductConfigurator 
+                                                    product={servicio} 
+                                                    onCancel={() => setServicio(null)}
+                                                    onComplete={(config) => {
+                                                        setConfiguracion(config);
+                                                        setPrecio(config.precioFinal);
+                                                        setStep(3);
+                                                    }}
+                                                />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                     
-                                    {isSriOrder && (
+                                    {isSriOrder && !servicio && (
                                         <div className="bg-brand-red/5 p-10 rounded-[3rem] border border-brand-red/20 space-y-10 animate-fade-in">
                                             <div className="flex items-center gap-6">
                                                 <ShieldCheckIcon className="w-8 h-8 text-brand-red" />
                                                 <h3 className="text-lg font-black text-white uppercase tracking-widest italic">Validación Tributaria Obligatoria</h3>
                                             </div>
-
+                                            {/* ... rest of SRI fields ... */}
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 <div className="space-y-6">
                                                     <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Tipo de Trámite</label>
@@ -267,31 +312,35 @@ const NuevoPedidoPage: React.FC = () => {
                                         </div>
                                     )}
 
-                                    <div className="space-y-6">
-                                        <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Memorándum del Proyecto</label>
-                                        <textarea 
-                                            value={detalle} 
-                                            onChange={e => setDetalle(e.target.value)}
-                                            placeholder="Describa los parámetros cuánticos del pedido..."
-                                            className="w-full h-48 p-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2.5rem] text-lg font-bold text-white placeholder:text-slate-700 outline-none transition-all duration-700 shadow-inner resize-none"
-                                        />
-                                    </div>
-                                    
-                                    <div className="flex flex-col gap-6">
-                                        <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Índice de Prioridad</label>
-                                        <div className="flex gap-6 p-2 bg-black/40 rounded-[2rem] border border-white/5 w-fit">
-                                            {['Normal', 'Urgente'].map(p => (
-                                                <button 
-                                                    key={p} onClick={() => setPrioridad(p as any)}
-                                                    className={`px-12 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.4em] italic transition-all duration-700 ${
-                                                        prioridad === p ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-600 hover:text-white'
-                                                    }`}
-                                                >
-                                                    {p}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    {!servicio && (
+                                        <>
+                                            <div className="space-y-6">
+                                                <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Memorándum del Proyecto</label>
+                                                <textarea 
+                                                    value={detalle} 
+                                                    onChange={e => setDetalle(e.target.value)}
+                                                    placeholder="Describa los parámetros cuánticos del pedido..."
+                                                    className="w-full h-48 p-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2.5rem] text-lg font-bold text-white placeholder:text-slate-700 outline-none transition-all duration-700 shadow-inner resize-none"
+                                                />
+                                            </div>
+                                            
+                                            <div className="flex flex-col gap-6">
+                                                <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Índice de Prioridad</label>
+                                                <div className="flex gap-6 p-2 bg-black/40 rounded-[2rem] border border-white/5 w-fit">
+                                                    {['Normal', 'Urgente'].map(p => (
+                                                        <button 
+                                                            key={p} onClick={() => setPrioridad(p as any)}
+                                                            className={`px-12 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.4em] italic transition-all duration-700 ${
+                                                                prioridad === p ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-600 hover:text-white'
+                                                            }`}
+                                                        >
+                                                            {p}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </motion.div>
                         )}
@@ -397,6 +446,16 @@ const NuevoPedidoPage: React.FC = () => {
                                     )}
                                     <button 
                                         onClick={() => {
+                                            if (!cliente) return;
+                                            const msg = `Hola *${cliente.nombre}*, necesito su confirmación para el diseño de su pedido. ¿Podría revisarlo?`;
+                                            window.open(`https://wa.me/${cliente.telefono?.[0] || ''}?text=${encodeURIComponent(msg)}`, '_blank');
+                                        }}
+                                        className="px-10 py-6 bg-green-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] shadow-luxury hover:bg-green-500 transition-all duration-500 active:scale-95 flex items-center gap-3"
+                                    >
+                                        WhatsApp Diseño
+                                    </button>
+                                    <button 
+                                        onClick={() => {
                                             setStep(1);
                                             setCliente(null);
                                             setServicio(null);
@@ -405,6 +464,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             setAbono(0);
                                             setImageFile(null);
                                             setCreatedTrabajoId(null);
+                                            setConfiguracion(null);
                                         }}
                                         className="px-10 py-6 bg-transparent border-2 border-white/20 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] hover:bg-white/10 transition-all duration-500 active:scale-95"
                                     >
@@ -486,6 +546,19 @@ const NuevoPedidoPage: React.FC = () => {
                                     {servicio ? (
                                         <div className="flex flex-col gap-3">
                                             <span className="text-2xl font-black text-white italic uppercase tracking-tighter">{servicio.nombre}</span>
+                                            {configuracion && (
+                                                <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-2">
+                                                    <p className="text-[9px] font-black text-liquid-gold uppercase tracking-widest">Especificaciones Elite</p>
+                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                                        <span className="text-[8px] text-slate-500 uppercase">Tam: {configuracion.especificaciones.tamano}</span>
+                                                        <span className="text-[8px] text-slate-500 uppercase">Cant: {configuracion.cantidad}</span>
+                                                        <span className="text-[8px] text-slate-500 uppercase">Pap: {configuracion.especificaciones.tipoPapel}</span>
+                                                        <span className="text-[8px] text-slate-500 uppercase">Cop: {configuracion.especificaciones.copias}</span>
+                                                        {configuracion.especificaciones.numerado !== 'No' && <span className="text-[8px] text-liquid-gold uppercase">Num: {configuracion.especificaciones.numerado}</span>}
+                                                        {configuracion.especificaciones.perforado !== 'No' && <span className="text-[8px] text-liquid-gold uppercase">Perf: SI</span>}
+                                                    </div>
+                                                </div>
+                                            )}
                                             {isSriOrder && <p className="text-brand-red text-[10px] font-black uppercase tracking-widest italic">Actividad: {sriActividad || 'PENDIENTE'}</p>}
                                             {detalle && <p className="text-slate-500 text-[13px] font-bold italic line-clamp-3 leading-relaxed uppercase">{detalle}</p>}
                                         </div>
