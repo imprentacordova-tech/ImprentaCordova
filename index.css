@@ -441,6 +441,7 @@ html.light body {
 html.light .bg-brand-dark, 
 html.light .bg-brand-dark\/60,
 html.light .bg-brand-dark\/40,
+html.light .bg-brand-dark\/20,
 html.light .bg-brand-dark\/90,
 html.light .bg-slate-950,
 html.light .bg-slate-900,
@@ -497,20 +498,27 @@ html.light .text-white\/50,
 html.light .text-slate-50,
 html.light .text-slate-100,
 html.light .text-slate-200,
-html.light .text-slate-300 {
+html.light .text-slate-300,
+html.light .text-slate-400 {
   color: #0f172a !important;
 }
 
-html.light .text-slate-400,
 html.light .text-slate-500,
-html.light .text-slate-600 {
-  color: #475569 !important;
+html.light .text-slate-600,
+html.light .text-slate-700 {
+  color: #0f172a !important; /* Forzar negro/azul oscuro en grises medios */
 }
 
 html.light .text-liquid-gold,
 html.light .text-gold-bright,
 html.light .text-glow-gold {
-  color: #854d0e !important; /* Gold más oscuro para contraste en blanco */
+  color: #713f12 !important; /* Dorado ultra-profundo para contraste máximo */
+}
+
+html.light .text-gold-gradient {
+  background: linear-gradient(135deg, #854d0e 0%, #451a03 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
 }
 
 /* Fix for buttons with white text by default */
@@ -535,9 +543,27 @@ html.light .icon-gold {
 html.light .glass-atelier, 
 html.light .glass-boutique,
 html.light .glass-card-luxury {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
   backdrop-filter: blur(20px) !important;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1) !important;
+}
+
+html.light .bg-liquid-gold\/5 {
+  background-color: rgba(184, 134, 11, 0.1) !important;
+}
+
+html.light .bg-liquid-gold\/10 {
+  background-color: rgba(184, 134, 11, 0.15) !important;
+}
+
+html.light .bg-liquid-gold\/30 {
+  background-color: #854d0e !important;
+}
+
+html.light .border-liquid-gold\/20,
+html.light .border-liquid-gold\/30 {
+  border-color: rgba(133, 77, 14, 0.3) !important;
 }
 
     /* Premium Mobile Utilities */
