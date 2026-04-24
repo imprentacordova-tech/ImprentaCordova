@@ -6,32 +6,31 @@ import {
     AddIcon, 
     KdsIcon, 
     ClientsIcon,
-    Cog8ToothIcon,
-    SparklesIcon
+    InventoryIcon
 } from './Icons';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const MobileFloatingNav: React.FC = () => {
     const location = useLocation();
 
     const navItems = [
-        { path: '/dashboard', icon: DashboardIcon, label: 'Inicio' },
-        { path: '/produccion', icon: KdsIcon, label: 'Impresión' },
-        { path: '/nuevo', icon: AddIcon, label: 'Nueva', primary: true },
-        { path: '/kds', icon: KdsIcon, label: 'Flujo' },
-        { path: '/retiros', icon: ClientsIcon, label: 'Entregas' },
+        { path: '/dashboard', icon: DashboardIcon, label: 'Resumen' },
+        { path: '/produccion', icon: KdsIcon, label: 'Talleres' },
+        { path: '/nuevo', icon: AddIcon, label: 'Crear', primary: true },
+        { path: '/retiros', icon: InventoryIcon, label: 'Vitrina' },
+        { path: '/clientes', icon: ClientsIcon, label: 'Clientes' },
     ];
 
     return (
-        <div className="fixed bottom-6 left-0 right-0 z-50 lg:hidden flex justify-center px-4">
+        <div className="fixed bottom-8 left-0 right-0 z-50 lg:hidden flex justify-center px-6">
             <motion.div 
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-                className="bg-white/90 dark:bg-[#000000]/40 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between w-full max-w-md relative overflow-hidden transition-colors duration-500"
+                transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+                className="bg-white/95 dark:bg-[#0c1324]/80 backdrop-blur-3xl border border-slate-200/50 dark:border-white/10 rounded-[2.5rem] p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] flex items-center justify-between w-full max-w-sm relative overflow-visible"
             >
-                {/* Ambient glow background */}
-                <div className="absolute inset-0 bg-gradient-to-t from-liquid-gold/5 dark:from-liquid-gold/10 to-transparent pointer-events-none opacity-50"></div>
+                {/* Visual Accent Glow */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/20 via-transparent to-liquid-gold/20 rounded-[2.6rem] blur-xl opacity-20 pointer-events-none"></div>
                 
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
@@ -42,23 +41,21 @@ export const MobileFloatingNav: React.FC = () => {
                                 key={item.path}
                                 to={item.path}
                                 className={({ isActive }) => `
-                                    relative -top-6 w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 transform
+                                    relative -top-8 w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-500
                                     ${isActive 
-                                        ? 'bg-liquid-gold text-black shadow-[0_0_30px_rgba(212,175,55,0.4)] scale-110 rotate-0' 
-                                        : 'bg-slate-100 dark:bg-white text-slate-800 dark:text-black hover:bg-liquid-gold dark:hover:bg-liquid-gold shadow-xl dark:shadow-2xl scale-100 hover:scale-105'
+                                        ? 'bg-liquid-gold text-brand-dark shadow-[0_15px_30px_rgba(212,175,55,0.4)] scale-110' 
+                                        : 'bg-brand-dark dark:bg-liquid-gold text-liquid-gold dark:text-brand-dark shadow-xl scale-100'
                                     }
                                 `}
                             >
                                 <motion.div
-                                    whileTap={{ scale: 0.9 }}
-                                    className="flex items-center justify-center"
+                                    whileTap={{ scale: 0.85 }}
+                                    className="flex items-center justify-center relative"
                                 >
                                     <item.icon className={`w-8 h-8 ${isActive ? 'animate-pulse' : ''}`} />
-                                    {isActive && (
-                                        <motion.div 
-                                            layoutId="primary-glow"
-                                            className="absolute inset-0 rounded-2xl bg-white/20 dark:bg-white/20 animate-pulse"
-                                        />
+                                    {/* Pulse effect */}
+                                    {!isActive && (
+                                        <div className="absolute inset-0 rounded-full bg-liquid-gold/30 animate-ping opacity-20"></div>
                                     )}
                                 </motion.div>
                             </NavLink>
@@ -73,14 +70,22 @@ export const MobileFloatingNav: React.FC = () => {
                         >
                             <motion.div
                                 whileTap={{ scale: 0.8 }}
-                                className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'text-liquid-gold scale-110' : 'text-slate-500 opacity-60'}`}
+                                className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${isActive ? 'text-liquid-gold scale-110' : 'text-slate-400 dark:text-slate-500 opacity-60 hover:opacity-100'}`}
                             >
-                                <item.icon className="w-5 h-5" />
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] italic">{item.label}</span>
+                                <div className="relative">
+                                    <item.icon className="w-5 h-5" />
+                                    {isActive && (
+                                        <motion.div 
+                                            layoutId="active-nav-glow"
+                                            className="absolute inset-0 bg-liquid-gold/20 blur-md rounded-full scale-150 -z-10"
+                                        />
+                                    )}
+                                </div>
+                                <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${isActive ? 'opacity-100' : 'opacity-0'}`}>{item.label}</span>
                                 
                                 {isActive && (
                                     <motion.div 
-                                        layoutId="nav-dot"
+                                        layoutId="nav-pill"
                                         className="absolute -bottom-1 w-1 h-1 bg-liquid-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,1)]"
                                     />
                                 )}

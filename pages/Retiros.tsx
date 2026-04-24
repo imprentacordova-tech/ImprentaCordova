@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -9,6 +8,7 @@ import {
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
     ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon
 } from '../components/Icons';
+import { BottomSheet } from '../components/BottomSheet';
 
 const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -16,10 +16,10 @@ const RetirosPage: React.FC = () => {
     const { trabajos, clientes, loading, registerRetiro } = useData();
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const filtered = useMemo(() => {
         const lower = searchTerm.toLowerCase();
-        // Optimización: Crear un mapa de búsqueda para acceso O(1)
         const clientMap = new Map(clientes.map(c => [c.id, c.nombre.toLowerCase()]));
         
         return trabajos
@@ -31,11 +31,12 @@ const RetirosPage: React.FC = () => {
                        clientName.includes(lower);
             });
     }, [trabajos, clientes, searchTerm]);
+
+    const handleConfirmRetiro = async (pagoFinal: number) => {
         if (!selectedTrabajo || isProcessing) return;
         setIsProcessing(true);
         try {
             const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
-            // Automatización: Redirigir inmediatamente al comprobante PDF
             navigate(`/nota-de-venta/${updated.id}`);
         } catch (error) {
             console.error("Error al registrar retiro:", error);
@@ -82,7 +83,7 @@ const RetirosPage: React.FC = () => {
                     <div className="col-span-full py-20 text-center"><Loader2Icon className="animate-spin w-10 h-10 text-liquid-gold mx-auto" /></div>
                 ) : filtered.length > 0 ? filtered.map(t => {
                     const c = clientes.find(cl => cl.id === t.clienteId);
-                    const days = getDaysInVitrina(t.fechaEntrada); // Usamos fechaEntrada como proxy si no hay fecha de paso a vitrina
+                    const days = getDaysInVitrina(t.fechaEntrada);
                     const isOld = days > 15;
 
                     return (
@@ -125,8 +126,50 @@ const RetirosPage: React.FC = () => {
                 )}
             </div>
 
+            <BottomSheet 
+                isOpen={!!selectedTrabajo} 
+                onClose={() => setSelectedTrabajo(null)}
+                title="Confirmar Cobro"
+            >
+                {selectedTrabajo && (
+                    <div className="space-y-6">
+                        <div className="p-8 bg-red-500/10 rounded-3xl text-center border border-red-500/20 shadow-inner">
+                            <span className="text-[10px] font-black text-slate-500 uppercase block mb-2 tracking-[0.2em]">SALDO A CANCELAR HOY</span>
+                            <span className="text-6xl font-black text-red-500 tracking-tighter drop-shadow-sm">{formatCurrency(selectedTrabajo.saldo)}</span>
+                        </div>
+                        
+                        <div className="bg-liquid-gold/10 p-6 rounded-2xl flex items-center gap-4 border border-liquid-gold/20">
+                            <div className="w-10 h-10 rounded-full bg-liquid-gold/20 flex items-center justify-center shrink-0">
+                                <CheckCircleIcon className="w-6 h-6 text-liquid-gold"/>
+                            </div>
+                            <p className="text-[11px] font-bold text-liquid-gold/90 uppercase leading-relaxed">
+                                Al confirmar, el sistema registrará el pago y generará la Nota de Venta PDF automáticamente.
+                            </p>
+                        </div>
+
+                        <button 
+                            onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
+                            disabled={isProcessing}
+                            className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-gold-glow flex items-center justify-center gap-3 transition-all duration-500 ${isProcessing ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-liquid-gold text-brand-dark hover:scale-[1.02]'}`}
+                        >
+                            {isProcessing ? (
+                                <><Loader2Icon className="animate-spin w-5 h-5" /> PROCESANDO...</>
+                            ) : (
+                                <><CheckCircleIcon className="w-5 h-5"/> COMPLETAR TRANSACCIÓN</>
+                            )}
+                        </button>
+                        
+                        <div className="text-center">
+                            <button onClick={() => setSelectedTrabajo(null)} className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">
+                                Cancelar y Volver
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </BottomSheet>
+
             {selectedTrabajo && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex justify-center items-center p-4 animate-fade-in" onClick={() => setSelectedTrabajo(null)}>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] hidden lg:flex justify-center items-center p-4 animate-fade-in" onClick={() => setSelectedTrabajo(null)}>
                     <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury w-full max-w-lg overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
                          <div className="bg-red-500/10 p-8 flex justify-between items-center border-b border-red-500/20">
                             <div><h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">Confirmar Cobro</h2><p className="text-red-400 text-[10px] font-black mt-1 uppercase tracking-[0.2em]">Orden #{selectedTrabajo.orden}</p></div>
@@ -140,8 +183,16 @@ const RetirosPage: React.FC = () => {
                             <div className="bg-liquid-gold/10 p-4 rounded-2xl flex items-center gap-3 border border-liquid-gold/20">
                                 <ExclamationTriangleIcon className="w-5 h-5 text-liquid-gold shrink-0"/><p className="text-[10px] font-bold text-liquid-gold/80 uppercase leading-tight">Al confirmar, el sistema generará automáticamente la Nota de Venta PDF.</p>
                             </div>
-                            <button onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} className="w-full py-6 bg-liquid-gold text-brand-dark font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-gold-glow hover:bg-white transition-all duration-500 flex items-center justify-center gap-3">
-                                <DocumentCheckIcon className="w-6 h-6"/> REGISTRAR Y GENERAR PDF
+                            <button 
+                                onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
+                                disabled={isProcessing}
+                                className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-gold-glow flex items-center justify-center gap-3 transition-all duration-500 ${isProcessing ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-liquid-gold text-brand-dark hover:bg-white'}`}
+                            >
+                                {isProcessing ? (
+                                    <><Loader2Icon className="animate-spin w-5 h-5" /> PROCESANDO...</>
+                                ) : (
+                                    <><CheckCircleIcon className="w-5 h-5"/> CONFIRMAR PAGO</>
+                                )}
                             </button>
                         </div>
                     </div>

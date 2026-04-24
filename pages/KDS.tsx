@@ -11,6 +11,7 @@ import {
 import { formatCurrency, formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BottomSheet } from '../components/BottomSheet';
 
 // --- UTILIDADES ---
 type UrgencyLevel = 'critical' | 'warning' | 'safe';
@@ -184,7 +185,7 @@ const KDSPage: React.FC = () => {
     const [filterTerm, setFilterTerm] = useState('');
     const [activeTag, setActiveTag] = useState('Vista General');
     const [draggedOverColumn, setDraggedOverColumn] = useState<TrabajoEstado | null>(null);
-    
+    const [activeMobileTab, setActiveMobileTab] = useState<TrabajoEstado>(TrabajoEstado.PENDIENTE);
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
     const [cameraTarget, setCameraTarget] = useState<Trabajo | null>(null);
 
@@ -291,25 +292,53 @@ const KDSPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Tab Selector */}
+                <div className="lg:hidden mt-8 flex gap-2 bg-white/5 p-1.5 rounded-2xl overflow-x-auto no-scrollbar border border-white/5">
+                    {Object.keys(KANBAN_COLUMNS).map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => setActiveMobileTab(status as TrabajoEstado)}
+                            className={`
+                                px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap italic flex items-center gap-3
+                                ${activeMobileTab === status 
+                                    ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' 
+                                    : 'text-slate-500 bg-white/5'}
+                            `}
+                        >
+                            {status}
+                            <span className={`px-2 py-0.5 rounded-lg text-[8px] ${activeMobileTab === status ? 'bg-brand-dark/20' : 'bg-white/10'}`}>
+                                {columns[status]?.length || 0}
+                            </span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* --- TABLERO KANBAN --- */}
-            <div className="flex-grow overflow-x-auto overflow-y-hidden p-8 lg:p-10 custom-scrollbar-h relative z-10">
-                <div className="flex h-full gap-6 min-w-[1400px]">
+            <div className="flex-grow overflow-x-auto lg:overflow-x-auto overflow-y-hidden p-4 lg:p-10 custom-scrollbar-h relative z-10">
+                <div className="flex h-full gap-6 lg:min-w-[1400px] w-full">
                     <AnimatePresence mode="popLayout">
                         {Object.keys(columns).map((status, index) => {
                             const colStatus = status as TrabajoEstado;
-                            const isDragOver = draggedOverColumn === colStatus;
+                            
+                            // On mobile, only show the active tab
+                            const isVisibleOnMobile = activeMobileTab === colStatus;
                             
                             return (
                                 <motion.div 
                                     key={status}
                                     initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
+                                    animate={{ 
+                                        opacity: 1, 
+                                        x: 0,
+                                        display: (window.innerWidth < 1024 && !isVisibleOnMobile) ? 'none' : 'flex'
+                                    }}
                                     transition={{ delay: index * 0.05 }}
                                     className={`
-                                        flex-1 min-w-[360px] flex flex-col bg-white/[0.01] backdrop-blur-md transition-all duration-500 border border-white/5 rounded-[2.5rem] overflow-hidden
-                                        ${isDragOver ? 'bg-liquid-gold/[0.02] border-liquid-gold/10' : ''}
+                                        flex-1 min-w-full lg:min-w-[360px] flex flex-col bg-white/[0.01] backdrop-blur-md transition-all duration-500 border border-white/5 rounded-[2.5rem] overflow-hidden
+                                        ${draggedOverColumn === colStatus ? 'bg-liquid-gold/[0.02] border-liquid-gold/10' : ''}
+                                        ${!isVisibleOnMobile ? 'hidden lg:flex' : 'flex'}
                                     `}
                                     onDragOver={(e) => e.preventDefault()}
                                     onDragEnter={() => setDraggedOverColumn(colStatus)}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { APP_NAME } from '../constants';
@@ -13,6 +12,7 @@ import { User, TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
 import { SEO } from './SEO';
 import { MobileFloatingNav } from './MobileFloatingNav';
+import { SearchOmni } from './SearchOmni';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -297,6 +297,11 @@ const Header: React.FC<{
                     <span className="text-base font-black text-slate-900 dark:text-white tracking-wider tabular-nums leading-none">{timeStr}</span>
                     <span className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.3em]">{dateStr}</span>
                 </div>
+
+                {/* Quick Search Trigger */}
+                <SearchOmni />
+
+                <div className="h-8 w-px bg-slate-200 dark:bg-white/5 hidden md:block" />
 
                 {/* Theme Toggle */}
                 <button
