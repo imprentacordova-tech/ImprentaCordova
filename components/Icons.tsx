@@ -170,6 +170,7 @@ export const ClipboardIcon      = Clipboard;
 export const ClipboardCheckIcon = ClipboardCheck;
 export const UploadIcon         = Upload;
 export const PhotoIcon          = Image;
+export const ImageIcon          = Image;
 export const FileImageIcon      = FileImage;
 export const ImagesIcon         = Images;
 export const GalleryIcon        = GalleryHorizontal;
