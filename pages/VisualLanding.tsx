@@ -437,7 +437,7 @@ const VisualLanding: React.FC = () => {
                                 </motion.button>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
