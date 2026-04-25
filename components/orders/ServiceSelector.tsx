@@ -10,23 +10,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ServiceSelectorProps {
     onSelect: (servicio: any) => void;
     selectedId?: string;
+    regimen?: string;
 }
 
-// Emoji por categoría para las pestañas
-const categoryEmoji: Record<string, string> = {
-    'Todas': '🏷️',
-    'Oficina': '🖨️',
-    'Tarjetas': '💳',
-    'Publicidad': '📢',
-    'Etiquetas': '🏷️',
-    'Gran Formato': '🎨',
-    'Sublimación': '☕',
-    'Merch': '👕',
-    'Eventos': '🎉',
-    'General': '📦'
-};
+// ... (existing emoji)
 
-const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId }) => {
+const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId, regimen }) => {
     const { productos } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState<string>('Todas');
@@ -42,9 +31,16 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId 
             const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
+            
+            // Inteligencia de Régimen:
+            // Si es General o Emprendedor, NO pueden imprimir Notas de Venta físicas
+            if ((regimen === 'General' || regimen === 'Rimpe Emprendedor') && p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
+                return false;
+            }
+
             return matchesSearch && matchesCategory;
         });
-    }, [productos, searchTerm, activeCategory]);
+    }, [productos, searchTerm, activeCategory, regimen]);
 
     // Conteo por categoría
     const categoryCounts = useMemo(() => {

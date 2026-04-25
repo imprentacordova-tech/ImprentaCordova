@@ -13,7 +13,7 @@ declare const html2pdf: any;
 const SolicitudImpresionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
-    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
+    const { trabajos, clientes, sriCredentials, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
 
@@ -79,16 +79,19 @@ const SolicitudImpresionPage: React.FC = () => {
         { key: 'factura', label: 'Facturas' },
         { key: 'nota de venta', label: 'Nota de Venta' },
         { key: 'liquidacion de compra de bienes muebles', label: 'Liq. Compra Bienes Muebles Usados' },
-        { key: 'credito', label: 'Nota de Crédito' },
-        { key: 'debito', label: 'Nota de Débito' },
-        { key: 'guia', label: 'Guía de Remisión' },
-        { key: 'boleto', label: 'Boletos / Entradas a Espectáculos' },
-        { key: 'liquidacion de compra de vehiculo', label: 'Liq. Compra Vehículos Usados' },
-        { key: 'acta de entrega', label: 'Acta Entrega-Recepción Vehículos' },
-        { key: 'liquidacion', label: 'Liq. Compra Bienes o Prest. Servicios' },
+        { key: 'credito', label: 'Notas de Crédito' },
+        { key: 'debito', label: 'Notas de Débito' },
+        { key: 'guia', label: 'Guías de Remisión' },
+        { key: 'boleto', label: 'Boletos / Entradas Espectáculos' },
+        { key: 'vehiculo', label: 'Liq. Compra Vehículos Usados' },
+        { key: 'acta', label: 'Acta Entrega-Recepción Vehículos' },
+        { key: 'servicios', label: 'Liq. Compra Bienes o Prest. Servicios' },
         { key: 'retencion', label: 'Comprobante de Retención' },
-        { key: 'recibo', label: 'RECIBOS (NO SRI)' }
+        { key: 'recibo', label: 'Recibos (No SRI)' }
     ];
+
+    const hasSriKey = sriCredentials.some(c => c.ruc === cliente.ruc);
+    const isContingencyLimit = (cliente.regimen === 'General' || cliente.regimen === 'Rimpe Emprendedor') && trabajo.es_sri;
 
     // Mapear el catálogo estándar con los items del trabajo
     const mappedItems = standardTypes.map(st => {
@@ -168,10 +171,15 @@ const SolicitudImpresionPage: React.FC = () => {
                 </div>
 
                 {/* 2. TÍTULO SECUNDARIO RUGOSO */}
-                <div className="bg-gray-200 border-x-2 border-b-2 border-[#1f2124] text-center py-2 px-2 relative z-10" style={{ backgroundImage: 'radial-gradient(#999 1px, transparent 1px)', backgroundSize: '4px 4px' }}>
+                <div className="bg-gray-200 border-x-2 border-b-2 border-[#1f2124] text-center py-2 px-2 relative z-10 flex items-center justify-center gap-4" style={{ backgroundImage: 'radial-gradient(#999 1px, transparent 1px)', backgroundSize: '4px 4px' }}>
                     <h2 className="text-xl font-black text-black uppercase tracking-widest bg-white/95 inline-block px-6 py-0.5 rounded shadow-sm border border-slate-300">
                         Solicitud de Autorización de Impresión SRI
                     </h2>
+                    {isContingencyLimit && (
+                        <div className="bg-brand-red text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-tighter shadow-lg border-2 border-white animate-pulse">
+                            Límite Contingencia: 25H
+                        </div>
+                    )}
                 </div>
 
                 {/* 3. DATOS DEL CLIENTE - ESTILO LÍNEAS DE PUNTOS */}
@@ -211,8 +219,14 @@ const SolicitudImpresionPage: React.FC = () => {
                             ))}
                         </div>
                         <span className="whitespace-nowrap italic ml-10 mr-2 font-black text-[15px]">Clave:</span>
-                        <div className="flex-grow border-b-2 border-black border-dashed pb-1 px-2 flex items-center justify-center font-black text-sm">
-                            {trabajo.estadoClave === 'LISTA' ? '************' : 'PENDIENTE'}
+                        <div className="flex-grow border-b-2 border-black border-dashed pb-1 px-2 flex items-center justify-center font-black text-sm relative">
+                            {hasSriKey ? (
+                                <span className="text-emerald-600 flex items-center gap-1">
+                                    CLAVE ENCONTRADA <span className="text-[10px]">✅</span>
+                                </span>
+                            ) : (
+                                <span>{trabajo.estadoClave === 'LISTA' ? '************' : 'PENDIENTE'}</span>
+                            )}
                         </div>
                     </div>
 

@@ -12,11 +12,22 @@ interface ProductConfiguratorProps {
     product: any;
     onComplete: (config: any) => void;
     onCancel: () => void;
+    regimen?: string;
 }
 
-const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onComplete, onCancel }) => {
+const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onComplete, onCancel, regimen }) => {
     // Basic Specs
     const [cantidad, setCantidad] = useState(1);
+    
+    // SRI Contingency Check
+    const isContingencyLimit = (regimen === 'General' || regimen === 'Rimpe Emprendedor') && product.esSRI;
+    
+    useEffect(() => {
+        if (isContingencyLimit && cantidad > 25) {
+            setCantidad(25);
+        }
+    }, [cantidad, isContingencyLimit]);
+
     const [tamano, setTamano] = useState('1/4 Oficio');
     const [tipoPapel, setTipoPapel] = useState('Bond 75g');
     const [copias, setCopias] = useState('Original y 1 Copia');
@@ -134,12 +145,21 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-3">
                                     <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Unidades</label>
-                                    <input 
-                                        type="number" 
-                                        value={cantidad}
-                                        onChange={(e) => setCantidad(Number(e.target.value))}
-                                        className="w-full bg-black/60 border border-white/10 rounded-2xl p-5 text-white font-black text-2xl outline-none focus:border-liquid-gold/50 transition-all shadow-inner"
-                                    />
+                                    <div className="relative">
+                                        <input 
+                                            type="number" 
+                                            value={cantidad}
+                                            onChange={(e) => setCantidad(Number(e.target.value))}
+                                            className={`w-full bg-black/60 border ${isContingencyLimit && cantidad >= 25 ? 'border-brand-red/50' : 'border-white/10'} rounded-2xl p-5 text-white font-black text-2xl outline-none focus:border-liquid-gold/50 transition-all shadow-inner`}
+                                        />
+                                        {isContingencyLimit && (
+                                            <div className="absolute -bottom-6 left-0 right-0 flex items-center justify-center gap-2">
+                                                <div className="h-[1px] flex-1 bg-brand-red/20"></div>
+                                                <span className="text-[7px] font-black text-brand-red uppercase tracking-widest whitespace-nowrap">Límite SRI Contingencia: 25 Hojas</span>
+                                                <div className="h-[1px] flex-1 bg-brand-red/20"></div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Formato</label>

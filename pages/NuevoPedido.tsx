@@ -315,7 +315,11 @@ const NuevoPedidoPage: React.FC = () => {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.95 }}
                                             >
-                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
+                                                <ServiceSelector 
+                                                    onSelect={setServicio} 
+                                                    selectedId={servicio?.id} 
+                                                    regimen={cliente?.regimen}
+                                                />
                                             </motion.div>
                                         ) : orderMode === 'CATALOG' && servicio ? (
                                             <motion.div
@@ -327,6 +331,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                 <ProductConfigurator 
                                                     product={servicio} 
                                                     onCancel={() => setServicio(null)}
+                                                    regimen={cliente?.regimen}
                                                     onComplete={(config) => {
                                                         setConfiguracion(config);
                                                         setPrecio(config.precioFinal);

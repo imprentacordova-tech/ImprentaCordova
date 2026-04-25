@@ -27,5 +27,16 @@
 - Debes usar exclusivamente el sistema de diseño definido en [design_manifest.md](file:///c:/Users/Santiago/Documents/Visual%20Code%20Antigraviti/01_Proyectos_Principales/Imprentacordova.net/design_manifest.md).
 - Si creas una página nueva, usa `glass-card-luxury` y `text-gold-gradient`.
 
+## 5. Reglas de Documentación SRI por Régimen
+
+- **RIMPE Negocio Popular**: 
+    - Documentos: Nota de Venta (Principal), Factura, Liquidaciones (Bienes Muebles, Vehículos, Servicios), Notas de Crédito/Débito, Guías de Remisión y Boletos de Espectáculos.
+    - Nota: Son documentos físicos con vigencia de 1 año (si están al día).
+
+- **Régimen General / RIMPE Emprendedor**: 
+    - **Obligatorio Facturación Electrónica**.
+    - **Regla de Imprenta (Contingencia)**: Solo pueden imprimir un máximo de **25 hojas/documentos** (Facturas o Retenciones de contingencia) por punto de emisión. 
+    - Prohibido: No pueden imprimir "Notas de Venta".
+
 ---
 *Si no sigues estas reglas, el sistema perderá la confianza del usuario y la eficiencia de la imprenta se verá comprometida.*

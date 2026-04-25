@@ -149,7 +149,13 @@ const ClientesPage: React.FC = () => {
                                     </td>
                                     <td className="px-5 lg:px-8 py-4 lg:py-6 font-mono text-sm font-bold text-slate-400">{c.ruc || c.cedula}</td>
                                     <td className="px-5 lg:px-8 py-4 lg:py-6">
-                                        <span className={`px-3 lg:px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/30'}`}>
+                                        <span className={`px-3 lg:px-4 py-1.5 inline-flex text-[9px] leading-5 font-black uppercase tracking-[0.2em] rounded-full border ${
+                                            c.regimen === Regimen.NEGOCIO_POPULAR 
+                                            ? 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_10px_rgba(249,115,22,0.1)]' 
+                                            : c.regimen === Regimen.EMPRENDEDOR
+                                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)]'
+                                            : 'bg-slate-500/10 text-slate-400 border-slate-500/30'
+                                        }`}>
                                             {c.regimen}
                                         </span>
                                     </td>
