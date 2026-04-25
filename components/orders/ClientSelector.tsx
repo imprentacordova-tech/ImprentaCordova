@@ -51,8 +51,9 @@ export const CreateClientModal: React.FC<{
     onClientCreated: (client: Cliente) => void; 
     initialName?: string; 
     initialCedulaRuc?: string;
-    initialMode?: ClientMode; // Nuevo prop para abrir directo en el modo deseado
-}> = ({ isOpen, onClose, onClientCreated, initialName, initialCedulaRuc, initialMode = 'EXPRESS' }) => {
+    initialMode?: ClientMode;
+    isLocked?: boolean;
+}> = ({ isOpen, onClose, onClientCreated, initialName, initialCedulaRuc, initialMode = 'EXPRESS', isLocked = false }) => {
     
     const [mode, setMode] = useState<ClientMode>(initialMode);
     
@@ -253,22 +254,26 @@ export const CreateClientModal: React.FC<{
                         </button>
                     </div>
 
-                    <div className="bg-white/5 p-1.5 rounded-[1.8rem] flex font-black text-[10px] uppercase tracking-widest border border-white/5">
-                        <button 
-                            type="button"
-                            onClick={() => setMode('EXPRESS')}
-                            className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'EXPRESS' ? 'bg-white text-brand-dark shadow-luxury' : 'text-slate-500 hover:text-white'}`}
-                        >
-                            <BoltIcon className="w-4 h-4"/> Express (Normal)
-                        </button>
-                        <button 
-                            type="button"
-                            onClick={() => setMode('SRI')}
-                            className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'SRI' ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}
-                        >
-                            <ShieldCheckIcon className="w-4 h-4"/> Perfil Tributario RUC
-                        </button>
-                    </div>
+                    {!isLocked && (
+                        <div className="bg-white/5 p-1.5 rounded-[1.8rem] flex font-black text-[10px] uppercase tracking-widest border border-white/5">
+                            <button 
+                                type="button"
+                                onClick={() => setMode('EXPRESS')}
+                                className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'EXPRESS' ? 'bg-white text-brand-dark shadow-luxury' : 'text-slate-500 hover:text-white'}`}
+                            >
+                                <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse"></div>
+                                Express (Normal)
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => setMode('SRI')}
+                                className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all ${mode === 'SRI' ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}
+                            >
+                                <div className="w-2 h-2 rounded-full bg-brand-red animate-pulse"></div>
+                                Perfil Tributario RUC
+                            </button>
+                        </div>
+                    )}
                 </div>
                 
                 <div className="flex-grow p-10 space-y-10 overflow-y-auto custom-scrollbar relative z-10 pb-40">
@@ -555,7 +560,12 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                         <div className="p-10 text-center space-y-4">
                             <ExclamationTriangleIcon className="w-10 h-10 mx-auto text-slate-700 opacity-50"/>
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sin coincidencias en base de datos</p>
-                            <button onClick={() => handleOpenCreate('EXPRESS')} className="text-liquid-gold hover:text-white text-[9px] font-black uppercase tracking-widest transition-colors border-b border-liquid-gold/30 pb-1">Dar de alta como nuevo cliente</button>
+                            <button 
+                                onClick={() => handleOpenCreate(hideQuickButtons ? 'SRI' : 'EXPRESS')} 
+                                className={`${hideQuickButtons ? 'bg-brand-red text-white px-8 py-3 rounded-xl shadow-red-glow' : 'text-liquid-gold border-b border-liquid-gold/30 pb-1'} text-[9px] font-black uppercase tracking-widest transition-all`}
+                            >
+                                {hideQuickButtons ? 'Inscribir como Nuevo Contribuyente SRI' : 'Dar de alta como nuevo cliente'}
+                            </button>
                         </div>
                     )}
                 </div>
@@ -567,7 +577,8 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                 onClientCreated={(c) => { setIsCreateModalOpen(false); onSelect(c); }}
                 initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
                 initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
-                initialMode={createMode}
+                initialMode={hideQuickButtons ? 'SRI' : createMode}
+                isLocked={hideQuickButtons}
             />
         </div>
     );
