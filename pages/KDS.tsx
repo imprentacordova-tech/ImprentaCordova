@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
+import { Cliente, Trabajo, TrabajoEstado, User, Regimen } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
 import { 
     CloseIcon, ClockIcon, SearchIcon, LayersIcon, 
     CheckBadgeIcon, ActivityIcon, CpuIcon,
-    BoltIcon, HistoryIcon, BoxIcon, CameraIcon, InfoIcon, ArrowRightIcon
+    BoltIcon, HistoryIcon, BoxIcon, CameraIcon, InfoIcon, ArrowRightIcon,
+    ShieldCheckIcon, PrinterIcon
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';
@@ -112,17 +113,31 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                         <h4 className="text-lg md:text-xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none mb-2 group-hover:text-liquid-gold transition-colors truncate uppercase">
                             {cliente?.nombre || 'Consumidor Final'}
                         </h4>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                              <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest opacity-80 italic">{trabajo.subtipo}</p>
+                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest opacity-80 italic truncate max-w-[200px]">{trabajo.subtipo}</p>
+                             {trabajo.tipo === 'sri' && (
+                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-brand-red/10 text-brand-red border border-brand-red/20 animate-pulse">SRI</span>
+                             )}
+                             {cliente?.regimen === Regimen.NEGOCIO_POPULAR && (
+                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">RIMPE N.P.</span>
+                             )}
+                             {cliente?.regimen === Regimen.EMPRENDEDOR && (
+                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-violet-500/10 text-violet-400 border border-violet-500/20">EMPREND.</span>
+                             )}
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-5">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.03] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 uppercase tracking-widest italic">
                             <LayersIcon className="w-3.5 h-3.5 text-liquid-gold/60" />
                             <span>{trabajo.cantidad} <span className="text-slate-500 dark:text-slate-600">UNID.</span></span>
                         </div>
+                        {trabajo.tamano && (
+                            <div className="text-[9px] font-black text-slate-400 bg-white/[0.03] px-2.5 py-1.5 rounded-lg border border-white/5 uppercase tracking-widest italic">
+                                {trabajo.tamano}
+                            </div>
+                        )}
                         {targetDate && (
                             <div className={`flex items-center gap-2.5 text-[10px] font-black ${style.text} uppercase tracking-widest italic`}>
                                 <ClockIcon className="w-3.5 h-3.5 opacity-50" />
@@ -206,6 +221,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
 const KDSPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const { trabajos, clientes, updateTrabajoStatus, updateTrabajoPhoto } = useData();
+    const navigate = useNavigate();
     
     const [filterTerm, setFilterTerm] = useState('');
     const [activeTag, setActiveTag] = useState('Vista General');
@@ -428,17 +444,27 @@ const KDSPage: React.FC = () => {
                 onClose={() => setSelectedTrabajo(null)} 
                 title={`ORD-${selectedTrabajo?.orden || ''}`}
             >
-                {selectedTrabajo && (
+                {selectedTrabajo && (() => {
+                    const selCliente = clientes.find(c => c.id === selectedTrabajo.clienteId);
+                    return (
                     <div className="space-y-8 pb-10">
                         <div className="flex items-center gap-6">
                             <div className="w-16 h-16 rounded-2xl bg-liquid-gold text-brand-dark flex items-center justify-center font-black text-2xl italic shadow-gold-glow">
-                                {clientes.find(c => c.id === selectedTrabajo.clienteId)?.nombre.charAt(0).toUpperCase()}
+                                {selCliente?.nombre.charAt(0).toUpperCase()}
                             </div>
                             <div>
                                 <h3 className="font-black text-slate-900 dark:text-white text-2xl uppercase tracking-tighter italic leading-none">
-                                    {clientes.find(c => c.id === selectedTrabajo.clienteId)?.nombre}
+                                    {selCliente?.nombre}
                                 </h3>
-                                <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic mt-1">Socio Comercial Activo</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic">Socio Comercial Activo</p>
+                                    {selectedTrabajo.tipo === 'sri' && (
+                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-brand-red/10 text-brand-red border border-brand-red/20">SRI</span>
+                                    )}
+                                    {selCliente?.regimen === Regimen.NEGOCIO_POPULAR && (
+                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">RIMPE N.P.</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -453,6 +479,14 @@ const KDSPage: React.FC = () => {
                             </div>
                         </div>
 
+                        {selectedTrabajo.tamano && (
+                            <div className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
+                                <CpuIcon className="w-4 h-4 text-liquid-gold/60" />
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Formato:</span>
+                                <span className="text-sm font-black text-white uppercase italic">{selectedTrabajo.tamano}</span>
+                            </div>
+                        )}
+
                         <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl space-y-4">
                             <div className="flex justify-between items-center">
                                 <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Inversión Total</span>
@@ -466,34 +500,56 @@ const KDSPage: React.FC = () => {
                             </div>
                         </div>
 
+                        {selectedTrabajo.actividadSeleccionada && (
+                            <div className="p-4 bg-brand-red/5 border border-brand-red/10 rounded-2xl flex items-center gap-3">
+                                <ShieldCheckIcon className="w-4 h-4 text-brand-red" />
+                                <span className="text-[9px] font-black text-brand-red uppercase tracking-widest italic">Actividad SRI:</span>
+                                <span className="text-xs font-black text-white uppercase italic truncate">{selectedTrabajo.actividadSeleccionada}</span>
+                            </div>
+                        )}
+
                         <div className="space-y-3">
                             <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] ml-1 italic flex items-center gap-2">
                                 <InfoIcon className="w-3 h-3 text-liquid-gold"/> Especificaciones de Taller
                             </label>
-                            <div className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-3xl p-6 text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic min-h-[100px]">
-                                {selectedTrabajo.observaciones || "Sin especificaciones técnicas adicionales."}
+                            <div className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-3xl p-6 text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic min-h-[80px]">
+                                {selectedTrabajo.observaciones || selectedTrabajo.subtipo || "Sin especificaciones técnicas adicionales."}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
+                            {selectedTrabajo.tipo === 'sri' && (
+                                <button 
+                                    onClick={() => {
+                                        setSelectedTrabajo(null);
+                                        navigate(`/solicitud-impresion/${selectedTrabajo.id}`);
+                                    }} 
+                                    className="bg-white/5 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic border border-white/10 hover:border-liquid-gold/30 transition-all flex items-center justify-center gap-2 col-span-2"
+                                >
+                                    <PrinterIcon className="w-4 h-4" /> Imprimir Solicitud A4
+                                </button>
+                            )}
+                            {selCliente?.telefono?.[0] && (
+                                <button 
+                                    onClick={() => {
+                                        const msg = `Hola *${selCliente.nombre}*, su pedido ORD-${String(selectedTrabajo.orden).padStart(5, '0')} está en producción. Le enviaremos el diseño para su aprobación.`;
+                                        window.open(`https://wa.me/${selCliente.telefono[0]}?text=${encodeURIComponent(msg)}`, '_blank');
+                                    }}
+                                    className="bg-green-600 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-green-500 transition-all flex items-center justify-center gap-2"
+                                >
+                                    WhatsApp Arte
+                                </button>
+                            )}
                              <button 
                                 onClick={() => setSelectedTrabajo(null)} 
                                 className="bg-slate-100 dark:bg-white/5 text-slate-500 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic"
                             >
                                 Regresar
                             </button>
-                            <button 
-                                onClick={() => {
-                                    // Navegar a edición o algo similar
-                                    setSelectedTrabajo(null);
-                                }} 
-                                className="bg-liquid-gold text-brand-dark py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic shadow-lg"
-                            >
-                                Modificar
-                            </button>
                         </div>
                     </div>
-                )}
+                    );
+                })()}
             </BottomSheet>
 
             <style>{`

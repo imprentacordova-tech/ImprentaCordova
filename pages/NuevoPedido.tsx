@@ -463,13 +463,9 @@ const NuevoPedidoPage: React.FC = () => {
                                         )}
 
                                         <div className="space-y-6">
-                                            <label className="text-[10px] md:text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Valor Total de Misión</label>
-                                            <div className="relative group">
-                                                <div className="absolute inset-y-0 left-6 md:left-10 flex items-center text-liquid-gold text-2xl md:text-4xl font-black italic">$</div>
-                                                <input 
-                                                    type="number" value={precio} onChange={e => setPrecio(Number(e.target.value))}
-                                                    className="w-full pl-14 md:pl-20 pr-6 md:pr-10 py-6 md:py-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2rem] md:rounded-[2.5rem] text-3xl md:text-5xl font-black text-white outline-none transition-all duration-700 shadow-inner italic"
-                                                />
+                                            <label className="text-[10px] md:text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Motor de Cotización Inteligente</label>
+                                            <div className="bg-black/60 border border-white/10 rounded-[3rem] p-10 shadow-luxury">
+                                                <PriceCalculatorDisplay onSelectPrice={setPrecio} />
                                             </div>
                                         </div>
                                         
