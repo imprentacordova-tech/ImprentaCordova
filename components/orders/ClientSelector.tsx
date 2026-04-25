@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
-import { extractClientFromImage } from '../../services/geminiService';
+import { extractDataFromSriPdf } from '../../services/pdfExtraction';
 import { validarIdentificacionEC } from '../../utils';
 import { 
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
@@ -111,17 +111,29 @@ export const CreateClientModal: React.FC<{
         const file = e.target.files?.[0];
         if (!file) return;
         setIsScanning(true);
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const base64 = event.target?.result as string;
-            const data = await extractClientFromImage(base64);
-            if (data) {
-                applyExtractedData(data);
+        try {
+            const result = await extractDataFromSriPdf(file);
+            if (result) {
+                applyExtractedData({
+                    nombre: result.apellidos_nombres,
+                    ruc: result.ruc,
+                    direccion: result.direccion,
+                    regimen: result.regimen,
+                    email: result.contacto?.email,
+                    telefono: result.contacto?.celular,
+                    numEstablecimientos: result.cantidad_establecimientos,
+                    establecimientoPrincipal: '001',
+                    actividades: result.actividad_economica
+                });
                 setMode('SRI'); // Auto-switch to SRI mode if scanning
             }
+        } catch (error) {
+            console.error("Error extracted SRI PDF:", error);
+            setRucError("Error al leer el PDF. Asegúrese de que sea un certificado del SRI.");
+        } finally {
             setIsScanning(false);
-        };
-        reader.readAsDataURL(file);
+            if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input
+        }
     };
 
     const applyExtractedData = (data: any) => {
@@ -129,8 +141,13 @@ export const CreateClientModal: React.FC<{
         setHighlightFields(fields);
         
         let regimenFinal = Regimen.GENERAL;
-        if (data.regimen?.toUpperCase().includes('POPULAR')) regimenFinal = Regimen.NEGOCIO_POPULAR;
-        else if (data.regimen?.toUpperCase().includes('EMPRENDEDOR')) regimenFinal = Regimen.EMPRENDEDOR;
+        if (typeof data.regimen === 'string') {
+            if (data.regimen.toUpperCase().includes('POPULAR')) regimenFinal = Regimen.NEGOCIO_POPULAR;
+            else if (data.regimen.toUpperCase().includes('EMPRENDEDOR')) regimenFinal = Regimen.EMPRENDEDOR;
+            else regimenFinal = data.regimen as Regimen;
+        } else if (data.regimen) {
+            regimenFinal = data.regimen;
+        }
 
         setNewClienteData(prev => ({
             ...prev,

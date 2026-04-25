@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Cliente, Trabajo } from '../types';
+import { Cliente, Trabajo, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
     Loader2Icon
@@ -182,6 +182,16 @@ const SolicitudImpresionPage: React.FC = () => {
                         <span className="whitespace-nowrap italic mr-2 text-[13px]">Actividad Ec.:</span>
                         <span className="flex-grow font-black uppercase text-sm">{cliente.actividades || trabajo.actividadSeleccionada || 'SEGÚN RUC'}</span>
                     </div>
+                    
+                    {cliente.regimen === Regimen.NEGOCIO_POPULAR && (
+                        <div className="flex items-end border-b-2 border-black border-dashed pb-1 pt-1">
+                            <span className="whitespace-nowrap italic mr-2 text-[13px]">Cumplimiento Tributario:</span>
+                            <div className="flex items-center gap-2 flex-grow">
+                                <div className="w-4 h-4 border-2 border-black flex items-center justify-center font-black pb-0.5 text-[10px] bg-white">x</div>
+                                <span className="font-black text-sm uppercase">Al día: verificado {dia}/{mes}/{anio}</span>
+                            </div>
+                        </div>
+                    )}
                     
                     {/* FILA DE RUC CON CAJITAS Y CLAVE */}
                     <div className="flex items-end pb-1 pt-2">
