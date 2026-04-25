@@ -338,7 +338,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                                         {group.title}
                                     </h3>
                                     <div className="grid gap-1">
-                                        {group.items.map(item => (
+                                         {group.items.map(item => (
                                             <NavLink 
                                                 key={item.path} 
                                                 to={item.path} 
@@ -350,8 +350,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                                                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:translate-x-1'}
                                                 `}
                                             >
-                                                <item.icon className={`w-4 h-4 transition-transform group-hover:rotate-12 ${isActive ? 'text-liquid-gold' : ''}`} />
-                                                {item.label}
+                                                {({ isActive }) => (
+                                                    <>
+                                                        <item.icon className={`w-4 h-4 transition-transform group-hover:rotate-12 ${isActive ? 'text-liquid-gold' : ''}`} />
+                                                        {item.label}
+                                                    </>
+                                                )}
                                             </NavLink>
                                         ))}
                                     </div>
