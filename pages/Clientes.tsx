@@ -6,7 +6,7 @@ import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
 import { UI_TEXT } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
 /* Added UserPlusIcon to the imports to fix the error on line 112 */
-import { CloseIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ClockIcon, PencilIcon, ExclamationTriangleIcon, Loader2Icon, CheckCircleIcon, SparklesIcon, MessageCircleIcon, WhatsAppIcon, UserPlusIcon } from '../components/Icons';
+import { CloseIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ClockIcon, PencilIcon, TrashIcon, ExclamationTriangleIcon, Loader2Icon, CheckCircleIcon, SparklesIcon, MessageCircleIcon, WhatsAppIcon, UserPlusIcon } from '../components/Icons';
 import { generateMarketingPromotion } from '../services/geminiService';
 
 // --- MODAL DE MARKETING IA ---
@@ -78,7 +78,7 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
 // ... Rest of component uses useData state
 const ClientesPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: any }>();
-    const { clientes, trabajos, loading, addCliente, updateCliente } = useData();
+    const { clientes, trabajos, loading, addCliente, updateCliente, deleteCliente } = useData();
     const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
     const [marketingClient, setMarketingClient] = useState<Cliente | null>(null);
     
@@ -102,6 +102,13 @@ const ClientesPage: React.FC = () => {
             logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CREAR_CLIENTE', `Nuevo cliente creado: ${client.nombre}`, 'Clientes');
         }
         setSelectedClient(null);
+    };
+
+    const handleDeleteClient = async (id: string, nombre: string) => {
+        if (window.confirm(`¿Está seguro de eliminar al cliente ${nombre}? Esta acción no se puede deshacer.`)) {
+            await deleteCliente(id);
+            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'ELIMINAR_CLIENTE', `Cliente eliminado: ${nombre}`, 'Clientes');
+        }
     };
 
     return (
@@ -153,6 +160,9 @@ const ClientesPage: React.FC = () => {
                                             </button>
                                             <button onClick={() => setSelectedClient(c)} className="p-2.5 lg:p-3 text-slate-400 hover:bg-white/10 hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10" title="Editar">
                                                 <PencilIcon className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDeleteClient(c.id, c.nombre)} className="p-2.5 lg:p-3 text-red-400 hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-all border border-transparent hover:border-red-500/10" title="Eliminar">
+                                                <TrashIcon className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </td>

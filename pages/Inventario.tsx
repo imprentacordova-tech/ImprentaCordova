@@ -60,6 +60,7 @@ const itemVariants = {
 };
 
 const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (item: Partial<InventoryItem>) => void; item: Partial<InventoryItem> | null }> = ({ isOpen, onClose, onSave, item }) => {
+    const { proveedores } = useData();
     const [formData, setFormData] = useState<Partial<InventoryItem>>({});
     
     useEffect(() => { 
@@ -87,14 +88,29 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
                     </div>
 
                     <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                        <div className="space-y-3">
-                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción del Material</label>
-                            <input 
-                                type="text" name="item" value={formData.item || ''} 
-                                onChange={e => setFormData({...formData, item: e.target.value})} 
-                                required className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-xl font-bold text-white italic focus:border-liquid-gold/50 outline-none transition-all placeholder:text-slate-800" 
-                                placeholder="Ej: Papel Couché 150g..." 
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción del Material</label>
+                                <input 
+                                    type="text" name="item" value={formData.item || ''} 
+                                    onChange={e => setFormData({...formData, item: e.target.value})} 
+                                    required className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-xl font-bold text-white italic focus:border-liquid-gold/50 outline-none transition-all placeholder:text-slate-800" 
+                                    placeholder="Ej: Papel Couché 150g..." 
+                                />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Alianza Estratégica (Proveedor)</label>
+                                <select 
+                                    name="proveedorId" value={formData.proveedorId || ''} 
+                                    onChange={e => setFormData({...formData, proveedorId: e.target.value})} 
+                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-sm font-black text-white focus:border-liquid-gold/50 outline-none transition-all cursor-pointer uppercase italic"
+                                >
+                                    <option value="" className="bg-slate-900">SIN PROVEEDOR ASIGNADO</option>
+                                    {proveedores.map(p => (
+                                        <option key={p.id} value={p.id} className="bg-slate-900">👑 {p.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
@@ -260,6 +276,11 @@ const InventarioPage: React.FC = () => {
                                                         {isLow ? 'Reposición Urgente' : 'Estado Saludable'}
                                                     </span>
                                                     <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">{item.unidad}</span>
+                                                    {item.proveedorId && (
+                                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full bg-liquid-gold/5 text-liquid-gold border border-liquid-gold/10">
+                                                            👑 ASOCIADO
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <h4 className="text-3xl font-black text-white uppercase italic tracking-tighter group-hover:text-liquid-gold transition-colors leading-tight">{item.item}</h4>
                                             </div>

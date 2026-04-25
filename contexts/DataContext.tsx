@@ -19,6 +19,7 @@ interface DataContextType {
     refreshData: () => Promise<void>;
     addCliente: (c: any) => Promise<Cliente>;
     updateCliente: (id: string, c: any) => Promise<void>;
+    deleteCliente: (id: string) => Promise<void>;
     addTrabajo: (t: any, user: string) => Promise<Trabajo>;
     updateTrabajoStatus: (id: string, status: TrabajoEstado, user: string) => Promise<void>;
     addProducto: (p: any) => Promise<any>;
@@ -249,6 +250,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { error } = await supabase.from('clientes').update(dbReadyData).eq('id', id);
         if (error) throw error;
         setClientes(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+    };
+
+    const deleteCliente = async (id: string) => {
+        const { error } = await supabase.from('clientes').delete().eq('id', id);
+        if (error) throw error;
+        setClientes(prev => prev.filter(c => c.id !== id));
     };
 
     const addTrabajo = async (trabajoData: any, user: string, imageFile?: File | null) => {
@@ -509,7 +516,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const value = {
         clientes, trabajos, productos, users, inventario, proveedores, tareas, sriCredentials, config,
         loading, syncing, error,
-        refreshData, addCliente, updateCliente, addTrabajo, updateTrabajoStatus,
+        refreshData, addCliente, updateCliente, deleteCliente, addTrabajo, updateTrabajoStatus,
         addProducto, createProducto, updateProducto, deleteProducto, bulkCreateProductos,
         seedCatalog, addInventoryItem, updateInventoryItem, deleteInventoryItem, 
         upsertSriCredential, bulkAddSriCredentials, deleteSriCredential, updateConfig,

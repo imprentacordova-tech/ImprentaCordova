@@ -121,6 +121,27 @@ export interface ServiceItem { id: string; title: string; description: string; i
 export enum ToneType { PROFESSIONAL = 'Profesional', CREATIVE = 'Creativo', PERSUASIVE = 'Persuasivo', FRIENDLY = 'Amigable' }
 export interface ContactFormState { name: string; email: string; phone: string; message: string; }
 export type ProductCategory = 'Todos' | 'Favoritos' | 'Oficina' | 'Gran Formato' | 'Merch' | 'Publicidad' | 'Tarjetas' | 'Sublimación' | 'Etiquetas';
-export interface InventoryItem { id: string; item: string; cantidad: number; unidad: string; costoUnitario: number; minimo: number; }
+export interface InventoryItem { id: string; item: string; cantidad: number; unidad: string; costoUnitario: number; minimo: number; proveedorId?: string; }
 export interface Proveedor { id: string; nombre: string; categoria: string; tipo: 'Producto' | 'Servicio'; contacto: string; telefono: string; email?: string; website?: string; direccion?: string; ciudad?: string; productos?: string; notas?: string; estado: 'Activo' | 'Inactivo'; creadoEn: string; }
 export interface TareaProveedor { id: string; proveedorId: string; titulo: string; tipo: 'General' | 'Mantenimiento'; descripcion?: string; fechaVencimiento: string; completada: boolean; }
+
+export interface CostConfig {
+  COSTO_RESMA_QUIMICO_ORIG: number;
+  COSTO_RESMA_QUIMICO_COPIA: number;
+  COSTO_RESMA_BOND: number;
+  COSTO_PLIEGO_COUCHE_150: number;
+  COSTO_PLIEGO_COUCHE_300: number;
+  COSTO_PLIEGO_ADHESIVO: number;
+  COSTO_DISENO_SRI: number;
+  COSTO_PLACA_CTP: number;
+  COSTO_PLACA_POLIESTER: number;
+  COSTO_ARRANQUE: number;
+  COSTO_MILLAR_IMPRESION: number;
+  CLICK_DIGITAL_A3: number;
+  CLICK_DIGITAL_BN: number;
+  COSTO_CORTE: number;
+  COSTO_BLOCK_ENCOLADO: number;
+  COSTO_NUMERACION: number;
+  MARGEN_GANANCIA: number;
+  proveedoresPredeterminados: Record<string, string>;
+}

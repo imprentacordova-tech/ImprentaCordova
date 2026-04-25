@@ -43,7 +43,7 @@ const ProductManagementModal: React.FC<{
     productToEdit: Producto | null;
 }> = ({ isOpen, onClose, onSave, productToEdit }) => {
     const [mode, setMode] = useState<'SINGLE' | 'MATRIX'>('SINGLE');
-    const [baseProduct, setBaseProduct] = useState<Partial<Producto>>({ nombre: '', categoria: 'SRI', esSRI: true, precio: 0 });
+    const [baseProduct, setBaseProduct] = useState<Partial<Producto>>({ nombre: '', categoria: 'General', esSRI: false, precio: 0, imagenUrl: '', specs: [] });
     const [selectedSizes, setSelectedSizes] = useState<string[]>(["1/4 Oficio"]);
     const [selectedPresentations, setSelectedPresentations] = useState<string[]>(["BLOCK"]);
     const [selectedCopies, setSelectedCopies] = useState<number[]>([2]);
@@ -56,7 +56,7 @@ const ProductManagementModal: React.FC<{
             setBaseProduct(productToEdit);
             setMode('SINGLE');
         } else {
-            setBaseProduct({ nombre: '', descripcion: '', precio: 15, categoria: 'SRI', esSRI: true });
+            setBaseProduct({ nombre: '', descripcion: '', precio: 0, categoria: 'General', esSRI: false, imagenUrl: '', specs: [] });
             setMode('SINGLE');
         }
     }, [productToEdit, isOpen]);
@@ -80,8 +80,10 @@ const ProductManagementModal: React.FC<{
                                 nombre: fullName.toUpperCase(),
                                 descripcion: baseProduct.descripcion || `${baseProduct.nombre} en tamaño ${size}, ${presInfo?.label} con ${copyInfo?.label}.`,
                                 precio: calculatedPrice,
-                                categoria: baseProduct.categoria || 'SRI',
+                                categoria: baseProduct.categoria || 'General',
                                 esSRI: baseProduct.esSRI,
+                                imagenUrl: baseProduct.imagenUrl,
+                                specs: [size, presInfo?.label || '', qtyLabel, copyInfo?.suffix || ''].filter(Boolean) as string[],
                             });
                         });
                     });
@@ -129,10 +131,51 @@ const ProductManagementModal: React.FC<{
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Base Rate ($)</label>
                                     <input type="number" value={baseProduct.precio} onChange={e => setBaseProduct({...baseProduct, precio: parseFloat(e.target.value)})} className="input-atelier w-full" />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Copy Adder ($)</label>
-                                    <input type="number" value={extraCopyPrice} onChange={e => setExtraCopyPrice(parseFloat(e.target.value))} className="input-atelier w-full" />
+                            </div>
+
+                            <div className="space-y-6 pt-6 border-t border-white/5">
+                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] block flex items-center gap-2"><PhotoIcon className="w-4 h-4"/> Visual Identity</label>
+                                <div className="space-y-4">
+                                    <input 
+                                        type="text" 
+                                        placeholder="IMAGE URL (E.G. HTTPS://...)" 
+                                        value={baseProduct.imagenUrl} 
+                                        onChange={e => setBaseProduct({...baseProduct, imagenUrl: e.target.value})} 
+                                        className="input-atelier w-full text-[10px]" 
+                                    />
+                                    {baseProduct.imagenUrl && (
+                                        <div className="h-32 rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                                            <img src={baseProduct.imagenUrl} className="w-full h-full object-cover opacity-60" alt="Preview" />
+                                        </div>
+                                    )}
                                 </div>
+                            </div>
+
+                            <div className="space-y-6 pt-6 border-t border-white/5">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] block flex items-center gap-2"><RulerIcon className="w-4 h-4"/> Technical Specs</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="SPECS (COMMA SEPARATED)" 
+                                    value={baseProduct.specs?.join(', ')} 
+                                    onChange={e => setBaseProduct({...baseProduct, specs: e.target.value.split(',').map(s => s.trim())})} 
+                                    className="input-atelier w-full text-[10px]" 
+                                />
+                            </div>
+
+                            <div className="space-y-4 pt-6 border-t border-white/5">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Core Category</label>
+                                <select 
+                                    value={baseProduct.categoria} 
+                                    onChange={e => setBaseProduct({...baseProduct, categoria: e.target.value})}
+                                    className="input-atelier w-full appearance-none text-[10px] font-black uppercase tracking-widest"
+                                >
+                                    <option value="General">GENERAL</option>
+                                    <option value="SRI">SRI OFFICIAL</option>
+                                    <option value="Publicidad">PUBLICIDAD</option>
+                                    <option value="Tarjetas">TARJETAS</option>
+                                    <option value="Gran Formato">GRAN FORMATO</option>
+                                    <option value="Sublimación">SUBLIMACIÓN</option>
+                                </select>
                             </div>
 
                             {mode === 'MATRIX' && (

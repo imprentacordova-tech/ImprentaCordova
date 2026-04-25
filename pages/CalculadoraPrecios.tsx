@@ -16,7 +16,8 @@ import { CloseIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { logActivity } from '../services/activityLogService';
 import { SOURCE_PAPERS, DEFAULT_COSTS } from '../constants';
-import { CostConfig } from '../types';
+import { CostConfig, Proveedor, InventoryItem } from '../types';
+import { useData } from '../contexts/DataContext';
 
 // --- ANIMATION VARIANTS ---
 const fadeInUp = {
@@ -92,7 +93,13 @@ const ProductionPipeline: React.FC<{
     prePressCost: number;
     materialCost: number;
     printCost: number;
-}> = ({ sourceName, sourceType, sourceSize, cutSize, cutsPerUnit, prePressCost, materialCost, printCost }) => {
+    materialProvider?: string;
+    prepressProvider?: string;
+    printProvider?: string;
+    materialLowStock?: boolean;
+    prepressLowStock?: boolean;
+    printLowStock?: boolean;
+}> = ({ sourceName, sourceType, sourceSize, cutSize, cutsPerUnit, prePressCost, materialCost, printCost, materialProvider, prepressProvider, printProvider, materialLowStock, prepressLowStock, printLowStock }) => {
     
     const images = {
         input: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=600",
@@ -113,21 +120,21 @@ const ProductionPipeline: React.FC<{
                     title="1. Sustrato" 
                     image={images.input} 
                     subtitle={sourceName} 
-                    detail={`${sourceType} • MATRIZ FÍSICA • ${sourceSize}`}
+                    detail={`${sourceType} • MATRIZ FÍSICA • ${sourceSize}${materialProvider ? ` • 👑 PROV: ${materialProvider}` : ''}${materialLowStock ? ' ⚠️ STOCK CRÍTICO' : ''}`}
                     cost={materialCost}
                 />
                 <VisualStep 
                     title="2. Pre-Impresión" 
                     image={images.prepress} 
                     subtitle="Profiling Offset" 
-                    detail="INSUMO TÉCNICO • CTP / POLIÉSTER"
+                    detail={`INSUMO TÉCNICO • CTP / POLIÉSTER${prepressProvider ? ` • 👑 PROV: ${prepressProvider}` : ''}${prepressLowStock ? ' ⚠️ STOCK CRÍTICO' : ''}`}
                     cost={prePressCost}
                 />
                 <VisualStep 
                     title="3. Ejecución" 
                     image={images.print} 
                     subtitle="Chasis Mecánico" 
-                    detail="TIRAJE INDUSTRIAL • CALIBRACIÓN"
+                    detail={`TIRAJE INDUSTRIAL • CALIBRACIÓN${printProvider ? ` • 👑 PROV: ${printProvider}` : ''}${printLowStock ? ' ⚠️ STOCK CRÍTICO' : ''}`}
                     cost={printCost}
                 />
                 <VisualStep 
@@ -143,7 +150,7 @@ const ProductionPipeline: React.FC<{
 };
 
 // --- CALCULADORA OFFSET ---
-const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
+const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[] }> = ({ costs, proveedores, inventario }) => {
     const [paperId, setPaperId] = useState('QUIMICO');
     const [selectedSizePreset, setSelectedSizePreset] = useState('1/4_OFICIO');
     const [finalW, setFinalW] = useState(10.5);
@@ -155,6 +162,17 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
     const [parts, setParts] = useState(2);
     const [hasDesign, setHasDesign] = useState(false);
     const [requiresSRI, setRequiresSRI] = useState(true);
+
+    const getProviderName = (key: string) => {
+        const id = costs.proveedoresPredeterminados?.[key];
+        return proveedores.find(p => p.id === id)?.nombre;
+    };
+
+    const isProviderLowStock = (key: string) => {
+        const id = costs.proveedoresPredeterminados?.[key];
+        if (!id) return false;
+        return inventario.some(i => i.proveedorId === id && i.cantidad <= i.minimo);
+    };
 
     const handlePresetChange = (val: string) => {
         setSelectedSizePreset(val);
@@ -232,7 +250,10 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
         let pvp = costoTotalProduccion * (1 + costs.MARGEN_GANANCIA);
         if (paper.id === 'QUIMICO' && quantity === 1 && pvp < 15) pvp = 15;
 
-        return { paper, cutsPerUnit, costPapelTotal, costPrePrensa, costImpresion, costAcabados, costoTotalProduccion, pvp, unitario: pvp / quantity };
+        const materialKey = paper.id === 'QUIMICO' ? 'COSTO_RESMA_QUIMICO_ORIG' : paper.costoBaseKey;
+        const placaKey = (quantity > 2000 || paper.id === 'COUCHE_300') ? 'COSTO_PLACA_CTP' : 'COSTO_PLACA_POLIESTER';
+
+        return { paper, cutsPerUnit, costPapelTotal, costPrePrensa, costImpresion, costAcabados, costoTotalProduccion, pvp, unitario: pvp / quantity, materialKey, placaKey };
     }, [paperId, finalW, finalH, quantity, colorsFront, colorsBack, parts, costs, hasDesign, requiresSRI, cantidadHojasBlock]);
 
     return (
@@ -346,6 +367,12 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                             prePressCost={result.costPrePrensa}
                             materialCost={result.costPapelTotal}
                             printCost={result.costImpresion}
+                            materialProvider={getProviderName(result.materialKey)}
+                            prepressProvider={getProviderName(result.placaKey)}
+                            printProvider={getProviderName('COSTO_MILLAR_IMPRESION')}
+                            materialLowStock={isProviderLowStock(result.materialKey)}
+                            prepressLowStock={isProviderLowStock(result.placaKey)}
+                            printLowStock={isProviderLowStock('COSTO_MILLAR_IMPRESION')}
                         />
 
                         {/* Métricas Financieras */}
@@ -437,12 +464,23 @@ const OffsetCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
 };
 
 // --- CALCULADORA DIGITAL ---
-const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
+const DigitalCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[] }> = ({ costs, proveedores, inventario }) => {
     const [format, setFormat] = useState<'A4' | 'A3' | 'SRA3'>('A3');
     const [paperType, setPaperType] = useState('COUCHE_150');
     const [colorMode, setColorMode] = useState<'COLOR' | 'BW'>('COLOR');
     const [sides, setSides] = useState<1 | 2>(1);
     const [quantity, setQuantity] = useState(10);
+
+    const getProviderName = (key: string) => {
+        const id = costs.proveedoresPredeterminados?.[key];
+        return proveedores.find(p => p.id === id)?.nombre;
+    };
+
+    const isProviderLowStock = (key: string) => {
+        const id = costs.proveedoresPredeterminados?.[key];
+        if (!id) return false;
+        return inventario.some(i => i.proveedorId === id && i.cantidad <= i.minimo);
+    };
 
     const calculation = useMemo(() => {
         let clickCost = colorMode === 'COLOR' ? costs.CLICK_DIGITAL_A3 : costs.CLICK_DIGITAL_BN;
@@ -460,8 +498,22 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
         const productionCost = ((quantity * sides) * clickCost) + (quantity * sheetCost);
         const pvp = productionCost * (1 + costs.MARGEN_GANANCIA);
         
-        return { unitCost: productionCost / quantity, totalCost: productionCost, unitPvp: pvp / quantity, totalPvp: pvp };
+        let sheetKey = '';
+        switch (paperType) {
+            case 'BOND': sheetKey = 'COSTO_RESMA_BOND'; break; 
+            case 'COUCHE_115': sheetKey = 'COSTO_PLIEGO_COUCHE_300'; break;
+            case 'COUCHE_300': sheetKey = 'COSTO_PLIEGO_COUCHE_300'; break;
+            case 'ADHESIVO': sheetKey = 'COSTO_PLIEGO_ADHESIVO'; break;
+        }
+        const clickKey = colorMode === 'COLOR' ? 'CLICK_DIGITAL_A3' : 'CLICK_DIGITAL_BN';
+
+        return { unitCost: productionCost / quantity, totalCost: productionCost, unitPvp: pvp / quantity, totalPvp: pvp, sheetKey, clickKey };
     }, [format, paperType, colorMode, sides, quantity, costs]);
+
+    const paperProvider = getProviderName(calculation.sheetKey);
+    const clickProvider = getProviderName(calculation.clickKey);
+    const paperLowStock = isProviderLowStock(calculation.sheetKey);
+    const clickLowStock = isProviderLowStock(calculation.clickKey);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -551,6 +603,20 @@ const DigitalCalculator: React.FC<{ costs: CostConfig }> = ({ costs }) => {
                         <div className="flex justify-between items-center bg-white/[0.01] p-10 rounded-[3rem] border border-white/5 shadow-inner group/val hover:border-white/10 transition-all">
                             <span className="text-[11px] font-black text-slate-700 uppercase tracking-[0.4em] italic leading-none">Iteración de Tiraje</span>
                             <span className="text-4xl font-black text-white italic">{quantity} <span className="text-xl text-slate-800 tracking-tighter ml-4 font-black opacity-40">UNIDADES</span></span>
+                        </div>
+                        <div className={`flex justify-between items-center bg-white/[0.01] p-8 rounded-[3rem] border shadow-inner group/val hover:border-white/10 transition-all ${paperLowStock ? 'border-rose-500/20' : 'border-white/5'}`}>
+                            <span className={`text-[9px] font-black uppercase tracking-[0.4em] italic leading-none ${paperLowStock ? 'text-rose-500/70' : 'text-slate-700'}`}>Sustrato Asociado</span>
+                            <div className="flex items-center gap-3">
+                                {paperLowStock && <span className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20">⚠️ STOCK CRÍTICO</span>}
+                                <span className="text-sm font-black text-slate-400 uppercase tracking-widest">{paperProvider ? `👑 ${paperProvider}` : 'S/P PREDETERMINADO'}</span>
+                            </div>
+                        </div>
+                        <div className={`flex justify-between items-center bg-white/[0.01] p-8 rounded-[3rem] border shadow-inner group/val hover:border-white/10 transition-all ${clickLowStock ? 'border-rose-500/20' : 'border-white/5'}`}>
+                            <span className={`text-[9px] font-black uppercase tracking-[0.4em] italic leading-none ${clickLowStock ? 'text-rose-500/70' : 'text-slate-700'}`}>Alianza de Impresión</span>
+                            <div className="flex items-center gap-3">
+                                {clickLowStock && <span className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20">⚠️ INSUMOS CRÍTICOS</span>}
+                                <span className="text-sm font-black text-slate-400 uppercase tracking-widest">{clickProvider ? `👑 ${clickProvider}` : 'TALLER INTERNO'}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -656,6 +722,7 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 const CalculadoraPreciosPage: React.FC = () => {
     const context = useOutletContext<{ currentUser: any }>();
     const currentUser = context?.currentUser;
+    const { proveedores, inventario } = useData();
     
     const [mode, setMode] = useState<Mode>('OFFSET');
     const [costs, setCosts] = useState<CostConfig>(DEFAULT_COSTS);
@@ -798,8 +865,8 @@ const CalculadoraPreciosPage: React.FC = () => {
                         transition={{ duration: 0.6 }}
                         className="relative z-10 pb-32"
                     >
-                        {mode === 'OFFSET' && <OffsetCalculator costs={costs} />}
-                        {mode === 'DIGITAL' && <DigitalCalculator costs={costs} />}
+                        {mode === 'OFFSET' && <OffsetCalculator costs={costs} proveedores={proveedores} inventario={inventario} />}
+                        {mode === 'DIGITAL' && <DigitalCalculator costs={costs} proveedores={proveedores} inventario={inventario} />}
                         {mode === 'CONFIG' && (
                             <motion.div 
                                 initial={{ opacity: 0, y: 40 }}
@@ -817,15 +884,27 @@ const CalculadoraPreciosPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                                    {Object.entries(costs).map(([key, val]) => (
+                                    {Object.entries(costs).filter(([key]) => key !== 'proveedoresPredeterminados').map(([key, val]) => (
                                         <div key={key} className="space-y-4">
                                             <label className="block text-[9px] font-black text-slate-700 uppercase tracking-widest ml-1">{key.replace(/_/g, ' ')}</label>
-                                            <input 
-                                                type="number" step="0.0001" 
-                                                value={val} 
-                                                onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value)})}
-                                                className="w-full p-5 bg-black/40 border border-white/5 rounded-2xl text-white font-black text-lg outline-none focus:border-liquid-gold/30 transition-all shadow-inner"
-                                            />
+                                            <div className="space-y-2">
+                                                <input 
+                                                    type="number" step="0.0001" 
+                                                    value={val as number} 
+                                                    onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value)})}
+                                                    className="w-full p-5 bg-black/40 border border-white/5 rounded-2xl text-white font-black text-lg outline-none focus:border-liquid-gold/30 transition-all shadow-inner"
+                                                />
+                                                <select 
+                                                    value={costs.proveedoresPredeterminados?.[key] || ''} 
+                                                    onChange={e => setCosts({...costs, proveedoresPredeterminados: {...(costs.proveedoresPredeterminados || {}), [key]: e.target.value}})}
+                                                    className="w-full p-3 bg-black/60 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-liquid-gold/30 cursor-pointer"
+                                                >
+                                                    <option value="" className="bg-slate-900">SIN PROVEEDOR PREDETERMINADO</option>
+                                                    {proveedores.map(p => (
+                                                        <option key={p.id} value={p.id} className="bg-slate-900">👑 {p.nombre}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
