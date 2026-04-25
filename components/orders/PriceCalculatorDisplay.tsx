@@ -204,5 +204,3 @@ const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelec
 };
 
 export default PriceCalculatorDisplay;
-
-export default PriceCalculatorDisplay;
