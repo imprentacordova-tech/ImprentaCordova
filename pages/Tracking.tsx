@@ -474,5 +474,4 @@ const TrackingPage: React.FC = () => {
 };
 
 export default TrackingPage;
-ault TrackingPage;
 
