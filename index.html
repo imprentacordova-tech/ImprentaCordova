@@ -19,7 +19,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-surface-light dark:bg-brand-dark text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-blue selection:text-white overflow-x-hidden">
-    <div id="root"></div>
+    <div id="root">
+        <!-- Cargador de emergencia: Si ves esto, JS no ha cargado -->
+        <div id="emergency-loader" style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0c1324; color: white; font-family: sans-serif; flex-direction: column; gap: 20px;">
+            <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #D4AF37; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5;">Iniciando Sistema Atelier...</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+        // Capturador de errores globales para depurar pantalla blanca en Vercel
+        window.onerror = function(msg, url, line, col, error) {
+            var root = document.getElementById('root');
+            if (root) {
+                root.innerHTML = '<div style="padding: 40px; color: #ff4444; background: #1a1a1a; min-height: 100vh; font-family: monospace;">' +
+                    '<h1 style="color: #D4AF37;">⚠️ Error Crítico de Carga</h1>' +
+                    '<p>El sistema no pudo iniciar correctamente en este navegador.</p>' +
+                    '<hr style="border: 1px solid #333; margin: 20px 0;">' +
+                    '<pre style="white-space: pre-wrap;">' + msg + '\nLínea: ' + line + '\nURL: ' + url + '</pre>' +
+                    '<button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #D4AF37; border: none; cursor: pointer; font-weight: bold;">Reintentar</button>' +
+                '</div>';
+            }
+            return false;
+        };
+        window.onunhandledrejection = function(event) {
+            console.error('Promesa fallida:', event.reason);
+        };
+    </script>
+
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>
