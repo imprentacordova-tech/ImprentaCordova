@@ -8,7 +8,7 @@ import {
     ArrowRightIcon, ShoppingCartIcon, ShieldCheckIcon,
     SparklesIcon, CpuIcon, CreditCardIcon, UserIcon,
     PrinterIcon, ClockIcon, BoltIcon, RocketLaunchIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon, LayoutDashboardIcon, BookOpenIcon, ZapIcon
 } from '../components/Icons';
 import ClientSelector from '../components/orders/ClientSelector';
 import ServiceSelector from '../components/orders/ServiceSelector';
@@ -23,6 +23,7 @@ const NuevoPedidoPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
+    const [orderMode, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [servicio, setServicio] = useState<any>(null);
@@ -35,19 +36,15 @@ const NuevoPedidoPage: React.FC = () => {
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
     const [configuracion, setConfiguracion] = useState<any>(null);
 
-    // Auto-scroll to top on step or service change - Aggressive reset
+    // Auto-scroll logic
     useEffect(() => {
-        // Reset full page scroll
         window.scrollTo(0, 0);
         document.documentElement.scrollTo(0, 0);
-        
-        // Ensure the transition is smooth for the user
         const timer = setTimeout(() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 50);
-        
         return () => clearTimeout(timer);
-    }, [step, servicio]);
+    }, [step, servicio, orderMode]);
 
     // SRI specific states
     const [isSriOrder, setIsSriOrder] = useState(false);
@@ -55,23 +52,17 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriClave, setSriClave] = useState('');
     const [sriActividad, setSriActividad] = useState('');
     const [taxStatus, setTaxStatus] = useState<'AL_DIA' | 'PENDIENTE' | 'DESCONOCIDO'>('DESCONOCIDO');
-    const [quickName, setQuickName] = useState(''); // Para cuando saltan el cliente
+    const [quickName, setQuickName] = useState('');
 
     const canAdvance = () => {
-        if (step === 1) return true; // Permitimos avanzar siempre (identidad opcional inicialmente)
-        if (step === 2) {
-            if (!servicio) return false;
-            if (isSriOrder) {
-                if (sriMode === 'RENOVACION' && !sriClave) return false;
-                if (!sriActividad) return false;
-            }
-            return true;
-        }
+        if (step === 1) return true; // Permitir avanzar, se asignará "Consumidor Final" si está vacío
+        if (step === 2) return orderMode !== null;
         if (step === 3) {
-            // En el último paso, si no hay cliente, DEBEMOS tener al menos un nombre rápido
-            if (!cliente && !quickName) return false;
-            return precio > 0;
+            if (orderMode === 'EXPRESS') return !!detalle.trim();
+            if (orderMode === 'CATALOG') return !!configuracion;
+            return false;
         }
+        if (step === 4) return precio > 0;
         return true;
     };
 
@@ -80,8 +71,6 @@ const NuevoPedidoPage: React.FC = () => {
         setError(null);
         try {
             let finalCliente = cliente;
-            
-            // Si no hay cliente, crear uno Express al vuelo
             if (!finalCliente) {
                 finalCliente = await addCliente({
                     nombre: (quickName || 'CONSUMIDOR FINAL').toUpperCase(),
@@ -94,7 +83,7 @@ const NuevoPedidoPage: React.FC = () => {
             const result = await addTrabajo({
                 titular: finalCliente.nombre,
                 clienteId: finalCliente.id || '',
-                servicio: servicio.nombre,
+                servicio: servicio?.nombre || 'Servicio General',
                 detalle: isSriOrder 
                     ? `[SRI ${sriMode}] ${sriActividad} | ${detalle}${configuracion ? ` | SPECS: ${JSON.stringify(configuracion.especificaciones)}` : ''}` 
                     : `${detalle}${configuracion ? ` | SPECS: ${JSON.stringify(configuracion.especificaciones)}` : ''}`,
@@ -106,13 +95,11 @@ const NuevoPedidoPage: React.FC = () => {
                 fechaEntrada: new Date().toISOString(),
                 responsable: currentUser.nombre,
                 origen: 'Local',
-                // Metadata SRI
                 es_sri: isSriOrder,
                 estado_clave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
                 actividad_seleccionada: isSriOrder ? sriActividad : null
             }, currentUser.nombre, imageFile);
 
-            // Fire-and-forget: no bloquear si la tabla activity_log no existe
             logActivity(
                 currentUser.nombre, 
                 currentUser.rol || 'Administrador', 
@@ -121,10 +108,9 @@ const NuevoPedidoPage: React.FC = () => {
                 'Ventas'
             ).catch(() => {});
             
-            // Refresh sin bloquear
             refreshData().catch(() => {});
             setCreatedTrabajoId(result.id);
-            setStep(4); // Success step
+            setStep(5); 
         } catch (err: any) {
             console.error('[NuevoPedido] Error:', err);
             setError(err.message || 'Error al desplegar la misión.');
@@ -135,9 +121,10 @@ const NuevoPedidoPage: React.FC = () => {
 
     const steps = [
         { id: 1, label: 'Identidad', icon: UserIcon },
-        { id: 2, label: 'Especificación', icon: CpuIcon },
-        { id: 3, label: 'Capital', icon: CreditCardIcon },
-        { id: 4, label: 'Despliegue', icon: RocketLaunchIcon }
+        { id: 2, label: 'Lobby', icon: LayoutDashboardIcon },
+        { id: 3, label: 'Especificación', icon: CpuIcon },
+        { id: 4, label: 'Capital', icon: CreditCardIcon },
+        { id: 5, label: 'Despliegue', icon: RocketLaunchIcon }
     ];
 
     return (
@@ -148,15 +135,15 @@ const NuevoPedidoPage: React.FC = () => {
                 {steps.map((s, idx) => (
                     <React.Fragment key={s.id}>
                         <div className="flex flex-col items-center gap-3 md:gap-4 relative z-10 flex-shrink-0">
-                            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 border-2 ${
+                            <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 border-2 ${
                                 step >= s.id ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 border-white/10 text-slate-600'
                             } ${step === s.id ? 'scale-110' : ''}`}>
-                                <s.icon className={`w-5 h-5 md:w-7 md:h-7 ${step === s.id ? 'animate-pulse' : ''}`} />
+                                <s.icon className={`w-4 h-4 md:w-6 md:h-6 ${step === s.id ? 'animate-pulse' : ''}`} />
                             </div>
-                            <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] italic ${step >= s.id ? 'text-white' : 'text-slate-700'}`}>{s.label}</span>
+                            <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] italic ${step >= s.id ? 'text-white' : 'text-slate-700'}`}>{s.label}</span>
                         </div>
                         {idx < steps.length - 1 && (
-                            <div className="flex-1 min-w-[20px] h-[1px] bg-white/5 mx-4 md:mx-10 relative">
+                            <div className="flex-1 min-w-[15px] h-[1px] bg-white/5 mx-2 md:mx-6 relative">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: step > s.id ? '100%' : '0%' }}
@@ -169,7 +156,6 @@ const NuevoPedidoPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                {/* --- MAIN CONFIGURATION PANEL --- */}
                 <div className="lg:col-span-8 space-y-10">
                     <AnimatePresence mode="wait">
                         {step === 1 && (
@@ -178,30 +164,289 @@ const NuevoPedidoPage: React.FC = () => {
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                                <div className="space-y-4 mb-8 md:mb-14">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 01</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
-                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione el titular o salte directamente a la cotización.</p>
+                                <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-12">
+                                    <div className="space-y-4 text-center sm:text-left">
+                                        <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 01</p>
+                                        <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
+                                        <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Inicie la misión localizando al cliente en la red.</p>
+                                    </div>
+                                    <div className="flex flex-col items-center sm:items-end gap-4">
+                                        <button 
+                                            onClick={() => setIsSriOrder(!isSriOrder)}
+                                            className={`px-10 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] transition-all border flex items-center gap-4 ${isSriOrder ? 'bg-brand-red border-brand-red text-white shadow-red-glow' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white hover:border-white/20'}`}
+                                        >
+                                            <ShieldCheckIcon className="w-5 h-5" />
+                                            {isSriOrder ? '✓ TRÁMITE SRI ACTIVO' : 'ACTIVAR MODO SRI'}
+                                        </button>
+                                        <p className="text-[8px] text-slate-600 font-black uppercase tracking-widest italic">Obligatorio para facturas físicas</p>
+                                    </div>
                                 </div>
-                                <div className="bg-black/40 p-2 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 shadow-inner">
+                                <div className="bg-black/40 p-4 rounded-[2.5rem] md:rounded-[3.5rem] border border-white/5 shadow-inner space-y-8">
                                     <ClientSelector 
                                         onSelect={(c) => { setCliente(c); if(c) setStep(2); }} 
                                         selectedId={cliente?.id} 
                                         onSkip={() => setStep(2)}
+                                        hideQuickButtons={true}
                                     />
+                                    <div className="flex justify-center pt-4">
+                                        <button 
+                                            onClick={() => setStep(2)}
+                                            className="px-10 py-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-[9px] font-black text-slate-500 hover:text-liquid-gold transition-all uppercase tracking-[0.4em] italic"
+                                        >
+                                            Continuar como Consumidor Final →
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
 
                         {step === 2 && (
                             <motion.div 
+                                key="hub" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+                                className="space-y-12"
+                            >
+                                <div className="text-center space-y-4">
+                                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Selector de <span className="text-gold-gradient">Vector</span></h2>
+                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] italic">Defina el tipo de producción para el cliente.</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Botón Catálogo */}
+                                    <motion.button 
+                                        whileHover={{ y: -10, scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleSelectMode('CATALOGO')}
+                                        className="group relative h-80 bg-brand-dark/50 backdrop-blur-3xl rounded-[3rem] border border-white/5 hover:border-liquid-gold/30 transition-all overflow-hidden p-10 text-left shadow-luxury"
+                                    >
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 transition-opacity group-hover:opacity-100 opacity-50"></div>
+                                        <div className="relative z-10 h-full flex flex-col justify-between">
+                                            <div className="w-16 h-16 bg-liquid-gold rounded-2xl flex items-center justify-center text-black shadow-gold-glow">
+                                                <SolidBoxIcon className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-3">Catálogo de<br/><span className="text-liquid-gold">Productos</span></h3>
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Personalización técnica y servicios de imprenta.</p>
+                                            </div>
+                                        </div>
+                                    </motion.button>
+
+                                    {/* Botón Venta Express */}
+                                    <motion.button 
+                                        whileHover={{ y: -10, scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleSelectMode('EXPRESS')}
+                                        className="group relative h-80 bg-brand-dark/50 backdrop-blur-3xl rounded-[3rem] border border-white/5 hover:border-blue-500/30 transition-all overflow-hidden p-10 text-left shadow-luxury"
+                                    >
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[80px] -mr-32 -mt-32 transition-opacity group-hover:opacity-100 opacity-50"></div>
+                                        <div className="relative z-10 h-full flex flex-col justify-between">
+                                            <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                                                <BoltIcon className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-3">Venta<br/><span className="text-blue-400">Express</span></h3>
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Recibo rápido de mostrador y suministros directos.</p>
+                                            </div>
+                                        </div>
+                                    </motion.button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 3 && (
+                            <motion.div 
+                                key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                            >
+                                <div className="space-y-4 mb-10 md:mb-14">
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 03</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Matriz de <span className="text-gold-gradient">Especificación</span></h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-8 md:gap-12">
+                                    <AnimatePresence mode="wait">
+                                        {!servicio ? (
+                                            <motion.div key="selector" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div key="configurator" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                                <ProductConfigurator 
+                                                    product={servicio} 
+                                                    onCancel={() => setServicio(null)}
+                                                    onComplete={(config) => {
+                                                        setConfiguracion(config);
+                                                        setPrecio(config.precioFinal);
+                                                        setStep(4);
+                                                    }}
+                                                />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                    
+                                    {isSriOrder && !servicio && (
+                                        <div className="bg-brand-red/5 p-10 rounded-[3rem] border border-brand-red/20 space-y-10 animate-fade-in">
+                                            <div className="flex items-center gap-6">
+                                                <ShieldCheckIcon className="w-8 h-8 text-brand-red" />
+                                                <h3 className="text-lg font-black text-white uppercase tracking-widest italic">Validación Tributaria</h3>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div className="space-y-6">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Tipo de Trámite</label>
+                                                    <div className="flex gap-4 p-1.5 bg-black/40 rounded-2xl border border-white/5">
+                                                        {['NUEVO', 'RENOVACION'].map(m => (
+                                                            <button 
+                                                                key={m} onClick={() => setSriMode(m as any)}
+                                                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${sriMode === m ? 'bg-brand-red text-white shadow-luxury' : 'text-slate-600 hover:text-white'}`}
+                                                            >
+                                                                {m}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-6">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Clave SRI</label>
+                                                    <input 
+                                                        type="text" value={sriClave} onChange={e => setSriClave(e.target.value)}
+                                                        placeholder="Contraseña..."
+                                                        className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-6">
+                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Actividad Autorizada</label>
+                                                <select 
+                                                    value={sriActividad} onChange={e => setSriActividad(e.target.value)}
+                                                    className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
+                                                >
+                                                    <option value="">Seleccione...</option>
+                                                    {cliente?.actividades ? cliente.actividades.split('|').map((a, i) => (
+                                                        <option key={i} value={a}>{a}</option>
+                                                    )) : (
+                                                        <>
+                                                            <option value="SERVICIOS PROFESIONALES">SERVICIOS PROFESIONALES</option>
+                                                            <option value="VENTA AL POR MENOR">VENTA AL POR MENOR</option>
+                                                        </>
+                                                    )}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 4 && (
+                            <motion.div 
+                                key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                            >
+                                <div className="space-y-4 mb-8 md:mb-14">
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 04</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Asignación <span className="text-gold-gradient">Financiera</span></h2>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                    <div className="space-y-12">
+                                        <div className="space-y-6">
+                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Valor Total</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-6 flex items-center text-liquid-gold text-2xl font-black italic">$</div>
+                                                <input 
+                                                    type="number" value={precio} onChange={e => setPrecio(Number(e.target.value))}
+                                                    className="w-full pl-14 pr-6 py-6 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2rem] text-3xl font-black text-white outline-none italic"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6">
+                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Abono Inicial</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-6 flex items-center text-emerald-500 text-2xl font-black italic">$</div>
+                                                <input 
+                                                    type="number" value={abono} onChange={e => setAbono(Number(e.target.value))}
+                                                    className="w-full pl-14 pr-6 py-6 bg-black/60 border-2 border-white/5 focus:border-emerald-500/30 rounded-[2rem] text-3xl font-black text-emerald-500 outline-none italic"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="p-8 bg-liquid-gold/[0.04] border border-liquid-gold/10 rounded-[2rem] flex items-center gap-6">
+                                            <BoltIcon className="w-8 h-8 text-liquid-gold" />
+                                            <div>
+                                                <p className="text-[9px] text-slate-600 font-black uppercase italic">Saldo Pendiente</p>
+                                                <p className="text-3xl font-black text-white italic">${Math.max(0, precio - abono).toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-8">
+                                        <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Captura Visual</label>
+                                        <div className="bg-black/40 p-4 rounded-[2rem] border border-white/5 shadow-inner min-h-[300px]">
+                                            <PhotoCapture onImageCaptured={setImageFile} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* --- STEP 02: LOBBY --- */}
+                        {step === 2 && (
+                            <motion.div 
                                 key="step2" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                            >
+                                <div className="space-y-4 mb-12 text-center">
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 02</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Canal de <span className="text-gold-gradient">Producción</span></h2>
+                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione la arquitectura de trabajo para {cliente?.nombre || 'Consumidor Final'}.</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <button 
+                                        onClick={() => { setOrderMode('CATALOG'); setStep(3); }}
+                                        className="group relative bg-black/40 hover:bg-black/60 border border-white/5 hover:border-liquid-gold/30 p-10 rounded-[3rem] transition-all duration-700 overflow-hidden"
+                                    >
+                                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all scale-150">
+                                            <BookOpenIcon className="w-32 h-32 text-liquid-gold" />
+                                        </div>
+                                        <div className="relative z-10 space-y-6 text-left">
+                                            <div className="w-16 h-16 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold group-hover:bg-liquid-gold group-hover:text-black transition-all duration-700">
+                                                <BookOpenIcon className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter group-hover:text-liquid-gold transition-colors">Catálogo Elite</h3>
+                                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2 leading-relaxed">Productos pre-configurados con estándares industriales y precios calibrados.</p>
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => { setOrderMode('EXPRESS'); setStep(3); }}
+                                        className="group relative bg-black/40 hover:bg-black/60 border border-white/5 hover:border-brand-red/30 p-10 rounded-[3rem] transition-all duration-700 overflow-hidden"
+                                    >
+                                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all scale-150">
+                                            <ZapIcon className="w-32 h-32 text-brand-red" />
+                                        </div>
+                                        <div className="relative z-10 space-y-6 text-left">
+                                            <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all duration-700">
+                                                <ZapIcon className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter group-hover:text-brand-red transition-colors">Venta Express</h3>
+                                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2 leading-relaxed">Configuración libre y ultra-rápida para trabajos no estandarizados.</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* --- STEP 03: ESPECIFICACIÓN --- */}
+                        {step === 3 && (
+                            <motion.div 
+                                key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="space-y-4 mb-10 md:mb-14">
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
                                         <div>
-                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 02</p>
+                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 03</p>
                                             <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Matriz de <span className="text-gold-gradient">Especificación</span></h2>
                                         </div>
                                         <button 
@@ -215,7 +460,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                                 <div className="grid grid-cols-1 gap-8 md:gap-12">
                                     <AnimatePresence mode="wait">
-                                        {!servicio ? (
+                                        {orderMode === 'CATALOG' && !servicio ? (
                                             <motion.div
                                                 key="selector"
                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -224,7 +469,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             >
                                                 <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
                                             </motion.div>
-                                        ) : (
+                                        ) : orderMode === 'CATALOG' && servicio ? (
                                             <motion.div
                                                 key="configurator"
                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -237,20 +482,44 @@ const NuevoPedidoPage: React.FC = () => {
                                                     onComplete={(config) => {
                                                         setConfiguracion(config);
                                                         setPrecio(config.precioFinal);
-                                                        setStep(3);
+                                                        setStep(4);
                                                     }}
                                                 />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key="express"
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="space-y-10"
+                                            >
+                                                <div className="space-y-6">
+                                                    <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Memorándum del Proyecto</label>
+                                                    <textarea 
+                                                        value={detalle} 
+                                                        onChange={e => setDetalle(e.target.value)}
+                                                        placeholder="Describa los parámetros cuánticos del pedido..."
+                                                        className="w-full h-48 p-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2.5rem] text-lg font-bold text-white placeholder:text-slate-700 outline-none transition-all duration-700 shadow-inner resize-none"
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center">
+                                                    <button 
+                                                        onClick={() => setStep(4)}
+                                                        className="px-20 py-6 bg-white text-black rounded-2xl font-black uppercase tracking-[0.4em] hover:bg-liquid-gold transition-all"
+                                                    >
+                                                        Confirmar Parámetros →
+                                                    </button>
+                                                </div>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
                                     
-                                    {isSriOrder && !servicio && (
+                                    {isSriOrder && (orderMode === 'EXPRESS' || (orderMode === 'CATALOG' && !servicio)) && (
                                         <div className="bg-brand-red/5 p-10 rounded-[3rem] border border-brand-red/20 space-y-10 animate-fade-in">
                                             <div className="flex items-center gap-6">
                                                 <ShieldCheckIcon className="w-8 h-8 text-brand-red" />
                                                 <h3 className="text-lg font-black text-white uppercase tracking-widest italic">Validación Tributaria Obligatoria</h3>
                                             </div>
-                                            {/* ... rest of SRI fields ... */}
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 <div className="space-y-6">
                                                     <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Tipo de Trámite</label>
@@ -295,69 +564,45 @@ const NuevoPedidoPage: React.FC = () => {
                                                     )}
                                                 </select>
                                             </div>
-
-                                            <div className="flex items-center gap-6 p-6 bg-black/40 rounded-2xl border border-white/5">
-                                                <div className="flex-1">
-                                                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Estado de Impuesto a la Renta</p>
-                                                    <p className="text-xs font-black text-white italic">{taxStatus === 'AL_DIA' ? '✓ AL DÍA CON EL FISCO' : taxStatus === 'PENDIENTE' ? '⚠ REQUIERE REGULARIZACIÓN' : 'CONSULTA PENDIENTE'}</p>
-                                                </div>
-                                                <button 
-                                                    onClick={() => setTaxStatus('AL_DIA')}
-                                                    className="px-6 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[9px] font-black uppercase text-slate-400 transition-all"
-                                                >
-                                                    Verificar Ahora
-                                                </button>
-                                            </div>
                                         </div>
                                     )}
 
-                                    {!servicio && (
-                                        <>
-                                            <div className="space-y-6">
-                                                <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Memorándum del Proyecto</label>
-                                                <textarea 
-                                                    value={detalle} 
-                                                    onChange={e => setDetalle(e.target.value)}
-                                                    placeholder="Describa los parámetros cuánticos del pedido..."
-                                                    className="w-full h-48 p-10 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2.5rem] text-lg font-bold text-white placeholder:text-slate-700 outline-none transition-all duration-700 shadow-inner resize-none"
-                                                />
+                                    {orderMode === 'CATALOG' && !servicio && (
+                                        <div className="flex flex-col gap-6">
+                                            <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Índice de Prioridad</label>
+                                            <div className="flex gap-6 p-2 bg-black/40 rounded-[2rem] border border-white/5 w-fit">
+                                                {['Normal', 'Urgente'].map(p => (
+                                                    <button 
+                                                        key={p} onClick={() => setPrioridad(p as any)}
+                                                        className={`px-12 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.4em] italic transition-all duration-700 ${
+                                                            prioridad === p ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-600 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        {p}
+                                                    </button>
+                                                ))}
                                             </div>
-                                            
-                                            <div className="flex flex-col gap-6">
-                                                <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Índice de Prioridad</label>
-                                                <div className="flex gap-6 p-2 bg-black/40 rounded-[2rem] border border-white/5 w-fit">
-                                                    {['Normal', 'Urgente'].map(p => (
-                                                        <button 
-                                                            key={p} onClick={() => setPrioridad(p as any)}
-                                                            className={`px-12 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.4em] italic transition-all duration-700 ${
-                                                                prioridad === p ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-600 hover:text-white'
-                                                            }`}
-                                                        >
-                                                            {p}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                             </motion.div>
                         )}
 
-                        {step === 3 && (
+                        {/* --- STEP 04: CAPITAL --- */}
+                        {step === 4 && (
                             <motion.div 
-                                key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="space-y-4 mb-8 md:mb-14">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 03</p>
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 04</p>
                                     <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Asignación <span className="text-gold-gradient">Financiera</span></h2>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-12">
                                         {!cliente && (
-                                            <div className="bg-liquid-gold/10 p-10 rounded-[2.5rem] border border-liquid-gold/20 space-y-6 animate-pulse-slow">
+                                            <div className="bg-liquid-gold/10 p-10 rounded-[2.5rem] border border-liquid-gold/20 space-y-6">
                                                 <label className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em] ml-4 italic">Identidad para el Recibo</label>
                                                 <input 
                                                     type="text" 
@@ -366,7 +611,6 @@ const NuevoPedidoPage: React.FC = () => {
                                                     placeholder="Nombre del cliente..."
                                                     className="w-full px-8 py-5 bg-black/60 border-2 border-liquid-gold/30 rounded-2xl text-xl font-black text-white outline-none placeholder:text-slate-700 shadow-luxury"
                                                 />
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Se creará un perfil Express automáticamente con este nombre.</p>
                                             </div>
                                         )}
 
@@ -413,9 +657,10 @@ const NuevoPedidoPage: React.FC = () => {
                             </motion.div>
                         )}
 
-                        {step === 4 && (
+                        {/* --- STEP 05: DESPLIEGUE --- */}
+                        {step === 5 && (
                             <motion.div 
-                                key="step4" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                key="step5" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                 className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-8 md:space-y-12 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-noise opacity-[0.05]"></div>
@@ -464,6 +709,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             setImageFile(null);
                                             setCreatedTrabajoId(null);
                                             setConfiguracion(null);
+                                            setOrderMode(null);
                                         }}
                                         className="px-10 py-6 bg-transparent border-2 border-white/20 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] hover:bg-white/10 transition-all duration-500 active:scale-95"
                                     >
@@ -492,10 +738,15 @@ const NuevoPedidoPage: React.FC = () => {
                                     </p>
                                 )}
                                 
-                                {step < 3 ? (
+                                {step === 2 ? (
+                                    <div className="text-[10px] text-slate-600 font-black uppercase tracking-[0.3em] italic animate-pulse">Seleccione un protocolo de producción para continuar</div>
+                                ) : step < 4 ? (
                                     <button 
                                         disabled={!canAdvance()}
-                                        onClick={() => setStep(s => s + 1)}
+                                        onClick={() => {
+                                            if (step === 1 && !cliente && !quickName) setQuickName('CONSUMIDOR FINAL');
+                                            setStep(s => s + 1);
+                                        }}
                                         className="bg-white text-black px-16 py-7 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.6em] shadow-luxury hover:bg-liquid-gold transition-all duration-700 active:scale-95 disabled:opacity-20 flex items-center gap-5 group"
                                     >
                                         Continuar <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-3 transition-transform" />

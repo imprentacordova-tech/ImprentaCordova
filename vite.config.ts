@@ -27,11 +27,16 @@ export default defineConfig(({ mode }) => {
           output: {
             manualChunks(id) {
               if (id.includes('node_modules')) {
+                if (id.includes('react')) return 'vendor-react';
+                if (id.includes('lucide-react')) return 'vendor-icons';
+                if (id.includes('framer-motion')) return 'vendor-animations';
+                if (id.includes('supabase')) return 'vendor-supabase';
                 return 'vendor';
               }
             }
           }
-        }
+        },
+        chunkSizeWarningLimit: 1000
       }
     };
 });

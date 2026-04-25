@@ -21,7 +21,7 @@ import {
     TruckIcon as Truck, Package2, Boxes, ScanLine, Rocket, Cpu, Flag,
     CloudUpload, Eraser, User, Database, Sliders, Layers as LayersLucide,
     TrendingUp as TrendingUpLucide, History, Server, Fingerprint, Command,
-    Terminal
+    Terminal, Headphones
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -212,6 +212,7 @@ export const PieChartIcon         = PieChart;
 // LUCIDE ALIASES — UI / Layout
 // ─────────────────────────────────────────────────────────────────────────────
 export const DashboardIcon    = LayoutDashboard;
+export const LayoutDashboardIcon = LayoutDashboard;
 export const LayoutIcon       = Layout;
 export const GridIcon         = Grid;
 export const HashIcon         = Hash;
@@ -260,6 +261,7 @@ export const EnvelopeIcon     = Mail;
 export const MicIcon          = Mic;
 export const MessageCircleIcon= MessageCircle;
 export const SendIcon         = Send;
+export const HeadphonesIcon   = Headphones;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LUCIDE ALIASES — Localización y Tiempo

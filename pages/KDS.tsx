@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
@@ -251,13 +251,17 @@ const KDSPage: React.FC = () => {
         return cols;
     }, [filteredTrabajos]);
 
-    const handleStatusChange = React.useCallback(async (id: string, newStatus: TrabajoEstado) => {
+    const handleStatusChange = useCallback(async (id: string, newStatus: TrabajoEstado) => {
         if (!currentUser) return;
-        await updateTrabajoStatus(id, newStatus, currentUser.nombre);
-        logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} cambiada a: ${newStatus}`, 'Producción');
+        try {
+            await updateTrabajoStatus(id, newStatus, currentUser.nombre);
+            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} cambiada a: ${newStatus}`, 'Producción');
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
     }, [updateTrabajoStatus, currentUser]);
 
-    const handleDrop = React.useCallback(async (e: React.DragEvent, newStatus: TrabajoEstado) => {
+    const handleDrop = useCallback(async (e: React.DragEvent, newStatus: TrabajoEstado) => {
         e.preventDefault();
         setDraggedOverColumn(null);
         const id = e.dataTransfer.getData("trabajoId");

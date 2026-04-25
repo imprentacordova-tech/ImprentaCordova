@@ -420,9 +420,10 @@ interface ClientSelectorProps {
     onSelect: (cliente: Cliente | null) => void; 
     selectedId?: string;
     onSkip?: () => void;
+    hideQuickButtons?: boolean;
 }
 
-const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, onSkip }) => {
+const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, onSkip, hideQuickButtons }) => {
     const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -456,46 +457,48 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                     )}
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <button 
-                        onClick={() => handleOpenCreate('EXPRESS')} 
-                        className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
-                    >
-                        <div className="p-3 bg-liquid-gold text-brand-dark rounded-xl shadow-gold-glow">
-                            <BoltIcon className="w-5 h-5" />
-                        </div>
-                        <div className="text-left">
-                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Nuevo Perfil</span>
-                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-liquid-gold transition-colors">Express</span>
-                        </div>
-                    </button>
-                    
-                    <button 
-                        onClick={() => handleOpenCreate('SRI')} 
-                        className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
-                    >
-                        <div className="p-3 bg-brand-red text-white rounded-xl shadow-red-glow">
-                            <ShieldCheckIcon className="w-5 h-5" />
-                        </div>
-                        <div className="text-left">
-                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Registro</span>
-                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-brand-red transition-colors">Oficial SRI</span>
-                        </div>
-                    </button>
+                {!hideQuickButtons && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button 
+                            onClick={() => handleOpenCreate('EXPRESS')} 
+                            className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
+                        >
+                            <div className="p-3 bg-liquid-gold text-brand-dark rounded-xl shadow-gold-glow">
+                                <BoltIcon className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Nuevo Perfil</span>
+                                <span className="block text-[11px] font-black uppercase text-white group-hover:text-liquid-gold transition-colors">Express</span>
+                            </div>
+                        </button>
+                        
+                        <button 
+                            onClick={() => handleOpenCreate('SRI')} 
+                            className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
+                        >
+                            <div className="p-3 bg-brand-red text-white rounded-xl shadow-red-glow">
+                                <ShieldCheckIcon className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Registro</span>
+                                <span className="block text-[11px] font-black uppercase text-white group-hover:text-brand-red transition-colors">Oficial SRI</span>
+                            </div>
+                        </button>
 
-                    <button 
-                        onClick={onSkip}
-                        className="flex-1 bg-white/2 hover:bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
-                    >
-                        <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all shadow-glow">
-                            <SparklesIcon className="w-5 h-5" />
-                        </div>
-                        <div className="text-left">
-                            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Acceso Directo</span>
-                            <span className="block text-[11px] font-black uppercase text-white group-hover:text-blue-400 transition-colors">Trabajos Generales</span>
-                        </div>
-                    </button>
-                </div>
+                        <button 
+                            onClick={onSkip}
+                            className="flex-1 bg-white/2 hover:bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
+                        >
+                            <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all shadow-glow">
+                                <SparklesIcon className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Acceso Directo</span>
+                                <span className="block text-[11px] font-black uppercase text-white group-hover:text-blue-400 transition-colors">Trabajos Generales</span>
+                            </div>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {searchTerm.length > 1 && (
