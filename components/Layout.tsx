@@ -133,7 +133,7 @@ const FloatingDock: React.FC<{
                     <NavLink
                         key={item.path}
                         to={item.path}
-                        className={`dock-item ${isActive ? 'dock-item-active' : 'dock-item-inactive'}`}
+                        className={`dock-item group ${isActive ? 'dock-item-active' : 'dock-item-inactive'}`}
                     >
                         <item.icon className="w-5 h-5" />
                         <span className="dock-tooltip">{item.label}</span>
@@ -158,7 +158,7 @@ const FloatingDock: React.FC<{
                     {user.nombre.charAt(0).toUpperCase()}
                     <span className="dock-tooltip">{user.nombre}</span>
                 </div>
-                <button onClick={onLogout} className="dock-item dock-item-inactive hover:text-red-500">
+                <button onClick={onLogout} className="dock-item group dock-item-inactive hover:text-red-500">
                     <LogoutIcon className="w-5 h-5" />
                     <span className="dock-tooltip">Salir</span>
                 </button>

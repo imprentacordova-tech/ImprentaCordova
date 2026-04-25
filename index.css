@@ -477,7 +477,7 @@ html.cordova .text-brand-red {
 }
 
 .dock-item {
-  @apply w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 relative group;
+  @apply w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 relative;
 }
 
 .dock-item-active {
