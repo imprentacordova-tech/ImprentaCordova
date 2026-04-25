@@ -318,7 +318,9 @@ const LandingPage: React.FC = () => {
                         </motion.div>
                     </div>
                 </div>
-              {/* --- SECCIÓN SERVICIOS --- */}
+            </section>
+
+            {/* --- SECCIÓN SERVICIOS --- */}
             <section id="servicios" className="py-32 lg:py-48 scroll-mt-24 relative overflow-hidden">
                 <div className="container mx-auto px-6 relative z-10">
                     <motion.div 
@@ -666,8 +668,6 @@ const LandingPage: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
-    );
         </div>
     );
 };

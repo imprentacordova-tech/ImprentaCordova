@@ -20,6 +20,7 @@ const NotaDeVentaPage: React.FC = () => {
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isConsumidorFinal, setIsConsumidorFinal] = useState(false);
 
     useEffect(() => {
         if (!trabajoId || dataLoading) return;
@@ -45,7 +46,8 @@ const NotaDeVentaPage: React.FC = () => {
         imprentaNombre: cloudConfig?.imprentaNombre || 'IMPRENTA CORDOVA',
         imprentaRuc: cloudConfig?.imprentaRuc || '',
         imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '',
-        fechaCaducidad: '31/12/2026',
+        fechaAutorizacion: cloudConfig?.imprentaFechaAut || '01/01/2026',
+        fechaCaducidad: cloudConfig?.imprentaFechaCaducidad || '31/12/2026',
     };
 
     const generatePDF = async () => {
@@ -140,6 +142,12 @@ const NotaDeVentaPage: React.FC = () => {
                     >
                         <PrinterIcon className="w-4 h-4"/> Imprimir
                     </button>
+                    <button 
+                        onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
+                        className={`px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-liquid-gold text-brand-dark border-liquid-gold' : 'bg-transparent text-white/70 border-white/20 hover:bg-white/10'}`}
+                    >
+                        {isConsumidorFinal ? 'Restaurar Datos Cliente' : 'Emitir como Consumidor Final'}
+                    </button>
                 </div>
             </div>
 
@@ -196,16 +204,16 @@ const NotaDeVentaPage: React.FC = () => {
                     <div className="bg-slate-50 rounded-lg p-3 mb-4 border border-slate-200 text-[8px]">
                         <div className="grid grid-cols-12 gap-y-1">
                             <div className="col-span-2 text-slate-500 font-bold uppercase">Cliente:</div>
-                            <div className="col-span-10 text-slate-900 font-bold uppercase truncate">{cliente.nombre}</div>
+                            <div className="col-span-10 text-slate-900 font-bold uppercase truncate">{isConsumidorFinal ? 'CONSUMIDOR FINAL' : cliente.nombre}</div>
                             
                             <div className="col-span-2 text-slate-500 font-bold uppercase">RUC/CI:</div>
-                            <div className="col-span-4 text-slate-900 font-mono font-bold">{cliente.ruc || cliente.cedula}</div>
+                            <div className="col-span-4 text-slate-900 font-mono font-bold">{isConsumidorFinal ? '9999999999999' : (cliente.ruc || cliente.cedula)}</div>
                             
                             <div className="col-span-2 text-slate-500 font-bold uppercase text-right pr-2">Fecha:</div>
                             <div className="col-span-4 text-slate-900 font-bold">{fechaEmision}</div>
 
                             <div className="col-span-2 text-slate-500 font-bold uppercase">Dirección:</div>
-                            <div className="col-span-10 text-slate-700 uppercase truncate">{cliente.direccion || 'Ciudad'}</div>
+                            <div className="col-span-10 text-slate-700 uppercase truncate">{isConsumidorFinal ? 'CIUDAD' : (cliente.direccion || 'Ciudad')}</div>
                         </div>
                     </div>
 
@@ -284,7 +292,7 @@ const NotaDeVentaPage: React.FC = () => {
                         {/* LEGAL */}
                         <div className="text-center border-t border-slate-200 pt-1">
                             <p className="text-[5px] text-slate-400 uppercase tracking-[0.1em] font-medium leading-tight">
-                                {config.imprentaNombre} • RUC {config.imprentaRuc} • Aut. {config.imprentaAutorizacion} • F. Caducidad {config.fechaCaducidad}
+                                {config.imprentaNombre} • RUC {config.imprentaRuc} • Aut. {config.imprentaAutorizacion} • F. Autorización {config.fechaAutorizacion} • F. Caducidad {config.fechaCaducidad}
                                 <br/> Original: Adquirente / Copia: Emisor
                             </p>
                         </div>

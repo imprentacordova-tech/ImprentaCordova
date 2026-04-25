@@ -2,16 +2,28 @@ import { Producto, TrabajoTipo, Regimen } from '../types';
 
 export const MASTER_CATALOG: Partial<Producto>[] = [
   // --- DOCUMENTOS AUTORIZADOS (SRI) ---
+  { nombre: 'Factura (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Nota de Venta (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Liquidación de Compra de Bienes Muebles Usados (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Notas de Crédito (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Notas de Débito (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Guías de Remisión (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Boletos o Entradas a Espectáculos Públicos (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Liquidación de Compra de Vehículos Usados (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Acta de Entrega - Recepción de Vehículos Usados (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Liquidación de Compra de Bienes o Prestación de Servicios (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Declaración Anual RIMPE Negocio Popular', precio: 10.00, categoria: 'Oficina', esSRI: true },
+  
   { nombre: 'Facturero A5 1x Blocs (50x2)', precio: 10.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Facturero A5 3x Blocs (50x2)', precio: 22.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Facturero A5 5x Blocs (50x2)', precio: 32.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Facturero A5 10x Blocs (50x2)', precio: 55.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Facturero A4 1x Blocs (50x2)', precio: 18.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Nota de Venta A6 (Rimpe Popular)', precio: 8.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Nota de Venta A6 (General)', precio: 8.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Retenciones 1x Blocs (50x3)', precio: 12.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Guía de Remisión 1x Blocs', precio: 12.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Liquidación de Compra 1x Blocs', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Notas de Crédito 1x Blocs', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Guía de Remisión 1x Blocs (General)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Liquidación de Compra 1x Blocs (General)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Notas de Crédito 1x Blocs (General)', precio: 12.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Comprobante de Retención Electrónico', precio: 0.15, categoria: 'Oficina', esSRI: true },
   { nombre: 'Vale de Caja Interno (Bloc)', precio: 5.00, categoria: 'Oficina', esSRI: false },
 

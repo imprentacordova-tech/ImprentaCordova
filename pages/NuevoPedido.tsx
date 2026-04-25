@@ -23,6 +23,7 @@ const NuevoPedidoPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
+    const [missionCategory, setMissionCategory] = useState<'SRI' | 'COMERCIAL' | 'EXPRESS' | null>(null);
     const [orderMode, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
@@ -55,8 +56,11 @@ const NuevoPedidoPage: React.FC = () => {
     const [quickName, setQuickName] = useState('');
 
     const canAdvance = () => {
-        if (step === 1) return true; // Permitir avanzar, se asignará "Consumidor Final" si está vacío
-        if (step === 2) return orderMode !== null;
+        if (step === 1) return missionCategory !== null;
+        if (step === 2) {
+            if (isSriOrder) return !!cliente;
+            return true;
+        }
         if (step === 3) {
             if (orderMode === 'EXPRESS') return !!detalle.trim();
             if (orderMode === 'CATALOG') return !!configuracion;
@@ -120,12 +124,27 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     const steps = [
-        { id: 1, label: 'Identidad', icon: UserIcon },
-        { id: 2, label: 'Lobby', icon: LayoutDashboardIcon },
+        { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
+        { id: 2, label: 'Identidad', icon: UserIcon },
         { id: 3, label: 'Especificación', icon: CpuIcon },
         { id: 4, label: 'Capital', icon: CreditCardIcon },
         { id: 5, label: 'Despliegue', icon: RocketLaunchIcon }
     ];
+
+    const handleSelectCategory = (category: 'SRI' | 'COMERCIAL' | 'EXPRESS') => {
+        setMissionCategory(category);
+        if (category === 'SRI') {
+            setIsSriOrder(true);
+            setOrderMode('CATALOG');
+        } else if (category === 'COMERCIAL') {
+            setIsSriOrder(false);
+            setOrderMode('CATALOG');
+        } else if (category === 'EXPRESS') {
+            setIsSriOrder(false);
+            setOrderMode('EXPRESS');
+        }
+        setStep(2);
+    };
 
     return (
         <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-40 px-4 sm:px-8 lg:px-14 pt-6 md:pt-10">
@@ -163,88 +182,66 @@ const NuevoPedidoPage: React.FC = () => {
                                 key="step1" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                                <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-12">
-                                    <div className="space-y-4 text-center sm:text-left">
-                                        <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 01</p>
-                                        <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
-                                        <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Inicie la misión localizando al cliente en la red.</p>
-                                    </div>
-                                    <div className="flex flex-col items-center sm:items-end gap-4">
-                                        <button 
-                                            onClick={() => setIsSriOrder(!isSriOrder)}
-                                            className={`px-10 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] transition-all border flex items-center gap-4 ${isSriOrder ? 'bg-brand-red border-brand-red text-white shadow-red-glow' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white hover:border-white/20'}`}
-                                        >
-                                            <ShieldCheckIcon className="w-5 h-5" />
-                                            {isSriOrder ? '✓ TRÁMITE SRI ACTIVO' : 'ACTIVAR MODO SRI'}
-                                        </button>
-                                        <p className="text-[8px] text-slate-600 font-black uppercase tracking-widest italic">Obligatorio para facturas físicas</p>
-                                    </div>
-                                </div>
-                                <div className="bg-black/40 p-4 rounded-[2.5rem] md:rounded-[3.5rem] border border-white/5 shadow-inner space-y-8">
-                                    <ClientSelector 
-                                        onSelect={(c) => { setCliente(c); if(c) setStep(2); }} 
-                                        selectedId={cliente?.id} 
-                                        onSkip={() => setStep(2)}
-                                        hideQuickButtons={true}
-                                    />
-                                    <div className="flex justify-center pt-4">
-                                        <button 
-                                            onClick={() => setStep(2)}
-                                            className="px-10 py-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-[9px] font-black text-slate-500 hover:text-liquid-gold transition-all uppercase tracking-[0.4em] italic"
-                                        >
-                                            Continuar como Consumidor Final →
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {step === 2 && (
-                            <motion.div 
-                                key="hub" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                                className="space-y-12"
-                            >
-                                <div className="text-center space-y-4">
-                                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Selector de <span className="text-gold-gradient">Vector</span></h2>
-                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] italic">Defina el tipo de producción para el cliente.</p>
+                                <div className="space-y-4 mb-12 text-center">
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 01</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Categoría de <span className="text-gold-gradient">Producción</span></h2>
+                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione la arquitectura de trabajo.</p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* Botón Catálogo */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* Botón SRI */}
                                     <motion.button 
                                         whileHover={{ y: -10, scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        onClick={() => handleSelectMode('CATALOGO')}
-                                        className="group relative h-80 bg-brand-dark/50 backdrop-blur-3xl rounded-[3rem] border border-white/5 hover:border-liquid-gold/30 transition-all overflow-hidden p-10 text-left shadow-luxury"
+                                        onClick={() => handleSelectCategory('SRI')}
+                                        className="group relative h-72 bg-brand-dark/50 backdrop-blur-3xl rounded-[2.5rem] border border-brand-red/30 hover:border-brand-red transition-all overflow-hidden p-8 text-left shadow-luxury"
                                     >
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 transition-opacity group-hover:opacity-100 opacity-50"></div>
+                                        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-red/10 rounded-full blur-[60px] -mr-24 -mt-24 transition-opacity group-hover:opacity-100 opacity-50"></div>
                                         <div className="relative z-10 h-full flex flex-col justify-between">
-                                            <div className="w-16 h-16 bg-liquid-gold rounded-2xl flex items-center justify-center text-black shadow-gold-glow">
-                                                <SolidBoxIcon className="w-8 h-8" />
+                                            <div className="w-14 h-14 bg-brand-red rounded-xl flex items-center justify-center text-white shadow-red-glow">
+                                                <ShieldCheckIcon className="w-7 h-7" />
                                             </div>
                                             <div>
-                                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-3">Catálogo de<br/><span className="text-liquid-gold">Productos</span></h3>
-                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Personalización técnica y servicios de imprenta.</p>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Trámites<br/><span className="text-brand-red">SRI</span></h3>
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Facturas, Notas de Venta, Guías. Exige RUC.</p>
                                             </div>
                                         </div>
                                     </motion.button>
 
-                                    {/* Botón Venta Express */}
+                                    {/* Botón Comercial */}
                                     <motion.button 
                                         whileHover={{ y: -10, scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        onClick={() => handleSelectMode('EXPRESS')}
-                                        className="group relative h-80 bg-brand-dark/50 backdrop-blur-3xl rounded-[3rem] border border-white/5 hover:border-blue-500/30 transition-all overflow-hidden p-10 text-left shadow-luxury"
+                                        onClick={() => handleSelectCategory('COMERCIAL')}
+                                        className="group relative h-72 bg-brand-dark/50 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 hover:border-liquid-gold/50 transition-all overflow-hidden p-8 text-left shadow-luxury"
                                     >
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[80px] -mr-32 -mt-32 transition-opacity group-hover:opacity-100 opacity-50"></div>
+                                        <div className="absolute top-0 right-0 w-48 h-48 bg-liquid-gold/5 rounded-full blur-[60px] -mr-24 -mt-24 transition-opacity group-hover:opacity-100 opacity-50"></div>
                                         <div className="relative z-10 h-full flex flex-col justify-between">
-                                            <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                                                <BoltIcon className="w-8 h-8" />
+                                            <div className="w-14 h-14 bg-liquid-gold rounded-xl flex items-center justify-center text-black shadow-gold-glow">
+                                                <BookOpenIcon className="w-7 h-7" />
                                             </div>
                                             <div>
-                                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-3">Venta<br/><span className="text-blue-400">Express</span></h3>
-                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Recibo rápido de mostrador y suministros directos.</p>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Trabajos<br/><span className="text-liquid-gold">Comerciales</span></h3>
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Volantes, Tarjetas, Gigantografías, etc.</p>
+                                            </div>
+                                        </div>
+                                    </motion.button>
+
+                                    {/* Botón Express */}
+                                    <motion.button 
+                                        whileHover={{ y: -10, scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleSelectCategory('EXPRESS')}
+                                        className="group relative h-72 bg-brand-dark/50 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 hover:border-blue-500/50 transition-all overflow-hidden p-8 text-left shadow-luxury"
+                                    >
+                                        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-[60px] -mr-24 -mt-24 transition-opacity group-hover:opacity-100 opacity-50"></div>
+                                        <div className="relative z-10 h-full flex flex-col justify-between">
+                                            <div className="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                                                <BoltIcon className="w-7 h-7" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Servicios<br/><span className="text-blue-400">Rápidos</span></h3>
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Copias, Anillados, Diseños y extras.</p>
                                             </div>
                                         </div>
                                     </motion.button>
@@ -252,187 +249,44 @@ const NuevoPedidoPage: React.FC = () => {
                             </motion.div>
                         )}
 
-                        {step === 3 && (
-                            <motion.div 
-                                key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
-                            >
-                                <div className="space-y-4 mb-10 md:mb-14">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 03</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Matriz de <span className="text-gold-gradient">Especificación</span></h2>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-8 md:gap-12">
-                                    <AnimatePresence mode="wait">
-                                        {!servicio ? (
-                                            <motion.div key="selector" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
-                                            </motion.div>
-                                        ) : (
-                                            <motion.div key="configurator" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                                <ProductConfigurator 
-                                                    product={servicio} 
-                                                    onCancel={() => setServicio(null)}
-                                                    onComplete={(config) => {
-                                                        setConfiguracion(config);
-                                                        setPrecio(config.precioFinal);
-                                                        setStep(4);
-                                                    }}
-                                                />
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                    
-                                    {isSriOrder && !servicio && (
-                                        <div className="bg-brand-red/5 p-10 rounded-[3rem] border border-brand-red/20 space-y-10 animate-fade-in">
-                                            <div className="flex items-center gap-6">
-                                                <ShieldCheckIcon className="w-8 h-8 text-brand-red" />
-                                                <h3 className="text-lg font-black text-white uppercase tracking-widest italic">Validación Tributaria</h3>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                <div className="space-y-6">
-                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Tipo de Trámite</label>
-                                                    <div className="flex gap-4 p-1.5 bg-black/40 rounded-2xl border border-white/5">
-                                                        {['NUEVO', 'RENOVACION'].map(m => (
-                                                            <button 
-                                                                key={m} onClick={() => setSriMode(m as any)}
-                                                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${sriMode === m ? 'bg-brand-red text-white shadow-luxury' : 'text-slate-600 hover:text-white'}`}
-                                                            >
-                                                                {m}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-6">
-                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Clave SRI</label>
-                                                    <input 
-                                                        type="text" value={sriClave} onChange={e => setSriClave(e.target.value)}
-                                                        placeholder="Contraseña..."
-                                                        className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-6">
-                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Actividad Autorizada</label>
-                                                <select 
-                                                    value={sriActividad} onChange={e => setSriActividad(e.target.value)}
-                                                    className="w-full px-8 py-4 bg-black/60 border border-white/5 rounded-2xl text-white font-bold text-sm outline-none focus:border-brand-red/30 transition-all"
-                                                >
-                                                    <option value="">Seleccione...</option>
-                                                    {cliente?.actividades ? cliente.actividades.split('|').map((a, i) => (
-                                                        <option key={i} value={a}>{a}</option>
-                                                    )) : (
-                                                        <>
-                                                            <option value="SERVICIOS PROFESIONALES">SERVICIOS PROFESIONALES</option>
-                                                            <option value="VENTA AL POR MENOR">VENTA AL POR MENOR</option>
-                                                        </>
-                                                    )}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {step === 4 && (
-                            <motion.div 
-                                key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
-                            >
-                                <div className="space-y-4 mb-8 md:mb-14">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 04</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Asignación <span className="text-gold-gradient">Financiera</span></h2>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <div className="space-y-12">
-                                        <div className="space-y-6">
-                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Valor Total</label>
-                                            <div className="relative group">
-                                                <div className="absolute inset-y-0 left-6 flex items-center text-liquid-gold text-2xl font-black italic">$</div>
-                                                <input 
-                                                    type="number" value={precio} onChange={e => setPrecio(Number(e.target.value))}
-                                                    className="w-full pl-14 pr-6 py-6 bg-black/60 border-2 border-white/5 focus:border-liquid-gold/30 rounded-[2rem] text-3xl font-black text-white outline-none italic"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-6">
-                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Abono Inicial</label>
-                                            <div className="relative group">
-                                                <div className="absolute inset-y-0 left-6 flex items-center text-emerald-500 text-2xl font-black italic">$</div>
-                                                <input 
-                                                    type="number" value={abono} onChange={e => setAbono(Number(e.target.value))}
-                                                    className="w-full pl-14 pr-6 py-6 bg-black/60 border-2 border-white/5 focus:border-emerald-500/30 rounded-[2rem] text-3xl font-black text-emerald-500 outline-none italic"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="p-8 bg-liquid-gold/[0.04] border border-liquid-gold/10 rounded-[2rem] flex items-center gap-6">
-                                            <BoltIcon className="w-8 h-8 text-liquid-gold" />
-                                            <div>
-                                                <p className="text-[9px] text-slate-600 font-black uppercase italic">Saldo Pendiente</p>
-                                                <p className="text-3xl font-black text-white italic">${Math.max(0, precio - abono).toFixed(2)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-8">
-                                        <label className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] ml-4 italic">Captura Visual</label>
-                                        <div className="bg-black/40 p-4 rounded-[2rem] border border-white/5 shadow-inner min-h-[300px]">
-                                            <PhotoCapture onImageCaptured={setImageFile} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* --- STEP 02: LOBBY --- */}
                         {step === 2 && (
                             <motion.div 
                                 key="step2" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
-                                <div className="space-y-4 mb-12 text-center">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 02</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Canal de <span className="text-gold-gradient">Producción</span></h2>
-                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione la arquitectura de trabajo para {cliente?.nombre || 'Consumidor Final'}.</p>
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+                                <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-12">
+                                    <div className="space-y-4 text-center sm:text-left">
+                                        <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 02</p>
+                                        <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Protocolo de <span className="text-gold-gradient">Identidad</span></h2>
+                                        <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Localice al titular de la misión.</p>
+                                    </div>
+                                    <div className="flex flex-col items-center sm:items-end gap-4">
+                                        {isSriOrder && (
+                                            <div className="px-8 py-4 bg-brand-red/20 border border-brand-red text-brand-red rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                                                <ShieldCheckIcon className="w-5 h-5" />
+                                                TRÁMITE OFICIAL SRI
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <button 
-                                        onClick={() => { setOrderMode('CATALOG'); setStep(3); }}
-                                        className="group relative bg-black/40 hover:bg-black/60 border border-white/5 hover:border-liquid-gold/30 p-10 rounded-[3rem] transition-all duration-700 overflow-hidden"
-                                    >
-                                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all scale-150">
-                                            <BookOpenIcon className="w-32 h-32 text-liquid-gold" />
+                                <div className="bg-black/40 p-4 rounded-[2.5rem] md:rounded-[3.5rem] border border-white/5 shadow-inner space-y-8">
+                                    <ClientSelector 
+                                        onSelect={(c) => { setCliente(c); if(c) setStep(3); }} 
+                                        selectedId={cliente?.id} 
+                                        onSkip={() => setStep(3)}
+                                        hideQuickButtons={isSriOrder}
+                                    />
+                                    {!isSriOrder && (
+                                        <div className="flex justify-center pt-4">
+                                            <button 
+                                                onClick={() => setStep(3)}
+                                                className="px-10 py-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-[9px] font-black text-slate-500 hover:text-liquid-gold transition-all uppercase tracking-[0.4em] italic"
+                                            >
+                                                Continuar como Consumidor Final →
+                                            </button>
                                         </div>
-                                        <div className="relative z-10 space-y-6 text-left">
-                                            <div className="w-16 h-16 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold group-hover:bg-liquid-gold group-hover:text-black transition-all duration-700">
-                                                <BookOpenIcon className="w-8 h-8" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter group-hover:text-liquid-gold transition-colors">Catálogo Elite</h3>
-                                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2 leading-relaxed">Productos pre-configurados con estándares industriales y precios calibrados.</p>
-                                            </div>
-                                        </div>
-                                    </button>
-
-                                    <button 
-                                        onClick={() => { setOrderMode('EXPRESS'); setStep(3); }}
-                                        className="group relative bg-black/40 hover:bg-black/60 border border-white/5 hover:border-brand-red/30 p-10 rounded-[3rem] transition-all duration-700 overflow-hidden"
-                                    >
-                                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all scale-150">
-                                            <ZapIcon className="w-32 h-32 text-brand-red" />
-                                        </div>
-                                        <div className="relative z-10 space-y-6 text-left">
-                                            <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all duration-700">
-                                                <ZapIcon className="w-8 h-8" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter group-hover:text-brand-red transition-colors">Venta Express</h3>
-                                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2 leading-relaxed">Configuración libre y ultra-rápida para trabajos no estandarizados.</p>
-                                            </div>
-                                        </div>
-                                    </button>
+                                    )}
                                 </div>
                             </motion.div>
                         )}
@@ -449,12 +303,6 @@ const NuevoPedidoPage: React.FC = () => {
                                             <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">Step 03</p>
                                             <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Matriz de <span className="text-gold-gradient">Especificación</span></h2>
                                         </div>
-                                        <button 
-                                            onClick={() => setIsSriOrder(!isSriOrder)}
-                                            className={`w-full sm:w-auto px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all border ${isSriOrder ? 'bg-brand-red border-brand-red text-white shadow-red-glow' : 'border-white/10 text-slate-500 hover:text-white'} tap-none`}
-                                        >
-                                            {isSriOrder ? '✓ TRABAJO SRI' : 'MODO SRI?'}
-                                        </button>
                                     </div>
                                 </div>
 
@@ -700,6 +548,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     </button>
                                     <button 
                                         onClick={() => {
+                                            setMissionCategory(null);
                                             setStep(1);
                                             setCliente(null);
                                             setServicio(null);

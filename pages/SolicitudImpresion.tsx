@@ -73,13 +73,19 @@ const SolicitudImpresionPage: React.FC = () => {
         };
     });
 
+    const isRimpe = cliente.regimen === Regimen.NEGOCIO_POPULAR;
+
     const standardTypes = [
         { key: 'factura', label: 'Facturas' },
         { key: 'nota de venta', label: 'Nota de Venta' },
-        { key: 'liquidacion', label: 'Liquidación de Compra / Prestación de Servicios' },
+        { key: 'liquidacion de compra de bienes muebles', label: 'Liq. Compra Bienes Muebles Usados' },
         { key: 'credito', label: 'Nota de Crédito' },
         { key: 'debito', label: 'Nota de Débito' },
         { key: 'guia', label: 'Guía de Remisión' },
+        { key: 'boleto', label: 'Boletos / Entradas a Espectáculos' },
+        { key: 'liquidacion de compra de vehiculo', label: 'Liq. Compra Vehículos Usados' },
+        { key: 'acta de entrega', label: 'Acta Entrega-Recepción Vehículos' },
+        { key: 'liquidacion', label: 'Liq. Compra Bienes o Prest. Servicios' },
         { key: 'retencion', label: 'Comprobante de Retención' },
         { key: 'recibo', label: 'RECIBOS (NO SRI)' }
     ];
@@ -181,6 +187,7 @@ const SolicitudImpresionPage: React.FC = () => {
                     <div className="flex items-end border-b-2 border-black border-dashed pb-1">
                         <span className="whitespace-nowrap italic mr-2 text-[13px]">Actividad Ec.:</span>
                         <span className="flex-grow font-black uppercase text-sm">{cliente.actividades || trabajo.actividadSeleccionada || 'SEGÚN RUC'}</span>
+                        {isRimpe && <span className="ml-2 bg-black text-white text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider">RIMPE N.P.</span>}
                     </div>
                     
                     {cliente.regimen === Regimen.NEGOCIO_POPULAR && (
