@@ -44,20 +44,20 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
             
-            // Inteligencia de Régimen Elite:
-            if (effectiveRegimen) {
-                // 1. Si es General o Emprendedor, HIDE "Nota de Venta" física
-                if ((effectiveRegimen === Regimen.GENERAL || effectiveRegimen === Regimen.EMPRENDEDOR) && 
-                    p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
-                    return false;
-                }
-
-                // 2. Si es Negocio Popular, asegurar acceso a sus documentos específicos
-                if (effectiveRegimen === Regimen.NEGOCIO_POPULAR && p.esSRI) {
-                    // Solo mostramos lo que le compete si estamos en categoría SRI explícitamente
-                    if (activeCategory === 'SRI' && !p.nombre.toUpperCase().includes('FACTURA') && !p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
-                        // Por ahora permitimos todo lo SRI, pero filtramos Notas de Venta vs Facturas
-                    }
+            // Inteligencia de Régimen Elite para categoría SRI:
+            if (activeCategory === 'SRI' && effectiveRegimen) {
+                const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
+                const name = p.nombre.toUpperCase();
+                
+                if (isPopular) {
+                    // Para Negocio Popular: Solo lo que diga Rimpe o Negocio Popular
+                    if (!(name.includes('RIMPE') || name.includes('NEGOCIO POPULAR'))) return false;
+                } else {
+                    // Para General/Emprendedor: 
+                    // 1. NO mostrar nada que diga Negocio Popular o Rimpe
+                    if (name.includes('NEGOCIO POPULAR') || name.includes('RIMPE')) return false;
+                    // 2. NO mostrar Notas de Venta
+                    if (name.includes('NOTA DE VENTA')) return false;
                 }
             }
 
