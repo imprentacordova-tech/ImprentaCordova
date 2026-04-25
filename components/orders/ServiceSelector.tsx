@@ -18,6 +18,19 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
     const { productos } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState<string>('Todas');
+    const [manualRegimen, setManualRegimen] = useState<string | null>(null);
+
+    // Si cambia el régimen por prop, reseteamos el manual
+    useEffect(() => {
+        if (regimen) setManualRegimen(null);
+    }, [regimen]);
+
+    // Al cambiar de categoría, si no es SRI, reseteamos el régimen manual
+    useEffect(() => {
+        if (activeCategory !== 'SRI') setManualRegimen(null);
+    }, [activeCategory]);
+
+    const effectiveRegimen = regimen || manualRegimen;
 
     // Extraer categorías únicas
     const categories = useMemo(() => {
@@ -32,21 +45,25 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
             
             // Inteligencia de Régimen Elite:
-            // 1. Si es General o Emprendedor, HIDE "Nota de Venta" física
-            if ((regimen === Regimen.GENERAL || regimen === Regimen.EMPRENDEDOR) && 
-                p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
-                return false;
-            }
+            if (effectiveRegimen) {
+                // 1. Si es General o Emprendedor, HIDE "Nota de Venta" física
+                if ((effectiveRegimen === Regimen.GENERAL || effectiveRegimen === Regimen.EMPRENDEDOR) && 
+                    p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
+                    return false;
+                }
 
-            // 2. Si es Negocio Popular, asegurar acceso a sus documentos específicos
-            // (La mayoría están en el catálogo, pero filtramos por relevancia si es necesario)
-            if (regimen === Regimen.NEGOCIO_POPULAR && p.esSRI) {
-                // Aquí podríamos priorizar o destacar, pero por ahora aseguramos visibilidad
+                // 2. Si es Negocio Popular, asegurar acceso a sus documentos específicos
+                if (effectiveRegimen === Regimen.NEGOCIO_POPULAR && p.esSRI) {
+                    // Solo mostramos lo que le compete si estamos en categoría SRI explícitamente
+                    if (activeCategory === 'SRI' && !p.nombre.toUpperCase().includes('FACTURA') && !p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
+                        // Por ahora permitimos todo lo SRI, pero filtramos Notas de Venta vs Facturas
+                    }
+                }
             }
 
             return matchesSearch && matchesCategory;
         });
-    }, [productos, searchTerm, activeCategory, regimen]);
+    }, [productos, searchTerm, activeCategory, effectiveRegimen]);
 
     // Conteo por categoría
     const categoryCounts = useMemo(() => {
@@ -119,21 +136,65 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
             </div>
 
             {/* Info de resultados */}
-            <div className="flex items-center justify-between px-1">
-                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                    {filtered.length} productos disponibles
-                </p>
-                {selectedId && (
-                    <span className="text-[10px] font-black text-liquid-gold uppercase tracking-widest flex items-center gap-1.5">
-                        <CheckCircleIcon className="w-3.5 h-3.5" /> Producto seleccionado
-                    </span>
-                )}
             </div>
+
+            {/* Selector de Régimen (Modo Carpeta) si es SRI y no se conoce el régimen */}
+            {activeCategory === 'SRI' && !effectiveRegimen && !searchTerm && (
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4"
+                >
+                    <button 
+                        onClick={() => setManualRegimen(Regimen.NEGOCIO_POPULAR)}
+                        className="p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-brand-red/50 hover:bg-brand-red/5 transition-all group text-left"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-brand-red/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <ShieldCheckIcon className="w-6 h-6 text-brand-red" />
+                        </div>
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">RIMPE Negocio Popular</h3>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase leading-relaxed">Solo Notas de Venta y Documentos de Régimen Simplificado.</p>
+                    </button>
+
+                    <button 
+                        onClick={() => setManualRegimen(Regimen.GENERAL)}
+                        className="p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-liquid-gold/50 hover:bg-liquid-gold/5 transition-all group text-left"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-liquid-gold/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <SparklesIcon className="w-6 h-6 text-liquid-gold" />
+                        </div>
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Régimen General / Emprendedor</h3>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase leading-relaxed">Facturas, Notas de Crédito, Guías de Remisión y más.</p>
+                    </button>
+                </motion.div>
+            )}
+
+            {/* Cabecera de Carpeta Seleccionada */}
+            {activeCategory === 'SRI' && effectiveRegimen && !searchTerm && (
+                <div className="flex items-center justify-between px-2 py-1">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'bg-brand-red' : 'bg-liquid-gold'}`} />
+                        <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                            Catálogo: {effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'Negocio Popular' : 'General / Emprendedor'}
+                        </span>
+                    </div>
+                    {!regimen && (
+                        <button 
+                            onClick={() => setManualRegimen(null)}
+                            className="text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-tighter transition-colors"
+                        >
+                            ← Cambiar Régimen
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Grilla de Productos - Estilo Menú Visual Compacto */}
             <div 
                 ref={scrollRef}
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar p-1"
+                className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar p-1 transition-all ${
+                    activeCategory === 'SRI' && !effectiveRegimen && !searchTerm ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
+                }`}
             >
                 <AnimatePresence mode="popLayout">
                     {filtered.map(p => {
