@@ -3,8 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --brand-blue: #0055ff;
+    --brand-yellow: #ffcc00;
+    --brand-red: #e11d48;
+    --brand-white: #ffffff;
+    --brand-slate: #0f172a;
+  }
+
   body {
-    @apply tracking-tight;
+    @apply tracking-tight antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
@@ -265,6 +273,7 @@ html.light .bg-\[\#050811\],
 html.light .bg-\[\#0c1324\],
 html.light .bg-\[\#070d1f\],
 html.light .bg-\[\#191f31\],
+html.light .bg-\[\#020202\],
 html.light .bg-\[\#0a0a0a\],
 html.light .bg-\[\#0a0a0a\]\/80,
 html.light .bg-\[\#0a0a0a\]\/40,
