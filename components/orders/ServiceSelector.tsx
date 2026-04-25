@@ -40,14 +40,14 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
 
     const filtered = useMemo(() => {
         return productos.filter(p => {
-            const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            const matchesSearch = (p.nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
             
             // Inteligencia de Régimen Elite para categoría SRI:
             if (activeCategory === 'SRI' && effectiveRegimen) {
                 const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
-                const name = p.nombre.toUpperCase();
+                const name = (p.nombre || '').toUpperCase();
                 
                 if (isPopular) {
                     // Para Negocio Popular: Solo lo que diga Rimpe o Negocio Popular
@@ -116,26 +116,25 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
 
             {/* Pestañas de Categorías - Estilo McDonald's */}
             <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar">
-                {categories.map(cat => (
-                    <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border ${
-                            activeCategory === cat 
-                            ? 'bg-liquid-gold text-black border-liquid-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]' 
-                            : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
-                        }`}
-                    >
-                        <span className="text-base">{CATEGORY_EMOJIS[cat] || '📦'}</span>
-                        {cat}
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                            activeCategory === cat ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'
-                        }`}>{categoryCounts[cat] || 0}</span>
-                    </button>
-                ))}
-            </div>
-
-            {/* Info de resultados */}
+                {categories.map((cat) => {
+                    return (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border ${
+                                activeCategory === cat 
+                                ? 'bg-liquid-gold text-black border-liquid-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]' 
+                                : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
+                            }`}
+                        >
+                            <span className="text-base">{CATEGORY_EMOJIS[cat] || '📦'}</span>
+                            {cat}
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                                activeCategory === cat ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'
+                            }`}>{categoryCounts[cat] || 0}</span>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Selector de Régimen (Modo Carpeta) si es SRI y no se conoce el régimen */}
@@ -256,7 +255,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                 <div className={`p-3 flex flex-col flex-1 ${isSelected ? 'bg-liquid-gold/[0.06]' : ''}`}>
                                     <h4 className={`text-[11px] font-black uppercase tracking-tight leading-tight mb-2 line-clamp-2 ${
                                         isSelected ? 'text-liquid-gold' : 'text-slate-200 group-hover:text-white'
-                                    }`}>{p.nombre}</h4>
+                                    }`}>{p.nombre || 'SERVICIO SIN NOMBRE'}</h4>
                                     
                                     <div className="mt-auto flex items-end justify-between">
                                         <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">

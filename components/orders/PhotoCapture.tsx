@@ -57,7 +57,10 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onImageCaptured }) => {
                         
                         <div className="text-center space-y-3">
                             <h3 className="text-sm font-black text-white uppercase tracking-[0.4em] italic">Captura de Archivo</h3>
-                            <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest leading-relaxed max-w-[200px] mx-auto opacity-60">Sincroniza el diseño físico o digital de la misión.</p>
+                            <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest leading-relaxed max-w-[250px] mx-auto opacity-60">
+                                Sincroniza el diseño físico o digital. <br/>
+                                <span className="text-liquid-gold/50 italic">(En PC: Sube fotos desde WhatsApp Web o tu equipo)</span>
+                            </p>
                         </div>
 
                         <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-full border border-white/5 opacity-40 group-hover:opacity-100 transition-opacity">

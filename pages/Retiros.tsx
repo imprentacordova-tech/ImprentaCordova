@@ -6,17 +6,22 @@ import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { 
     SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, 
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
-    ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon
+    ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon,
+    CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon
 } from '../components/Icons';
 import { BottomSheet } from '../components/BottomSheet';
+import { motion, AnimatePresence } from 'framer-motion';
+import PhotoCapture from '../components/orders/PhotoCapture';
 
 const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const navigate = useNavigate();
-    const { trabajos, clientes, loading, registerRetiro } = useData();
+    const { trabajos, clientes, loading, registerRetiro, uploadFile } = useData();
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [retiroPhoto, setRetiroPhoto] = useState<File | null>(null);
+    const [showCamera, setShowCamera] = useState(false);
 
     const filtered = useMemo(() => {
         const lower = searchTerm.toLowerCase();
@@ -36,7 +41,12 @@ const RetirosPage: React.FC = () => {
         if (!selectedTrabajo || isProcessing) return;
         setIsProcessing(true);
         try {
-            const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre);
+            let photoUrl = '';
+            if (retiroPhoto) {
+                photoUrl = await uploadFile(retiroPhoto, 'trabajos', `${selectedTrabajo.id}/retiro_${Date.now()}`);
+            }
+
+            const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre, photoUrl);
             navigate(`/nota-de-venta/${updated.id}`);
         } catch (error) {
             console.error("Error al registrar retiro:", error);
@@ -147,6 +157,35 @@ const RetirosPage: React.FC = () => {
                             </p>
                         </div>
 
+                        {/* Sección de Respaldo Visual */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Respaldo Visual (Opcional)</h4>
+                                <button 
+                                    onClick={() => setShowCamera(!showCamera)}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${showCamera ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-white/5 border-white/10 text-slate-400'}`}
+                                >
+                                    <CameraIcon className="w-3 h-3" />
+                                    <span className="text-[9px] font-black uppercase tracking-wider">{showCamera ? 'CERRAR' : 'TOMAR FOTO'}</span>
+                                </button>
+                            </div>
+                            
+                            <AnimatePresence>
+                                {showCamera && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="aspect-square max-h-[300px] w-full bg-black/40 rounded-3xl border border-white/5 overflow-hidden">
+                                            <PhotoCapture onImageCaptured={(file) => setRetiroPhoto(file)} />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
                         <button 
                             onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
                             disabled={isProcessing}
@@ -183,6 +222,36 @@ const RetirosPage: React.FC = () => {
                             <div className="bg-liquid-gold/10 p-4 rounded-2xl flex items-center gap-3 border border-liquid-gold/20">
                                 <ExclamationTriangleIcon className="w-5 h-5 text-liquid-gold shrink-0"/><p className="text-[10px] font-bold text-liquid-gold/80 uppercase leading-tight">Al confirmar, el sistema generará automáticamente la Nota de Venta PDF.</p>
                             </div>
+
+                            {/* Sección de Respaldo Visual Desktop */}
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Respaldo Visual (Opcional)</h4>
+                                    <button 
+                                        onClick={() => setShowCamera(!showCamera)}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${showCamera ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-white/5 border-white/10 text-slate-400'}`}
+                                    >
+                                        <CameraIcon className="w-3 h-3" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider">{showCamera ? 'CERRAR' : 'TOMAR FOTO'}</span>
+                                    </button>
+                                </div>
+                                
+                                <AnimatePresence>
+                                    {showCamera && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="aspect-video w-full bg-black/40 rounded-3xl border border-white/5 overflow-hidden">
+                                                <PhotoCapture onImageCaptured={(file) => setRetiroPhoto(file)} />
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
                             <button 
                                 onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
                                 disabled={isProcessing}

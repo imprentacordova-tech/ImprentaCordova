@@ -143,8 +143,8 @@ const ClientesPage: React.FC = () => {
                                 <tr key={c.id} className="hover:bg-white/[0.04] transition-all duration-300 group">
                                     <td className="px-5 lg:px-8 py-4 lg:py-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-[1rem] bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center font-black text-liquid-gold shadow-gold-glow transition-transform group-hover:scale-105 flex-shrink-0">{c.nombre.charAt(0)}</div>
-                                            <span className="font-bold text-white uppercase tracking-tight text-sm truncate max-w-[200px] lg:max-w-xs">{c.nombre}</span>
+                                            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-[1rem] bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center font-black text-liquid-gold shadow-gold-glow transition-transform group-hover:scale-105 flex-shrink-0">{(c.nombre || '?').charAt(0)}</div>
+                                            <span className="font-bold text-white uppercase tracking-tight text-sm truncate max-w-[200px] lg:max-w-xs">{c.nombre || 'SIN NOMBRE'}</span>
                                         </div>
                                     </td>
                                     <td className="px-5 lg:px-8 py-4 lg:py-6 font-mono text-sm font-bold text-slate-400">{c.ruc || c.cedula}</td>

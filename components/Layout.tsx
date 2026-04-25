@@ -93,124 +93,77 @@ function useLiveClock() {
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
-const Sidebar: React.FC<{
+// ── Floating Dock (Desktop Elite) ─────────────────────────────────────────────
+const FloatingDock: React.FC<{
     user: User;
     onLogout: () => void;
-    onClose?: () => void;
-}> = ({ user, onLogout, onClose }) => {
-    const location  = useLocation();
-    const navigate  = useNavigate();
+    onMoreClick: () => void;
+}> = ({ user, onLogout, onMoreClick }) => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const { trabajos } = useData();
 
     const counts = {
-        design: trabajos.filter(t =>
-            [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)
-        ).length,
+        design: trabajos.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)).length,
         produccion: trabajos.filter(t => t.estado === TrabajoEstado.PROCESO).length,
         retail: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length,
     };
 
-    const handleNuevaOrden = () => {
-        navigate('/nuevo');
-        onClose?.();
-    };
+    const dockItems = [
+        { path: '/dashboard', label: 'Inicio', icon: DashboardIcon },
+        { path: '/nuevo', label: 'Nuevo', icon: AddIcon, primary: true },
+        { path: '/diseno', label: 'Diseño', icon: PaletteIcon, badge: counts.design },
+        { path: '/produccion', label: 'Taller', icon: PrinterIcon, badge: counts.produccion },
+        { path: '/kds', label: 'Flujo', icon: KdsIcon },
+        { path: '/retiros', label: 'Entregas', icon: ReceiptIcon, badge: counts.retail },
+    ];
 
     return (
-        <aside className="w-72 bg-white dark:bg-slate-950 flex flex-col h-full border-r border-slate-200 dark:border-white/5 z-20 transition-all duration-300">
-
-            {/* ── Logo / Brand ── */}
-            <div className="p-10 border-b border-white/5 flex flex-col items-center gap-5 bg-white/[0.01] shrink-0">
-                <div className="w-16 h-16 bg-white text-black rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(255,255,255,0.08)] cursor-pointer transition-transform hover:scale-105 duration-500">
-                    <CordovaLogo className="w-10 h-10" />
-                </div>
-                <div className="text-center">
-                    <h1 className="font-display font-black text-2xl leading-none tracking-[0.3em] text-slate-900 dark:text-white uppercase">Córdova</h1>
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.5em] mt-2">Gestión Administrativa</p>
-                </div>
+        <div className="floating-dock">
+            <div 
+                className="w-10 h-10 bg-white dark:bg-liquid-gold text-black rounded-xl flex items-center justify-center mb-4 cursor-pointer hover:rotate-12 transition-transform shadow-xl"
+                onClick={() => navigate('/dashboard')}
+            >
+                <CordovaLogo className="w-6 h-6" />
             </div>
 
-            {/* ── Quick action ── */}
-            <div className="px-6 pt-8 pb-2 shrink-0">
-                <button
-                    onClick={handleNuevaOrden}
-                    className="group w-full flex items-center justify-between px-5 py-4 rounded-2xl bg-liquid-gold/10 border border-liquid-gold/20 hover:bg-liquid-gold hover:border-liquid-gold transition-all duration-500 text-liquid-gold hover:text-brand-dark shadow-gold-glow"
-                >
-                    <div className="flex items-center gap-3">
-                        <BoltIcon className="w-4 h-4" />
-                        <span className="text-[11px] font-black uppercase tracking-widest">Nueva Orden</span>
-                    </div>
-                    <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            {dockItems.map(item => {
+                const isActive = location.pathname === item.path;
+                return (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        className={`dock-item ${isActive ? 'dock-item-active' : 'dock-item-inactive'}`}
+                    >
+                        <item.icon className="w-5 h-5" />
+                        <span className="dock-tooltip">{item.label}</span>
+                        {item.badge ? (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white dark:border-brand-dark animate-pulse">
+                                {item.badge}
+                            </span>
+                        ) : null}
+                    </NavLink>
+                );
+            })}
+
+            <div className="w-8 h-[1px] bg-slate-200 dark:bg-white/10 my-2" />
+
+            <button onClick={onMoreClick} className="dock-item dock-item-inactive group">
+                <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                <span className="dock-tooltip">Más Módulos</span>
+            </button>
+
+            <div className="mt-auto flex flex-col gap-4">
+                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center text-[10px] font-black text-slate-500 dark:text-slate-400 group relative">
+                    {user.nombre.charAt(0).toUpperCase()}
+                    <span className="dock-tooltip">{user.nombre}</span>
+                </div>
+                <button onClick={onLogout} className="dock-item dock-item-inactive hover:text-red-500">
+                    <LogoutIcon className="w-5 h-5" />
+                    <span className="dock-tooltip">Salir</span>
                 </button>
             </div>
-
-            {/* ── Nav ── */}
-            <nav className="flex-grow px-6 py-6 space-y-8 overflow-y-auto custom-scrollbar">
-                {navGroups.map(group => {
-                    if (group.adminOnly && user.rol !== 'Admin') return null;
-                    return (
-                        <div key={group.title} className="space-y-1.5">
-                            <h3 className="px-5 pb-2 text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] font-display">
-                                {group.title}
-                            </h3>
-                            {group.items.map(item => {
-                                const isActive = location.pathname === item.path;
-                                const badge =
-                                    item.path === '/diseno'  ? counts.design  :
-                                    item.path === '/produccion' ? counts.produccion :
-                                    item.path === '/retiros' ? counts.retail  : 0;
-
-                                return (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={onClose}
-                                        className={`group flex items-center justify-between px-5 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all duration-400 border ${
-                                            isActive
-                                                ? 'bg-slate-100 dark:bg-white/5 border-liquid-gold/20 text-slate-900 dark:text-white shadow-gold-glow'
-                                                : 'border-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:hover:border-white/5'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <item.icon className={`h-4 w-4 transition-colors duration-400 ${isActive ? 'text-liquid-gold' : 'text-slate-600 group-hover:text-liquid-gold'}`} />
-                                            <span>{item.label}</span>
-                                        </div>
-                                        {badge > 0 && (
-                                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${isActive ? 'bg-liquid-gold text-brand-dark' : 'bg-white/5 text-slate-500 border border-white/8'}`}>
-                                                {badge}
-                                            </span>
-                                        )}
-                                    </NavLink>
-                                );
-                            })}
-                        </div>
-                    );
-                })}
-            </nav>
-
-            {/* ── User card + Logout ── */}
-            <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/20 shrink-0">
-                <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.03] backdrop-blur-md">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-liquid-gold text-brand-dark flex items-center justify-center font-black text-sm shadow-gold-glow shrink-0">
-                            {user.nombre.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-black text-slate-900 dark:text-white truncate uppercase tracking-wider">{user.nombre}</p>
-                            <p className="text-[9px] font-bold text-liquid-gold uppercase tracking-widest">
-                                {user.rol === 'Admin' ? 'Administrador' : user.rol}
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onLogout}
-                        className="group w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-transparent border border-white/5 text-slate-600 hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/20 transition-all duration-300"
-                    >
-                        <LogoutIcon className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em]">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </div>
-        </aside>
+        </div>
     );
 };
 
@@ -226,30 +179,27 @@ const Header: React.FC<{
 
     const pageTitle = PAGE_TITLES[location.pathname] ?? 'Atelier';
 
-    const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-        return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+    const [theme, setTheme] = useState<'dark' | 'light' | 'cordova'>(() => {
+        return (localStorage.getItem('theme') as 'dark' | 'light' | 'cordova') || 'dark';
     });
 
     useEffect(() => {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-        }
+        document.documentElement.classList.remove('dark', 'light', 'cordova');
+        document.documentElement.classList.add(theme);
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    const nextTheme = () => {
+        if (theme === 'dark') setTheme('light');
+        else if (theme === 'light') setTheme('cordova');
+        else setTheme('dark');
     };
 
     const timeStr = now.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     const dateStr = now.toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' });
 
     return (
-        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
+        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 cordova:bg-brand-dark/90 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
 
             {/* LEFT: hamburger + page title */}
             <div className="flex items-center gap-5">
@@ -303,13 +253,19 @@ const Header: React.FC<{
 
                 <div className="h-8 w-px bg-slate-200 dark:bg-white/5 hidden md:block" />
 
-                {/* Theme Toggle */}
+                {/* Theme Toggle (3 Steps) */}
                 <button
-                    onClick={toggleTheme}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-liquid-gold dark:hover:text-liquid-gold hover:border-liquid-gold/50 transition-all duration-300"
-                    title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+                    onClick={nextTheme}
+                    className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-300 ${
+                        theme === 'dark' ? 'bg-white/5 border-white/10 text-liquid-gold' :
+                        theme === 'light' ? 'bg-slate-100 border-slate-200 text-slate-600' :
+                        'bg-blue-900 border-yellow-500/50 text-yellow-400'
+                    }`}
+                    title={`Tema Actual: ${theme}`}
                 >
-                    {theme === 'dark' ? <SparklesIcon className="w-5 h-5" /> : <SolidBoxIcon className="w-5 h-5" />}
+                    {theme === 'dark' && <SparklesIcon className="w-5 h-5" />}
+                    {theme === 'light' && <SolidBoxIcon className="w-5 h-5" />}
+                    {theme === 'cordova' && <CordovaLogo className="w-5 h-5" />}
                 </button>
 
                 <div className="h-8 w-px bg-slate-200 dark:bg-white/5 hidden md:block" />
@@ -351,40 +307,82 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
         <div className="flex h-screen bg-slate-50 dark:bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500">
             <SEO title="Imprenta Córdova | Backend Administrativo" includeLocalBusiness={false} robots={false} />
 
-            {/* ── Mobile Sidebar Overlay ── */}
+            {/* ── Desktop/Mobile Sidebar Drawer Overlay ── */}
             <div
-                className={`fixed inset-0 z-[100] lg:hidden transition-all duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 z-[100] transition-all duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 aria-hidden={!sidebarOpen}
             >
                 <div
-                    className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                     onClick={() => setSidebarOpen(false)}
                 />
-                <div className={`relative w-72 h-full transition-transform duration-500 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                    <Sidebar user={user} onLogout={onLogout} onClose={() => setSidebarOpen(false)} />
-                    <button
-                        onClick={() => setSidebarOpen(false)}
-                        className="absolute top-6 right-[-50px] p-3 text-white hover:text-liquid-gold transition-colors"
-                        aria-label="Cerrar menú"
-                    >
-                        <CloseIcon className="h-6 w-6" />
-                    </button>
+                <div className={`absolute left-0 top-0 w-80 h-full transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                    <aside className="w-80 bg-white dark:bg-slate-950 flex flex-col h-full border-r border-slate-200 dark:border-white/5 shadow-2xl relative">
+                        {/* ── Drawer Header ── */}
+                        <div className="p-8 border-b border-slate-100 dark:border-white/5 flex flex-col items-center gap-4 bg-slate-50/50 dark:bg-white/[0.01] shrink-0">
+                            <div className="w-14 h-14 bg-white dark:bg-liquid-gold text-black rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+                                <CordovaLogo className="w-8 h-8" />
+                            </div>
+                            <div className="text-center">
+                                <h1 className="font-display font-black text-xl leading-none tracking-widest text-slate-900 dark:text-white uppercase">Módulos</h1>
+                                <p className="text-[8px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.4em] mt-2">Gestión Administrativa</p>
+                            </div>
+                        </div>
+
+                        {/* ── Nav Items ── */}
+                        <nav className="flex-grow px-4 py-8 space-y-8 overflow-y-auto custom-scrollbar scroll-smooth">
+                            {navGroups.map(group => (
+                                <div key={group.title} className="space-y-2">
+                                    <h3 className="px-4 pb-2 text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 bg-liquid-gold rounded-full" />
+                                        {group.title}
+                                    </h3>
+                                    <div className="grid gap-1">
+                                        {group.items.map(item => (
+                                            <NavLink 
+                                                key={item.path} 
+                                                to={item.path} 
+                                                onClick={() => setSidebarOpen(false)}
+                                                className={({isActive}) => `
+                                                    flex items-center gap-4 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group
+                                                    ${isActive 
+                                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-brand-dark shadow-lg scale-[1.02]' 
+                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:translate-x-1'}
+                                                `}
+                                            >
+                                                <item.icon className={`w-4 h-4 transition-transform group-hover:rotate-12 ${isActive ? 'text-liquid-gold' : ''}`} />
+                                                {item.label}
+                                            </NavLink>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </nav>
+
+                        {/* Close button inside for desktop feel */}
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            <CloseIcon className="w-5 h-5" />
+                        </button>
+                    </aside>
                 </div>
             </div>
 
-            {/* ── Desktop Sidebar ── */}
-            <div className="hidden lg:flex lg:flex-shrink-0">
-                <Sidebar user={user} onLogout={onLogout} />
+            {/* ── Desktop Floating Dock ── */}
+            <div className="hidden lg:flex lg:flex-shrink-0 w-24 relative">
+                <FloatingDock user={user} onLogout={onLogout} onMoreClick={() => setSidebarOpen(true)} />
             </div>
 
             {/* ── Main content ── */}
-            <div className="flex flex-col flex-1 w-0 overflow-hidden relative">
+            <div className="flex flex-col flex-1 w-0 overflow-hidden relative lg:pl-4 transition-all duration-500">
                 {/* Ambient glow */}
-                <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-liquid-gold/4 rounded-full blur-[100px] -ml-48 -mt-48 pointer-events-none" />
+                <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-liquid-gold/5 rounded-full blur-[100px] -ml-48 -mt-48 pointer-events-none" />
 
                 <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
 
-                <main className="flex-1 relative overflow-y-auto focus:outline-none p-8 lg:p-12 pb-40 lg:pb-12 scroll-smooth custom-scrollbar z-10">
+                <main className="flex-1 relative overflow-y-auto focus:outline-none p-6 lg:p-10 pb-40 lg:pb-12 scroll-smooth custom-scrollbar z-10">
                     <div className="max-w-[1600px] mx-auto w-full animate-slide-up">
                         {children}
                     </div>

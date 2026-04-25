@@ -2,22 +2,13 @@ import { Producto, TrabajoTipo, Regimen } from '../types';
 
 export const MASTER_CATALOG: Partial<Producto>[] = [
   // --- DOCUMENTOS AUTORIZADOS (SRI) ---
-  { nombre: 'Factura (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Nota de Venta (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Liquidación de Compra de Bienes Muebles Usados (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Notas de Crédito (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Notas de Débito (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Guías de Remisión (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Boletos o Entradas a Espectáculos Públicos (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Liquidación de Compra de Vehículos Usados (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Acta de Entrega - Recepción de Vehículos Usados (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Liquidación de Compra de Bienes o Prestación de Servicios (Rimpe)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Declaración Anual RIMPE Negocio Popular', precio: 10.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Factura (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
+  { nombre: 'Nota de Venta (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
   
-  { nombre: 'Facturero A5 1x Blocs (50x2)', precio: 10.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Facturero A5 3x Blocs (50x2)', precio: 22.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Facturero A5 5x Blocs (50x2)', precio: 32.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Facturero A5 10x Blocs (50x2)', precio: 55.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Facturero A5 1x Blocs (50x2)', precio: 10.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
+  { nombre: 'Facturero A5 3x Blocs (50x2)', precio: 22.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
+  { nombre: 'Facturero A5 5x Blocs (50x2)', precio: 32.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
+  { nombre: 'Facturero A5 10x Blocs (50x2)', precio: 55.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
   { nombre: 'Facturero A4 1x Blocs (50x2)', precio: 18.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Nota de Venta A6 (General)', precio: 8.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Retenciones 1x Blocs (50x3)', precio: 12.00, categoria: 'Oficina', esSRI: true },
@@ -28,9 +19,27 @@ export const MASTER_CATALOG: Partial<Producto>[] = [
   { nombre: 'Vale de Caja Interno (Bloc)', precio: 5.00, categoria: 'Oficina', esSRI: false },
 
   // --- TARJETAS DE PRESENTACIÓN ---
-  { nombre: 'Tarjetas de Presentación x100 (Couché 300g)', precio: 12.00, categoria: 'Tarjetas', esSRI: false },
-  { nombre: 'Tarjetas de Presentación x1000 (Couché 300g)', precio: 35.00, categoria: 'Tarjetas', esSRI: false },
-  { nombre: 'Tarjetas Laminado Mate + Brillante UV x1000', precio: 55.00, categoria: 'Tarjetas', esSRI: false },
+  { 
+    nombre: 'Tarjetas de Presentación x100 (Couché 300g)', 
+    precio: 12.00, 
+    categoria: 'Tarjetas', 
+    esSRI: false,
+    imagenUrl: 'https://i.imgur.com/kS9Qj6q.png' // Placeholder premium for now, user can swap with real assets
+  },
+  { 
+    nombre: 'Tarjetas de Presentación x1000 (Couché 300g)', 
+    precio: 35.00, 
+    categoria: 'Tarjetas', 
+    esSRI: false,
+    imagenUrl: 'https://i.imgur.com/kS9Qj6q.png'
+  },
+  { 
+    nombre: 'Tarjetas Laminado Mate + Brillante UV x1000', 
+    precio: 55.00, 
+    categoria: 'Tarjetas', 
+    esSRI: false,
+    imagenUrl: 'https://i.imgur.com/kS9Qj6q.png'
+  },
   { nombre: 'Tarjetas PVC (Tipo Carnet)', precio: 5.00, categoria: 'Tarjetas', esSRI: false },
   { nombre: 'Tarjetas con Troquel Especial x100', precio: 45.00, categoria: 'Tarjetas', esSRI: false },
   { nombre: 'Tarjetas con Bordes Redondeados x100', precio: 15.00, categoria: 'Tarjetas', esSRI: false },
@@ -67,14 +76,12 @@ export const MASTER_CATALOG: Partial<Producto>[] = [
   { nombre: 'Sticker Holográfico x100', precio: 65.00, categoria: 'Etiquetas', esSRI: false },
 
   // --- GRAN FORMATO (GIGANTOGRAFÍA) ---
-  { nombre: 'Lona Banner 13oz (m2)', precio: 10.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Lona con Ojalillos (m2)', precio: 12.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Vinil Adhesivo Brillante (m2)', precio: 14.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Vinil Adhesivo Mate (m2)', precio: 15.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Vinil Microperforado (m2)', precio: 18.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Rollup Premium (200x85cm)', precio: 45.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Rollup Económico (200x80cm)', precio: 38.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Letrero Caja de Luz (m2)', precio: 95.00, categoria: 'Gran Formato', esSRI: false },
+  { nombre: 'Banner x m2 (Lona 13oz)', precio: 12.00, categoria: 'Gran Formato', esSRI: false },
+  { nombre: 'Vinil Adhesivo x m2', precio: 18.00, categoria: 'Gran Formato', esSRI: false },
+  { nombre: 'Microperforado x m2', precio: 22.00, categoria: 'Gran Formato', esSRI: false },
+  { nombre: 'Roll up Completo (80x200cm)', precio: 45.00, categoria: 'Gran Formato', esSRI: false, imagenUrl: 'https://i.imgur.com/8X9mY9L.png' },
+  { nombre: 'Letrero en Caja de Luz x m2', precio: 85.00, categoria: 'Gran Formato', esSRI: false },
+  { nombre: 'Lona Translúcida x m2', precio: 25.00, categoria: 'Gran Formato', esSRI: false },
   { nombre: 'Corte de Vinil Decorativo Lineal', precio: 6.00, categoria: 'Gran Formato', esSRI: false },
   { nombre: 'Señalética Celtex 30x20cm', precio: 15.00, categoria: 'Gran Formato', esSRI: false },
   { nombre: 'Lona Mesh (Transpirable) m2', precio: 16.00, categoria: 'Gran Formato', esSRI: false },

@@ -5,7 +5,7 @@ import {
     SparklesIcon, TableIcon, CheckCircleIcon, ArrowRightIcon, 
     AddIcon, SearchIcon, Loader2Icon, DocumentTextIcon, 
     LayersIcon, FileStackIcon, ShieldCheckIcon, RulerIcon,
-    ActivityIcon
+    ActivityIcon, CloudArrowUpIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { useOutletContext, useNavigate } from 'react-router-dom';
@@ -136,13 +136,41 @@ const ProductManagementModal: React.FC<{
                             <div className="space-y-6 pt-6 border-t border-white/5">
                                 <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] block flex items-center gap-2"><PhotoIcon className="w-4 h-4"/> Visual Identity</label>
                                 <div className="space-y-4">
-                                    <input 
-                                        type="text" 
-                                        placeholder="IMAGE URL (E.G. HTTPS://...)" 
-                                        value={baseProduct.imagenUrl} 
-                                        onChange={e => setBaseProduct({...baseProduct, imagenUrl: e.target.value})} 
-                                        className="input-atelier w-full text-[10px]" 
-                                    />
+                                    <div className="flex gap-4">
+                                        <input 
+                                            type="text" 
+                                            placeholder="IMAGE URL (E.G. HTTPS://...)" 
+                                            value={baseProduct.imagenUrl} 
+                                            onChange={e => setBaseProduct({...baseProduct, imagenUrl: e.target.value})} 
+                                            className="input-atelier flex-grow text-[10px]" 
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={() => document.getElementById('product-image-upload')?.click()}
+                                            className="p-4 bg-white/5 hover:bg-liquid-gold text-slate-500 hover:text-black rounded-xl border border-white/5 transition-all"
+                                            title="Upload Image"
+                                        >
+                                            <CloudArrowUpIcon className="w-5 h-5" />
+                                        </button>
+                                        <input 
+                                            id="product-image-upload"
+                                            type="file" 
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    try {
+                                                        const file = e.target.files[0];
+                                                        const url = await uploadFile(file, 'catalog', `prod_${Date.now()}`);
+                                                        setBaseProduct({...baseProduct, imagenUrl: url});
+                                                    } catch (err) {
+                                                        console.error("Upload failed", err);
+                                                        alert("Error al subir imagen");
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    </div>
                                     {baseProduct.imagenUrl && (
                                         <div className="h-32 rounded-2xl overflow-hidden border border-white/10 bg-black/40">
                                             <img src={baseProduct.imagenUrl} className="w-full h-full object-cover opacity-60" alt="Preview" />

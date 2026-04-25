@@ -51,7 +51,8 @@ interface DataContextType {
     updateConfig: (data: any) => Promise<void>;
     updateTrabajoPhoto: (id: string, url: string) => Promise<void>;
     updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
-    registerRetiro: (id: string, pagoFinal: number, user: string) => Promise<Trabajo>;
+    uploadFile: (file: File, bucket: string, path: string) => Promise<string>;
+    registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string) => Promise<Trabajo>;
     aprobarArte: (id: string) => Promise<Trabajo>;
     createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
     getClientDebt: (clienteId: string) => number;
@@ -84,7 +85,8 @@ const mapDBTrabajo = (t: any): Trabajo => ({
     esRenovacion: t.es_renovacion,
     fechaVencimiento: t.fecha_vencimiento,
     actividadSeleccionada: t.actividad_seleccionada,
-    arteAprobado: t.arte_aprobado
+    arteAprobado: t.arte_aprobado,
+    fotoRetiroUrl: t.foto_retiro_url
 });
 
 // Mapping for Clientes
@@ -309,6 +311,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         if (error) throw error;
 
+        // Si hay una imagen, subirla
+        if (imageFile) {
+            try {
+                const url = await uploadFile(imageFile, 'trabajos', `${data.id}/original_${Date.now()}`);
+                await supabase.from('trabajos').update({ foto_original_url: url }).eq('id', data.id);
+                data.foto_original_url = url;
+            } catch (uploadErr) {
+                console.error("Error uploading job image:", uploadErr);
+            }
+        }
+
         
         try {
             await deductInventory(dbData);
@@ -325,6 +338,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { error } = await supabase.from('trabajos').update({ estado: status, actualizado_por: user }).eq('id', id);
         if (error) throw error;
         setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizado_por: user } : t));
+    };
+
+    const updateTrabajoPhoto = async (id: string, url: string) => {
+        const { error } = await supabase.from('trabajos').update({ foto_original_url: url }).eq('id', id);
+        if (error) throw error;
+        setTrabajos(prev => prev.map(t => t.id === id ? { ...t, fotoOriginalUrl: url } : t));
     };
 
     const addProducto = async (p: any) => {
@@ -422,23 +441,46 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (error) throw error;
     };
 
-    const updateTrabajoPhoto = async (id: string, url: string) => {
-        const { error } = await supabase.from('trabajos').update({ foto_original_url: url }).eq('id', id);
-        if (error) throw error;
-    };
-
     const updateTrabajoEvidencia = async (id: string, url: string) => {
         const { error } = await supabase.from('trabajos').update({ foto_evidencia_url: url }).eq('id', id);
         if (error) throw error;
     };
 
-    const registerRetiro = async (id: string, pagoFinal: number, user: string): Promise<Trabajo> => {
+    const uploadFile = async (file: File, bucket: string, path: string): Promise<string> => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${path}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(fileName);
+
+        return publicUrl;
+    };
+
+    const updateTrabajoRetiro = async (id: string, url: string) => {
+        const { error } = await supabase.from('trabajos').update({ foto_retiro_url: url }).eq('id', id);
+        if (error) throw error;
+    };
+
+    const registerRetiro = async (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string): Promise<Trabajo> => {
+        const updateData: any = { 
+            saldo: 0, 
+            estado: TrabajoEstado.ENTREGADO, 
+            actualizado_por: user 
+        };
+
+        if (fotoRetiroUrl) {
+            updateData.foto_retiro_url = fotoRetiroUrl;
+        }
+
         const { data, error } = await supabase.from('trabajos')
-            .update({ 
-                saldo: 0, 
-                estado: TrabajoEstado.ENTREGADO, 
-                actualizado_por: user 
-            })
+            .update(updateData)
             .eq('id', id)
             .select()
             .single();
@@ -468,7 +510,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const createPublicOrder = async (clientData: { nombre: string, telefono: string }, items: any[]) => {
         // Buscar o crear cliente
-        let cliente = clientes.find(c => c.telefono === clientData.telefono);
+        let cliente = clientes.find(c => c.telefono?.includes(clientData.telefono));
         if (!cliente) {
             cliente = await addCliente({ ...clientData, cedula: '9999999999', regimen: 'General' });
         }
@@ -552,6 +594,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         seedCatalog, addInventoryItem, updateInventoryItem, deleteInventoryItem, 
         upsertSriCredential, bulkAddSriCredentials, deleteSriCredential, updateConfig,
         updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, aprobarArte,
+        uploadFile,
         createPublicOrder, getClientDebt, syncFromLocalStorage,
         addProveedor, updateProveedor, deleteProveedor, 
         createTareaProveedor, updateTareaProveedor, deleteTareaProveedor

@@ -454,7 +454,11 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
     const [createMode, setCreateMode] = useState<ClientMode>('EXPRESS');
     
     const filteredClients = searchTerm.length > 1 
-        ? clientes.filter(c => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || c.cedula.includes(searchTerm) || (c.ruc && c.ruc.includes(searchTerm))).slice(0, 5)
+        ? clientes.filter(c => 
+            (c.nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+            (c.cedula || '').includes(searchTerm) || 
+            (c.ruc || '').includes(searchTerm)
+        ).slice(0, 5)
         : [];
 
     const handleOpenCreate = (mode: ClientMode) => {
@@ -532,10 +536,10 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                             <div className={`absolute inset-y-0 left-0 w-1 bg-liquid-gold transition-opacity ${selectedId === c.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
                             <div className="flex items-center gap-5 relative z-10">
                                 <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/20 text-orange-400' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
-                                    {c.nombre.charAt(0)}
+                                    {(c.nombre || '?').charAt(0)}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-black text-white text-base tracking-tight uppercase leading-tight mb-1.5 truncate">{c.nombre}</p>
+                                    <p className="font-black text-white text-base tracking-tight uppercase leading-tight mb-1.5 truncate">{c.nombre || 'SIN NOMBRE'}</p>
                                     <div className="flex items-center gap-3 flex-wrap">
                                         <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
                                             <IdentificationIcon className="w-3 h-3 opacity-40"/> {c.cedula || c.ruc} 

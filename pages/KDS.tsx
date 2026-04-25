@@ -236,9 +236,9 @@ const KDSPage: React.FC = () => {
         if (filterTerm) {
             const lower = filterTerm.toLowerCase();
             filtered = filtered.filter(t => 
-                t.subtipo.toLowerCase().includes(lower) || 
+                (t.subtipo || '').toLowerCase().includes(lower) || 
                 String(t.orden).includes(lower) || 
-                clientes.find(c => c.id === t.clienteId)?.nombre.toLowerCase().includes(lower)
+                (clientes.find(c => c.id === t.clienteId)?.nombre || '').toLowerCase().includes(lower)
             );
         }
 

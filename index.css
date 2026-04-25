@@ -388,6 +388,110 @@ html.light svg.text-slate-200 {
   color: #1e293b !important;
 }
 
+/* --- THEME: IMPRENTA CORDOVA (ORIGINAL INDUSTRIAL) --- */
+html.cordova {
+  --cordova-blue: #0044cc;
+  --cordova-yellow: #ffcc00;
+  --cordova-red: #cc0000;
+  --cordova-white: #ffffff;
+  --cordova-slate: #1e293b;
+}
+
+html.cordova body {
+  background-color: #f1f5f9 !important;
+  color: var(--cordova-slate) !important;
+}
+
+html.cordova .bg-brand-dark,
+html.cordova .bg-slate-950,
+html.cordova .bg-brand-dark\/60,
+html.cordova .bg-brand-dark\/90 {
+  background-color: var(--cordova-blue) !important;
+}
+
+html.cordova header {
+  background-color: var(--cordova-blue) !important;
+  border-bottom: 2px solid var(--cordova-yellow) !important;
+}
+
+html.cordova header .text-slate-900,
+html.cordova header .text-white,
+html.cordova header h2 {
+  color: white !important;
+}
+
+html.cordova header .text-slate-500,
+html.cordova header .text-slate-600 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.cordova .floating-dock {
+  background-color: rgba(0, 68, 204, 0.95) !important;
+  border: 1px solid var(--cordova-yellow) !important;
+}
+
+html.cordova .dock-item-inactive {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html.cordova .dock-item-inactive:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+html.cordova .dock-item-active {
+  background-color: var(--cordova-yellow) !important;
+  color: var(--cordova-blue) !important;
+  box-shadow: 0 0 15px rgba(255, 204, 0, 0.4) !important;
+}
+
+html.cordova .text-liquid-gold {
+  color: #b45309 !important; /* Dorado oscuro para fondo blanco */
+}
+
+html.cordova .btn-luxury {
+  background: linear-gradient(135deg, var(--cordova-red) 0%, #990000 100%) !important;
+  color: white !important;
+  border: 1px solid var(--cordova-yellow) !important;
+}
+
+html.cordova .input-atelier {
+  background-color: white !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.cordova .glass-card-luxury {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.cordova .text-brand-red {
+  color: var(--cordova-red) !important;
+}
+
+/* Floating Dock Utilities */
+.floating-dock {
+  @apply fixed left-6 top-1/2 -translate-y-1/2 z-[60] bg-white/80 dark:bg-brand-dark/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[2rem] p-3 shadow-luxury flex flex-col items-center gap-4 transition-all duration-500 hover:scale-[1.02];
+}
+
+.dock-item {
+  @apply w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 relative group;
+}
+
+.dock-item-active {
+  @apply bg-liquid-gold text-brand-dark shadow-gold-glow;
+}
+
+.dock-item-inactive {
+  @apply text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white;
+}
+
+.dock-tooltip {
+  @apply absolute left-full ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none translate-x-[-10px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 whitespace-nowrap z-[70];
+}
+
 /* Premium Mobile Utilities */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 .mb-safe { margin-bottom: env(safe-area-inset-bottom); }

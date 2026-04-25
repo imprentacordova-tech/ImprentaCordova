@@ -55,6 +55,7 @@ export interface Trabajo {
   caduco: boolean;
   fotoOriginalUrl?: string;
   fotoEvidenciaUrl?: string;
+  fotoRetiroUrl?: string;
   creadoPor?: string;
   actualizadoPor?: string;
   establecimiento?: string;
