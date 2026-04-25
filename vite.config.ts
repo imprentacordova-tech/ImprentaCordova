@@ -29,15 +29,9 @@ export default defineConfig(({ mode }) => {
         minify: 'esbuild',
         rollupOptions: {
           output: {
-            manualChunks(id) {
-              if (id.includes('node_modules')) {
-                if (id.includes('react')) return 'vendor-react';
-                if (id.includes('lucide-react')) return 'vendor-icons';
-                if (id.includes('framer-motion')) return 'vendor-animations';
-                if (id.includes('supabase')) return 'vendor-supabase';
-                return 'vendor-libs';
-              }
-            }
+            chunkFileNames: 'assets/[name]-[hash].js',
+            entryFileNames: 'assets/[name]-[hash].js',
+            assetFileNames: 'assets/[name]-[hash].[ext]'
           }
         },
         chunkSizeWarningLimit: 2000 // Aumentado para evitar warnings de Vercel
