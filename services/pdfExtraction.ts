@@ -105,8 +105,21 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
 
     // --- 5. RÉGIMEN & OBLIGACIONES ---
     let regimen = Regimen.GENERAL;
-    if (textOnly.includes("NEGOCIO POPULAR")) regimen = Regimen.NEGOCIO_POPULAR;
-    else if (textOnly.includes("RIMPE") && textOnly.includes("EMPRENDEDOR")) regimen = Regimen.EMPRENDEDOR;
+    
+    // Búsqueda más robusta de Régimen
+    const isPopular = textOnly.includes("NEGOCIO POPULAR") || 
+                     (textOnly.includes("RIMPE") && textOnly.includes("POPULAR")) ||
+                     textOnly.includes("CONTRIBUYENTE RÉGIMEN RIMPE-NEGOCIO POPULAR") ||
+                     textOnly.includes("RÉGIMEN RIMPE - NEGOCIO POPULAR");
+                     
+    const isEmprendedor = textOnly.includes("EMPRENDEDOR") && 
+                         (textOnly.includes("RIMPE") || textOnly.includes("RÉGIMEN"));
+
+    if (isPopular) regimen = Regimen.NEGOCIO_POPULAR;
+    else if (isEmprendedor) regimen = Regimen.EMPRENDEDOR;
+    else regimen = Regimen.GENERAL;
+
+    console.log("SRI ENGINE - REGIMEN DETECTED:", regimen, " | Based on keywords found:", { isPopular, isEmprendedor });
 
     const listaObligaciones: string[] = [];
     if (textOnly.includes("DECLARACION DE IVA")) listaObligaciones.push("IVA");

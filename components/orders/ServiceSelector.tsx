@@ -1,19 +1,18 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useData } from '../../contexts/DataContext';
 import { 
     SearchIcon, BoxIcon, ShieldCheckIcon, 
     CheckCircleIcon, SparklesIcon, TagIcon
 } from '../Icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Regimen } from '../../types';
+import { useData, CATEGORY_EMOJIS } from '../../contexts/DataContext';
 
 interface ServiceSelectorProps {
     onSelect: (servicio: any) => void;
     selectedId?: string;
     regimen?: string;
 }
-
-// ... (existing emoji)
 
 const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId, regimen }) => {
     const { productos } = useData();
@@ -32,10 +31,17 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
             
-            // Inteligencia de Régimen:
-            // Si es General o Emprendedor, NO pueden imprimir Notas de Venta físicas
-            if ((regimen === 'General' || regimen === 'Rimpe Emprendedor') && p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
+            // Inteligencia de Régimen Elite:
+            // 1. Si es General o Emprendedor, HIDE "Nota de Venta" física
+            if ((regimen === Regimen.GENERAL || regimen === Regimen.EMPRENDEDOR) && 
+                p.nombre.toUpperCase().includes('NOTA DE VENTA')) {
                 return false;
+            }
+
+            // 2. Si es Negocio Popular, asegurar acceso a sus documentos específicos
+            // (La mayoría están en el catálogo, pero filtramos por relevancia si es necesario)
+            if (regimen === Regimen.NEGOCIO_POPULAR && p.esSRI) {
+                // Aquí podríamos priorizar o destacar, pero por ahora aseguramos visibilidad
             }
 
             return matchesSearch && matchesCategory;
@@ -103,7 +109,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                             : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
                         }`}
                     >
-                        <span className="text-base">{categoryEmoji[cat] || '📦'}</span>
+                        <span className="text-base">{CATEGORY_EMOJIS[cat] || '📦'}</span>
                         {cat}
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
                             activeCategory === cat ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'
@@ -159,7 +165,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
                                             <span className="text-4xl opacity-20 group-hover:opacity-40 transition-opacity">
-                                                {categoryEmoji[p.categoria] || '📦'}
+                                                {CATEGORY_EMOJIS[p.categoria] || '📦'}
                                             </span>
                                         </div>
                                     )}

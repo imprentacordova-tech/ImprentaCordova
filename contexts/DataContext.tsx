@@ -2,6 +2,20 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, TrabajoEstado, TrabajoTipo } from '../types';
 import { supabase } from '../services/supabase';
 import { MASTER_CATALOG } from '../services/catalogData';
+import { Regimen } from '../types';
+
+export const CATEGORY_EMOJIS: Record<string, string> = {
+    'Todas': '✨',
+    'SRI': '🏛️',
+    'Impresión': '🖨️',
+    'Sellos': '📜',
+    'Diseño': '🎨',
+    'Publicidad': '📣',
+    'Suministros': '📦',
+    'Varias': '⚙️',
+    'General': '📋'
+};
+
 
 interface DataContextType {
     clientes: Cliente[];
@@ -74,23 +88,40 @@ const mapDBTrabajo = (t: any): Trabajo => ({
 });
 
 // Mapping for Clientes
-const mapDBCliente = (c: any): Cliente => ({
-    id: c.id,
-    cedula: c.cedula,
-    ruc: c.ruc,
-    nombre: c.nombre,
-    nombreComercial: c.nombre_comercial,
-    actividades: c.actividades,
-    direccion: c.direccion,
-    notas: c.notas,
-    telefono: c.telefono || [],
-    email: c.email,
-    creadoEn: c.creado_en,
-    regimen: c.regimen,
-    establecimientoPredeterminado: c.establecimiento_predeterminado,
-    puntoEmisionPredeterminado: c.punto_emision_predeterminado,
-    numEstablecimientosOpen: c.num_establecimientos_open
-});
+const mapDBCliente = (c: any): Cliente => {
+    // Normalización robusta del régimen (DB -> UI)
+    // Soportamos tanto 'regimen' como 'regime' (naming mismatch en DB)
+    const dbRegimen = c.regimen || c.regime || '';
+    const raw = dbRegimen.toString().toUpperCase();
+    
+    let normalizedRegimen = Regimen.GENERAL;
+    
+    if (raw === 'RIMPE' || raw.includes('POPULAR') || raw.includes('NEGOCIO POPULAR')) {
+        normalizedRegimen = Regimen.NEGOCIO_POPULAR;
+    } else if (raw === 'EMPRENDEDOR' || raw.includes('EMPRENDEDOR')) {
+        normalizedRegimen = Regimen.EMPRENDEDOR;
+    } else if (raw === 'GENERAL') {
+        normalizedRegimen = Regimen.GENERAL;
+    }
+
+    return {
+        id: c.id,
+        cedula: c.cedula,
+        ruc: c.ruc,
+        nombre: c.nombre,
+        nombreComercial: c.nombre_comercial,
+        actividades: c.actividades,
+        direccion: c.direccion,
+        notas: c.notas,
+        telefono: c.telefono || [],
+        email: c.email,
+        creadoEn: c.creado_en,
+        regimen: normalizedRegimen as Regimen,
+        establecimientoPredeterminado: c.establecimiento_predeterminado,
+        puntoEmisionPredeterminado: c.punto_emision_predeterminado,
+        numEstablecimientosOpen: c.num_establecimientos_open
+    };
+};
 
 const mapClienteToDB = (c: any) => ({
     cedula: c.cedula,

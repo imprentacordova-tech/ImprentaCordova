@@ -5,7 +5,8 @@ import {
     CheckCircleIcon, ArrowRightIcon, BoxIcon, 
     LayersIcon, HashIcon, ScissorsIcon, 
     ChevronDownIcon, InfoIcon, SparklesIcon,
-    ClipboardIcon, FileTextIcon, MonitorIcon
+    ClipboardIcon, FileTextIcon, MonitorIcon,
+    CpuIcon, ShieldCheckIcon
 } from '../Icons';
 
 interface ProductConfiguratorProps {

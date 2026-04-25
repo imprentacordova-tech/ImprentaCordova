@@ -142,8 +142,10 @@ export const CreateClientModal: React.FC<{
         
         let regimenFinal = Regimen.GENERAL;
         if (typeof data.regimen === 'string') {
-            if (data.regimen.toUpperCase().includes('POPULAR')) regimenFinal = Regimen.NEGOCIO_POPULAR;
-            else if (data.regimen.toUpperCase().includes('EMPRENDEDOR')) regimenFinal = Regimen.EMPRENDEDOR;
+            const raw = data.regimen.toUpperCase();
+            if (raw.includes('POPULAR')) regimenFinal = Regimen.NEGOCIO_POPULAR;
+            else if (raw.includes('EMPRENDEDOR')) regimenFinal = Regimen.EMPRENDEDOR;
+            else if (raw.includes('GENERAL')) regimenFinal = Regimen.GENERAL;
             else regimenFinal = data.regimen as Regimen;
         } else if (data.regimen) {
             regimenFinal = data.regimen;
@@ -529,11 +531,20 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                                 </div>
                                 <div className="min-w-0">
                                     <p className="font-black text-white text-base tracking-tight uppercase leading-tight mb-1.5 truncate">{c.nombre}</p>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 flex-wrap">
                                         <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
                                             <IdentificationIcon className="w-3 h-3 opacity-40"/> {c.cedula || c.ruc} 
                                         </p>
-                                        {c.ruc && <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5 tracking-tighter uppercase">RUC OFICIAL</span>}
+                                        {c.ruc && (
+                                            <div className="flex gap-1.5 items-center">
+                                                <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5 tracking-tighter uppercase">RUC OFICIAL</span>
+                                                {useData().sriCredentials.some(s => s.ruc === c.ruc) && (
+                                                    <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-green-500/20 text-green-400 border border-green-500/20 tracking-tighter uppercase flex items-center gap-1">
+                                                        <ShieldCheckIcon className="w-2 h-2"/> CLAVE ENCONTRADA ✅
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

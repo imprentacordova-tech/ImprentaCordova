@@ -129,29 +129,70 @@ const ConfiguracionPage: React.FC = () => {
         setIsImporting(true);
         try {
             const text = await file.text();
-            const lines = text.split(/\r?\n/);
-            const headers = lines[0].toLowerCase().split(',');
-            const idxUser = headers.indexOf('username');
-            const idxPass = headers.indexOf('password');
-            const idxName = headers.indexOf('name');
+            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length < 2) return;
+
+            // Detectar delimitador
+            const firstLine = lines[0];
+            const delimiter = firstLine.includes(';') ? ';' : ',';
+            
+            const headers = firstLine.toLowerCase().split(delimiter).map(h => h.trim().replace(/"/g, ''));
+            
+            // Chrome Headers: name, url, username, password
+            let idxUser = headers.indexOf('username');
+            let idxPass = headers.indexOf('password');
+            let idxName = headers.indexOf('name');
+
+            // Fallback si no hay cabeceras exactas (asumir formato Chrome: name,url,username,password)
+            if (idxUser === -1 && headers.length >= 4) {
+                // Si la tercera columna parece un RUC o username
+                idxName = 0;
+                idxUser = 2;
+                idxPass = 3;
+            }
 
             const creds: SriCredential[] = [];
             lines.slice(1).forEach(line => {
-                const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                if (parts && parts.length >= 4) {
-                    const rucRaw = parts[idxUser]?.replace(/"/g, '') || '';
-                    const ruc = rucRaw.replace(/\D/g, '');
-                    const pass = parts[idxPass]?.replace(/"/g, '') || '';
-                    const name = parts[idxName]?.replace(/"/g, '') || '';
-                    if (ruc.length >= 10 && pass) {
-                        creds.push({ ruc, password: pass, origen: name, updatedAt: new Date().toISOString() });
+                // Regex robusto para CSV que maneja comillas y campos vacíos
+                const parts: string[] = [];
+                let current = "";
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === delimiter && !inQuotes) {
+                        parts.push(current);
+                        current = "";
+                    } else {
+                        current += char;
+                    }
+                }
+                parts.push(current);
+
+                if (parts.length > Math.max(idxUser, idxPass)) {
+                    const rucRaw = parts[idxUser]?.trim() || '';
+                    const ruc = rucRaw.replace(/\D/g, ''); // Solo números
+                    const pass = parts[idxPass]?.trim() || '';
+                    const name = parts[idxName]?.trim() || '';
+
+                    // Validar RUC (10 o 13 dígitos)
+                    if ((ruc.length === 10 || ruc.length === 13) && pass) {
+                        creds.push({ 
+                            ruc, 
+                            password: pass, 
+                            origen: name || 'Importado CSV', 
+                            updatedAt: new Date().toISOString() 
+                        });
                     }
                 }
             });
 
             if (creds.length > 0) {
                 await bulkAddSriCredentials(creds);
-                logActivity(currentUser.nombre, currentUser.rol, 'CREDENTIALS_IMPORT', `Importó ${creds.length} credenciales SRI`, 'Seguridad');
+                logActivity(currentUser.nombre, currentUser.rol, 'CREDENTIALS_IMPORT', `Importó exitosamente ${creds.length} credenciales SRI`, 'Seguridad');
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
             }
         } catch (error) { 
             console.error("Error importing CSV:", error);
