@@ -37,7 +37,7 @@ export const MobileFloatingNav: React.FC = () => {
                     <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/20 via-transparent to-liquid-gold/20 rounded-[2.6rem] blur-xl opacity-10 pointer-events-none"></div>
                     
                     {navItems.map((item) => {
-                        const isActive = location.pathname === item.path;
+                        const isCurrentActive = location.pathname === item.path;
                         
                         if (item.primary) {
                             return (
@@ -57,8 +57,11 @@ export const MobileFloatingNav: React.FC = () => {
                                         className={`flex items-center justify-center relative ${isHubOpen ? '-rotate-45' : ''}`}
                                     >
                                         <item.icon className="w-8 h-8" />
-                                        {!isHubOpen && !isActive && (
-                                            <div className="absolute inset-0 rounded-full bg-liquid-gold/30 animate-ping opacity-20"></div>
+                                        {!isHubOpen && !isCurrentActive && (
+                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-liquid-gold opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-liquid-gold"></span>
+                                            </span>
                                         )}
                                     </motion.div>
                                 </button>
@@ -69,30 +72,22 @@ export const MobileFloatingNav: React.FC = () => {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                className="flex flex-col items-center justify-center flex-1 py-2 relative"
+                                className={(props) => `
+                                    flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 relative group
+                                    ${props.isActive ? 'text-liquid-gold shadow-gold-glow-soft bg-liquid-gold/5' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}
+                                `}
                             >
-                                <motion.div
-                                    whileTap={{ scale: 0.8 }}
-                                    className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${isActive ? 'text-liquid-gold scale-110' : 'text-slate-400 dark:text-slate-500 opacity-70 hover:opacity-100'}`}
-                                >
-                                    <div className="relative">
-                                        <item.icon className="w-5 h-5" />
-                                        {isActive && (
+                                {(props) => (
+                                    <>
+                                        <item.icon className={`w-6 h-6 transition-transform duration-500 ${props.isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                        {props.isActive && (
                                             <motion.div 
-                                                layoutId="active-nav-glow"
-                                                className="absolute inset-0 bg-liquid-gold/20 blur-md rounded-full scale-150 -z-10"
+                                                layoutId="nav-pill"
+                                                className="absolute -bottom-1 w-1 h-1 bg-liquid-gold rounded-full shadow-gold-glow"
                                             />
                                         )}
-                                    </div>
-                                    <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${isActive ? 'opacity-100' : 'opacity-0'}`}>{item.label}</span>
-                                    
-                                    {isActive && (
-                                        <motion.div 
-                                            layoutId="nav-pill"
-                                            className="absolute -bottom-1 w-1 h-1 bg-liquid-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,1)]"
-                                        />
-                                    )}
-                                </motion.div>
+                                    </>
+                                )}
                             </NavLink>
                         );
                     })}

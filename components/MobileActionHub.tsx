@@ -27,7 +27,7 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
         {
             id: 'new-order',
             title: 'Nuevo Pedido',
-            subtitle: 'Lanzar nueva misión',
+            subtitle: 'Crear nuevo trabajo',
             icon: PlusIcon,
             color: 'bg-liquid-gold',
             textColor: 'text-black',
@@ -36,7 +36,7 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
         {
             id: 'new-client',
             title: 'Registrar Cliente',
-            subtitle: 'IA & SRI Ready',
+            subtitle: 'Listo para el SRI',
             icon: UserPlusIcon,
             color: 'bg-blue-500',
             textColor: 'text-white',
@@ -57,7 +57,7 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
         {
             id: 'vitrina',
             title: 'Vitrina Digital',
-            subtitle: 'Catálogo & Stock',
+            subtitle: 'Estado de Inventario',
             icon: SolidBoxIcon,
             color: 'bg-purple-500',
             textColor: 'text-white',
@@ -129,7 +129,7 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
                     </div>
                     <div>
                         <p className="text-[9px] text-liquid-gold font-black uppercase tracking-widest mb-1">Tip de Productividad</p>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">Usa el Omni-Search (arriba) para encontrar pedidos por # de orden.</p>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">Usa el Buscador Rápido (arriba) para encontrar pedidos por # de orden.</p>
                     </div>
                 </div>
             </div>

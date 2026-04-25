@@ -111,8 +111,8 @@ const DashboardPage: React.FC = () => {
                 </div>
             </motion.div>
             <div className="text-center space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.6em] text-liquid-gold italic">Sincronizando Atelier</p>
-                <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-700">Actualizando flujos de producción...</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.6em] text-liquid-gold italic">Sincronizando Sistema</p>
+                <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-700">Actualizando flujo de producción...</p>
             </div>
         </div>
     );
@@ -131,7 +131,7 @@ const DashboardPage: React.FC = () => {
                         Buen día, <span className="text-gold-gradient">{currentUser.nombre.split(' ')[0]}</span>
                     </h1>
                     <p className="text-slate-500 text-lg font-light tracking-tight flex items-center gap-3">
-                        El taller gestiona <span className="text-white font-bold px-3 py-1 bg-white/5 rounded-lg border border-white/10">{stats.totalActivos}</span> trabajos en curso.
+                        El taller tiene <span className="text-white font-bold px-3 py-1 bg-white/5 rounded-lg border border-white/10">{stats.totalActivos}</span> trabajos activos.
                     </p>
                 </div>
 
@@ -302,7 +302,7 @@ const DashboardPage: React.FC = () => {
                     <div className="bg-white/[0.01] border border-white/5 rounded-[3rem] p-10 space-y-10 relative overflow-hidden">
                         <div className="space-y-1">
                             <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Asistente de Arte</h3>
-                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.4em]">Control de Calidad A.I.</p>
+                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.4em]">Control de Calidad</p>
                         </div>
 
                         <div className="space-y-8">
@@ -319,8 +319,8 @@ const DashboardPage: React.FC = () => {
                             <div className="space-y-5">
                                 {[ 
                                     { label: 'Servidor S.R.I.', icon: ShieldCheckIcon, status: 'Conectado' },
-                                    { label: 'Unidad de Corte', icon: AdjustmentsHorizontalIcon, status: 'Standby' },
-                                    { label: 'Backup en Nube', icon: CircleStackIcon, status: 'Sincronizado' }
+                                    { label: 'Unidad de Corte', icon: AdjustmentsHorizontalIcon, status: 'En espera' },
+                                    { label: 'Respaldo en Nube', icon: CircleStackIcon, status: 'Sincronizado' }
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-5 px-2">
                                         <div className="w-1 h-1 rounded-full bg-slate-800"></div> 
@@ -335,7 +335,7 @@ const DashboardPage: React.FC = () => {
                             onClick={() => navigate('/registro')} 
                             className="w-full py-6 bg-white/[0.03] border border-white/10 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all flex items-center justify-center gap-4 group"
                         >
-                            Log de Actividad <ActivityIcon className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
+                            Bitácora de Actividad <ActivityIcon className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
                         </button>
                     </div>
 

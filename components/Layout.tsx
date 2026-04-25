@@ -27,53 +27,53 @@ const navGroups = [
     {
         title: 'Principal',
         items: [
-            { path: '/dashboard', label: 'Panel de Control', icon: DashboardIcon },
+            { path: '/dashboard', label: 'Inicio', icon: DashboardIcon },
         ],
     },
     {
-        title: 'Taller',
+        title: 'Taller de Gráfica',
         items: [
             { path: '/nuevo',      label: 'Nueva Orden',   icon: AddIcon    },
             { path: '/diseno',     label: 'Diseño',        icon: PaletteIcon },
             { path: '/produccion', label: 'Impresión',     icon: PrinterIcon },
-            { path: '/kds',        label: 'Control KDS',   icon: KdsIcon     },
-            { path: '/retiros',    label: 'Entregas',      icon: ReceiptIcon },
+            { path: '/kds',        label: 'Producción',    icon: KdsIcon     },
+            { path: '/retiros',    label: 'Despacho',      icon: ReceiptIcon },
         ],
     },
     {
-        title: 'Gestión',
+        title: 'Gestión Comercial',
         items: [
             { path: '/clientes',    label: 'Clientes',      icon: ClientsIcon   },
-            { path: '/trabajos',    label: 'Historial',     icon: DocumentIcon  },
-            { path: '/cuentas',     label: 'Por Cobrar',    icon: FinanceIcon   },
+            { path: '/trabajos',    label: 'Trabajos',      icon: DocumentIcon  },
+            { path: '/cuentas',     label: 'Cobros',        icon: FinanceIcon   },
             { path: '/proveedores', label: 'Proveedores',   icon: UsersIcon     },
-            { path: '/productos',   label: 'Catálogo',      icon: BoxIcon       },
-            { path: '/inventario',  label: 'Insumos',       icon: SolidBoxIcon  },
+            { path: '/productos',   label: 'Servicios',     icon: BoxIcon       },
+            { path: '/inventario',  label: 'Materiales',    icon: SolidBoxIcon  },
         ],
     },
     {
         title: 'Administración',
         adminOnly: true,
         items: [
-            { path: '/finanzas',       label: 'Finanzas',      icon: FinanceIcon   },
+            { path: '/finanzas',       label: 'Contabilidad',  icon: FinanceIcon   },
             { path: '/usuarios',       label: 'Usuarios',      icon: UsersIcon     },
-            { path: '/registro',       label: 'Auditoría',     icon: DocumentIcon  },
-            { path: '/configuracion',  label: 'Ajustes',       icon: Cog8ToothIcon },
+            { path: '/registro',       label: 'Bitácora',      icon: DocumentIcon  },
+            { path: '/configuracion',  label: 'Configuración', icon: Cog8ToothIcon },
         ],
     },
 ];
 
 // Map de rutas → título legible para el breadcrumb del header
 const PAGE_TITLES: Record<string, string> = {
-    '/dashboard':     'Panel de Control',
+    '/dashboard':     'Panel Principal',
     '/':              'Vista Pública',
-    '/nuevo':         'Nueva Orden de Trabajo',
-    '/diseno':        'Estación de Diseño',
-    '/produccion':    'Estación de Impresión',
-    '/kds':           'Control de Flujo',
-    '/retiros':       'Entregas y Retiros',
+    '/nuevo':         'Nueva Orden',
+    '/diseno':        'Departamento de Diseño',
+    '/produccion':    'Taller de Imprenta',
+    '/kds':           'Centro de Producción',
+    '/retiros':       'Entrega y Vitrina',
     '/clientes':      'Directorio de Clientes',
-    '/trabajos':      'Historial de Órdenes',
+    '/trabajos':      'Gestión de Trabajos',
     '/cuentas':       'Gestión de Cartera',
     '/proveedores':   'Gestión de Proveedores',
     '/productos':     'Catálogo de Servicios',
@@ -81,7 +81,10 @@ const PAGE_TITLES: Record<string, string> = {
     '/finanzas':      'Análisis Financiero',
     '/usuarios':      'Control de Accesos',
     '/registro':      'Registro de Actividad',
-    '/configuracion': 'Ajustes del Sistema',
+    '/configuracion': 'Configuración del Sistema',
+    '/caja':          'Control de Caja',
+    '/nota-de-venta': 'Expediente de Orden',
+    '/not-found':     'Recurso No Encontrado'
 };
 
 // ── Hook: reloj en tiempo real ────────────────────────────────────────────────
@@ -133,22 +136,27 @@ const FloatingDock: React.FC<{
 
             <div className={orientation === 'vertical' ? "flex flex-col gap-1" : "flex items-center gap-2"}>
                 {dockItems.map(item => {
-                    const isActive = location.pathname === item.path;
+                    const isItemActive = location.pathname === item.path;
                     return (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            className={`dock-item group ${isActive ? 'dock-item-active' : 'dock-item-inactive'} ${orientation === 'horizontal' ? 'w-auto px-4 h-10' : ''}`}
+                        <button 
+                            key={item.path} 
+                            onClick={() => navigate(item.path)}
+                            className={`dock-item group ${isItemActive ? 'dock-item-active' : 'dock-item-inactive'} ${orientation === 'horizontal' ? 'w-auto px-4 h-10' : ''}`}
                         >
-                            <item.icon className="w-5 h-5" />
-                            {orientation === 'horizontal' && <span className="ml-2 text-[10px] font-black uppercase tracking-widest">{item.label}</span>}
+                            <item.icon className="w-5 h-5 transition-transform duration-500 group-hover:scale-110" />
                             <span className="dock-tooltip">{item.label}</span>
+                            {isItemActive && (
+                                <motion.div 
+                                    layoutId="dock-active"
+                                    className={`absolute bg-liquid-gold rounded-full ${orientation === 'vertical' ? 'w-1 h-8 -left-1' : 'h-1 w-8 -bottom-1'}`}
+                                />
+                            )}
                             {item.badge ? (
                                 <span className={`absolute ${orientation === 'vertical' ? '-top-1 -right-1' : 'top-1 right-1'} w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white dark:border-brand-dark animate-pulse`}>
                                     {item.badge}
                                 </span>
                             ) : null}
-                        </NavLink>
+                        </button>
                     );
                 })}
             </div>
@@ -215,7 +223,7 @@ const Header: React.FC<{
     const dateStr = now.toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' });
 
     return (
-        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 cordova:bg-brand-dark/90 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
+        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 cordova:bg-brand-dark/95 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
 
             {/* LEFT: hamburger + page title */}
             <div className="flex items-center gap-5">
@@ -227,9 +235,9 @@ const Header: React.FC<{
                     <MenuIcon className="h-5 w-5" />
                 </button>
 
-                <div className="hidden sm:block">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.4em] mb-0.5">Módulo Activo</p>
-                    <h2 className="text-sm font-display font-black text-slate-900 dark:text-white tracking-tight leading-none">{pageTitle}</h2>
+                <div className="flex flex-col">
+                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic mb-0.5">Centro de Control</p>
+                    <h2 className="text-xl font-black text-white uppercase tracking-tighter italic">Imprenta Córdova</h2>
                 </div>
             </div>
 
@@ -365,20 +373,22 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                                     <div className="grid gap-1">
                                          {group.items.map(item => (
                                             <NavLink 
-                                                key={item.path} 
-                                                to={item.path} 
+                                                key={item.path}
+                                                to={item.path}
                                                 onClick={() => setSidebarOpen(false)}
-                                                className={({isActive}) => `
+                                                className={(props) => `
                                                     flex items-center gap-4 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group
-                                                    ${isActive 
-                                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-brand-dark shadow-lg scale-[1.02]' 
-                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:translate-x-1'}
+                                                    ${props.isActive 
+                                                        ? 'bg-liquid-gold text-brand-dark shadow-[0_10px_20px_-5px_rgba(212,175,55,0.3)] translate-x-1' 
+                                                        : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                                                    }
                                                 `}
                                             >
-                                                {({ isActive }) => (
+                                                {(props) => (
                                                     <>
-                                                        <item.icon className={`w-4 h-4 transition-transform group-hover:rotate-12 ${isActive ? 'text-liquid-gold' : ''}`} />
-                                                        {item.label}
+                                                        <item.icon className={`w-5 h-5 transition-transform duration-500 group-hover:scale-110 ${props.isActive ? 'text-brand-dark' : ''}`} />
+                                                        <span>{item.label}</span>
+                                                        {props.isActive && <motion.div layoutId="active-pill" className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-dark" />}
                                                     </>
                                                 )}
                                             </NavLink>

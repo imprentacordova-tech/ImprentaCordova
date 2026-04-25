@@ -6,15 +6,15 @@ import {
     ArrowRightIcon, SparklesIcon, ShieldCheckIcon, PrinterIcon,
 } from './Icons';
 
-// ── Nav links ─────────────────────────────────────────────────────────────────
+// ── Enlaces de Navegación ──────────────────────────────────────────────────────
 const navLinks = [
-    { name: 'Inicio',        href: '/#home'      },
-    { name: 'Servicios',     href: '/#services'  },
-    { name: 'Catálogo',      href: '/#catalog'   },
-    { name: 'Rastreo',       href: '/tracking'  },
+    { name: 'Inicio',        href: '/#inicio'      },
+    { name: 'Documentos SRI', href: '/#sri'         },
+    { name: 'Imprenta',      href: '/#imprenta'    },
+    { name: 'Rastreo',       href: '/tracking'     },
 ];
 
-// ── Animated mobile link ───────────────────────────────────────────────────────
+// ── Enlace Móvil Animado ───────────────────────────────────────────────────────
 const MobileLink: React.FC<{
     href: string; name: string; index: number; onClick: () => void;
 }> = ({ href, name, index, onClick }) => (
@@ -31,7 +31,7 @@ const MobileLink: React.FC<{
     </motion.a>
 );
 
-// ── Main Navbar ───────────────────────────────────────────────────────────────
+// ── Navbar Principal ─────────────────────────────────────────────────────────
 const Navbar: React.FC = () => {
     const [isOpen,   setIsOpen]   = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -44,27 +44,27 @@ const Navbar: React.FC = () => {
 
     return (
         <>
-            {/* ── Top brand bar ── */}
+            {/* ── Barra Superior de Marca ── */}
             <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-slate-900 flex items-center justify-center overflow-hidden px-6">
                 <div className="flex items-center gap-6 text-white/40">
                     <span className="text-[8px] font-black uppercase tracking-[0.6em] italic">
-                        Imprenta Autorizada SRI · <span className="text-yellow-400">PASSAJE, EL ORO</span> · EST. 1990
+                        Imprenta Autorizada SRI · <span className="text-yellow-400 font-bold">PASAJE, EL ORO</span> · DESDE 1990
                     </span>
                 </div>
             </div>
 
-            {/* ── Main nav ── */}
+            {/* ── Navegación Principal ── */}
             <nav
                 className={`fixed top-10 inset-x-0 z-50 transition-all duration-500 ${
                     scrolled
-                        ? 'bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-xl py-2'
-                        : 'bg-white/40 backdrop-blur-md border-b border-transparent py-4'
+                        ? 'bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-xl py-2'
+                        : 'bg-white/60 backdrop-blur-md border-b border-transparent py-4'
                 }`}
             >
                 <div className="container mx-auto px-6 lg:px-10">
                     <div className="flex items-center justify-between h-16">
 
-                        {/* ── Logo ── */}
+                        {/* ── Logotipo ── */}
                         <a
                             href="/"
                             className="group flex items-center gap-4 shrink-0 transition-transform hover:scale-105"
@@ -74,12 +74,12 @@ const Navbar: React.FC = () => {
                                 <CordovaLogo className="w-6 h-6" />
                             </div>
                             <div className="flex flex-col leading-none">
-                                <span className="font-display font-black text-lg italic text-slate-900 tracking-tighter">CORDOVA</span>
-                                <span className="font-display font-black text-[9px] text-blue-600 tracking-[0.4em] uppercase">Atelier</span>
+                                <span className="font-display font-black text-xl italic text-slate-900 tracking-tighter">CÓRDOVA</span>
+                                <span className="font-display font-black text-[9px] text-blue-600 tracking-[0.4em] uppercase">Artes Gráficas</span>
                             </div>
                         </a>
 
-                        {/* ── Desktop links ── */}
+                        {/* ── Enlaces Escritorio ── */}
                         <div className="hidden lg:flex items-center gap-2">
                             {navLinks.map(link => (
                                 <a
@@ -93,7 +93,7 @@ const Navbar: React.FC = () => {
                             ))}
                         </div>
 
-                        {/* ── Desktop CTAs ── */}
+                        {/* ── CTAs Escritorio ── */}
                         <div className="hidden lg:flex items-center gap-4">
                             <a
                                 href="https://wa.me/593993083943"
@@ -102,11 +102,11 @@ const Navbar: React.FC = () => {
                                 className="group px-8 py-3 bg-blue-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-900 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-3 active:scale-95"
                             >
                                 <WhatsAppIcon className="w-4 h-4" />
-                                <span>Atelier Direct</span>
+                                <span>WhatsApp Directo</span>
                             </a>
                         </div>
 
-                        {/* ── Mobile hamburger ── */}
+                        {/* ── Hamburguesa Móvil ── */}
                         <button
                             onClick={() => setIsOpen(v => !v)}
                             className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-900 hover:bg-white transition-all"
@@ -123,7 +123,7 @@ const Navbar: React.FC = () => {
                 </div>
             </nav>
 
-            {/* ── Mobile Drawer ── */}
+            {/* ── Menú Desplegable Móvil ── */}
             <AnimatePresence>
                 {isOpen && (
                     <>
@@ -134,19 +134,19 @@ const Navbar: React.FC = () => {
                         />
                         <motion.div
                             initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -100, opacity: 0 }}
-                            className="fixed top-10 inset-x-0 z-[58] bg-white border-b border-slate-100 shadow-2xl lg:hidden overflow-hidden rounded-b-[2rem]"
+                            className="fixed top-10 inset-x-0 z-[58] bg-white border-b border-slate-100 shadow-2xl lg:hidden overflow-hidden rounded-b-[3rem]"
                         >
-                            <div className="container mx-auto px-6 py-10 space-y-2">
+                            <div className="container mx-auto px-6 py-12 space-y-2">
                                 {navLinks.map((link, i) => (
                                     <MobileLink key={link.name} href={link.href} name={link.name} index={i} onClick={() => setIsOpen(false)} />
                                 ))}
-                                <div className="h-px bg-slate-100 my-6" />
+                                <div className="h-px bg-slate-100 my-8" />
                                 <a
                                     href="https://wa.me/593993083943"
-                                    className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 shadow-xl"
+                                    className="w-full py-6 bg-blue-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-blue-500/20"
                                 >
                                     <WhatsAppIcon className="w-5 h-5" />
-                                    Atelier Direct
+                                    WhatsApp Directo
                                 </a>
                             </div>
                         </motion.div>

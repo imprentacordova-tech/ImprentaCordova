@@ -203,7 +203,7 @@ export const SearchOmni: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="text-[9px] font-black text-slate-700 uppercase tracking-widest">
-                                    CORDOVA COMMAND CENTER
+                                    CENTRO DE COMANDO CÓRDOVA
                                 </div>
                             </div>
                         </motion.div>

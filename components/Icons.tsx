@@ -21,7 +21,7 @@ import {
     TruckIcon as Truck, Package2, Boxes, ScanLine, Rocket, Cpu, Flag,
     CloudUpload, Eraser, User, Database, Sliders, Layers as LayersLucide,
     TrendingUp as TrendingUpLucide, History, Server, Fingerprint, Command,
-    Terminal, Headphones
+    Terminal, Headphones, Scissors, Hand
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -237,6 +237,8 @@ export const AdjustmentsHorizontalIcon = Sliders;
 export const CubeTransparentIcon = Box;
 export const CommandIcon          = Command;
 export const TerminalIcon         = Terminal;
+export const ScissorsIcon         = Scissors;
+export const HandRaisedIcon       = Hand;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LUCIDE ALIASES — Taller / Producción
