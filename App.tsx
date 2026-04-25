@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { User } from './types';
-import { DataProvider } from './contexts/DataContext';
 import { Layout } from './components/Layout';
 import { logActivity, purgeOldEntries } from './services/activityLogService';
 
@@ -74,7 +73,6 @@ const App: React.FC = () => {
   };
 
   return (
-    <DataProvider>
       <HashRouter>
         <Routes>
           {/* Public Routes - NOW USING PREMIUM VISUAL LANDING */}
@@ -114,7 +112,6 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>
-    </DataProvider>
   );
 };
 

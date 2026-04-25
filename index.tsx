@@ -5,6 +5,7 @@ import './index.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { HelmetProvider } from 'react-helmet-async';
+import { DataProvider } from './contexts/DataContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -16,7 +17,9 @@ root.render(
   <React.StrictMode>
     <HelmetProvider>
       <ErrorBoundary>
+        <DataProvider>
           <App />
+        </DataProvider>
       </ErrorBoundary>
     </HelmetProvider>
   </React.StrictMode>
