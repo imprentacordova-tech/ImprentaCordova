@@ -7,7 +7,7 @@ import {
     CircleStackIcon, CpuIcon, Cog8ToothIcon, ExclamationTriangleIcon
 } from '../Icons';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 import { SOURCE_PAPERS, DEFAULT_COSTS } from '../../constants';
 import { CostConfig, Proveedor, InventoryItem } from '../../types';
 import { useData } from '../../contexts/DataContext';
