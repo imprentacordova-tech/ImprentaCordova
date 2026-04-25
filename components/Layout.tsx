@@ -20,6 +20,8 @@ interface LayoutProps {
     user: User;
 }
 
+type NavOrientation = 'vertical' | 'horizontal';
+
 // ── Navegación ────────────────────────────────────────────────────────────────
 const navGroups = [
     {
@@ -98,7 +100,9 @@ const FloatingDock: React.FC<{
     user: User;
     onLogout: () => void;
     onMoreClick: () => void;
-}> = ({ user, onLogout, onMoreClick }) => {
+    orientation: NavOrientation;
+    onToggleOrientation: () => void;
+}> = ({ user, onLogout, onMoreClick, orientation, onToggleOrientation }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { trabajos } = useData();
@@ -119,41 +123,53 @@ const FloatingDock: React.FC<{
     ];
 
     return (
-        <div className="floating-dock">
+        <div className={orientation === 'vertical' ? "floating-dock" : "fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-brand-dark/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 z-50 flex items-center px-6 gap-6"}>
             <div 
-                className="w-10 h-10 bg-white dark:bg-liquid-gold text-black rounded-xl flex items-center justify-center mb-4 cursor-pointer hover:rotate-12 transition-transform shadow-xl"
+                className={`${orientation === 'vertical' ? 'w-10 h-10 mb-4' : 'w-8 h-8'} bg-white dark:bg-liquid-gold text-black rounded-xl flex items-center justify-center cursor-pointer hover:rotate-12 transition-transform shadow-xl`}
                 onClick={() => navigate('/dashboard')}
             >
-                <CordovaLogo className="w-6 h-6" />
+                <CordovaLogo className={orientation === 'vertical' ? "w-6 h-6" : "w-5 h-5"} />
             </div>
 
-            {dockItems.map(item => {
-                const isActive = location.pathname === item.path;
-                return (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={`dock-item group ${isActive ? 'dock-item-active' : 'dock-item-inactive'}`}
-                    >
-                        <item.icon className="w-5 h-5" />
-                        <span className="dock-tooltip">{item.label}</span>
-                        {item.badge ? (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white dark:border-brand-dark animate-pulse">
-                                {item.badge}
-                            </span>
-                        ) : null}
-                    </NavLink>
-                );
-            })}
+            <div className={orientation === 'vertical' ? "flex flex-col gap-1" : "flex items-center gap-2"}>
+                {dockItems.map(item => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={`dock-item group ${isActive ? 'dock-item-active' : 'dock-item-inactive'} ${orientation === 'horizontal' ? 'w-auto px-4 h-10' : ''}`}
+                        >
+                            <item.icon className="w-5 h-5" />
+                            {orientation === 'horizontal' && <span className="ml-2 text-[10px] font-black uppercase tracking-widest">{item.label}</span>}
+                            <span className="dock-tooltip">{item.label}</span>
+                            {item.badge ? (
+                                <span className={`absolute ${orientation === 'vertical' ? '-top-1 -right-1' : 'top-1 right-1'} w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white dark:border-brand-dark animate-pulse`}>
+                                    {item.badge}
+                                </span>
+                            ) : null}
+                        </NavLink>
+                    );
+                })}
+            </div>
 
-            <div className="w-8 h-[1px] bg-slate-200 dark:bg-white/10 my-2" />
+            <div className={orientation === 'vertical' ? "w-8 h-[1px] bg-slate-200 dark:bg-white/10 my-2" : "w-[1px] h-6 bg-slate-200 dark:bg-white/10 mx-2"} />
 
-            <button onClick={onMoreClick} className="dock-item dock-item-inactive group">
+            <button onClick={onMoreClick} className={`dock-item group dock-item-inactive ${orientation === 'horizontal' ? 'w-10 h-10' : ''}`}>
                 <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                 <span className="dock-tooltip">Más Módulos</span>
             </button>
 
-            <div className="mt-auto flex flex-col gap-4">
+            {/* Discreet Orientation Toggle */}
+            <button 
+                onClick={onToggleOrientation}
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-liquid-gold transition-colors opacity-30 hover:opacity-100 ml-auto"
+                title="Cambiar Orientación del Menú"
+            >
+                <BoltIcon className={`w-4 h-4 ${orientation === 'horizontal' ? 'rotate-90' : ''}`} />
+            </button>
+
+            <div className={`${orientation === 'vertical' ? 'mt-auto flex flex-col gap-4' : 'flex items-center gap-4'}`}>
                 <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center text-[10px] font-black text-slate-500 dark:text-slate-400 group relative">
                     {user.nombre.charAt(0).toUpperCase()}
                     <span className="dock-tooltip">{user.nombre}</span>
@@ -286,6 +302,15 @@ const Header: React.FC<{
 // ── Layout principal ──────────────────────────────────────────────────────────
 export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [orientation, setOrientation] = useState<NavOrientation>(() => {
+        return (localStorage.getItem('nav-orientation') as NavOrientation) || 'vertical';
+    });
+
+    const toggleOrientation = () => {
+        const next = orientation === 'vertical' ? 'horizontal' : 'vertical';
+        setOrientation(next);
+        localStorage.setItem('nav-orientation', next);
+    };
 
     // Cerrar sidebar con tecla Esc
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -375,14 +400,32 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
             </div>
 
             {/* ── Desktop Floating Dock ── */}
-            <div className="hidden lg:flex lg:flex-shrink-0 w-24 relative">
-                <FloatingDock user={user} onLogout={onLogout} onMoreClick={() => setSidebarOpen(true)} />
-            </div>
+            {orientation === 'vertical' && (
+                <div className="hidden lg:flex lg:flex-shrink-0 w-24 relative">
+                    <FloatingDock 
+                        user={user} 
+                        onLogout={onLogout} 
+                        onMoreClick={() => setSidebarOpen(true)} 
+                        orientation={orientation}
+                        onToggleOrientation={toggleOrientation}
+                    />
+                </div>
+            )}
 
             {/* ── Main content ── */}
-            <div className="flex flex-col flex-1 w-0 overflow-hidden relative lg:pl-4 transition-all duration-500">
+            <div className={`flex flex-col flex-1 w-0 overflow-hidden relative ${orientation === 'vertical' ? 'lg:pl-4' : 'pt-16'} transition-all duration-500`}>
                 {/* Ambient glow */}
                 <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-liquid-gold/5 rounded-full blur-[100px] -ml-48 -mt-48 pointer-events-none" />
+
+                {orientation === 'horizontal' && (
+                    <FloatingDock 
+                        user={user} 
+                        onLogout={onLogout} 
+                        onMoreClick={() => setSidebarOpen(true)} 
+                        orientation={orientation}
+                        onToggleOrientation={toggleOrientation}
+                    />
+                )}
 
                 <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
 

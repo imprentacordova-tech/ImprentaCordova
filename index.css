@@ -398,77 +398,86 @@ html.cordova {
 }
 
 html.cordova body {
-  background-color: #f1f5f9 !important;
-  color: var(--cordova-slate) !important;
+  background-color: #0c1324 !important;
+  color: #dce1fb !important;
 }
 
 html.cordova .bg-brand-dark,
 html.cordova .bg-slate-950,
 html.cordova .bg-brand-dark\/60,
 html.cordova .bg-brand-dark\/90 {
-  background-color: var(--cordova-blue) !important;
+  background-color: #0c1324 !important;
 }
 
 html.cordova header {
-  background-color: var(--cordova-blue) !important;
-  border-bottom: 2px solid var(--cordova-yellow) !important;
+  background-color: rgba(12, 19, 36, 0.95) !important;
+  border-bottom: 1px solid rgba(242, 202, 80, 0.2) !important;
+  backdrop-filter: blur(20px) !important;
 }
 
 html.cordova header .text-slate-900,
 html.cordova header .text-white,
 html.cordova header h2 {
-  color: white !important;
+  color: #f2ca50 !important;
+  text-shadow: 0 0 10px rgba(242, 202, 80, 0.2);
 }
 
 html.cordova header .text-slate-500,
 html.cordova header .text-slate-600 {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: #d0c5af !important;
 }
 
 html.cordova .floating-dock {
-  background-color: rgba(0, 68, 204, 0.95) !important;
-  border: 1px solid var(--cordova-yellow) !important;
+  background-color: rgba(25, 31, 49, 0.9) !important;
+  border: 1px solid rgba(242, 202, 80, 0.1) !important;
+  backdrop-filter: blur(40px) !important;
 }
 
 html.cordova .dock-item-inactive {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: #99907c !important;
 }
 
 html.cordova .dock-item-inactive:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: white !important;
+  background-color: rgba(242, 202, 80, 0.05) !important;
+  color: #f2ca50 !important;
 }
 
 html.cordova .dock-item-active {
-  background-color: var(--cordova-yellow) !important;
-  color: var(--cordova-blue) !important;
-  box-shadow: 0 0 15px rgba(255, 204, 0, 0.4) !important;
+  background-color: #f2ca50 !important;
+  color: #0c1324 !important;
+  box-shadow: 0 0 20px rgba(242, 202, 80, 0.4) !important;
 }
 
 html.cordova .text-liquid-gold {
-  color: #b45309 !important; /* Dorado oscuro para fondo blanco */
+  color: #f2ca50 !important;
+  text-shadow: 0 0 8px rgba(242, 202, 80, 0.3);
 }
 
 html.cordova .btn-luxury {
-  background: linear-gradient(135deg, var(--cordova-red) 0%, #990000 100%) !important;
-  color: white !important;
-  border: 1px solid var(--cordova-yellow) !important;
+  background: linear-gradient(135deg, #f2ca50 0%, #d4af37 100%) !important;
+  color: #0c1324 !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3) !important;
 }
 
 html.cordova .input-atelier {
-  background-color: white !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #0f172a !important;
+  background-color: #151b2d !important;
+  border: 1px solid rgba(242, 202, 80, 0.1) !important;
+  color: #dce1fb !important;
+}
+
+html.cordova .input-atelier::placeholder {
+  color: #99907c !important;
 }
 
 html.cordova .glass-card-luxury {
-  background-color: white !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  background-color: #191f31 !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
 html.cordova .text-brand-red {
-  color: var(--cordova-red) !important;
+  color: #ff5555 !important;
 }
 
 /* Floating Dock Utilities */
