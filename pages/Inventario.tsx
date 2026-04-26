@@ -55,7 +55,7 @@ const itemVariants = {
     visible: { 
         opacity: 1, 
         y: 0,
-        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+        transition: { duration: 0.5, ease: "easeOut" as any }
     }
 };
 
@@ -265,7 +265,7 @@ const InventarioPage: React.FC = () => {
                                     <motion.div 
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: idx * 0.02, ease: [0.22, 1, 0.36, 1] }}
+                                        transition={{ delay: idx * 0.02, ease: "easeOut" as any }}
                                         key={item.id} 
                                         className={`group relative glass-card-luxury p-10 flex flex-col gap-10 border ${isLow ? 'border-rose-500/20' : 'border-white/5'} hover:border-liquid-gold/20 transition-all duration-500 rounded-[2.5rem] overflow-hidden`}
                                     >
@@ -313,7 +313,7 @@ const InventarioPage: React.FC = () => {
                                                     <motion.div 
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${progress}%` }}
-                                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                                        transition={{ duration: 1.5, ease: "easeOut" as any }}
                                                         className={`h-full ${isLow ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-liquid-gold shadow-[0_0_10px_rgba(212,175,55,0.5)]'}`}
                                                     />
                                                 </div>

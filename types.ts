@@ -70,6 +70,10 @@ export interface Trabajo {
   fechaVencimiento?: string;
   actividadSeleccionada?: string;
   arteAprobado?: boolean;
+  esSRI?: boolean;
+  responsable?: string;
+  detalle?: string;
+  observaciones?: string;
 }
 
 export interface Producto {
@@ -95,12 +99,13 @@ export interface SriCredential {
 export interface User {
   id: string;
   nombre: string;
-  email: string;
+  email?: string;
   rol: 'Admin' | 'Operador' | 'Diseñador';
   estado: 'Activo' | 'Inactivo';
   ultimoAcceso: string;
   password?: string;
   requirePassword?: boolean;
+  avatar?: string;
 }
 
 export interface StatusLog {

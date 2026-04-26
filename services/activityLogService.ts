@@ -44,7 +44,8 @@ export type ActivityAction =
   | 'BORRAR_PROVEEDOR'
   | 'AGENDAR_TAREA'
   | 'COMPLETAR_TAREA'
-  | 'ACCESO_MODULO';
+  | 'ACCESO_MODULO'
+  | (string & {});
 
 /**
  * Genera un hash simple encadenado (simula blockchain).

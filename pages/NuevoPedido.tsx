@@ -99,9 +99,9 @@ const NuevoPedidoPage: React.FC = () => {
                 fechaEntrada: new Date().toISOString(),
                 responsable: currentUser.nombre,
                 origen: 'Local',
-                es_sri: isSriOrder,
-                estado_clave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
-                actividad_seleccionada: isSriOrder ? sriActividad : null
+                esSRI: isSriOrder,
+                estadoClave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
+                actividadSeleccionada: isSriOrder ? sriActividad : null
             }, currentUser.nombre, imageFile);
 
             logActivity(

@@ -91,7 +91,7 @@ const SolicitudImpresionPage: React.FC = () => {
     ];
 
     const hasSriKey = sriCredentials.some(c => c.ruc === cliente.ruc);
-    const isContingencyLimit = (cliente.regimen === 'General' || cliente.regimen === 'Rimpe Emprendedor') && trabajo.es_sri;
+    const isContingencyLimit = (cliente.regimen === 'General' || cliente.regimen === 'Rimpe Emprendedor') && trabajo.esSRI;
 
     // Mapear el catálogo estándar con los items del trabajo
     const mappedItems = standardTypes.map(st => {

@@ -34,7 +34,7 @@ interface DataContextType {
     addCliente: (c: any) => Promise<Cliente>;
     updateCliente: (id: string, c: any) => Promise<void>;
     deleteCliente: (id: string) => Promise<void>;
-    addTrabajo: (t: any, user: string) => Promise<Trabajo>;
+    addTrabajo: (t: any, user: string, imageFile?: File | null) => Promise<Trabajo>;
     updateTrabajoStatus: (id: string, status: TrabajoEstado, user: string) => Promise<void>;
     addProducto: (p: any) => Promise<any>;
     createProducto: (p: any) => Promise<any>;

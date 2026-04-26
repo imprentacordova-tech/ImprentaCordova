@@ -6,10 +6,10 @@ import {
     ClipboardIcon, CheckCircleIcon, CordovaLogo,
 } from './Icons';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Props {
     children?: ReactNode;
-    /** Render personalizado cuando hay error — reemplaza la pantalla de fallback */
+    /** Render personalizado cuando hay error â€” reemplaza la pantalla de fallback */
     fallback?: (error: Error, reset: () => void) => ReactNode;
     /** Si true, muestra el stack trace en desarrollo */
     showStack?: boolean;
@@ -22,7 +22,7 @@ interface State {
     recovering: boolean;
 }
 
-// ── Fallback UI ───────────────────────────────────────────────────────────────
+// â”€â”€ Fallback UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ErrorScreen: React.FC<{
     error: Error;
     showStack: boolean;
@@ -37,16 +37,16 @@ const ErrorScreen: React.FC<{
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-brand-dark relative overflow-hidden p-6">
 
-            {/* ── Ambient orbs ── */}
+            {/* â”€â”€ Ambient orbs â”€â”€ */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-brand-red/8 blur-[160px] rounded-full pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-liquid-gold/4 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute inset-0 bg-noise mix-blend-overlay opacity-40 pointer-events-none" />
 
-            {/* ── Card ── */}
+            {/* â”€â”€ Card â”€â”€ */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
                 className="relative w-full max-w-lg"
             >
                 {/* Gold top accent */}
@@ -62,7 +62,7 @@ const ErrorScreen: React.FC<{
                             </div>
                             <div>
                                 <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em]">Sistema Atelier</p>
-                                <p className="text-[10px] font-black text-white uppercase tracking-widest">Imprenta Córdova</p>
+                                <p className="text-[10px] font-black text-white uppercase tracking-widest">Imprenta CÃ³rdova</p>
                             </div>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-brand-red/10 border border-brand-red/20 flex items-center justify-center">
@@ -75,12 +75,12 @@ const ErrorScreen: React.FC<{
                         <div>
                             <p className="text-[9px] font-black text-brand-red uppercase tracking-[0.5em] mb-3">Error del Sistema</p>
                             <h1 className="text-3xl font-display font-black text-white tracking-tight leading-tight">
-                                Algo salió<br />
+                                Algo saliÃ³<br />
                                 <span className="text-white/20">de control.</span>
                             </h1>
                         </div>
                         <p className="text-slate-500 text-sm font-light leading-relaxed">
-                            El sistema ha encontrado un error inesperado. Tu trabajo está guardado en Supabase — puedes recargar y continuar sin perder datos.
+                            El sistema ha encontrado un error inesperado. Tu trabajo estÃ¡ guardado en Supabase â€” puedes recargar y continuar sin perder datos.
                         </p>
                     </div>
 
@@ -102,10 +102,10 @@ const ErrorScreen: React.FC<{
                             </button>
                         </div>
                         <p className="text-red-400/80 text-xs font-mono leading-relaxed break-all">
-                            {error.message || 'Error desconocido. Consulta la consola para más detalles.'}
+                            {error.message || 'Error desconocido. Consulta la consola para mÃ¡s detalles.'}
                         </p>
 
-                        {/* Stack trace — solo en desarrollo */}
+                        {/* Stack trace â€” solo en desarrollo */}
                         {isDev && showStack && error.stack && (
                             <details className="group">
                                 <summary className="text-[9px] font-black text-slate-700 uppercase tracking-[0.3em] cursor-pointer hover:text-slate-500 transition-colors mt-2 select-none">
@@ -126,7 +126,7 @@ const ErrorScreen: React.FC<{
                             className="group flex-1 flex items-center justify-center gap-2.5 py-4 bg-liquid-gold text-brand-dark rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white hover:shadow-gold-glow hover:scale-[1.02] transition-all duration-300 disabled:opacity-60 disabled:cursor-wait active:scale-95"
                         >
                             <ArrowPathIcon className={`w-4 h-4 ${recovering ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-                            {recovering ? 'Recargando…' : 'Recargar Sistema'}
+                            {recovering ? 'Recargandoâ€¦' : 'Recargar Sistema'}
                         </button>
                         <button
                             onClick={onHome}
@@ -139,7 +139,7 @@ const ErrorScreen: React.FC<{
 
                     {/* Info footer */}
                     <p className="text-center text-[9px] font-black text-slate-700 uppercase tracking-[0.3em]">
-                        Tus datos están seguros · Supabase Cloud · Cifrado E2E
+                        Tus datos estÃ¡n seguros Â· Supabase Cloud Â· Cifrado E2E
                     </p>
                 </div>
             </motion.div>
@@ -147,7 +147,7 @@ const ErrorScreen: React.FC<{
     );
 };
 
-// ── ErrorBoundary class ───────────────────────────────────────────────────────
+// â”€â”€ ErrorBoundary class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export class ErrorBoundary extends React.Component<Props, State> {
     public state: State = {
         hasError:   false,

@@ -6,7 +6,7 @@ import {
     BuildingStorefrontIcon, UserPlusIcon, SearchIcon, CloseIcon, PencilIcon, TrashIcon, 
     WhatsAppIcon, ExclamationTriangleIcon, PhoneIcon, CheckBadgeIcon, ClockIcon, 
     WrenchScrewdriverIcon, CalendarDaysIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon,
-    LayersIcon, SparklesIcon, ActivityIcon, PlusIcon
+    LayersIcon, SparklesIcon, ActivityIcon, PlusIcon, ArrowRightIcon
 } from '../components/Icons';
 import { formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';

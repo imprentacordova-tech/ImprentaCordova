@@ -14,3 +14,12 @@ export const supabase = createClient(
   supabaseUrl || 'https://placeholder-url-missing.supabase.co', 
   supabaseAnonKey || 'placeholder-key-missing'
 );
+
+export const uploadFile = async (file: File, bucket: string, path: string): Promise<string> => {
+  const { data, error } = await supabase.storage.from(bucket).upload(path, file);
+  if (error) {
+    throw error;
+  }
+  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+  return urlData.publicUrl;
+};

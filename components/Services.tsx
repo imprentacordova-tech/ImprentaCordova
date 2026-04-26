@@ -6,15 +6,15 @@ import {
     LayersIcon, PaletteIcon, ArrowRightIcon, ReceiptIcon
 } from './Icons';
 
-// ── Service data ─────────────────────────────────────────────────────────────
+// â”€â”€ Service data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const services = [
     {
         id: '1',
         index: '01',
-        title: 'Gigantografías HD',
+        title: 'GigantografÃ­as HD',
         subtitle: 'Gran Formato Roland',
         description:
-            'Lonas, banners y vinilos con tecnología Roland High-Fidelity. Colores saturados que resisten sol, lluvia y el paso del tiempo.',
+            'Lonas, banners y vinilos con tecnologÃ­a Roland High-Fidelity. Colores saturados que resisten sol, lluvia y el paso del tiempo.',
         icon: PrinterIcon,
         imageUrl: 'https://images.unsplash.com/photo-1520697517317-6767553cc51a?auto=format&fit=crop&q=80&w=800',
         accent: 'text-liquid-gold',
@@ -27,7 +27,7 @@ const services = [
         title: 'Imprenta Autorizada SRI',
         subtitle: 'Documentos con Validez Fiscal',
         description:
-            'Facturas, Notas de Venta, Retenciones, Liquidaciones de compra y Guías de remisión. Autorizados y con numeración SRI.',
+            'Facturas, Notas de Venta, Retenciones, Liquidaciones de compra y GuÃ­as de remisiÃ³n. Autorizados y con numeraciÃ³n SRI.',
         icon: ShieldCheckIcon,
         imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=800',
         accent: 'text-brand-red',
@@ -37,8 +37,8 @@ const services = [
     {
         id: '3',
         index: '03',
-        title: 'Gestión Tributaria',
-        subtitle: 'IVA · Renta · Anexos',
+        title: 'GestiÃ³n Tributaria',
+        subtitle: 'IVA Â· Renta Â· Anexos',
         description:
             'Declaraciones de IVA Mensual y Semestral, Impuesto a la Renta, Anexos Transaccionales, RUC y RISE. Tus cifras en orden.',
         icon: CalculatorIcon,
@@ -51,9 +51,9 @@ const services = [
         id: '4',
         index: '04',
         title: 'Material Publicitario',
-        subtitle: 'Tarjetas · Volantes · Dípticos',
+        subtitle: 'Tarjetas Â· Volantes Â· DÃ­pticos',
         description:
-            'Desde tarjetas de presentación premium hasta folletos corporativos. Diseño estratégico para que tu marca cause primera impresión.',
+            'Desde tarjetas de presentaciÃ³n premium hasta folletos corporativos. DiseÃ±o estratÃ©gico para que tu marca cause primera impresiÃ³n.',
         icon: PaletteIcon,
         imageUrl: 'https://images.unsplash.com/photo-1586075010683-2350bcbc085c?auto=format&fit=crop&q=80&w=800',
         accent: 'text-purple-400',
@@ -64,9 +64,9 @@ const services = [
         id: '5',
         index: '05',
         title: 'Acabados Premium',
-        subtitle: 'Troquelado · Barniz UV · Laminado',
+        subtitle: 'Troquelado Â· Barniz UV Â· Laminado',
         description:
-            'Terminaciones que elevan cualquier pieza al nivel de obra de arte. Lacados mate, brillos selectivos y relieves táctiles.',
+            'Terminaciones que elevan cualquier pieza al nivel de obra de arte. Lacados mate, brillos selectivos y relieves tÃ¡ctiles.',
         icon: SparklesIcon,
         imageUrl: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&q=80&w=800',
         accent: 'text-liquid-gold',
@@ -76,10 +76,10 @@ const services = [
     {
         id: '6',
         index: '06',
-        title: 'Sellos y Encuadernación',
-        subtitle: 'Tesis · Archivos · Sellos Express',
+        title: 'Sellos y EncuadernaciÃ³n',
+        subtitle: 'Tesis Â· Archivos Â· Sellos Express',
         description:
-            'Sellos automáticos y de madera al instante, empastados de tesis y encuadernación de archivos contables con acabados de lujo.',
+            'Sellos automÃ¡ticos y de madera al instante, empastados de tesis y encuadernaciÃ³n de archivos contables con acabados de lujo.',
         icon: LayersIcon,
         imageUrl: 'https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&q=80&w=800',
         accent: 'text-emerald-400',
@@ -88,7 +88,7 @@ const services = [
     },
 ];
 
-// ── Animation variants ────────────────────────────────────────────────────────
+// â”€â”€ Animation variants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const containerVariants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.1 } },
@@ -96,10 +96,10 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as any } },
 };
 
-// ── Featured card (large) ─────────────────────────────────────────────────────
+// â”€â”€ Featured card (large) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, description, icon: Icon, imageUrl, accent, glow }) => (
     <motion.div
         variants={itemVariants}
@@ -138,14 +138,14 @@ const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, descripti
 
             {/* CTA */}
             <div className="pt-2 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 group-hover:text-liquid-gold transition-colors duration-500">
-                <span>Solicitar Cotización</span>
+                <span>Solicitar CotizaciÃ³n</span>
                 <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
         </div>
     </motion.div>
 );
 
-// ── Compact card ──────────────────────────────────────────────────────────────
+// â”€â”€ Compact card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
     index, title, subtitle, description, icon: Icon, imageUrl, accent, glow, delay = 0,
 }) => (
@@ -188,7 +188,7 @@ const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
     </motion.div>
 );
 
-// ── Main component ────────────────────────────────────────────────────────────
+// â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const Services: React.FC = () => {
     const [featured, ...rest] = services;
 
@@ -200,12 +200,12 @@ const Services: React.FC = () => {
 
             <div className="container mx-auto px-6 lg:px-10 relative z-10">
 
-                {/* ── Section header ── */}
+                {/* â”€â”€ Section header â”€â”€ */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-80px' }}
-                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 1, ease: "easeOut" }}
                     className="mb-20 lg:mb-28 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 border-l-2 border-liquid-gold pl-10"
                 >
                     <div className="space-y-5">
@@ -219,11 +219,11 @@ const Services: React.FC = () => {
                         </h2>
                     </div>
                     <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed italic pb-2 lg:text-right">
-                        Desde la primera impresión hasta el acabado final, cada detalle es una declaración de intención hacia la excelencia.
+                        Desde la primera impresiÃ³n hasta el acabado final, cada detalle es una declaraciÃ³n de intenciÃ³n hacia la excelencia.
                     </p>
                 </motion.div>
 
-                {/* ── Bento grid ── */}
+                {/* â”€â”€ Bento grid â”€â”€ */}
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"
@@ -242,18 +242,18 @@ const Services: React.FC = () => {
                     ))}
                 </motion.div>
 
-                {/* ── Bottom CTA strip ── */}
+                {/* â”€â”€ Bottom CTA strip â”€â”€ */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
                     className="mt-20 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8"
                 >
                     <div className="text-center md:text-left space-y-2">
-                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">¿Tienes un proyecto en mente?</p>
+                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Â¿Tienes un proyecto en mente?</p>
                         <p className="text-2xl font-display font-black text-white tracking-tight">
-                            Cuéntanos y lo hacemos realidad.
+                            CuÃ©ntanos y lo hacemos realidad.
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 shrink-0">
@@ -264,7 +264,7 @@ const Services: React.FC = () => {
                             className="group px-10 py-4 bg-liquid-gold text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white hover:shadow-gold-glow hover:scale-105 transition-all duration-300 flex items-center gap-3 active:scale-95"
                         >
                             <ReceiptIcon className="w-4 h-4" />
-                            Solicitar Cotización
+                            Solicitar CotizaciÃ³n
                             <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                         </a>
                         <a

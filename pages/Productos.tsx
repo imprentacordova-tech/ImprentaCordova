@@ -12,6 +12,7 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { uploadFile } from '../services/supabase';
 
 // --- DATA CONSTANTS ---
 

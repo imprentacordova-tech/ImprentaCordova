@@ -2,16 +2,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/supabase';
 import { 
-    WrenchScrewdriverIcon, PrinterIcon, SparklesIcon, 
-    TableCellsIcon as TableIcon, Cog8ToothIcon, 
-    ChevronRightIcon, ExclamationTriangleIcon,
-    CurrencyDollarIcon as DollarIcon, ArrowRightIcon,
-    ClockIcon, ShieldCheckIcon, CpuIcon, RocketLaunchIcon,
-    BeakerIcon, DocumentDuplicateIcon as DocumentIcon,
-    CircleStackIcon
-} from '@heroicons/react/24/solid';
+    Wrench, Printer, Sparkles as SparklesIcon, 
+    Table as TableIcon, Settings, 
+    ChevronRight as ChevronRightIcon, AlertTriangle as ExclamationTriangleIcon,
+    DollarSign as DollarIcon, ArrowRight as ArrowRightIcon,
+    Clock as ClockIcon, ShieldCheck as ShieldCheckIcon, Cpu as CpuIcon, Rocket as RocketLaunchIcon,
+    FlaskConical as BeakerIcon, Copy as DocumentIcon,
+    Database as CircleStackIcon
+} from 'lucide-react';
 import { CloseIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { logActivity } from '../services/activityLogService';
@@ -23,7 +23,7 @@ import { useData } from '../contexts/DataContext';
 const fadeInUp = {
     initial: { opacity: 0, y: 30, scale: 0.98 },
     animate: { opacity: 1, y: 0, scale: 1 },
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+    transition: { duration: 0.8, ease: "easeOut" as any }
 };
 
 const staggerContainer = {
@@ -221,13 +221,13 @@ const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; 
             const bajadas = Math.ceil(quantity / cutsPerUnit);
             const merma = Math.ceil(bajadas * 0.10) + 30;
             const totalHojas = bajadas + merma;
-            costPapelTotal = totalHojas * (costs[paper.costoBaseKey as keyof CostConfig] / 500);
+            costPapelTotal = totalHojas * ((costs[paper.costoBaseKey as keyof CostConfig] as number) / 500);
             totalSheetsNeeded = totalHojas;
         } else {
             const bajadas = Math.ceil(quantity / cutsPerUnit);
             const merma = Math.ceil(bajadas * 0.10) + 5;
             const totalPliegos = bajadas + merma;
-            costPapelTotal = totalPliegos * costs[paper.costoBaseKey as keyof CostConfig];
+            costPapelTotal = totalPliegos * (costs[paper.costoBaseKey as keyof CostConfig] as number);
             totalSheetsNeeded = totalPliegos;
         }
 
@@ -401,7 +401,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; 
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                            transition={{ duration: 1, delay: 0.8, ease: "easeOut" as any }}
                             className="relative rounded-[4.5rem] overflow-hidden bg-slate-950/80 border border-white/10 shadow-gold-glow-strong p-16 flex flex-col md:flex-row items-center justify-between group"
                         >
                             <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
@@ -834,7 +834,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                             onClick={() => setMode(mode === 'CONFIG' ? 'OFFSET' : 'CONFIG')} 
                             className={`group flex items-center gap-5 px-12 py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all border-2 shadow-luxury ${mode === 'CONFIG' ? 'bg-white text-black border-white scale-105' : 'bg-white/[0.02] text-white border-white/5 hover:border-white/10'}`}
                         >
-                            <Cog8ToothIcon className={`w-5 h-5 ${mode === 'CONFIG' ? 'animate-spin-slow' : 'text-slate-700'}`}/> Calibración
+                            <Settings className={`w-5 h-5 ${mode === 'CONFIG' ? 'animate-spin-slow' : 'text-slate-700'}`}/> Calibración
                         </button>
                     </div>
                 </div>
@@ -847,7 +847,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                         className="flex p-2.5 bg-black/60 border-2 border-white/5 rounded-[3rem] mb-20 max-w-md shadow-3xl relative z-10"
                     >
                         <button onClick={() => setMode('OFFSET')} className={`flex-1 py-5 px-12 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-5 italic ${mode === 'OFFSET' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-700 hover:text-white'}`}>
-                            <PrinterIcon className="w-5 h-5"/> Offset
+                            <Printer className="w-5 h-5"/> Offset
                         </button>
                         <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-5 px-12 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-5 italic ${mode === 'DIGITAL' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-700 hover:text-white'}`}>
                             <RocketLaunchIcon className="w-5 h-5"/> Digital

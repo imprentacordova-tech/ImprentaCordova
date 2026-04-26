@@ -184,7 +184,7 @@ const TrackingPage: React.FC = () => {
         try {
             const { error } = await supabase.from('trabajos').update({ arte_aprobado: true }).eq('id', trabajoId);
             if (error) throw error;
-            setFoundJobs(prev => prev.map(j => j.id === trabajoId ? { ...j, arte_aprobado: true } : j));
+            setFoundJobs(prev => prev.map(j => j.id === trabajoId ? { ...j, arteAprobado: true } : j));
         } catch (e) { alert("Error al aprobar."); }
     };
 
@@ -235,7 +235,8 @@ const TrackingPage: React.FC = () => {
                             nextStartTimeRef.current += audioBuffer.duration;
                         }
                     },
-                    onclose: () => stopVoiceTracking()
+                    onclose: () => stopVoiceTracking(),
+                    onerror: (e: any) => { console.error('[Voice] Error:', e); stopVoiceTracking(); }
                 },
                 config: {
                     responseModalities: [Modality.AUDIO],
@@ -367,7 +368,7 @@ const TrackingPage: React.FC = () => {
                                         </div>
 
                                         <div className="flex gap-4 w-full sm:w-auto">
-                                            {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arte_aprobado && (
+                                            {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arteAprobado && (
                                                 <motion.button 
                                                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                     onClick={() => handleAprobarArte(currentJob.id)}

@@ -30,6 +30,11 @@ const ACTION_LABELS: Record<ActivityAction, { label: string; color: string; icon
     ARTE_APROBADO: { label: 'Visual Approval', color: 'text-pink-400 border-pink-500/20 bg-pink-500/5', icon: SparklesIcon },
     FOTO_CAPTURADA: { label: 'Optical Scan', color: 'text-indigo-400 border-indigo-500/20 bg-indigo-500/5', icon: SparklesIcon },
     ACCESO_MODULO: { label: 'Module Access', color: 'text-slate-400 border-white/10 bg-white/5', icon: ShieldCheckIcon },
+    CREAR_PROVEEDOR: { label: 'Supplier Created', color: 'text-teal-400 border-teal-500/20 bg-teal-500/5', icon: UsersIcon },
+    EDITAR_PROVEEDOR: { label: 'Supplier Updated', color: 'text-teal-400 border-teal-500/20 bg-teal-500/5', icon: UsersIcon },
+    BORRAR_PROVEEDOR: { label: 'Supplier Removed', color: 'text-red-400 border-red-500/20 bg-red-500/5', icon: ExclamationTriangleIcon },
+    AGENDAR_TAREA: { label: 'Task Scheduled', color: 'text-amber-400 border-amber-500/20 bg-amber-500/5', icon: ClockIcon },
+    COMPLETAR_TAREA: { label: 'Task Completed', color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5', icon: CheckCircleIcon },
 };
 
 const RegistroActividadPage: React.FC = () => {

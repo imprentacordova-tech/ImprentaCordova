@@ -77,12 +77,12 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             exit={{ opacity: 0, scale: 0.95 }}
             whileHover={{ y: -4 }}
             draggable
-            onDragStart={(e) => {
-                e.dataTransfer.setData("trabajoId", trabajo.id);
-                e.currentTarget.classList.add('opacity-40');
+            onDragStart={(e: any) => {
+                if (e.dataTransfer) e.dataTransfer.setData("trabajoId", trabajo.id);
+                if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('opacity-40');
             }}
-            onDragEnd={(e) => {
-                e.currentTarget.classList.remove('opacity-40');
+            onDragEnd={(e: any) => {
+                if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('opacity-40');
             }}
             onClick={() => onCardClick(trabajo)}
             className={`

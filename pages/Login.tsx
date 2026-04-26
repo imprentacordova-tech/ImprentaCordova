@@ -63,7 +63,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           avatar: validUser.avatar,
           requirePassword: validUser.require_password,
           password: validUser.password,
-          permisos: validUser.permisos || [],
+          ultimoAcceso: validUser.ultimo_acceso || new Date().toISOString(),
         };
 
         if (user.requirePassword) {
@@ -100,7 +100,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <motion.div 
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 1, ease: "easeOut" as any }}
                 className="w-full max-w-[480px] mx-auto"
             >
                 {/* Header Content */}
@@ -161,7 +161,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-white/[0.02] border border-white/10 focus:border-gold-bright/40 rounded-2xl pl-16 pr-20 py-6 text-white font-medium focus:ring-4 focus:ring-gold-bright/5 transition-all placeholder:text-slate-700 outline-none shadow-inner"
-                                    placeholder="••••••••••••"
+                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                 />
                                 <button
                                     type="button"
@@ -207,7 +207,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                 </div>
                             ) : (
                                 <>
-                                    <span className="relative z-10 italic">Inicializar Sesión</span>
+                                    <span className="relative z-10 italic">Inicializar SesiÃ³n</span>
                                     <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                 </>
                             )}
@@ -225,7 +225,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                         className="inline-flex items-center gap-3 text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-[0.2em] transition-all group italic"
                     >
                         <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
-                        <span>Regresar a la Galería Pública</span>
+                        <span>Regresar a la GalerÃ­a PÃºblica</span>
                     </Link>
                 </div>
                 
@@ -233,7 +233,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-40">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Núcleo Activo</span>
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">NÃºcleo Activo</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">v2.6 Hyperion Engine</span>
@@ -284,21 +284,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                    transition={{ duration: 1.5, ease: "easeOut" as any, delay: 0.2 }}
                 >
                     <CordovaLogo className="w-32 h-32 md:w-48 md:h-48 text-gold-bright drop-shadow-[0_0_30px_rgba(242,202,80,0.3)] opacity-80" />
                 </motion.div>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                    transition={{ duration: 1.5, ease: "easeOut" as any, delay: 0.5 }}
                     className="mt-12 max-w-lg"
                 >
                     <h2 className="text-3xl font-display font-black text-white tracking-widest uppercase italic mb-6">
-                        Imprenta <span className="text-gold-bright">Córdova</span>
+                        Imprenta <span className="text-gold-bright">CÃ³rdova</span>
                     </h2>
                     <p className="text-slate-400 font-medium leading-relaxed text-sm">
-                        Plataforma de gestión operativa avanzada. Optimización de procesos, seguimiento de producción y control financiero centralizado en tiempo real.
+                        Plataforma de gestiÃ³n operativa avanzada. OptimizaciÃ³n de procesos, seguimiento de producciÃ³n y control financiero centralizado en tiempo real.
                     </p>
                 </motion.div>
             </div>
