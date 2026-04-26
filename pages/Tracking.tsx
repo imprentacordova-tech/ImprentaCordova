@@ -110,30 +110,68 @@ const TrackingPage: React.FC = () => {
     const handleSearchLogic = async (query: string) => {
         const cleanQuery = query.trim();
         if (!cleanQuery) return;
+        
+        // Limpiar para búsqueda de cédula/RUC (quitar guiones y espacios)
+        const numericQuery = cleanQuery.replace(/[-\s]/g, '');
+        
         setSearching(true);
         setError('');
+        setFoundJobs([]);
+        
         try {
+            // 1. Intentar búsqueda por ID exacto (UUID) o Número de Orden
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
+            const isOrderNum = /^\d+$/.test(cleanQuery);
+
             if (isUUID) {
-                const { data: orderMatches } = await supabase.from('trabajos').select('*').eq('id', cleanQuery);
-                if (orderMatches && orderMatches.length > 0) {
-                    setFoundJobs(orderMatches as any);
-                    setSelectedJobId(orderMatches[0].id);
+                const { data } = await supabase.from('trabajos').select('*').eq('id', cleanQuery);
+                if (data && data.length > 0) {
+                    setFoundJobs(data as any);
+                    setSelectedJobId(data[0].id);
                     setSearching(false);
                     return;
                 }
             }
-            const { data: matchedClients } = await supabase.from('clientes').select('id').or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${cleanQuery},ruc.eq.${cleanQuery}`);
+
+            if (isOrderNum) {
+                const { data } = await supabase.from('trabajos').select('*').eq('orden', parseInt(cleanQuery));
+                if (data && data.length > 0) {
+                    setFoundJobs(data as any);
+                    setSelectedJobId(data[0].id);
+                    setSearching(false);
+                    return;
+                }
+            }
+
+            // 2. Búsqueda por Cliente (Nombre, Cédula o RUC)
+            const { data: matchedClients } = await supabase
+                .from('clientes')
+                .select('id')
+                .or(`nombre.ilike.%${cleanQuery}%,cedula.eq.${numericQuery},ruc.eq.${numericQuery}`);
+
             if (matchedClients && matchedClients.length > 0) {
                 const clientIds = matchedClients.map(c => c.id);
-                const { data: clientJobs } = await supabase.from('trabajos').select('*').in('cliente_id', clientIds).order('orden', { ascending: false });
+                const { data: clientJobs } = await supabase
+                    .from('trabajos')
+                    .select('*')
+                    .in('cliente_id', clientIds)
+                    .order('orden', { ascending: false });
+
                 if (clientJobs && clientJobs.length > 0) {
                     setFoundJobs(clientJobs as any);
                     setSelectedJobId(clientJobs[0].id);
-                } else setError('NO SE ENCONTRARON REGISTROS');
-            } else if (!isUUID) setError('VÍNCULO NO ENCONTRADO');
-            else setError('ID INVÁLIDO');
-        } catch (err) { setError('FALLO EN LA CONEXIÓN'); } finally { setSearching(false); }
+                } else {
+                    setError('NO SE ENCONTRARON TRABAJOS PARA ESTE CLIENTE');
+                }
+            } else {
+                setError('VÍNCULO O IDENTIFICACIÓN NO ENCONTRADA');
+            }
+        } catch (err) { 
+            console.error(err);
+            setError('FALLO EN LA CONEXIÓN CON EL SATÉLITE'); 
+        } finally { 
+            setSearching(false); 
+        }
     };
 
     const handleSearch = (e: React.FormEvent) => {
@@ -241,17 +279,43 @@ const TrackingPage: React.FC = () => {
                 </div>
 
                 {/* Search Bar HUD */}
-                <div className="flex items-center justify-center">
-                    <form onSubmit={handleSearch} className="flex items-center gap-4 bg-white border border-slate-200 px-8 py-5 rounded-[2.5rem] focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/5 transition-all group w-full max-w-3xl shadow-2xl">
-                        <SearchIcon className={`w-6 h-6 ${searching ? 'text-blue-600 animate-spin' : 'text-slate-400'}`} />
+                <div className="flex flex-col items-center justify-center gap-4">
+                    <form onSubmit={handleSearch} className="flex items-center gap-4 bg-white border border-slate-200 px-6 lg:px-8 py-4 lg:py-5 rounded-[2rem] lg:rounded-[2.5rem] focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/5 transition-all group w-full max-w-3xl shadow-2xl">
+                        <SearchIcon className={`w-5 h-5 lg:w-6 h-6 ${searching ? 'text-blue-600 animate-spin' : 'text-slate-400'}`} />
                         <input 
                             type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="Ingrese N° de Orden o Cédula..."
-                            className="bg-transparent border-none p-0 text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:ring-0 uppercase tracking-widest w-full"
+                            placeholder="N° Orden, Cédula o RUC..."
+                            className="bg-transparent border-none p-0 text-xs lg:text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:ring-0 uppercase tracking-widest w-full"
                         />
-                        <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-colors">Buscar</button>
+                        <button type="submit" className="bg-blue-600 text-white px-4 lg:px-6 py-2 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-colors">Buscar</button>
                     </form>
+                    
+                    {error && (
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[#e11d48] text-[10px] font-black uppercase tracking-widest bg-red-50 px-4 py-2 rounded-full border border-red-100">
+                            {error}
+                        </motion.div>
+                    )}
                 </div>
+
+                {/* Multiple Results Selector (If many jobs found) */}
+                <AnimatePresence>
+                    {foundJobs.length > 1 && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                            className="max-w-3xl mx-auto w-full bg-slate-50 p-4 rounded-3xl border border-slate-100 flex gap-3 overflow-x-auto no-scrollbar"
+                        >
+                            {foundJobs.map(job => (
+                                <button
+                                    key={job.id}
+                                    onClick={() => setSelectedJobId(job.id)}
+                                    className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedJobId === job.id ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 hover:text-blue-600 border border-slate-100'}`}
+                                >
+                                    Orden #{job.orden}
+                                </button>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <div className="flex-1 flex flex-col lg:flex-row gap-8 min-h-0">
                     {/* Main Console Hub */}

@@ -8,10 +8,11 @@ import {
 
 // ── Enlaces de Navegación ──────────────────────────────────────────────────────
 const navLinks = [
-    { name: 'Inicio',        href: '/#inicio'      },
-    { name: 'Documentos SRI', href: '/#sri'         },
-    { name: 'Imprenta',      href: '/#imprenta'    },
-    { name: 'Rastreo',       href: '/tracking'     },
+    { name: 'Inicio',        href: '#/'            },
+    { name: 'Documentos SRI', href: '#/sri'         },
+    { name: 'Imprenta',      href: '#/imprenta'    },
+    { name: 'Rastreo',       href: '#/tracking'    },
+    { name: 'Administración', href: '#/login'       },
 ];
 
 // ── Enlace Móvil Animado ───────────────────────────────────────────────────────
