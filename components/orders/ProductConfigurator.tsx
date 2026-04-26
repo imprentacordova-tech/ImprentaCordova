@@ -118,7 +118,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
                         <span className="w-12 h-[1px] bg-liquid-gold/40"></span>
-                        <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">Industrial Manifest Protocol</p>
+                        <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">PROTOCOLO DE MANIFIESTO INDUSTRIAL</p>
                     </div>
                     <h3 className="text-3xl md:text-4xl font-black text-white uppercase italic tracking-tighter flex items-center gap-4">
                         {product.nombre}
@@ -129,7 +129,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                     onClick={onCancel}
                     className="group flex items-center gap-3 px-6 py-3 rounded-xl border border-white/5 hover:border-white/20 transition-all"
                 >
-                    <span className="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Abortar & Volver</span>
+                    <span className="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Abortar Operación</span>
                     <BoxIcon className="w-4 h-4 text-slate-600 group-hover:text-liquid-gold" />
                 </button>
             </div>

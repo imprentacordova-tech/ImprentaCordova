@@ -107,7 +107,7 @@ const FinanzasPage: React.FC = () => {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
             <Loader2Icon className="animate-spin w-10 h-10 text-liquid-gold opacity-30"/>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.8em] animate-pulse">Analizando Registros...</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.8em] animate-pulse">Sincronizando Bóveda de Capital...</p>
         </div>
     );
 
@@ -123,10 +123,10 @@ const FinanzasPage: React.FC = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-[1px] bg-liquid-gold/40"></div>
-                        <span className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.6em]">Rendimiento del Atelier</span>
+                        <span className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.6em]">Telemetría Financiera Industrial</span>
                     </div>
                     <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        Análisis <span className="text-gold-gradient">Financiero</span>
+                        Bóveda de <span className="text-gold-gradient">Capital</span>
                     </h1>
                 </div>
                 
@@ -149,7 +149,7 @@ const FinanzasPage: React.FC = () => {
                                 <SparklesIcon className="w-5 h-5 text-black group-hover:scale-110 transition-transform duration-300"/>
                                 <div className="absolute inset-0 bg-liquid-gold blur-md opacity-0 group-hover:opacity-30 transition-opacity"></div>
                             </div>
-                            <span className="text-[10px] uppercase tracking-[0.15em] font-black">Pronóstico Predictivo</span>
+                            <span className="text-[10px] uppercase tracking-[0.15em] font-black">Simulación de Capital</span>
                         </>
                     )}
                 </motion.button>
@@ -157,9 +157,9 @@ const FinanzasPage: React.FC = () => {
 
             {/* --- GRID DE MÉTRICAS --- */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard label="Capital Recaudado" value={formatCurrency(totalRevenue).split(',')[0]} icon={SolidFinanceIcon} trend="8.2%" trendUp={true} />
-                <MetricCard label="Ticket Promedio" value={formatCurrency(avgSale).split(',')[0]} icon={ScaleIcon} />
-                <MetricCard label="Pico de Operación" value={formatCurrency(peakSale).split(',')[0]} icon={LightningBoltIcon} />
+                <MetricCard label="Ingresos Consolidados" value={formatCurrency(totalRevenue).split(',')[0]} icon={SolidFinanceIcon} trend="8.2%" trendUp={true} />
+                <MetricCard label="Valor Medio Transaccional" value={formatCurrency(avgSale).split(',')[0]} icon={ScaleIcon} />
+                <MetricCard label="Máximo Operativo" value={formatCurrency(peakSale).split(',')[0]} icon={LightningBoltIcon} />
                 <MetricCard label="Integridad de Datos" value="100%" icon={ServerIcon} trend="ÓPTIMO" trendUp={true} />
             </motion.div>
 
@@ -180,10 +180,10 @@ const FinanzasPage: React.FC = () => {
                                     <CpuIcon className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Proyección de <span className="text-liquid-gold">Ingresos</span></h2>
+                                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Proyección de <span className="text-liquid-gold">Activos</span></h2>
                                     <div className="mt-1 flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse"></div>
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Simulación Próximos 30 Días</span>
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Simulación Estratégica Próximos 30 Días</span>
                                     </div>
                                 </div>
                             </div>
@@ -300,7 +300,7 @@ const FinanzasPage: React.FC = () => {
             {/* --- SECCIÓN HISTÓRICA --- */}
             <motion.div variants={itemVariants} className="space-y-8">
                 <div className="flex items-center gap-6">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Historial de <span className="text-slate-500">Movimientos</span></h3>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Estado <span className="text-slate-500">Patrimonial</span></h3>
                     <div className="flex-grow h-[1px] bg-white/5"></div>
                 </div>
 

@@ -305,7 +305,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         className="btn-luxury w-full py-6 disabled:opacity-20 disabled:cursor-not-allowed group"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-4 text-brand-dark">
-                            {isLoading ? <Loader2Icon className="animate-spin w-6 h-6"/> : <>Confirmar Producción <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform"/></>}
+                            {isLoading ? <Loader2Icon className="animate-spin w-6 h-6"/> : <>Desplegar Proyecto Industrial <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform"/></>}
                         </span>
                     </button>
                 </div>

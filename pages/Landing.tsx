@@ -8,12 +8,12 @@ import {
     EnvelopeIcon, CordovaLogo, StarIcon, PrinterIcon, CheckBadgeIcon, ClockIcon,
     SearchIcon, SparklesIcon, MonitorIcon, MessageCircleIcon, ChevronRightIcon,
     Loader2Icon, WalletIcon, ExclamationTriangleIcon, LayersIcon, WhatsAppIcon,
-    PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon
-} from '../components/Icons';
+import { WhatsAppIcon, PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon, MonitorIcon } from '../components/Icons';
 import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
 import { Producto, TrabajoEstado, TrabajoTipo, Regimen } from '../types';
 import { formatCurrency } from '../utils';
+import { useScroll, useTransform } from 'framer-motion';
 
 // --- ANIMATION VARIANTS ---
 const fadeInUp = {
@@ -44,13 +44,17 @@ const StatCard: React.FC<{ label: string; value: string; sub: string }> = ({ lab
     </motion.div>
 );
 
-const ServiceCard: React.FC<{ title: string; desc: string; icon: any }> = ({ title, desc, icon: Icon }) => (
+const ServiceCard: React.FC<{ title: string; desc: string; icon: any; index: number; activeIndex: number }> = ({ title, desc, icon: Icon, index, activeIndex }) => (
     <motion.div 
         variants={fadeInUp}
-        className="group bg-white/5 backdrop-blur-xl p-12 rounded-[3.5rem] border border-white/5 hover:border-liquid-gold/30 transition-all duration-700 hover:-translate-y-3 hover:bg-white/8 relative overflow-hidden"
+        className={`group bg-white/5 backdrop-blur-xl p-12 rounded-[3.5rem] border transition-all duration-700 hover:-translate-y-3 relative overflow-hidden ${
+            index === activeIndex ? 'border-liquid-gold/40 bg-white/8 shadow-gold-glow-soft' : 'border-white/5 hover:border-liquid-gold/30 hover:bg-white/8'
+        }`}
     >
         <div className="absolute top-0 right-0 w-40 h-40 bg-liquid-gold/5 rounded-full blur-3xl -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className="w-20 h-20 rounded-[2rem] bg-brand-dark border border-white/10 flex items-center justify-center mb-10 group-hover:shadow-gold-glow-soft group-hover:border-liquid-gold/40 transition-all duration-700">
+        <div className={`w-20 h-20 rounded-[2rem] bg-brand-dark border flex items-center justify-center mb-10 transition-all duration-700 ${
+            index === activeIndex ? 'border-liquid-gold/40 shadow-gold-glow-soft scale-110' : 'border-white/10 group-hover:shadow-gold-glow-soft group-hover:border-liquid-gold/40'
+        }`}>
             <Icon className="w-10 h-10 text-liquid-gold" />
         </div>
         <h3 className="text-2xl font-display font-black text-white uppercase tracking-tight mb-5 leading-none transition-colors group-hover:text-gold-gradient italic">{title}</h3>
@@ -68,6 +72,16 @@ const LandingPage: React.FC = () => {
     const { productos, loading } = useData();
     const [calcQty, setCalcQty] = useState(5);
     const [calcPrice, setCalcPrice] = useState(65);
+    const [activeServiceIndex, setActiveServiceIndex] = useState(0);
+
+    const targetRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: targetRef,
+        offset: ["start end", "end start"]
+    });
+
+    const imageOpacity = useTransform(scrollYProgress, [0, 0.3, 0.6, 0.9], [0.1, 1, 1, 0.1]);
+    const imageScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1.1, 0.8]);
 
     // IA Quality Tester State
     const [isTesting, setIsTesting] = useState(false);
@@ -159,7 +173,7 @@ const LandingPage: React.FC = () => {
                             </AnimatePresence>
                         </button>
                         <Link to="/login" className="hidden sm:flex items-center gap-3 px-8 py-4 bg-white text-brand-dark rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gold-gradient hover:text-brand-dark transition-all duration-700 shadow-luxury active:scale-95">
-                            Terminal Manager
+                            Gestión Interna
                         </Link>
                     </div>
                 </div>
@@ -195,10 +209,10 @@ const LandingPage: React.FC = () => {
 
                             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-6 pt-6">
                                 <a href="https://wa.me/593993083943" className="group px-14 py-7 bg-white text-brand-dark rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] shadow-luxury hover:bg-gold-gradient transition-all duration-700 flex items-center justify-center gap-4 active:scale-95">
-                                    <WhatsAppIcon className="w-6 h-6 group-hover:scale-125 transition-transform duration-500"/> Consultar Atelier
+                                    <WhatsAppIcon className="w-6 h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
                                 </a>
                                 <button onClick={() => fileInputRef.current?.click()} className="px-14 py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] hover:border-liquid-gold/30 hover:bg-liquid-gold/5 transition-all duration-700 flex items-center justify-center gap-4 active:scale-95 group">
-                                    <MonitorIcon className="w-6 h-6 group-hover:text-liquid-gold transition-colors"/> Analizador IA
+                                    <MonitorIcon className="w-6 h-6 group-hover:text-liquid-gold transition-colors"/> Analizador de Manifiesto
                                 </button>
                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileTest} />
                             </motion.div>
@@ -239,8 +253,8 @@ const LandingPage: React.FC = () => {
                                                         <Loader2Icon className="w-full h-full animate-spin text-liquid-gold" />
                                                         <div className="absolute inset-0 border-4 border-liquid-gold/20 rounded-full" />
                                                     </div>
-                                                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest italic group-hover:text-gold-gradient transition-colors">Vision Analyser</h3>
-                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3">Procesando Perfil de Color</p>
+                                                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest italic group-hover:text-gold-gradient transition-colors">Analizador Óptico</h3>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3">Sincronizando Perfil de Color</p>
                                                 </div>
                                                 <div className="absolute top-0 left-0 w-full h-[2px] bg-liquid-gold shadow-gold-glow animate-scan z-20" />
                                             </motion.div>
@@ -299,7 +313,7 @@ const LandingPage: React.FC = () => {
                                                         <div className="p-5 bg-white/5 rounded-2xl group-hover/upload:scale-110 transition-transform duration-500">
                                                             <UploadIcon className="w-12 h-12 text-slate-500 group-hover/upload:text-liquid-gold transition-colors" />
                                                         </div>
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover/upload:text-liquid-gold transition-colors">Check My Design</span>
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover/upload:text-liquid-gold transition-colors">Analizar mi Diseño</span>
                                                         <div className="absolute inset-0 bg-gradient-to-t from-liquid-gold/[0.02] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
                                                     </button>
                                                 </div>
@@ -338,16 +352,87 @@ const LandingPage: React.FC = () => {
                     </motion.div>
 
                     <motion.div 
+                        ref={targetRef}
                         initial="initial"
                         whileInView="animate"
                         viewport={{ once: true }}
                         variants={staggerContainer}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+                        className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center"
                     >
-                        <ServiceCard title="Gigantografías HD" desc="Impresión en lona brillante, mate y vinilos adhesivos con tecnología Roland Eco-Solvente de 1440dpi." icon={PrinterIcon} />
-                        <ServiceCard title="Talonarios SRI" desc="Imprenta Autorizada. Facturas, Notas de Venta y Retenciones bajo normativas RIMPE con papel químico premium." icon={ShieldCheckIcon} />
-                        <ServiceCard title="Marketing de Lujo" desc="Diseño de branding imponente que posiciona tu marca en la cima del mercado local y regional." icon={PaletteIcon} />
+                        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                            <div onMouseEnter={() => setActiveServiceIndex(0)}>
+                                <ServiceCard title="Gigantografías HD" desc="Impresión en lona brillante, mate y vinilos adhesivos con tecnología Roland Eco-Solvente de 1440dpi." icon={PrinterIcon} index={0} activeIndex={activeServiceIndex} />
+                            </div>
+                            <div onMouseEnter={() => setActiveServiceIndex(1)}>
+                                <ServiceCard title="Talonarios SRI" desc="Imprenta Autorizada. Facturas, Notas de Venta y Retenciones bajo normativas RIMPE con papel químico premium." icon={ShieldCheckIcon} index={1} activeIndex={activeServiceIndex} />
+                            </div>
+                            <div onMouseEnter={() => setActiveServiceIndex(2)}>
+                                <ServiceCard title="Marketing de Lujo" desc="Diseño de branding imponente que posiciona tu marca en la cima del mercado local y regional." icon={PaletteIcon} index={2} activeIndex={activeServiceIndex} />
+                            </div>
+                        </div>
+
+                        <div className="lg:col-span-4 h-[600px] relative rounded-[4rem] overflow-hidden border border-white/10 shadow-luxury group">
+                            <motion.img 
+                                key={activeServiceIndex}
+                                initial={{ opacity: 0, scale: 1.2 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 1 }}
+                                src={
+                                    activeServiceIndex === 0 
+                                    ? "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2671&auto=format&fit=crop"
+                                    : activeServiceIndex === 1
+                                    ? "https://images.unsplash.com/photo-1586762522674-5928a52140b5?q=80&w=2670&auto=format&fit=crop"
+                                    : "https://images.unsplash.com/photo-1606857521015-7f9fdf423740?q=80&w=2670&auto=format&fit=crop"
+                                }
+                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent opacity-60" />
+                            <motion.div 
+                                style={{ opacity: imageOpacity, scale: imageScale }}
+                                className="absolute inset-0 flex items-center justify-center p-12 pointer-events-none"
+                            >
+                                <div className="text-center">
+                                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.8em] mb-4">Precision Tech</p>
+                                    <h3 className="text-5xl font-display font-black text-white uppercase italic tracking-tighter leading-none">Calidad<br/>Córdova</h3>
+                                </div>
+                            </motion.div>
+                        </div>
                     </motion.div>
+                </div>
+            </section>
+
+            {/* --- SECCIÓN GALERÍA INMERSIVA --- */}
+            <section className="py-20 overflow-hidden bg-brand-dark/50">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col gap-32">
+                        <motion.div 
+                            style={{ scale: imageScale, opacity: imageOpacity }}
+                            className="relative h-[80vh] rounded-[5rem] overflow-hidden border border-white/10 shadow-luxury group"
+                        >
+                            <img 
+                                src="https://images.unsplash.com/photo-1614036417651-efe5912149d8?q=80&w=2670&auto=format&fit=crop" 
+                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[3s]" 
+                                alt="Industrial Detail"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-brand-dark/20" />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
+                                <motion.span 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    className="text-liquid-gold font-black text-[12px] uppercase tracking-[1em] mb-8"
+                                >
+                                    Artesanía Tecnológica
+                                </motion.span>
+                                <motion.h2 
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    className="text-6xl md:text-9xl font-display font-black text-white uppercase italic leading-none tracking-tighter"
+                                >
+                                    EL ESTÁNDAR <br/> <span className="text-gold-gradient">CÓRDOVA</span>
+                                </motion.h2>
+                            </div>
+                        </motion.div>
+                    </div>
                 </div>
             </section>
 
@@ -432,8 +517,8 @@ const LandingPage: React.FC = () => {
                                     whileHover={{ y: -5 }}
                                     className="bg-white/[0.03] backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 hover:border-liquid-gold/20 transition-all"
                                 >
-                                    <h4 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-4 italic text-glow">Garantía Roland 300</h4>
-                                    <p className="text-sm font-medium text-slate-400 leading-relaxed italic">Calibración automática de cabezales y perfiles ICC optimizados para cada material.</p>
+                                    <h4 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-4 italic text-glow">Protocolo Roland Elite</h4>
+                                    <p className="text-sm font-medium text-slate-400 leading-relaxed italic">Calibración micrométrica de cabezales y perfiles de color cinemáticos para cada sustrato industrial.</p>
                                 </motion.div>
                              </div>
                         </div>
@@ -450,7 +535,7 @@ const LandingPage: React.FC = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                         >
-                            <span className="text-liquid-gold font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Portfolio Boutique</span>
+                            <span className="text-liquid-gold font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Colección Exclusiva</span>
                             <h2 className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-tighter italic">
                                 EL MUESTRARIO <br/> <span className="text-gold-gradient text-glow">DEFINITIVO</span>
                             </h2>
@@ -493,7 +578,7 @@ const LandingPage: React.FC = () => {
                                             onClick={() => handleAddToCart(p)} 
                                             className="bg-white text-brand-dark px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-gold-gradient transition-all active:scale-95"
                                         >
-                                            Inhibir Proyecto
+                                            Solicitar Proyecto
                                         </button>
                                     </div>
                                     {p.esSRI && (

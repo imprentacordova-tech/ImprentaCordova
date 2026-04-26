@@ -95,8 +95,8 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             {/* Header info */}
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-black text-slate-700 tracking-[0.3em] uppercase italic">
-                        ORD-{String(trabajo.orden).padStart(5, '0')}
+                    <span className="text-[9px] font-black text-slate-500 tracking-[0.3em] uppercase italic">
+                        PROTOCOLO-{String(trabajo.orden).padStart(5, '0')}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -303,10 +303,10 @@ const KDSPage: React.FC = () => {
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">
                             <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow"></div>
-                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">Taller de Producción Digital</span>
+                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">Sistema de Telemetría Industrial</span>
                         </div>
                         <h1 className="text-5xl lg:text-8xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-none">
-                            Control de <span className="text-gold-gradient">Flujo</span>
+                            Núcleo de <span className="text-gold-gradient">Control</span>
                         </h1>
                     </div>
 
@@ -319,19 +319,27 @@ const KDSPage: React.FC = () => {
                                 type="text" 
                                 value={filterTerm}
                                 onChange={e => setFilterTerm(e.target.value)}
-                                placeholder="BUSCAR POR ORDEN O CLIENTE..." 
+                                placeholder="RASTREAR PROTOCOLO O IDENTIDAD..." 
                                 className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl py-5 pl-14 pr-6 text-[11px] font-bold uppercase tracking-widest text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-700 focus:border-liquid-gold/20 outline-none transition-all italic backdrop-blur-md"
                             />
                         </div>
 
                         <div className="flex gap-1 bg-black/40 p-1.5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar backdrop-blur-md">
-                            {['Vista General', 'Prioridad Alta', 'En Diseño', 'En Proceso'].map(tag => (
+                            {['Vista General', 'Prioridad Alta', 'Protocolo de Arte', 'Fase de Ejecución'].map(tag => (
                                 <button
                                     key={tag}
-                                    onClick={() => setActiveTag(tag)}
+                                    onClick={() => {
+                                        if (tag === 'Protocolo de Arte') setActiveTag('En Diseño');
+                                        else if (tag === 'Fase de Ejecución') setActiveTag('En Proceso');
+                                        else if (tag === 'Prioridad Alta') setActiveTag('Órdenes Urgentes');
+                                        else setActiveTag(tag);
+                                    }}
                                     className={`
                                         px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap italic
-                                        ${activeTag === tag 
+                                        ${(tag === 'Protocolo de Arte' && activeTag === 'En Diseño') || 
+                                          (tag === 'Fase de Ejecución' && activeTag === 'En Proceso') ||
+                                          (tag === 'Prioridad Alta' && activeTag === 'Órdenes Urgentes') ||
+                                          activeTag === tag
                                             ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' 
                                             : 'text-slate-500 hover:text-white hover:bg-white/5'}
                                     `}
@@ -424,10 +432,10 @@ const KDSPage: React.FC = () => {
                                         
                                         {columns[status].length === 0 && (
                                             <div className="h-full flex flex-col items-center justify-center opacity-10 py-24 gap-5">
-                                                <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center">
-                                                    <BoxIcon className="w-6 h-6 text-white" />
+                                                <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center animate-pulse">
+                                                    <BoxIcon className="w-6 h-6 text-white/40" />
                                                 </div>
-                                                <p className="text-[10px] font-black tracking-[0.3em] uppercase italic">Sin órdenes activas</p>
+                                                <p className="text-[10px] font-black tracking-[0.3em] uppercase italic text-white/40">Sin actividad detectada en el sector</p>
                                             </div>
                                         )}
                                     </div>
@@ -442,7 +450,7 @@ const KDSPage: React.FC = () => {
             <BottomSheet 
                 isOpen={!!selectedTrabajo} 
                 onClose={() => setSelectedTrabajo(null)} 
-                title={`ORD-${selectedTrabajo?.orden || ''}`}
+                title={`PROTOCOLO-${selectedTrabajo?.orden || ''}`}
             >
                 {selectedTrabajo && (() => {
                     const selCliente = clientes.find(c => c.id === selectedTrabajo.clienteId);
@@ -457,7 +465,7 @@ const KDSPage: React.FC = () => {
                                     {selCliente?.nombre}
                                 </h3>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic">Socio Comercial Activo</p>
+                                    <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic">Identidad Industrial Vinculada</p>
                                     {selectedTrabajo.tipo === 'sri' && (
                                         <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-brand-red/10 text-brand-red border border-brand-red/20">SRI</span>
                                     )}
@@ -532,7 +540,7 @@ const KDSPage: React.FC = () => {
                             {selCliente?.telefono?.[0] && (
                                 <button 
                                     onClick={() => {
-                                        const msg = `Hola *${selCliente.nombre}*, su pedido ORD-${String(selectedTrabajo.orden).padStart(5, '0')} está en producción. Le enviaremos el diseño para su aprobación.`;
+                                        const msg = `Protocolo Industrial ORD-${String(selectedTrabajo.orden).padStart(5, '0')}\nEstado: Fase de Diseño/Aprobación.\n\nHola ${selCliente.nombre}, adjuntamos el arte para su validación final.`;
                                         window.open(`https://wa.me/${selCliente.telefono[0]}?text=${encodeURIComponent(msg)}`, '_blank');
                                     }}
                                     className="bg-green-600 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-green-500 transition-all flex items-center justify-center gap-2"

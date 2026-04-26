@@ -160,7 +160,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                 <SparklesIcon className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-[11px] font-black uppercase truncate leading-tight mb-1.5 text-liquid-gold group-hover:text-white">Nuevo Ítem Libre</h3>
+                                <h3 className="text-[11px] font-black uppercase truncate leading-tight mb-1.5 text-liquid-gold group-hover:text-white">Nuevo Ítem Manual</h3>
                                 <p className="text-[8px] font-bold uppercase tracking-widest text-[#a69c8b]/70">Variable · Precio Dinámico</p>
                             </div>
                         </div>

@@ -114,34 +114,34 @@ const DashboardPage: React.FC = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-5">
                         <div className="h-1 w-12 bg-liquid-gold rounded-full"></div>
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">Panel Administrativo</p>
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">NÚCLEO DE OPERACIONES ESTRATÉGICAS</p>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        ¡Hola, <span className="text-gold-gradient">{currentUser.nombre.split(' ')[0]}</span>!
+                        SISTEMA <span className="text-gold-gradient">NUCLEUS</span>
                     </h1>
                     <p className="text-slate-500 text-lg font-light tracking-tight italic">
-                        Bienvenido al núcleo de control de <span className="text-white font-bold">Imprenta Córdova</span>.
+                        Sincronización Maestra para <span className="text-white font-bold">{currentUser.nombre.split(' ')[0]}</span>.
                     </p>
                 </div>
 
                 <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 flex items-center gap-8 backdrop-blur-xl">
                     <div className="text-center">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Trabajos Activos</p>
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Manifiestos en Curso</p>
                         <p className="text-3xl font-black text-white italic">{stats.totalActivos}</p>
                     </div>
                     <div className="w-px h-10 bg-white/5"></div>
                     <div className="text-center">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">En Producción</p>
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Fase de Despliegue</p>
                         <p className="text-3xl font-black text-blue-400 italic">{stats.enProduccion}</p>
                     </div>
                 </div>
             </div>
 
-            {/* --- ACCIONES PRINCIPALES (BOTONES SOLICITADOS) --- */}
+            {/* --- ACCIONES OPERATIVAS --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <MainActionButton 
                     label="Catálogo" 
-                    sub="Explorar Servicios" 
+                    sub="Bóveda de Activos Gráficos" 
                     icon={BookOpenIcon} 
                     onClick={() => navigate('/productos')} 
                     color="blue" 
@@ -149,7 +149,7 @@ const DashboardPage: React.FC = () => {
                 />
                 <MainActionButton 
                     label="Clientes SRI" 
-                    sub="Gestión Tributaria" 
+                    sub="Soberanía Fiscal" 
                     icon={ShieldCheckIcon} 
                     onClick={() => navigate('/clientes')} 
                     color="red" 
@@ -157,15 +157,15 @@ const DashboardPage: React.FC = () => {
                 />
                 <MainActionButton 
                     label="Nuevo Pedido" 
-                    sub="Lanzar Producción" 
+                    sub="Protocolo de Manufactura" 
                     icon={RocketLaunchIcon} 
                     onClick={() => navigate('/nuevo')} 
                     color="gold" 
                     delay={0.3}
                 />
                 <MainActionButton 
-                    label="Historial" 
-                    sub="Archivo de Órdenes" 
+                    label="Manifiestos" 
+                    sub="Estado Patrimonial" 
                     icon={ReceiptIcon} 
                     onClick={() => navigate('/trabajos')} 
                     color="yellow" 
@@ -173,7 +173,7 @@ const DashboardPage: React.FC = () => {
                 />
             </div>
 
-            {/* --- SECCIÓN INFERIOR: ESTADO DEL SISTEMA & NOTAS --- */}
+            {/* --- SECCIÓN INFERIOR: TELEMETRÍA & NÚCLEO --- */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 <div className="lg:col-span-8 bg-white/[0.01] border border-white/5 rounded-[3rem] p-10 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-5 transition-opacity duration-1000">
@@ -182,8 +182,8 @@ const DashboardPage: React.FC = () => {
                     
                     <div className="relative z-10 space-y-8">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Resumen de Actividad</h3>
-                            <button onClick={() => navigate('/registro')} className="text-[10px] font-black text-liquid-gold uppercase tracking-widest hover:underline italic">Ver Bitácora</button>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Telemetría Central</h3>
+                            <button onClick={() => navigate('/registro')} className="text-[10px] font-black text-liquid-gold uppercase tracking-widest hover:underline italic">Ver Registro Histórico</button>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -192,14 +192,14 @@ const DashboardPage: React.FC = () => {
                                     <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
                                         <ShieldCheckIcon className="w-5 h-5" />
                                     </div>
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Estado SRI</p>
+                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Cumplimiento Tributario SRI</p>
                                 </div>
-                                <p className="text-xs text-slate-400 font-light leading-relaxed italic">
-                                    Sincronización activa con servidores oficiales. Los trámites de hoy están al día.
+                                <p className="text-xs text-slate-400 font-light leading-relaxed italic uppercase tracking-wider">
+                                    Sincronización activa con servidores oficiales. Los trámites institucionales están validados.
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">En Línea</span>
+                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Enlace Activo</span>
                                 </div>
                             </div>
 
@@ -208,39 +208,40 @@ const DashboardPage: React.FC = () => {
                                     <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
                                         <CpuIcon className="w-5 h-5" />
                                     </div>
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Motor de Cálculo</p>
+                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Algoritmo de Precisión</p>
                                 </div>
-                                <p className="text-xs text-slate-400 font-light leading-relaxed italic">
-                                    Calculadora de precios industrial calibrada según costos de materiales actuales.
+                                <p className="text-xs text-slate-400 font-light leading-relaxed italic uppercase tracking-wider">
+                                    Algoritmos de precisión calibrados según el mercado de sustratos y tintas actual.
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                    <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Optimizado</span>
+                                    <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Máxima Precisión</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="lg:col-span-4 bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col justify-between shadow-gold-glow-soft">
-                    <div className="space-y-6">
-                        <div className="w-12 h-12 bg-liquid-gold rounded-2xl flex items-center justify-center text-black">
+                <div className="lg:col-span-4 bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col justify-between shadow-gold-glow-soft relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    <div className="space-y-6 relative z-10">
+                        <div className="w-12 h-12 bg-liquid-gold rounded-2xl flex items-center justify-center text-black shadow-gold-glow">
                             <SparklesIcon className="w-6 h-6" />
                         </div>
-                        <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic">Córdova Vision <span className="text-liquid-gold">v2.0</span></h4>
-                        <p className="text-sm text-slate-500 font-light leading-relaxed italic">
-                            Sistema de gestión industrial optimizado para la eficiencia en diseño y producción gráfica.
+                        <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic">Córdova Nucleus <span className="text-liquid-gold">v3.0</span></h4>
+                        <p className="text-sm text-slate-500 font-light leading-relaxed italic uppercase tracking-wider">
+                            Arquitectura de gestión industrial para la elite de la producción gráfica regional.
                         </p>
                     </div>
 
-                    <div className="pt-10 space-y-4 border-t border-white/5">
+                    <div className="pt-10 space-y-4 border-t border-white/5 relative z-10">
                         <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">
-                            <span>Soporte Técnico</span>
-                            <span className="text-liquid-gold">Activo</span>
+                            <span>Enlace Técnico</span>
+                            <span className="text-liquid-gold">Maestro</span>
                         </div>
                         <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">
-                            <span>Base de Datos</span>
-                            <span className="text-emerald-500">Segura</span>
+                            <span>Núcleo de Datos</span>
+                            <span className="text-emerald-500">Cifrado</span>
                         </div>
                     </div>
                 </div>

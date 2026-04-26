@@ -1,5 +1,13 @@
 import { Producto, TrabajoTipo, Regimen } from '../types';
 
+/**
+ * @version 2.0 - Edición Alpha Industrial
+ * @ideas_500k:
+ * - Integración con Stock en Tiempo Real (Supabase Realtime)
+ * - Matriz de Precios Dinámica por Volumen Escalable
+ * - Filtros Avanzados por Gramaje, Acabado y Tipo de Impresión
+ * - Generación Automática de Hojas de Producción desde el Catálogo
+ */
 export const MASTER_CATALOG: Partial<Producto>[] = [
   // --- DOCUMENTOS AUTORIZADOS (SRI) ---
   { nombre: 'Factura (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
@@ -20,124 +28,56 @@ export const MASTER_CATALOG: Partial<Producto>[] = [
 
   // --- TARJETAS DE PRESENTACIÓN ---
   { 
-    nombre: 'Tarjetas de Presentación x100 (Couché 300g)', 
-    precio: 12.00, 
+    nombre: 'Tarjetas Premium (Acabado Soft-Touch)', 
+    precio: 45.00, 
     categoria: 'Tarjetas', 
     esSRI: false,
-    imagenUrl: 'https://i.imgur.com/kS9Qj6q.png' // Placeholder premium for now, user can swap with real assets
+    descripcion: 'Tarjetas con laminado aterciopelado y puntas redondeadas. Máximo prestigio.',
+    specs: ['Soft-Touch', '350g', 'Full Color']
   },
   { 
-    nombre: 'Tarjetas de Presentación x1000 (Couché 300g)', 
-    precio: 35.00, 
+    nombre: 'Tarjetas con Barniz UV Localizado x1000', 
+    precio: 75.00, 
     categoria: 'Tarjetas', 
     esSRI: false,
-    imagenUrl: 'https://i.imgur.com/kS9Qj6q.png'
+    descripcion: 'Laminado mate con detalles brillantes en relieve. Ideal para logotipos.',
+    specs: ['Mate + UV Localizado', '300g', 'Offset']
   },
-  { 
-    nombre: 'Tarjetas Laminado Mate + Brillante UV x1000', 
-    precio: 55.00, 
-    categoria: 'Tarjetas', 
-    esSRI: false,
-    imagenUrl: 'https://i.imgur.com/kS9Qj6q.png'
-  },
-  { nombre: 'Tarjetas PVC (Tipo Carnet)', precio: 5.00, categoria: 'Tarjetas', esSRI: false },
-  { nombre: 'Tarjetas con Troquel Especial x100', precio: 45.00, categoria: 'Tarjetas', esSRI: false },
-  { nombre: 'Tarjetas con Bordes Redondeados x100', precio: 15.00, categoria: 'Tarjetas', esSRI: false },
-  { nombre: 'Tarjetas Kraft x100', precio: 18.00, categoria: 'Tarjetas', esSRI: false },
-  { nombre: 'Tarjetas Hot Stamping (Pan de Oro) x100', precio: 80.00, categoria: 'Tarjetas', esSRI: false },
+  { nombre: 'Tarjetas en PVC Mate (Grosor Crédito)', precio: 1.50, categoria: 'Tarjetas', esSRI: false, specs: ['PVC', 'Durabilidad Alta'] },
+  { nombre: 'Tarjetas Hot Stamping Oro/Plata x100', precio: 85.00, categoria: 'Tarjetas', esSRI: false, specs: ['Foil Metálico', 'Lujo'] },
 
-  // --- PUBLICIDAD (Volantes, Dípticos, Trípticos) ---
-  { nombre: 'Volantes A6 x1000 (Couché 115g)', precio: 38.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Volantes A6 x1000 (Bond 75g)', precio: 28.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Volantes A5 x1000 (Couché 115g)', precio: 65.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Volantes A4 x1000 (Couché 115g)', precio: 120.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Dípticos A4 x1000 (Couché 150g)', precio: 85.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Trípticos A4 x1000 (Couché 150g)', precio: 95.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Afiches A3 x100 (Couché 150g)', precio: 45.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Flyers Express (Mismo Día) A6 x100', precio: 15.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Brochure de 8 Páginas x100', precio: 250.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Carpetas Corporativas x100', precio: 90.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Menú Restaurante A4 (Laminado)', precio: 5.50, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Hojas Membretadas A4 x500', precio: 40.00, categoria: 'Publicidad', esSRI: false },
+  // --- PUBLICIDAD Y EDITORIAL ---
+  { nombre: 'Revistas Corporativas A4 (16 pág) x100', precio: 350.00, categoria: 'Publicidad', esSRI: false, specs: ['Grapadas', 'Couché 150g'] },
+  { nombre: 'Dípticos A4 x1000 (Couché 150g)', precio: 85.00, categoria: 'Publicidad', esSRI: false, specs: ['Doblado Pro', 'Offset'] },
+  { nombre: 'Trípticos A4 x1000 (Couché 150g)', precio: 95.00, categoria: 'Publicidad', esSRI: false, specs: ['Doblado Pro', 'Offset'] },
+  { nombre: 'Afiches A3 Pro x100 (Couché 150g)', precio: 45.00, categoria: 'Publicidad', esSRI: false, specs: ['Full Color', 'Offset'] },
+  { nombre: 'Carpetas con Bolsillo Troquelado x100', precio: 120.00, categoria: 'Publicidad', esSRI: false, specs: ['Couché 300g', 'Troquel'] },
 
-  // --- JUEGOS Y RIFAS ---
-  { nombre: 'Tablas de Bingo x1000', precio: 45.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Boletos de Rifa Numerados x1000', precio: 35.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Tickets de Consumo x1000', precio: 30.00, categoria: 'Publicidad', esSRI: false },
-
-  // --- ETIQUETAS Y ADHESIVOS ---
-  { nombre: 'Etiquetas x100 (Papel Adhesivo)', precio: 12.00, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Stickers Circulares 5cm x100', precio: 15.00, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Etiquetas Troqueladas Vinil x100', precio: 22.00, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Etiquetas Transparentes x100', precio: 25.00, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Etiquetas para Botellas x100', precio: 35.00, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Cinta Embalaje con Logo (Rollo)', precio: 12.50, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Sello de Seguridad (Void) x100', precio: 45.00, categoria: 'Etiquetas', esSRI: false },
-  { nombre: 'Sticker Holográfico x100', precio: 65.00, categoria: 'Etiquetas', esSRI: false },
+  // --- ETIQUETAS Y PACKAGING (LUJO) ---
+  { nombre: 'Etiquetas de Vino (Papel Texturizado)', precio: 0.45, categoria: 'Etiquetas', esSRI: false, specs: ['Antihumedad', 'Textura'] },
+  { nombre: 'Cajas para Joyería con Logo Oro', precio: 4.50, categoria: 'Packaging', esSRI: false, specs: ['Cartón Rígido', 'Hot Stamping'] },
+  { nombre: 'Bolsas de Lujo (Papel Couché + Cordón)', precio: 1.20, categoria: 'Packaging', esSRI: false, specs: ['Laminadas', 'Reforzadas'] },
+  { nombre: 'Etiquetas Transparentes (Corte Especial)', precio: 15.00, categoria: 'Etiquetas', esSRI: false, specs: ['Plotter', 'Vinil'] },
 
   // --- GRAN FORMATO (GIGANTOGRAFÍA) ---
-  { nombre: 'Banner x m2 (Lona 13oz)', precio: 12.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Vinil Adhesivo x m2', precio: 18.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Microperforado x m2', precio: 22.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Roll up Completo (80x200cm)', precio: 45.00, categoria: 'Gran Formato', esSRI: false, imagenUrl: 'https://i.imgur.com/8X9mY9L.png' },
-  { nombre: 'Letrero en Caja de Luz x m2', precio: 85.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Lona Translúcida x m2', precio: 25.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Corte de Vinil Decorativo Lineal', precio: 6.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Señalética Celtex 30x20cm', precio: 15.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Lona Mesh (Transpirable) m2', precio: 16.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Banner Navideño (1.5x1.0m)', precio: 12.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Letras 3D en MDF (Metro)', precio: 45.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Vinil para Vehículos (Instalado)', precio: 35.00, categoria: 'Gran Formato', esSRI: false },
-  { nombre: 'Impresión Lienzo (Canvas) m2', precio: 45.00, categoria: 'Gran Formato', esSRI: false },
+  { nombre: 'Exhibidor Roll-up (80x200cm) Pro', precio: 55.00, categoria: 'Gran Formato', esSRI: false, specs: ['Aluminio Reforzado', 'Lona 13oz'] },
+  { nombre: 'Caja de Luz LED (Backlight) m2', precio: 110.00, categoria: 'Gran Formato', esSRI: false, specs: ['Estructura Metal', 'Luz LED'] },
+  { nombre: 'Vinil Decorativo para Pared m2', precio: 22.00, categoria: 'Gran Formato', esSRI: false, specs: ['Instalación Incluida', 'Mate/Brillo'] },
+  { nombre: 'Letrero Acrílico con Separadores', precio: 145.00, categoria: 'Gran Formato', esSRI: false, specs: ['Acrílico 5mm', 'Pernos Acero'] },
 
-  // --- MERCHANDISING Y SUBLIMACIÓN ---
-  { nombre: 'Camiseta Blanca (Sublimación)', precio: 12.00, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Taza Blanca 11oz', precio: 6.50, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Taza Mágica Color', precio: 12.00, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Gorra Camionera Sublimada', precio: 8.00, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Mousepad Personalizado', precio: 6.50, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Llavero Sublimado (Circular)', precio: 4.50, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Toma-todo Aluminio (600ml)', precio: 15.00, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Rompecabezas A4 Sublimado', precio: 12.50, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Cojín Personalizado (35x35cm)', precio: 18.00, categoria: 'Sublimación', esSRI: false },
-  { nombre: 'Jarros Cerveceros (Pavonados)', precio: 14.00, categoria: 'Sublimación', esSRI: false },
+  // --- MERCHANDISING Y REGALOS ---
+  { nombre: 'Jarros Térmicos de Acero (Grabado Láser)', precio: 18.00, categoria: 'Merch', esSRI: false, specs: ['Láser YAG', 'Acero Inox'] },
+  { nombre: 'Bolígrafos de Metal (Grabado Láser)', precio: 3.50, categoria: 'Merch', esSRI: false, specs: ['Tinta Azul', 'Estuche'] },
+  { nombre: 'Agendas Cuero Sintético 2024', precio: 12.00, categoria: 'Merch', esSRI: false, specs: ['Repujado', 'A5'] },
+  { nombre: 'Llaveros de Cuero con Placa Metal', precio: 5.50, categoria: 'Merch', esSRI: false, specs: ['Elegante', 'Empaque'] },
 
-  // --- MERCHANDISING TEXTIL/OTROS ---
-  { nombre: 'Camiseta de Color (DTF Full Color)', precio: 18.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Camiseta Polo (Bordado Pecho)', precio: 25.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Gorra Estampada (Vinil Textil)', precio: 10.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Bolígrafo Publicitario x100', precio: 65.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Bolsas Kraft Medianas x100', precio: 45.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Bolsas Ecológicas con Logo x100', precio: 85.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Lanyard (Cinta Credencial) x50', precio: 75.00, categoria: 'Merch', esSRI: false },
-  { nombre: 'Caja para Regalo Personalizada', precio: 8.50, categoria: 'Merch', esSRI: false },
-  { nombre: 'Cinta Funeraria con Letras Oro', precio: 5.00, categoria: 'Merch', esSRI: false },
+  // --- OFICINA Y VARIOS ---
+  { nombre: 'Sello Seco (Relieve en Papel)', precio: 65.00, categoria: 'Oficina', esSRI: false, specs: ['Prensa Metal', 'Inviolable'] },
+  { nombre: 'Sellos Automáticos (Serie Professional)', precio: 35.00, categoria: 'Oficina', esSRI: false, specs: ['Shiny Pro', 'Metal'] },
+  { nombre: 'Hojas Membretadas en Papel Especial x500', precio: 65.00, categoria: 'Oficina', esSRI: false, specs: ['Papel Lino', 'Láser'] },
+  { nombre: 'Sobres de Invitación (Corte Láser)', precio: 1.50, categoria: 'Oficina', esSRI: false, specs: ['Cartulina 220g', 'Diseño Calado'] },
 
-  // --- OFICINA, SELLOS Y VARIOS ---
-  { nombre: 'Sello Automático Shiny S-843', precio: 15.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Sello Automático Económico', precio: 12.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Sello de Madera', precio: 8.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Sello Fechador', precio: 22.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Recarga de Tinta (Sellos)', precio: 5.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Almohadilla para Sellos', precio: 3.50, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Plastificado de Documentos A4', precio: 1.50, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Encuadernación Espiralada', precio: 2.50, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Diseño Básico (Trámite)', precio: 5.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Vectorización de Logotipo', precio: 15.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Impresión Láser A4 Color', precio: 0.50, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Copia B/N Simple', precio: 0.05, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Agendas Personalizadas x50', precio: 450.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Calendarios de Escritorio x100', precio: 220.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Calendarios de Pared x100', precio: 180.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Sobres A4 con Logo x100', precio: 45.00, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Diplomas en Cartulina de Hilo', precio: 2.50, categoria: 'Oficina', esSRI: false },
-  { nombre: 'Portatítulos (Carpetas)', precio: 8.00, categoria: 'Oficina', esSRI: false },
-
-  // --- COMBOS Y PAQUETES ---
-  { nombre: 'Combo Emprendedor (100 Tarjetas + 500 Volantes)', precio: 30.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Combo SRI (1 Facturero + 1 Retención + Sello)', precio: 35.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Paquete Graduación (Carpeta + Diploma + Invitación)', precio: 15.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Kit Restaurante (10 Menús + 100 Portavasos)', precio: 120.00, categoria: 'Publicidad', esSRI: false },
-  { nombre: 'Combo Cumpleaños (Lona + 50 Tarjetas + 20 Stickers)', precio: 25.00, categoria: 'Eventos', esSRI: false },
-  { nombre: 'Combo Elecciones (1000 Volantes + 1 Lona + 100 Stickers)', precio: 85.00, categoria: 'Eventos', esSRI: false },
+  // --- COMBOS ESTRATÉGICOS ---
+  { nombre: 'Combo Identidad Corporativa Basic', precio: 150.00, categoria: 'Combos', esSRI: false, descripcion: 'Diseño Logo + 1000 Tarjetas + 500 Hojas Membretadas', specs: ['Ahorro 20%'] },
+  { nombre: 'Combo Stand Ferias (Roll-up + 1000 Flyers)', precio: 95.00, categoria: 'Combos', esSRI: false, descripcion: 'Ideal para eventos y activaciones rápidas.', specs: ['Entrega 48h'] },
 ];

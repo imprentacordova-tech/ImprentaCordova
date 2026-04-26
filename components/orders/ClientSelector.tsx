@@ -242,11 +242,11 @@ export const CreateClientModal: React.FC<{
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
-                                {mode === 'EXPRESS' ? 'REGISTRO DE CLIENTE RÁPIDO' : 'CONTRIBUYENTE SRI (OFICIAL)'}
+                                {mode === 'EXPRESS' ? 'IDENTIDAD EXPRESS' : 'PROTOCOLOS SRI (OFICIAL)'}
                             </h2>
                             <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-3 flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold' : 'bg-brand-red'} animate-pulse`}></div>
-                                {mode === 'EXPRESS' ? 'Datos indispensables para facturación genérica' : 'Expediente completo para tributación oficial'}
+                                {mode === 'EXPRESS' ? 'Resumen para facturación simplificada' : 'Expediente industrial para tributación oficial'}
                             </p>
                         </div>
                         <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
@@ -359,7 +359,7 @@ export const CreateClientModal: React.FC<{
                                 <div className="p-8 bg-white/2 rounded-[2.5rem] border border-white/5 space-y-8 relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-[80px] rounded-full pointer-events-none"></div>
                                     <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] border-b border-white/5 pb-4 flex items-center gap-3">
-                                        <DocumentTextIcon className="w-4 h-4 text-liquid-gold opacity-50"/> Inteligencia Tributaria Avanzada
+                                        <DocumentTextIcon className="w-4 h-4 text-liquid-gold opacity-50"/> Telemetría Tributaria Avanzada
                                     </h3>
                                     
                                     <div className="flex flex-wrap gap-3">
@@ -429,7 +429,7 @@ export const CreateClientModal: React.FC<{
                         <div className="absolute bottom-0 left-0 right-0 p-10 bg-brand-dark/80 backdrop-blur-xl border-t border-white/10 flex justify-end gap-6 z-20">
                             <button type="button" onClick={onClose} className="px-10 py-5 text-slate-500 font-black uppercase text-[10px] tracking-[0.3em] hover:text-white transition-colors">Abortar</button>
                             <button type="submit" disabled={isSaving || saveSuccess || (mode === 'SRI' && !!rucError)} className={`min-w-[320px] px-10 py-5 text-brand-dark font-black rounded-2xl shadow-luxury transition-all flex items-center justify-center gap-4 uppercase text-xs tracking-[0.2em] ${saveSuccess ? 'bg-green-500 scale-[1.02]' : 'bg-white hover:bg-liquid-gold'} disabled:opacity-30 disabled:cursor-not-allowed`}>
-                                {isSaving ? <Loader2Icon className="animate-spin w-6 h-6"/> : saveSuccess ? <CheckCircleIcon className="w-6 h-6"/> : mode === 'SRI' ? "Inscribir Contribuyente SRI" : "Habilitar Perfil Express"}
+                                {isSaving ? <Loader2Icon className="animate-spin w-6 h-6"/> : saveSuccess ? <CheckCircleIcon className="w-6 h-6"/> : mode === 'SRI' ? "Sincronizar Protocolo SRI" : "Autorizar Perfil Express"}
                             </button>
                         </div>
                     </form>

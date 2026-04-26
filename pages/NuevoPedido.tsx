@@ -130,10 +130,10 @@ const NuevoPedidoPage: React.FC = () => {
     const getSteps = () => {
         return [
             { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-            { id: 2, label: missionCategory === 'SRI' ? 'Identidad' : 'Especificación', icon: missionCategory === 'SRI' ? UserIcon : CpuIcon },
-            { id: 3, label: missionCategory === 'SRI' ? 'Especificación' : 'Identidad', icon: missionCategory === 'SRI' ? CpuIcon : UserIcon },
+            { id: 2, label: missionCategory === 'SRI' ? 'Identidad' : 'Protocolo', icon: missionCategory === 'SRI' ? UserIcon : CpuIcon },
+            { id: 3, label: missionCategory === 'SRI' ? 'Protocolo' : 'Identidad', icon: missionCategory === 'SRI' ? CpuIcon : UserIcon },
             { id: 4, label: 'Capital', icon: CreditCardIcon },
-            { id: 5, label: 'Finalizado', icon: RocketLaunchIcon }
+            { id: 5, label: 'Despliegue', icon: RocketLaunchIcon }
         ];
     };
 
@@ -192,9 +192,9 @@ const NuevoPedidoPage: React.FC = () => {
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="space-y-4 mb-12 text-center">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">PASO 01</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient">Proyecto</span></h2>
-                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione el flujo de producción adecuado.</p>
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">MODALIDAD DE INGRESO</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient">Misión</span></h2>
+                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione el flujo de despliegue industrial adecuado.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -249,8 +249,8 @@ const NuevoPedidoPage: React.FC = () => {
                                                 <BoltIcon className="w-7 h-7" />
                                             </div>
                                             <div>
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Servicios<br/><span className="text-blue-400">Rápidos</span></h3>
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Copias, Plastificados, Diseños express.</p>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Despliegue<br/><span className="text-blue-400">Inmediato</span></h3>
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Copias, Plastificados, Diseños de respuesta rápida.</p>
                                             </div>
                                         </div>
                                     </motion.button>
@@ -267,9 +267,9 @@ const NuevoPedidoPage: React.FC = () => {
                                 {missionCategory === 'SRI' ? (
                                     <div className="space-y-12">
                                         <div className="space-y-4">
-                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">PASO 02</p>
+                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA FISCAL</p>
                                             <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Identidad del <span className="text-gold-gradient">Contribuyente</span></h2>
-                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Verificación de datos fiscales obligatoria.</p>
+                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Validación obligatoria de datos tributarios para emisión autorizada.</p>
                                         </div>
                                         <ClientSelector 
                                             onSelect={(c) => { setCliente(c); if(c) setStep(3); }} 
@@ -280,9 +280,9 @@ const NuevoPedidoPage: React.FC = () => {
                                 ) : (
                                     <div className="space-y-12">
                                         <div className="space-y-4">
-                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">PASO 02</p>
-                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Especificación del <span className="text-gold-gradient">Producto</span></h2>
-                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Defina los parámetros del trabajo.</p>
+                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA TÉCNICA</p>
+                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Configuración de <span className="text-gold-gradient">Producción</span></h2>
+                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Defina los parámetros de ingeniería para este trabajo.</p>
                                         </div>
                                         {orderMode === 'CATALOG' ? (
                                             !servicio ? (
@@ -396,8 +396,9 @@ const NuevoPedidoPage: React.FC = () => {
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="space-y-4 mb-14">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">PASO 04</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Control <span className="text-gold-gradient">Financiero</span></h2>
+                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA FINANCIERA</p>
+                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Control de <span className="text-gold-gradient">Capital</span></h2>
+                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Gestión de pagos, abonos y captura de referencias visuales.</p>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-10">
@@ -443,8 +444,8 @@ const NuevoPedidoPage: React.FC = () => {
                                     <RocketLaunchIcon className="w-16 h-16 md:w-24 md:h-24 text-black animate-bounce" />
                                 </div>
                                 <div className="space-y-6">
-                                    <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic">Orden <span className="text-emerald-500">Registrada</span></h2>
-                                    <p className="text-slate-400 font-medium max-w-lg mx-auto">El pedido ha sido sincronizado correctamente. Puede imprimir el recibo ahora.</p>
+                                    <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic">Protocolo <span className="text-emerald-500">Ejecutado</span></h2>
+                                    <p className="text-slate-400 font-medium max-w-lg mx-auto">El manifiesto industrial ha sido sincronizado. El seguimiento de telemetría está activo.</p>
                                 </div>
                                 <div className="flex flex-wrap justify-center gap-6">
                                     {createdTrabajoId && (
@@ -504,7 +505,7 @@ const NuevoPedidoPage: React.FC = () => {
                     >
                         <div className="absolute top-0 right-0 p-10 opacity-[0.02] scale-150"><ShoppingCartIcon className="w-64 h-64 text-liquid-gold" /></div>
                         <div className="relative z-10 space-y-10">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Resumen <span className="text-liquid-gold">Actual</span></h3>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Hoja de <span className="text-liquid-gold">Ruta</span></h3>
                             
                             <div className="space-y-8">
                                 <div className="space-y-2">

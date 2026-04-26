@@ -81,8 +81,8 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
                 >
                     <div className="p-10 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
                         <div>
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight italic">Control de <span className="text-liquid-gold">Insumos</span></h2>
-                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Ingreso al Almacén del Atelier</p>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight italic">Protocolo de <span className="text-liquid-gold">Activos</span></h2>
+                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Ingreso a Bóveda de Sustratos</p>
                         </div>
                         <button onClick={onClose} className="p-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition-all border border-white/5"><CloseIcon className="w-5 h-5"/></button>
                     </div>
@@ -160,7 +160,7 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
                         <div className="flex gap-4 pt-8">
                             <button type="button" onClick={onClose} className="flex-1 py-5 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] hover:text-white transition-colors">Cancelar</button>
                             <button type="submit" className="flex-[2] bg-white text-black py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-liquid-gold transition-all active:scale-95 shadow-xl shadow-white/5">
-                                Registrar en Almacén
+                                Vincular a Bóveda
                             </button>
                         </div>
                     </form>
@@ -209,10 +209,10 @@ const InventarioPage: React.FC = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-[1px] bg-liquid-gold/40"></div>
-                        <span className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.6em]">Almacén de Atelier</span>
+                        <span className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.6em]">Centro de Logística Industrial</span>
                     </div>
                     <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        Gestión de <span className="text-gold-gradient">Insumos</span>
+                        Bóveda de <span className="text-gold-gradient">Activos</span>
                     </h1>
                 </div>
                 
@@ -229,9 +229,9 @@ const InventarioPage: React.FC = () => {
 
             {/* --- MÉTRICAS --- */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <MetricCard label="Inversión en Almacén" value={formatCurrency(kpis.valorTotal).split(',')[0]} icon={InventoryIcon} colorClass="text-liquid-gold" />
-                <MetricCard label="Materias Primas" value={kpis.totalItems} icon={BoxIcon} colorClass="text-white" />
-                <MetricCard label="Existencias Críticas" value={kpis.bajoStock} icon={ExclamationTriangleIcon} colorClass={kpis.bajoStock > 0 ? "text-rose-500 animate-pulse" : "text-emerald-500"} />
+                <MetricCard label="Capital Inmovilizado" value={formatCurrency(kpis.valorTotal).split(',')[0]} icon={InventoryIcon} colorClass="text-liquid-gold" />
+                <MetricCard label="Sustratos Activos" value={kpis.totalItems} icon={BoxIcon} colorClass="text-white" />
+                <MetricCard label="Alertas de Reposición" value={kpis.bajoStock} icon={ExclamationTriangleIcon} colorClass={kpis.bajoStock > 0 ? "text-rose-500 animate-pulse" : "text-emerald-500"} />
             </motion.div>
 
             {/* --- FILTROS --- */}
@@ -254,7 +254,7 @@ const InventarioPage: React.FC = () => {
                     {loading ? (
                         <div className="py-40 flex flex-col items-center justify-center gap-6 border border-white/5 border-dashed rounded-[3rem]">
                             <Loader2Icon className="w-12 h-12 text-liquid-gold/20 animate-spin" />
-                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.8em] animate-pulse">Sincronizando Almacén...</p>
+                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.8em] animate-pulse">Sincronizando Bóveda...</p>
                         </div>
                     ) : filtered.length > 0 ? (
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -336,8 +336,8 @@ const InventarioPage: React.FC = () => {
                             className="py-40 glass-card-luxury text-center flex flex-col items-center justify-center border-dashed border-white/5 rounded-[3rem]"
                         >
                             <BoxIcon className="w-24 h-24 text-slate-900/50 mb-8" />
-                            <h3 className="text-3xl font-black text-slate-800 uppercase tracking-[0.4em] italic">Almacén Desierto</h3>
-                            <p className="text-slate-900 text-[10px] font-black uppercase mt-6 tracking-[0.8em] italic opacity-50">No se detectaron registros de materias primas</p>
+                            <h3 className="text-3xl font-black text-slate-800 uppercase tracking-[0.4em] italic">Bóveda Sin Activos</h3>
+                            <p className="text-slate-900 text-[10px] font-black uppercase mt-6 tracking-[0.8em] italic opacity-50">No se detectaron registros de sustratos industriales</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -390,11 +390,11 @@ const InventarioPage: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-5">
                                 <div className="bg-white/[0.01] p-6 rounded-[2rem] border border-white/5 hover:border-white/10 transition-colors">
-                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Items en Tránsito</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Manifiestos en Tránsito</p>
                                     <p className="text-2xl font-black text-white italic">04 <span className="text-[12px] opacity-20 ml-1 font-bold">Lotes</span></p>
                                 </div>
                                 <div className="bg-white/[0.01] p-6 rounded-[2rem] border border-white/5 hover:border-white/10 transition-colors">
-                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Ocupación Vol.</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Capacidad Operativa</p>
                                     <p className="text-2xl font-black text-white italic">64%</p>
                                 </div>
                             </div>

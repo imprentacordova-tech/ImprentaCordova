@@ -7,19 +7,19 @@ import {
     ShieldCheckIcon, PrinterIcon, ArrowRightIcon, SparklesIcon,
 } from './Icons';
 
-// â”€â”€ Link groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Link groups ──────────────────────────────────────────────────────────────
 const links = {
     servicios: [
-        { label: 'GigantografÃ­as HD', href: '#services' },
+        { label: 'Gigantografías HD', href: '#services' },
         { label: 'Imprenta Autorizada SRI', href: '#sri' },
-        { label: 'GestiÃ³n Tributaria', href: '#sri' },
+        { label: 'Gestión Tributaria', href: '#sri' },
         { label: 'Material Publicitario', href: '#services' },
         { label: 'Acabados Premium', href: '#services' },
-        { label: 'Sellos y EncuadernaciÃ³n', href: '#services' },
+        { label: 'Sellos y Encuadernación', href: '#services' },
     ],
     legal: [
-        { label: 'PolÃ­tica de Privacidad', href: '#' },
-        { label: 'TÃ©rminos de Servicio', href: '#' },
+        { label: 'Política de Privacidad', href: '#' },
+        { label: 'Términos de Servicio', href: '#' },
         { label: 'Accesibilidad', href: '#' },
         { label: 'Mapa del Sitio', href: '#' },
     ],
@@ -47,12 +47,12 @@ const social = [
 ];
 
 const schedule = [
-    { day: 'Lun â€“ Vie', hours: '08:00 â€“ 19:00' },
-    { day: 'SÃ¡bado',    hours: '08:00 â€“ 14:00' },
+    { day: 'Lun – Vie', hours: '08:00 – 19:00' },
+    { day: 'Sábado',    hours: '08:00 – 14:00' },
     { day: 'Domingo',   hours: 'Cerrado' },
 ];
 
-// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sub-components ────────────────────────────────────────────────────────────
 const FooterLink: React.FC<{ href: string; label: string }> = ({ href, label }) => (
     <li>
         <a
@@ -69,7 +69,7 @@ const ColumnTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <h4 className="text-[9px] font-black text-gold-bright uppercase tracking-[0.5em] mb-8 italic">{children}</h4>
 );
 
-// â”€â”€ Main Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Main Footer ────────────────────────────────────────────────────────────────
 const Footer: React.FC = () => {
     const year = new Date().getFullYear();
 
@@ -80,7 +80,7 @@ const Footer: React.FC = () => {
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gold-bright/4 blur-[140px] rounded-full pointer-events-none" />
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-bright/20 to-transparent" />
 
-            {/* â”€â”€ CTA Banner â”€â”€ */}
+            {/* ── CTA Banner ── */}
             <div className="border-b border-white/5 bg-white/[0.015]">
                 <div className="container mx-auto px-6 lg:px-10 py-20">
                     <motion.div
@@ -93,13 +93,13 @@ const Footer: React.FC = () => {
                         <div className="text-center lg:text-left space-y-4">
                             <div className="inline-flex items-center gap-2 text-gold-bright">
                                 <SparklesIcon className="w-4 h-4" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.5em] italic text-gold-bright/60">AtenciÃ³n Pyme Â· Pasaje, El Oro</span>
+                                <span className="text-[9px] font-black uppercase tracking-[0.5em] italic text-gold-bright/60">Atención Pyme · Pasaje, El Oro</span>
                             </div>
                             <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none italic uppercase">
-                                Â¿Listo para <br className="hidden md:block"/> <span className="text-white/20 not-italic font-editorial font-normal">IMPRIMIR?</span>
+                                ¿Listo para <br className="hidden md:block"/> <span className="text-white/20 not-italic font-editorial font-normal">IMPRIMIR?</span>
                             </h2>
                             <p className="text-slate-500 max-w-md font-light text-sm italic">
-                                ContÃ¡ctanos por WhatsApp y recibe tu cotizaciÃ³n en minutos. Protocolos de alta fidelidad garantizados.
+                                Contáctanos por WhatsApp y recibe tu cotización en minutos. Protocolos de alta fidelidad garantizados.
                             </p>
                         </div>
 
@@ -126,7 +126,7 @@ const Footer: React.FC = () => {
                 </div>
             </div>
 
-            {/* â”€â”€ Main grid â”€â”€ */}
+            {/* ── Main grid ── */}
             <div className="container mx-auto px-6 lg:px-10 py-24">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-14 lg:gap-8">
 
@@ -143,7 +143,7 @@ const Footer: React.FC = () => {
                         </div>
 
                         <p className="text-slate-500 leading-relaxed text-sm font-light max-w-sm">
-                            MÃ¡s de 15 aÃ±os transformando ideas en obras maestras grÃ¡ficas. TecnologÃ­a Roland, gestiÃ³n autorizada SRI y el cuidado artesanal de siempre.
+                            Más de 15 años transformando ideas en obras maestras gráficas. Tecnología Roland, gestión autorizada SRI y el cuidado artesanal de siempre.
                         </p>
 
                         {/* Badges */}
@@ -193,8 +193,8 @@ const Footer: React.FC = () => {
                                         <MapPinIcon className="w-3.5 h-3.5 text-gold-bright" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1 italic">DirecciÃ³n</p>
-                                        <p className="text-slate-300 text-sm font-light leading-snug">Calle ColÃ³n e/ Sucre<br />Diagonal al Parque Central<br />Pasaje Â· El Oro, Ecuador</p>
+                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1 italic">Dirección</p>
+                                        <p className="text-slate-300 text-sm font-light leading-snug">Calle Colón e/ Sucre<br />Diagonal al Parque Central<br />Pasaje · El Oro, Ecuador</p>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-4">
@@ -202,7 +202,7 @@ const Footer: React.FC = () => {
                                         <PhoneIcon className="w-3.5 h-3.5 text-gold-bright" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1 italic">TelÃ©fono</p>
+                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1 italic">Teléfono</p>
                                         <a href="tel:+593993083943" className="text-slate-300 text-sm font-light hover:text-white transition-colors">+593 993 083 943</a>
                                     </div>
                                 </li>
@@ -211,7 +211,7 @@ const Footer: React.FC = () => {
                                         <ClockIcon className="w-3.5 h-3.5 text-gold-bright" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 italic">Horario de AtenciÃ³n</p>
+                                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 italic">Horario de Atención</p>
                                         <div className="space-y-1.5">
                                             {schedule.map(({ day, hours }) => (
                                                 <div key={day} className="flex items-center justify-between gap-6 text-[11px]">
@@ -229,11 +229,11 @@ const Footer: React.FC = () => {
                 </div>
             </div>
 
-            {/* â”€â”€ Bottom bar â”€â”€ */}
+            {/* ── Bottom bar ── */}
             <div className="border-t border-white/5">
                 <div className="container mx-auto px-6 lg:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em]">
-                        &copy; {year} Imprenta CÃ³rdova Â· Archivo de Excelencia Â· Pasaje, Ecuador
+                        &copy; {year} Imprenta Córdova · Archivo de Excelencia · Pasaje, Ecuador
                     </p>
                     <div className="flex gap-8">
                         {links.legal.map(l => (

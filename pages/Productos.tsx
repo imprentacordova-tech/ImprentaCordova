@@ -109,38 +109,38 @@ const ProductManagementModal: React.FC<{
                         <div className="flex items-center gap-6">
                             <div className="p-4 bg-liquid-gold rounded-2xl text-black shadow-gold-glow"><TableIcon className="w-8 h-8"/></div>
                             <div>
-                                <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">Product Creation <span className="text-liquid-gold text-4xl">Studio</span></h1>
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-1">Advanced Matrix Generation Protocol</p>
+                                <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">Estudio de Creación <span className="text-liquid-gold text-4xl">Maestro</span></h1>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-1">Protocolo de Generación de Matriz Avanzada</p>
                             </div>
                         </div>
                         <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
-                            <button onClick={() => setMode('SINGLE')} className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'SINGLE' ? 'bg-white text-black shadow-xl' : 'text-slate-500 hover:text-white'}`}>Unitary</button>
-                            <button onClick={() => setMode('MATRIX')} className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'MATRIX' ? 'bg-liquid-gold text-black shadow-xl' : 'text-slate-500 hover:text-white'}`}>Matrix</button>
+                            <button onClick={() => setMode('SINGLE')} className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'SINGLE' ? 'bg-white text-black shadow-xl' : 'text-slate-500 hover:text-white'}`}>Unitario</button>
+                            <button onClick={() => setMode('MATRIX')} className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'MATRIX' ? 'bg-liquid-gold text-black shadow-xl' : 'text-slate-500 hover:text-white'}`}>Matriz</button>
                         </div>
                     </div>
 
                     <div className="flex-grow overflow-hidden flex">
                         <div className="w-1/3 p-10 overflow-y-auto border-r border-white/5 space-y-12 custom-scrollbar bg-white/[0.01]">
                             <div className="space-y-6">
-                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] block">Base Definition</label>
-                                <input type="text" placeholder="CONCEPT NAME" value={baseProduct.nombre} onChange={e => setBaseProduct({...baseProduct, nombre: e.target.value.toUpperCase()})} className="input-atelier w-full text-lg uppercase" />
-                                <textarea placeholder="SPECIFICATIONS & NOTES" value={baseProduct.descripcion} onChange={e => setBaseProduct({...baseProduct, descripcion: e.target.value})} className="input-atelier w-full h-32 text-[10px] uppercase tracking-widest leading-loose" />
+                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] block">Definición Base</label>
+                                <input type="text" placeholder="NOMBRE DEL CONCEPTO" value={baseProduct.nombre} onChange={e => setBaseProduct({...baseProduct, nombre: e.target.value.toUpperCase()})} className="input-atelier w-full text-lg uppercase" />
+                                <textarea placeholder="ESPECIFICACIONES Y NOTAS TÉCNICAS" value={baseProduct.descripcion} onChange={e => setBaseProduct({...baseProduct, descripcion: e.target.value})} className="input-atelier w-full h-32 text-[10px] uppercase tracking-widest leading-loose" />
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Base Rate ($)</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Tarifa Base ($)</label>
                                     <input type="number" value={baseProduct.precio} onChange={e => setBaseProduct({...baseProduct, precio: parseFloat(e.target.value)})} className="input-atelier w-full" />
                                 </div>
                             </div>
 
                             <div className="space-y-6 pt-6 border-t border-white/5">
-                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] block flex items-center gap-2"><PhotoIcon className="w-4 h-4"/> Visual Identity</label>
+                                <label className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] block flex items-center gap-2"><PhotoIcon className="w-4 h-4"/> Identidad Visual</label>
                                 <div className="space-y-4">
                                     <div className="flex gap-4">
                                         <input 
                                             type="text" 
-                                            placeholder="IMAGE URL (E.G. HTTPS://...)" 
+                                            placeholder="URL DE IMAGEN (EJ. HTTPS://...)" 
                                             value={baseProduct.imagenUrl} 
                                             onChange={e => setBaseProduct({...baseProduct, imagenUrl: e.target.value})} 
                                             className="input-atelier flex-grow text-[10px]" 
@@ -149,7 +149,7 @@ const ProductManagementModal: React.FC<{
                                             type="button"
                                             onClick={() => document.getElementById('product-image-upload')?.click()}
                                             className="p-4 bg-white/5 hover:bg-liquid-gold text-slate-500 hover:text-black rounded-xl border border-white/5 transition-all"
-                                            title="Upload Image"
+                                            title="Subir Imagen"
                                         >
                                             <CloudArrowUpIcon className="w-5 h-5" />
                                         </button>
@@ -174,17 +174,17 @@ const ProductManagementModal: React.FC<{
                                     </div>
                                     {baseProduct.imagenUrl && (
                                         <div className="h-32 rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                                            <img src={baseProduct.imagenUrl} className="w-full h-full object-cover opacity-60" alt="Preview" />
+                                            <img src={baseProduct.imagenUrl} className="w-full h-full object-cover opacity-60" alt="Vista Previa" />
                                         </div>
                                     )}
                                 </div>
                             </div>
 
                             <div className="space-y-6 pt-6 border-t border-white/5">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] block flex items-center gap-2"><RulerIcon className="w-4 h-4"/> Technical Specs</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] block flex items-center gap-2"><RulerIcon className="w-4 h-4"/> Atributos Técnicos</label>
                                 <input 
                                     type="text" 
-                                    placeholder="SPECS (COMMA SEPARATED)" 
+                                    placeholder="ESPECIFICACIONES (SEPARADAS POR COMA)" 
                                     value={baseProduct.specs?.join(', ')} 
                                     onChange={e => setBaseProduct({...baseProduct, specs: e.target.value.split(',').map(s => s.trim())})} 
                                     className="input-atelier w-full text-[10px]" 
@@ -233,7 +233,7 @@ const ProductManagementModal: React.FC<{
 
                         <div className="flex-1 bg-black/40 p-10 flex flex-col overflow-hidden">
                             <div className="flex justify-between items-center mb-8">
-                                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Instance <span className="text-liquid-gold">Stream</span> [{generatedPreview.length}]</h3>
+                                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Flujo de <span className="text-liquid-gold">Instancias</span> [{generatedPreview.length}]</h3>
                                 <ActivityIcon className="w-5 h-5 text-liquid-gold/50 animate-pulse" />
                             </div>
                             <div className="flex-grow overflow-y-auto space-y-3 pr-4 custom-scrollbar">
@@ -249,15 +249,15 @@ const ProductManagementModal: React.FC<{
                                         </div>
                                     </motion.div>
                                 ))}
-                                {generatedPreview.length === 0 && <div className="h-full flex flex-col items-center justify-center opacity-10 text-[10px] font-black uppercase tracking-[0.5em] italic">System Idle</div>}
+                                {generatedPreview.length === 0 && <div className="h-full flex flex-col items-center justify-center opacity-10 text-[10px] font-black uppercase tracking-[0.5em] italic">Sistema en Espera</div>}
                             </div>
                         </div>
                     </div>
 
                     <div className="p-10 border-t border-white/5 flex justify-between items-center bg-white/[0.02]">
-                        <button onClick={onClose} className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Terminate Process</button>
+                        <button onClick={onClose} className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Abortar Proceso</button>
                         <button onClick={() => onSave(mode === 'SINGLE' ? (baseProduct as Producto) : generatedPreview)} className="btn-luxury px-20">
-                            {mode === 'SINGLE' ? 'Materialize Concept' : `Initialize ${generatedPreview.length} Units`}
+                            {mode === 'SINGLE' ? 'Materializar Concepto' : `Inicializar ${generatedPreview.length} Unidades`}
                         </button>
                     </div>
                 </motion.div>
@@ -341,87 +341,212 @@ const ProductosPage: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-20 pb-40 px-6 relative">
-            <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
-
-            {/* --- HEADER --- */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 relative z-10">
-                <div className="space-y-6">
-                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-7xl sm:text-8xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        Master <span className="text-gold-gradient drop-shadow-gold italic">Catalog</span>
-                    </motion.h1>
-
-                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.8em] flex items-center gap-4">
-                        <span className="w-16 h-[1px] bg-liquid-gold/30"></span> Specimen Repository Alpha
-                    </p>
-                </div>
-                <button 
-                    onClick={() => { setProductToEdit(null); setIsMgmtModalOpen(true); }} 
-                    className="btn-luxury px-12 py-6 text-sm flex items-center gap-4 group"
-                >
-                    <AddIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
-                    <span>Expand Collection</span>
-                </button>
+      <div className="flex flex-col h-screen bg-[#0a0a0b] text-white">
+        {/* Header Estilo Industrial Elite */}
+        <header className="p-6 border-b border-white/5 bg-black/40 backdrop-blur-xl flex justify-between items-center shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#c9a050] to-[#8a6d29] flex items-center justify-center shadow-lg shadow-[#c9a050]/20">
+              <BoxIcon className="w-7 h-7 text-black" />
             </div>
-
-            {/* --- CONTROLS --- */}
-            <div className="flex flex-col md:flex-row gap-6 relative z-10">
-                <div className="relative group flex-grow">
-                    <SearchIcon className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
-                    <input 
-                        type="text" placeholder="QUERY ARCHIVE..." value={searchTerm} 
-                        onChange={e => setSearchTerm(e.target.value)} 
-                        className="input-atelier w-full pl-20 text-xs font-black uppercase tracking-[0.3em]"
-                    />
-                </div>
-                <select 
-                    value={categoryFilter} 
-                    onChange={e => setCategoryFilter(e.target.value)}
-                    className="input-atelier md:w-80 appearance-none text-xs font-black uppercase tracking-widest cursor-pointer"
-                >
-                    {categories.map(cat => <option key={cat} value={cat} className="bg-brand-dark">{cat.toUpperCase()}</option>)}
-                </select>
+            <div>
+              <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent uppercase italic">
+                Bóveda de Activos <span className="text-liquid-gold">Gráficos</span>
+              </h1>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em]">
+                Logística de Especificaciones Industriales
+              </p>
             </div>
+          </div>
+  
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => { setProductToEdit(null); setIsMgmtModalOpen(true); }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest"
+            >
+              <AddIcon className="w-4 h-4 text-liquid-gold" />
+              Registrar Activo
+            </button>
+            <button 
+              onClick={() => { /* Generador de Matriz logic */ }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gold-gradient hover:brightness-110 text-black rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shadow-lg shadow-gold-glow-sm"
+            >
+              <TableIcon className="w-4 h-4" />
+              Núcleo de Generación
+            </button>
+          </div>
+        </header>
+  
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar de Categorías - Estilo ERP Premium */}
+          <aside className="w-80 border-r border-white/5 bg-black/40 p-8 flex flex-col gap-10 overflow-y-auto shrink-0">
+            <div>
+              <h3 className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] mb-6">
+                Directorio de Activos
+              </h3>
+              <div className="space-y-2">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    className={`w-full text-left px-5 py-4 rounded-2xl transition-all flex items-center justify-between group border ${
+                      categoryFilter === cat 
+                        ? 'bg-gradient-to-br from-[#c9a050]/20 to-transparent text-[#c9a050] border-[#c9a050]/30' 
+                        : 'hover:bg-white/5 text-white/40 border-transparent'
+                    }`}
+                  >
+                    <span className="font-bold text-[11px] uppercase tracking-widest">{cat === 'Todas' ? 'Sistema Integral' : cat}</span>
+                    <span className={`text-[10px] font-black px-3 py-1 rounded-full ${
+                      categoryFilter === cat ? 'bg-[#c9a050] text-black' : 'bg-white/5 text-white/20 group-hover:text-white/40'
+                    }`}>
+                      {cat === 'Todas' ? productos.length : productos.filter(p => p.categoria === cat).length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+  
+            <div className="mt-auto p-6 rounded-3xl bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#c9a050]/10 blur-3xl -mr-12 -mt-12"></div>
+              <div className="flex items-center gap-3 mb-4">
+                <ActivityIcon className="w-5 h-5 text-[#c9a050]" />
+                <span className="text-[11px] font-black uppercase tracking-widest">Sincronización</span>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[10px] font-bold">
+                  <span className="text-white/30 uppercase tracking-tighter">SKUs Registrados</span>
+                  <span className="font-mono text-[#c9a050]">{productos.length}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-bold">
+                  <span className="text-white/30 uppercase tracking-tighter">Estado Base de Datos</span>
+                  <span className="text-green-500 uppercase">Online</span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden mt-4">
+                  <div className="h-full bg-gradient-to-r from-[#c9a050] to-[#8a6d29] w-full rounded-full shadow-[0_0_15px_#c9a05033]" />
+                </div>
+              </div>
+            </div>
+          </aside>
+  
+          {/* Main Content Area */}
+          <main className="flex-1 flex flex-col bg-[#050505] overflow-hidden">
+            {/* Sub-Header con Búsqueda */}
+            <div className="p-6 border-b border-white/5 bg-black/20 flex gap-6 items-center shrink-0">
+              <div className="relative flex-1 group">
+                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/10 group-focus-within:text-[#c9a050] transition-colors" />
+                <input 
+                  type="text"
+                  placeholder="CONSULTAR ARCHIVO POR NOMBRE O SKU..."
+                  className="w-full bg-white/[0.02] border border-white/10 rounded-2xl py-4 pl-16 pr-6 focus:outline-none focus:border-[#c9a050]/40 focus:ring-1 focus:ring-[#c9a050]/10 transition-all text-[11px] font-black uppercase tracking-[0.2em]"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+  
+            {/* Grid de Productos Elite */}
+            <div className="flex-1 overflow-y-auto p-10 scrollbar-thin scrollbar-thumb-white/5">
+              {loading ? (
+                <div className="h-full flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 border-2 border-[#c9a050]/20 border-t-[#c9a050] rounded-full animate-spin"></div>
+                </div>
+              ) : filteredProductos.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-white/10">
+                  <BoxIcon className="w-20 h-20 mb-6 opacity-5" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.5em]">No se encontraron activos</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-10">
+                  {filteredProductos.map((prod) => (
+                    <div 
+                      key={prod.id}
+                      onClick={() => setViewingProduct(prod)}
+                      className="group relative bg-[#0d0d0f] border border-white/5 rounded-3xl p-8 hover:border-[#c9a050]/40 transition-all duration-700 cursor-pointer overflow-hidden shadow-2xl hover:shadow-[#c9a050]/5"
+                    >
+                        {/* Efecto de Luz Hover */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#c9a050]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-            {/* --- GRID --- */}
-            {loading ? (
-                <div className="py-40 text-center"><div className="w-16 h-16 border-4 border-liquid-gold/20 border-t-liquid-gold rounded-full animate-spin mx-auto"></div></div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-10">
-                    {filteredProductos.map(p => <ProductCard key={p.id} producto={p} onViewDetails={() => setViewingProduct(p)} />)}
-                    {filteredProductos.length === 0 && <div className="col-span-full py-40 text-center opacity-10 uppercase font-black tracking-widest italic grayscale">Repository Offline</div>}
+                      <div className="flex justify-between items-start mb-8 relative z-10">
+                        <span className="px-4 py-1.5 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-widest text-[#c9a050] border border-[#c9a050]/10">
+                          {prod.categoria}
+                        </span>
+                        <div className="flex gap-3">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setProductToEdit(prod); setIsMgmtModalOpen(true); }}
+                            className="p-2.5 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-[#c9a050]/20 hover:text-[#c9a050]"
+                          >
+                            <PencilIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+  
+                      <h3 className="font-black text-lg mb-2 group-hover:text-white transition-colors uppercase tracking-tight leading-none italic">
+                        {prod.nombre}
+                      </h3>
+                      <p className="text-white/30 text-[11px] line-clamp-2 min-h-[2.5rem] leading-relaxed mb-8 italic">
+                        {prod.descripcion || 'Repositorio industrial alpha - Especificación protegida.'}
+                      </p>
+  
+                      <div className="flex justify-between items-end pt-8 border-t border-white/5 relative z-10">
+                        <div>
+                          <p className="text-[9px] text-white/10 font-black uppercase tracking-widest mb-1">Costo Base</p>
+                          <p className="text-3xl font-black text-white group-hover:scale-105 transition-transform origin-left italic">
+                            <span className="text-[#c9a050] text-sm mr-1">$</span>
+                            {prod.precio.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#c9a050]/5 rounded-xl border border-[#c9a050]/10">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#c9a050] animate-pulse" />
+                            <span className="text-[9px] font-black text-[#c9a050] uppercase tracking-tighter">Disponible</span>
+                          </div>
+                        </div>
+                      </div>
+  
+                      {/* SRI Indicator */}
+                      {prod.esSRI && (
+                        <div className="absolute top-8 right-8 bg-[#c9a050] text-black text-[8px] font-black px-3 py-1 rounded-sm shadow-xl shadow-[#c9a050]/20 rotate-12">
+                          SRI
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+  
+        <ProductManagementModal isOpen={isMgmtModalOpen} onClose={() => setIsMgmtModalOpen(false)} onSave={handleSave} productToEdit={productToEdit} />
+        
+        <AnimatePresence>
+            {viewingProduct && (
+                <div className="fixed inset-0 z-50 flex justify-center items-center p-6">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/95 backdrop-blur-2xl" onClick={() => setViewingProduct(null)} />
+                    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#0d0d0f] w-full max-w-5xl rounded-[3rem] overflow-hidden flex relative z-10 border border-white/10 shadow-[0_0_100px_rgba(201,160,80,0.1)]">
+                        <div className="w-1/2 bg-black/40 relative group overflow-hidden">
+                            {viewingProduct.imagenUrl ? <img src={viewingProduct.imagenUrl} className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-[2s]" /> : <div className="w-full h-full flex items-center justify-center opacity-5"><BoxIcon className="w-60 h-60" /></div>}
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0f] via-transparent to-transparent"></div>
+                        </div>
+                        <div className="w-1/2 p-20 flex flex-col justify-center">
+                            <span className="text-[10px] font-black text-[#c9a050] uppercase tracking-[0.8em] mb-10 block">{viewingProduct.categoria}</span>
+                            <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none mb-10">{viewingProduct.nombre}</h1>
+                            <p className="text-white/40 text-xl leading-relaxed border-l-2 border-[#c9a050]/20 pl-10 italic mb-12">{viewingProduct.descripcion || 'Especificación técnica de alta gama disponible en el centro de producción alpha.'}</p>
+                            <div className="flex items-center justify-between pt-12 border-t border-white/5">
+                                <div>
+                                    <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em] mb-2">Valor Comercial</p>
+                                    <p className="text-7xl font-black text-white tracking-tighter italic"><span className="text-[#c9a050] text-3xl">$</span>{viewingProduct.precio.toFixed(2)}</p>
+                                </div>
+                                <button onClick={() => setViewingProduct(null)} className="p-8 bg-white/5 hover:bg-[#c9a050] text-[#c9a050] hover:text-black rounded-full transition-all duration-500">
+                                    <SearchIcon className="w-8 h-8 rotate-45" />
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             )}
-
-            <ProductManagementModal isOpen={isMgmtModalOpen} onClose={() => setIsMgmtModalOpen(false)} onSave={handleSave} productToEdit={productToEdit} />
-
-            <AnimatePresence>
-                {viewingProduct && (
-                    <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/98 backdrop-blur-3xl" onClick={() => setViewingProduct(null)} />
-                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="glass-card-luxury w-full max-w-4xl overflow-hidden flex relative z-10 border border-white/10">
-                            <div className="w-1/2 bg-black/60 relative">
-                                {viewingProduct.imagenUrl ? <img src={viewingProduct.imagenUrl} className="w-full h-full object-cover grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-1000" /> : <div className="w-full h-full flex items-center justify-center opacity-10"><BoxIcon className="w-40 h-40" /></div>}
-                                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent"></div>
-                            </div>
-                            <div className="w-1/2 p-16 space-y-10 flex flex-col justify-center">
-                                <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] border border-liquid-gold/20 px-6 py-2 rounded-full inline-block">{viewingProduct.categoria}</span>
-                                <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">{viewingProduct.nombre}</h1>
-                                <p className="text-slate-400 text-lg leading-relaxed border-l-2 border-liquid-gold/30 pl-8 italic">{viewingProduct.descripcion || 'Premium selection from the Cordova Master Archive.'}</p>
-                                <div className="pt-10 border-t border-white/5 items-end flex justify-between">
-                                    <p className="text-6xl font-black text-white tracking-widest italic">{formatCurrency(viewingProduct.precio)}</p>
-                                    <div className="flex gap-4">
-                                        <button onClick={() => { setProductToEdit(viewingProduct); setViewingProduct(null); setIsMgmtModalOpen(true); }} className="p-5 bg-white/5 hover:bg-white text-slate-500 hover:text-black rounded-2xl transition-all"><PencilIcon className="w-6 h-6"/></button>
-                                        <button onClick={() => { deleteProducto(viewingProduct.id); setViewingProduct(null); }} className="p-5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl transition-all"><TrashIcon className="w-6 h-6"/></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </div>
+        </AnimatePresence>
+      </div>
     );
-};
+  };
 
 export default ProductosPage;

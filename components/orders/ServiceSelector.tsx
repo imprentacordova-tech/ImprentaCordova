@@ -103,8 +103,8 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                     type="text" 
                     value={searchTerm} 
                     onChange={e => setSearchTerm(e.target.value)} 
-                    placeholder="¿Qué necesita el cliente? Buscar producto..."
-                    className="w-full pl-13 pr-6 py-4 bg-black/50 border border-white/10 rounded-2xl text-sm font-bold text-white focus:ring-2 focus:ring-liquid-gold/30 outline-none transition-all placeholder:text-slate-500"
+                    placeholder="SISTEMA DE BÚSQUEDA DE ACTIVOS INDUSTRIALES..."
+                    className="w-full pl-13 pr-6 py-4 bg-black/50 border border-white/10 rounded-2xl text-sm font-bold text-white focus:ring-2 focus:ring-liquid-gold/30 outline-none transition-all placeholder:text-slate-500 uppercase tracking-tighter"
                 />
                 {searchTerm && (
                     <button 
@@ -174,7 +174,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                     <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full animate-pulse ${effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'bg-brand-red' : 'bg-liquid-gold'}`} />
                         <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                            Catálogo: {effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'Negocio Popular' : 'General / Emprendedor'}
+                            Bóveda: {effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'Negocio Popular' : 'General / Emprendedor'}
                         </span>
                     </div>
                     {!regimen && (
