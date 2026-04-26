@@ -70,7 +70,7 @@ export const TikTokIcon: React.FC<IconProps> = ({ className = 'w-6 h-6', ...prop
 /** Logo Imprenta Córdova */
 export const CordovaLogo = ({ className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     <img
-        src="https://i.imgur.com/1LeI5Ax.png"
+        src="https://i.imgur.com/bKbCyj2.png"
         alt="Imprenta Córdova"
         className={`object-contain ${className}`}
         loading="lazy"

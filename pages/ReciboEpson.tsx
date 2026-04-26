@@ -5,7 +5,7 @@ import { Trabajo, Cliente } from '../types';
 import { 
     PrinterIcon, ArrowLeftIcon, ArrowDownTrayIcon, 
     WhatsAppIcon, Loader2Icon, FileTextIcon,
-    ShieldCheckIcon, CheckCircleIcon
+    ShieldCheckIcon, CheckCircleIcon, CordovaLogo
 } from '../components/Icons';
 // Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
 declare const html2pdf: any;
@@ -21,11 +21,7 @@ const generateWhatsAppLink = (phone: string, message: string) => {
     return `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
 };
 
-const CordovaLogo = ({ className }: { className?: string }) => (
-    <div className={`flex items-center justify-center bg-black rounded-lg ${className}`}>
-        <span className="text-white font-black text-[10px] italic tracking-tighter">IC</span>
-    </div>
-);
+
 
 /**
  * ReciboEpson — Comprobante de trabajo diseñado para impresora Epson de tinta/impacto
