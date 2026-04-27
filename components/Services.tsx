@@ -272,7 +272,7 @@ const Services: React.FC = () => {
                             className="px-10 py-4 bg-white/5 border border-white/10 text-white rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center gap-3"
                         >
                             <ShieldCheckIcon className="w-4 h-4 text-brand-red" />
-                            Documentos SRI
+                            Trámites SRI
                         </a>
                     </div>
                 </motion.div>

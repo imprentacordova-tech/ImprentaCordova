@@ -49,19 +49,44 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
             
             // Inteligencia de Régimen Elite para categoría SRI:
-            if (activeCategory === 'SRI' && effectiveRegimen) {
-                const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
-                const name = (p.nombre || '').toUpperCase();
-                
-                if (isPopular) {
-                    // Para Negocio Popular: Solo lo que diga Rimpe o Negocio Popular
-                    if (!(name.includes('RIMPE') || name.includes('NEGOCIO POPULAR'))) return false;
-                } else {
-                    // Para General/Emprendedor: 
-                    // 1. NO mostrar nada que diga Negocio Popular o Rimpe
-                    if (name.includes('NEGOCIO POPULAR') || name.includes('RIMPE')) return false;
-                    // 2. NO mostrar Notas de Venta
-                    if (name.includes('NOTA DE VENTA')) return false;
+            if (activeCategory === 'SRI') {
+                // Si estamos en categoría SRI, solo mostrar productos marcados como esSRI
+                if (!p.esSRI) return false;
+
+                if (effectiveRegimen) {
+                    const name = (p.nombre || '').toUpperCase();
+                    const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
+
+                    // LISTA ESTRICTA RIMPE NEGOCIO POPULAR
+                    const docsPopular = [
+                        'FACTURA', 'NOTA DE VENTA', 'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS',
+                        'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 
+                        'BOLETOS O ENTRADAS A ESPECTACULOS PUBLICOS', 'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
+                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS'
+                    ];
+
+                    // LISTA ESTRICTA REGIMEN GENERAL / EMPRENDEDOR
+                    const docsGeneral = [
+                        'FACTURA', 'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
+                        'NOTAS DE DEBITO', 'GUIAS DE REMISION', 
+                        'ACTA ENTREGA - RECEPCIÓN DE BOTELLAS PLASTICAS NO RETORNABLES DE PET',
+                        'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS', 'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
+                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS'
+                    ];
+
+                    const allowedDocs = isPopular ? docsPopular : docsGeneral;
+                    
+                    // Verificamos si el nombre del producto contiene alguna de las frases permitidas
+                    const isBaseTypeAllowed = allowedDocs.some(doc => name.includes(doc));
+                    if (!isBaseTypeAllowed) return false;
+
+                    // Filtro secundario: Asegurar que el tag del nombre coincida con el régimen
+                    if (isPopular) {
+                        if (name.includes('(GENERAL)') || name.includes('(REGIMEN GENERAL')) return false;
+                    } else {
+                        if (name.includes('(RIMPE)') || name.includes('(RIMPE NEGOCIO POPULAR')) return false;
+                        if (name.includes('NOTA DE VENTA')) return false; // Nota de venta prohibida en General
+                    }
                 }
             }
 
@@ -99,129 +124,103 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
     }, []);
 
     return (
-        <div className="space-y-6">
-            {/* Buscador */}
-            <div className="relative group">
-                <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
-                <input 
-                    type="text" 
-                    value={searchTerm} 
-                    onChange={e => setSearchTerm(e.target.value)} 
-                    placeholder="SISTEMA DE BÚSQUEDA DE ACTIVOS INDUSTRIALES..."
-                    className="w-full pl-13 pr-6 py-4 bg-black/50 border border-white/10 rounded-2xl text-sm font-bold text-white focus:ring-2 focus:ring-liquid-gold/30 outline-none transition-all placeholder:text-slate-500 uppercase tracking-tighter"
-                />
-                {searchTerm && (
-                    <button 
-                        onClick={() => setSearchTerm('')}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-lg"
-                    >×</button>
+        <div className="space-y-10 animate-fade-in">
+            {/* --- CABECERA DE FILTROS --- */}
+            <div className="space-y-8 bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-10 opacity-[0.03] scale-150 rotate-12 transition-transform group-hover:scale-[1.7]"><SearchIcon className="w-64 h-64 text-liquid-gold" /></div>
+                
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
+                    <div className="space-y-4 flex-grow max-w-2xl">
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">Centro de Despliegue</p>
+                        <div className="relative group">
+                            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                            <input 
+                                type="text" 
+                                value={searchTerm} 
+                                onChange={e => setSearchTerm(e.target.value)} 
+                                placeholder="Escanear o buscar protocolo..." 
+                                className="w-full pl-16 pr-8 py-6 bg-black/40 border-2 border-white/5 rounded-3xl text-xl font-bold text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic" 
+                            />
+                        </div>
+                    </div>
+
+                    {!forcedCategory && (
+                        <div className="space-y-4 flex-shrink-0">
+                            <label className="text-[10px] text-slate-600 font-black uppercase tracking-widest ml-4 italic">Categorías Industriales</label>
+                            <div className="flex flex-wrap gap-3 bg-black/20 p-2 rounded-[2rem] border border-white/5 no-scrollbar overflow-x-auto max-w-full">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                            activeCategory === cat 
+                                                ? 'bg-liquid-gold text-black shadow-gold-glow-sm scale-105' 
+                                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        {(CATEGORY_EMOJIS as any)[cat] || '📦'} {cat}
+                                        <span className={`ml-3 opacity-40 ${activeCategory === cat ? 'text-black' : 'text-slate-400'}`}>
+                                            [{categoryCounts[cat] || 0}]
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* --- SELECTOR DE RÉGIMEN PARA SRI --- */}
+                {(activeCategory === 'SRI' || forcedCategory === 'SRI') && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                        className="pt-6 border-t border-white/5 space-y-6"
+                    >
+                        <div className="flex items-center justify-between flex-wrap gap-6">
+                            <div className="space-y-2">
+                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic flex items-center gap-2">
+                                    <ShieldCheckIcon className="w-3 h-3 text-brand-red"/> Protocolo de Régimen Automático
+                                </p>
+                                <p className="text-[9px] text-slate-700 font-bold uppercase tracking-widest max-w-md">
+                                    {effectiveRegimen 
+                                        ? `Aplicando filtros para ${effectiveRegimen.toUpperCase()} (Sincronización Inteligente)`
+                                        : 'Seleccione un régimen para optimizar el catálogo de documentos fiscales.'}
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5">
+                                {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
+                                    <button
+                                        key={reg}
+                                        onClick={() => setManualRegimen(reg)}
+                                        className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                            effectiveRegimen === reg 
+                                                ? 'bg-brand-red text-white shadow-red-glow' 
+                                                : 'text-slate-600 hover:text-slate-400'
+                                        }`}
+                                    >
+                                        {reg}
+                                    </button>
+                                ))}
+                                {manualRegimen && (
+                                    <button 
+                                        onClick={() => setManualRegimen(null)}
+                                        className="px-3 text-slate-700 hover:text-brand-red transition-colors"
+                                    >
+                                        &times;
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
                 )}
             </div>
 
-            {/* Pestañas de Categorías - Estilo McDonald's */}
-            {!forcedCategory && (
-                <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar">
-                    {categories.map((cat) => {
-                        return (
-                            <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat)}
-                                className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border ${
-                                    activeCategory === cat 
-                                    ? 'bg-liquid-gold text-black border-liquid-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]' 
-                                    : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
-                                }`}
-                            >
-                                <span className="text-base">{CATEGORY_EMOJIS[cat] || '📦'}</span>
-                                {cat}
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                                    activeCategory === cat ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'
-                                }`}>{categoryCounts[cat] || 0}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Selector de Régimen (Modo Carpeta) si es SRI y no se conoce el régimen */}
-            {activeCategory === 'SRI' && !effectiveRegimen && !searchTerm && (
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4"
-                >
-                    <button 
-                        onClick={() => setManualRegimen(Regimen.NEGOCIO_POPULAR)}
-                        className="p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-brand-red/50 hover:bg-brand-red/5 transition-all group text-left"
-                    >
-                        <div className="w-12 h-12 rounded-2xl bg-brand-red/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <ShieldCheckIcon className="w-6 h-6 text-brand-red" />
-                        </div>
-                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">RIMPE Negocio Popular</h3>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase leading-relaxed">Solo Notas de Venta y Documentos de Régimen Simplificado.</p>
-                    </button>
-
-                    <button 
-                        onClick={() => setManualRegimen(Regimen.GENERAL)}
-                        className="p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-liquid-gold/50 hover:bg-liquid-gold/5 transition-all group text-left"
-                    >
-                        <div className="w-12 h-12 rounded-2xl bg-liquid-gold/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <SparklesIcon className="w-6 h-6 text-liquid-gold" />
-                        </div>
-                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Régimen General / Emprendedor</h3>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase leading-relaxed">Facturas, Notas de Crédito, Guías de Remisión y más.</p>
-                    </button>
-                </motion.div>
-            )}
-
-            {/* Cabecera de Carpeta Seleccionada */}
-            {activeCategory === 'SRI' && effectiveRegimen && !searchTerm && (
-                <div className="flex items-center justify-between px-2 py-1">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full animate-pulse ${effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'bg-brand-red' : 'bg-liquid-gold'}`} />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                            Bóveda: {effectiveRegimen === Regimen.NEGOCIO_POPULAR ? 'Negocio Popular' : 'General / Emprendedor'}
-                        </span>
-                    </div>
-                    {!regimen && (
-                        <button 
-                            onClick={() => setManualRegimen(null)}
-                            className="text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-tighter transition-colors"
-                        >
-                            ← Cambiar Régimen
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* Grilla de Productos - Estilo Menú Visual Compacto */}
+            {/* --- GRID DE PRODUCTOS --- */}
             <div 
                 ref={scrollRef}
-                className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar p-1 transition-all ${
-                    activeCategory === 'SRI' && !effectiveRegimen && !searchTerm ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
-                }`}
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-h-[1000px] overflow-y-auto pr-4 custom-scrollbar pb-20"
             >
                 <AnimatePresence mode="popLayout">
-                    {filtered.map(p => {
-                        const isSelected = selectedId === p.id;
-                        return (
-                            <motion.button
-                                layout
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.2 }}
-                                key={p.id}
-                                onClick={() => onSelect(p)}
-                                className={`relative rounded-2xl border transition-all text-left flex flex-col overflow-hidden group min-h-[160px] ${
-                                    isSelected
-                                    ? 'border-liquid-gold shadow-[0_0_25px_rgba(212,175,55,0.25)] ring-1 ring-liquid-gold/50' 
-                                    : 'border-white/5 hover:border-white/20 bg-black/40'
-                                }`}
-                            >
-                                {/* Imagen del producto - Compacta */}
-                                <div className={`relative w-full h-20 overflow-hidden ${isSelected ? 'bg-liquid-gold/10' : 'bg-white/[0.02]'}`}>
-                                    {p.imagenUrl ? (
                                         <img 
                                             src={p.imagenUrl} 
                                             alt={p.nombre}

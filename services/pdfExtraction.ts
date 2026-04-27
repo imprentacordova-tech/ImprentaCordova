@@ -136,7 +136,26 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
       regimen: regimen,
       obligaciones_tributarias: textOnly.includes("SEMESTRAL") ? "semestral" : "mensual",
       lista_obligaciones: listaObligaciones,
-      actividad_economica: textOnly.match(/ACTIVIDADES ECONÓMICAS\s*([^:]+?)(?=\s*(?:ESTABLECIMIENTOS|OBLIGACIONES|$))/)?.[1]?.trim() || '',
+    // --- 6. ACTIVIDADES ECONÓMICAS (REFINADO) ---
+    // Buscamos líneas que empiecen con • o tengan el patrón Código - Descripción
+    const lines = fullText.split('|').map(l => l.trim()).filter(Boolean);
+    const activityLines = lines.filter(l => l.startsWith('•') || /^\d{6,7}\s*-/.test(l));
+    const actividadEconomica = activityLines.length > 0 
+        ? activityLines.map(a => a.replace(/^•\s*/, '').trim()).join('\n')
+        : textOnly.match(/ACTIVIDADES ECONÓMICAS\s*([^:]+?)(?=\s*(?:ESTABLECIMIENTOS|OBLIGACIONES|$))/)?.[1]?.trim() || '';
+
+    return {
+      apellidos_nombres: nombres || 'CONTRIBUYENTE',
+      ruc: ruc,
+      direccion: direccionFinal || 'Dirección no detectada',
+      contacto: {
+        email: validEmail || '',
+        celular: validPhone || ''
+      },
+      regimen: regimen,
+      obligaciones_tributarias: textOnly.includes("SEMESTRAL") ? "semestral" : "mensual",
+      lista_obligaciones: listaObligaciones,
+      actividad_economica: actividadEconomica,
       es_artesano: textOnly.includes("ARTESANO") && !textOnly.includes("NO REGISTRA"),
       cantidad_establecimientos: parseInt(textOnly.match(/ESTABLECIMIENTOS\s*ABIERTOS\s*(\d+)/)?.[1] || '1'),
       isCertificate: textOnly.includes("CERTIFICADO DE RUC")

@@ -17,6 +17,7 @@ import ProductConfigurator from '../components/orders/ProductConfigurator';
 import PhotoCapture from '../components/orders/PhotoCapture';
 import PriceCalculatorDisplay from '../components/orders/PriceCalculatorDisplay';
 import { CommercialFlow } from '../components/orders/CommercialFlow';
+import SriSolicitudStep from '../components/orders/SriSolicitudStep';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
@@ -46,6 +47,8 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriMode, setSriMode] = useState<'NUEVO' | 'RENOVACION'>('RENOVACION');
     const [sriClave, setSriClave] = useState('');
     const [sriActividad, setSriActividad] = useState('');
+    const [sriEstablecimiento, setSriEstablecimiento] = useState('001');
+    const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
     const [quickName, setQuickName] = useState('');
 
     // Auto-scroll logic
@@ -56,20 +59,23 @@ const NuevoPedidoPage: React.FC = () => {
 
     // Validation logic for current step
     const canAdvance = () => {
-        if (step === 1) return missionCategory !== null;
+        if (step === 1) return !!missionCategory;
         
         if (missionCategory === 'SRI') {
             if (step === 2) return !!cliente;
-            if (step === 3) return items.length > 0;
+            if (step === 3) return !!sriActividad; 
+            if (step === 4) return items.length > 0;
+            if (step === 5) return true;
         } else if (missionCategory === 'COMERCIAL') {
             if (step === 2) return items.length > 0;
-            if (step === 3) return true; 
+            if (step === 3) return !!cliente;
+            if (step === 4) return precio > 0;
         } else if (missionCategory === 'EXPRESS') {
-            if (step === 2) return !!detalle.trim();
+            if (step === 2) return !!detalle.trim() && precio > 0;
+            if (step === 4) return true;
         }
         
-        if (step === 4) return items.length > 0 && items.reduce((acc, i) => acc + (i.precioFinal || 0), 0) > 0;
-        return true;
+        return false;
     };
 
     const handleCreateOrder = async () => {
@@ -102,26 +108,34 @@ const NuevoPedidoPage: React.FC = () => {
         try {
             let finalCliente = cliente;
             if (!finalCliente) {
-                finalCliente = await addCliente({
-                    nombre: (quickName || 'CONSUMIDOR FINAL').toUpperCase(),
-                    cedula: '9999999999',
-                    regimen: 'General',
-                    direccion: 'Pasaje, El Oro'
-                });
+                // Primero intentamos buscar si ya existe el Consumidor Final (9999999999)
+                const existingCF = clientes.find(c => c.cedula === '9999999999');
+                if (existingCF) {
+                    finalCliente = existingCF;
+                } else {
+                    finalCliente = await addCliente({
+                        nombre: (quickName || 'CONSUMIDOR FINAL').toUpperCase(),
+                        cedula: '9999999999',
+                        regimen: 'General',
+                        direccion: 'Pasaje, El Oro'
+                    });
+                }
             }
 
+            if (!finalCliente) throw new Error("No se pudo establecer un cliente para el pedido.");
+
             // Create multiple jobs for divided orders
-            const results = await Promise.all(finalItems.map(async (item) => {
+            const results = await Promise.all(finalItems.map(async (item, index) => {
                 return await addTrabajo({
                     titular: finalCliente!.nombre,
-                    clienteId: finalCliente!.id || '',
+                    clienteId: finalCliente!.id,
                     servicio: item.nombre || 'Servicio General',
                     detalle: isSriOrder 
-                        ? `[SRI ${sriMode}] ${sriActividad} | ${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}` 
+                        ? `[SRI ${sriMode}] ${sriActividad} | EST: ${sriEstablecimiento} | PTO: ${sriPuntoEmision} | CLAVE: ${sriClave || 'PENDIENTE'} | ${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}` 
                         : `${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}`,
                     precio: item.precioFinal,
-                    abono: items.indexOf(item) === 0 ? abono : 0, // Only apply abono to the first job for now, or split it
-                    saldo: item.precioFinal - (items.indexOf(item) === 0 ? abono : 0),
+                    abono: index === 0 ? abono : 0, // Only apply abono to the first job
+                    saldo: item.precioFinal - (index === 0 ? abono : 0),
                     prioridad,
                     estado: TrabajoEstado.PENDIENTE,
                     fechaEntrada: new Date().toISOString(),
@@ -137,13 +151,13 @@ const NuevoPedidoPage: React.FC = () => {
                 currentUser.nombre, 
                 currentUser.rol || 'Administrador', 
                 'CREAR_ORDEN', 
-                `Pedido Dividido (${items.length} ítems) creado para ${finalCliente.nombre}`, 
+                `Pedido (${finalItems.length} ítems) creado para ${finalCliente.nombre}`, 
                 'Ventas'
             ).catch(() => {});
             
             refreshData().catch(() => {});
             setCreatedTrabajoId(results[0].id); // Use first job ID for receipts
-            setStep(5); 
+            setStep(isSriOrder ? 6 : 5); 
         } catch (err: any) {
             console.error('[NuevoPedido] Error:', err);
             setError(err.message || 'Error al procesar la orden.');
@@ -163,10 +177,21 @@ const NuevoPedidoPage: React.FC = () => {
             ];
         }
 
+        if (missionCategory === 'SRI') {
+            return [
+                { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
+                { id: 2, label: 'Identidad', icon: UserIcon },
+                { id: 3, label: 'Trámites SRI', icon: ShieldCheckIcon },
+                { id: 4, label: 'Servicios SRI', icon: BookOpenIcon },
+                { id: 5, label: 'Capital', icon: CreditCardIcon },
+                { id: 6, label: 'Despliegue', icon: RocketLaunchIcon }
+            ];
+        }
+
         return [
             { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-            { id: 2, label: missionCategory === 'SRI' ? 'Identidad' : 'Catálogo Comercial', icon: missionCategory === 'SRI' ? UserIcon : BookOpenIcon },
-            { id: 3, label: missionCategory === 'SRI' ? 'Catálogo Fiscal' : 'Identidad', icon: missionCategory === 'SRI' ? ShieldCheckIcon : UserIcon },
+            { id: 2, label: 'Catálogo Comercial', icon: BookOpenIcon },
+            { id: 3, label: 'Identidad', icon: UserIcon },
             { id: 4, label: 'Capital', icon: CreditCardIcon },
             { id: 5, label: 'Despliegue', icon: RocketLaunchIcon }
         ];
@@ -232,61 +257,69 @@ const NuevoPedidoPage: React.FC = () => {
                                     <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione el flujo de despliegue industrial adecuado.</p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="flex flex-col md:flex-row items-stretch justify-center gap-0 relative">
+                                    {/* Línea Vertical 1 */}
+                                    <div className="hidden md:block absolute left-[33.33%] inset-y-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent z-0"></div>
+                                    <div className="hidden md:block absolute left-[33.33%] inset-y-20 w-[2px] bg-liquid-gold/10 -ml-[5px] blur-[1px] z-0"></div>
+                                    
+                                    {/* Línea Vertical 2 */}
+                                    <div className="hidden md:block absolute right-[33.33%] inset-y-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent z-0"></div>
+                                    <div className="hidden md:block absolute right-[33.33%] inset-y-20 w-[2px] bg-liquid-gold/10 -mr-[5px] blur-[1px] z-0"></div>
+
                                     {/* SRI */}
                                     <motion.button 
-                                        whileHover={{ y: -10, scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
+                                        whileHover={{ backgroundColor: 'rgba(225, 29, 72, 0.05)' }}
                                         onClick={() => handleSelectCategory('SRI')}
-                                        className="group relative h-72 bg-brand-dark/50 backdrop-blur-3xl rounded-[2.5rem] border border-brand-red/30 hover:border-brand-red transition-all overflow-hidden p-8 text-left shadow-luxury"
+                                        className="flex-1 group relative p-12 lg:p-16 text-center flex flex-col items-center gap-10 transition-all duration-500 z-10 border-b md:border-b-0 md:border-r border-white/5 last:border-0"
                                     >
-                                        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-red/10 rounded-full blur-[60px] -mr-24 -mt-24 transition-opacity group-hover:opacity-100 opacity-50"></div>
-                                        <div className="relative z-10 h-full flex flex-col justify-between">
-                                            <div className="w-14 h-14 bg-brand-red rounded-xl flex items-center justify-center text-white shadow-red-glow">
-                                                <ShieldCheckIcon className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Trámites<br/><span className="text-brand-red">SRI</span></h3>
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Facturas, Notas de Venta, Retenciones. Requiere RUC.</p>
-                                            </div>
+                                        <div className="w-24 h-24 bg-brand-red/10 rounded-3xl flex items-center justify-center text-brand-red border border-brand-red/20 group-hover:scale-110 group-hover:bg-brand-red group-hover:text-white transition-all duration-500 shadow-xl group-hover:shadow-red-glow">
+                                            <ShieldCheckIcon className="w-12 h-12" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <h3 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Documentos<br/><span className="text-brand-red">SRI</span></h3>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto opacity-60 group-hover:opacity-100 transition-opacity">Protocolos autorizados y validez fiscal industrial.</p>
+                                        </div>
+                                        <div className="mt-4 flex items-center gap-2 text-[8px] font-black text-brand-red/40 group-hover:text-brand-red tracking-[0.4em] uppercase transition-colors italic">
+                                            <span>Iniciar Expediente</span>
+                                            <ArrowRightIcon className="w-3 h-3 translate-x-0 group-hover:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>
 
                                     {/* COMERCIAL */}
                                     <motion.button 
-                                        whileHover={{ y: -10, scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
+                                        whileHover={{ backgroundColor: 'rgba(212, 175, 55, 0.03)' }}
                                         onClick={() => handleSelectCategory('COMERCIAL')}
-                                        className="group relative h-72 bg-brand-dark/50 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 hover:border-liquid-gold/50 transition-all overflow-hidden p-8 text-left shadow-luxury"
+                                        className="flex-1 group relative p-12 lg:p-16 text-center flex flex-col items-center gap-10 transition-all duration-500 z-10 border-b md:border-b-0 md:border-r border-white/5 last:border-0"
                                     >
-                                        <div className="absolute top-0 right-0 w-48 h-48 bg-liquid-gold/5 rounded-full blur-[60px] -mr-24 -mt-24 transition-opacity group-hover:opacity-100 opacity-50"></div>
-                                        <div className="relative z-10 h-full flex flex-col justify-between">
-                                            <div className="w-14 h-14 bg-liquid-gold rounded-xl flex items-center justify-center text-black shadow-gold-glow">
-                                                <BookOpenIcon className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Trabajos<br/><span className="text-liquid-gold">Comerciales</span></h3>
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Tarjetas, Volantes, Gigantografías y más.</p>
-                                            </div>
+                                        <div className="w-24 h-24 bg-liquid-gold/10 rounded-3xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 group-hover:scale-110 group-hover:bg-liquid-gold group-hover:text-black transition-all duration-500 shadow-xl group-hover:shadow-gold-glow">
+                                            <BookOpenIcon className="w-12 h-12" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <h3 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Flujo<br/><span className="text-liquid-gold">Comercial</span></h3>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto opacity-60 group-hover:opacity-100 transition-opacity">Tarjetas, publicidad y acabados gráficos de lujo.</p>
+                                        </div>
+                                        <div className="mt-4 flex items-center gap-2 text-[8px] font-black text-liquid-gold/40 group-hover:text-liquid-gold tracking-[0.4em] uppercase transition-colors italic">
+                                            <span>Abrir Catálogo</span>
+                                            <ArrowRightIcon className="w-3 h-3 translate-x-0 group-hover:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>
 
                                     {/* EXPRESS */}
                                     <motion.button 
-                                        whileHover={{ y: -10, scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
+                                        whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
                                         onClick={() => handleSelectCategory('EXPRESS')}
-                                        className="group relative h-72 bg-brand-dark/50 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 hover:border-blue-500/50 transition-all overflow-hidden p-8 text-left shadow-luxury"
+                                        className="flex-1 group relative p-12 lg:p-16 text-center flex flex-col items-center gap-10 transition-all duration-500 z-10"
                                     >
-                                        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-[60px] -mr-24 -mt-24 transition-opacity group-hover:opacity-100 opacity-50"></div>
-                                        <div className="relative z-10 h-full flex flex-col justify-between">
-                                            <div className="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                                                <BoltIcon className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none mb-2">Despliegue<br/><span className="text-blue-400">Inmediato</span></h3>
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Copias, Plastificados, Diseños de respuesta rápida.</p>
-                                            </div>
+                                        <div className="w-24 h-24 bg-blue-500/10 rounded-3xl flex items-center justify-center text-blue-500 border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-500 shadow-xl group-hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                                            <BoltIcon className="w-12 h-12" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <h3 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Despliegue<br/><span className="text-blue-400">Inmediato</span></h3>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto opacity-60 group-hover:opacity-100 transition-opacity">Producción rápida para servicios de entrega al instante.</p>
+                                        </div>
+                                        <div className="mt-4 flex items-center gap-2 text-[8px] font-black text-blue-500/40 group-hover:text-blue-500 tracking-[0.4em] uppercase transition-colors italic">
+                                            <span>Modo Turbo</span>
+                                            <ArrowRightIcon className="w-3 h-3 translate-x-0 group-hover:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>
                                 </div>
@@ -307,7 +340,13 @@ const NuevoPedidoPage: React.FC = () => {
                                             <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Validación obligatoria de datos tributarios para emisión autorizada.</p>
                                         </div>
                                         <ClientSelector 
-                                            onSelect={(c) => { setCliente(c); if(c) setStep(3); }} 
+                                            onSelect={(c) => { 
+                                                setCliente(c); 
+                                                if(c) {
+                                                    if (missionCategory === 'SRI') setStep(3);
+                                                    else setStep(3);
+                                                } 
+                                            }} 
                                             selectedId={cliente?.id} 
                                             hideQuickButtons={true}
                                         />
@@ -345,7 +384,13 @@ const NuevoPedidoPage: React.FC = () => {
                                                         saldo: trabajo.saldo || 0,
                                                         prioridad: 'Normal',
                                                         estado: TrabajoEstado.PENDIENTE,
-                                                        fechaEntrada: new Date().toISOString(),
+                                                        items: items,
+                                                        esSRI: missionCategory === 'SRI',
+                                                        sriModo: sriMode,
+                                                        sriClave: sriClave,
+                                                        sriActividad: sriActividad,
+                                                        establecimiento: sriEstablecimiento,
+                                                        puntoEmision: sriPuntoEmision,
                                                         responsable: currentUser.nombre,
                                                         origen: 'Local',
                                                         esSRI: false
@@ -363,24 +408,102 @@ const NuevoPedidoPage: React.FC = () => {
                                         />
                                     </div>
                                 ) : (
+                                    <div className="space-y-8 animate-fade-in">
+                                        <div className="space-y-12">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-4">Manifiesto de Misión</label>
+                                                    <textarea 
+                                                        value={detalle} onChange={e => setDetalle(e.target.value)}
+                                                        placeholder="Ej: 10 Copias a color, 2 anillados..."
+                                                        className="w-full h-48 p-8 bg-black/60 border-2 border-white/5 rounded-[2.5rem] text-white text-xl font-bold outline-none focus:border-liquid-gold/50 transition-all placeholder:text-slate-800 italic"
+                                                    />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-4">Valor Industrial Total</label>
+                                                    <div className="relative h-48 bg-black/60 border-2 border-white/5 rounded-[2.5rem] flex items-center justify-center group focus-within:border-liquid-gold/50 transition-all">
+                                                        <span className="text-4xl font-black text-liquid-gold italic mr-4">$</span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={precio || ''} 
+                                                            onChange={e => setPrecio(Number(e.target.value))}
+                                                            placeholder="0.00"
+                                                            className="bg-transparent text-6xl font-black text-white outline-none w-48 text-center placeholder:text-slate-900 italic"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <button 
+                                                disabled={!detalle.trim() || precio <= 0}
+                                                onClick={() => setStep(4)} 
+                                                className="w-full py-8 bg-liquid-gold text-black font-black uppercase tracking-[0.3em] rounded-3xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-6 shadow-gold-glow disabled:opacity-20 italic"
+                                            >
+                                                Sincronizar con Caja <ArrowRightIcon className="w-6 h-6"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </motion.div>
+                                 {/* PASO 3: SOLICITUD (SRI) o ESPECIFICACIÓN (OTRO) */}
+                        {step === 3 && (
+                            <motion.div 
+                                key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                            >
+                                {missionCategory === 'SRI' ? (
+                                    cliente && (
+                                        <SriSolicitudStep 
+                                            cliente={cliente}
+                                            initialData={{
+                                                actividad: sriActividad,
+                                                modo: sriMode,
+                                                clave: sriClave,
+                                                establecimiento: sriEstablecimiento,
+                                                puntoEmision: sriPuntoEmision
+                                            }}
+                                            onBack={() => setStep(2)}
+                                            onComplete={(data) => {
+                                                setSriActividad(data.actividad);
+                                                setSriMode(data.modo);
+                                                setSriClave(data.clave);
+                                                setSriEstablecimiento(data.establecimiento);
+                                                setSriPuntoEmision(data.puntoEmision);
+                                                setStep(4);
+                                            }}
+                                        />
+                                    )
+                                ) : (
                                     <div className="space-y-12">
-                                        <div className="space-y-8">
-                                            <textarea 
-                                                value={detalle} onChange={e => setDetalle(e.target.value)}
-                                                placeholder="Ej: 10 Copias a color, 2 anillados..."
-                                                className="w-full h-48 p-8 bg-black/60 border-2 border-white/5 rounded-[2rem] text-white text-xl outline-none focus:border-blue-500/50 transition-all"
-                                            />
-                                            <button onClick={() => setStep(4)} className="w-full py-6 bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-blue-400 transition-all flex items-center justify-center gap-4">Continuar a Pago Rápido <ArrowRightIcon className="w-5 h-5"/></button>
+                                        <div className="space-y-4">
+                                            <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">ESPECIFICACIÓN COMERCIAL</p>
+                                            <h2 className="text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Detalles del <span className="text-gold-gradient">Trabajo</span></h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                            <div className="space-y-8">
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">¿Qué estamos fabricando?</label>
+                                                    <textarea 
+                                                        value={detalle}
+                                                        onChange={e => setDetalle(e.target.value)}
+                                                        placeholder="Describe las especificaciones técnicas..."
+                                                        className="w-full h-48 bg-black/40 border-2 border-white/10 rounded-[2rem] p-8 text-white font-bold outline-none focus:border-liquid-gold transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-8">
+                                                <PriceCalculatorDisplay onSelectPrice={setPrecio} currentPrice={precio} />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </motion.div>
                         )}
 
-                        {/* PASO 3: ESPECIFICACIÓN (SRI) o IDENTIDAD (COMERCIAL) */}
-                        {step === 3 && (
+                        {/* PASO 4: PRODUCTOS (SRI) o COBRO (OTRO) */}
+                        {step === 4 && (
                             <motion.div 
-                                key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 {missionCategory === 'SRI' ? (
@@ -435,96 +558,95 @@ const NuevoPedidoPage: React.FC = () => {
                                                     <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                                                     Agregar Otro Producto Fiscal
                                                 </button>
-                                                
-                                                <div className="bg-brand-red/5 p-8 rounded-[2rem] border border-brand-red/20 space-y-6">
-                                                    <div className="flex items-center gap-4 text-brand-red">
-                                                        <ShieldCheckIcon className="w-6 h-6" />
-                                                        <h3 className="font-black uppercase tracking-widest text-sm">Validación Tributaria</h3>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-6">
-                                                        <div className="space-y-2">
-                                                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Modo</label>
-                                                            <div className="flex bg-black/40 p-1 rounded-xl">
-                                                                {['NUEVO', 'RENOVACION'].map(m => (
-                                                                    <button key={m} onClick={() => setSriMode(m as any)} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${sriMode === m ? 'bg-brand-red text-white' : 'text-slate-600'}`}>{m}</button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Clave SRI</label>
-                                                            <input type="text" value={sriClave} onChange={e => setSriClave(e.target.value)} className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none focus:border-brand-red" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Actividad Económica</label>
-                                                        <select value={sriActividad} onChange={e => setSriActividad(e.target.value)} className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none">
-                                                            <option value="">Seleccionar actividad...</option>
-                                                            {cliente?.actividades?.split('|').map((a, i) => <option key={i} value={a}>{a}</option>)}
-                                                        </select>
-                                                    </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    /* COBRO (EXPRESS/COMERCIAL) */
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        <div className="space-y-10">
+                                            <div className="space-y-4 mb-10">
+                                                <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA FINANCIERA</p>
+                                                <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Cierre de <span className="text-gold-gradient">Caja</span></h2>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Abono Inicial</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500 text-3xl font-black italic">$</span>
+                                                    <input type="number" value={abono} onChange={e => setAbono(Number(e.target.value))} className="w-full bg-black/60 border-2 border-white/5 pl-14 py-8 rounded-[2rem] text-4xl font-black text-emerald-500 outline-none focus:border-emerald-500/30 italic" />
                                                 </div>
-
-                                                <button onClick={() => setStep(4)} className="w-full py-8 bg-white text-black font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-luxury hover:bg-brand-red hover:text-white transition-all text-[13px] italic flex items-center justify-center gap-5">Confirmar Protocolo Fiscal <ArrowRightIcon className="w-5 h-5" /></button>
                                             </div>
-                                        )}
-                                    </div>
-                                ) : null}
-                            </motion.div>
-                        )}
-
-                        {/* PASO 4: CAPITAL */}
-                        {step === 4 && (
-                            <motion.div 
-                                key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
-                            >
-                                <div className="space-y-4 mb-14">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA FINANCIERA</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Control de <span className="text-gold-gradient">Capital</span></h2>
-                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Gestión de pagos, abonos y captura de referencias visuales.</p>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <div className="space-y-10">
-                                        {(!cliente || missionCategory === 'EXPRESS') && (
-                                            <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-4">
-                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Nombre Rápido para el Recibo</label>
-                                                <input type="text" value={quickName} onChange={e => setQuickName(e.target.value)} placeholder="Ej: CONSUMIDOR FINAL" className="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white font-black uppercase tracking-widest outline-none focus:border-liquid-gold transition-colors" />
-                                                {missionCategory === 'EXPRESS' && <p className="text-[9px] text-blue-400 uppercase tracking-widest font-bold ml-2">Modo Express: Se creará como consumidor final automáticamente si no especifica datos.</p>}
-                                            </div>
-                                        )}
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Total a Cobrar (Modificable)</label>
-                                            <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-white text-3xl font-black italic">$</span>
-                                                <input type="number" value={precio} onChange={e => setPrecio(Number(e.target.value))} className="w-full bg-black/60 border-2 border-white/5 pl-14 py-8 rounded-[2rem] text-4xl font-black text-white outline-none focus:border-liquid-gold/30 transition-colors italic" />
+                                            <div className="bg-liquid-gold/10 p-8 rounded-[2.5rem] flex justify-between items-center border border-liquid-gold/20">
+                                                <span className="text-[10px] text-liquid-gold font-black uppercase tracking-widest">Saldo Pendiente</span>
+                                                <span className="text-4xl font-black text-white italic tracking-tighter">${Math.max(0, precio - abono).toFixed(2)}</span>
                                             </div>
                                         </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Abono Inicial</label>
-                                            <div className="relative">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500 text-3xl font-black italic">$</span>
-                                                <input type="number" value={abono} onChange={e => setAbono(Number(e.target.value))} className="w-full bg-black/60 border-2 border-white/5 pl-14 py-8 rounded-[2rem] text-4xl font-black text-emerald-500 outline-none focus:border-emerald-500/30 italic" />
-                                            </div>
-                                        </div>
-                                        <div className="bg-liquid-gold/10 p-8 rounded-[2.5rem] flex justify-between items-center border border-liquid-gold/20">
-                                            <span className="text-[10px] text-liquid-gold font-black uppercase tracking-widest">Saldo Pendiente</span>
-                                            <span className="text-4xl font-black text-white italic tracking-tighter">${Math.max(0, precio - abono).toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-6">
-                                        <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Captura de Diseño / Referencia</label>
-                                        <div className="bg-black/40 p-4 rounded-[3rem] border border-white/5 min-h-[350px]">
+                                        <div className="space-y-6">
+                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Referencia Visual</label>
                                             <PhotoCapture onImageCaptured={setImageFile} />
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </motion.div>
                         )}
 
-                        {/* PASO 5: FINALIZADO */}
+                        {/* PASO 5: COBRO (SRI) o FINALIZADO (OTRO) */}
                         {step === 5 && (
+                            missionCategory === 'SRI' ? (
+                                <motion.div 
+                                    key="step5" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
+                                    className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        <div className="space-y-10">
+                                            <div className="space-y-4 mb-10">
+                                                <p className="text-[9px] md:text-[11px] font-black text-emerald-500 uppercase tracking-[0.8em] italic">ETAPA FINANCIERA</p>
+                                                <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Cierre de <span className="text-emerald-500">Protocolo</span></h2>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Abono Inicial</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500 text-3xl font-black italic">$</span>
+                                                    <input type="number" value={abono} onChange={e => setAbono(Number(e.target.value))} className="w-full bg-black/60 border-2 border-white/5 pl-14 py-8 rounded-[2rem] text-4xl font-black text-emerald-500 outline-none focus:border-emerald-500/30 italic" />
+                                                </div>
+                                            </div>
+                                            <div className="bg-liquid-gold/10 p-8 rounded-[2.5rem] flex justify-between items-center border border-liquid-gold/20">
+                                                <span className="text-[10px] text-liquid-gold font-black uppercase tracking-widest">Saldo Pendiente</span>
+                                                <span className="text-4xl font-black text-white italic tracking-tighter">${Math.max(0, precio - abono).toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6">
+                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Referencia Visual</label>
+                                            <PhotoCapture onImageCaptured={setImageFile} />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div 
+                                    key="step5_final" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
+                                >
+                                    <div className="w-32 h-32 md:w-48 md:h-48 bg-emerald-500 rounded-[3rem] flex items-center justify-center mx-auto shadow-glow shadow-emerald-500/40">
+                                        <RocketLaunchIcon className="w-16 h-16 md:w-24 md:h-24 text-black animate-bounce" />
+                                    </div>
+                                    <div className="space-y-6">
+                                        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic">Pedido <span className="text-emerald-500">Ejecutado</span></h2>
+                                        <p className="text-slate-400 font-medium max-w-lg mx-auto">El trabajo ha sido registrado exitosamente en el sistema de producción.</p>
+                                    </div>
+                                    <div className="flex flex-wrap justify-center gap-6">
+                                        {createdTrabajoId && (
+                                            <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="px-10 py-6 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-luxury hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Imprimir Recibo</button>
+                                        )}
+                                        <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Nueva Orden</button>
+                                    </div>
+                                </motion.div>
+                            )
+                        )}
+
+                        {/* PASO 6: FINALIZADO (SRI) */}
+                        {step === 6 && missionCategory === 'SRI' && (
                             <motion.div 
-                                key="step5" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                key="step6" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                 className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
                             >
                                 <div className="w-32 h-32 md:w-48 md:h-48 bg-emerald-500 rounded-[3rem] flex items-center justify-center mx-auto shadow-glow shadow-emerald-500/40">
@@ -537,20 +659,11 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="flex flex-wrap justify-center gap-6">
                                     {createdTrabajoId && (
                                         <div className="flex gap-4">
-                                            {missionCategory === 'SRI' ? (
-                                                <>
-                                                    <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} className="px-8 py-6 bg-brand-red text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-red-glow hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A5 Doble)</button>
-                                                    <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} className="px-8 py-6 bg-white/10 text-white border border-brand-red/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-red/20 transition-all"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A4 Completo)</button>
-                                                </>
-                                            ) : (
-                                                <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="px-10 py-6 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3"><PrinterIcon className="w-5 h-5" /> Recibo Epson (Doble Copia)</button>
-                                            )}
-                                            {missionCategory === 'EXPRESS' && (
-                                                <button onClick={() => window.open(`/#/recibo/${createdTrabajoId}`, '_blank')} className="px-8 py-6 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-blue-500 hover:text-white transition-all"><PrinterIcon className="w-5 h-5" /> Ticket Térmico Corto</button>
-                                            )}
+                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} className="px-8 py-6 bg-brand-red text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-red-glow hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A5 Doble)</button>
+                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} className="px-8 py-6 bg-white/10 text-white border border-brand-red/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-red/20 transition-all"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A4 Completo)</button>
                                         </div>
                                     )}
-                                    <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest">Nueva Orden</button>
+                                    <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Nueva Orden</button>
                                 </div>
                             </motion.div>
                         )}
@@ -558,12 +671,13 @@ const NuevoPedidoPage: React.FC = () => {
                     </AnimatePresence>
 
                     {/* CONTROLES DE NAVEGACIÓN */}
-                    {step < 5 && missionCategory !== 'COMERCIAL' && (
+                    {((missionCategory === 'SRI' && step < 6) || (missionCategory !== 'SRI' && step < 5)) && missionCategory !== 'COMERCIAL' && (
                         <div className="flex justify-between items-center px-10">
                             <button 
                                 disabled={step === 1}
                                 onClick={() => {
                                     if (missionCategory === 'EXPRESS' && step === 4) setStep(2);
+                                    else if (missionCategory === 'SRI' && step === 5) setStep(4);
                                     else setStep(s => s - 1);
                                 }}
                                 className="flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase tracking-widest hover:text-white disabled:opacity-0 transition-all"
@@ -573,7 +687,7 @@ const NuevoPedidoPage: React.FC = () => {
                             
                             <div className="flex items-center gap-6">
                                 {error && <span className="text-brand-red text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
-                                {step < 4 && !(missionCategory === 'EXPRESS' && step === 2) ? (
+                                {((missionCategory === 'SRI' && step < 5) || (missionCategory === 'EXPRESS' && step < 4) || (missionCategory === 'COMERCIAL' && step < 4)) ? (
                                     <button 
                                         disabled={!canAdvance()}
                                         onClick={() => {
@@ -584,7 +698,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     >
                                         Continuar <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
-                                ) : step === 4 ? (
+                                ) : (step === 4 && missionCategory !== 'SRI') || (step === 5 && missionCategory === 'SRI') ? (
                                     <button 
                                         disabled={!canAdvance() || loading}
                                         onClick={handleCreateOrder}

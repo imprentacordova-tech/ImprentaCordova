@@ -10,19 +10,35 @@ import { Producto, TrabajoTipo, Regimen } from '../types';
  */
 export const MASTER_CATALOG: Partial<Producto>[] = [
   // --- DOCUMENTOS AUTORIZADOS (SRI) ---
-  { nombre: 'Factura (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
-  { nombre: 'Nota de Venta (Rimpe Negocio Popular)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
+  // Estos documentos aparecen filtrados según el régimen del cliente seleccionado.
   
+  // RIMPE NEGOCIO POPULAR
+  { nombre: 'FACTURA (RIMPE NEGOCIO POPULAR)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
+  { nombre: 'NOTA DE VENTA (RIMPE NEGOCIO POPULAR)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
+  { nombre: 'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS (RIMPE)', precio: 18.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'NOTAS DE CREDITO (RIMPE)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'NOTAS DE DEBITO (RIMPE)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'GUIAS DE REMISION (RIMPE)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'BOLETOS O ENTRADAS A ESPECTACULOS PUBLICOS (RIMPE)', precio: 25.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'LIQUIDACION DE COMPRA DE VEHICULOS USADOS (RIMPE)', precio: 20.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS (RIMPE)', precio: 5.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS (RIMPE)', precio: 15.00, categoria: 'Oficina', esSRI: true },
+
+  // RÉGIMEN GENERAL / RIMPE EMPRENDEDOR
+  { nombre: 'FACTURA (REGIMEN GENERAL / EMPRENDEDOR)', precio: 15.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/vH3mGvR.png' },
+  { nombre: 'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS (GENERAL)', precio: 18.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'NOTAS DE DEBITO (GENERAL)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'GUIAS DE REMISION (GENERAL)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'ACTA ENTREGA - RECEPCIÓN DE BOTELLAS PLASTICAS NO RETORNABLES DE PET', precio: 5.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS (GENERAL)', precio: 18.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'LIQUIDACION DE COMPRA DE VEHICULOS USADOS (GENERAL)', precio: 20.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS (GENERAL)', precio: 5.00, categoria: 'Oficina', esSRI: true },
+
+  // Formatos Estándar (Fallback/Comunes)
   { nombre: 'Facturero A5 1x Blocs (50x2)', precio: 10.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
-  { nombre: 'Facturero A5 3x Blocs (50x2)', precio: 22.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
-  { nombre: 'Facturero A5 5x Blocs (50x2)', precio: 32.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
-  { nombre: 'Facturero A5 10x Blocs (50x2)', precio: 55.00, categoria: 'Oficina', esSRI: true, imagenUrl: 'https://i.imgur.com/6X9mY9L.png' },
-  { nombre: 'Facturero A4 1x Blocs (50x2)', precio: 18.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Nota de Venta A6 (General)', precio: 8.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Retenciones 1x Blocs (50x3)', precio: 12.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Guía de Remisión 1x Blocs (General)', precio: 12.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Liquidación de Compra 1x Blocs (General)', precio: 15.00, categoria: 'Oficina', esSRI: true },
-  { nombre: 'Notas de Crédito 1x Blocs (General)', precio: 12.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Facturero A5 3x Blocs (50x2)', precio: 22.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Facturero A5 5x Blocs (50x2)', precio: 32.00, categoria: 'Oficina', esSRI: true },
+  { nombre: 'Facturero A5 10x Blocs (50x2)', precio: 55.00, categoria: 'Oficina', esSRI: true },
   { nombre: 'Comprobante de Retención Electrónico', precio: 0.15, categoria: 'Oficina', esSRI: true },
   { nombre: 'Vale de Caja Interno (Bloc)', precio: 5.00, categoria: 'Oficina', esSRI: false },
 
