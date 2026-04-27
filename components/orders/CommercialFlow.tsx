@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     CheckCircleIcon, SparklesIcon, PrinterIcon, 
     ArrowRightIcon, ArrowLeftIcon, CreditCardIcon, UserIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon, SearchIcon
 } from '../Icons';
 import { Producto, Trabajo, TrabajoEstado, TrabajoTipo } from '../../types';
 import { useData } from '../../contexts/DataContext';
@@ -99,29 +99,36 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     };
 
     return (
-        <div className="bg-brand-dark/20 backdrop-blur-3xl p-6 md:p-14 lg:p-20 rounded-[3rem] md:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden animate-fade-in">
+        <>
+            {/* Background Industrial Grid */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+            
             {/* Header / Steps Navigation */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-8 border-b border-white/5 pb-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-8 border-b border-white/10 pb-10 relative z-10">
                 <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse"></div>
+                        <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow"></div>
                         <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">Misión Comercial de Respuesta Rápida</p>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">
-                        {step === 1 && 'Suministros'}
-                        {step === 2 && 'Configuración'}
-                        {step === 3 && 'Finalización'}
+                        {step === 1 && <span className="flex items-center gap-4">SUMINISTROS <span className="text-sm font-mono text-liquid-gold/20 tracking-tighter hidden sm:inline">TYPE_COMMERCIAL_A1</span></span>}
+                        {step === 2 && <span className="flex items-center gap-4">CONFIGURACIÓN <span className="text-sm font-mono text-liquid-gold/20 tracking-tighter hidden sm:inline">SPEC_LAYER_V2</span></span>}
+                        {step === 3 && <span className="flex items-center gap-4">FINALIZACIÓN <span className="text-sm font-mono text-liquid-gold/20 tracking-tighter hidden sm:inline">DEPLOY_READY</span></span>}
                     </h2>
                 </div>
-                <div className="flex items-center gap-8 bg-black/40 p-4 rounded-[2.5rem] border border-white/5">
-                    <div className="flex gap-3 px-4">
+                <div className="flex items-center gap-8 bg-black/60 p-5 rounded-[2.5rem] border border-white/10 shadow-inner">
+                    <div className="flex gap-4 px-4">
                         {[1, 2, 3].map(s => (
-                            <div key={s} className={`h-2 transition-all duration-700 rounded-full ${step === s ? 'w-12 bg-liquid-gold shadow-gold-glow' : step > s ? 'w-6 bg-liquid-gold/40' : 'w-4 bg-white/10'}`} />
+                            <div key={s} className="flex flex-col items-center gap-2">
+                                <div className={`h-1.5 transition-all duration-700 rounded-full ${step === s ? 'w-12 bg-liquid-gold shadow-gold-glow' : step > s ? 'w-6 bg-liquid-gold/40' : 'w-4 bg-white/10'}`} />
+                                <span className={`text-[7px] font-black uppercase tracking-widest ${step === s ? 'text-liquid-gold' : 'text-slate-700'}`}>PH_{s}</span>
+                            </div>
                         ))}
                     </div>
+                    <div className="w-[1px] h-10 bg-white/10 mx-2"></div>
                     <button 
                         onClick={onCancel}
-                        className="w-12 h-12 bg-white/5 hover:bg-brand-red/20 text-slate-500 hover:text-brand-red rounded-2xl transition-all border border-white/5 flex items-center justify-center group"
+                        className="w-12 h-12 bg-white/5 hover:bg-brand-red/20 text-slate-500 hover:text-brand-red rounded-2xl transition-all border border-white/10 flex items-center justify-center group"
                     >
                         <ExclamationTriangleIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                     </button>
@@ -132,27 +139,33 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 {/* PASO 1: SELECCION DE PRODUCTO (ESTILO SERVICE SELECTOR) */}
                 {step === 1 && (
                     <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">
-                        <div className="space-y-8 bg-white/[0.02] p-8 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+                        <div className="space-y-8 bg-black/40 p-10 rounded-[3rem] border border-white/10 shadow-inner relative overflow-hidden group">
+                            {/* Scanning Beam */}
+                            <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/10 animate-scan pointer-events-none" />
+                            
                             <div className="absolute top-0 right-0 p-10 opacity-[0.03] scale-150 rotate-12 transition-transform group-hover:scale-[1.7]"><PrinterIcon className="w-64 h-64 text-liquid-gold" /></div>
                             
                             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
                                 <div className="space-y-4 flex-grow max-w-2xl">
-                                    <label className="text-[10px] text-slate-600 font-black uppercase tracking-widest ml-4 italic">Búsqueda Técnica</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] text-slate-600 font-black uppercase tracking-widest ml-4 italic">Búsqueda Técnica</label>
+                                        <span className="text-[8px] text-liquid-gold/30 font-mono">SEARCH_REDUX_ACTIVE</span>
+                                    </div>
                                     <div className="relative group">
-                                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-600 group-focus-within:text-liquid-gold transition-colors" />
                                         <input 
                                             type="text" 
                                             value={search} 
                                             onChange={e => setSearch(e.target.value)} 
                                             placeholder="Buscar protocolo comercial..." 
-                                            className="w-full pl-16 pr-8 py-6 bg-black/40 border-2 border-white/5 rounded-3xl text-xl font-bold text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic" 
+                                            className="w-full pl-16 pr-8 py-7 bg-black/40 border-2 border-white/5 rounded-3xl text-xl font-bold text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic shadow-inner" 
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex-shrink-0 w-full lg:w-auto">
                                     <label className="text-[10px] text-slate-600 font-black uppercase tracking-widest ml-4 mb-4 block italic text-center lg:text-left">Categorías Estratégicas</label>
-                                    <div className="flex flex-wrap lg:flex-nowrap justify-center lg:justify-start gap-2 bg-black/40 p-2 rounded-[2.5rem] border border-white/5 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
+                                    <div className="flex flex-wrap lg:flex-nowrap justify-center lg:justify-start gap-2 bg-black/60 p-2.5 rounded-[2.5rem] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
                                         {commercialCategories.map(cat => (
                                             <button
                                                 key={cat}
@@ -470,7 +483,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
             `}</style>
-        </div>
+        </>
     );
 };
 

@@ -100,22 +100,40 @@ export const SearchOmni: React.FC = () => {
                             exit={{ scale: 0.95, opacity: 0, y: -20 }}
                             className="relative w-full max-w-2xl bg-[#0c1324] border border-white/10 rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
                         >
-                            {/* Search Input */}
-                            <div className="relative border-b border-white/5">
-                                <SearchIcon className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-liquid-gold" />
+                            {/* Search Input Area */}
+                            <div className="relative border-b border-white/5 bg-black/20 group">
+                                {/* Scanner Beam Effect */}
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/20 animate-scan pointer-events-none" />
+                                
+                                <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                                    <SearchIcon className="w-5 h-5 text-liquid-gold animate-pulse shadow-gold-glow" />
+                                    <div className="w-[1px] h-6 bg-white/10 hidden sm:block"></div>
+                                </div>
+                                
                                 <input 
                                     autoFocus
                                     placeholder="BUSCAR PEDIDO #, CLIENTE O SERVICIO..."
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
-                                    className="w-full bg-transparent pl-16 pr-20 py-8 text-lg font-black text-white uppercase tracking-widest placeholder:text-slate-700 outline-none"
+                                    className="w-full bg-transparent pl-20 pr-20 py-10 text-lg font-black text-white uppercase tracking-[0.2em] placeholder:text-slate-800 outline-none italic"
                                 />
-                                <button 
-                                    onClick={() => setIsOpen(false)}
-                                    className="absolute right-8 top-1/2 -translate-y-1/2 p-2 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors"
-                                >
-                                    <XIcon className="w-4 h-4" />
-                                </button>
+                                
+                                <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-4">
+                                    {query && (
+                                        <button 
+                                            onClick={() => setQuery('')}
+                                            className="p-2 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-colors"
+                                        >
+                                            <XIcon className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                    <button 
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-3 bg-white/5 border border-white/10 rounded-xl text-slate-500 hover:text-white transition-all group/close"
+                                    >
+                                        <kbd className="text-[10px] font-mono group-hover:text-liquid-gold transition-colors">ESC</kbd>
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Results Area */}
@@ -190,20 +208,23 @@ export const SearchOmni: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Footer Help */}
-                            <div className="bg-black/40 px-8 py-4 flex items-center justify-between border-t border-white/5">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2">
-                                        <kbd className="px-2 py-1 bg-white/5 rounded text-[10px] text-slate-500 font-mono">↵</kbd>
-                                        <span className="text-[9px] font-bold text-slate-600 uppercase">Seleccionar</span>
+                            {/* Footer Help / Telemetry */}
+                            <div className="bg-black/60 px-8 py-5 flex items-center justify-between border-t border-white/5 relative overflow-hidden">
+                                <div className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
+                                
+                                <div className="flex items-center gap-8 relative z-10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest italic">SYSLINK_STABLE</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <kbd className="px-2 py-1 bg-white/5 rounded text-[10px] text-slate-500 font-mono">↑↓</kbd>
-                                        <span className="text-[9px] font-bold text-slate-600 uppercase">Navegar</span>
+                                    <div className="flex items-center gap-3">
+                                        <kbd className="px-2 py-1 bg-white/5 rounded text-[10px] text-slate-500 font-mono">↵</kbd>
+                                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Select</span>
                                     </div>
                                 </div>
-                                <div className="text-[9px] font-black text-slate-700 uppercase tracking-widest">
-                                    CENTRO DE COMANDO CÓRDOVA
+                                <div className="text-[9px] font-black text-slate-500 uppercase tracking-[0.5em] italic flex items-center gap-3">
+                                    <div className="w-4 h-[1px] bg-liquid-gold/30"></div>
+                                    CENTRO DE COMANDO <span className="text-liquid-gold">CÓRDOVA v3.0</span>
                                 </div>
                             </div>
                         </motion.div>

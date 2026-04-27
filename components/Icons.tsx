@@ -217,6 +217,7 @@ export const LayoutDashboardIcon = LayoutDashboard;
 export const LayoutIcon       = Layout;
 export const GridIcon         = Grid;
 export const HashIcon         = Hash;
+export const HashtagIcon     = Hash;
 export const FilterIcon       = Filter;
 export const ListFilterIcon   = ListFilter;
 export const SlidersIcon      = SlidersHorizontal;

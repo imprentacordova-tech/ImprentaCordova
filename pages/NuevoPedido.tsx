@@ -170,30 +170,30 @@ const NuevoPedidoPage: React.FC = () => {
     const getSteps = () => {
         if (missionCategory === 'EXPRESS') {
             return [
-                { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-                { id: 2, label: 'Despliegue Rápido', icon: BoltIcon },
-                { id: 4, label: 'Capital Rápido', icon: CreditCardIcon },
-                { id: 5, label: 'Ticket', icon: RocketLaunchIcon }
+                { id: 1, label: 'CATEGORÍA', icon: LayoutDashboardIcon, code: '01' },
+                { id: 2, label: 'DESPLIEGUE', icon: BoltIcon, code: '02' },
+                { id: 4, label: 'CAPITAL', icon: CreditCardIcon, code: '03' },
+                { id: 5, label: 'TICKET', icon: RocketLaunchIcon, code: '04' }
             ];
         }
 
         if (missionCategory === 'SRI') {
             return [
-                { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-                { id: 2, label: 'Identidad', icon: UserIcon },
-                { id: 3, label: 'Trámites SRI', icon: ShieldCheckIcon },
-                { id: 4, label: 'Servicios SRI', icon: BookOpenIcon },
-                { id: 5, label: 'Capital', icon: CreditCardIcon },
-                { id: 6, label: 'Despliegue', icon: RocketLaunchIcon }
+                { id: 1, label: 'CATEGORÍA', icon: LayoutDashboardIcon, code: '01' },
+                { id: 2, label: 'IDENTIDAD', icon: UserIcon, code: '02' },
+                { id: 3, label: 'TRÁMITES', icon: ShieldCheckIcon, code: '03' },
+                { id: 4, label: 'SERVICIOS', icon: BookOpenIcon, code: '04' },
+                { id: 5, label: 'CAPITAL', icon: CreditCardIcon, code: '05' },
+                { id: 6, label: 'DESPLIEGUE', icon: RocketLaunchIcon, code: '06' }
             ];
         }
 
         return [
-            { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-            { id: 2, label: 'Catálogo Comercial', icon: BookOpenIcon },
-            { id: 3, label: 'Identidad', icon: UserIcon },
-            { id: 4, label: 'Capital', icon: CreditCardIcon },
-            { id: 5, label: 'Despliegue', icon: RocketLaunchIcon }
+            { id: 1, label: 'CATEGORÍA', icon: LayoutDashboardIcon, code: '01' },
+            { id: 2, label: 'CATÁLOGO', icon: BookOpenIcon, code: '02' },
+            { id: 3, label: 'IDENTIDAD', icon: UserIcon, code: '03' },
+            { id: 4, label: 'CAPITAL', icon: CreditCardIcon, code: '04' },
+            { id: 5, label: 'DESPLIEGUE', icon: RocketLaunchIcon, code: '05' }
         ];
     };
 
@@ -220,21 +220,55 @@ const NuevoPedidoPage: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.03] via-transparent to-liquid-gold/[0.03]"></div>
                 {getSteps().map((s, idx) => (
                     <React.Fragment key={s.id}>
-                        <div className="flex flex-col items-center gap-3 md:gap-4 relative z-10 flex-shrink-0">
-                            <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 border-2 ${
-                                step >= s.id ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 border-white/10 text-slate-600'
-                            } ${step === s.id ? 'scale-110' : ''}`}>
-                                <s.icon className={`w-4 h-4 md:w-6 md:h-6 ${step === s.id ? 'animate-pulse' : ''}`} />
+                        <div className="flex flex-col items-center gap-3 md:gap-5 relative z-10 flex-shrink-0 group/step">
+                            <div className="relative">
+                                {/* Holographic Base for Active Step */}
+                                {step === s.id && (
+                                    <motion.div 
+                                        layoutId="stepGlow"
+                                        className="absolute -inset-4 bg-liquid-gold/20 blur-2xl rounded-full"
+                                    />
+                                )}
+                                
+                                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all duration-700 border-2 relative overflow-hidden ${
+                                    step >= s.id 
+                                        ? 'bg-black border-liquid-gold shadow-gold-glow-sm' 
+                                        : 'bg-white/5 border-white/10 text-slate-700'
+                                } ${step === s.id ? 'scale-110 shadow-gold-glow' : ''}`}>
+                                    {/* Scanning Beam inside Icon Box */}
+                                    {step === s.id && (
+                                        <motion.div 
+                                            animate={{ y: [-40, 40] }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                            className="absolute inset-0 bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent w-full h-1/2 pointer-events-none"
+                                        />
+                                    )}
+                                    <s.icon className={`w-5 h-5 md:w-7 md:h-7 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
+                                </div>
                             </div>
-                            <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] italic ${step >= s.id ? 'text-white' : 'text-slate-700'}`}>{s.label}</span>
+                            
+                            <div className="flex flex-col items-center gap-1">
+                                <span className={`text-[8px] font-black tracking-widest ${step >= s.id ? 'text-liquid-gold/60' : 'text-slate-800'}`}>{(s as any).code}</span>
+                                <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-[0.3em] italic transition-all ${
+                                    step >= s.id ? 'text-white' : 'text-slate-700'
+                                } ${step === s.id ? 'text-liquid-gold' : ''}`}>{s.label}</span>
+                            </div>
                         </div>
+
                         {idx < getSteps().length - 1 && (
-                            <div className="flex-1 min-w-[15px] h-[1px] bg-white/5 mx-2 md:mx-6 relative">
+                            <div className="flex-1 min-w-[20px] h-[2px] bg-white/5 mx-2 md:mx-6 relative overflow-hidden rounded-full">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: step > s.id ? '100%' : '0%' }}
-                                    className="absolute inset-0 bg-liquid-gold/40 shadow-gold-glow-sm"
+                                    className="absolute inset-0 bg-liquid-gold shadow-gold-glow"
                                 />
+                                {step > s.id && (
+                                    <motion.div 
+                                        animate={{ x: [-100, 400] }}
+                                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                        className="absolute top-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-white to-transparent opacity-40"
+                                    />
+                                )}
                             </div>
                         )}
                     </React.Fragment>
@@ -245,81 +279,163 @@ const NuevoPedidoPage: React.FC = () => {
                 <div className={missionCategory === 'COMERCIAL' && step === 2 ? "lg:col-span-12 space-y-10" : "lg:col-span-8 space-y-10"}>
                     <AnimatePresence mode="wait">
                         
-                        {/* PASO 1: CATEGORÍA */}
+                        {/* PASO 1: CATEGORÍA (Arquitectura de 3 Pilares Elite) */}
                         {step === 1 && (
                             <motion.div 
-                                key="step1" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                key="step1" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }}
+                                className="bg-black/40 backdrop-blur-[40px] p-8 sm:p-16 lg:p-24 rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden group/modal"
                             >
-                                <div className="space-y-4 mb-12 text-center">
-                                    <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">MODALIDAD DE INGRESO</p>
-                                    <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient">Misión</span></h2>
-                                    <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Seleccione el flujo de despliegue industrial adecuado.</p>
+                                {/* Grid de Fondo Técnico */}
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
+                                
+                                <div className="space-y-6 mb-20 text-center relative z-10">
+                                    <div className="flex items-center justify-center gap-4 mb-2">
+                                        <div className="h-px w-12 bg-gradient-to-r from-transparent to-liquid-gold/40" />
+                                        <p className="text-[10px] md:text-[12px] font-black text-liquid-gold uppercase tracking-[1em] italic">MODALIDAD_DE_INGRESO_V5.0</p>
+                                        <div className="h-px w-12 bg-gradient-to-l from-transparent to-liquid-gold/40" />
+                                    </div>
+                                    <h2 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient drop-shadow-gold">Misión</span></h2>
+                                    <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-[0.4em] italic opacity-60">Seleccione el vector de despliegue industrial requerido</p>
                                 </div>
 
-                                <div className="flex flex-col md:flex-row items-stretch justify-center gap-0 relative">
-                                    {/* Línea Vertical 1 */}
-                                    <div className="hidden md:block absolute left-[33.33%] inset-y-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent z-0"></div>
-                                    <div className="hidden md:block absolute left-[33.33%] inset-y-20 w-[2px] bg-liquid-gold/10 -ml-[5px] blur-[1px] z-0"></div>
+                                <div className="flex flex-col md:flex-row min-h-[650px] relative gap-4 md:gap-0">
                                     
-                                    {/* Línea Vertical 2 */}
-                                    <div className="hidden md:block absolute right-[33.33%] inset-y-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent z-0"></div>
-                                    <div className="hidden md:block absolute right-[33.33%] inset-y-20 w-[2px] bg-liquid-gold/10 -mr-[5px] blur-[1px] z-0"></div>
+                                    {/* --- LASER SEPARATOR 1 --- */}
+                                    <div className="hidden md:block absolute left-[33.33%] inset-y-0 w-px z-20 pointer-events-none">
+                                        <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                                        <motion.div 
+                                            animate={{ top: ['-20%', '120%'] }}
+                                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                                            className="absolute w-[2px] h-40 -left-[0.5px] bg-gradient-to-b from-transparent via-liquid-gold to-transparent blur-[2px]"
+                                        />
+                                        <div className="absolute top-[20%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
+                                        <div className="absolute bottom-[20%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
+                                    </div>
+                                    
+                                    {/* --- LASER SEPARATOR 2 --- */}
+                                    <div className="hidden md:block absolute right-[33.33%] inset-y-0 w-px z-20 pointer-events-none">
+                                        <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                                        <motion.div 
+                                            animate={{ top: ['120%', '-20%'] }}
+                                            transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                                            className="absolute w-[2px] h-40 -left-[0.5px] bg-gradient-to-b from-transparent via-liquid-gold to-transparent blur-[2px]"
+                                        />
+                                        <div className="absolute top-[40%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
+                                        <div className="absolute bottom-[40%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
+                                    </div>
 
-                                    {/* SRI */}
+                                    {/* PILAR 01: SRI */}
                                     <motion.button 
-                                        whileHover={{ backgroundColor: 'rgba(225, 29, 72, 0.05)' }}
+                                        whileHover="hover"
                                         onClick={() => handleSelectCategory('SRI')}
-                                        className="flex-1 group relative p-12 lg:p-16 text-center flex flex-col items-center gap-10 transition-all duration-500 z-10 border-b md:border-b-0 md:border-r border-white/5 last:border-0"
+                                        className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
                                     >
-                                        <div className="w-24 h-24 bg-brand-red/10 rounded-3xl flex items-center justify-center text-brand-red border border-brand-red/20 group-hover:scale-110 group-hover:bg-brand-red group-hover:text-white transition-all duration-500 shadow-xl group-hover:shadow-red-glow">
-                                            <ShieldCheckIcon className="w-12 h-12" />
+                                        <div className="absolute inset-0 bg-brand-red/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
+                                        
+                                        {/* Telemetría Lateral Pilar */}
+                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-0 group-hover/pilar:opacity-100 transition-all duration-700 translate-x-4 group-hover/pilar:translate-x-0">
+                                            {['SYS_AUTH', 'TR_ENCRYPT', 'FISCAL_V3'].map(t => (
+                                                <span key={t} className="[writing-mode:vertical-lr] text-[7px] font-black tracking-[0.5em] text-brand-red/40 uppercase italic">{t}</span>
+                                            ))}
                                         </div>
-                                        <div className="space-y-4">
-                                            <h3 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Documentos<br/><span className="text-brand-red">SRI</span></h3>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto opacity-60 group-hover:opacity-100 transition-opacity">Protocolos autorizados y validez fiscal industrial.</p>
+
+                                        <div className="relative">
+                                            <div className="w-40 h-40 bg-brand-red/5 rounded-[3rem] flex items-center justify-center text-brand-red border border-brand-red/10 group-hover/pilar:scale-110 group-hover/pilar:bg-brand-red group-hover/pilar:text-white transition-all duration-700 shadow-2xl group-hover/pilar:shadow-red-glow relative overflow-hidden">
+                                                <motion.div 
+                                                    animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                                    className="absolute inset-0 border border-dashed border-white/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
+                                                />
+                                                <ShieldCheckIcon className="w-20 h-20 relative z-10" />
+                                            </div>
+                                            <div className="absolute -bottom-4 -right-4 bg-black border border-brand-red/20 px-3 py-1 rounded-lg text-[8px] font-black text-brand-red tracking-widest uppercase italic">0x_FISCAL</div>
                                         </div>
-                                        <div className="mt-4 flex items-center gap-2 text-[8px] font-black text-brand-red/40 group-hover:text-brand-red tracking-[0.4em] uppercase transition-colors italic">
-                                            <span>Iniciar Expediente</span>
-                                            <ArrowRightIcon className="w-3 h-3 translate-x-0 group-hover:translate-x-2 transition-transform" />
+
+                                        <div className="space-y-8 relative z-10">
+                                            <div className="space-y-2">
+                                                <p className="text-[10px] font-black text-brand-red uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Protocolo Certificado</p>
+                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Vector<br/><span className="text-brand-red">SRI</span></h3>
+                                            </div>
+                                            <div className="h-[2px] w-16 bg-brand-red/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-red-glow" />
+                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Emisión de documentos tributarios con validación en tiempo real.</p>
+                                        </div>
+
+                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-brand-red/20 bg-brand-red/5 flex items-center gap-4 text-[11px] font-black text-brand-red group-hover/pilar:bg-brand-red group-hover/pilar:text-white tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
+                                            <span>AUTORIZAR</span>
+                                            <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>
 
-                                    {/* COMERCIAL */}
+                                    {/* PILAR 02: COMERCIAL */}
                                     <motion.button 
-                                        whileHover={{ backgroundColor: 'rgba(212, 175, 55, 0.03)' }}
+                                        whileHover="hover"
                                         onClick={() => handleSelectCategory('COMERCIAL')}
-                                        className="flex-1 group relative p-12 lg:p-16 text-center flex flex-col items-center gap-10 transition-all duration-500 z-10 border-b md:border-b-0 md:border-r border-white/5 last:border-0"
+                                        className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
                                     >
-                                        <div className="w-24 h-24 bg-liquid-gold/10 rounded-3xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 group-hover:scale-110 group-hover:bg-liquid-gold group-hover:text-black transition-all duration-500 shadow-xl group-hover:shadow-gold-glow">
-                                            <BookOpenIcon className="w-12 h-12" />
+                                        <div className="absolute inset-0 bg-liquid-gold/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
+                                        
+                                        <div className="relative">
+                                            <div className="w-40 h-40 bg-liquid-gold/5 rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
+                                                <motion.div 
+                                                    animate={{ rotate: -360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                                                    className="absolute inset-0 border border-dashed border-black/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
+                                                />
+                                                <BookOpenIcon className="w-20 h-20 relative z-10" />
+                                            </div>
+                                            <div className="absolute -bottom-4 -right-4 bg-black border border-liquid-gold/20 px-3 py-1 rounded-lg text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_ELITE</div>
                                         </div>
-                                        <div className="space-y-4">
-                                            <h3 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Flujo<br/><span className="text-liquid-gold">Comercial</span></h3>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto opacity-60 group-hover:opacity-100 transition-opacity">Tarjetas, publicidad y acabados gráficos de lujo.</p>
+
+                                        <div className="space-y-8 relative z-10">
+                                            <div className="space-y-2">
+                                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Branding Industrial</p>
+                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Artes<br/><span className="text-liquid-gold">Elite</span></h3>
+                                            </div>
+                                            <div className="h-[2px] w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
+                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Tarjetas, brochures y catálogos de alta gama para marcas de prestigio.</p>
                                         </div>
-                                        <div className="mt-4 flex items-center gap-2 text-[8px] font-black text-liquid-gold/40 group-hover:text-liquid-gold tracking-[0.4em] uppercase transition-colors italic">
-                                            <span>Abrir Catálogo</span>
-                                            <ArrowRightIcon className="w-3 h-3 translate-x-0 group-hover:translate-x-2 transition-transform" />
+
+                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
+                                            <span>CONFIGURAR</span>
+                                            <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>
 
-                                    {/* EXPRESS */}
+                                    {/* PILAR 03: EXPRESS */}
                                     <motion.button 
-                                        whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
+                                        whileHover="hover"
                                         onClick={() => handleSelectCategory('EXPRESS')}
-                                        className="flex-1 group relative p-12 lg:p-16 text-center flex flex-col items-center gap-10 transition-all duration-500 z-10"
+                                        className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
                                     >
-                                        <div className="w-24 h-24 bg-blue-500/10 rounded-3xl flex items-center justify-center text-blue-500 border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-500 shadow-xl group-hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                                            <BoltIcon className="w-12 h-12" />
+                                        <div className="absolute inset-0 bg-blue-500/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
+                                        
+                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-0 group-hover/pilar:opacity-100 transition-all duration-700 -translate-x-4 group-hover/pilar:translate-x-0">
+                                            {['WARP_DRIVE', 'HOT_SWAP', 'INSTANT_V1'].map(t => (
+                                                <span key={t} className="[writing-mode:vertical-lr] text-[7px] font-black tracking-[0.5em] text-blue-400/40 uppercase italic">{t}</span>
+                                            ))}
                                         </div>
-                                        <div className="space-y-4">
-                                            <h3 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Despliegue<br/><span className="text-blue-400">Inmediato</span></h3>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto opacity-60 group-hover:opacity-100 transition-opacity">Producción rápida para servicios de entrega al instante.</p>
+
+                                        <div className="relative">
+                                            <div className="w-40 h-40 bg-blue-500/5 rounded-[3rem] flex items-center justify-center text-blue-500 border border-blue-500/10 group-hover/pilar:scale-110 group-hover/pilar:bg-blue-500 group-hover/pilar:text-white transition-all duration-700 shadow-2xl group-hover/pilar:shadow-[0_0_50px_rgba(59,130,246,0.4)] relative overflow-hidden">
+                                                <motion.div 
+                                                    animate={{ x: [-100, 200] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 opacity-0 group-hover/pilar:opacity-100"
+                                                />
+                                                <BoltIcon className="w-20 h-20 relative z-10" />
+                                            </div>
+                                            <div className="absolute -bottom-4 -right-4 bg-black border border-blue-500/20 px-3 py-1 rounded-lg text-[8px] font-black text-blue-400 tracking-widest uppercase italic">0x_FAST</div>
                                         </div>
-                                        <div className="mt-4 flex items-center gap-2 text-[8px] font-black text-blue-500/40 group-hover:text-blue-500 tracking-[0.4em] uppercase transition-colors italic">
-                                            <span>Modo Turbo</span>
-                                            <ArrowRightIcon className="w-3 h-3 translate-x-0 group-hover:translate-x-2 transition-transform" />
+
+                                        <div className="space-y-8 relative z-10">
+                                            <div className="space-y-2">
+                                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Prioridad Crítica</p>
+                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Modo<br/><span className="text-blue-400">Turbo</span></h3>
+                                            </div>
+                                            <div className="h-[2px] w-16 bg-blue-500/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-[0_0_20px_rgba(59,130,246,0.3)]" />
+                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Servicio express para requerimientos de entrega inmediata.</p>
+                                        </div>
+
+                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-blue-500/20 bg-blue-500/5 flex items-center gap-4 text-[11px] font-black text-blue-400 group-hover/pilar:bg-blue-500 group-hover/pilar:text-white tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
+                                            <span>DESPLEGAR</span>
+                                            <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>
                                 </div>
@@ -385,15 +501,14 @@ const NuevoPedidoPage: React.FC = () => {
                                                         prioridad: 'Normal',
                                                         estado: TrabajoEstado.PENDIENTE,
                                                         items: items,
-                                                        esSRI: missionCategory === 'SRI',
-                                                        sriModo: sriMode,
-                                                        sriClave: sriClave,
-                                                        sriActividad: sriActividad,
-                                                        establecimiento: sriEstablecimiento,
-                                                        puntoEmision: sriPuntoEmision,
+                                                        esSRI: false,
+                                                        sriModo: 'RENOVACION',
+                                                        sriClave: '',
+                                                        sriActividad: '',
+                                                        establecimiento: '001',
+                                                        puntoEmision: '001',
                                                         responsable: currentUser.nombre,
-                                                        origen: 'Local',
-                                                        esSRI: false
+                                                        origen: 'Local'
                                                     }, currentUser.nombre);
 
                                                     setCreatedTrabajoId(result.id);
@@ -445,7 +560,9 @@ const NuevoPedidoPage: React.FC = () => {
                                     </div>
                                 )}
                             </motion.div>
-                                 {/* PASO 3: SOLICITUD (SRI) o ESPECIFICACIÓN (OTRO) */}
+                        )}
+
+                        {/* PASO 3: SOLICITUD (SRI) o ESPECIFICACIÓN (OTRO) */}
                         {step === 3 && (
                             <motion.div 
                                 key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
@@ -533,20 +650,31 @@ const NuevoPedidoPage: React.FC = () => {
                                             <div className="space-y-10">
                                                 <div className="grid grid-cols-1 gap-6">
                                                     {items.map((item, idx) => (
-                                                        <div key={idx} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 flex justify-between items-center group/item">
+                                                        <div key={idx} className="bg-black/60 p-6 rounded-[2rem] border border-white/5 flex items-center justify-between group/item hover:border-brand-red/30 transition-all">
                                                             <div className="flex items-center gap-6">
-                                                                <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center text-brand-red border border-brand-red/20 font-black italic">{idx + 1}</div>
+                                                                <div className="w-14 h-14 bg-brand-red/10 rounded-2xl flex items-center justify-center text-brand-red border border-brand-red/20 font-black italic relative overflow-hidden">
+                                                                    <div className="absolute inset-0 bg-brand-red/5 animate-pulse" />
+                                                                    <span className="relative z-10">{idx + 1}</span>
+                                                                </div>
                                                                 <div>
-                                                                    <h4 className="text-white font-black uppercase tracking-tight italic">{item.nombre}</h4>
-                                                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">x{item.cantidad} • {item.especificaciones.tamano} • {item.especificaciones.tipoPapel}</p>
+                                                                    <h4 className="text-[13px] font-black uppercase tracking-tight italic text-white group-hover:text-brand-red transition-colors">{item.nombre}</h4>
+                                                                    <div className="flex gap-4 mt-1">
+                                                                        <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">QTY: {item.cantidad}</span>
+                                                                        <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">SPEC: {item.especificaciones.tamano}</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-10">
-                                                                <span className="text-xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
+                                                                <div className="text-right">
+                                                                    <p className="text-[8px] text-slate-700 font-black uppercase tracking-widest mb-1">Valuación</p>
+                                                                    <span className="text-2xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
+                                                                </div>
                                                                 <button onClick={() => {
                                                                     setItems(prev => prev.filter((_, i) => i !== idx));
                                                                     setPrecio(prev => prev - item.precioFinal);
-                                                                }} className="text-slate-700 hover:text-brand-red transition-colors"><SolidBoxIcon className="w-5 h-5 rotate-45" /></button>
+                                                                }} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-700 hover:bg-brand-red hover:text-white transition-all transform hover:rotate-90">
+                                                                    <SolidBoxIcon className="w-4 h-4" />
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -626,12 +754,20 @@ const NuevoPedidoPage: React.FC = () => {
                                     key="step5_final" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                     className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
                                 >
-                                    <div className="w-32 h-32 md:w-48 md:h-48 bg-emerald-500 rounded-[3rem] flex items-center justify-center mx-auto shadow-glow shadow-emerald-500/40">
-                                        <RocketLaunchIcon className="w-16 h-16 md:w-24 md:h-24 text-black animate-bounce" />
+                                    <div className="space-y-4">
+                                        <div className="w-24 h-24 md:w-32 md:h-32 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-emerald-glow relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-white/20 animate-pulse opacity-0 group-hover:opacity-100" />
+                                            <CheckCircleIcon className="w-12 h-12 md:w-16 md:h-16 text-black" />
+                                        </div>
+                                        <div className="flex justify-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]" />
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]" />
+                                        </div>
                                     </div>
                                     <div className="space-y-6">
-                                        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic">Pedido <span className="text-emerald-500">Ejecutado</span></h2>
-                                        <p className="text-slate-400 font-medium max-w-lg mx-auto">El trabajo ha sido registrado exitosamente en el sistema de producción.</p>
+                                        <h2 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none">Despliegue <span className="text-emerald-500">Exitoso</span></h2>
+                                        <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-[10px]">Protocolo Registrado • ID: {createdTrabajoId?.substring(0,8) || 'AUTO-GEN'}</p>
                                     </div>
                                     <div className="flex flex-wrap justify-center gap-6">
                                         {createdTrabajoId && (
@@ -670,8 +806,8 @@ const NuevoPedidoPage: React.FC = () => {
 
                     </AnimatePresence>
 
-                    {/* CONTROLES DE NAVEGACIÓN */}
-                    {((missionCategory === 'SRI' && step < 6) || (missionCategory !== 'SRI' && step < 5)) && missionCategory !== 'COMERCIAL' && (
+                    {/* CONTROLES DE NAVEGACIÓN (NO SE MUESTRAN EN COMERCIAL PORQUE TIENE SUS PROPIOS CONTROLES) */}
+                    {missionCategory !== 'COMERCIAL' && ((missionCategory === 'SRI' && step < 6) || (missionCategory !== 'SRI' && step < 5)) && (
                         <div className="flex justify-between items-center px-10">
                             <button 
                                 disabled={step === 1}
@@ -687,7 +823,7 @@ const NuevoPedidoPage: React.FC = () => {
                             
                             <div className="flex items-center gap-6">
                                 {error && <span className="text-brand-red text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
-                                {((missionCategory === 'SRI' && step < 5) || (missionCategory === 'EXPRESS' && step < 4) || (missionCategory === 'COMERCIAL' && step < 4)) ? (
+                                {((missionCategory === 'SRI' && step < 5) || (missionCategory === 'EXPRESS' && step < 4)) ? (
                                     <button 
                                         disabled={!canAdvance()}
                                         onClick={() => {

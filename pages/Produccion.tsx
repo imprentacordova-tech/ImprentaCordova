@@ -112,7 +112,7 @@ const ProduccionPage: React.FC = () => {
                                 <button 
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={uploading}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-white/5 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl hover:bg-white/10 border border-white/10 transition-all disabled:opacity-30"
+                                    className="flex items-center gap-2 px-6 py-3 bg-white/5 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-white/10 border border-white/10 transition-all hover:scale-105"
                                 >
                                     {uploading ? <Loader2Icon className="animate-spin w-4 h-4 text-liquid-gold"/> : <CameraIcon className="w-4 h-4 text-liquid-gold"/>}
                                     <span>Registrar Despliegue</span>
@@ -126,9 +126,10 @@ const ProduccionPage: React.FC = () => {
                                 />
                                 <button 
                                     onClick={handleSendToVitrina}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-liquid-gold text-brand-dark font-black text-[9px] uppercase tracking-widest rounded-xl hover:bg-white transition-all shadow-gold-glow"
+                                    className="flex items-center gap-3 px-8 py-3 bg-liquid-gold text-black font-black text-[10px] uppercase tracking-[0.3em] rounded-xl hover:bg-white transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:scale-105 active:scale-95 group relative overflow-hidden"
                                 >
-                                    <CheckCircleIcon className="w-4 h-4"/> Validar y Finalizar
+                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+                                    <CheckCircleIcon className="w-5 h-5"/> Validar y Finalizar
                                 </button>
                             </div>
                         </div>

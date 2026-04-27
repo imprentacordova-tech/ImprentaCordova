@@ -234,7 +234,13 @@ const Header: React.FC<{
     const dateStr = now.toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' });
 
     return (
-        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 cordova:bg-brand-dark/95 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0">
+        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 cordova:bg-brand-dark/95 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0 overflow-hidden">
+            {/* Background Laser Divider */}
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+            
+            {/* Corner Industrial Accents */}
+            <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-white/5 rounded-tl-xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-white/5 rounded-tr-xl pointer-events-none" />
 
             {/* LEFT: hamburger + page title */}
             <div className="flex items-center gap-5">
@@ -249,6 +255,12 @@ const Header: React.FC<{
                 <div className="flex flex-col">
                     <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic mb-0.5">Centro de Control</p>
                     <h2 className="text-xl font-black text-white uppercase tracking-tighter italic">Imprenta Córdova</h2>
+                </div>
+
+                <div className="hidden xl:flex h-8 w-px bg-white/5 mx-2" />
+                <div className="hidden xl:flex flex-col opacity-20">
+                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">SYS_READY: TRUE</span>
+                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">ENCRYPT: AES-256</span>
                 </div>
             </div>
 
@@ -276,7 +288,13 @@ const Header: React.FC<{
             </div>
 
             {/* RIGHT: clock + logout */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-5 relative">
+                <div className="hidden xl:flex flex-col items-end opacity-20 mr-4">
+                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">LATENCY: 12ms</span>
+                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">NODE: VERCEL_EAST</span>
+                </div>
+                <div className="hidden xl:flex h-8 w-px bg-white/5 mr-2" />
+
                 {/* Live clock */}
                 <div className="hidden md:flex flex-col items-end gap-0.5">
                     <span className="text-base font-black text-slate-900 dark:text-white tracking-wider tabular-nums leading-none">{timeStr}</span>
@@ -348,7 +366,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     }, [sidebarOpen]);
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500">
+        <div className="flex h-screen bg-slate-50 dark:bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500 relative">
+            {/* Global Industrial Scanline Effect */}
+            <div className="animate-scan opacity-[0.03] z-[100]" />
+            <div className="absolute inset-0 pointer-events-none z-[99] opacity-[0.02] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
+            
             <SEO title="Imprenta Córdova | Backend Administrativo" includeLocalBusiness={false} robots={false} />
 
             {/* ── Desktop/Mobile Sidebar Drawer Overlay ── */}

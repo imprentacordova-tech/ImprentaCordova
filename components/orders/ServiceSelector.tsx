@@ -57,21 +57,32 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                     const name = (p.nombre || '').toUpperCase();
                     const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
 
-                    // LISTA ESTRICTA RIMPE NEGOCIO POPULAR
+                    // LISTA ESTRICTA RIMPE NEGOCIO POPULAR (Sincronizada con base legal SRI)
                     const docsPopular = [
-                        'FACTURA', 'NOTA DE VENTA', 'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS',
-                        'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 
-                        'BOLETOS O ENTRADAS A ESPECTACULOS PUBLICOS', 'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
-                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS'
+                        'FACTURA', 
+                        'NOTA DE VENTA', 
+                        'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS',
+                        'NOTAS DE CREDITO', 
+                        'NOTAS DE DEBITO', 
+                        'GUIAS DE REMISION', 
+                        'BOLETOS O ENTRADAS A ESPECTACULOS PUBLICOS', 
+                        'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
+                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 
+                        'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
+                        'FACTURERO', 'COMPROBANTE'
                     ];
 
-                    // LISTA ESTRICTA REGIMEN GENERAL / EMPRENDEDOR
+                    // LISTA ESTRICTA REGIMEN GENERAL / EMPRENDEDOR (Sincronizada con base legal SRI)
                     const docsGeneral = [
-                        'FACTURA', 'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
-                        'NOTAS DE DEBITO', 'GUIAS DE REMISION', 
+                        'FACTURA', 
+                        'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
+                        'NOTAS DE DEBITO', 
+                        'GUIAS DE REMISION', 
                         'ACTA ENTREGA - RECEPCIÓN DE BOTELLAS PLASTICAS NO RETORNABLES DE PET',
-                        'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS', 'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
-                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS'
+                        'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS', 
+                        'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
+                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 
+                        'FACTURERO', 'COMPROBANTE'
                     ];
 
                     const allowedDocs = isPopular ? docsPopular : docsGeneral;
@@ -131,41 +142,47 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                 
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
                     <div className="space-y-4 flex-grow max-w-2xl">
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">Centro de Despliegue</p>
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic animate-pulse">Centro de Inteligencia de Productos</p>
                         <div className="relative group">
-                            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                            <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+                            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all" />
                             <input 
                                 type="text" 
                                 value={searchTerm} 
                                 onChange={e => setSearchTerm(e.target.value)} 
-                                placeholder="Escanear o buscar protocolo..." 
-                                className="w-full pl-16 pr-8 py-6 bg-black/40 border-2 border-white/5 rounded-3xl text-xl font-bold text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic" 
+                                placeholder="IDENTIFICAR PROTOCOLO O SERVICIO..." 
+                                className="w-full pl-16 pr-8 py-7 bg-black/60 border border-white/5 rounded-3xl text-xl font-black text-white focus:bg-black/80 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10" 
                             />
                         </div>
                     </div>
 
                     {!forcedCategory && (
-                        <div className="space-y-4 flex-shrink-0">
-                            <label className="text-[10px] text-slate-600 font-black uppercase tracking-widest ml-4 italic">Categorías Industriales</label>
-                            <div className="flex flex-wrap gap-3 bg-black/20 p-2 rounded-[2rem] border border-white/5 no-scrollbar overflow-x-auto max-w-full">
-                                {categories.map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setActiveCategory(cat)}
-                                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                                            activeCategory === cat 
-                                                ? 'bg-liquid-gold text-black shadow-gold-glow-sm scale-105' 
-                                                : 'text-slate-500 hover:text-white hover:bg-white/5'
-                                        }`}
-                                    >
+                    <div className="space-y-4 flex-shrink-0">
+                        <label className="text-[10px] text-slate-700 font-black uppercase tracking-[0.3em] ml-4 italic">Segmentación</label>
+                        <div className="relative flex gap-1 p-1 bg-black/40 rounded-[1.5rem] border border-white/5 overflow-hidden">
+                            {categories.map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`relative px-6 py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap z-10 ${
+                                        activeCategory === cat 
+                                            ? 'text-black' 
+                                            : 'text-slate-500 hover:text-white'
+                                    }`}
+                                >
+                                    {activeCategory === cat && (
+                                        <motion.div 
+                                            layoutId="activeCat"
+                                            className="absolute inset-0 bg-liquid-gold rounded-xl -z-10 shadow-gold-glow-sm"
+                                        />
+                                    )}
+                                    <span className="flex items-center gap-2">
                                         {(CATEGORY_EMOJIS as any)[cat] || '📦'} {cat}
-                                        <span className={`ml-3 opacity-40 ${activeCategory === cat ? 'text-black' : 'text-slate-400'}`}>
-                                            [{categoryCounts[cat] || 0}]
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
+                                    </span>
+                                </button>
+                            ))}
                         </div>
+                    </div>
                     )}
                 </div>
 
@@ -221,6 +238,27 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                 className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-h-[1000px] overflow-y-auto pr-4 custom-scrollbar pb-20"
             >
                 <AnimatePresence mode="popLayout">
+                    {filtered.map((p) => {
+                        const isSelected = selectedId === p.id;
+                        return (
+                            <motion.button
+                                layout
+                                key={p.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                whileHover={{ y: -8, transition: { duration: 0.4 } }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => onSelect(p)}
+                                className={`group relative flex flex-col h-[320px] rounded-[2rem] overflow-hidden border transition-all duration-700 bg-black/40 backdrop-blur-xl ${
+                                    isSelected ? 'border-liquid-gold shadow-gold-glow-strong' : 'border-white/5 hover:border-white/20'
+                                }`}
+                            >
+                                {/* Glass Reflection Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/[0.03] to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                {/* Miniatura / Icono */}
+                                <div className="relative h-44 overflow-hidden bg-slate-950">
+                                    {p.imagenUrl ? (
                                         <img 
                                             src={p.imagenUrl} 
                                             alt={p.nombre}
@@ -237,41 +275,53 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                     
                                     {/* Badge SRI */}
                                     {p.esSRI && (
-                                        <div className="absolute top-2 left-2 bg-red-500/90 backdrop-blur-sm text-white text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-1">
-                                            <ShieldCheckIcon className="w-2.5 h-2.5" /> SRI
+                                        <div className="absolute top-4 left-4 bg-brand-red text-white text-[9px] font-black px-3 py-1 rounded-xl uppercase tracking-[0.2em] flex items-center gap-2 shadow-red-glow z-20">
+                                            <ShieldCheckIcon className="w-3 h-3" /> SRI PROTOCOL
                                         </div>
                                     )}
+
+                                    {/* Precio Flotante */}
+                                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 z-20 transition-all group-hover:scale-110 group-hover:border-liquid-gold/40">
+                                        <span className="text-xs font-black text-white italic tracking-tighter">${(p.precio || 0).toFixed(2)}</span>
+                                    </div>
 
                                     {/* Check de selección */}
                                     {isSelected && (
                                         <motion.div 
                                             initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                            className="absolute top-2 right-2 bg-liquid-gold rounded-full p-1 shadow-lg"
+                                            className="absolute bottom-4 right-4 bg-liquid-gold rounded-full p-1.5 shadow-gold-glow z-30"
                                         >
-                                            <CheckCircleIcon className="w-4 h-4 text-black" />
+                                            <CheckCircleIcon className="w-5 h-5 text-black" />
                                         </motion.div>
                                     )}
 
                                     {/* Overlay gradiente */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
                                 </div>
 
                                 {/* Info del producto */}
-                                <div className={`p-3 flex flex-col flex-1 ${isSelected ? 'bg-liquid-gold/[0.06]' : ''}`}>
-                                    <h4 className={`text-[11px] font-black uppercase tracking-tight leading-tight mb-2 line-clamp-2 ${
+                                <div className={`p-6 flex flex-col flex-1 relative z-10 ${isSelected ? 'bg-liquid-gold/[0.03]' : ''}`}>
+                                    <h4 className={`text-[13px] font-black uppercase tracking-tight leading-[1.1] mb-3 line-clamp-2 transition-colors ${
                                         isSelected ? 'text-liquid-gold' : 'text-slate-200 group-hover:text-white'
                                     }`}>{p.nombre || 'SERVICIO SIN NOMBRE'}</h4>
                                     
-                                    <div className="mt-auto flex items-end justify-between">
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                                            <TagIcon className="w-2.5 h-2.5 text-liquid-gold/40" />
-                                            {p.categoria || 'General'}
-                                        </span>
-                                        <span className={`text-sm font-black tracking-tight ${
-                                            isSelected ? 'text-liquid-gold' : 'text-white/70'
-                                        }`}>
-                                            ${(p.precio || 0).toFixed(2)}
-                                        </span>
+                                    <div className="mt-auto flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-[10px]">
+                                                {(CATEGORY_EMOJIS as any)[p.categoria] || '📦'}
+                                            </div>
+                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                                                {p.categoria || 'General'}
+                                            </span>
+                                        </div>
+                                        {isSelected && (
+                                            <motion.div 
+                                                initial={{ scale: 0, x: 20 }} animate={{ scale: 1, x: 0 }}
+                                                className="bg-liquid-gold text-black px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-gold-glow"
+                                            >
+                                                Activo
+                                            </motion.div>
+                                        )}
                                     </div>
                                 </div>
                             </motion.button>
@@ -282,16 +332,23 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                 {/* Fallback para servicio personalizado */}
                 {searchTerm && filtered.length === 0 && (
                     <motion.button 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={{ scale: 1.02 }}
                         onClick={() => onSelect({ id: 'custom', nombre: searchTerm, categoria: 'Personalizado', precio: 0 })}
-                        className="col-span-full p-8 rounded-2xl border border-dashed border-liquid-gold/40 bg-liquid-gold/5 text-center group flex flex-col items-center justify-center min-h-[150px] hover:border-liquid-gold/70 transition-all"
+                        className="col-span-full p-16 rounded-[3rem] border-2 border-dashed border-liquid-gold/20 bg-liquid-gold/5 text-center group flex flex-col items-center justify-center min-h-[300px] hover:border-liquid-gold/50 transition-all relative overflow-hidden"
                     >
-                        <SparklesIcon className="w-8 h-8 mb-3 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors" />
-                        <p className="text-xs font-black text-white uppercase tracking-widest leading-relaxed">
-                            No se encontró "{searchTerm}"
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <SparklesIcon className="w-16 h-16 mb-6 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:rotate-12 transition-all duration-500" />
+                        <p className="text-xl font-black text-white uppercase tracking-[0.4em] leading-relaxed mb-2">
+                            Protocolo No Encontrado
                         </p>
-                        <p className="text-[10px] text-liquid-gold/60 mt-1">Toca para crear como servicio personalizado</p>
+                        <p className="text-xs text-liquid-gold/60 font-bold uppercase tracking-widest">
+                            Toca para iniciar diseño de "{searchTerm}" desde cero
+                        </p>
+                        <div className="mt-8 px-8 py-3 bg-white/5 rounded-full border border-white/10 group-hover:bg-liquid-gold group-hover:text-black transition-all">
+                            <span className="text-[10px] font-black uppercase tracking-widest">Generar Especificación Única</span>
+                        </div>
                     </motion.button>
                 )}
             </div>

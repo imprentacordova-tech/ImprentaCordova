@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, TrabajoEstado, SupervisorAnalysis, User } from '../types';
-import { PaletteIcon, SparklesIcon, Loader2Icon, PrinterIcon, EyeIcon } from '../components/Icons';
+import { PaletteIcon, SparklesIcon, Loader2Icon, PrinterIcon, EyeIcon, RocketLaunchIcon } from '../components/Icons';
 import { useOutletContext } from 'react-router-dom';
 import { analyzeDesignWithSupervisor } from '../services/geminiService';
 import { logActivity } from '../services/activityLogService';
@@ -57,6 +57,22 @@ const DisenoPage: React.FC = () => {
         }
     };
 
+    const handleSendToVitrina = async () => {
+        if (!selectedJob) return;
+
+        if (!window.confirm("¿Seguro que desea enviar DIRECTO A VITRINA? Esta acción salta el paso de producción.")) {
+            return;
+        }
+
+        try {
+            await updateTrabajoStatus(selectedJob.id, TrabajoEstado.VITRINA, currentUser.nombre);
+            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'FINALIZADO_DIRECTO', `Orden #${selectedJob.orden} enviada directamente a vitrina`, 'Diseño');
+            setSelectedJob(null);
+        } catch (error) {
+            alert("Error al finalizar la orden.");
+        }
+    };
+
     return (
         <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] gap-6 pb-6 overflow-hidden">
             
@@ -109,21 +125,48 @@ const DisenoPage: React.FC = () => {
                                 <h1 className="text-xl font-black text-white uppercase tracking-tight">Orden <span className="text-liquid-gold">#{selectedJob.orden}</span></h1>
                                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{selectedJob.subtipo} • {getClientName(selectedJob.clienteId)}</p>
                             </div>
-                            <div className="flex gap-3">
-                                <button 
+                            <div className="flex gap-4 items-center">
+                                <motion.button 
+                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                                     onClick={handleRunAI}
                                     disabled={analyzing || !selectedJob.fotoOriginalUrl}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-white/5 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl hover:bg-white/10 border border-white/10 transition-all disabled:opacity-30"
+                                    className="group relative flex items-center gap-3 px-6 py-3.5 bg-white/[0.03] text-white font-black text-[9px] uppercase tracking-[0.3em] rounded-2xl hover:bg-white/[0.08] border border-white/10 transition-all disabled:opacity-30 overflow-hidden"
                                 >
-                                    {analyzing ? <Loader2Icon className="animate-spin w-4 h-4 text-liquid-gold"/> : <SparklesIcon className="w-4 h-4 text-liquid-gold"/>}
-                                    <span>Validación IA</span>
-                                </button>
-                                <button 
+                                    <div className="absolute inset-0 bg-liquid-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    {analyzing ? <Loader2Icon className="animate-spin w-5 h-5 text-liquid-gold"/> : <SparklesIcon className="w-5 h-5 text-liquid-gold group-hover:rotate-12 transition-transform"/>}
+                                    <div className="flex flex-col items-start leading-none gap-1">
+                                        <span>ANÁLISIS_IA</span>
+                                        <span className="text-[6px] text-slate-500 font-bold tracking-widest">PROTOCOLO_V4</span>
+                                    </div>
+                                </motion.button>
+
+                                <div className="h-10 w-px bg-white/10 mx-2" />
+
+                                <motion.button 
+                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                                     onClick={handleSendToPrint}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-black font-black text-[9px] uppercase tracking-widest rounded-xl hover:bg-liquid-gold transition-all"
+                                    className="group relative flex items-center gap-4 px-8 py-3.5 bg-white/[0.03] text-white font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-white/[0.08] border border-white/10 transition-all overflow-hidden"
                                 >
-                                    <PrinterIcon className="w-4 h-4"/> Enviar a Producción
-                                </button>
+                                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <PrinterIcon className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors"/>
+                                    <div className="flex flex-col items-start leading-none gap-1">
+                                        <span>ENVIAR A PRODUCCIÓN</span>
+                                        <span className="text-[6px] text-slate-500 font-bold tracking-widest">COLA_INDUSTRIAL</span>
+                                    </div>
+                                </motion.button>
+
+                                <motion.button 
+                                    whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+                                    onClick={handleSendToVitrina}
+                                    className="group relative flex items-center gap-4 px-10 py-4 bg-liquid-gold text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-white transition-all shadow-gold-glow-strong overflow-hidden"
+                                >
+                                    <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
+                                    <RocketLaunchIcon className="w-6 h-6 animate-pulse"/>
+                                    <div className="flex flex-col items-start leading-none gap-1">
+                                        <span>SALTO A VITRINA</span>
+                                        <span className="text-[7px] text-black/40 font-black tracking-widest">BYPASS_PROCESO</span>
+                                    </div>
+                                </motion.button>
                             </div>
                         </div>
 

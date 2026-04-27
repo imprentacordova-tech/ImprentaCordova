@@ -5,11 +5,11 @@ import {
     ClockIcon, SearchIcon, ArrowDownTrayIcon, TrashIcon, ShieldCheckIcon, 
     Loader2Icon, ExclamationTriangleIcon, CheckCircleIcon, UsersIcon,
     DocumentIcon, BoxIcon, CpuIcon, BoltIcon, ActivityIcon,
-    SparklesIcon, LockIcon, CircleStackIcon
+    SparklesIcon, LockIcon, CircleStackIcon, RocketLaunchIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ACTION_LABELS: Record<ActivityAction, { label: string; color: string; icon: any }> = {
+const ACTION_LABELS: Record<string, { label: string; color: string; icon: any }> = {
     LOGIN: { label: 'Auth Success', color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5', icon: ShieldCheckIcon },
     LOGOUT: { label: 'Session End', color: 'text-slate-400 border-white/10 bg-white/5', icon: LockIcon },
     CREAR_ORDEN: { label: 'Mission Created', color: 'text-liquid-gold border-liquid-gold/20 bg-liquid-gold/5', icon: BoxIcon },
@@ -35,6 +35,7 @@ const ACTION_LABELS: Record<ActivityAction, { label: string; color: string; icon
     BORRAR_PROVEEDOR: { label: 'Supplier Removed', color: 'text-red-400 border-red-500/20 bg-red-500/5', icon: ExclamationTriangleIcon },
     AGENDAR_TAREA: { label: 'Task Scheduled', color: 'text-amber-400 border-amber-500/20 bg-amber-500/5', icon: ClockIcon },
     COMPLETAR_TAREA: { label: 'Task Completed', color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5', icon: CheckCircleIcon },
+    FINALIZADO_DIRECTO: { label: 'Direct Finish', color: 'text-orange-400 border-orange-500/20 bg-orange-500/5', icon: RocketLaunchIcon },
 };
 
 const RegistroActividadPage: React.FC = () => {

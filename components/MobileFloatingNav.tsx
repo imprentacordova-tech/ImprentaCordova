@@ -31,40 +31,46 @@ export const MobileFloatingNav: React.FC = () => {
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-                    className="bg-white/90 dark:bg-[#0c1324]/90 backdrop-blur-3xl border border-slate-200/50 dark:border-white/10 rounded-[2.5rem] p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] flex items-center justify-between w-full max-w-sm relative overflow-visible pointer-events-auto"
+                    className="bg-black/80 backdrop-blur-3xl border border-white/10 rounded-[2.2rem] p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex items-center justify-between w-full max-w-sm relative overflow-hidden pointer-events-auto"
                 >
-                    {/* Visual Accent Glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/20 via-transparent to-liquid-gold/20 rounded-[2.6rem] blur-xl opacity-10 pointer-events-none"></div>
+                    {/* Elite Industrial Accents */}
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/20 animate-scan pointer-events-none" />
+                    <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/10 via-transparent to-liquid-gold/10 rounded-[2.3rem] blur-xl opacity-50 pointer-events-none"></div>
                     
                     {navItems.map((item) => {
                         const isCurrentActive = location.pathname === item.path;
                         
                         if (item.primary) {
                             return (
-                                <button 
-                                    key={item.path}
-                                    onClick={() => setIsHubOpen(true)}
-                                    className={`
-                                        relative -top-8 w-16 h-16 rounded-[1.8rem] flex items-center justify-center transition-all duration-500 outline-none
-                                        ${isHubOpen 
-                                            ? 'bg-liquid-gold text-brand-dark shadow-[0_15px_30px_rgba(212,175,55,0.4)] scale-110 rotate-45' 
-                                            : 'bg-brand-dark dark:bg-liquid-gold text-liquid-gold dark:text-brand-dark shadow-xl scale-100'
-                                        }
-                                    `}
-                                >
-                                    <motion.div
-                                        whileTap={{ scale: 0.85 }}
-                                        className={`flex items-center justify-center relative ${isHubOpen ? '-rotate-45' : ''}`}
+                                <div key={item.path} className="relative px-2">
+                                    {/* Action Hub Button Refined */}
+                                    <button 
+                                        onClick={() => setIsHubOpen(true)}
+                                        className={`
+                                            relative -top-6 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 outline-none overflow-hidden
+                                            ${isHubOpen 
+                                                ? 'bg-liquid-gold text-black shadow-gold-glow scale-110 rotate-45' 
+                                                : 'bg-[#1a2333] text-liquid-gold border border-liquid-gold/30 shadow-lg scale-100'
+                                            }
+                                        `}
                                     >
-                                        <item.icon className="w-8 h-8" />
-                                        {!isHubOpen && !isCurrentActive && (
-                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-liquid-gold opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-liquid-gold"></span>
-                                            </span>
-                                        )}
-                                    </motion.div>
-                                </button>
+                                        {/* Internal Sheen for Primary Button */}
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full hover:animate-sheen pointer-events-none" />
+                                        
+                                        <motion.div
+                                            whileTap={{ scale: 0.9 }}
+                                            className={`flex items-center justify-center relative ${isHubOpen ? '-rotate-45' : ''}`}
+                                        >
+                                            <item.icon className="w-7 h-7" />
+                                            {!isHubOpen && (
+                                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-liquid-gold opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-liquid-gold"></span>
+                                                </span>
+                                            )}
+                                        </motion.div>
+                                    </button>
+                                </div>
                             );
                         }
 
@@ -73,18 +79,22 @@ export const MobileFloatingNav: React.FC = () => {
                                 key={item.path}
                                 to={item.path}
                                 className={(props) => `
-                                    flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 relative group
-                                    ${props.isActive ? 'text-liquid-gold shadow-gold-glow-soft bg-liquid-gold/5' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}
+                                    flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-500 relative group
+                                    ${props.isActive ? 'text-liquid-gold bg-white/5 shadow-[inset_0_0_20px_rgba(212,175,55,0.1)]' : 'text-slate-500 hover:text-slate-300'}
                                 `}
                             >
                                 {(props) => (
                                     <>
-                                        <item.icon className={`w-6 h-6 transition-transform duration-500 ${props.isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                        <item.icon className={`w-5 h-5 transition-all duration-500 ${props.isActive ? 'scale-110 drop-shadow-gold' : 'group-hover:scale-110'}`} />
                                         {props.isActive && (
                                             <motion.div 
-                                                layoutId="nav-pill"
-                                                className="absolute -bottom-1 w-1 h-1 bg-liquid-gold rounded-full shadow-gold-glow"
+                                                layoutId="nav-pill-mobile"
+                                                className="absolute bottom-1.5 w-1 h-1 bg-liquid-gold rounded-full shadow-gold-glow"
                                             />
+                                        )}
+                                        {/* Subtle Hover Indicator */}
+                                        {!props.isActive && (
+                                            <div className="absolute bottom-1 w-0 h-[1px] bg-liquid-gold/50 group-hover:w-2 transition-all duration-300"></div>
                                         )}
                                     </>
                                 )}

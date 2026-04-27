@@ -14,9 +14,10 @@ import { useData } from '../../contexts/DataContext';
 
 interface PriceCalculatorDisplayProps {
     onSelectPrice: (price: number) => void;
+    currentPrice?: number;
 }
 
-const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelectPrice }) => {
+const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelectPrice, currentPrice }) => {
     const { proveedores, inventario } = useData();
     const [mode, setMode] = useState<'MANUAL' | 'OFFSET' | 'DIGITAL'>('MANUAL');
     const [costs, setCosts] = useState<CostConfig>(DEFAULT_COSTS);
@@ -150,7 +151,12 @@ const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelec
     const supplierName = supplierId ? proveedores.find(p => p.id === supplierId)?.nombre : null;
 
     return (
-        <div className="space-y-6">
+        <div className="relative space-y-8 p-1">
+            {/* Background Pattern - Blueprint Grid */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                 style={{ backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`, backgroundSize: '24px 24px' }}>
+            </div>
+
             {isLowStock && (
                 <motion.div 
                     initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
@@ -176,14 +182,23 @@ const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelec
                 </button>
             </div>
 
-            <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+            <div className="relative flex gap-1 p-1.5 bg-black/60 rounded-2xl border border-white/5 backdrop-blur-xl">
+                <div 
+                    className="absolute h-[calc(100%-12px)] top-1.5 rounded-xl bg-gradient-to-br from-liquid-gold to-brand-red/40 transition-all duration-500 ease-out z-0 shadow-gold-glow-sm"
+                    style={{ 
+                        width: 'calc(33.33% - 6px)', 
+                        left: mode === 'MANUAL' ? '6px' : mode === 'OFFSET' ? 'calc(33.33% + 3px)' : 'calc(66.66% + 1px)' 
+                    }}
+                />
                 {(['MANUAL', 'OFFSET', 'DIGITAL'] as const).map(m => (
                     <button
                         key={m}
                         onClick={() => setMode(m)}
-                        className={`flex-1 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${mode === m ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'text-slate-500 hover:text-white'}`}
+                        className={`relative flex-1 py-3.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 z-10 ${
+                            mode === m ? 'text-black' : 'text-slate-500 hover:text-white'
+                        }`}
                     >
-                        {m === 'MANUAL' ? 'Manual' : m === 'OFFSET' ? 'Offset Ind.' : 'Digital HD'}
+                        {m === 'MANUAL' ? 'Directo' : m === 'OFFSET' ? 'Industrial' : 'Digital'}
                     </button>
                 ))}
             </div>
@@ -295,10 +310,15 @@ const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelec
                 </div>
             )}
 
-            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                <div>
-                    <p className="text-[7px] font-black text-slate-700 uppercase tracking-widest mb-1 italic">Inversión Final Sugerida</p>
-                    <p className="text-3xl font-black text-white italic tracking-tighter shadow-gold-glow-sm">${finalPrice.toFixed(2)}</p>
+            <div className="pt-8 border-t border-white/10 flex items-center justify-between gap-6">
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-liquid-gold/40 uppercase tracking-[0.4em] mb-1 italic">Total Proyectado</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-sm font-black text-liquid-gold/60">$</span>
+                        <span className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                            {finalPrice.toFixed(2)}
+                        </span>
+                    </div>
                 </div>
                 <button
                     onClick={() => onSelectPrice(finalPrice)}

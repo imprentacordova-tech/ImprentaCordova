@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { extractDataFromSriPdf } from '../../services/pdfExtraction';
-import { sriLookupService } from '../../services/sriLookupService';
+import { sriLookupService, SriRucData } from '../../services/sriLookupService';
 import { validarIdentificacionEC } from '../../utils';
 import {
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon,
@@ -218,7 +218,7 @@ export const CreateClientModal: React.FC<{
         });
     }
     setTimeout(() => setHighlightFields([]), 3000);
-};
+
 
 const addActividad = (text: string) => {
     const val = text.toUpperCase().trim();
@@ -625,7 +625,8 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
 
     return (
         <div className="animate-fade-in w-full space-y-8">
-            <div className="flex flex-col gap-6">
+            {!hideQuickButtons && (
+                <div className="flex flex-col gap-6">
                 {/* Botón de Acción Principal Directo SRI */}
                 <button
                     onClick={() => handleOpenCreate('SRI')}
@@ -646,18 +647,22 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                 </button>
 
                 <div className="relative group">
-                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                    <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all" />
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Buscar por Nombre, Cédula o RUC..."
-                        className="w-full pl-16 pr-14 py-6 bg-white/5 border border-white/5 rounded-[2.5rem] text-xl font-black text-white focus:bg-white/10 focus:ring-1 focus:ring-liquid-gold/30 transition-all placeholder:text-slate-700 uppercase tracking-tight"
+                        placeholder="IDENTIFICAR CONTRIBUYENTE O CONSUMIDOR..."
+                        className="w-full pl-16 pr-14 py-8 bg-black/40 border border-white/5 rounded-[2rem] text-xl font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
                     />
                     {searchTerm && (
-                        <button onClick={() => setSearchTerm('')} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
+                        <button onClick={() => setSearchTerm('')} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors z-20">
                             <CloseIcon className="w-6 h-6" />
                         </button>
+                    )}
+                    {isSearchingPadron && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-liquid-gold to-transparent animate-pulse z-20" />
                     )}
                 </div>
 
@@ -690,38 +695,35 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                 </div>
             </div>
                 )}
-        </div>
 
             {
         searchTerm.length > 1 && (
             <div className="bg-brand-dark/40 backdrop-blur-3xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden animate-slide-in-up divide-y divide-white/5">
                 {filteredClients.map((c) => (
-                    <div key={c.id} onClick={() => onSelect(c)} className={`p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === c.id ? 'bg-liquid-gold/10' : ''}`}>
-                        <div className={`absolute inset-y-0 left-0 w-1 bg-liquid-gold transition-opacity ${selectedId === c.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
-                        <div className="flex items-center gap-5 relative z-10">
-                            <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${c.regimen === Regimen.NEGOCIO_POPULAR ? 'bg-orange-500/20 text-orange-400' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
+                    <div key={c.id} onClick={() => onSelect(c)} className={`p-6 cursor-pointer hover:bg-white/[0.03] flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === c.id ? 'bg-liquid-gold/10' : ''}`}>
+                        <div className={`absolute inset-y-4 left-0 w-1 rounded-full ${c.ruc ? 'bg-brand-red' : 'bg-liquid-gold'} transition-all ${selectedId === c.id ? 'h-12 opacity-100' : 'h-4 opacity-0 group-hover:opacity-100 group-hover:h-8'}`}></div>
+                        <div className="flex items-center gap-6 relative z-10">
+                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl transition-transform group-hover:scale-105 ${c.ruc ? 'bg-brand-red/10 text-brand-red border border-brand-red/20' : 'bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20'}`}>
                                 {(c.nombre || '?').charAt(0)}
                             </div>
                             <div className="min-w-0">
-                                <p className="font-black text-white text-base tracking-tight uppercase leading-tight mb-1.5 truncate">{c.nombre || 'SIN NOMBRE'}</p>
-                                <div className="flex items-center gap-3 flex-wrap">
-                                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-                                        <IdentificationIcon className="w-3 h-3 opacity-40" /> {c.cedula || c.ruc}
-                                    </p>
-                                    {c.ruc && (
-                                        <div className="flex gap-1.5 items-center">
-                                            <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5 tracking-tighter uppercase">RUC OFICIAL</span>
-                                            {useData().sriCredentials.some(s => s.ruc === c.ruc) && (
-                                                <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-green-500/20 text-green-400 border border-green-500/20 tracking-tighter uppercase flex items-center gap-1">
-                                                    <ShieldCheckIcon className="w-2 h-2" /> CLAVE ENCONTRADA ✅
-                                                </span>
-                                            )}
-                                        </div>
+                                <p className="font-black text-white text-lg tracking-tight uppercase leading-none mb-2 truncate group-hover:text-liquid-gold transition-colors">{c.nombre || 'SIN NOMBRE'}</p>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <IdentificationIcon className="w-3.5 h-3.5 opacity-50" /> {c.cedula || c.ruc}
+                                    </span>
+                                    {c.ruc ? (
+                                        <span className="text-[8px] font-black px-2 py-0.5 rounded bg-brand-red/10 text-brand-red border border-brand-red/20 uppercase tracking-widest italic">Contribuyente SRI</span>
+                                    ) : (
+                                        <span className="text-[8px] font-black px-2 py-0.5 rounded bg-white/5 text-slate-600 border border-white/10 uppercase tracking-widest italic">Cliente Final</span>
                                     )}
                                 </div>
                             </div>
                         </div>
-                        <ArrowRightIcon className="w-5 h-5 text-slate-600 group-hover:text-liquid-gold transition-all group-hover:translate-x-1" />
+                        <div className="flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                            <span className="text-[8px] font-black text-liquid-gold uppercase tracking-widest">Seleccionar</span>
+                            <ArrowRightIcon className="w-5 h-5 text-liquid-gold" />
+                        </div>
                     </div>
                 ))}
                 {filteredClients.length === 0 && padronResults.length > 0 && (

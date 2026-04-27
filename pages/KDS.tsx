@@ -88,19 +88,59 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             className={`
                 relative group kds-card mb-5 cursor-pointer
                 border-l-2 ${style.border} border-t border-r border-b border-slate-200/50 dark:border-white/5
-                transition-all duration-500 rounded-3xl overflow-hidden p-6 md:p-8
-                hover:border-white/10 hover:shadow-2xl hover:shadow-black/50
+                transition-all duration-700 rounded-[2rem] overflow-hidden p-6 md:p-8
+                hover:border-white/10 hover:shadow-2xl hover:shadow-black/50 bg-white/40 dark:bg-[#0a0a0a]/80 backdrop-blur-md
             `}
         >
+            {/* --- ELITE EFFECTS LAYER --- */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {/* Diagonal Holographic Sheen */}
+                <motion.div 
+                    initial={{ x: '-100%', opacity: 0 }}
+                    whileHover={{ x: '100%', opacity: 0.15 }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent skew-x-[-20deg] z-20"
+                />
+                
+                {/* Technical Grid Overlay (Corner) */}
+                <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.03] rotate-45 translate-x-12 -translate-y-12">
+                    <div className="grid grid-cols-4 gap-2">
+                        {Array.from({ length: 16 }).map((_, i) => (
+                            <div key={i} className="w-1 h-1 bg-white rounded-full" />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Horizontal Scanner Beam */}
+                <motion.div 
+                    animate={{ y: ['0%', '400%', '0%'] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent z-20 opacity-0 group-hover:opacity-100"
+                />
+            </div>
+
+            {/* Industrial Telemetry Strings */}
+            <div className="absolute top-8 right-8 flex gap-4 pointer-events-none opacity-[0.15] group-hover:opacity-40 transition-opacity">
+                <span className="text-[6px] font-black tracking-[0.4em] text-white italic">SYS_ACTIVE</span>
+                <span className="text-[6px] font-black tracking-[0.4em] text-liquid-gold italic">0x{trabajo.id.substring(0,4).toUpperCase()}</span>
+            </div>
+
             {/* Header info */}
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-black text-slate-500 tracking-[0.3em] uppercase italic">
-                        PROTOCOLO-{String(trabajo.orden).padStart(5, '0')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                            trabajo.estado === TrabajoEstado.PENDIENTE ? 'bg-rose-500 shadow-red-glow' :
+                            trabajo.estado === TrabajoEstado.EN_DISENO ? 'bg-blue-500 shadow-blue-glow' :
+                            trabajo.estado === TrabajoEstado.PROCESO ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500'
+                        }`} />
+                        <span className="text-[9px] font-black text-slate-500 dark:text-slate-500 tracking-[0.3em] uppercase italic">
+                            PROTOCOLO-{String(trabajo.orden).padStart(5, '0')}
+                        </span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic ${style.bg} ${style.text} border border-white/5 backdrop-blur-md`}>
+                    <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic ${style.bg} ${style.text} border border-white/5 backdrop-blur-md transition-all group-hover:scale-105`}>
                         {style.label}
                     </div>
                 </div>
@@ -110,31 +150,27 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             <div className="flex gap-6 relative z-10">
                 <div className="flex-grow min-w-0 space-y-4">
                     <div>
-                        <h4 className="text-lg md:text-xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none mb-2 group-hover:text-liquid-gold transition-colors truncate uppercase">
+                        <h4 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none mb-2 group-hover:text-liquid-gold transition-all duration-500 truncate uppercase">
                             {cliente?.nombre || 'Consumidor Final'}
                         </h4>
                         <div className="flex items-center gap-2 flex-wrap">
-                             <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest opacity-80 italic truncate max-w-[200px]">{trabajo.subtipo}</p>
+                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase tracking-widest opacity-80 italic truncate max-w-[200px]">{trabajo.subtipo}</p>
                              {trabajo.tipo === 'sri' && (
-                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-brand-red/10 text-brand-red border border-brand-red/20 animate-pulse">SRI</span>
+                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-brand-red/10 text-brand-red border border-brand-red/20 animate-pulse">SRI TERMINAL</span>
                              )}
                              {cliente?.regimen === Regimen.NEGOCIO_POPULAR && (
                                  <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">RIMPE N.P.</span>
-                             )}
-                             {cliente?.regimen === Regimen.EMPRENDEDOR && (
-                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-violet-500/10 text-violet-400 border border-violet-500/20">EMPREND.</span>
                              )}
                         </div>
                     </div>
                     
                     <div className="flex items-center gap-3 flex-wrap">
-                        <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.03] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 uppercase tracking-widest italic">
+                        <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.03] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 uppercase tracking-widest italic transition-colors group-hover:border-liquid-gold/30">
                             <LayersIcon className="w-3.5 h-3.5 text-liquid-gold/60" />
                             <span>{trabajo.cantidad} <span className="text-slate-500 dark:text-slate-600">UNID.</span></span>
                         </div>
                         {trabajo.tamano && (
-                            <div className="text-[9px] font-black text-slate-400 bg-white/[0.03] px-2.5 py-1.5 rounded-lg border border-white/5 uppercase tracking-widest italic">
+                            <div className="text-[9px] font-black text-slate-400 bg-white/[0.03] px-2.5 py-1.5 rounded-lg border border-white/5 uppercase tracking-widest italic group-hover:text-white transition-colors">
                                 {trabajo.tamano}
                             </div>
                         )}
@@ -149,19 +185,26 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                 
                 <div className="flex-shrink-0">
                     {trabajo.fotoOriginalUrl ? (
-                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/5 relative group/img bg-black transition-all group-hover:border-liquid-gold/20 shadow-xl">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/5 relative group/img bg-black transition-all group-hover:border-liquid-gold/40 shadow-2xl">
                             <img 
                                 src={trabajo.fotoOriginalUrl} 
                                 alt="Referencia" 
-                                className="w-full h-full object-cover grayscale opacity-30 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100" 
+                                className="w-full h-full object-cover grayscale opacity-30 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700 scale-125 group-hover:scale-100" 
+                            />
+                            {/* Scanning beam specifically for the image */}
+                            <motion.div 
+                                animate={{ y: ['-100%', '200%'] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent pointer-events-none"
                             />
                         </div>
                     ) : (
                         <button 
                             onClick={(e) => { e.stopPropagation(); onTakePhotoClick(trabajo); }}
-                            className="w-16 h-16 rounded-2xl border border-dashed border-white/5 flex items-center justify-center hover:border-liquid-gold/20 hover:bg-liquid-gold/5 transition-all text-slate-800 hover:text-liquid-gold group/cam"
+                            className="w-20 h-20 rounded-2xl border border-dashed border-white/5 flex items-center justify-center hover:border-liquid-gold/40 hover:bg-liquid-gold/5 transition-all text-slate-800 hover:text-liquid-gold group/cam relative overflow-hidden"
                         >
-                            <CameraIcon className="w-7 h-7 group-hover/cam:scale-110 transition-transform" />
+                            <CameraIcon className="w-7 h-7 group-hover/cam:scale-110 transition-transform relative z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 to-transparent opacity-0 group-hover/cam:opacity-100 transition-opacity" />
                         </button>
                     )}
                 </div>
@@ -171,14 +214,15 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5 relative z-10">
                 <div className="flex items-center gap-3">
                     {trabajo.saldo > 0 ? (
-                        <div className="flex items-center gap-2 text-rose-500 text-[8px] font-black uppercase tracking-widest italic bg-rose-500/5 px-3 py-1 rounded-lg border border-rose-500/10">
+                        <div className="flex items-center gap-2 text-rose-500 text-[8px] font-black uppercase tracking-widest italic bg-rose-500/5 px-3 py-1 rounded-lg border border-rose-500/10 group-hover:border-rose-500/30 transition-all">
                            <BoltIcon className="w-3 h-3 animate-pulse" /> {formatCurrency(trabajo.saldo)}
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 text-emerald-500 text-[8px] font-black uppercase tracking-widest italic bg-emerald-500/5 px-3 py-1 rounded-lg border border-emerald-500/10">
+                        <div className="flex items-center gap-2 text-emerald-500 text-[8px] font-black uppercase tracking-widest italic bg-emerald-500/5 px-3 py-1 rounded-lg border border-emerald-500/10 group-hover:border-emerald-500/30 transition-all">
                             <CheckBadgeIcon className="w-3 h-3" /> Liquidado
                         </div>
                     )}
+                    <span className="text-[6px] font-black text-slate-700 tracking-[0.5em] uppercase hidden md:inline">SPEC_LAYER_V3.1</span>
                 </div>
 
                 {/* Mobile Quick Status Switcher */}
@@ -294,19 +338,49 @@ const KDSPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#050505] relative select-none overflow-hidden">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#050505] relative select-none overflow-hidden font-display">
             
+            {/* --- ELITE HUD OVERLAY --- */}
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:32px_32px] opacity-20" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,#f2ca5008,transparent_50%)]" />
+                
+                {/* Vertical Telemetry */}
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-[0.05] vertical-text items-center">
+                    <span className="text-[7px] font-black tracking-[1em] text-white uppercase italic">CORE_PROCESSOR_V3</span>
+                    <div className="h-20 w-[1px] bg-white/20" />
+                    <span className="text-[7px] font-black tracking-[1em] text-liquid-gold uppercase italic">SECTOR_B_ACTIVE</span>
+                </div>
+                
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-[0.05] vertical-text items-center">
+                    <span className="text-[7px] font-black tracking-[1em] text-white uppercase italic">NUCLEUS_SYNC_STABLE</span>
+                    <div className="h-20 w-[1px] bg-white/20" />
+                    <span className="text-[7px] font-black tracking-[1em] text-liquid-gold uppercase italic">LATENCY_02MS</span>
+                </div>
+            </div>
+
             {/* --- CABECERA --- */}
-            <div className="flex-shrink-0 p-8 lg:p-12 relative z-10 border-b border-slate-200 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-xl">
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+            <div className="flex-shrink-0 p-8 lg:p-14 relative z-10 border-b border-slate-200 dark:border-white/5 bg-white/40 dark:bg-black/60 backdrop-blur-3xl overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 relative z-10">
                     
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow"></div>
-                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">Sistema de Telemetría Industrial</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse"></div>
+                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">Terminal de Operaciones Industriales</span>
                         </div>
-                        <h1 className="text-5xl lg:text-8xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-none">
-                            Núcleo de <span className="text-gold-gradient">Control</span>
+                        <h1 className="text-6xl lg:text-9xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-[0.8] group">
+                            Núcleo de <br/>
+                            <span className="text-gold-gradient relative">
+                                Control
+                                <motion.div 
+                                    className="absolute -right-12 top-0 text-[10px] font-black text-white/20 not-italic tracking-normal"
+                                    animate={{ opacity: [0.2, 0.5, 0.2] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                    [SYS_ON]
+                                </motion.div>
+                            </span>
                         </h1>
                     </div>
 

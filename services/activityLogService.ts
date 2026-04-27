@@ -45,6 +45,7 @@ export type ActivityAction =
   | 'AGENDAR_TAREA'
   | 'COMPLETAR_TAREA'
   | 'ACCESO_MODULO'
+  | 'FINALIZADO_DIRECTO'
   | (string & {});
 
 /**

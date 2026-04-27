@@ -125,19 +125,7 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
     if (textOnly.includes("DECLARACION DE IVA")) listaObligaciones.push("IVA");
     if (textOnly.includes("RENTA")) listaObligaciones.push("Impuesto a la Renta");
 
-    return {
-      apellidos_nombres: nombres || 'CONTRIBUYENTE',
-      ruc: ruc,
-      direccion: direccionFinal || 'Dirección no detectada',
-      contacto: {
-        email: validEmail || '',
-        celular: validPhone || ''
-      },
-      regimen: regimen,
-      obligaciones_tributarias: textOnly.includes("SEMESTRAL") ? "semestral" : "mensual",
-      lista_obligaciones: listaObligaciones,
     // --- 6. ACTIVIDADES ECONÓMICAS (REFINADO) ---
-    // Buscamos líneas que empiecen con • o tengan el patrón Código - Descripción
     const lines = fullText.split('|').map(l => l.trim()).filter(Boolean);
     const activityLines = lines.filter(l => l.startsWith('•') || /^\d{6,7}\s*-/.test(l));
     const actividadEconomica = activityLines.length > 0 

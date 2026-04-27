@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
@@ -6,7 +6,7 @@ import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
 import { UI_TEXT } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
 /* Added UserPlusIcon to the imports to fix the error on line 112 */
-import { CloseIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ClockIcon, PencilIcon, TrashIcon, ExclamationTriangleIcon, Loader2Icon, CheckCircleIcon, SparklesIcon, MessageCircleIcon, WhatsAppIcon, UserPlusIcon } from '../components/Icons';
+import { CloseIcon, PhoneIcon, EnvelopeIcon, DollarIcon, ClockIcon, PencilIcon, TrashIcon, ExclamationTriangleIcon, Loader2Icon, CheckCircleIcon, SparklesIcon, MessageCircleIcon, WhatsAppIcon, UserPlusIcon, SearchIcon } from '../components/Icons';
 import { generateMarketingPromotion } from '../services/geminiService';
 
 // --- MODAL DE MARKETING IA ---
@@ -81,8 +81,18 @@ const ClientesPage: React.FC = () => {
     const { clientes, trabajos, loading, addCliente, updateCliente, deleteCliente } = useData();
     const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
     const [marketingClient, setMarketingClient] = useState<Cliente | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     
     const location = useLocation();
+
+    const filteredClientes = useMemo(() => {
+        const lower = searchTerm.toLowerCase();
+        return clientes.filter(c => 
+            (c.nombre && c.nombre.toLowerCase().includes(lower)) ||
+            (c.ruc && c.ruc.toLowerCase().includes(lower)) ||
+            (c.cedula && c.cedula.toLowerCase().includes(lower))
+        );
+    }, [clientes, searchTerm]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -125,6 +135,18 @@ const ClientesPage: React.FC = () => {
                 </button>
             </div>
 
+            <div className="flex flex-col md:flex-row gap-6 relative z-10">
+                <div className="relative group flex-grow">
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                    <input 
+                        type="text" placeholder="BUSCAR POR NOMBRE, RUC O CÉDULA..." 
+                        value={searchTerm} 
+                        onChange={e => setSearchTerm(e.target.value)} 
+                        className="w-full bg-white/5 border border-white/10 p-5 pl-16 rounded-[2rem] text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all shadow-inner text-sm uppercase tracking-widest placeholder:text-slate-600"
+                    />
+                </div>
+            </div>
+
             <div className="flex-grow bg-white/5 backdrop-blur-xl rounded-[2rem] lg:rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden">
                 <div className="overflow-x-auto h-full styled-scrollbar">
                     <table className="min-w-full divide-y divide-white/5">
@@ -139,7 +161,9 @@ const ClientesPage: React.FC = () => {
                         <tbody className="divide-y divide-white/5 bg-transparent">
                             {loading ? (
                                 <tr><td colSpan={4} className="text-center py-20 text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Cargando clientes...</td></tr>
-                            ) : clientes.map(c => (
+                            ) : filteredClientes.length === 0 ? (
+                                <tr><td colSpan={4} className="text-center py-20 text-xs font-bold text-slate-500 uppercase tracking-widest">No se encontraron clientes.</td></tr>
+                            ) : filteredClientes.map(c => (
                                 <tr key={c.id} className="hover:bg-white/[0.04] transition-all duration-300 group">
                                     <td className="px-5 lg:px-8 py-4 lg:py-6">
                                         <div className="flex items-center gap-4">

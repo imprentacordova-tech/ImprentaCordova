@@ -46,20 +46,29 @@ const MainActionButton: React.FC<{
             onClick={onClick}
             className={`group relative flex flex-col items-start p-8 rounded-[2.5rem] border bg-gradient-to-br ${colorMap[color]} backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-2xl overflow-hidden h-64`}
         >
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-700">
+            {/* Holographic Sheen Effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-[1.5s] ease-in-out" />
+            </div>
+
+            {/* Industrial Internal Scanline */}
+            <div className="absolute left-0 w-full h-[1px] bg-white/10 top-0 group-hover:top-full transition-all duration-[3s] ease-linear pointer-events-none" />
+
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-125 group-hover:rotate-6">
                 <Icon className="w-40 h-40" />
             </div>
             
-            <div className={`w-14 h-14 rounded-2xl ${iconBgMap[color]} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-white/5`}>
+            <div className={`w-14 h-14 rounded-2xl ${iconBgMap[color]} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-white/5 relative z-10`}>
                 <Icon className="w-7 h-7" />
+                <div className="absolute inset-0 rounded-2xl bg-white/20 scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-0 transition-all duration-700" />
             </div>
             
-            <div className="mt-auto space-y-1">
+            <div className="mt-auto space-y-1 relative z-10">
                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic text-left">{label}</h3>
                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] text-left">{sub}</p>
             </div>
 
-            <div className="absolute bottom-6 right-8 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+            <div className="absolute bottom-6 right-8 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all group-hover:scale-110">
                 <ChevronRightIcon className="w-5 h-5 text-white/40 group-hover:text-white transition-colors" />
             </div>
         </motion.button>
@@ -110,29 +119,39 @@ const DashboardPage: React.FC = () => {
         <div className="max-w-[1400px] mx-auto space-y-16 pb-20 px-4 md:px-0 pt-10">
             
             {/* --- CABECERA --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
-                <div className="space-y-4">
-                    <div className="flex items-center gap-5">
-                        <div className="h-1 w-12 bg-liquid-gold rounded-full"></div>
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">NÚCLEO DE OPERACIONES ESTRATÉGICAS</p>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 border-b border-white/5 pb-12">
+                <div className="flex gap-10">
+                    <div className="w-[1px] h-32 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-5">
+                            <div className="h-[2px] w-12 bg-liquid-gold rounded-full shadow-gold-glow"></div>
+                            <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">NÚCLEO DE OPERACIONES ESTRATÉGICAS</p>
+                        </div>
+                        <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter uppercase italic leading-none">
+                            SISTEMA <span className="text-gold-gradient">NUCLEUS</span>
+                        </h1>
+                        <p className="text-slate-500 text-lg font-light tracking-tight italic">
+                            Sincronización Maestra para <span className="text-white font-bold">{currentUser.nombre.split(' ')[0]}</span>.
+                        </p>
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        SISTEMA <span className="text-gold-gradient">NUCLEUS</span>
-                    </h1>
-                    <p className="text-slate-500 text-lg font-light tracking-tight italic">
-                        Sincronización Maestra para <span className="text-white font-bold">{currentUser.nombre.split(' ')[0]}</span>.
-                    </p>
                 </div>
 
-                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 flex items-center gap-8 backdrop-blur-xl">
-                    <div className="text-center">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Manifiestos en Curso</p>
-                        <p className="text-3xl font-black text-white italic">{stats.totalActivos}</p>
+                <div className="bg-black/60 border border-white/10 rounded-[2.5rem] p-8 flex items-center gap-10 backdrop-blur-3xl shadow-luxury relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
+                    <div className="text-center relative z-10">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Manifiestos en Curso</p>
+                        <p className="text-4xl font-black text-white italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalActivos}</p>
                     </div>
-                    <div className="w-px h-10 bg-white/5"></div>
-                    <div className="text-center">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Fase de Despliegue</p>
-                        <p className="text-3xl font-black text-blue-400 italic">{stats.enProduccion}</p>
+                    <div className="w-[1px] h-12 bg-white/10 relative z-10"></div>
+                    <div className="text-center relative z-10">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Fase de Despliegue</p>
+                        <p className="text-4xl font-black text-blue-400 italic tracking-tighter group-hover:scale-110 transition-transform">{stats.enProduccion}</p>
+                    </div>
+                    {/* Tiny animated signal */}
+                    <div className="absolute top-4 right-4 flex gap-1">
+                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse delay-75"></div>
+                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse delay-150"></div>
                     </div>
                 </div>
             </div>
