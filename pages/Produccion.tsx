@@ -72,20 +72,23 @@ const ProduccionPage: React.FC = () => {
                          <div className="flex justify-center py-10">
                              <Loader2Icon className="w-6 h-6 text-orange-500/40 animate-spin" />
                          </div>
-                        <motion.div 
-                            layoutId={job.id}
-                            key={job.id} 
-                            onClick={() => setSelectedJob(job)} 
-                            className={`p-4 rounded-xl cursor-pointer transition-all duration-300 border ${selectedJob?.id === job.id ? 'bg-liquid-gold/5 border-liquid-gold/40' : 'bg-white/[0.02] border-white/5 hover:border-white/10'}`}
-                        >
-                            <div className="flex justify-between items-center mb-1">
-                                <p className={`font-black text-sm uppercase tracking-tighter ${selectedJob?.id === job.id ? 'text-liquid-gold' : 'text-slate-400'}`}>PROTOCOLO-{job.orden}</p>
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-600 bg-white/5 px-1.5 py-0.5 rounded">FASE_EJECUCIÓN</span>
-                            </div>
-                            <h3 className="font-bold text-xs text-white truncate uppercase">{getClientName(job.clienteId)}</h3>
-                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest truncate mt-1">{job.subtipo}</p>
-                        </motion.div>
-                    ))}
+                    ) : (
+                        pendingJobs.map(job => (
+                            <motion.div 
+                                layoutId={job.id}
+                                key={job.id} 
+                                onClick={() => setSelectedJob(job)} 
+                                className={`p-4 rounded-xl cursor-pointer transition-all duration-300 border ${selectedJob?.id === job.id ? 'bg-liquid-gold/5 border-liquid-gold/40' : 'bg-white/[0.02] border-white/5 hover:border-white/10'}`}
+                            >
+                                <div className="flex justify-between items-center mb-1">
+                                    <p className={`font-black text-sm uppercase tracking-tighter ${selectedJob?.id === job.id ? 'text-liquid-gold' : 'text-slate-400'}`}>PROTOCOLO-{job.orden}</p>
+                                    <span className="text-[7px] font-bold uppercase tracking-widest text-slate-600 bg-white/5 px-1.5 py-0.5 rounded">FASE_EJECUCIÓN</span>
+                                </div>
+                                <h3 className="font-bold text-xs text-white truncate uppercase">{getClientName(job.clienteId)}</h3>
+                                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest truncate mt-1">{job.subtipo}</p>
+                            </motion.div>
+                        ))
+                    )}
                     {!loading && pendingJobs.length === 0 && (
                         <div className="py-20 text-center opacity-30">
                             <p className="text-[10px] font-bold uppercase tracking-widest">Sin pendientes</p>

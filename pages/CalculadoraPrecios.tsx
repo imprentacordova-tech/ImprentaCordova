@@ -1154,20 +1154,3 @@ const CalculadoraPreciosPage: React.FC = () => {
 
 export default CalculadoraPreciosPage;
 
-
-            {showMasterTable && <MasterTableModal onClose={() => setShowMasterTable(false)} />}
-            {showSaveModal && (
-                <ProductManagementModal 
-                    isOpen={showSaveModal} 
-                    onClose={() => setShowSaveModal(false)} 
-                    onSave={handleFinalSave} 
-                    productToEdit={productToSave as Producto}
-                    defaultMode="SINGLE"
-                />
-            )}
-        </div>
-    );
-};
-
-export default CalculadoraPreciosPage;
-

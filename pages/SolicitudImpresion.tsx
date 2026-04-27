@@ -115,41 +115,6 @@ const SolicitudImpresionPage: React.FC = () => {
     const RucArray = (cliente.ruc || cliente.cedula || '9999999999001').split('').slice(0, 13);
     while (RucArray.length < 13) RucArray.push('');
 
-    return (
-        <div className="bg-slate-300 min-h-screen py-12 flex flex-col items-center overflow-y-auto font-sans">
-            <style>{`
-                @media print {
-                    @page { size: A4; margin: 0; }
-                    body { margin: 0; background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                    .no-print { display: none !important; }
-                    .page-container {
-                        width: 210mm;
-                        min-height: 297mm;
-                        background: white;
-                        margin: 0 auto;
-                        position: relative;
-                        box-sizing: border-box;
-                    }
-                    /* Ocultar bordes de la vista web en impresión */
-                    .web-shadow { box-shadow: none !important; }
-                }
-            `}</style>
-
-            {/* BARRA SUPERIOR ELEGANTE (NO IMPRIMIBLE) */}
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-6 no-print px-6 py-4 bg-white/70 backdrop-blur-xl rounded-2xl shadow-sm border border-white/50">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-700 font-black text-xs uppercase tracking-widest hover:text-brand-blue transition-colors bg-white px-4 py-2 rounded-xl shadow-sm">
-                    <ArrowLeftIcon className="w-4 h-4" /> Volver
-                </button>
-                <div className="flex gap-3">
-                    <button onClick={handleDownloadPdf} className="bg-white border-2 border-slate-200 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest hover:border-brand-blue/30 transition-all flex items-center gap-2 shadow-sm text-slate-700">
-                        <ArrowDownTrayIcon className="w-4 h-4" /> Descargar PDF
-                    </button>
-                    <button onClick={() => window.print()} className="bg-[#1f2124] text-white px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:shadow-black/30 flex items-center gap-2 hover:bg-black transition-all">
-                        <PrinterIcon className="w-4 h-4"/> Imprimir A4
-                    </button>
-                </div>
-            </div>
-
     // Función principal para renderizar el formulario (ya sea la mitad A5 o la A4 completa)
     const renderFormulario = (variant: 'cliente' | 'imprenta' | 'full') => {
         // Configuraciones de color dinámicas según la variante

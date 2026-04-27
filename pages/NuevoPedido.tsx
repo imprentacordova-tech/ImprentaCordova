@@ -364,6 +364,7 @@ const NuevoPedidoPage: React.FC = () => {
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 {missionCategory === 'SRI' ? (
+                                    <div className="space-y-12">
                                         {(isAddingItem || items.length === 0) ? (
                                             !servicio ? (
                                                 <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} regimen={cliente?.regimen} />
