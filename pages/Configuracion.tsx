@@ -11,6 +11,9 @@ import {
     KeyIcon, ServerIcon, CpuIcon, FingerPrintIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import Papa from 'papaparse';
+import { supabase } from '../services/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 // --- LUXURY CORE COMPONENTS ---
 
@@ -104,8 +107,11 @@ const ConfiguracionPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
     const [isImporting, setIsImporting] = useState(false);
+    const [isImportingSri, setIsImportingSri] = useState(false);
+    const [sriImportProgress, setSriImportProgress] = useState(0);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const sriFileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (cloudConfig) setLocalConfig(cloudConfig);
@@ -200,6 +206,77 @@ const ConfiguracionPage: React.FC = () => {
             setIsImporting(false); 
             e.target.value = ''; 
         }
+    };
+
+    const handleImportSriPadron = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        setIsImportingSri(true);
+        setSriImportProgress(0);
+        
+        // El usuario proporcionó el service_role key, lo usaremos para hacer el bulk insert saltando RLS
+        // ya que insertupsert de 1.5M de registros requiere poder fuerte
+        const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
+        
+        // Creamos un cliente temporal con service_role para esta importación pesada
+        const supaAdmin = createClient(import.meta.env.VITE_SUPABASE_URL, SERVICE_ROLE_KEY);
+
+        let batch: any[] = [];
+        let totalProcessed = 0;
+        
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            step: async function(row, parser) {
+                parser.pause();
+                
+                const data: any = row.data;
+                const ruc = data['NUMERO_RUC']?.trim();
+                const razon = data['RAZON_SOCIAL']?.trim();
+                
+                if (ruc && razon) {
+                    // Evitar duplicados en el mismo batch (el CSV del SRI tiene múltiples establecimientos por RUC)
+                    if (!batch.some(item => item.ruc === ruc)) {
+                        batch.push({
+                            ruc: ruc,
+                            razon_social: razon,
+                            estado_contribuyente: data['ESTADO_CONTRIBUYENTE']?.trim() || null,
+                            tipo_persona: data['TIPO_CONTRIBUYENTE']?.trim() || null,
+                            provincia: data['DESCRIPCION_PROVINCIA_EST']?.trim() || null,
+                            canton: data['DESCRIPCION_CANTON_EST']?.trim() || null,
+                            parroquia: data['DESCRIPCION_PARROQUIA_EST']?.trim() || null,
+                            actividad_economica: data['ACTIVIDAD_ECONOMICA']?.trim() || null
+                        });
+                    }
+                }
+                
+                totalProcessed++;
+                
+                if (batch.length >= 1000) {
+                    const { error } = await supaAdmin.from('sri_padron_el_oro').upsert(batch, { onConflict: 'ruc' });
+                    if(error) console.error("Error upserting SRI chunk:", error);
+                    batch = [];
+                    setSriImportProgress(totalProcessed);
+                }
+                
+                parser.resume();
+            },
+            complete: async function() {
+                if (batch.length > 0) {
+                    await supaAdmin.from('sri_padron_el_oro').upsert(batch, { onConflict: 'ruc' });
+                }
+                logActivity(currentUser.nombre, currentUser.rol, 'SRI_PADRON_IMPORT', `Importó padrón SRI con ${totalProcessed} registros`, 'Sistema');
+                setIsImportingSri(false);
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
+                if(e.target) e.target.value = '';
+            },
+            error: function(error) {
+                console.error("Error parsing SRI CSV:", error);
+                setIsImportingSri(false);
+            }
+        });
     };
 
     const togglePasswordVisibility = (ruc: string) => {
@@ -411,6 +488,25 @@ const ConfiguracionPage: React.FC = () => {
                                 >
                                     {isImporting ? <Loader2Icon className="animate-spin w-3 h-3"/> : <ArrowDownTrayIcon className="w-3 h-3"/>}
                                     Import CSV Protocol
+                                </button>
+                                
+                                <input type="file" ref={sriFileInputRef} onChange={handleImportSriPadron} className="hidden" accept=".csv" />
+                                <button 
+                                    onClick={() => sriFileInputRef.current?.click()} 
+                                    disabled={isImportingSri} 
+                                    className="btn-luxury flex-1 py-3 border-liquid-gold/30 hover:bg-liquid-gold/10 text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3 relative overflow-hidden"
+                                >
+                                    {isImportingSri ? (
+                                        <>
+                                            <Loader2Icon className="animate-spin w-3 h-3 text-liquid-gold"/>
+                                            SYNCING ({sriImportProgress})
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ServerIcon className="w-3 h-3 text-liquid-gold"/>
+                                            ACTUALIZAR PADRÓN SRI (108MB)
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

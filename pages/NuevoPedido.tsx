@@ -50,6 +50,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriEstablecimiento, setSriEstablecimiento] = useState('001');
     const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
     const [quickName, setQuickName] = useState('');
+    const [isSidebarMinimized, setIsSidebarMinimized] = useState(true);
 
     // Auto-scroll logic
     useEffect(() => {
@@ -215,22 +216,22 @@ const NuevoPedidoPage: React.FC = () => {
     return (
         <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-40 px-4 sm:px-8 lg:px-14 pt-6 md:pt-10">
             
-            {/* --- INDICADOR DE PASOS --- */}
-            <div className="flex justify-between items-center bg-white/[0.01] backdrop-blur-3xl p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden group no-scrollbar overflow-x-auto">
+            {/* --- INDICADOR DE PASOS (MINIMALISTA) --- */}
+            <div className="flex justify-between items-center bg-white/[0.01] backdrop-blur-3xl p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group no-scrollbar overflow-x-auto">
                 <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.03] via-transparent to-liquid-gold/[0.03]"></div>
                 {getSteps().map((s, idx) => (
                     <React.Fragment key={s.id}>
-                        <div className="flex flex-col items-center gap-3 md:gap-5 relative z-10 flex-shrink-0 group/step">
+                        <div className="flex flex-col items-center gap-2 relative z-10 flex-shrink-0 group/step">
                             <div className="relative">
                                 {/* Holographic Base for Active Step */}
                                 {step === s.id && (
                                     <motion.div 
                                         layoutId="stepGlow"
-                                        className="absolute -inset-4 bg-liquid-gold/20 blur-2xl rounded-full"
+                                        className="absolute -inset-2 bg-liquid-gold/20 blur-xl rounded-full"
                                     />
                                 )}
                                 
-                                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all duration-700 border-2 relative overflow-hidden ${
+                                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all duration-700 border relative overflow-hidden ${
                                     step >= s.id 
                                         ? 'bg-black border-liquid-gold shadow-gold-glow-sm' 
                                         : 'bg-white/5 border-white/10 text-slate-700'
@@ -238,18 +239,18 @@ const NuevoPedidoPage: React.FC = () => {
                                     {/* Scanning Beam inside Icon Box */}
                                     {step === s.id && (
                                         <motion.div 
-                                            animate={{ y: [-40, 40] }}
+                                            animate={{ y: [-30, 30] }}
                                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                                             className="absolute inset-0 bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent w-full h-1/2 pointer-events-none"
                                         />
                                     )}
-                                    <s.icon className={`w-5 h-5 md:w-7 md:h-7 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
+                                    <s.icon className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
                                 </div>
                             </div>
                             
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center gap-0.5">
                                 <span className={`text-[8px] font-black tracking-widest ${step >= s.id ? 'text-liquid-gold/60' : 'text-slate-800'}`}>{(s as any).code}</span>
-                                <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-[0.3em] italic transition-all ${
+                                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] italic transition-all ${
                                     step >= s.id ? 'text-white' : 'text-slate-700'
                                 } ${step === s.id ? 'text-liquid-gold' : ''}`}>{s.label}</span>
                             </div>
@@ -275,8 +276,8 @@ const NuevoPedidoPage: React.FC = () => {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                <div className={missionCategory === 'COMERCIAL' && step === 2 ? "lg:col-span-12 space-y-10" : "lg:col-span-8 space-y-10"}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
+                <div className={missionCategory === 'COMERCIAL' && step === 2 ? "lg:col-span-12 space-y-10" : (isSidebarMinimized ? "lg:col-span-12 space-y-10 transition-all duration-500" : "lg:col-span-8 space-y-10 transition-all duration-500")}>
                     <AnimatePresence mode="wait">
                         
                         {/* PASO 1: CATEGORÍA (Arquitectura de 3 Pilares Elite) */}
@@ -849,58 +850,61 @@ const NuevoPedidoPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* SIDEBAR DE RESUMEN EN TIEMPO REAL */}
+                {/* SIDEBAR DE RESUMEN EN TIEMPO REAL (COLLAPSIBLE) */}
                 {missionCategory !== 'COMERCIAL' && (
-                    <div className="lg:col-span-4 space-y-10 sticky top-10">
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                            className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/10 shadow-2xl relative overflow-hidden group"
+                    <div className={`lg:col-span-4 sticky top-10 transition-all duration-500 z-40 ${isSidebarMinimized ? 'fixed right-4 translate-x-[calc(100%-4rem)] w-[400px]' : 'space-y-6 w-full'}`}>
+                        <button 
+                            onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
+                            className="absolute -left-12 top-4 bg-black border border-white/10 p-3 rounded-l-2xl text-liquid-gold shadow-xl hover:bg-white/5 transition-colors group"
                         >
-                        <div className="absolute top-0 right-0 p-10 opacity-[0.02] scale-150"><ShoppingCartIcon className="w-64 h-64 text-liquid-gold" /></div>
-                        <div className="relative z-10 space-y-10">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Hoja de <span className="text-liquid-gold">Ruta</span></h3>
-                            
-                            <div className="space-y-8">
-                                <div className="space-y-2">
-                                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Cliente</p>
-                                    <p className="text-2xl font-black text-white italic truncate uppercase">{cliente?.nombre || quickName || '---'}</p>
-                                    {isSriOrder && <span className="text-[8px] text-brand-red font-black border border-brand-red/30 px-2 py-0.5 rounded-full">SRI ACTIVO</span>}
-                                </div>
+                            <ShoppingCartIcon className="w-5 h-5" />
+                        </button>
+                        <div className={`bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden transition-all duration-500 ${isSidebarMinimized ? 'opacity-50 hover:opacity-100' : 'opacity-100'}`}>
+                            <div className="absolute top-0 right-0 p-6 opacity-[0.02] scale-150"><ShoppingCartIcon className="w-48 h-48 text-liquid-gold" /></div>
+                            <div className="relative z-10 space-y-8">
+                                <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Hoja de <span className="text-liquid-gold">Ruta</span></h3>
+                                
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Cliente</p>
+                                        <p className="text-xl font-black text-white italic truncate uppercase">{cliente?.nombre || quickName || '---'}</p>
+                                        {isSriOrder && <span className="text-[8px] text-brand-red font-black border border-brand-red/30 px-2 py-0.5 rounded-full">SRI ACTIVO</span>}
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Manifiesto de Items</p>
-                                    <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                                        {items.length > 0 ? items.map((item, i) => (
-                                            <div key={i} className="flex justify-between items-center bg-white/[0.02] p-4 rounded-xl border border-white/5">
-                                                <span className="text-[10px] text-white font-black uppercase tracking-tighter truncate max-w-[150px] italic">{item.nombre}</span>
-                                                <span className="text-xs font-black text-liquid-gold">${item.precioFinal.toFixed(2)}</span>
-                                            </div>
-                                        )) : <p className="text-[10px] text-slate-700 font-black uppercase tracking-widest italic">Esperando Protocolo...</p>}
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Manifiesto de Items</p>
+                                        <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {items.length > 0 ? items.map((item, i) => (
+                                                <div key={i} className="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl border border-white/5">
+                                                    <span className="text-[9px] text-white font-black uppercase tracking-tighter truncate max-w-[120px] italic">{item.nombre}</span>
+                                                    <span className="text-[10px] font-black text-liquid-gold">${item.precioFinal.toFixed(2)}</span>
+                                                </div>
+                                            )) : <p className="text-[9px] text-slate-700 font-black uppercase tracking-widest italic">Esperando Protocolo...</p>}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="pt-8 border-t border-white/5 space-y-4">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Total</span>
-                                        <span className="text-3xl font-black text-white italic tracking-tighter">${precio.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest italic">Abono</span>
-                                        <span className="text-2xl font-black text-emerald-500 italic tracking-tighter">-${abono.toFixed(2)}</span>
-                                    </div>
-                                    <div className="pt-4 flex justify-between items-end border-t border-white/5">
-                                        <span className="text-[11px] text-liquid-gold font-black uppercase tracking-widest italic">Saldo</span>
-                                        <span className="text-5xl font-black text-liquid-gold italic tracking-tighter shadow-gold-glow-sm">${(precio - abono).toFixed(2)}</span>
+                                    <div className="pt-6 border-t border-white/5 space-y-3">
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Total</span>
+                                            <span className="text-2xl font-black text-white italic tracking-tighter">${precio.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-[9px] text-emerald-600 font-black uppercase tracking-widest italic">Abono</span>
+                                            <span className="text-xl font-black text-emerald-500 italic tracking-tighter">-${abono.toFixed(2)}</span>
+                                        </div>
+                                        <div className="pt-3 flex justify-between items-end border-t border-white/5">
+                                            <span className="text-[10px] text-liquid-gold font-black uppercase tracking-widest italic">Saldo</span>
+                                            <span className="text-4xl font-black text-liquid-gold italic tracking-tighter shadow-gold-glow-sm">${(precio - abono).toFixed(2)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
 
-                    <div className="bg-white/[0.02] p-10 rounded-[2.5rem] border border-white/5 space-y-6">
-                        <div className="flex items-center gap-4 text-liquid-gold"><SparklesIcon className="w-5 h-5" /><h4 className="text-[10px] font-black uppercase tracking-widest italic">Cálculo Preciso</h4></div>
-                        <PriceCalculatorDisplay onSelectPrice={setPrecio} />
-                    </div>
+                        <div className={`bg-white/[0.02] p-6 rounded-3xl border border-white/5 space-y-4 mt-6 transition-all duration-500 ${isSidebarMinimized ? 'opacity-50 hover:opacity-100' : 'opacity-100'}`}>
+                            <div className="flex items-center gap-3 text-liquid-gold"><SparklesIcon className="w-4 h-4" /><h4 className="text-[9px] font-black uppercase tracking-widest italic">Cálculo Preciso</h4></div>
+                            <PriceCalculatorDisplay onSelectPrice={setPrecio} />
+                        </div>
                     </div>
                 )}
             </div>

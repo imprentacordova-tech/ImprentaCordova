@@ -130,18 +130,31 @@ const OrdenProduccionPage: React.FC = () => {
                             <div className="bg-slate-50 p-2 rounded-t-xl text-[9px] font-black uppercase text-slate-400 text-center tracking-widest border-b">
                                 Detalles de Fabricación
                             </div>
-                            <div className="p-4 flex-grow space-y-4">
-                                <p className="text-xl font-black text-slate-900 uppercase leading-snug tracking-tight">
-                                    {trabajo.subtipo}
-                                </p>
-                                <div className="grid grid-cols-2 gap-3">
+                            <div className="p-4 flex-grow space-y-4 flex flex-col">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 uppercase leading-none tracking-tighter">
+                                        {trabajo.tipo || 'General'}
+                                    </h2>
+                                    <p className="text-sm font-bold text-slate-500 uppercase mt-1">
+                                        {trabajo.subtipo}
+                                    </p>
+                                </div>
+
+                                {trabajo.detalle && (
+                                    <div className="flex-grow bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Instrucciones / Detalles</span>
+                                        <p className="text-xs text-slate-800 font-medium whitespace-pre-wrap leading-tight">{trabajo.detalle}</p>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3 mt-auto">
                                     <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 text-center">
                                         <span className="text-[8px] font-black text-blue-400 uppercase block mb-1">Cantidad</span>
                                         <span className="text-2xl font-black text-brand-blue">{trabajo.cantidad}</span>
                                     </div>
-                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center flex flex-col justify-center">
                                         <span className="text-[8px] font-black text-slate-400 uppercase block mb-1">Prioridad</span>
-                                        <span className={`text-xs font-black uppercase ${trabajo.prioridad === 'Urgente' ? 'text-brand-red' : 'text-slate-900'}`}>{trabajo.prioridad || 'NORMAL'}</span>
+                                        <span className={`text-sm font-black uppercase ${trabajo.prioridad === 'Urgente' ? 'text-brand-red' : 'text-slate-900'}`}>{trabajo.prioridad || 'NORMAL'}</span>
                                     </div>
                                 </div>
                             </div>
