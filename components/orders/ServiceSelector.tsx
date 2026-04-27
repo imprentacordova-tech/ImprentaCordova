@@ -12,12 +12,13 @@ interface ServiceSelectorProps {
     onSelect: (servicio: any) => void;
     selectedId?: string;
     regimen?: string;
+    forcedCategory?: string;
 }
 
-const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId, regimen }) => {
+const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId, regimen, forcedCategory }) => {
     const { productos } = useData();
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState<string>('Todas');
+    const [activeCategory, setActiveCategory] = useState<string>(forcedCategory || 'Todas');
     const [manualRegimen, setManualRegimen] = useState<string | null>(null);
 
     // Si cambia el régimen por prop, reseteamos el manual
@@ -118,27 +119,29 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
             </div>
 
             {/* Pestañas de Categorías - Estilo McDonald's */}
-            <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar">
-                {categories.map((cat) => {
-                    return (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveCategory(cat)}
-                            className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border ${
-                                activeCategory === cat 
-                                ? 'bg-liquid-gold text-black border-liquid-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]' 
-                                : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
-                            }`}
-                        >
-                            <span className="text-base">{CATEGORY_EMOJIS[cat] || '📦'}</span>
-                            {cat}
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                                activeCategory === cat ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'
-                            }`}>{categoryCounts[cat] || 0}</span>
-                        </button>
-                    );
-                })}
-            </div>
+            {!forcedCategory && (
+                <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar">
+                    {categories.map((cat) => {
+                        return (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all border ${
+                                    activeCategory === cat 
+                                    ? 'bg-liquid-gold text-black border-liquid-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]' 
+                                    : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
+                                }`}
+                            >
+                                <span className="text-base">{CATEGORY_EMOJIS[cat] || '📦'}</span>
+                                {cat}
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                                    activeCategory === cat ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'
+                                }`}>{categoryCounts[cat] || 0}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* Selector de Régimen (Modo Carpeta) si es SRI y no se conoce el régimen */}
             {activeCategory === 'SRI' && !effectiveRegimen && !searchTerm && (

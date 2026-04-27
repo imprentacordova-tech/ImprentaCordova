@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { extractDataFromSriPdf } from '../../services/pdfExtraction';
+import { sriLookupService } from '../../services/sriLookupService';
 import { validarIdentificacionEC } from '../../utils';
 import { 
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon, 
@@ -100,12 +101,46 @@ export const CreateClientModal: React.FC<{
 
     // Validación RUC solo en modo SRI
     useEffect(() => {
-        if (mode === 'SRI' && newClienteData.cedulaRuc.length >= 10) {
-            const isValid = validarIdentificacionEC(newClienteData.cedulaRuc);
-            setRucError(isValid ? '' : 'Identificación inválida (Ecuador)');
-        } else {
-            setRucError('');
-        }
+        const performLookup = async () => {
+            if (mode === 'SRI' && newClienteData.cedulaRuc.length === 13) {
+                const isValid = validarIdentificacionEC(newClienteData.cedulaRuc);
+                if (isValid) {
+                    setRucError('');
+                    setIsScanning(true); // Reutilizamos el estado de scanning para el lookup
+                    try {
+                        const result = await sriLookupService.lookupByRuc(newClienteData.cedulaRuc);
+                        if (result) {
+                            applyExtractedData({
+                                nombre: result.razon_social,
+                                ruc: result.ruc,
+                                direccion: result.direccion || `${result.parroquia}, ${result.canton}, ${result.provincia || 'EL ORO'}`,
+                                regimen: result.regimen || Regimen.GENERAL,
+                                actividades: result.actividad_economica
+                            });
+                        }
+                    } catch (err) {
+                        console.error("Error doing padron lookup:", err);
+                    } finally {
+                        setIsScanning(false);
+                    }
+                } else {
+                    setRucError('Identificación inválida (Ecuador)');
+                }
+            } else if (mode === 'SRI' && newClienteData.cedulaRuc.length >= 10 && newClienteData.cedulaRuc.length < 13) {
+                // Posible Cédula
+                const isValid = validarIdentificacionEC(newClienteData.cedulaRuc);
+                setRucError(isValid ? '' : 'Cédula inválida');
+                
+                // Si es válida (10 dígitos), también intentamos buscar en el padrón por si acaso está registrado como RUC pero escribió la cédula
+                if (isValid && newClienteData.cedulaRuc.length === 10) {
+                   // Opcional: buscar ruc + '001'
+                }
+            } else {
+                setRucError('');
+            }
+        };
+        
+        performLookup();
     }, [newClienteData.cedulaRuc, mode]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -452,6 +487,8 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createMode, setCreateMode] = useState<ClientMode>('EXPRESS');
+    const [padronResults, setPadronResults] = useState<SriRucData[]>([]);
+    const [isSearchingPadron, setIsSearchingPadron] = useState(false);
     
     const filteredClients = searchTerm.length > 1 
         ? clientes.filter(c => 
@@ -460,6 +497,27 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
             (c.ruc || '').includes(searchTerm)
         ).slice(0, 5)
         : [];
+
+    useEffect(() => {
+        const searchPadron = async () => {
+            if (searchTerm.length > 3 && filteredClients.length === 0) {
+                setIsSearchingPadron(true);
+                try {
+                    const results = await sriLookupService.searchByName(searchTerm);
+                    setPadronResults(results);
+                } catch (err) {
+                    console.error("Error searching padron:", err);
+                } finally {
+                    setIsSearchingPadron(false);
+                }
+            } else {
+                setPadronResults([]);
+            }
+        };
+
+        const timer = setTimeout(searchPadron, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm, filteredClients.length]);
 
     const handleOpenCreate = (mode: ClientMode) => {
         setCreateMode(mode);
@@ -484,6 +542,21 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                         </button>
                     )}
                 </div>
+
+                {hideQuickButtons && (
+                    <button 
+                        onClick={() => handleOpenCreate('SRI')}
+                        className="w-full bg-brand-red/10 border-2 border-dashed border-brand-red/30 p-6 rounded-[2rem] flex items-center justify-center gap-4 group hover:bg-brand-red/20 transition-all"
+                    >
+                        <div className="p-3 bg-brand-red text-white rounded-2xl shadow-red-glow group-hover:scale-110 transition-transform">
+                            <UserPlusIcon className="w-6 h-6" />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-[10px] font-black text-brand-red uppercase tracking-[0.4em] mb-1">Trámite Fiscal</p>
+                            <h4 className="text-lg font-black text-white uppercase italic">Inscribir como Nuevo Contribuyente SRI</h4>
+                        </div>
+                    </button>
+                )}
                 
                 {!hideQuickButtons && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -560,7 +633,49 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                             <ArrowRightIcon className="w-5 h-5 text-slate-600 group-hover:text-liquid-gold transition-all group-hover:translate-x-1" />
                         </div>
                     ))}
-                    {filteredClients.length === 0 && (
+                    {filteredClients.length === 0 && padronResults.length > 0 && (
+                        <div className="bg-liquid-gold/5">
+                            <div className="px-6 py-3 border-b border-white/5 flex items-center gap-2">
+                                <SparklesIcon className="w-3 h-3 text-liquid-gold"/>
+                                <span className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.2em]">Padrón Inteligente (El Oro) - ¿Es este el cliente?</span>
+                            </div>
+                            {padronResults.map((p) => (
+                                <div 
+                                    key={p.ruc} 
+                                    onClick={() => {
+                                        setCreateMode('SRI');
+                                        setIsCreateModalOpen(true);
+                                        setSearchTerm(p.ruc); // Esto disparará el lookup en el modal
+                                    }} 
+                                    className="p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group"
+                                >
+                                    <div className="flex items-center gap-5">
+                                        <div className="h-12 w-12 rounded-2xl bg-liquid-gold/10 text-liquid-gold flex items-center justify-center font-black text-lg border border-liquid-gold/20">
+                                            {p.razon_social.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-base uppercase truncate max-w-[350px] italic">{p.razon_social}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{p.ruc}</p>
+                                                <span className="text-[7px] font-black px-1.5 py-0.5 rounded bg-white/5 text-slate-500 border border-white/5">{p.canton}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-[8px] font-black text-liquid-gold uppercase tracking-widest">Inscripción Auto</p>
+                                            <p className="text-[10px] font-black text-white uppercase italic">Sincronizar</p>
+                                        </div>
+                                        <div className="p-3 bg-liquid-gold text-brand-dark rounded-xl group-hover:scale-110 transition-transform">
+                                            <SparklesIcon className="w-4 h-4" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {filteredClients.length === 0 && padronResults.length === 0 && !isSearchingPadron && (
                         <div className="p-10 text-center space-y-4">
                             <ExclamationTriangleIcon className="w-10 h-10 mx-auto text-slate-700 opacity-50"/>
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sin coincidencias en base de datos</p>
@@ -570,6 +685,13 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                             >
                                 {hideQuickButtons ? 'Inscribir como Nuevo Contribuyente SRI' : 'Dar de alta como nuevo cliente'}
                             </button>
+                        </div>
+                    )}
+                    
+                    {isSearchingPadron && (
+                        <div className="p-10 text-center">
+                            <Loader2Icon className="w-6 h-6 text-liquid-gold animate-spin mx-auto mb-3"/>
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Consultando Padrón Inteligente...</p>
                         </div>
                     )}
                 </div>

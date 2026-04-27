@@ -73,7 +73,26 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     const handleCreateOrder = async () => {
-        if (items.length === 0) {
+        let finalItems = [...items];
+        
+        // Si es modo EXPRESS y no hay items, creamos un item virtual a partir del detalle
+        if (missionCategory === 'EXPRESS' && finalItems.length === 0) {
+            if (!detalle && !precio) {
+                setError("Debe especificar el detalle o el precio del servicio express.");
+                return;
+            }
+            finalItems = [{
+                id: 'express_item_' + Date.now(),
+                nombre: 'Servicio Express',
+                descripcion: detalle,
+                cantidad: 1,
+                precioBase: precio,
+                precioFinal: precio,
+                especificaciones: { tamano: 'N/A', tipoPapel: 'N/A' }
+            } as any];
+        }
+
+        if (finalItems.length === 0) {
             setError("Debe agregar al menos un ítem al pedido.");
             return;
         }
@@ -92,7 +111,7 @@ const NuevoPedidoPage: React.FC = () => {
             }
 
             // Create multiple jobs for divided orders
-            const results = await Promise.all(items.map(async (item) => {
+            const results = await Promise.all(finalItems.map(async (item) => {
                 return await addTrabajo({
                     titular: finalCliente!.nombre,
                     clienteId: finalCliente!.id || '',
@@ -368,7 +387,12 @@ const NuevoPedidoPage: React.FC = () => {
                                     <div className="space-y-12">
                                         {(isAddingItem || items.length === 0) ? (
                                             !servicio ? (
-                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} regimen={cliente?.regimen} />
+                                                <ServiceSelector 
+                                                    onSelect={setServicio} 
+                                                    selectedId={servicio?.id} 
+                                                    regimen={cliente?.regimen} 
+                                                    forcedCategory="SRI"
+                                                />
                                             ) : (
                                                 <ProductConfigurator 
                                                     product={servicio} 

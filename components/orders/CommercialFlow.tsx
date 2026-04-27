@@ -26,6 +26,8 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     // Step 1: Producto
     const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
     const [search, setSearch] = useState('');
+    const [activeCategory, setActiveCategory] = useState('Todas');
+    const [showDetails, setShowDetails] = useState<string | null>(null);
 
     // Step 2: Detalles
     const [cantidad, setCantidad] = useState(100);
@@ -39,10 +41,21 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
     const [abono, setAbono] = useState<number>(0);
 
+    // Categorías comerciales
+    const commercialCategories = useMemo(() => {
+        const cats = new Set(productos.filter(p => !p.esSRI).map(p => p.categoria || 'General'));
+        return ['Todas', ...Array.from(cats)];
+    }, [productos]);
+
     // Filtrar solo productos NO SRI
     const commercialProducts = useMemo(() => {
-        return productos.filter(p => !p.esSRI && p.esActivo !== false && p.nombre.toLowerCase().includes(search.toLowerCase()));
-    }, [productos, search]);
+        return productos.filter(p => {
+            if (p.esSRI || p.esActivo === false) return false;
+            const matchesSearch = p.nombre.toLowerCase().includes(search.toLowerCase());
+            const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
+            return matchesSearch && matchesCategory;
+        });
+    }, [productos, search, activeCategory]);
 
     // Calcular precio
     const precioFinal = useMemo(() => {
@@ -117,36 +130,87 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 {/* PASO 1: SELECCION DE PRODUCTO */}
                 {step === 1 && (
                     <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
-                        <div className="relative group">
-                            <input 
-                                type="text" 
-                                placeholder="Buscar producto comercial... ej. Tarjetas, Volantes" 
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full bg-black/40 border-2 border-white/10 p-6 pl-14 rounded-3xl text-white text-xl outline-none focus:border-liquid-gold/50 transition-all placeholder:text-white/20"
-                            />
-                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-liquid-gold transition-colors">
-                                <SparklesIcon className="w-6 h-6" />
+                        <div className="flex gap-4">
+                            <div className="relative flex-1 group">
+                                <input 
+                                    type="text" 
+                                    placeholder="Buscar producto comercial... ej. Tarjetas, Volantes" 
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full bg-black/40 border-2 border-white/10 p-6 pl-14 rounded-3xl text-white text-xl outline-none focus:border-liquid-gold/50 transition-all placeholder:text-white/20"
+                                />
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-liquid-gold transition-colors">
+                                    <SparklesIcon className="w-6 h-6" />
+                                </div>
                             </div>
                         </div>
 
+                        {/* Pestañas de Categorías */}
+                        <div className="flex overflow-x-auto pb-2 gap-3 no-scrollbar">
+                            {commercialCategories.map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${
+                                        activeCategory === cat 
+                                        ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' 
+                                        : 'bg-white/5 text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+
                         {commercialProducts.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar p-1">
                                 {commercialProducts.map(p => (
-                                    <button 
+                                    <div 
                                         key={p.id}
-                                        onClick={() => { setSelectedProduct(p); setStep(2); }}
-                                        className="bg-white/5 hover:bg-liquid-gold/10 border border-white/10 hover:border-liquid-gold/50 p-6 rounded-3xl text-left transition-all group flex flex-col gap-4 relative overflow-hidden"
+                                        className="group relative bg-white/5 hover:bg-white/[0.08] border border-white/10 hover:border-liquid-gold/40 rounded-[2rem] transition-all overflow-hidden flex flex-col"
                                     >
-                                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-liquid-gold/10 transition-colors"></div>
-                                        <div className="w-12 h-12 bg-white/10 group-hover:bg-liquid-gold group-hover:text-black text-white rounded-xl flex items-center justify-center transition-all group-hover:scale-110 shadow-luxury">
-                                            <SparklesIcon className="w-6 h-6" />
+                                        <div 
+                                            onClick={() => { setSelectedProduct(p); setStep(2); }}
+                                            className="cursor-pointer p-6 space-y-4"
+                                        >
+                                            <div className="w-14 h-14 bg-white/5 group-hover:bg-liquid-gold/20 rounded-2xl flex items-center justify-center text-white/40 group-hover:text-liquid-gold transition-all group-hover:scale-110">
+                                                <PrinterIcon className="w-7 h-7" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-black text-white uppercase tracking-tighter text-xl leading-tight group-hover:text-liquid-gold transition-colors">{p.nombre}</h3>
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{p.categoria}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between pt-2">
+                                                <span className="text-lg font-black text-white/60 italic">${p.precio.toFixed(2)}</span>
+                                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-liquid-gold group-hover:text-black transition-all">
+                                                    <ArrowRightIcon className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="relative z-10">
-                                            <h3 className="font-black text-white uppercase tracking-tighter text-lg leading-tight group-hover:text-liquid-gold transition-colors">{p.nombre}</h3>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{p.categoria}</p>
-                                        </div>
-                                    </button>
+                                        
+                                        {/* Botón de Detalles */}
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); setShowDetails(showDetails === p.id ? null : p.id); }}
+                                            className="absolute top-4 right-4 text-[8px] font-black text-slate-600 hover:text-liquid-gold uppercase tracking-widest z-20"
+                                        >
+                                            {showDetails === p.id ? 'Cerrar' : 'Info'}
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {showDetails === p.id && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="bg-black/60 backdrop-blur-md px-6 py-4 border-t border-white/10 overflow-hidden"
+                                                >
+                                                    <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">
+                                                        {p.descripcion || 'Sin descripción detallada para este producto industrial.'}
+                                                    </p>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 ))}
                             </div>
                         ) : (
@@ -155,7 +219,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                     <SparklesIcon className="w-10 h-10 text-slate-700" />
                                 </div>
                                 <h3 className="text-xl font-black text-white uppercase tracking-widest italic">Sin Resultados</h3>
-                                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Intente con otro término o cree el producto en Inventario.</p>
+                                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Intente con otro término o categoría comercial.</p>
                             </div>
                         )}
                     </motion.div>

@@ -6,9 +6,12 @@ export interface SriRucData {
   razon_social: string;
   estado_contribuyente: string;
   tipo_persona: string;
+  provincia?: string;
   canton: string;
   parroquia: string;
   actividad_economica: string;
+  direccion?: string;
+  regimen?: string;
 }
 
 /**
