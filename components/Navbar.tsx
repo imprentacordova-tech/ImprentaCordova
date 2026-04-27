@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
             <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-[#0a0a0a] flex items-center justify-center overflow-hidden px-6 border-b border-white/5">
                 <div className="flex items-center gap-6 text-white/40">
                     <span className="text-[8px] font-black uppercase tracking-[0.6em] italic">
-                        Imprenta Autorizada SRI · <span className="text-liquid-gold font-bold">PASAJE, EL ORO</span> · DESDE 1990
+                        Imprenta Autorizada SRI · <span className="text-liquid-gold font-bold">PASAJE, EL ORO</span>
                     </span>
                 </div>
             </div>

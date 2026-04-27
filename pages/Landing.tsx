@@ -8,7 +8,8 @@ import {
     EnvelopeIcon, CordovaLogo, StarIcon, PrinterIcon, CheckBadgeIcon, ClockIcon,
     SearchIcon, SparklesIcon, MonitorIcon, MessageCircleIcon, ChevronRightIcon,
     Loader2Icon, WalletIcon, ExclamationTriangleIcon, LayersIcon, WhatsAppIcon,
-import { WhatsAppIcon, PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon, MonitorIcon } from '../components/Icons';
+    PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon, MonitorIcon
+} from '../components/Icons';
 import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
 import { Producto, TrabajoEstado, TrabajoTipo, Regimen } from '../types';
@@ -194,8 +195,9 @@ const LandingPage: React.FC = () => {
                             className="lg:col-span-7 space-y-12"
                         >
                             <motion.div variants={fadeInUp} className="inline-flex items-center gap-4 px-6 py-2.5 bg-white/[0.03] border border-white/10 rounded-full text-slate-400 backdrop-blur-md">
-                                <div className="w-2 h-2 bg-liquid-gold rounded-full animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Boutique de Impresión Digital • Pasaje, EC</span>
+                                <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                                    Pasión por la excelencia gráfica. Innovación y compromiso en cada impresión para elevar la identidad de tu marca.
+                                </p>
                             </motion.div>
                             
                             <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[10rem] font-display font-black text-white leading-[0.8] tracking-tighter uppercase italic">
@@ -218,7 +220,7 @@ const LandingPage: React.FC = () => {
                             </motion.div>
 
                             <motion.div variants={fadeInUp} className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-16">
-                                <StatCard label="TRAYECTORIA" value="+15" sub="Años Líderes" />
+                                <StatCard label="TRAYECTORIA" value="Vanguardia" sub="Innovación" />
                                 <StatCard label="PRECISIÓN" value="HD" sub="Roland Tech" />
                                 <StatCard label="PORTAFOLIO" value="10k" sub="Proyectos" />
                                 <StatCard label="LATITUD" value="07" sub="Pasaje Centro" />
@@ -556,7 +558,7 @@ const LandingPage: React.FC = () => {
                     >
                         {loading ? [...Array(4)].map((_, i) => (
                             <div key={i} className="bg-white/[0.03] rounded-[4rem] h-[550px] animate-pulse border border-white/5" />
-                        )) : productos.slice(0, 8).map(p => (
+                        )) : productos.filter(p => p.esActivo !== false && p.visiblePublico !== false).slice(0, 8).map(p => (
                             <motion.article 
                                 key={p.id} 
                                 variants={fadeInUp}
@@ -661,7 +663,7 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     <div className="pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10 text-[10px] font-black text-slate-700 uppercase tracking-[0.6em]">
-                        <p>&copy; 2026 Imprenta Córdova. Estándar Industrial.</p>
+                        <p>Imprenta Córdova · Estándar Industrial</p>
                         <div className="flex gap-14">
                             <a href="#" className="hover:text-liquid-gold transition-colors">Compliance</a>
                             <a href="#" className="hover:text-liquid-gold transition-colors">SRI Legal</a>

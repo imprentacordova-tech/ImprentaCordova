@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/supabase';
 import { 
@@ -35,7 +34,7 @@ const staggerContainer = {
 };
 
 // --- TYPES ---
-type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG';
+type Mode = 'OFFSET' | 'DIGITAL' | 'CONFIG' | 'HUB';
 
 // --- COMPONENTE VISUAL STEP ---
 const VisualStep: React.FC<{
@@ -150,7 +149,7 @@ const ProductionPipeline: React.FC<{
 };
 
 // --- CALCULADORA OFFSET ---
-const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[] }> = ({ costs, proveedores, inventario }) => {
+const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[]; onSave: (p: any) => void }> = ({ costs, proveedores, inventario, onSave }) => {
     const [paperId, setPaperId] = useState('QUIMICO');
     const [selectedSizePreset, setSelectedSizePreset] = useState('1/4_OFICIO');
     const [finalW, setFinalW] = useState(10.5);
@@ -441,9 +440,36 @@ const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; 
                                     <div className="px-10 py-5 bg-black/60 border border-white/5 rounded-3xl text-[11px] font-black tracking-[0.4em] text-slate-500 uppercase italic shadow-inner">
                                         Costo Unitario: <span className="text-white ml-4 font-black">{formatCurrency(result.unitario)}</span>
                                     </div>
-                                    <button className="px-16 py-8 bg-white text-black rounded-[2.8rem] font-black text-[13px] uppercase tracking-[0.6em] shadow-luxury transition-all hover:bg-liquid-gold hover:scale-105 active:scale-95 flex items-center gap-5 group/btn overflow-hidden">
+                                    <button 
+                                        onClick={() => onSave({
+                                            nombre: `${paperId} - ${selectedSizePreset} (${parts} Partes)`, 
+                                            precio: result.pvp, 
+                                            specs: [
+                                                `${finalW}x${finalH} mm`,
+                                                `${quantity} unidades`,
+                                                `${parts} partes`,
+                                                paperId,
+                                                `Offset ${colorsFront}+${colorsBack}`
+                                            ],
+                                            categoria: requiresSRI ? 'SRI' : 'General',
+                                            esSRI: requiresSRI,
+                                            visiblePublico: true,
+                                            requiereDiseno: !hasDesign,
+                                            manejaInventario: false,
+                                            esActivo: true,
+                                            configuracionHabilitada: {
+                                                dimensiones: true,
+                                                volumen: true,
+                                                materiales: true,
+                                                acabados: true,
+                                                cromatismo: true,
+                                                procesosMecanicos: true
+                                            }
+                                        })}
+                                        className="px-16 py-8 bg-white text-black rounded-[2.8rem] font-black text-[13px] uppercase tracking-[0.6em] shadow-luxury transition-all hover:bg-liquid-gold hover:scale-105 active:scale-95 flex items-center gap-5 group/btn overflow-hidden"
+                                    >
                                         <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                        Inicializar Protocolo
+                                        Guardar en Catálogo
                                     </button>
                                 </div>
                             </div>
@@ -464,7 +490,7 @@ const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; 
 };
 
 // --- CALCULADORA DIGITAL ---
-const DigitalCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[] }> = ({ costs, proveedores, inventario }) => {
+const DigitalCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[]; onSave: (p: any) => void }> = ({ costs, proveedores, inventario, onSave }) => {
     const [format, setFormat] = useState<'A4' | 'A3' | 'SRA3'>('A3');
     const [paperType, setPaperType] = useState('COUCHE_150');
     const [colorMode, setColorMode] = useState<'COLOR' | 'BW'>('COLOR');
@@ -634,14 +660,43 @@ const DigitalCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[];
                         </motion.span>
                         <span className="text-4xl text-slate-800 font-black tracking-widest uppercase opacity-40 italic">+ TAX</span>
                     </div>
-                    <div className="mt-20 flex items-center justify-between">
-                         <div className="flex items-center gap-5 text-emerald-500/50 font-black text-[11px] uppercase tracking-[0.6em] italic">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-glow"></div>
-                            Flujo de Prioridad Establecido
-                         </div>
-                         <button className="flex items-center gap-5 text-liquid-gold font-black text-[13px] uppercase tracking-[0.5em] hover:translate-x-6 transition-all duration-700 group/link">
+                    
+                    <div className="mt-20 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <button 
+                            onClick={() => onSave({
+                                nombre: `Digital ${paperType} ${format}`, 
+                                precio: calculation.totalPvp, 
+                                specs: [
+                                    format,
+                                    paperType,
+                                    `${quantity} unidades`,
+                                    colorMode,
+                                    sides === 1 ? '1 cara' : '2 caras'
+                                ],
+                                categoria: 'Digital',
+                                esSRI: false,
+                                visiblePublico: true,
+                                requiereDiseno: true,
+                                manejaInventario: false,
+                                esActivo: true,
+                                configuracionHabilitada: {
+                                    dimensiones: true,
+                                    volumen: false,
+                                    materiales: true,
+                                    acabados: true,
+                                    cromatismo: true,
+                                    procesosMecanicos: false
+                                }
+                            })}
+                            className="w-full md:w-auto px-16 py-8 bg-white text-black rounded-[2.8rem] font-black text-[13px] uppercase tracking-[0.6em] shadow-luxury transition-all hover:bg-liquid-gold hover:scale-105 active:scale-95 flex items-center justify-center gap-5 group/btn overflow-hidden"
+                        >
+                            <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                            Guardar en Catálogo
+                        </button>
+
+                        <button className="flex items-center gap-5 text-liquid-gold font-black text-[13px] uppercase tracking-[0.5em] hover:translate-x-6 transition-all duration-700 group/link">
                             Ejecutar Despacho <ArrowRightIcon className="w-6 h-6 group-hover:animate-bounce-x" />
-                         </button>
+                        </button>
                     </div>
                 </div>
             </motion.div>
@@ -649,69 +704,59 @@ const DigitalCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[];
     );
 };
 
+// --- COMPONENTE TABLA MAESTRA ---
 const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const matrices = [
+        { name: 'Libretines Facturas', size: '1/4 Oficio', units: '100 hjs', parts: '2 part.', price: 15.50 },
+        { name: 'Volantes Publicitarios', size: 'A5', units: '1000 un.', parts: 'Full Color', price: 45.00 },
+        { name: 'Tarjetas de Presentación', size: '9x5cm', units: '1000 un.', parts: 'Couché 300g', price: 25.00 },
+        { name: 'Afiches Eventos', size: 'A3', units: '100 un.', parts: 'Digital', price: 35.00 }
+    ];
+
     return (
-        <div className="fixed inset-0 z-[200] flex justify-center items-center p-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-10 bg-black/90 backdrop-blur-xl">
             <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                className="absolute inset-0 bg-black/98 backdrop-blur-3xl" 
-                onClick={onClose} 
-            />
-            <motion.div 
-                initial={{ scale: 0.9, opacity: 0, y: 40 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-slate-950 border border-white/10 rounded-[4.5rem] shadow-gold-glow-strong w-full max-w-5xl max-h-[90vh] flex flex-col relative z-20 overflow-hidden" 
-                onClick={e => e.stopPropagation()}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-5xl glass-card-luxury rounded-[4rem] border border-white/10 overflow-hidden shadow-gold-glow-strong"
             >
-                <div className="flex justify-between items-center p-16 border-b border-white/5 relative overflow-hidden bg-white/[0.01]">
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent"></div>
-                    <div className="relative z-10">
-                        <h2 className="text-5xl font-black text-white tracking-tighter italic uppercase">Catálogo de <span className="text-liquid-gold">Sustratos</span></h2>
-                        <p className="text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] mt-5 italic">Especificación de Matriz Técnica • Atelier Core</p>
+                <div className="p-12 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                    <div>
+                        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">Matriz de <span className="text-liquid-gold">Referencia</span></h2>
+                        <p className="text-[10px] text-slate-700 font-black uppercase tracking-[0.5em] mt-2">Valores de Mercado Pre-Calculados</p>
                     </div>
-                    <button onClick={onClose} className="w-16 h-16 flex items-center justify-center rounded-[2rem] bg-white/5 text-slate-600 hover:text-white hover:bg-white/10 transition-all group border border-white/5 relative z-10">
-                        <CloseIcon className="w-6 h-6 transition-transform group-hover:rotate-90" />
+                    <button onClick={onClose} className="p-5 hover:bg-white/5 rounded-full text-slate-500 hover:text-white transition-all">
+                        <CloseIcon />
                     </button>
                 </div>
                 
-                <div className="p-16 overflow-y-auto custom-scrollbar flex-grow bg-noise/5">
-                    <div className="grid gap-8">
-                        {SOURCE_PAPERS.map((paper, i) => (
-                            <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.05 }}
-                                key={paper.id} 
-                                className="group bg-white/[0.01] border border-white/5 hover:border-liquid-gold/30 p-10 rounded-[2.5rem] flex items-center justify-between transition-all duration-700 hover:bg-black shadow-inner"
-                            >
-                                <div className="flex items-center gap-12">
-                                    <div className="w-24 h-24 rounded-3xl bg-black flex flex-col items-center justify-center border-2 border-white/5 text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] group-hover:border-liquid-gold/20 transition-colors">
-                                        <DocumentIcon className="w-8 h-8 mb-2 opacity-10" />
-                                        {paper.id.split('_')[0]}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-black text-2xl tracking-tighter uppercase italic group-hover:text-liquid-gold transition-colors">{paper.nombre}</h4>
-                                        <p className="text-[10px] text-slate-700 mt-4 uppercase tracking-[0.4em] italic font-black leading-none">
-                                            {paper.ancho} x {paper.alto} cm • Sustrato Industrial Calibrado
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-16">
-                                    <div className="text-right">
-                                        <p className="text-[9px] font-black text-slate-800 uppercase tracking-widest mb-2 italic">Procesamiento</p>
-                                        <span className="text-[11px] font-black text-white tracking-[0.5em] uppercase italic group-hover:text-white transition-colors">{paper.tipo}</span>
-                                    </div>
-                                    <div className="w-[1px] h-12 bg-white/5"></div>
-                                    <span className="bg-liquid-gold/5 text-liquid-gold px-7 py-2.5 rounded-full text-[9px] font-black tracking-[0.6em] uppercase border border-liquid-gold/10 shadow-gold-glow-sm">SGN-ACTIVO</span>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                <div className="p-12 overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="border-b border-white/5 text-[11px] font-black text-slate-700 uppercase tracking-widest">
+                                <th className="pb-8 pl-4 italic">Artefacto</th>
+                                <th className="pb-8 italic">Dimensión</th>
+                                <th className="pb-8 italic">Escala</th>
+                                <th className="pb-8 italic">Configuración</th>
+                                <th className="pb-8 pr-4 text-right italic">Valor Base</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {matrices.map((m, i) => (
+                                <tr key={i} className="group hover:bg-white/[0.02] transition-colors">
+                                    <td className="py-10 pl-4 font-black text-white text-lg italic tracking-tight">{m.name}</td>
+                                    <td className="py-10 text-[11px] font-black text-slate-500 uppercase tracking-widest">{m.size}</td>
+                                    <td className="py-10 text-[11px] font-black text-slate-500 uppercase tracking-widest">{m.units}</td>
+                                    <td className="py-10 text-[11px] font-black text-slate-500 uppercase tracking-widest italic">{m.parts}</td>
+                                    <td className="py-10 pr-4 text-right font-black text-liquid-gold text-2xl italic tracking-tighter">{formatCurrency(m.price)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div className="p-16 border-t border-white/5 flex justify-end bg-white/[0.01]">
-                    <button onClick={onClose} className="px-16 py-8 bg-white text-black rounded-[2.8rem] font-black text-[12px] uppercase tracking-[0.6em] hover:bg-liquid-gold transition-all shadow-luxury active:scale-95">Desactivar Catálogo</button>
+                <div className="p-12 bg-white/[0.01] border-t border-white/5 text-center">
+                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.4em] italic">Valores sujetos a fluctuación de insumos según mercado local</p>
                 </div>
             </motion.div>
         </div>
@@ -719,15 +764,32 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 // --- MAIN PAGE ---
+import { ProductManagementModal } from '../components/ProductManagementModal';
+import { Producto } from '../types';
+
 const CalculadoraPreciosPage: React.FC = () => {
     const context = useOutletContext<{ currentUser: any }>();
     const currentUser = context?.currentUser;
-    const { proveedores, inventario } = useData();
-    
-    const [mode, setMode] = useState<Mode>('OFFSET');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const queryMode = searchParams.get('mode') as Mode;
+    const [mode, setMode] = useState<Mode>(queryMode || 'HUB');
+
+    useEffect(() => {
+        if (queryMode && queryMode !== mode) {
+            setMode(queryMode);
+        }
+    }, [queryMode]);
+
+    const handleSetMode = (newMode: Mode) => {
+        setMode(newMode);
+        setSearchParams({ mode: newMode });
+    };
     const [costs, setCosts] = useState<CostConfig>(DEFAULT_COSTS);
     const [showMasterTable, setShowMasterTable] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [productToSave, setProductToSave] = useState<Partial<Producto> | null>(null);
     const [loading, setLoading] = useState(true);
+    const { proveedores, inventario, refreshData } = useData();
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -799,8 +861,90 @@ const CalculadoraPreciosPage: React.FC = () => {
         }
     };
 
+    const handleSaveToCatalog = (p: Partial<Producto>) => {
+        setProductToSave(p);
+        setShowSaveModal(true);
+    };
+
+    const handleAddToOrder = (p: any) => {
+        try {
+            // Transform calculator product to "item" format for NuevoPedido
+            const newItem = {
+                id: Math.random().toString(36).substr(2, 9),
+                nombre: p.nombre,
+                descripcion: p.specs.join(' | '),
+                precioFinal: p.precio,
+                especificaciones: {
+                    ...p.configuracionHabilitada,
+                    detalles_tecnicos: p.specs
+                },
+                product: p
+            };
+
+            const existingItems = JSON.parse(localStorage.getItem('pending_order_items') || '[]');
+            localStorage.setItem('pending_order_items', JSON.stringify([...existingItems, newItem]));
+            
+            alert('Ítem agregado al manifiesto del pedido. Redirigiendo...');
+            navigate('/pedidos/nuevo?action=resume');
+        } catch (err) {
+            console.error('Error adding to order:', err);
+        }
+    };
+
+    const handleFinalSave = async (product: Producto | Producto[]) => {
+        try {
+            const products = Array.isArray(product) ? product : [product];
+            const { error } = await supabase.from('productos').insert(
+                products.map(p => ({
+                    ...p,
+                    id: undefined // Let DB generate ID
+                }))
+            );
+
+            if (error) throw error;
+
+            alert('Producto(s) guardado(s) exitosamente en el catálogo.');
+            setShowSaveModal(false);
+            refreshData();
+            
+            logActivity(
+                currentUser?.nombre || 'Admin',
+                currentUser?.rol || 'Administrador',
+                'CREATE_PRODUCT',
+                `Creado desde calculadora: ${Array.isArray(product) ? product.length + ' productos' : product.nombre}`,
+                'Catálogo'
+            );
+        } catch (err) {
+            console.error('Error saving to catalog:', err);
+            alert('Error al guardar en el catálogo.');
+        }
+    };
+
+    const SidebarItem = ({ id, label, icon: Icon, active }: { id: Mode | 'TABLE', label: string, icon: any, active: boolean }) => (
+        <button
+            onClick={() => {
+                if (id === 'TABLE') setShowMasterTable(true);
+                else handleSetMode(id);
+            }}
+            className={`w-full flex items-center gap-5 px-8 py-6 rounded-3xl transition-all duration-500 group relative ${
+                active 
+                ? 'bg-liquid-gold text-black shadow-gold-glow-sm' 
+                : 'text-slate-500 hover:text-white hover:bg-white/5'
+            }`}
+        >
+            <Icon className={`w-5 h-5 ${active ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'}`} />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] italic">{label}</span>
+            {active && (
+                <motion.div 
+                    layoutId="sidebar-indicator"
+                    className="absolute right-4 w-1.5 h-1.5 bg-black rounded-full"
+                />
+            )}
+        </button>
+    );
+
     return (
-        <div className="min-h-screen p-8 sm:p-14 relative overflow-hidden flex flex-col bg-[#050505]">
+        <div className="min-h-screen relative overflow-hidden flex bg-[#050505]">
             <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
             
             {/* Fondo Cinematográfico */}
@@ -809,51 +953,79 @@ const CalculadoraPreciosPage: React.FC = () => {
                 <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.01] blur-[150px]"></div>
             </div>
 
-            <div className="max-w-[1600px] mx-auto w-full flex-grow flex flex-col pt-10">
-                {/* Cabecera */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-20 relative z-10">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-6">
-                            <div className="w-16 h-[2px] bg-liquid-gold/40"></div>
-                            <span className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.8em]">Precision Print Engine v4.1</span>
+            {/* Premium Sidebar Menu */}
+            <aside className="w-80 border-r border-white/5 bg-black/40 backdrop-blur-3xl p-10 flex flex-col gap-12 sticky top-0 h-screen z-50">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-4 px-4">
+                        <div className="w-10 h-10 bg-liquid-gold rounded-xl flex items-center justify-center shadow-gold-glow">
+                            <CpuIcon className="w-6 h-6 text-black" />
                         </div>
-                        <motion.h1 
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="text-7xl lg:text-9xl font-black text-white tracking-tighter uppercase italic leading-none"
-                        >
-                            Ingeniería de <span className="text-gold-gradient">Costos</span>
-                        </motion.h1>
+                        <div className="space-y-0.5">
+                            <h3 className="text-white font-black text-sm uppercase tracking-tighter italic leading-none">Cordova</h3>
+                            <p className="text-liquid-gold/40 font-black text-[8px] uppercase tracking-widest italic">Engineering Hub</p>
+                        </div>
                     </div>
-                    
-                    <div className="flex gap-8">
-                        <button onClick={() => setShowMasterTable(true)} className="group flex items-center gap-5 px-12 py-7 bg-white/[0.02] border-2 border-white/5 text-white font-black text-[11px] uppercase tracking-[0.5em] rounded-[2rem] hover:bg-white/[0.05] hover:border-liquid-gold/20 transition-all shadow-luxury">
-                            <TableIcon className="w-5 h-5 text-liquid-gold/30 group-hover:text-liquid-gold transition-colors"/> Catálogo de Matriz
-                        </button>
-                        <button 
-                            onClick={() => setMode(mode === 'CONFIG' ? 'OFFSET' : 'CONFIG')} 
-                            className={`group flex items-center gap-5 px-12 py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all border-2 shadow-luxury ${mode === 'CONFIG' ? 'bg-white text-black border-white scale-105' : 'bg-white/[0.02] text-white border-white/5 hover:border-white/10'}`}
-                        >
-                            <Settings className={`w-5 h-5 ${mode === 'CONFIG' ? 'animate-spin-slow' : 'text-slate-700'}`}/> Calibración
-                        </button>
-                    </div>
+                    <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
                 </div>
 
-                {/* Selector de Modo (Tabs) */}
-                {mode !== 'CONFIG' && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex p-2.5 bg-black/60 border-2 border-white/5 rounded-[3rem] mb-20 max-w-md shadow-3xl relative z-10"
-                    >
-                        <button onClick={() => setMode('OFFSET')} className={`flex-1 py-5 px-12 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-5 italic ${mode === 'OFFSET' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-700 hover:text-white'}`}>
-                            <Printer className="w-5 h-5"/> Offset
-                        </button>
-                        <button onClick={() => setMode('DIGITAL')} className={`flex-1 py-5 px-12 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-5 italic ${mode === 'DIGITAL' ? 'bg-white text-black shadow-luxury scale-105' : 'text-slate-700 hover:text-white'}`}>
-                            <RocketLaunchIcon className="w-5 h-5"/> Digital
-                        </button>
-                    </motion.div>
-                )}
+                <nav className="flex-grow space-y-4">
+                    <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] mb-6 px-4">Protocolos</p>
+                    <SidebarItem id="HUB" label="Dashboard" icon={LayoutDashboardIcon} active={mode === 'HUB'} />
+                    <SidebarItem id="OFFSET" label="Industrial Offset" icon={Printer} active={mode === 'OFFSET'} />
+                    <SidebarItem id="DIGITAL" label="Digital Boutique" icon={RocketLaunchIcon} active={mode === 'DIGITAL'} />
+                    
+                    <div className="pt-10">
+                        <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] mb-6 px-4">Utilidades</p>
+                        <SidebarItem id="TABLE" label="Matriz Maestra" icon={TableIcon} active={showMasterTable} />
+                        <SidebarItem id="CONFIG" label="Calibración" icon={Settings} active={mode === 'CONFIG'} />
+                    </div>
+                </nav>
+
+                <div className="bg-white/[0.03] p-6 rounded-3xl border border-white/5">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-white/10">
+                            <span className="text-[10px] font-black text-white italic">{currentUser?.nombre?.charAt(0) || 'A'}</span>
+                        </div>
+                        <div className="space-y-0.5">
+                            <p className="text-[9px] font-black text-white uppercase tracking-widest leading-none">{currentUser?.nombre || 'Operador'}</p>
+                            <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest italic">{currentUser?.rol || 'Staff'}</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div className="flex-grow max-w-[1600px] mx-auto w-full p-8 sm:p-14 overflow-y-auto custom-scrollbar">
+                {/* Cabecera Dinámica */}
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-20 relative z-10">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-[2px] bg-liquid-gold/40"></div>
+                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">
+                                {mode === 'HUB' ? 'Ecosistema de Gestión' : 
+                                 mode === 'OFFSET' ? 'Protocolo de Alto Volumen' : 
+                                 mode === 'DIGITAL' ? 'Producción On-Demand' : 'Configuración de Núcleo'}
+                            </span>
+                        </div>
+                        <motion.h1 
+                            key={mode}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="text-6xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-none"
+                        >
+                            {mode === 'HUB' ? 'Engineering' : ''} 
+                            <span className="text-gold-gradient">
+                                {mode === 'HUB' ? ' Hub' : mode === 'OFFSET' ? 'Industrial Offset' : mode === 'DIGITAL' ? 'Digital Boutique' : 'Calibración Maestro'}
+                            </span>
+                        </motion.h1>
+                    </div>
+
+                    {mode !== 'HUB' && (
+                        <div className="flex gap-4 p-2.5 bg-black/40 rounded-[2.8rem] border border-white/5 shadow-luxury">
+                            <button onClick={() => setMode('OFFSET')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all italic ${mode === 'OFFSET' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Offset</button>
+                            <button onClick={() => setMode('DIGITAL')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all italic ${mode === 'DIGITAL' ? 'bg-white text-black' : 'text-slate-600 hover:text-white'}`}>Digital</button>
+                        </div>
+                    )}
+                </header>
 
                 {/* Área de Contenido */}
                 <AnimatePresence mode="wait">
@@ -865,8 +1037,60 @@ const CalculadoraPreciosPage: React.FC = () => {
                         transition={{ duration: 0.6 }}
                         className="relative z-10 pb-32"
                     >
-                        {mode === 'OFFSET' && <OffsetCalculator costs={costs} proveedores={proveedores} inventario={inventario} />}
-                        {mode === 'DIGITAL' && <DigitalCalculator costs={costs} proveedores={proveedores} inventario={inventario} />}
+                        {mode === 'HUB' && (
+                            <div className="flex flex-col gap-16 relative z-10">
+                                <div className="relative p-16 rounded-[4rem] bg-gradient-to-br from-liquid-gold/10 to-transparent border border-liquid-gold/20 overflow-hidden shadow-gold-glow-soft">
+                                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-liquid-gold/5 blur-[120px] -mr-32 -mt-32"></div>
+                                    <div className="relative z-10 max-w-2xl">
+                                        <h2 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none mb-8">Ecosistema de <br/> <span className="text-liquid-gold">Ingeniería Atelier</span></h2>
+                                        <p className="text-[12px] font-black text-slate-500 uppercase tracking-[0.5em] leading-loose italic">Calibración de algoritmos de producción para optimización de rentabilidad industrial y precisión de costos.</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                                    {[ 
+                                        { id: 'OFFSET', title: 'Industrial Offset', desc: 'Producción de alto volumen, libros y formularios SRI.', icon: Printer, color: 'text-liquid-gold', tag: 'High Volume' },
+                                        { id: 'DIGITAL', title: 'Digital Boutique', desc: 'Impresión rápida on-demand y tirajes personalizados.', icon: RocketLaunchIcon, color: 'text-white', tag: 'On-Demand' },
+                                        { id: 'CONFIG', title: 'Sistema Maestro', desc: 'Calibración de costos operativos y proveedores.', icon: Settings, color: 'text-slate-500', tag: 'Core Config' }
+                                    ].map(item => (
+                                        <motion.button
+                                            key={item.id}
+                                            whileHover={{ y: -10, scale: 1.02 }}
+                                            onClick={() => handleSetMode(item.id as Mode)}
+                                            className="glass-card-luxury p-12 rounded-[4rem] border border-white/5 text-left group transition-all hover:border-liquid-gold/30 hover:bg-white/[0.03] flex flex-col h-full"
+                                        >
+                                            <div className="flex justify-between items-start mb-10">
+                                                <div className={`w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:bg-liquid-gold group-hover:text-black transition-all ${item.color}`}>
+                                                    <item.icon className="w-10 h-10" />
+                                                </div>
+                                                <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 rounded-full text-slate-500">{item.tag}</span>
+                                            </div>
+                                            <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4">{item.title}</h3>
+                                            <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest leading-loose flex-grow">{item.desc}</p>
+                                            <div className="mt-10 flex items-center gap-4 text-liquid-gold opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Inicializar Protocolo</span>
+                                                <ChevronRightIcon className="w-4 h-4" />
+                                            </div>
+                                        </motion.button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {mode === 'OFFSET' && (
+                            <OffsetCalculator 
+                                costs={costs} 
+                                proveedores={proveedores} 
+                                inventario={inventario} 
+                                onSave={(p) => (
+                                    <div className="flex gap-4">
+                                        <button onClick={() => handleSaveToCatalog(p)} className="...">Catalog</button>
+                                        <button onClick={() => handleAddToOrder(p)} className="...">Order</button>
+                                    </div>
+                                )} 
+                            />
+                        )}
+                        {mode === 'DIGITAL' && <DigitalCalculator costs={costs} proveedores={proveedores} inventario={inventario} onSave={handleSaveToCatalog} />}
                         {mode === 'CONFIG' && (
                             <motion.div 
                                 initial={{ opacity: 0, y: 40 }}
@@ -879,7 +1103,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                                         <p className="text-[11px] font-black text-slate-700 uppercase tracking-[0.6em] italic">Protocolo de Ajuste Financiero Maestro</p>
                                     </div>
                                     <div className="flex gap-6">
-                                        <button onClick={() => setMode('OFFSET')} className="px-10 py-5 text-[10px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
+                                        <button onClick={() => setMode('HUB')} className="px-10 py-5 text-[10px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
                                         <button onClick={() => handleSaveConfig(costs)} className="px-12 py-5 bg-liquid-gold text-black rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-gold-glow">Guardar Matriz</button>
                                     </div>
                                 </div>
@@ -915,8 +1139,35 @@ const CalculadoraPreciosPage: React.FC = () => {
             </div>
 
             {showMasterTable && <MasterTableModal onClose={() => setShowMasterTable(false)} />}
+            {showSaveModal && (
+                <ProductManagementModal 
+                    isOpen={showSaveModal} 
+                    onClose={() => setShowSaveModal(false)} 
+                    onSave={handleFinalSave} 
+                    productToEdit={productToSave as Producto}
+                    defaultMode="SINGLE"
+                />
+            )}
         </div>
     );
 };
 
 export default CalculadoraPreciosPage;
+
+
+            {showMasterTable && <MasterTableModal onClose={() => setShowMasterTable(false)} />}
+            {showSaveModal && (
+                <ProductManagementModal 
+                    isOpen={showSaveModal} 
+                    onClose={() => setShowSaveModal(false)} 
+                    onSave={handleFinalSave} 
+                    productToEdit={productToSave as Producto}
+                    defaultMode="SINGLE"
+                />
+            )}
+        </div>
+    );
+};
+
+export default CalculadoraPreciosPage;
+

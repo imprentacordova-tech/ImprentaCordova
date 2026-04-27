@@ -70,7 +70,7 @@ const VisualLanding: React.FC = () => {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-12">
                         <motion.a
-                            href={generateWhatsAppLink("593988636437", "Hola, necesito solicitar talonarios autorizados por el SRI.")}
+                            href={generateWhatsAppLink("593993083943", "Hola, necesito solicitar talonarios autorizados por el SRI.")}
                             whileHover={{ scale: 1.05, y: -5, boxShadow: "0px 30px 60px rgba(212, 175, 55, 0.25)" }}
                             whileTap={{ scale: 0.95 }}
                             className="w-full sm:w-auto bg-liquid-gold text-brand-dark px-12 py-7 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl flex items-center justify-center gap-4 group"
@@ -246,17 +246,17 @@ const VisualLanding: React.FC = () => {
             <footer className="py-20 text-center bg-[#020617] border-t border-white/5">
                 <div className="max-w-7xl mx-auto px-6 space-y-12">
                     <div className="flex justify-center gap-12">
-                        <motion.a href={generateWhatsAppLink("593988636437", "Hola!")} whileHover={{ y: -5, textShadow: "0 0 10px rgba(212,175,55,0.5)" }} className="text-liquid-gold font-black uppercase text-[10px] tracking-widest transition-all">WhatsApp</motion.a>
+                        <motion.a href={generateWhatsAppLink("593993083943", "Hola!")} whileHover={{ y: -5, textShadow: "0 0 10px rgba(212,175,55,0.5)" }} className="text-liquid-gold font-black uppercase text-[10px] tracking-widest transition-all">WhatsApp</motion.a>
                         <motion.a href="#/login" whileHover={{ y: -5 }} className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Intranet</motion.a>
                         <motion.a href="#/tracking" whileHover={{ y: -5 }} className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Rastreo</motion.a>
                     </div>
-                    <p className="text-slate-700 font-bold uppercase text-[9px] tracking-[1em]">Imprenta Córdova • 2026 • Ecuador</p>
+                    <p className="text-slate-700 font-bold uppercase text-[9px] tracking-[1em]">Imprenta Córdova • Ecuador</p>
                 </div>
             </footer>
 
             {/* Floating Action */}
             <motion.a 
-                href={generateWhatsAppLink("593988636437", "Hola Imprenta Córdova!")}
+                href={generateWhatsAppLink("593993083943", "Hola Imprenta Córdova!")}
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
                 className="fixed bottom-10 right-10 z-50 bg-[#25D366] text-white p-6 rounded-full shadow-gold-glow flex items-center justify-center"

@@ -154,13 +154,14 @@ const ReciboEpson: React.FC = () => {
 
 const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc }: any) => {
     let specs: any = null;
+    const detalleStr = trabajo.detalle || '';
     try {
-        if (trabajo.detalle.includes('| SPECS: ')) {
-            specs = JSON.parse(trabajo.detalle.split('| SPECS: ')[1]);
+        if (detalleStr.includes('| SPECS: ')) {
+            specs = JSON.parse(detalleStr.split('| SPECS: ')[1]);
         }
     } catch(e) {}
 
-    const cleanDetail = trabajo.detalle.split('| SPECS:')[0];
+    const cleanDetail = detalleStr.split('| SPECS:')[0];
     const isOperator = type === 'OPERADOR';
 
     return (
@@ -305,7 +306,7 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc }
                     <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest italic">Responsable: {trabajo.responsable}</p>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                    <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase italic">Imprenta Córdova 2026</p>
+                    <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase italic">Imprenta Córdova</p>
                     <div className="text-[5px] font-black bg-slate-100 text-slate-500 px-3 py-0.5 rounded-full uppercase tracking-widest">{fecha.toLocaleDateString()}</div>
                 </div>
                 <div className="text-center w-28">

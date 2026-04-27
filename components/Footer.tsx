@@ -143,7 +143,7 @@ const Footer: React.FC = () => {
                         </div>
 
                         <p className="text-slate-500 leading-relaxed text-sm font-light max-w-sm">
-                            Más de 15 años transformando ideas en obras maestras gráficas. Tecnología Roland, gestión autorizada SRI y el cuidado artesanal de siempre.
+                            Transformando ideas en obras maestras gráficas. Tecnología Roland, gestión autorizada SRI y el cuidado artesanal de siempre.
                         </p>
 
                         {/* Badges */}
@@ -233,7 +233,7 @@ const Footer: React.FC = () => {
             <div className="border-t border-white/5">
                 <div className="container mx-auto px-6 lg:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em]">
-                        &copy; {year} Imprenta Córdova · Archivo de Excelencia · Pasaje, Ecuador
+                        Imprenta Córdova · Archivo de Excelencia · Pasaje, Ecuador
                     </p>
                     <div className="flex gap-8">
                         {links.legal.map(l => (

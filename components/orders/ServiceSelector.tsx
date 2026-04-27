@@ -40,6 +40,9 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
 
     const filtered = useMemo(() => {
         return productos.filter(p => {
+            // Filtrar solo productos activos
+            if (p.esActivo === false) return false;
+
             const matchesSearch = (p.nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;

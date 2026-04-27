@@ -42,6 +42,14 @@ const navGroups = [
         ],
     },
     {
+        title: 'Ingeniería & Costos',
+        items: [
+            { path: '/calculadora',       label: 'Menú Principal', icon: CalculatorIcon },
+            { path: '/calculadora?mode=OFFSET',  label: 'Offset Industrial', icon: PrinterIcon },
+            { path: '/calculadora?mode=DIGITAL', label: 'Digital Boutique', icon: RocketLaunchIcon },
+        ],
+    },
+    {
         title: 'Gestión Comercial',
         items: [
             { path: '/clientes',    label: 'Clientes',      icon: ClientsIcon   },
@@ -82,6 +90,7 @@ const PAGE_TITLES: Record<string, string> = {
     '/finanzas':      'Análisis Financiero',
     '/usuarios':      'Control de Accesos',
     '/registro':      'Registro de Actividad',
+    '/calculadora':   'Ingeniería de Costos',
     '/configuracion': 'Configuración del Sistema',
     '/caja':          'Control de Caja',
     '/nota-de-venta': 'Expediente de Orden',

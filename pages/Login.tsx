@@ -26,7 +26,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
     
     try {
-      // Simulacin de handshake de seguridad
+      // Simulación de handshake de seguridad
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // ACCESO DE EMERGENCIA PARA PEDRO (Fallback si la DB falla)
@@ -79,14 +79,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           navigate('/dashboard');
         }
       } else {
-        setError("IDENTIDAD NO RECONOCIDA EN EL NCLEO");
+        setError("IDENTIDAD NO RECONOCIDA EN EL NÚCLEO");
         setKey('');
         setPassword('');
         setLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError("FALLO CRTICO: ERROR DE CONEXIN");
+      setError("FALLO CRÍTICO: ERROR DE CONEXIÓN");
       setLoading(false);
     }
   };
@@ -115,13 +115,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     
                     <div className="space-y-3">
                         <h1 className="text-4xl md:text-5xl font-display font-black text-white tracking-tighter uppercase italic leading-none">
-                            CENTRAL <br/>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright not-italic font-editorial font-normal">PROTOCOL</span>
+                            PROTOCOLO <br/>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright not-italic font-editorial font-normal">CENTRAL</span>
                         </h1>
                         <div className="flex items-center gap-3">
                             <div className="h-[1px] w-8 bg-gold-bright/30"></div>
                             <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">
-                                Secure Operative Terminal
+                                Terminal Operativa Segura
                             </p>
                         </div>
                     </div>
@@ -132,7 +132,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     <div className="space-y-6">
                         {/* Operator Input */}
                         <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">Operator ID</label>
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">ID de Operador</label>
                             <div className="relative">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-gold-bright transition-colors">
                                     <UsersIcon className="h-5 w-5" />
@@ -144,14 +144,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
                                     className="w-full bg-white/[0.02] border border-white/10 focus:border-gold-bright/40 rounded-2xl pl-16 pr-6 py-6 text-white font-medium focus:ring-4 focus:ring-gold-bright/5 transition-all placeholder:text-slate-700 outline-none shadow-inner"
-                                    placeholder="Enter identifier..."
+                                    placeholder="Ingrese identificador..."
                                 />
                             </div>
                         </div>
 
                         {/* Signature Input */}
                         <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">Security Signature</label>
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">Firma de Seguridad</label>
                             <div className="relative">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-gold-bright transition-colors">
                                     <LockIcon className="h-5 w-5" />
@@ -207,7 +207,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                 </div>
                             ) : (
                                 <>
-                                    <span className="relative z-10 italic">Inicializar SesiÃ³n</span>
+                                    <span className="relative z-10 italic">Iniciar Sesión</span>
                                     <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                 </>
                             )}
@@ -225,7 +225,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                         className="inline-flex items-center gap-3 text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-[0.2em] transition-all group italic"
                     >
                         <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
-                        <span>Regresar a la GalerÃ­a PÃºblica</span>
+                        <span>Regresar a la Galería Pública</span>
                     </Link>
                 </div>
                 
@@ -233,7 +233,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-40">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">NÃºcleo Activo</span>
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Núcleo Activo</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">v2.6 Hyperion Engine</span>
@@ -295,10 +295,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     className="mt-12 max-w-lg"
                 >
                     <h2 className="text-3xl font-display font-black text-white tracking-widest uppercase italic mb-6">
-                        Imprenta <span className="text-gold-bright">CÃ³rdova</span>
+                        Imprenta <span className="text-gold-bright">Córdova</span>
                     </h2>
                     <p className="text-slate-400 font-medium leading-relaxed text-sm">
-                        Plataforma de gestiÃ³n operativa avanzada. OptimizaciÃ³n de procesos, seguimiento de producciÃ³n y control financiero centralizado en tiempo real.
+                        Plataforma de gestión operativa avanzada. Optimización de procesos, seguimiento de producción y control financiero centralizado en tiempo real.
                     </p>
                 </motion.div>
             </div>

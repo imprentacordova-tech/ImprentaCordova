@@ -46,8 +46,8 @@ const NotaDeVentaPage: React.FC = () => {
         imprentaNombre: cloudConfig?.imprentaNombre || 'IMPRENTA CORDOVA',
         imprentaRuc: cloudConfig?.imprentaRuc || '',
         imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '',
-        fechaAutorizacion: cloudConfig?.imprentaFechaAut || '01/01/2026',
-        fechaCaducidad: cloudConfig?.imprentaFechaCaducidad || '31/12/2026',
+        fechaAutorizacion: cloudConfig?.imprentaFechaAut || '01/01/20--',
+        fechaCaducidad: cloudConfig?.imprentaFechaCaducidad || '31/12/20--',
     };
 
     const generatePDF = async () => {
@@ -281,6 +281,7 @@ const NotaDeVentaPage: React.FC = () => {
                         <div className="grid grid-cols-2 gap-8 mb-4">
                             <div className="text-center">
                                 <div className="border-t border-slate-400 w-3/4 mx-auto mb-1"></div>
+                                <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase italic">Imprenta Córdova</p>
                                 <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">Firma Autorizada</p>
                             </div>
                             <div className="text-center">

@@ -72,7 +72,7 @@ const Hero: React.FC = () => {
                             className="inline-flex items-center gap-3 px-5 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-xl text-liquid-gold shadow-gold-glow"
                         >
                             <SparklesIcon className="w-3.5 h-3.5 animate-pulse" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.5em]">Alta RelojerÃ­a GrÃ¡fica Â· Pasaje, El Oro</span>
+                            <span className="text-[9px] font-black uppercase tracking-[0.5em]">Alta Relojería Gráfica · Pasaje, El Oro</span>
                         </motion.div>
 
                         {/* Headline */}
@@ -82,7 +82,7 @@ const Hero: React.FC = () => {
                             transition={{ duration: 1.4, delay: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
                             className="text-6xl md:text-[7.5rem] lg:text-[8rem] font-display font-black text-white leading-[0.85] tracking-tighter"
                         >
-                            IMPRESIÃ“N{' '}
+                            IMPRESIÓN{' '}
                             <br className="hidden md:block" />
                             <span className="font-editorial italic font-normal text-liquid-gold text-glow tracking-normal">
                                 DE AUTOR.
@@ -96,9 +96,9 @@ const Hero: React.FC = () => {
                             transition={{ duration: 1.4, delay: 0.5 }}
                             className="text-lg md:text-2xl text-slate-300 font-light max-w-xl mx-auto lg:mx-0 leading-relaxed"
                         >
-                            Transformamos visiones en piezas maestras con tecnologÃ­a{' '}
+                            Transformamos visiones en piezas maestras con tecnología{' '}
                             <span className="text-white font-medium">Roland High-Fidelity</span>{' '}
-                            y acabados dignos de exhibiciÃ³n.
+                            y acabados dignos de exhibición.
                         </motion.p>
 
                         {/* Location pill row */}
@@ -110,11 +110,11 @@ const Hero: React.FC = () => {
                         >
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
                                 <MapPinIcon className="w-3.5 h-3.5 text-liquid-gold" />
-                                <span className="text-[10px] font-bold text-slate-300 tracking-wide">ColÃ³n e/ Sucre Â· Diagonal al Parque</span>
+                                <span className="text-[10px] font-bold text-slate-300 tracking-wide">Colón e/ Sucre · Diagonal al Parque</span>
                             </div>
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
                                 <ClockIcon className="w-3.5 h-3.5 text-liquid-gold" />
-                                <span className="text-[10px] font-bold text-slate-300 tracking-wide">Lunâ€“Vie 08:00â€“19:00</span>
+                                <span className="text-[10px] font-bold text-slate-300 tracking-wide">Lun–Vie 08:00–19:00</span>
                             </div>
                         </motion.div>
 
@@ -150,10 +150,10 @@ const Hero: React.FC = () => {
                             transition={{ duration: 1.5, delay: 1.1 }}
                             className="grid grid-cols-4 gap-4 pt-12 mt-4 border-t border-white/5"
                         >
-                            <Stat label="Trayectoria" value="15" sub="AÃ±os" />
-                            <Stat label="PrecisiÃ³n" value="99%" sub="CMYK" />
-                            <Stat label="ResoluciÃ³n" value="8K" sub="DPI" />
-                            <Stat label="Clientes" value="50+" sub="Por DÃ­a" />
+                            <Stat label="Innovación" value="TOP" sub="Nivel" />
+                            <Stat label="Precisión" value="99%" sub="CMYK" />
+                            <Stat label="Resolución" value="8K" sub="DPI" />
+                            <Stat label="Clientes" value="50+" sub="Por Día" />
                         </motion.div>
                     </div>
 
@@ -186,7 +186,7 @@ const Hero: React.FC = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <h3 className="text-lg font-display font-black text-white uppercase tracking-widest italic">Analizando Calidad...</h3>
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Procesando densidad de pÃ­xeles y gama cromÃ¡tica</p>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Procesando densidad de píxeles y gama cromática</p>
                                         </div>
                                     </div>
                                 ) : testResult ? (
@@ -194,7 +194,7 @@ const Hero: React.FC = () => {
                                     <div className="animate-fade-in space-y-8">
                                         <div className="flex justify-between items-center">
                                             <div className="px-4 py-1.5 bg-liquid-gold/10 border border-liquid-gold/20 rounded-full text-liquid-gold text-[9px] font-black uppercase tracking-widest">
-                                                AnÃ¡lisis Alpha-7
+                                                Análisis Alpha-7
                                             </div>
                                             <button
                                                 onClick={() => { setTestResult(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
@@ -206,7 +206,7 @@ const Hero: React.FC = () => {
                                         <div className="space-y-4">
                                             <h3 className="text-4xl font-display font-black text-white leading-none tracking-tight">{testResult.veredicto}</h3>
                                             <div className="p-6 bg-white/[0.03] rounded-2xl border border-white/5">
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">ObservaciÃ³n del Atelier:</p>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Observación del Atelier:</p>
                                                 <p className="text-base font-medium text-slate-300 italic leading-relaxed">"{testResult.calidad}"</p>
                                             </div>
                                         </div>
@@ -214,7 +214,7 @@ const Hero: React.FC = () => {
                                             onClick={() => fileInputRef.current?.click()}
                                             className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-white hover:text-brand-dark transition-all"
                                         >
-                                            Repetir DiagnÃ³stico
+                                            Repetir Diagnóstico
                                         </button>
                                     </div>
                                 ) : (
@@ -231,7 +231,7 @@ const Hero: React.FC = () => {
                                                     <span className="font-editorial italic font-normal text-liquid-gold">A.I.</span>
                                                 </h3>
                                                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">
-                                                    AuditorÃ­a AlgorÃ­tmica de Calidad de ImpresiÃ³n
+                                                    Auditoría Algorítmica de Calidad de Impresión
                                                 </p>
                                             </div>
                                         </div>
@@ -252,10 +252,10 @@ const Hero: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-lg font-display font-bold text-white mb-1">Importar Archivo Maestro</p>
-                                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">JPG Â· PNG Â· WEBP</p>
+                                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">JPG · PNG · WEBP</p>
                                                 </div>
                                                 <p className="text-xs text-slate-600 font-light">
-                                                    La IA analiza la resoluciÃ³n, saturaciÃ³n y densidad de color de tu archivo antes de enviarlo a imprimir.
+                                                    La IA analiza la resolución, saturación y densidad de color de tu archivo antes de enviarlo a imprimir.
                                                 </p>
                                             </div>
                                         </div>
@@ -263,7 +263,7 @@ const Hero: React.FC = () => {
                                         {/* Trust indicator */}
                                         <div className="flex items-center justify-center gap-3 text-[9px] font-black text-slate-600 uppercase tracking-widest">
                                             <CheckCircleIcon className="w-4 h-4 text-liquid-gold/40" />
-                                            <span>DiagnÃ³stico impulsado por Gemini Pro Vision</span>
+                                            <span>Diagnóstico impulsado por Gemini Pro Vision</span>
                                         </div>
                                     </div>
                                 )}

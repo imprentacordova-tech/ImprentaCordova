@@ -15,6 +15,7 @@ import ClientesPage from './pages/Clientes';
 import NuevoPedidoPage from './pages/NuevoPedido';
 import ConfiguracionPage from './pages/Configuracion';
 import ProductosPage from './pages/Productos';
+import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
 import InventarioPage from './pages/Inventario';
 import GestionUsuariosPage from './pages/GestionUsuarios';
 import RetirosPage from './pages/Retiros';
@@ -105,6 +106,7 @@ const App: React.FC = () => {
             <Route path="/usuarios" element={<GestionUsuariosPage />} />
             <Route path="/cuentas" element={<CuentasPage />} />
             <Route path="/registro" element={<RegistroActividadPage />} />
+            <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
             <Route path="/configuracion" element={<ConfiguracionPage />} />
           </Route>
 

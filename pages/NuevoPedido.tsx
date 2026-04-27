@@ -37,6 +37,8 @@ const NuevoPedidoPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
     const [configuracion, setConfiguracion] = useState<any>(null);
+    const [items, setItems] = useState<any[]>([]);
+    const [isAddingItem, setIsAddingItem] = useState(false);
 
     // SRI specific states
     const [isSriOrder, setIsSriOrder] = useState(false);
@@ -55,25 +57,26 @@ const NuevoPedidoPage: React.FC = () => {
     const canAdvance = () => {
         if (step === 1) return missionCategory !== null;
         
-        // Path SRI: Step 2 = Identity (Client), Step 3 = Specification (Product)
-        // Path Commercial: Step 2 = Specification (Product), Step 3 = Identity (Client)
-        
         if (missionCategory === 'SRI') {
             if (step === 2) return !!cliente;
-            if (step === 3) return !!configuracion;
-        } else {
-            if (step === 2) {
-                if (orderMode === 'EXPRESS') return !!detalle.trim();
-                return !!configuracion;
-            }
-            if (step === 3) return true; // Optional client for commercial, defaults to CF
+            if (step === 3) return items.length > 0;
+        } else if (missionCategory === 'COMERCIAL') {
+            if (step === 2) return items.length > 0;
+            if (step === 3) return true; 
+        } else if (missionCategory === 'EXPRESS') {
+            if (step === 2) return !!detalle.trim();
         }
         
-        if (step === 4) return precio > 0;
+        if (step === 4) return items.length > 0 && items.reduce((acc, i) => acc + (i.precioFinal || 0), 0) > 0;
         return true;
     };
 
     const handleCreateOrder = async () => {
+        if (items.length === 0) {
+            setError("Debe agregar al menos un ítem al pedido.");
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
@@ -87,36 +90,39 @@ const NuevoPedidoPage: React.FC = () => {
                 });
             }
 
-            const result = await addTrabajo({
-                titular: finalCliente.nombre,
-                clienteId: finalCliente.id || '',
-                servicio: servicio?.nombre || 'Servicio General',
-                detalle: isSriOrder 
-                    ? `[SRI ${sriMode}] ${sriActividad} | ${detalle}${configuracion ? ` | ESPECIFICACIONES: ${JSON.stringify(configuracion.especificaciones)}` : ''}` 
-                    : `${detalle}${configuracion ? ` | ESPECIFICACIONES: ${JSON.stringify(configuracion.especificaciones)}` : ''}`,
-                precio,
-                abono,
-                saldo: precio - abono,
-                prioridad,
-                estado: TrabajoEstado.PENDIENTE,
-                fechaEntrada: new Date().toISOString(),
-                responsable: currentUser.nombre,
-                origen: 'Local',
-                esSRI: isSriOrder,
-                estadoClave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
-                actividadSeleccionada: isSriOrder ? sriActividad : null
-            }, currentUser.nombre, imageFile);
+            // Create multiple jobs for divided orders
+            const results = await Promise.all(items.map(async (item) => {
+                return await addTrabajo({
+                    titular: finalCliente!.nombre,
+                    clienteId: finalCliente!.id || '',
+                    servicio: item.nombre || 'Servicio General',
+                    detalle: isSriOrder 
+                        ? `[SRI ${sriMode}] ${sriActividad} | ${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}` 
+                        : `${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}`,
+                    precio: item.precioFinal,
+                    abono: items.indexOf(item) === 0 ? abono : 0, // Only apply abono to the first job for now, or split it
+                    saldo: item.precioFinal - (items.indexOf(item) === 0 ? abono : 0),
+                    prioridad,
+                    estado: TrabajoEstado.PENDIENTE,
+                    fechaEntrada: new Date().toISOString(),
+                    responsable: currentUser.nombre,
+                    origen: 'Local',
+                    esSRI: isSriOrder,
+                    estadoClave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
+                    actividadSeleccionada: isSriOrder ? sriActividad : null
+                }, currentUser.nombre, imageFile);
+            }));
 
             logActivity(
                 currentUser.nombre, 
                 currentUser.rol || 'Administrador', 
                 'CREAR_ORDEN', 
-                `Orden #${result.orden} creada para ${finalCliente.nombre}`, 
+                `Pedido Dividido (${items.length} ítems) creado para ${finalCliente.nombre}`, 
                 'Ventas'
             ).catch(() => {});
             
             refreshData().catch(() => {});
-            setCreatedTrabajoId(result.id);
+            setCreatedTrabajoId(results[0].id); // Use first job ID for receipts
             setStep(5); 
         } catch (err: any) {
             console.error('[NuevoPedido] Error:', err);
@@ -128,10 +134,19 @@ const NuevoPedidoPage: React.FC = () => {
 
     // --- DYNAMIC STEPS LABELS ---
     const getSteps = () => {
+        if (missionCategory === 'EXPRESS') {
+            return [
+                { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
+                { id: 2, label: 'Despliegue Rápido', icon: BoltIcon },
+                { id: 4, label: 'Capital Rápido', icon: CreditCardIcon },
+                { id: 5, label: 'Ticket', icon: RocketLaunchIcon }
+            ];
+        }
+
         return [
             { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-            { id: 2, label: missionCategory === 'SRI' ? 'Identidad' : 'Protocolo', icon: missionCategory === 'SRI' ? UserIcon : CpuIcon },
-            { id: 3, label: missionCategory === 'SRI' ? 'Protocolo' : 'Identidad', icon: missionCategory === 'SRI' ? CpuIcon : UserIcon },
+            { id: 2, label: missionCategory === 'SRI' ? 'Identidad' : 'Catálogo Comercial', icon: missionCategory === 'SRI' ? UserIcon : BookOpenIcon },
+            { id: 3, label: missionCategory === 'SRI' ? 'Catálogo Fiscal' : 'Identidad', icon: missionCategory === 'SRI' ? ShieldCheckIcon : UserIcon },
             { id: 4, label: 'Capital', icon: CreditCardIcon },
             { id: 5, label: 'Despliegue', icon: RocketLaunchIcon }
         ];
@@ -279,33 +294,62 @@ const NuevoPedidoPage: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="space-y-12">
-                                        <div className="space-y-4">
-                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA TÉCNICA</p>
-                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Configuración de <span className="text-gold-gradient">Producción</span></h2>
-                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Defina los parámetros de ingeniería para este trabajo.</p>
-                                        </div>
                                         {orderMode === 'CATALOG' ? (
-                                            !servicio ? (
-                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
+                                            (isAddingItem || items.length === 0) ? (
+                                                !servicio ? (
+                                                    <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
+                                                ) : (
+                                                    <ProductConfigurator 
+                                                        product={servicio} 
+                                                        onCancel={() => {setServicio(null); setIsAddingItem(false);}}
+                                                        onComplete={(config) => {
+                                                            setItems(prev => [...prev, config]);
+                                                            setPrecio(prev => prev + config.precioFinal);
+                                                            setServicio(null);
+                                                            setIsAddingItem(false);
+                                                        }}
+                                                    />
+                                                )
                                             ) : (
-                                                <ProductConfigurator 
-                                                    product={servicio} 
-                                                    onCancel={() => setServicio(null)}
-                                                    onComplete={(config) => {
-                                                        setConfiguracion(config);
-                                                        setPrecio(config.precioFinal);
-                                                        setStep(3);
-                                                    }}
-                                                />
+                                                <div className="space-y-10">
+                                                    <div className="grid grid-cols-1 gap-6">
+                                                        {items.map((item, idx) => (
+                                                            <div key={idx} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 flex justify-between items-center group/item">
+                                                                <div className="flex items-center gap-6">
+                                                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 font-black italic">{idx + 1}</div>
+                                                                    <div>
+                                                                        <h4 className="text-white font-black uppercase tracking-tight italic">{item.nombre}</h4>
+                                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">x{item.cantidad} • {item.especificaciones.tamano} • {item.especificaciones.tipoPapel}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-10">
+                                                                    <span className="text-xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
+                                                                    <button onClick={() => {
+                                                                        setItems(prev => prev.filter((_, i) => i !== idx));
+                                                                        setPrecio(prev => prev - item.precioFinal);
+                                                                    }} className="text-slate-700 hover:text-brand-red transition-colors"><SolidBoxIcon className="w-5 h-5 rotate-45" /></button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => setIsAddingItem(true)}
+                                                        className="w-full py-6 border-2 border-dashed border-white/10 rounded-3xl text-slate-500 font-black uppercase tracking-[0.4em] hover:border-liquid-gold/30 hover:text-liquid-gold transition-all italic flex items-center justify-center gap-4 group"
+                                                    >
+                                                        <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                                        Agregar Otro Producto al Manifiesto
+                                                    </button>
+                                                    <button onClick={() => setStep(3)} className="w-full py-8 bg-white text-black font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-luxury hover:bg-liquid-gold transition-all text-[13px] italic flex items-center justify-center gap-5">Confirmar Protocolo & Siguiente Fase <ArrowRightIcon className="w-5 h-5" /></button>
+                                                </div>
                                             )
                                         ) : (
                                             <div className="space-y-8">
                                                 <textarea 
                                                     value={detalle} onChange={e => setDetalle(e.target.value)}
-                                                    placeholder="Detalle del servicio rápido..."
-                                                    className="w-full h-40 p-8 bg-black/60 border-2 border-white/5 rounded-[2rem] text-white outline-none focus:border-liquid-gold/30 transition-all"
+                                                    placeholder="Ej: 10 Copias a color, 2 anillados..."
+                                                    className="w-full h-48 p-8 bg-black/60 border-2 border-white/5 rounded-[2rem] text-white text-xl outline-none focus:border-blue-500/50 transition-all"
                                                 />
-                                                <button onClick={() => setStep(3)} className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl">Siguiente →</button>
+                                                <button onClick={() => setStep(4)} className="w-full py-6 bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-blue-400 transition-all flex items-center justify-center gap-4">Continuar a Pago Rápido <ArrowRightIcon className="w-5 h-5"/></button>
                                             </div>
                                         )}
                                     </div>
@@ -320,52 +364,81 @@ const NuevoPedidoPage: React.FC = () => {
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 {missionCategory === 'SRI' ? (
-                                    <div className="space-y-12">
-                                        <div className="space-y-4">
-                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">PASO 03</p>
-                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Detalle del <span className="text-gold-gradient">Documento</span></h2>
-                                        </div>
-                                        {!servicio ? (
-                                            <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} regimen={cliente?.regimen} />
+                                        {(isAddingItem || items.length === 0) ? (
+                                            !servicio ? (
+                                                <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} regimen={cliente?.regimen} />
+                                            ) : (
+                                                <ProductConfigurator 
+                                                    product={servicio} 
+                                                    onCancel={() => {setServicio(null); setIsAddingItem(false);}}
+                                                    regimen={cliente?.regimen}
+                                                    onComplete={(config) => {
+                                                        setItems(prev => [...prev, config]);
+                                                        setPrecio(prev => prev + config.precioFinal);
+                                                        setServicio(null);
+                                                        setIsAddingItem(false);
+                                                    }}
+                                                />
+                                            )
                                         ) : (
-                                            <ProductConfigurator 
-                                                product={servicio} 
-                                                onCancel={() => setServicio(null)}
-                                                regimen={cliente?.regimen}
-                                                onComplete={(config) => {
-                                                    setConfiguracion(config);
-                                                    setPrecio(config.precioFinal);
-                                                    setStep(4);
-                                                }}
-                                            />
-                                        )}
-                                        {!configuracion && (
-                                            <div className="bg-brand-red/5 p-8 rounded-[2rem] border border-brand-red/20 space-y-6">
-                                                <div className="flex items-center gap-4 text-brand-red">
-                                                    <ShieldCheckIcon className="w-6 h-6" />
-                                                    <h3 className="font-black uppercase tracking-widest text-sm">Validación Tributaria</h3>
+                                            <div className="space-y-10">
+                                                <div className="grid grid-cols-1 gap-6">
+                                                    {items.map((item, idx) => (
+                                                        <div key={idx} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 flex justify-between items-center group/item">
+                                                            <div className="flex items-center gap-6">
+                                                                <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center text-brand-red border border-brand-red/20 font-black italic">{idx + 1}</div>
+                                                                <div>
+                                                                    <h4 className="text-white font-black uppercase tracking-tight italic">{item.nombre}</h4>
+                                                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">x{item.cantidad} • {item.especificaciones.tamano} • {item.especificaciones.tipoPapel}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-10">
+                                                                <span className="text-xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
+                                                                <button onClick={() => {
+                                                                    setItems(prev => prev.filter((_, i) => i !== idx));
+                                                                    setPrecio(prev => prev - item.precioFinal);
+                                                                }} className="text-slate-700 hover:text-brand-red transition-colors"><SolidBoxIcon className="w-5 h-5 rotate-45" /></button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-6">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Modo</label>
-                                                        <div className="flex bg-black/40 p-1 rounded-xl">
-                                                            {['NUEVO', 'RENOVACION'].map(m => (
-                                                                <button key={m} onClick={() => setSriMode(m as any)} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${sriMode === m ? 'bg-brand-red text-white' : 'text-slate-600'}`}>{m}</button>
-                                                            ))}
+                                                <button 
+                                                    onClick={() => setIsAddingItem(true)}
+                                                    className="w-full py-6 border-2 border-dashed border-brand-red/10 rounded-3xl text-slate-600 font-black uppercase tracking-[0.4em] hover:border-brand-red/30 hover:text-brand-red transition-all italic flex items-center justify-center gap-4 group"
+                                                >
+                                                    <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                                    Agregar Otro Producto Fiscal
+                                                </button>
+                                                
+                                                <div className="bg-brand-red/5 p-8 rounded-[2rem] border border-brand-red/20 space-y-6">
+                                                    <div className="flex items-center gap-4 text-brand-red">
+                                                        <ShieldCheckIcon className="w-6 h-6" />
+                                                        <h3 className="font-black uppercase tracking-widest text-sm">Validación Tributaria</h3>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-6">
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Modo</label>
+                                                            <div className="flex bg-black/40 p-1 rounded-xl">
+                                                                {['NUEVO', 'RENOVACION'].map(m => (
+                                                                    <button key={m} onClick={() => setSriMode(m as any)} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${sriMode === m ? 'bg-brand-red text-white' : 'text-slate-600'}`}>{m}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Clave SRI</label>
+                                                            <input type="text" value={sriClave} onChange={e => setSriClave(e.target.value)} className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none focus:border-brand-red" />
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Clave SRI</label>
-                                                        <input type="text" value={sriClave} onChange={e => setSriClave(e.target.value)} className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none focus:border-brand-red" />
+                                                        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Actividad Económica</label>
+                                                        <select value={sriActividad} onChange={e => setSriActividad(e.target.value)} className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none">
+                                                            <option value="">Seleccionar actividad...</option>
+                                                            {cliente?.actividades?.split('|').map((a, i) => <option key={i} value={a}>{a}</option>)}
+                                                        </select>
                                                     </div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Actividad Económica</label>
-                                                    <select value={sriActividad} onChange={e => setSriActividad(e.target.value)} className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none">
-                                                        <option value="">Seleccionar actividad...</option>
-                                                        {cliente?.actividades?.split('|').map((a, i) => <option key={i} value={a}>{a}</option>)}
-                                                    </select>
-                                                </div>
+
+                                                <button onClick={() => setStep(4)} className="w-full py-8 bg-white text-black font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-luxury hover:bg-brand-red hover:text-white transition-all text-[13px] italic flex items-center justify-center gap-5">Confirmar Protocolo Fiscal <ArrowRightIcon className="w-5 h-5" /></button>
                                             </div>
                                         )}
                                     </div>
@@ -402,15 +475,19 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-10">
-                                        {!cliente && (
+                                        {(!cliente || missionCategory === 'EXPRESS') && (
                                             <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-4">
-                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Nombre para el Recibo</label>
-                                                <input type="text" value={quickName} onChange={e => setQuickName(e.target.value)} placeholder="Ej: CONSUMIDOR FINAL" className="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white font-black uppercase tracking-widest outline-none focus:border-liquid-gold" />
+                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Nombre Rápido para el Recibo</label>
+                                                <input type="text" value={quickName} onChange={e => setQuickName(e.target.value)} placeholder="Ej: CONSUMIDOR FINAL" className="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white font-black uppercase tracking-widest outline-none focus:border-liquid-gold transition-colors" />
+                                                {missionCategory === 'EXPRESS' && <p className="text-[9px] text-blue-400 uppercase tracking-widest font-bold ml-2">Modo Express: Se creará como consumidor final automáticamente si no especifica datos.</p>}
                                             </div>
                                         )}
                                         <div className="space-y-4">
-                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Costo del Trabajo</label>
-                                            <PriceCalculatorDisplay onSelectPrice={setPrecio} />
+                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Total a Cobrar (Modificable)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-white text-3xl font-black italic">$</span>
+                                                <input type="number" value={precio} onChange={e => setPrecio(Number(e.target.value))} className="w-full bg-black/60 border-2 border-white/5 pl-14 py-8 rounded-[2rem] text-4xl font-black text-white outline-none focus:border-liquid-gold/30 transition-colors italic" />
+                                            </div>
                                         </div>
                                         <div className="space-y-4">
                                             <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Abono Inicial</label>
@@ -449,10 +526,19 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
                                 <div className="flex flex-wrap justify-center gap-6">
                                     {createdTrabajoId && (
-                                        <>
-                                            <button onClick={() => window.open(`/#/recibo/${createdTrabajoId}`, '_blank')} className="px-10 py-6 bg-liquid-gold text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3"><PrinterIcon className="w-5 h-5" /> Ticket Térmico</button>
-                                            <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="px-10 py-6 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3"><PrinterIcon className="w-5 h-5" /> Nota A5 (Epson)</button>
-                                        </>
+                                        <div className="flex gap-4">
+                                            {missionCategory === 'SRI' ? (
+                                                <>
+                                                    <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} className="px-8 py-6 bg-brand-red text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-red-glow hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A5 Doble)</button>
+                                                    <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} className="px-8 py-6 bg-white/10 text-white border border-brand-red/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-red/20 transition-all"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A4 Completo)</button>
+                                                </>
+                                            ) : (
+                                                <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="px-10 py-6 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3"><PrinterIcon className="w-5 h-5" /> Recibo Epson (Doble Copia)</button>
+                                            )}
+                                            {missionCategory === 'EXPRESS' && (
+                                                <button onClick={() => window.open(`/#/recibo/${createdTrabajoId}`, '_blank')} className="px-8 py-6 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-blue-500 hover:text-white transition-all"><PrinterIcon className="w-5 h-5" /> Ticket Térmico Corto</button>
+                                            )}
+                                        </div>
                                     )}
                                     <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest">Nueva Orden</button>
                                 </div>
@@ -466,7 +552,10 @@ const NuevoPedidoPage: React.FC = () => {
                         <div className="flex justify-between items-center px-10">
                             <button 
                                 disabled={step === 1}
-                                onClick={() => setStep(s => s - 1)}
+                                onClick={() => {
+                                    if (missionCategory === 'EXPRESS' && step === 4) setStep(2);
+                                    else setStep(s => s - 1);
+                                }}
                                 className="flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase tracking-widest hover:text-white disabled:opacity-0 transition-all"
                             >
                                 <ArrowRightIcon className="w-5 h-5 rotate-180" /> Paso Anterior
@@ -474,15 +563,18 @@ const NuevoPedidoPage: React.FC = () => {
                             
                             <div className="flex items-center gap-6">
                                 {error && <span className="text-brand-red text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
-                                {step < 4 ? (
+                                {step < 4 && !(missionCategory === 'EXPRESS' && step === 2) ? (
                                     <button 
                                         disabled={!canAdvance()}
-                                        onClick={() => setStep(s => s + 1)}
+                                        onClick={() => {
+                                            if (missionCategory === 'EXPRESS' && step === 2) setStep(4);
+                                            else setStep(s => s + 1);
+                                        }}
                                         className="bg-white text-black px-16 py-6 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-liquid-gold transition-all disabled:opacity-20 flex items-center gap-4 group"
                                     >
                                         Continuar <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
-                                ) : (
+                                ) : step === 4 ? (
                                     <button 
                                         disabled={!canAdvance() || loading}
                                         onClick={handleCreateOrder}
@@ -491,7 +583,7 @@ const NuevoPedidoPage: React.FC = () => {
                                         {loading ? <Loader2Icon className="animate-spin w-5 h-5" /> : <RocketLaunchIcon className="w-6 h-6" />}
                                         {loading ? 'Procesando...' : 'Finalizar Pedido'}
                                     </button>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     )}
@@ -515,9 +607,15 @@ const NuevoPedidoPage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Trabajo</p>
-                                    <p className="text-xl font-bold text-white italic uppercase">{servicio?.nombre || '---'}</p>
-                                    {detalle && <p className="text-xs text-slate-500 italic mt-2 line-clamp-2">{detalle}</p>}
+                                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Manifiesto de Items</p>
+                                    <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                        {items.length > 0 ? items.map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                                                <span className="text-[10px] text-white font-black uppercase tracking-tighter truncate max-w-[150px] italic">{item.nombre}</span>
+                                                <span className="text-xs font-black text-liquid-gold">${item.precioFinal.toFixed(2)}</span>
+                                            </div>
+                                        )) : <p className="text-[10px] text-slate-700 font-black uppercase tracking-widest italic">Esperando Protocolo...</p>}
+                                    </div>
                                 </div>
 
                                 <div className="pt-8 border-t border-white/5 space-y-4">

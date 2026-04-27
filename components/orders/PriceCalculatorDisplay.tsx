@@ -160,11 +160,21 @@ const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelec
                         <ExclamationTriangleIcon className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest italic">Alerta de Insumo</p>
+                        <p className="text-[9px] font-black text-amber-500 uppercase tracking-[0.8em] italic">Alerta de Insumo</p>
                         <p className="text-[10px] text-slate-300 font-medium">Stock crítico en material asignado a <span className="text-white font-bold">{supplierName || 'Proveedor'}</span>.</p>
                     </div>
                 </motion.div>
             )}
+
+            <div className="flex items-center justify-between mb-2 px-2">
+                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Herramienta de Costos</p>
+                <button 
+                    onClick={() => window.open('/#/calculadora', '_blank')}
+                    className="text-[9px] font-black text-liquid-gold hover:text-white uppercase tracking-widest flex items-center gap-2 transition-colors group"
+                >
+                    Hub Avanzado <RocketLaunchIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
 
             <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
                 {(['MANUAL', 'OFFSET', 'DIGITAL'] as const).map(m => (

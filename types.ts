@@ -87,6 +87,23 @@ export interface Producto {
   specs?: string[];
   unit?: string;
   isPopular?: boolean;
+  visiblePublico?: boolean;
+  requiereDiseno?: boolean;
+  manejaInventario?: boolean;
+  codigoInterno?: string;
+  tags?: string[];
+  esActivo?: boolean;
+  configCalculadora?: any;
+  configuracionBase?: any;
+  configuracionHabilitada?: {
+      dimensiones?: boolean;
+      volumen?: boolean;
+      formato?: boolean;
+      material?: boolean;
+      acabados?: boolean;
+      cromatismo?: boolean;
+      procesosMecanicos?: boolean;
+  };
 }
 
 export interface SriCredential {
