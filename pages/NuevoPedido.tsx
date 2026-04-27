@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { refreshData, addTrabajo, addCliente } = useData();
+    const { refreshData, addTrabajo, addCliente, clientes } = useData();
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
@@ -296,15 +296,22 @@ const NuevoPedidoPage: React.FC = () => {
                                 ) : missionCategory === 'COMERCIAL' ? (
                                     <div className="space-y-12">
                                         <CommercialFlow 
-                                            onComplete={async ({ trabajo, clienteNombre, clienteTelefono }) => {
+                                            onComplete={async ({ trabajo, clienteNombre, clienteTelefono, clienteId }) => {
                                                 setLoading(true);
                                                 try {
                                                     let finalCliente = cliente;
+                                                    
+                                                    // Si CommercialFlow pasó un ID, buscamos ese cliente
+                                                    if (clienteId) {
+                                                        const found = clientes.find(c => c.id === clienteId);
+                                                        if (found) finalCliente = found;
+                                                    }
+
                                                     if (!finalCliente) {
                                                         finalCliente = await addCliente({
                                                             nombre: clienteNombre || 'CONSUMIDOR FINAL',
                                                             cedula: '9999999999',
-                                                            telefono: clienteTelefono,
+                                                            telefono: [clienteTelefono],
                                                             regimen: 'General',
                                                             direccion: 'Local'
                                                         });
@@ -317,7 +324,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                         precio: trabajo.total || 0,
                                                         abono: trabajo.abono || 0,
                                                         saldo: trabajo.saldo || 0,
-                                                        prioridad: 'Media',
+                                                        prioridad: 'Normal',
                                                         estado: TrabajoEstado.PENDIENTE,
                                                         fechaEntrada: new Date().toISOString(),
                                                         responsable: currentUser.nombre,

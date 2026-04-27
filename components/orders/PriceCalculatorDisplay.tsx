@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-    Calculator as CalculatorIcon, Sparkles as SparklesIcon, CheckCircle as CheckCircleIcon,
-    ArrowRight as ArrowRightIcon, Zap as BoltIcon, Rocket as RocketLaunchIcon, 
-    FlaskConical as BeakerIcon, Copy as DocumentIcon,
-    Database as CircleStackIcon, Cpu as CpuIcon, Settings as Cog8ToothIcon, AlertTriangle as ExclamationTriangleIcon
-} from 'lucide-react';
+    CalculatorIcon, SparklesIcon, CheckCircleIcon,
+    ArrowRightIcon, BoltIcon, RocketLaunchIcon, 
+    BeakerIcon, DocumentIcon,
+    CircleStackIcon, CpuIcon, Cog8ToothIcon, ExclamationTriangleIcon
+} from '../../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../services/supabase';
 import { SOURCE_PAPERS, DEFAULT_COSTS } from '../../constants';
