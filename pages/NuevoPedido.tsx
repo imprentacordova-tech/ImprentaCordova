@@ -16,6 +16,7 @@ import ServiceSelector from '../components/orders/ServiceSelector';
 import ProductConfigurator from '../components/orders/ProductConfigurator';
 import PhotoCapture from '../components/orders/PhotoCapture';
 import PriceCalculatorDisplay from '../components/orders/PriceCalculatorDisplay';
+import { CommercialFlow } from '../components/orders/CommercialFlow';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
@@ -197,7 +198,7 @@ const NuevoPedidoPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                <div className="lg:col-span-8 space-y-10">
+                <div className={missionCategory === 'COMERCIAL' && step === 2 ? "lg:col-span-12 space-y-10" : "lg:col-span-8 space-y-10"}>
                     <AnimatePresence mode="wait">
                         
                         {/* PASO 1: CATEGORÍA */}
@@ -292,66 +293,59 @@ const NuevoPedidoPage: React.FC = () => {
                                             hideQuickButtons={true}
                                         />
                                     </div>
+                                ) : missionCategory === 'COMERCIAL' ? (
+                                    <div className="space-y-12">
+                                        <CommercialFlow 
+                                            onComplete={async ({ trabajo, clienteNombre, clienteTelefono }) => {
+                                                setLoading(true);
+                                                try {
+                                                    let finalCliente = cliente;
+                                                    if (!finalCliente) {
+                                                        finalCliente = await addCliente({
+                                                            nombre: clienteNombre || 'CONSUMIDOR FINAL',
+                                                            cedula: '9999999999',
+                                                            telefono: clienteTelefono,
+                                                            regimen: 'General',
+                                                            direccion: 'Local'
+                                                        });
+                                                    }
+                                                    const result = await addTrabajo({
+                                                        titular: finalCliente.nombre,
+                                                        clienteId: finalCliente.id || '',
+                                                        servicio: trabajo.subtipo || 'Comercial',
+                                                        detalle: trabajo.detalle || '',
+                                                        precio: trabajo.total || 0,
+                                                        abono: trabajo.abono || 0,
+                                                        saldo: trabajo.saldo || 0,
+                                                        prioridad: 'Media',
+                                                        estado: TrabajoEstado.PENDIENTE,
+                                                        fechaEntrada: new Date().toISOString(),
+                                                        responsable: currentUser.nombre,
+                                                        origen: 'Local',
+                                                        esSRI: false
+                                                    }, currentUser.nombre);
+
+                                                    setCreatedTrabajoId(result.id);
+                                                    setStep(5);
+                                                } catch (e: any) {
+                                                    setError(e.message);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            onCancel={() => setStep(1)}
+                                        />
+                                    </div>
                                 ) : (
                                     <div className="space-y-12">
-                                        {orderMode === 'CATALOG' ? (
-                                            (isAddingItem || items.length === 0) ? (
-                                                !servicio ? (
-                                                    <ServiceSelector onSelect={setServicio} selectedId={servicio?.id} />
-                                                ) : (
-                                                    <ProductConfigurator 
-                                                        product={servicio} 
-                                                        onCancel={() => {setServicio(null); setIsAddingItem(false);}}
-                                                        onComplete={(config) => {
-                                                            setItems(prev => [...prev, config]);
-                                                            setPrecio(prev => prev + config.precioFinal);
-                                                            setServicio(null);
-                                                            setIsAddingItem(false);
-                                                        }}
-                                                    />
-                                                )
-                                            ) : (
-                                                <div className="space-y-10">
-                                                    <div className="grid grid-cols-1 gap-6">
-                                                        {items.map((item, idx) => (
-                                                            <div key={idx} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 flex justify-between items-center group/item">
-                                                                <div className="flex items-center gap-6">
-                                                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 font-black italic">{idx + 1}</div>
-                                                                    <div>
-                                                                        <h4 className="text-white font-black uppercase tracking-tight italic">{item.nombre}</h4>
-                                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">x{item.cantidad} • {item.especificaciones.tamano} • {item.especificaciones.tipoPapel}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex items-center gap-10">
-                                                                    <span className="text-xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
-                                                                    <button onClick={() => {
-                                                                        setItems(prev => prev.filter((_, i) => i !== idx));
-                                                                        setPrecio(prev => prev - item.precioFinal);
-                                                                    }} className="text-slate-700 hover:text-brand-red transition-colors"><SolidBoxIcon className="w-5 h-5 rotate-45" /></button>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <button 
-                                                        onClick={() => setIsAddingItem(true)}
-                                                        className="w-full py-6 border-2 border-dashed border-white/10 rounded-3xl text-slate-500 font-black uppercase tracking-[0.4em] hover:border-liquid-gold/30 hover:text-liquid-gold transition-all italic flex items-center justify-center gap-4 group"
-                                                    >
-                                                        <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                                        Agregar Otro Producto al Manifiesto
-                                                    </button>
-                                                    <button onClick={() => setStep(3)} className="w-full py-8 bg-white text-black font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-luxury hover:bg-liquid-gold transition-all text-[13px] italic flex items-center justify-center gap-5">Confirmar Protocolo & Siguiente Fase <ArrowRightIcon className="w-5 h-5" /></button>
-                                                </div>
-                                            )
-                                        ) : (
-                                            <div className="space-y-8">
-                                                <textarea 
-                                                    value={detalle} onChange={e => setDetalle(e.target.value)}
-                                                    placeholder="Ej: 10 Copias a color, 2 anillados..."
-                                                    className="w-full h-48 p-8 bg-black/60 border-2 border-white/5 rounded-[2rem] text-white text-xl outline-none focus:border-blue-500/50 transition-all"
-                                                />
-                                                <button onClick={() => setStep(4)} className="w-full py-6 bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-blue-400 transition-all flex items-center justify-center gap-4">Continuar a Pago Rápido <ArrowRightIcon className="w-5 h-5"/></button>
-                                            </div>
-                                        )}
+                                        <div className="space-y-8">
+                                            <textarea 
+                                                value={detalle} onChange={e => setDetalle(e.target.value)}
+                                                placeholder="Ej: 10 Copias a color, 2 anillados..."
+                                                className="w-full h-48 p-8 bg-black/60 border-2 border-white/5 rounded-[2rem] text-white text-xl outline-none focus:border-blue-500/50 transition-all"
+                                            />
+                                            <button onClick={() => setStep(4)} className="w-full py-6 bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-blue-400 transition-all flex items-center justify-center gap-4">Continuar a Pago Rápido <ArrowRightIcon className="w-5 h-5"/></button>
+                                        </div>
                                     </div>
                                 )}
                             </motion.div>
@@ -443,23 +437,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
-                                ) : (
-                                    <div className="space-y-12">
-                                        <div className="space-y-4">
-                                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">PASO 03</p>
-                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Datos del <span className="text-gold-gradient">Cliente</span></h2>
-                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Opcional: Continuar como Consumidor Final.</p>
-                                        </div>
-                                        <ClientSelector 
-                                            onSelect={(c) => { setCliente(c); if(c) setStep(4); }} 
-                                            selectedId={cliente?.id} 
-                                            onSkip={() => setStep(4)}
-                                        />
-                                        <div className="flex justify-center">
-                                            <button onClick={() => setStep(4)} className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] hover:text-white transition-all">Continuar sin Registrar Cliente →</button>
-                                        </div>
-                                    </div>
-                                )}
+                                ) : null}
                             </motion.div>
                         )}
 
@@ -549,7 +527,7 @@ const NuevoPedidoPage: React.FC = () => {
                     </AnimatePresence>
 
                     {/* CONTROLES DE NAVEGACIÓN */}
-                    {step < 5 && (
+                    {step < 5 && missionCategory !== 'COMERCIAL' && (
                         <div className="flex justify-between items-center px-10">
                             <button 
                                 disabled={step === 1}
@@ -591,11 +569,12 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
 
                 {/* SIDEBAR DE RESUMEN EN TIEMPO REAL */}
-                <div className="lg:col-span-4 space-y-10 sticky top-10">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                        className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/10 shadow-2xl relative overflow-hidden group"
-                    >
+                {missionCategory !== 'COMERCIAL' && (
+                    <div className="lg:col-span-4 space-y-10 sticky top-10">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                            className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/10 shadow-2xl relative overflow-hidden group"
+                        >
                         <div className="absolute top-0 right-0 p-10 opacity-[0.02] scale-150"><ShoppingCartIcon className="w-64 h-64 text-liquid-gold" /></div>
                         <div className="relative z-10 space-y-10">
                             <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Hoja de <span className="text-liquid-gold">Ruta</span></h3>
@@ -641,7 +620,8 @@ const NuevoPedidoPage: React.FC = () => {
                         <div className="flex items-center gap-4 text-liquid-gold"><SparklesIcon className="w-5 h-5" /><h4 className="text-[10px] font-black uppercase tracking-widest italic">Cálculo Preciso</h4></div>
                         <PriceCalculatorDisplay onSelectPrice={setPrecio} />
                     </div>
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );

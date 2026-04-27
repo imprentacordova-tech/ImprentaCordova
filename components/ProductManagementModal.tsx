@@ -4,7 +4,8 @@ import {
     BoxIcon, CloseIcon, PhotoIcon, 
     TableIcon, DocumentTextIcon, 
     LayersIcon, CloudArrowUpIcon,
-    RulerIcon, ActivityIcon, ShieldCheckIcon
+    RulerIcon, ActivityIcon, ShieldCheckIcon,
+    SparklesIcon, PaletteIcon, Cog8ToothIcon
 } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uploadFile } from '../services/supabase';
@@ -52,7 +53,7 @@ export const ProductManagementModal: React.FC<{
         configuracionHabilitada: {
             dimensiones: true,
             volumen: true,
-            materiales: true,
+            material: true,
             acabados: true,
             cromatismo: true,
             procesosMecanicos: true
@@ -78,7 +79,7 @@ export const ProductManagementModal: React.FC<{
                 configuracionHabilitada: productToEdit.configuracionHabilitada ?? {
                     dimensiones: true,
                     volumen: true,
-                    materiales: true,
+                    material: true,
                     acabados: true,
                     cromatismo: true,
                     procesosMecanicos: true
@@ -103,7 +104,7 @@ export const ProductManagementModal: React.FC<{
                 configuracionHabilitada: {
                     dimensiones: true,
                     volumen: true,
-                    materiales: true,
+                    material: true,
                     acabados: true,
                     cromatismo: true,
                     procesosMecanicos: true
@@ -356,7 +357,7 @@ export const ProductManagementModal: React.FC<{
                                         {[
                                             { id: 'dimensiones', label: 'Matriz de Dimensiones', icon: RulerIcon },
                                             { id: 'volumen', label: 'Cálculo de Volumen', icon: ActivityIcon },
-                                            { id: 'materiales', label: 'Sustratos y Copias', icon: LayersIcon },
+                                            { id: 'material', label: 'Sustratos y Copias', icon: LayersIcon },
                                             { id: 'acabados', label: 'Acabados de Élite', icon: SparklesIcon },
                                             { id: 'cromatismo', label: 'Gama de Color', icon: PaletteIcon },
                                             { id: 'procesosMecanicos', label: 'Procesos Mecánicos', icon: Cog8ToothIcon }

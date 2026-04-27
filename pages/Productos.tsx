@@ -13,6 +13,7 @@ import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uploadFile } from '../services/supabase';
+import { ProductManagementModal } from '../components/ProductManagementModal';
 
 // --- DATA CONSTANTS ---
 
@@ -79,6 +80,7 @@ const ProductosPage: React.FC = () => {
         productos, loading, createProducto, updateProducto, 
         deleteProducto, bulkCreateProductos, refreshData, seedCatalog 
     } = useData();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('Todas');
     const [productToEdit, setProductToEdit] = useState<Producto | null>(null);

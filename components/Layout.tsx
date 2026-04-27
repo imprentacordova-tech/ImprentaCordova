@@ -8,6 +8,7 @@ import {
     BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon,
     GlobeAltIcon, PaletteIcon, CordovaLogo, CheckCircleIcon,
     ArrowPathIcon, SparklesIcon, BoltIcon, ChevronRightIcon, PrinterIcon,
+    RocketLaunchIcon,
 } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';

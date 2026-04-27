@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/supabase';
 import { 
@@ -9,7 +9,8 @@ import {
     DollarSign as DollarIcon, ArrowRight as ArrowRightIcon,
     Clock as ClockIcon, ShieldCheck as ShieldCheckIcon, Cpu as CpuIcon, Rocket as RocketLaunchIcon,
     FlaskConical as BeakerIcon, Copy as DocumentIcon,
-    Database as CircleStackIcon
+    Database as CircleStackIcon,
+    LayoutDashboard as LayoutDashboardIcon
 } from 'lucide-react';
 import { CloseIcon } from '../components/Icons';
 import { formatCurrency } from '../utils';
@@ -770,6 +771,7 @@ import { Producto } from '../types';
 const CalculadoraPreciosPage: React.FC = () => {
     const context = useOutletContext<{ currentUser: any }>();
     const currentUser = context?.currentUser;
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const queryMode = searchParams.get('mode') as Mode;
     const [mode, setMode] = useState<Mode>(queryMode || 'HUB');

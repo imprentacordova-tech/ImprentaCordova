@@ -8,7 +8,7 @@ import {
     EnvelopeIcon, CordovaLogo, StarIcon, PrinterIcon, CheckBadgeIcon, ClockIcon,
     SearchIcon, SparklesIcon, MonitorIcon, MessageCircleIcon, ChevronRightIcon,
     Loader2Icon, WalletIcon, ExclamationTriangleIcon, LayersIcon, WhatsAppIcon,
-    PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon, MonitorIcon
+    PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon
 } from '../components/Icons';
 import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
