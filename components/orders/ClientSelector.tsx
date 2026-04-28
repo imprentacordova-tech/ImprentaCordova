@@ -350,10 +350,10 @@ return (
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isScanning}
-                            className={`w-full group relative flex flex-col items-center justify-center gap-3 py-8 rounded-[2.5rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-liquid-gold bg-liquid-gold/5' : 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'}`}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            {isScanning ? <Loader2Icon className="w-8 h-8 text-liquid-gold animate-spin" /> : <UploadIcon className="w-8 h-8 text-liquid-gold opacity-50 group-hover:opacity-100 transition-all" />}
+353:                             className={`w-full group relative flex flex-col items-center justify-center gap-2 md:gap-3 py-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-liquid-gold bg-liquid-gold/5' : 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'}`}
+354:                         >
+355:                             <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+356:                             {isScanning ? <Loader2Icon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold animate-spin" /> : <UploadIcon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold opacity-50 group-hover:opacity-100 transition-all" />}
                             <div className="text-center relative z-10">
                                 <span className="block text-[11px] font-black uppercase tracking-[0.4em]">
                                     {isScanning ? "IA Analizando estructura tributaria..." : "Sincronizar con Documento RUC (PDF)"}
@@ -645,22 +645,22 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
         <div className="animate-fade-in w-full space-y-8">
             <div className="flex flex-col gap-6">
                 {/* Botón de Acción Principal Directo SRI */}
-                <button
-                    onClick={() => handleOpenCreate('SRI')}
-                    className="w-full bg-liquid-gold/5 border-2 border-liquid-gold/20 p-8 rounded-[2.5rem] flex items-center justify-between gap-6 group hover:bg-liquid-gold/10 hover:border-liquid-gold/40 transition-all shadow-gold-glow-soft relative overflow-hidden"
-                >
+648:                 <button
+649:                     onClick={() => handleOpenCreate('SRI')}
+650:                     className="w-full bg-liquid-gold/5 border-2 border-liquid-gold/20 p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] flex items-center justify-between gap-4 md:gap-6 group hover:bg-liquid-gold/10 hover:border-liquid-gold/40 transition-all shadow-gold-glow-soft relative overflow-hidden"
+651:                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/10 blur-[50px] -mr-16 -mt-16 group-hover:bg-liquid-gold/20 transition-all"></div>
-                    <div className="flex items-center gap-6 relative z-10">
-                        <div className="p-4 bg-liquid-gold text-black rounded-2xl shadow-gold-glow group-hover:scale-110 transition-transform">
-                            <UserPlusIcon className="w-8 h-8" />
-                        </div>
+653:                     <div className="flex items-center gap-4 md:gap-6 relative z-10">
+654:                         <div className="p-3 md:p-4 bg-liquid-gold text-black rounded-xl md:rounded-2xl shadow-gold-glow group-hover:scale-110 transition-transform">
+655:                             <UserPlusIcon className="w-6 h-6 md:w-8 md:h-8" />
+656:                         </div>
                         <div className="text-left">
-                            <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.5em] mb-1 italic">Protocolo de Alta Oficial</p>
-                            <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">Inscribir como Nuevo Contribuyente SRI</h4>
-                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Sincronización instantánea con padrón El Oro y PDF</p>
+658:                             <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] md:tracking-[0.5em] mb-1 italic">Protocolo de Alta Oficial</p>
+659:                             <h4 className="text-lg md:text-xl font-black text-white uppercase italic tracking-tighter">Inscribir como SRI</h4>
+660:                             <p className="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 md:mt-1">Padrón El Oro y PDF</p>
                         </div>
                     </div>
-                    <ArrowRightIcon className="w-8 h-8 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:translate-x-2 transition-all relative z-10" />
+663:                     <ArrowRightIcon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:translate-x-2 transition-all relative z-10" />
                 </button>
 
                 <div className="relative group">
@@ -675,14 +675,14 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                          />
                     </div>
 
-                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all z-20" />
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="IDENTIFICAR CONTRIBUYENTE O CONSUMIDOR..."
-                        className="w-full pl-16 pr-14 py-8 bg-black/40 border border-white/5 rounded-[2rem] text-xl font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
-                    />
+678:                     <SearchIcon className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all z-20" />
+679:                     <input
+680:                         type="text"
+681:                         value={searchTerm}
+682:                         onChange={e => setSearchTerm(e.target.value)}
+683:                         placeholder="BUSCAR CLIENTE O RUC..."
+684:                         className="w-full pl-14 md:pl-16 pr-12 md:pr-14 py-5 md:py-8 bg-black/40 border border-white/5 rounded-[1.5rem] md:rounded-[2rem] text-base md:text-xl font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
+685:                     />
 
                     {/* Biometric Data Streams (Visual Only) */}
                     <div className="absolute right-20 top-1/2 -translate-y-1/2 flex gap-1 items-end h-4 pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity z-20">

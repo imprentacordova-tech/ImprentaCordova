@@ -19,6 +19,7 @@ import PhotoCapture from '../components/orders/PhotoCapture';
 import PriceCalculatorDisplay from '../components/orders/PriceCalculatorDisplay';
 import { CommercialFlow } from '../components/orders/CommercialFlow';
 import SriSolicitudStep from '../components/orders/SriSolicitudStep';
+import OrderSummary from '../components/orders/OrderSummary';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
@@ -50,6 +51,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriActividad, setSriActividad] = useState('');
     const [sriEstablecimiento, setSriEstablecimiento] = useState('001');
     const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
+    const [imprimirClave, setImprimirClave] = useState(false);
     const [quickName, setQuickName] = useState('');
     const [isSidebarMinimized, setIsSidebarMinimized] = useState(true);
 
@@ -132,6 +134,7 @@ const NuevoPedidoPage: React.FC = () => {
                     claveAcceso: isSriOrder ? sriClave : undefined,
                     esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
                     actividadSeleccionada: isSriOrder ? sriActividad : null,
+                    imprimirClave: isSriOrder ? imprimirClave : false,
                     numeracion: item.especificaciones?.numerado,
                     autorizacion_sri: item.especificaciones?.sri?.autorizacion,
                     fechaVencimiento: item.especificaciones?.sri?.vencimiento
@@ -363,83 +366,75 @@ const NuevoPedidoPage: React.FC = () => {
     );
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-40 px-4 sm:px-8 lg:px-14 pt-6 md:pt-10">
-            
-            {/* --- INDICADOR DE PASOS (MINIMALISTA) --- */}
-            <div className="flex justify-between items-center bg-white/[0.01] backdrop-blur-3xl p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group no-scrollbar overflow-x-auto">
-                <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.03] via-transparent to-liquid-gold/[0.03]"></div>
+        <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-16 pb-40 px-3 sm:px-8 lg:px-14 pt-4 md:pt-10">            {/* --- INDICADOR DE PASOS (OPTIMIZADO PARA MÓVIL) --- */}
+            <div className="flex justify-between items-center bg-black/40 backdrop-blur-3xl p-3 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group no-scrollbar overflow-x-auto sticky top-0 z-[60] -mx-1 sm:mx-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.05] via-transparent to-liquid-gold/[0.05] pointer-events-none"></div>
                 {getSteps().map((s, idx) => (
                     <React.Fragment key={s.id}>
-                        <div className="flex flex-col items-center gap-2 relative z-10 flex-shrink-0 group/step">
+                        <div 
+                            onClick={() => step > s.id && setStep(s.id)}
+                            className={`flex flex-col items-center gap-1.5 md:gap-3 relative z-10 flex-shrink-0 group/step cursor-pointer transition-all ${step === s.id ? 'opacity-100 scale-105' : 'opacity-40 hover:opacity-100'}`}
+                        >
                             <div className="relative">
-                                {/* Holographic Base for Active Step */}
                                 {step === s.id && (
                                     <motion.div 
                                         layoutId="stepGlow"
-                                        className="absolute -inset-2 bg-liquid-gold/20 blur-xl rounded-full"
+                                        className="absolute -inset-2 bg-liquid-gold/20 blur-lg rounded-full"
                                     />
                                 )}
                                 
-                                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all duration-700 border relative overflow-hidden ${
+                                <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 border relative overflow-hidden ${
                                     step >= s.id 
                                         ? 'bg-black border-liquid-gold shadow-gold-glow-sm' 
                                         : 'bg-white/5 border-white/10 text-slate-700'
-                                } ${step === s.id ? 'scale-110 shadow-gold-glow' : ''}`}>
-                                    {/* Scanning Beam inside Icon Box */}
+                                } ${step === s.id ? 'scale-110 shadow-gold-glow ring-2 ring-liquid-gold/20' : ''}`}>
                                     {step === s.id && (
                                         <motion.div 
-                                            animate={{ y: [-30, 30] }}
-                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                            className="absolute inset-0 bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent w-full h-1/2 pointer-events-none"
+                                            animate={{ y: [-40, 40] }}
+                                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                                            className="absolute inset-0 bg-gradient-to-b from-transparent via-liquid-gold/15 to-transparent w-full h-1/2 pointer-events-none"
                                         />
                                     )}
-                                    <s.icon className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
+                                    <s.icon className={`w-4 h-4 md:w-6 md:h-6 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
                                 </div>
                             </div>
                             
-                            <div className="flex flex-col items-center gap-0.5">
-                                <span className={`text-[8px] font-black tracking-widest ${step >= s.id ? 'text-liquid-gold/60' : 'text-slate-800'}`}>{(s as any).code}</span>
-                                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] italic transition-all ${
+                            <div className="flex flex-col items-center gap-0">
+                                <span className={`text-[6px] md:text-[8px] font-black tracking-widest ${step >= s.id ? 'text-liquid-gold/80' : 'text-slate-800'}`}>{(s as any).code}</span>
+                                <span className={`text-[8px] md:text-[11px] font-black uppercase tracking-tighter italic transition-all ${
                                     step >= s.id ? 'text-white' : 'text-slate-700'
-                                } ${step === s.id ? 'text-liquid-gold' : ''}`}>{s.label}</span>
+                                } ${step === s.id ? 'text-liquid-gold font-black' : ''} whitespace-nowrap`}>{s.label}</span>
                             </div>
                         </div>
 
                         {idx < getSteps().length - 1 && (
-                            <div className="flex-1 min-w-[20px] h-[2px] bg-white/5 mx-2 md:mx-6 relative overflow-hidden rounded-full">
+                            <div className="flex-1 min-w-[15px] md:min-w-[40px] h-[1px] md:h-[2px] bg-white/5 mx-1 md:mx-4 relative overflow-hidden rounded-full self-center mb-4 md:mb-6">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: step > s.id ? '100%' : '0%' }}
                                     className="absolute inset-0 bg-liquid-gold shadow-gold-glow"
                                 />
-                                {step > s.id && (
-                                    <motion.div 
-                                        animate={{ x: [-100, 400] }}
-                                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                        className="absolute top-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-white to-transparent opacity-40"
-                                    />
-                                )}
                             </div>
                         )}
                     </React.Fragment>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
-                <div className={isSidebarMinimized ? "lg:col-span-12 space-y-10 transition-all duration-500" : "lg:col-span-8 space-y-10 transition-all duration-500"}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start relative">
+                <div className={isSidebarMinimized ? "lg:col-span-12 space-y-6 md:space-y-12 transition-all duration-500" : "lg:col-span-8 space-y-6 md:space-y-12 transition-all duration-500"}>
                     <AnimatePresence mode="wait">
                         
-                        {/* Minimize Toggle (Floating) */}
+                        {/* Floating Telemetry Toggle (Optimized for mobile) */}
                         {isSidebarMinimized && missionCategory && step < 5 && (
                             <motion.button 
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
                                 onClick={() => setIsSidebarMinimized(false)}
-                                className="fixed right-10 bottom-40 z-50 p-6 bg-liquid-gold text-black rounded-full shadow-gold-glow group overflow-hidden"
+                                className="fixed right-4 bottom-24 md:right-10 md:bottom-32 z-50 p-4 md:p-6 bg-liquid-gold text-black rounded-full shadow-[0_10px_40px_rgba(212,175,55,0.4)] group overflow-hidden border-2 border-white/20 active:scale-90 transition-transform"
                             >
-                                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                                <LayoutDashboardIcon className="w-8 h-8 relative z-10" />
-                                <div className="absolute -top-12 -left-12 w-24 h-24 bg-white/10 blur-2xl rounded-full" />
+                                <div className="absolute inset-0 bg-white/40 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                                <LayoutDashboardIcon className="w-6 h-6 md:w-8 md:h-8 relative z-10" />
+                                <div className="absolute -top-10 -left-10 w-20 h-20 bg-white/20 blur-2xl rounded-full" />
                             </motion.button>
                         )}
                         
@@ -447,22 +442,22 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 1 && (
                             <motion.div 
                                 key="step1" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }}
-                                className="bg-black/40 backdrop-blur-[40px] p-8 sm:p-16 lg:p-24 rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden group/modal"
+                                className="bg-black/40 backdrop-blur-[40px] p-6 sm:p-16 lg:p-24 rounded-[2.5rem] md:rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden group/modal"
                             >
                                 {/* Grid de Fondo Técnico */}
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
                                 
-                                <div className="space-y-6 mb-20 text-center relative z-10">
+                                <div className="space-y-4 md:space-y-6 mb-12 md:mb-20 text-center relative z-10">
                                     <div className="flex items-center justify-center gap-4 mb-2">
-                                        <div className="h-px w-12 bg-gradient-to-r from-transparent to-liquid-gold/40" />
-                                        <p className="text-[10px] md:text-[12px] font-black text-liquid-gold uppercase tracking-[1em] italic">MODALIDAD_DE_INGRESO_V5.0</p>
-                                        <div className="h-px w-12 bg-gradient-to-l from-transparent to-liquid-gold/40" />
+                                        <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-liquid-gold/40" />
+                                        <p className="text-[9px] md:text-[12px] font-black text-liquid-gold uppercase tracking-[0.5em] md:tracking-[1em] italic">MODALIDAD_DE_INGRESO_V5.0</p>
+                                        <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-liquid-gold/40" />
                                     </div>
-                                    <h2 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient drop-shadow-gold">Misión</span></h2>
-                                    <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-[0.4em] italic opacity-60">Seleccione el vector de despliegue industrial requerido</p>
+                                    <h2 className="text-3xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient drop-shadow-gold">Misión</span></h2>
+                                    <p className="text-slate-500 text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] italic opacity-60">Seleccione el vector de despliegue industrial requerido</p>
                                 </div>
 
-                                <div className="flex flex-col md:flex-row min-h-[650px] relative gap-4 md:gap-0">
+                                <div className="flex flex-col md:flex-row md:min-h-[650px] relative gap-4 md:gap-0">
                                     
                                     {/* --- LASER SEPARATOR 1 --- */}
                                     <div className="hidden md:block absolute left-[50%] inset-y-0 w-px z-20 pointer-events-none">
@@ -491,23 +486,23 @@ const NuevoPedidoPage: React.FC = () => {
                                         </div>
 
                                         <div className="relative">
-                                            <div className="w-40 h-40 bg-liquid-gold/5 rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
+                                            <div className="w-32 h-32 md:w-40 md:h-40 bg-liquid-gold/5 rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
                                                 <motion.div 
                                                     animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                                                     className="absolute inset-0 border border-dashed border-white/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
                                                 />
-                                                <ShieldCheckIcon className="w-20 h-20 relative z-10" />
+                                                <ShieldCheckIcon className="w-16 h-16 md:w-20 md:h-20 relative z-10" />
                                             </div>
-                                            <div className="absolute -bottom-4 -right-4 bg-black border border-liquid-gold/20 px-3 py-1 rounded-lg text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_FISCAL</div>
+                                            <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-black border border-liquid-gold/20 px-2 md:px-3 py-1 rounded-lg text-[7px] md:text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_FISCAL</div>
                                         </div>
 
-                                        <div className="space-y-8 relative z-10">
+                                        <div className="space-y-4 md:space-y-8 relative z-10">
                                             <div className="space-y-2">
-                                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Protocolo Certificado</p>
-                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Vector<br/><span className="text-liquid-gold">SRI</span></h3>
+                                                <p className="text-[9px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Protocolo Certificado</p>
+                                                <h3 className="text-4xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Vector<br/><span className="text-liquid-gold">SRI</span></h3>
                                             </div>
-                                            <div className="h-[2px] w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
-                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Emisión de documentos tributarios con validación en tiempo real.</p>
+                                            <div className="h-[2px] w-12 md:w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
+                                            <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Emisión de documentos tributarios con validación en tiempo real.</p>
                                         </div>
 
                                         <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
@@ -525,23 +520,23 @@ const NuevoPedidoPage: React.FC = () => {
                                         <div className="absolute inset-0 bg-liquid-gold/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
                                         
                                         <div className="relative">
-                                            <div className="w-40 h-40 bg-liquid-gold/5 rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
+                                            <div className="w-32 h-32 md:w-40 md:h-40 bg-liquid-gold/5 rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
                                                 <motion.div 
                                                     animate={{ rotate: -360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
                                                     className="absolute inset-0 border border-dashed border-black/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
                                                 />
-                                                <BookOpenIcon className="w-20 h-20 relative z-10" />
+                                                <BookOpenIcon className="w-16 h-16 md:w-20 md:h-20 relative z-10" />
                                             </div>
-                                            <div className="absolute -bottom-4 -right-4 bg-black border border-liquid-gold/20 px-3 py-1 rounded-lg text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_ELITE</div>
+                                            <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-black border border-liquid-gold/20 px-2 md:px-3 py-1 rounded-lg text-[7px] md:text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_ELITE</div>
                                         </div>
 
-                                        <div className="space-y-8 relative z-10">
+                                        <div className="space-y-4 md:space-y-8 relative z-10">
                                             <div className="space-y-2">
-                                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Branding Industrial</p>
-                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Artes<br/><span className="text-liquid-gold">Comercial</span></h3>
+                                                <p className="text-[9px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Branding Industrial</p>
+                                                <h3 className="text-4xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Artes<br/><span className="text-liquid-gold">Comercial</span></h3>
                                             </div>
-                                            <div className="h-[2px] w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
-                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Tarjetas, sellos, brochures y ventas rápidas de mostrador.</p>
+                                            <div className="h-[2px] w-12 md:w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
+                                            <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Tarjetas, sellos, brochures y ventas rápidas de mostrador.</p>
                                         </div>
 
                                         <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
@@ -587,43 +582,46 @@ const NuevoPedidoPage: React.FC = () => {
                                                     let finalCliente = cliente;
                                                     
                                                     // Si CommercialFlow pasó un ID, buscamos ese cliente
-                                                    if (clienteId) {
+                                                    if (clienteId && !finalCliente) {
                                                         const found = clientes.find(c => c.id === clienteId);
                                                         if (found) finalCliente = found;
                                                     }
 
                                                     if (!finalCliente) {
-                                                        finalCliente = await addCliente({
-                                                            nombre: clienteNombre || 'CONSUMIDOR FINAL',
-                                                            cedula: '9999999999',
-                                                            telefono: [clienteTelefono],
-                                                            regimen: 'General',
-                                                            direccion: 'Local'
-                                                        });
+                                                        // Intentar buscar por cédula si es Consumidor Final
+                                                        const existingCF = clientes.find(c => c.cedula === '9999999999');
+                                                        if (existingCF) {
+                                                            finalCliente = existingCF;
+                                                        } else {
+                                                            finalCliente = await addCliente({
+                                                                nombre: (clienteNombre || 'CONSUMIDOR FINAL').toUpperCase(),
+                                                                cedula: '9999999999',
+                                                                telefono: [clienteTelefono],
+                                                                regimen: 'General',
+                                                                direccion: 'Local'
+                                                            });
+                                                        }
                                                     }
-                                                    const result = await addTrabajo({
-                                                        titular: finalCliente.nombre,
-                                                        clienteId: finalCliente.id ? finalCliente.id : undefined,
-                                                        servicio: trabajo.subtipo || 'Comercial',
-                                                        detalle: trabajo.detalle || '',
-                                                        precio: trabajo.total || 0,
-                                                        abono: trabajo.abono || 0,
-                                                        saldo: trabajo.saldo || 0,
-                                                        prioridad: 'Normal',
-                                                        estado: TrabajoEstado.PENDIENTE,
-                                                        items: items,
-                                                        esSRI: false,
-                                                        sriModo: 'RENOVACION',
-                                                        sriClave: '',
-                                                        sriActividad: '',
-                                                        establecimiento: '001',
-                                                        puntoEmision: '001',
-                                                        responsable: currentUser.nombre,
-                                                        origen: 'Local'
-                                                    }, currentUser.nombre);
 
-                                                    setCreatedTrabajoId(result.id);
-                                                    setStep(5);
+                                                    setCliente(finalCliente);
+                                                    
+                                                    // Normalizar el trabajo comercial como un ítem de la orden
+                                                    const newItem = {
+                                                        nombre: trabajo.tipo || 'Servicio Comercial',
+                                                        cantidad: trabajo.cantidad || 1,
+                                                        precioFinal: trabajo.total || 0,
+                                                        descripcion: trabajo.detalle || '',
+                                                        especificaciones: {
+                                                            subtipo: trabajo.subtipo,
+                                                            tamano: trabajo.tamano
+                                                        }
+                                                    };
+                                                    
+                                                    setItems([newItem]);
+                                                    setPrecio(trabajo.total || 0);
+                                                    setAbono(trabajo.abono || 0);
+                                                    setIsSriOrder(false);
+                                                    setStep(5); // Ir al resumen para revisión final elite
                                                 } catch (e: any) {
                                                     setError(e.message);
                                                 } finally {
@@ -836,93 +834,92 @@ const NuevoPedidoPage: React.FC = () => {
                             </motion.div>
                         )}
 
-                        {/* PASO 5: COBRO (SRI) o FINALIZADO (OTRO) */}
+                        {/* PASO 5: COBRO / RESUMEN ELITE */}
                         {step === 5 && (
-                            missionCategory === 'SRI' ? (
-                                <motion.div 
-                                    key="step5" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                    className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
-                                >
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                        <div className="space-y-10">
-                                            <div className="space-y-4 mb-10">
-                                                <p className="text-[9px] md:text-[11px] font-black text-emerald-500 uppercase tracking-[0.8em] italic">ETAPA FINANCIERA</p>
-                                                <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Cierre de <span className="text-emerald-500">Protocolo</span></h2>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Abono Inicial</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500 text-3xl font-black italic">$</span>
-                                                    <input type="number" value={abono} onChange={e => setAbono(Number(e.target.value))} className="w-full bg-black/60 border-2 border-white/5 pl-14 py-8 rounded-[2rem] text-4xl font-black text-emerald-500 outline-none focus:border-emerald-500/30 italic" />
-                                                </div>
-                                            </div>
-                                            <div className="bg-liquid-gold/10 p-8 rounded-[2.5rem] flex justify-between items-center border border-liquid-gold/20">
-                                                <span className="text-[10px] text-liquid-gold font-black uppercase tracking-widest">Saldo Pendiente</span>
-                                                <span className="text-4xl font-black text-white italic tracking-tighter">${Math.max(0, precio - abono).toFixed(2)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-6">
-                                            <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest ml-2">Referencia Visual</label>
-                                            <PhotoCapture onImageCaptured={setImageFile} />
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ) : (
-                                <motion.div 
-                                    key="step5_final" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                                    className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
-                                >
-                                    <div className="space-y-4">
-                                        <div className="w-24 h-24 md:w-32 md:h-32 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-emerald-glow relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-white/20 animate-pulse opacity-0 group-hover:opacity-100" />
-                                            <CheckCircleIcon className="w-12 h-12 md:w-16 md:h-16 text-black" />
-                                        </div>
-                                        <div className="flex justify-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]" />
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-6">
-                                        <h2 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none">Despliegue <span className="text-emerald-500">Exitoso</span></h2>
-                                        <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-[10px]">Protocolo Registrado • ID: {createdTrabajoId?.substring(0,8) || 'AUTO-GEN'}</p>
-                                    </div>
-                                    <div className="flex flex-wrap justify-center gap-6">
-                                        {createdTrabajoId && (
-                                            <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="px-10 py-6 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-luxury hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Imprimir Recibo</button>
-                                        )}
-                                        <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Nueva Orden</button>
-                                    </div>
-                                </motion.div>
-                            )
+                            <OrderSummary
+                                isOpen={true}
+                                onClose={() => setStep(step - 1)}
+                                items={items}
+                                total={precio}
+                                abono={abono}
+                                setAbono={setAbono}
+                                client={cliente}
+                                onDeploy={handleCreateOrder}
+                                isLoading={loading}
+                                sriData={{
+                                    claveAcceso: sriClave,
+                                    actividadSeleccionada: sriActividad,
+                                    establecimiento: sriEstablecimiento,
+                                    puntoEmision: sriPuntoEmision,
+                                    estadoClave: sriClave ? 'LISTA' : 'PENDIENTE'
+                                }}
+                                setSriData={(data: any) => {
+                                    if (data.claveAcceso !== undefined) setSriClave(data.claveAcceso);
+                                    if (data.actividadSeleccionada !== undefined) setSriActividad(data.actividadSeleccionada);
+                                    if (data.establecimiento !== undefined) setSriEstablecimiento(data.establecimiento);
+                                    if (data.puntoEmision !== undefined) setSriPuntoEmision(data.puntoEmision);
+                                }}
+                                imprimirClave={imprimirClave}
+                                setImprimirClave={setImprimirClave}
+                            />
                         )}
 
-                        {/* PASO 6: FINALIZADO (SRI) */}
-                        {step === 6 && missionCategory === 'SRI' && (
+                        {/* PASO 6: FINALIZADO */}
+                        {step === 6 && (
                             <motion.div 
-                                key="step6" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                                className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
+                                key="step6_final" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                className="bg-emerald-500/5 backdrop-blur-3xl p-8 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-8 md:space-y-16 shadow-luxury relative overflow-hidden"
                             >
-                                <div className="w-32 h-32 md:w-48 md:h-48 bg-liquid-gold rounded-[3rem] flex items-center justify-center mx-auto shadow-gold-glow relative overflow-hidden group">
-                                    <motion.div 
-                                        animate={{ y: [-50, 150] }}
-                                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                        className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-transparent w-full h-1/2 pointer-events-none"
-                                    />
-                                    <RocketLaunchIcon className="w-16 h-16 md:w-24 md:h-24 text-black animate-bounce" />
+                                {/* Celebratory Background Elements */}
+                                <div className="absolute inset-0 pointer-events-none">
+                                    <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-emerald-500/20 to-transparent" />
+                                    <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-emerald-500/20 to-transparent" />
                                 </div>
-                                <div className="space-y-6">
-                                    <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic">Protocolo <span className="text-emerald-500">Ejecutado</span></h2>
-                                    <p className="text-slate-400 font-medium max-w-lg mx-auto">El manifiesto industrial ha sido sincronizado. El seguimiento de telemetría está activo.</p>
-                                </div>
-                                <div className="flex flex-wrap justify-center gap-6">
-                                    {createdTrabajoId && (
-                                        <div className="flex gap-4">
-                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} className="px-8 py-6 bg-liquid-gold text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-gold-glow hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A5 Doble)</button>
-                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} className="px-8 py-6 bg-white/10 text-white border border-liquid-gold/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-liquid-gold/20 transition-all"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A4 Completo)</button>
-                                        </div>
-                                    )}
-                                    <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Nueva Orden</button>
+                                
+                                <div className="relative z-10 space-y-10">
+                                    <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-emerald-500 shadow-emerald-500/50 shadow-2xl mb-8">
+                                        <CheckCircleIcon className="w-16 h-16 text-white" />
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        <p className="text-emerald-500 font-black uppercase tracking-[0.5em] text-xs">Misión Completada</p>
+                                        <h2 className="text-5xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none">Despliegue <span className="text-emerald-500">Exitoso</span></h2>
+                                        <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">El protocolo industrial ha sido ejecutado. El pedido #{createdTrabajoId?.substring(0, 8)} ya está en el sistema.</p>
+                                    </div>
+
+                                    {/* Botones de Impresión Condicionales */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto px-4 relative z-10">
+                                        {createdTrabajoId && (
+                                            missionCategory === 'SRI' ? (
+                                                <>
+                                                    <button 
+                                                        onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} 
+                                                        className="px-8 py-7 bg-liquid-gold text-black rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-gold-glow hover:scale-105 active:scale-95 transition-all"
+                                                    >
+                                                        <PrinterIcon className="w-5 h-5 md:w-7 md:h-7" /> SRI (A5 DOBLE)
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} 
+                                                        className="px-8 py-7 bg-white/5 text-white border border-liquid-gold/30 rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-liquid-gold/20 active:scale-95 transition-all"
+                                                    >
+                                                        <PrinterIcon className="w-5 h-5 md:w-7 md:h-7" /> SRI (A4 COMPLETO)
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} 
+                                                    className="col-span-2 px-10 py-6 bg-white text-black rounded-2xl md:rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-luxury hover:scale-105 active:scale-95 transition-all"
+                                                >
+                                                    <PrinterIcon className="w-5 h-5 md:w-6 md:h-6" /> Imprimir Recibo
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-6 justify-center pt-10">
+                                        <button onClick={() => navigate('/dashboard')} className="px-12 py-6 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest rounded-2xl border border-white/10 transition-all italic">Panel de Control</button>
+                                        <button onClick={() => window.location.reload()} className="px-12 py-6 bg-emerald-500 text-black font-black uppercase tracking-widest rounded-2xl shadow-lg hover:scale-105 transition-all italic">Nueva Misión</button>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
