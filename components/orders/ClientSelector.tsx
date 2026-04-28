@@ -350,10 +350,10 @@ return (
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isScanning}
-353:                             className={`w-full group relative flex flex-col items-center justify-center gap-2 md:gap-3 py-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-liquid-gold bg-liquid-gold/5' : 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'}`}
-354:                         >
-355:                             <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-356:                             {isScanning ? <Loader2Icon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold animate-spin" /> : <UploadIcon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold opacity-50 group-hover:opacity-100 transition-all" />}
+                            className={`w-full group relative flex flex-col items-center justify-center gap-2 md:gap-3 py-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-liquid-gold bg-liquid-gold/5' : 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'}`}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {isScanning ? <Loader2Icon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold animate-spin" /> : <UploadIcon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold opacity-50 group-hover:opacity-100 transition-all" />}
                             <div className="text-center relative z-10">
                                 <span className="block text-[11px] font-black uppercase tracking-[0.4em]">
                                     {isScanning ? "IA Analizando estructura tributaria..." : "Sincronizar con Documento RUC (PDF)"}
