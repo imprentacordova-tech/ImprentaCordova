@@ -36,10 +36,10 @@ const staggerContainer = {
 const StatCard: React.FC<{ label: string; value: string; sub: string }> = ({ label, value, sub }) => (
     <motion.div 
         variants={fadeInUp}
-        className="text-center p-8 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/5 group hover:border-liquid-gold/30 hover:bg-liquid-gold/5 transition-all duration-700 relative overflow-hidden box-border shadow-luxury"
+        className="text-center p-8 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/5 group hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 relative overflow-hidden box-border shadow-luxury"
     >
-        <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.5em] mb-4 relative z-10 group-hover:text-liquid-gold/80 transition-colors">{label}</p>
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-red/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.5em] mb-4 relative z-10 group-hover:text-brand-red/80 transition-colors">{label}</p>
         <p className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter mb-2 group-hover:scale-105 transition-transform duration-700 relative z-10 italic drop-shadow-2xl">{value}</p>
         <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em] relative z-10">{sub}</p>
     </motion.div>
@@ -49,18 +49,18 @@ const ServiceCard: React.FC<{ title: string; desc: string; icon: any; index: num
     <motion.div 
         variants={fadeInUp}
         className={`group bg-white/[0.02] backdrop-blur-3xl p-12 rounded-[3.5rem] border transition-all duration-1000 hover:-translate-y-4 relative overflow-hidden ${
-            index === activeIndex ? 'border-liquid-gold/40 bg-white/[0.05] shadow-gold-glow-soft' : 'border-white/5 hover:border-liquid-gold/30 hover:bg-white/[0.04]'
+            index === activeIndex ? 'border-brand-red/40 bg-white/[0.05] shadow-red-glow-soft' : 'border-white/5 hover:border-brand-red/30 hover:bg-white/[0.04]'
         }`}
     >
-        <div className="absolute top-0 right-0 w-48 h-48 bg-liquid-gold/5 rounded-full blur-3xl -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className={`w-24 h-24 rounded-[2.5rem] bg-brand-dark border flex items-center justify-center mb-12 transition-all duration-1000 ${
-            index === activeIndex ? 'border-liquid-gold/40 shadow-gold-glow-soft scale-110' : 'border-white/10 group-hover:shadow-gold-glow-soft group-hover:border-liquid-gold/40 group-hover:scale-105'
+        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-red/5 rounded-full blur-3xl -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+        <div className={`w-24 h-24 rounded-[2.5rem] bg-brand-blue border flex items-center justify-center mb-12 transition-all duration-1000 ${
+            index === activeIndex ? 'border-brand-red/40 shadow-red-glow-soft scale-110' : 'border-white/10 group-hover:shadow-red-glow-soft group-hover:border-brand-red/40 group-hover:scale-105'
         }`}>
-            <Icon className="w-12 h-12 text-liquid-gold" />
+            <Icon className="w-12 h-12 text-brand-red" />
         </div>
-        <h3 className="text-3xl font-display font-black text-white uppercase tracking-tighter mb-6 leading-[0.9] transition-colors group-hover:text-gold-gradient italic">{title}</h3>
+        <h3 className="text-3xl font-display font-black text-white uppercase tracking-tighter mb-6 leading-[0.9] transition-colors group-hover:text-text-brand-red italic">{title}</h3>
         <p className="text-slate-500 leading-relaxed text-sm font-medium italic">{desc}</p>
-        <div className="mt-12 flex items-center gap-4 text-liquid-gold font-black text-[9px] uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
+        <div className="mt-12 flex items-center gap-4 text-brand-red font-black text-[9px] uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
             Consultar Ingeniería <ArrowRightIcon className="w-4 h-4" />
         </div>
     </motion.div>
@@ -115,7 +115,7 @@ const LandingPage: React.FC = () => {
     const subtotal = cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
 
     return (
-        <div className="min-h-screen bg-brand-dark font-sans selection:bg-liquid-gold selection:text-brand-dark overflow-x-hidden relative">
+        <div className="min-h-screen bg-brand-blue font-sans selection:bg-brand-red selection:text-brand-blue overflow-x-hidden relative">
             {/* Cinematic Overlay Effects */}
             <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none z-0" />
             <div className="fixed inset-0 bg-noise pointer-events-none z-[100]" />
@@ -126,42 +126,42 @@ const LandingPage: React.FC = () => {
                     initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="container mx-auto max-w-6xl bg-brand-dark/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] py-4 px-8 shadow-2xl flex justify-between items-center relative overflow-hidden"
+                    className="container mx-auto max-w-6xl bg-brand-blue/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] py-4 px-8 shadow-2xl flex justify-between items-center relative overflow-hidden"
                 >
                     {/* Subtle Navigation Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-liquid-gold/5 opacity-50" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-red/5 via-transparent to-brand-red/5 opacity-50" />
                     
                     <div className="flex items-center gap-6 group cursor-pointer relative z-10">
                         <div className="relative">
                             <CordovaLogo className="h-10 w-auto group-hover:scale-110 transition-all duration-700 brightness-0 invert" />
-                            <div className="absolute -inset-2 bg-liquid-gold/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute -inset-2 bg-brand-red/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div className="flex flex-col leading-none">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.5em] mb-1">Pasaje • Ec</span>
-                            <span className="text-xl font-display font-black text-white uppercase tracking-tight group-hover:text-gold-gradient transition-colors italic">Córdova</span>
+                            <span className="text-xl font-display font-black text-white uppercase tracking-tight group-hover:text-text-brand-red transition-colors italic">Córdova</span>
                         </div>
                     </div>
                     
                     <div className="hidden lg:flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 relative z-10">
-                        <a href="#servicios" className="hover:text-liquid-gold transition-colors relative group py-2">
+                        <a href="#servicios" className="hover:text-brand-red transition-colors relative group py-2">
                             Servicios
-                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-liquid-gold transition-all duration-500 group-hover:w-full" />
+                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-brand-red transition-all duration-500 group-hover:w-full" />
                         </a>
-                        <a href="#catalog" className="hover:text-liquid-gold transition-colors relative group py-2">
+                        <a href="#catalog" className="hover:text-brand-red transition-colors relative group py-2">
                             Catálogo
-                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-liquid-gold transition-all duration-500 group-hover:w-full" />
+                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-brand-red transition-all duration-500 group-hover:w-full" />
                         </a>
-                        <a href="#cotizador" className="hover:text-liquid-gold transition-colors relative group py-2">
+                        <a href="#cotizador" className="hover:text-brand-red transition-colors relative group py-2">
                             Cotizador
-                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-liquid-gold transition-all duration-500 group-hover:w-full" />
+                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-brand-red transition-all duration-500 group-hover:w-full" />
                         </a>
-                        <Link to="/tracking" className="px-6 py-2.5 bg-liquid-gold/10 border border-liquid-gold/20 text-liquid-gold rounded-full hover:bg-liquid-gold hover:text-brand-dark transition-all duration-700 box-border shadow-gold-glow-soft">
+                        <Link to="/tracking" className="px-6 py-2.5 bg-brand-red/10 border border-brand-red/20 text-brand-red rounded-full hover:bg-brand-red hover:text-brand-blue transition-all duration-700 box-border shadow-red-glow-soft">
                             Rastreo
                         </Link>
                     </div>
 
                     <div className="flex items-center gap-4 relative z-10">
-                        <button onClick={() => setIsCartOpen(true)} className="relative p-3.5 bg-white/[0.03] rounded-2xl hover:bg-liquid-gold/10 hover:border-liquid-gold/30 border border-white/5 transition-all text-slate-400 hover:text-liquid-gold group">
+                        <button onClick={() => setIsCartOpen(true)} className="relative p-3.5 bg-white/[0.03] rounded-2xl hover:bg-brand-red/10 hover:border-brand-red/30 border border-white/5 transition-all text-slate-400 hover:text-brand-red group">
                             <ShoppingCartIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             <AnimatePresence>
                                 {cartItems.length > 0 && (
@@ -169,14 +169,14 @@ const LandingPage: React.FC = () => {
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
                                         exit={{ scale: 0 }}
-                                        className="absolute -top-1 -right-1 bg-liquid-gold text-brand-dark text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-gold-glow"
+                                        className="absolute -top-1 -right-1 bg-brand-red text-brand-blue text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-red-glow"
                                     >
                                         {cartItems.length}
                                     </motion.span>
                                 )}
                             </AnimatePresence>
                         </button>
-                        <Link to="/login" className="hidden sm:flex items-center gap-3 px-7 py-3.5 bg-white text-brand-dark rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-gold-gradient transition-all duration-700 shadow-luxury active:scale-95">
+                        <Link to="/login" className="hidden sm:flex items-center gap-3 px-7 py-3.5 bg-white text-brand-blue rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-text-brand-red transition-all duration-700 shadow-luxury active:scale-95">
                             Elite Hub
                         </Link>
                     </div>
@@ -186,7 +186,7 @@ const LandingPage: React.FC = () => {
             {/* --- HERO OBSIDIAN & GOLD --- */}
             <section className="relative pt-48 pb-20 lg:pt-64 lg:pb-40 overflow-hidden">
                 {/* Hero Accents */}
-                <div className="absolute top-0 right-0 w-[1200px] h-[1200px] bg-liquid-gold/5 rounded-full blur-[180px] -mr-80 -mt-80 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-[1200px] h-[1200px] bg-brand-red/5 rounded-full blur-[180px] -mr-80 -mt-80 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-500/5 rounded-full blur-[160px] -ml-40 -mb-40 pointer-events-none" />
                 
                 <div className="container mx-auto px-6 relative z-10">
@@ -205,7 +205,7 @@ const LandingPage: React.FC = () => {
                             
                             <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[11rem] font-display font-black text-white leading-[0.75] tracking-tighter uppercase italic">
                                 Ingeniería <br/>
-                                <span className="text-gold-gradient text-glow">Gráfica</span>
+                                <span className="text-text-brand-red text-glow">Gráfica</span>
                             </motion.h1>
 
                             <motion.p variants={fadeInUp} className="text-xl lg:text-3xl text-slate-500 font-medium max-w-2xl leading-relaxed tracking-tight italic">
@@ -213,11 +213,11 @@ const LandingPage: React.FC = () => {
                             </motion.p>
 
                             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-6 pt-6">
-                                <a href="https://wa.me/593993083943" className="group px-14 py-7 bg-white text-brand-dark rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] shadow-luxury hover:bg-gold-gradient transition-all duration-700 flex items-center justify-center gap-4 active:scale-95">
+                                <a href="https://wa.me/593993083943" className="group px-14 py-7 bg-white text-brand-blue rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] shadow-luxury hover:bg-text-brand-red transition-all duration-700 flex items-center justify-center gap-4 active:scale-95">
                                     <WhatsAppIcon className="w-6 h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
                                 </a>
-                                <button onClick={() => fileInputRef.current?.click()} className="px-14 py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] hover:border-liquid-gold/30 hover:bg-liquid-gold/5 transition-all duration-700 flex items-center justify-center gap-4 active:scale-95 group">
-                                    <MonitorIcon className="w-6 h-6 group-hover:text-liquid-gold transition-colors"/> Analizador de Manifiesto
+                                <button onClick={() => fileInputRef.current?.click()} className="px-14 py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 flex items-center justify-center gap-4 active:scale-95 group">
+                                    <MonitorIcon className="w-6 h-6 group-hover:text-brand-red transition-colors"/> Analizador de Manifiesto
                                 </button>
                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileTest} />
                             </motion.div>
@@ -237,9 +237,9 @@ const LandingPage: React.FC = () => {
                             transition={{ duration: 1, delay: 0.4 }}
                             className="lg:col-span-5 relative group"
                         >
-                            <div className="absolute -inset-6 bg-liquid-gold/5 rounded-[4.5rem] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            <div className="absolute -inset-6 bg-brand-red/5 rounded-[4.5rem] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                             
-                            <div className="relative bg-white/[0.02] backdrop-blur-3xl rounded-[4rem] p-1 shadow-2xl border border-white/10 group-hover:border-liquid-gold/20 transition-all duration-1000 overflow-hidden">
+                            <div className="relative bg-white/[0.02] backdrop-blur-3xl rounded-[4rem] p-1 shadow-2xl border border-white/10 group-hover:border-brand-red/20 transition-all duration-1000 overflow-hidden">
                                 <div className="p-12 space-y-10">
                                     <AnimatePresence mode="wait">
                                         {isTesting ? (
@@ -255,13 +255,13 @@ const LandingPage: React.FC = () => {
                                                 </div>
                                                 <div className="relative z-10 flex flex-col items-center">
                                                     <div className="w-24 h-24 mb-6 relative">
-                                                        <Loader2Icon className="w-full h-full animate-spin text-liquid-gold" />
-                                                        <div className="absolute inset-0 border-4 border-liquid-gold/20 rounded-full" />
+                                                        <Loader2Icon className="w-full h-full animate-spin text-brand-red" />
+                                                        <div className="absolute inset-0 border-4 border-brand-red/20 rounded-full" />
                                                     </div>
-                                                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest italic group-hover:text-gold-gradient transition-colors">Analizador Óptico</h3>
+                                                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest italic group-hover:text-text-brand-red transition-colors">Analizador Óptico</h3>
                                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3">Sincronizando Perfil de Color</p>
                                                 </div>
-                                                <div className="absolute top-0 left-0 w-full h-[2px] bg-liquid-gold shadow-gold-glow animate-scan z-20" />
+                                                <div className="absolute top-0 left-0 w-full h-[2px] bg-brand-red shadow-red-glow animate-scan z-20" />
                                             </motion.div>
                                         ) : testResult ? (
                                             <motion.div 
@@ -271,7 +271,7 @@ const LandingPage: React.FC = () => {
                                                 className="space-y-8"
                                             >
                                                 <div className="flex justify-between items-start">
-                                                    <div className="bg-liquid-gold/10 border border-liquid-gold/30 p-5 rounded-[1.5rem] text-liquid-gold shadow-gold-glow-soft">
+                                                    <div className="bg-brand-red/10 border border-brand-red/30 p-5 rounded-[1.5rem] text-brand-red shadow-red-glow-soft">
                                                         <SparklesIcon className="w-8 h-8"/>
                                                     </div>
                                                     <button onClick={() => setTestResult(null)} className="p-3 bg-white/5 rounded-xl text-slate-500 hover:text-white transition-colors border border-white/5">
@@ -282,8 +282,8 @@ const LandingPage: React.FC = () => {
                                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Veredicto Profesional</p>
                                                     <h3 className="text-4xl font-display font-black text-white uppercase tracking-tighter leading-none italic">{testResult.veredicto}</h3>
                                                 </div>
-                                                <div className="p-8 bg-brand-dark/50 rounded-[2.5rem] space-y-6 border border-white/5 relative overflow-hidden group/result">
-                                                    <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover/result:opacity-100 transition-opacity duration-700" />
+                                                <div className="p-8 bg-brand-blue/50 rounded-[2.5rem] space-y-6 border border-white/5 relative overflow-hidden group/result">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-brand-red/5 via-transparent to-transparent opacity-0 group-hover/result:opacity-100 transition-opacity duration-700" />
                                                     <p className="text-lg font-medium italic text-slate-300 relative z-10 leading-relaxed">"{testResult.calidad}"</p>
                                                     <div className="flex flex-wrap gap-3 pt-2 relative z-10">
                                                         {testResult.advertencias.map((adv: string, i: number) => (
@@ -291,7 +291,7 @@ const LandingPage: React.FC = () => {
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <button onClick={() => fileInputRef.current?.click()} className="w-full py-6 bg-white/[0.03] border border-white/10 text-slate-400 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:border-liquid-gold/40 hover:text-white transition-all shadow-xl">
+                                                <button onClick={() => fileInputRef.current?.click()} className="w-full py-6 bg-white/[0.03] border border-white/10 text-slate-400 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:border-brand-red/40 hover:text-white transition-all shadow-xl">
                                                     Subir nueva versión
                                                 </button>
                                             </motion.div>
@@ -303,7 +303,7 @@ const LandingPage: React.FC = () => {
                                                 className="space-y-12"
                                             >
                                                 <div className="flex items-center gap-5">
-                                                    <div className="p-4 bg-liquid-gold/10 border border-liquid-gold/20 rounded-[1.5rem] text-liquid-gold shadow-gold-glow-soft">
+                                                    <div className="p-4 bg-brand-red/10 border border-brand-red/20 rounded-[1.5rem] text-brand-red shadow-red-glow-soft">
                                                         <SparklesIcon className="w-7 h-7"/>
                                                     </div>
                                                     <div>
@@ -314,18 +314,18 @@ const LandingPage: React.FC = () => {
                                                 
                                                 <div className="space-y-8">
                                                     <p className="text-slate-400 text-lg font-medium leading-relaxed tracking-tight">Carga tu arte para un diagnóstico instantáneo de <strong className="text-white">viabilidad de impresión HD</strong>.</p>
-                                                    <button onClick={() => fileInputRef.current?.click()} className="w-full py-14 border-2 border-dashed border-white/5 rounded-[3rem] flex flex-col items-center justify-center gap-5 hover:border-liquid-gold/40 hover:bg-liquid-gold/5 transition-all group/upload relative overflow-hidden">
+                                                    <button onClick={() => fileInputRef.current?.click()} className="w-full py-14 border-2 border-dashed border-white/5 rounded-[3rem] flex flex-col items-center justify-center gap-5 hover:border-brand-red/40 hover:bg-brand-red/5 transition-all group/upload relative overflow-hidden">
                                                         <div className="p-5 bg-white/5 rounded-2xl group-hover/upload:scale-110 transition-transform duration-500">
-                                                            <UploadIcon className="w-12 h-12 text-slate-500 group-hover/upload:text-liquid-gold transition-colors" />
+                                                            <UploadIcon className="w-12 h-12 text-slate-500 group-hover/upload:text-brand-red transition-colors" />
                                                         </div>
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover/upload:text-liquid-gold transition-colors">Analizar mi Diseño</span>
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-liquid-gold/[0.02] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover/upload:text-brand-red transition-colors">Analizar mi Diseño</span>
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-brand-red/[0.02] to-transparent opacity-0 group-hover/upload:opacity-100 transition-opacity" />
                                                     </button>
                                                 </div>
 
                                                 <div className="pt-10 border-t border-white/5 flex items-center justify-between">
                                                     <div className="flex -space-x-3">
-                                                        {[1,2,3,4].map(i => <div key={i} className="w-9 h-9 rounded-full bg-slate-800 border-2 border-brand-dark relative overflow-hidden"><div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/20 to-transparent" /></div>)}
+                                                        {[1,2,3,4].map(i => <div key={i} className="w-9 h-9 rounded-full bg-slate-800 border-2 border-brand-blue relative overflow-hidden"><div className="absolute inset-0 bg-gradient-to-br from-brand-red/20 to-transparent" /></div>)}
                                                     </div>
                                                     <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Soporte Técnico Roland</p>
                                                 </div>
@@ -349,9 +349,9 @@ const LandingPage: React.FC = () => {
                         variants={staggerContainer}
                         className="max-w-4xl mb-24"
                     >
-                        <motion.span variants={fadeInUp} className="text-liquid-gold font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Atelier de Soluciones</motion.span>
+                        <motion.span variants={fadeInUp} className="text-brand-red font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Atelier de Soluciones</motion.span>
                         <motion.h2 variants={fadeInUp} className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-tighter leading-none italic mb-10">
-                            PULIENDO TU <br/> <span className="text-gold-gradient text-glow">VISIÓN DIGITAL</span>
+                            PULIENDO TU <br/> <span className="text-text-brand-red text-glow">VISIÓN DIGITAL</span>
                         </motion.h2>
                         <motion.p variants={fadeInUp} className="text-xl lg:text-2xl text-slate-500 max-w-3xl leading-relaxed tracking-tight font-medium">Fusión de artesanía clásica y vanguardia tecnológica. Cada proyecto es una pieza única de ingeniería visual.</motion.p>
                     </motion.div>
@@ -391,13 +391,13 @@ const LandingPage: React.FC = () => {
                                 }
                                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent opacity-60" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-transparent opacity-60" />
                             <motion.div 
                                 style={{ opacity: imageOpacity, scale: imageScale }}
                                 className="absolute inset-0 flex items-center justify-center p-12 pointer-events-none"
                             >
                                 <div className="text-center">
-                                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.8em] mb-4">Precision Tech</p>
+                                    <p className="text-[10px] font-black text-brand-red uppercase tracking-[0.8em] mb-4">Precision Tech</p>
                                     <h3 className="text-5xl font-display font-black text-white uppercase italic tracking-tighter leading-none">Calidad<br/>Córdova</h3>
                                 </div>
                             </motion.div>
@@ -407,7 +407,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* --- SECCIÓN GALERÍA INMERSIVA --- */}
-            <section className="py-20 overflow-hidden bg-brand-dark/50">
+            <section className="py-20 overflow-hidden bg-brand-blue/50">
                 <div className="container mx-auto px-6">
                     <div className="flex flex-col gap-32">
                         <motion.div 
@@ -419,12 +419,12 @@ const LandingPage: React.FC = () => {
                                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[3s] scale-110 group-hover:scale-100" 
                                 alt="Industrial Detail"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-brand-dark/20" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-brand-blue/20" />
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
                                 <motion.span 
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    className="text-liquid-gold font-black text-[12px] uppercase tracking-[1em] mb-8"
+                                    className="text-brand-red font-black text-[12px] uppercase tracking-[1em] mb-8"
                                 >
                                     Artesanía Tecnológica
                                 </motion.span>
@@ -433,7 +433,7 @@ const LandingPage: React.FC = () => {
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     className="text-6xl md:text-9xl font-display font-black text-white uppercase italic leading-none tracking-tighter"
                                 >
-                                    EL ESTÁNDAR <br/> <span className="text-gold-gradient">CÓRDOVA</span>
+                                    EL ESTÁNDAR <br/> <span className="text-text-brand-red">CÓRDOVA</span>
                                 </motion.h2>
                             </div>
                         </motion.div>
@@ -444,8 +444,8 @@ const LandingPage: React.FC = () => {
             {/* --- COTIZADOR RÁPIDO --- */}
             <section id="cotizador" className="py-32 lg:py-48 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/[0.01]" />
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
                 
                 <div className="container mx-auto px-6 flex flex-col lg:flex-row gap-24 items-center relative z-10">
                     <motion.div 
@@ -455,9 +455,9 @@ const LandingPage: React.FC = () => {
                         className="lg:w-1/2 space-y-12"
                     >
                         <div className="space-y-4">
-                            <span className="text-liquid-gold font-black text-[10px] uppercase tracking-[0.4em] italic">Calculadora de Inversión</span>
+                            <span className="text-brand-red font-black text-[10px] uppercase tracking-[0.4em] italic">Calculadora de Inversión</span>
                             <h2 className="text-5xl lg:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none italic">
-                                PROYECTA TU <br/> <span className="text-gold-gradient">ÉXITO</span>
+                                PROYECTA TU <br/> <span className="text-text-brand-red">ÉXITO</span>
                             </h2>
                         </div>
                         
@@ -469,7 +469,7 @@ const LandingPage: React.FC = () => {
                                         key={calcQty}
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
-                                        className="text-3xl font-display font-black text-liquid-gold italic"
+                                        className="text-3xl font-display font-black text-brand-red italic"
                                     >
                                         {calcQty} Uds
                                     </motion.span>
@@ -481,16 +481,16 @@ const LandingPage: React.FC = () => {
                                         if(qty >= 10) setCalcPrice(qty * 11);
                                         else if(qty >= 5) setCalcPrice(qty * 13);
                                         else setCalcPrice(qty * 15);
-                                    }} className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-liquid-gold group-hover/slider:bg-white/20 transition-all" />
-                                    <div className="absolute -top-1 left-0 h-3 bg-liquid-gold rounded-full pointer-events-none" style={{ width: `${calcQty}%` }} />
+                                    }} className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-red group-hover/slider:bg-white/20 transition-all" />
+                                    <div className="absolute -top-1 left-0 h-3 bg-brand-red rounded-full pointer-events-none" style={{ width: `${calcQty}%` }} />
                                 </div>
                             </div>
 
                             <motion.div 
                                 whileHover={{ scale: 1.02 }}
-                                className="p-10 bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/10 hover:border-liquid-gold/30 transition-all flex items-center justify-between shadow-2xl relative overflow-hidden group/quote"
+                                className="p-10 bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/10 hover:border-brand-red/30 transition-all flex items-center justify-between shadow-2xl relative overflow-hidden group/quote"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover/quote:opacity-100 transition-opacity duration-700" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-red/5 via-transparent to-transparent opacity-0 group-hover/quote:opacity-100 transition-opacity duration-700" />
                                 <div className="space-y-2 relative z-10">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Inversión Estimada</p>
                                     <motion.p 
@@ -502,7 +502,7 @@ const LandingPage: React.FC = () => {
                                         {formatCurrency(calcPrice)}
                                     </motion.p>
                                 </div>
-                                <a href={`https://wa.me/593993083943?text=Hola,%20quiero%20confirmar%20mi%20cotización%20de%20${calcQty}%20unidades`} className="w-20 h-20 bg-white text-brand-dark rounded-3xl flex items-center justify-center shadow-gold-glow hover:bg-liquid-gold hover:scale-110 transition-all duration-500 relative z-10 active:scale-95">
+                                <a href={`https://wa.me/593993083943?text=Hola,%20quiero%20confirmar%20mi%20cotización%20de%20${calcQty}%20unidades`} className="w-20 h-20 bg-white text-brand-blue rounded-3xl flex items-center justify-center shadow-red-glow hover:bg-brand-red hover:scale-110 transition-all duration-500 relative z-10 active:scale-95">
                                     <WhatsAppIcon className="w-10 h-10" />
                                 </a>
                             </motion.div>
@@ -515,12 +515,12 @@ const LandingPage: React.FC = () => {
                         viewport={{ once: true }}
                         className="lg:w-1/2 relative group"
                     >
-                        <div className="aspect-[4/5] bg-brand-dark rounded-[4.5rem] overflow-hidden border border-white/10 group-hover:border-liquid-gold/30 transition-all duration-1000 relative shadow-luxury">
+                        <div className="aspect-[4/5] bg-brand-blue rounded-[4.5rem] overflow-hidden border border-white/10 group-hover:border-brand-red/30 transition-all duration-1000 relative shadow-luxury">
                              <img src="/images/landing/printer_gold.png" className="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-60 group-hover:scale-110 transition-all duration-[2s]" alt="Roland Machine" />
-                             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-transparent flex flex-col justify-end p-16">
+                             <div className="absolute inset-0 bg-gradient-to-t from-brand-blue via-brand-blue/20 to-transparent flex flex-col justify-end p-16">
                                 <motion.div 
                                     whileHover={{ y: -5 }}
-                                    className="bg-white/[0.03] backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 hover:border-liquid-gold/20 transition-all"
+                                    className="bg-white/[0.03] backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 hover:border-brand-red/20 transition-all"
                                 >
                                     <h4 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-4 italic text-glow">Protocolo Roland Elite</h4>
                                     <p className="text-sm font-medium text-slate-400 leading-relaxed italic">Calibración micrométrica de cabezales y perfiles de color cinemáticos para cada sustrato industrial.</p>
@@ -540,13 +540,13 @@ const LandingPage: React.FC = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                         >
-                            <span className="text-liquid-gold font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Colección Exclusiva</span>
+                            <span className="text-brand-red font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Colección Exclusiva</span>
                             <h2 className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-tighter italic">
-                                EL MUESTRARIO <br/> <span className="text-gold-gradient text-glow">DEFINITIVO</span>
+                                EL MUESTRARIO <br/> <span className="text-text-brand-red text-glow">DEFINITIVO</span>
                             </h2>
                         </motion.div>
                         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex gap-4">
-                            <button className="px-8 py-4 bg-white/[0.03] border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] text-slate-400 hover:border-liquid-gold/40 hover:text-white transition-all shadow-xl">
+                            <button className="px-8 py-4 bg-white/[0.03] border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] text-slate-400 hover:border-brand-red/40 hover:text-white transition-all shadow-xl">
                                 Filtrar Colecciones
                             </button>
                         </motion.div>
@@ -566,9 +566,9 @@ const LandingPage: React.FC = () => {
                                 key={p.id} 
                                 variants={fadeInUp}
                                 whileHover={{ y: -15 }}
-                                className="group bg-white/[0.02] backdrop-blur-2xl rounded-[4rem] border border-white/5 hover:border-liquid-gold/30 overflow-hidden transition-all duration-1000 p-5 flex flex-col shadow-2xl relative"
+                                className="group bg-white/[0.02] backdrop-blur-2xl rounded-[4rem] border border-white/5 hover:border-brand-red/30 overflow-hidden transition-all duration-1000 p-5 flex flex-col shadow-2xl relative"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.02] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-red/[0.02] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                                 <div className="h-72 rounded-[3rem] overflow-hidden relative mb-10 shadow-inner">
                                     {p.imagenUrl ? (
                                         <img src={p.imagenUrl} className="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-125" alt={p.nombre}/>
@@ -577,25 +577,25 @@ const LandingPage: React.FC = () => {
                                             <BoxIcon className="w-20 h-20 opacity-20"/>
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-brand-dark/90 opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col items-center justify-center p-10 text-center backdrop-blur-md">
+                                    <div className="absolute inset-0 bg-brand-blue/90 opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col items-center justify-center p-10 text-center backdrop-blur-md">
                                         <p className="text-white text-sm font-medium leading-relaxed mb-8 italic tracking-tight">{p.descripcion}</p>
                                         <button 
                                             onClick={() => handleAddToCart(p)} 
-                                            className="bg-white text-brand-dark px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-gold-gradient transition-all active:scale-95"
+                                            className="bg-white text-brand-blue px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-text-brand-red transition-all active:scale-95"
                                         >
                                             Solicitar Proyecto
                                         </button>
                                     </div>
                                     {p.esSRI && (
-                                        <div className="absolute top-6 left-6 flex items-center gap-2 bg-brand-dark/80 backdrop-blur-md border border-liquid-gold/40 px-4 py-2 rounded-full shadow-gold-glow-soft">
-                                            <ShieldCheckIcon className="w-3 h-3 text-liquid-gold" />
-                                            <span className="text-liquid-gold text-[8px] font-black tracking-[0.2em] uppercase">Validación SRI</span>
+                                        <div className="absolute top-6 left-6 flex items-center gap-2 bg-brand-blue/80 backdrop-blur-md border border-brand-red/40 px-4 py-2 rounded-full shadow-red-glow-soft">
+                                            <ShieldCheckIcon className="w-3 h-3 text-brand-red" />
+                                            <span className="text-brand-red text-[8px] font-black tracking-[0.2em] uppercase">Validación SRI</span>
                                         </div>
                                     )}
                                 </div>
                                 <div className="px-5 pb-5 flex flex-col flex-grow relative z-10">
                                     <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-3">{p.categoria}</p>
-                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-gold-gradient transitionColors italic transition-all duration-700 tracking-tighter">{p.nombre}</h3>
+                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-text-brand-red transitionColors italic transition-all duration-700 tracking-tighter">{p.nombre}</h3>
                                     <div className="mt-auto flex justify-between items-center pt-8 border-t border-white/5">
                                         <div className="flex flex-col">
                                             <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.2em]">Honorario Base</span>
@@ -604,7 +604,7 @@ const LandingPage: React.FC = () => {
                                         <motion.button 
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => handleAddToCart(p)} 
-                                            className="w-16 h-16 bg-white/[0.05] border border-white/10 text-white rounded-3xl hover:bg-white hover:text-brand-dark transition-all flex items-center justify-center shadow-luxury"
+                                            className="w-16 h-16 bg-white/[0.05] border border-white/10 text-white rounded-3xl hover:bg-white hover:text-brand-blue transition-all flex items-center justify-center shadow-luxury"
                                         >
                                             <AddIcon className="w-7 h-7"/>
                                         </motion.button>
@@ -617,8 +617,8 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* --- FOOTER OBSIDIAN --- */}
-            <footer className="bg-brand-dark text-white pt-48 pb-16 relative overflow-hidden border-t border-white/10">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-liquid-gold/5 rounded-full blur-[200px] -mr-40 -mt-40 pointer-events-none" />
+            <footer className="bg-brand-blue text-white pt-48 pb-16 relative overflow-hidden border-t border-white/10">
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-red/5 rounded-full blur-[200px] -mr-40 -mt-40 pointer-events-none" />
                 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="grid lg:grid-cols-12 gap-24 mb-32">
@@ -626,10 +626,10 @@ const LandingPage: React.FC = () => {
                             <div className="flex items-center gap-6">
                                 <div className="relative">
                                     <CordovaLogo className="h-20 w-auto brightness-0 invert relative z-10" />
-                                    <div className="absolute -inset-4 bg-liquid-gold/20 rounded-full blur-2xl animate-pulse" />
+                                    <div className="absolute -inset-4 bg-brand-red/20 rounded-full blur-2xl animate-pulse" />
                                 </div>
                                 <div className="flex flex-col leading-none">
-                                    <span className="text-4xl font-display font-black tracking-tighter uppercase italic text-gold-gradient">CÓRDOVA</span>
+                                    <span className="text-4xl font-display font-black tracking-tighter uppercase italic text-text-brand-red">CÓRDOVA</span>
                                     <span className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-600 mt-2">Boutique Gráfica</span>
                                 </div>
                             </div>
@@ -640,7 +640,7 @@ const LandingPage: React.FC = () => {
                                         key={i} 
                                         href="#" 
                                         whileHover={{ y: -5, scale: 1.1 }}
-                                        className="w-16 h-16 rounded-2xl bg-white/[0.03] flex items-center justify-center hover:border-liquid-gold/40 hover:bg-liquid-gold/10 transition-all border border-white/10 group text-slate-500 hover:text-liquid-gold shadow-xl"
+                                        className="w-16 h-16 rounded-2xl bg-white/[0.03] flex items-center justify-center hover:border-brand-red/40 hover:bg-brand-red/10 transition-all border border-white/10 group text-slate-500 hover:text-brand-red shadow-xl"
                                     >
                                         <Icon className="w-7 h-7 group-hover:animate-pulse"/>
                                     </motion.a>
@@ -651,16 +651,16 @@ const LandingPage: React.FC = () => {
                         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-16">
                             <div className="space-y-10">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 border-b border-white/5 pb-5">Atelier Sede</h4>
-                                <p className="text-sm font-bold flex items-start gap-5 leading-relaxed text-slate-400 italic"><MapPinIcon className="w-7 h-7 text-liquid-gold shrink-0 opacity-60"/> Calle Colón entre <br/> Sucre y Rocafuerte.<br/>Pasaje, El Oro - EC</p>
+                                <p className="text-sm font-bold flex items-start gap-5 leading-relaxed text-slate-400 italic"><MapPinIcon className="w-7 h-7 text-brand-red shrink-0 opacity-60"/> Calle Colón entre <br/> Sucre y Rocafuerte.<br/>Pasaje, El Oro - EC</p>
                             </div>
                             <div className="space-y-10">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 border-b border-white/5 pb-5">Concierge Directo</h4>
-                                <p className="text-sm font-bold flex items-center gap-5 text-slate-400 italic"><PhoneIcon className="w-7 h-7 text-liquid-gold shrink-0 opacity-60"/> 099 308 3943</p>
-                                <p className="text-sm font-bold flex items-center gap-5 text-xs truncate text-slate-400 italic"><EnvelopeIcon className="w-7 h-7 text-liquid-gold shrink-0 opacity-60"/> imprentacordova@gmail.com</p>
+                                <p className="text-sm font-bold flex items-center gap-5 text-slate-400 italic"><PhoneIcon className="w-7 h-7 text-brand-red shrink-0 opacity-60"/> 099 308 3943</p>
+                                <p className="text-sm font-bold flex items-center gap-5 text-xs truncate text-slate-400 italic"><EnvelopeIcon className="w-7 h-7 text-brand-red shrink-0 opacity-60"/> imprentacordova@gmail.com</p>
                             </div>
                             <div className="space-y-10">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 border-b border-white/5 pb-5">Operaciones</h4>
-                                <p className="text-sm font-bold flex items-start gap-5 text-slate-400 italic leading-relaxed"><ClockIcon className="w-7 h-7 text-liquid-gold shrink-0 opacity-60"/> Lunes a Sábado <br/> 08:00 AM — 07:00 PM</p>
+                                <p className="text-sm font-bold flex items-start gap-5 text-slate-400 italic leading-relaxed"><ClockIcon className="w-7 h-7 text-brand-red shrink-0 opacity-60"/> Lunes a Sábado <br/> 08:00 AM — 07:00 PM</p>
                             </div>
                         </div>
                     </div>
@@ -668,8 +668,8 @@ const LandingPage: React.FC = () => {
                     <div className="pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10 text-[10px] font-black text-slate-700 uppercase tracking-[0.6em]">
                         <p>Imprenta Córdova · Estándar Industrial</p>
                         <div className="flex gap-14">
-                            <a href="#" className="hover:text-liquid-gold transition-colors">Compliance</a>
-                            <a href="#" className="hover:text-liquid-gold transition-colors">SRI Legal</a>
+                            <a href="#" className="hover:text-brand-red transition-colors">Compliance</a>
+                            <a href="#" className="hover:text-brand-red transition-colors">SRI Legal</a>
                         </div>
                     </div>
                 </div>
@@ -682,7 +682,7 @@ const LandingPage: React.FC = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-brand-dark/95 backdrop-blur-2xl z-[200] flex justify-end p-5" 
+                        className="fixed inset-0 bg-brand-blue/95 backdrop-blur-2xl z-[200] flex justify-end p-5" 
                         onClick={() => setIsCartOpen(false)}
                     >
                         <motion.div 
@@ -690,7 +690,7 @@ const LandingPage: React.FC = () => {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="bg-brand-dark border border-white/10 h-full w-full max-w-xl rounded-[4rem] shadow-heavy flex flex-col overflow-hidden box-border relative" 
+                            className="bg-brand-blue border border-white/10 h-full w-full max-w-xl rounded-[4rem] shadow-heavy flex flex-col overflow-hidden box-border relative" 
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="absolute inset-0 bg-mesh opacity-20 pointer-events-none" />
@@ -720,10 +720,10 @@ const LandingPage: React.FC = () => {
                                             className="flex justify-between items-center group"
                                         >
                                             <div className="min-w-0 flex-grow pr-12">
-                                                <p className="text-2xl font-display font-black text-white group-hover:text-gold-gradient transition-all truncate italic uppercase">{item.producto.nombre}</p>
+                                                <p className="text-2xl font-display font-black text-white group-hover:text-text-brand-red transition-all truncate italic uppercase">{item.producto.nombre}</p>
                                                 <div className="flex items-center gap-4 mt-3">
                                                     <span className="px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.cantidad} UNIDAD(ES)</span>
-                                                    <span className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">{formatCurrency(item.producto.precio)} C/U</span>
+                                                    <span className="text-[10px] font-bold text-brand-red uppercase tracking-[0.2em]">{formatCurrency(item.producto.precio)} C/U</span>
                                                 </div>
                                             </div>
                                             <button onClick={() => setCartItems(cartItems.filter(i => i.producto.id !== item.producto.id))} className="w-16 h-16 rounded-[1.5rem] bg-red-500/5 text-red-500/40 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-500/10 shadow-lg">
@@ -749,7 +749,7 @@ const LandingPage: React.FC = () => {
                                             </motion.span>
                                         </div>
                                     </div>
-                                    <button onClick={() => window.open(`https://wa.me/593993083943?text=Hola,%20solicito%20concierge%20para%20los%20siguientes%20proyectos`)} className="w-full py-9 bg-white text-brand-dark font-black rounded-[2.5rem] shadow-gold-glow uppercase tracking-[0.4em] text-xs hover:bg-gold-gradient hover:-translate-y-1 transition-all duration-700 flex items-center justify-center gap-5 group active:scale-[0.98]">
+                                    <button onClick={() => window.open(`https://wa.me/593993083943?text=Hola,%20solicito%20concierge%20para%20los%20siguientes%20proyectos`)} className="w-full py-9 bg-white text-brand-blue font-black rounded-[2.5rem] shadow-red-glow uppercase tracking-[0.4em] text-xs hover:bg-text-brand-red hover:-translate-y-1 transition-all duration-700 flex items-center justify-center gap-5 group active:scale-[0.98]">
                                         FORMALIZAR PROYECTO <WhatsAppIcon className="w-8 h-8 group-hover:scale-125 transition-transform duration-500"/>
                                     </button>
                                 </div>
