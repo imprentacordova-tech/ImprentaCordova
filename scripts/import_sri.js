@@ -38,18 +38,21 @@ async function importSRI() {
     const ruc = parts[0]?.trim();
     const razon = parts[1]?.trim();
     
-    if (!ruc || !razon) continue;
-
-    batch.push({
-      ruc: ruc,
-      razon_social: razon,
-      estado_contribuyente: parts[3]?.trim() || null,
-      tipo_persona: parts[10]?.trim() || null,
-      provincia: parts[14]?.trim() || null,
-      canton: parts[15]?.trim() || null,
-      parroquia: parts[16]?.trim() || null,
-      actividad_economica: parts[18]?.trim() || null
-    });
+    if (ruc && razon) {
+        // Deduplicar en el batch
+        if (!batch.some(item => item.ruc === ruc)) {
+            batch.push({
+                ruc: ruc,
+                razon_social: razon,
+                provincia: parts[14]?.trim() || null,
+                canton: parts[15]?.trim() || null,
+                parroquia: parts[16]?.trim() || null,
+                estado_contribuyente: parts[3]?.trim() || null,
+                tipo_persona: parts[10]?.trim() || null,
+                actividad_economica: parts[18]?.trim() || null
+            });
+        }
+    }
 
     if (batch.length >= BATCH_SIZE) {
       await insertBatch(batch);
@@ -59,10 +62,8 @@ async function importSRI() {
     }
     
     totalProcessed++;
-    // Opcional: Parar a los 10000 para no hacer esperar al usuario mientras programamos
-    if (totalProcessed >= 10000) {
-        console.log('Test run limited to 10000 rows for speed.');
-        break;
+    if (totalProcessed % 10000 === 0) {
+        console.log(`Progreso: ${totalProcessed} filas procesadas...`);
     }
   }
 

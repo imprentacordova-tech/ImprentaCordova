@@ -83,6 +83,10 @@ const mapDBTrabajo = (t: any): Trabajo => ({
     estadoClave: t.estado_clave,
     imprimirClave: t.imprimir_clave,
     esRenovacion: t.es_renovacion,
+    esSRI: t.es_sri ?? false,
+    tamano: t.tamano,
+    establecimiento: t.establecimiento,
+    puntoEmision: t.punto_emision,
     fechaVencimiento: t.fecha_vencimiento,
     actividadSeleccionada: t.actividad_seleccionada,
     arteAprobado: t.arte_aprobado,
@@ -293,7 +297,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const addTrabajo = async (trabajoData: any, user: string, imageFile?: File | null) => {
-        const dbData = {
+        const dbData: Record<string, any> = {
             cliente_id: trabajoData.clienteId || trabajoData.cliente_id,
             titular: trabajoData.titular,
             tipo: trabajoData.servicio || trabajoData.tipo,
@@ -308,6 +312,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             origen: trabajoData.origen || 'Interno',
             fecha_entrada: trabajoData.fechaEntrada || new Date().toISOString()
         };
+
+        // Persist SRI-specific fields when present
+        if (trabajoData.esSRI !== undefined) dbData.es_sri = trabajoData.esSRI;
+        if (trabajoData.establecimiento) dbData.establecimiento = trabajoData.establecimiento;
+        if (trabajoData.puntoEmision) dbData.punto_emision = trabajoData.puntoEmision;
+        if (trabajoData.estadoClave) dbData.estado_clave = trabajoData.estadoClave;
+        if (trabajoData.actividadSeleccionada) dbData.actividad_seleccionada = trabajoData.actividadSeleccionada;
+        if (trabajoData.tamano) dbData.tamano = trabajoData.tamano;
+        if (trabajoData.esRenovacion !== undefined) dbData.es_renovacion = trabajoData.esRenovacion;
         
         const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         if (error) throw error;

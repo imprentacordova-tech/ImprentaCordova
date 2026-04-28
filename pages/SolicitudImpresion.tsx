@@ -65,9 +65,10 @@ const SolicitudImpresionPage: React.FC = () => {
 
     const subtipoOriginal = trabajo.subtipo.toLowerCase();
     
-    // Parse workflow: "100x FACTURAS (1/4 OFICIO), 50x RETENCIONES"
+    // Parse workflow: "100x FACTURAS (1/4 OFICIO)", "50x RETENCIONES"
     // Split by comma then find quantity and description
-    const parsedJobItems = trabajo.subtipo.split(',').map(part => {
+    const rawSubtipo = trabajo.subtipo || '';
+    const parsedJobItems = rawSubtipo.split(',').map(part => {
         const trimmed = part.trim();
         const match = trimmed.match(/^(\d+)x\s+(.*)$/i);
         return {
@@ -193,7 +194,7 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                     <div className="flex items-end border-b-2 border-black border-dashed pb-0.5">
                         <span className={`whitespace-nowrap italic mr-2 ${isA5?'text-[11px]':'text-[13px]'}`}>Actividad Ec.:</span>
-                        <span className={`flex-grow font-black uppercase ${isA5?'text-xs':'text-sm'}`}>{cliente.actividades || trabajo.actividadSeleccionada || 'SEGÚN RUC'}</span>
+                        <span className={`flex-grow font-black uppercase ${isA5?'text-xs':'text-sm'}`}>{trabajo.actividadSeleccionada || cliente.actividades || 'SEGÚN RUC'}</span>
                         {isRimpe && <span className={`ml-2 bg-black text-white ${isA5?'text-[7px]':'text-[8px]'} font-black px-2 py-0.5 rounded uppercase tracking-wider`}>RIMPE N.P.</span>}
                     </div>
                     

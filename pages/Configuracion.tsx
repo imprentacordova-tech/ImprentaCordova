@@ -314,17 +314,17 @@ const ConfiguracionPage: React.FC = () => {
                 <div>
                     <div className="flex items-center gap-4 mb-4">
                         <div className="w-10 h-[1px] bg-liquid-gold/50"></div>
-                        <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">System Architecture</span>
+                        <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Arquitectura del Sistema</span>
                     </div>
                     <h1 className="text-6xl sm:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        Neural <span className="text-gold-gradient">Center</span>
+                        Centro <span className="text-gold-gradient">de Mando</span>
                     </h1>
                 </div>
                 
                 <div className="flex items-center gap-6 bg-black/40 p-5 rounded-3xl border border-white/5 backdrop-blur-xl shadow-2xl">
                     <div className="flex flex-col items-end">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Sync Status</span>
-                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tighter italic">Operational • Global Node</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Estado de Servidor</span>
+                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tighter italic">Operacional • Nodo Global</span>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center relative">
                         <div className="absolute inset-0 bg-emerald-500 blur-md opacity-20 animate-pulse"></div>
@@ -350,8 +350,8 @@ const ConfiguracionPage: React.FC = () => {
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/icon:translate-y-0 transition-transform duration-500"></div>
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-white uppercase tracking-tight italic">Cloud Seed Protocol</h3>
-                                    <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[9px] mt-2">Initialize master product catalog from institutional vault</p>
+                                    <h3 className="text-2xl font-black text-white uppercase tracking-tight italic">Catálogo Base en la Nube</h3>
+                                    <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[9px] mt-2">Restaurar el catálogo maestro de productos predeterminados</p>
                                 </div>
                             </div>
                             
@@ -373,7 +373,7 @@ const ConfiguracionPage: React.FC = () => {
                             >
                                 <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 skew-x-12"></div>
                                 {syncing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <CloudIcon className="w-5 h-5"/>}
-                                <span className="relative z-10 font-black uppercase tracking-widest text-xs">Execute Cloud Seed</span>
+                                <span className="relative z-10 font-black uppercase tracking-widest text-xs">Restaurar Catálogo</span>
                             </motion.button>
                         </div>
                     </motion.div>
@@ -387,18 +387,18 @@ const ConfiguracionPage: React.FC = () => {
                                 <div className="space-y-10">
                                     <ControlHeader 
                                         icon={<ShieldCheckIcon className="w-6 h-6" />} 
-                                        title="Jurisdiction" 
-                                        subtitle="Fiscal Authorization Matrix"
+                                        title="Jurisdicción Fiscal" 
+                                        subtitle="Configuración Legal y SRI"
                                         colorClass="from-red-900/40 to-transparent"
                                     />
                                     <div className="space-y-8">
-                                        <ControlInput label="Legal Entity Name" name="emisorRazonSocial" value={localConfig.emisorRazonSocial} onChange={e => setLocalConfig({...localConfig, emisorRazonSocial: e.target.value})} />
-                                        <ControlInput label="Tax ID (R.U.C.)" name="emisorRuc" value={localConfig.emisorRuc} onChange={e => setLocalConfig({...localConfig, emisorRuc: e.target.value})} maxLength={13} />
+                                        <ControlInput label="Razón Social (Emisor)" name="emisorRazonSocial" value={localConfig.emisorRazonSocial} onChange={e => setLocalConfig({...localConfig, emisorRazonSocial: e.target.value})} />
+                                        <ControlInput label="RUC del Emisor" name="emisorRuc" value={localConfig.emisorRuc} onChange={e => setLocalConfig({...localConfig, emisorRuc: e.target.value})} maxLength={13} />
                                         <div className="grid grid-cols-2 gap-8">
-                                            <ControlInput label="Est. Code" name="emisorEstablecimiento" value={localConfig.emisorEstablecimiento} onChange={e => setLocalConfig({...localConfig, emisorEstablecimiento: e.target.value})} maxLength={3} />
-                                            <ControlInput label="Punt. Code" name="emisorPuntoEmision" value={localConfig.emisorPuntoEmision} onChange={e => setLocalConfig({...localConfig, emisorPuntoEmision: e.target.value})} maxLength={3} />
+                                            <ControlInput label="Cód. Establecimiento" name="emisorEstablecimiento" value={localConfig.emisorEstablecimiento} onChange={e => setLocalConfig({...localConfig, emisorEstablecimiento: e.target.value})} maxLength={3} />
+                                            <ControlInput label="Punto de Emisión" name="emisorPuntoEmision" value={localConfig.emisorPuntoEmision} onChange={e => setLocalConfig({...localConfig, emisorPuntoEmision: e.target.value})} maxLength={3} />
                                         </div>
-                                        <ControlInput label="Start Sequence" type="number" name="secuencialInicio" value={localConfig.secuencialInicio} onChange={e => setLocalConfig({...localConfig, secuencialInicio: parseInt(e.target.value) || 1})} />
+                                        <ControlInput label="Secuencial Inicial Facturas" type="number" name="secuencialInicio" value={localConfig.secuencialInicio} onChange={e => setLocalConfig({...localConfig, secuencialInicio: parseInt(e.target.value) || 1})} />
                                     </div>
                                 </div>
 
@@ -406,20 +406,20 @@ const ConfiguracionPage: React.FC = () => {
                                 <div className="space-y-10">
                                     <ControlHeader 
                                         icon={<PrinterIcon className="w-6 h-6" />} 
-                                        title="Terminal" 
-                                        subtitle="Workshop Identification Nodes"
+                                        title="Terminal del Taller" 
+                                        subtitle="Identificación para Órdenes Físicas"
                                         colorClass="from-liquid-gold/20 to-transparent"
                                     />
                                     <div className="space-y-8 bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/5 relative">
                                         <div className="absolute top-4 right-4 opacity-10">
                                             <FingerPrintIcon className="w-12 h-12 text-liquid-gold" />
                                         </div>
-                                        <ControlInput label="Public Workshop Name" name="imprentaNombre" value={localConfig.imprentaNombre} onChange={e => setLocalConfig({...localConfig, imprentaNombre: e.target.value})} />
+                                        <ControlInput label="Nombre Comercial (Imprenta)" name="imprentaNombre" value={localConfig.imprentaNombre} onChange={e => setLocalConfig({...localConfig, imprentaNombre: e.target.value})} />
                                         <div className="grid grid-cols-2 gap-8">
-                                            <ControlInput label="Industrial R.U.C." name="imprentaRuc" value={localConfig.imprentaRuc} onChange={e => setLocalConfig({...localConfig, imprentaRuc: e.target.value})} maxLength={13} />
-                                            <ControlInput label="Auth Token" name="imprentaAutorizacion" value={localConfig.imprentaAutorizacion} onChange={e => setLocalConfig({...localConfig, imprentaAutorizacion: e.target.value})} maxLength={4} />
+                                            <ControlInput label="RUC del Taller" name="imprentaRuc" value={localConfig.imprentaRuc} onChange={e => setLocalConfig({...localConfig, imprentaRuc: e.target.value})} maxLength={13} />
+                                            <ControlInput label="Autorización SRI" name="imprentaAutorizacion" value={localConfig.imprentaAutorizacion} onChange={e => setLocalConfig({...localConfig, imprentaAutorizacion: e.target.value})} maxLength={4} />
                                         </div>
-                                        <ControlInput label="Support Frequency" name="imprentaTelefono" value={localConfig.imprentaTelefono} onChange={e => setLocalConfig({...localConfig, imprentaTelefono: e.target.value})} />
+                                        <ControlInput label="Teléfono / Contacto" name="imprentaTelefono" value={localConfig.imprentaTelefono} onChange={e => setLocalConfig({...localConfig, imprentaTelefono: e.target.value})} />
                                     </div>
                                 </div>
                             </div>
@@ -436,11 +436,11 @@ const ConfiguracionPage: React.FC = () => {
                                                 className="flex items-center gap-3 px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full"
                                             >
                                                 <CheckCircleIcon className="w-4 h-4 text-emerald-500"/> 
-                                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Success</span>
+                                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Ajustes Guardados con Éxito</span>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
-                                    <p className="text-[10px] font-bold text-slate-500 italic">Settings are globally synchronized across all active instances.</p>
+                                    <p className="text-[10px] font-bold text-slate-500 italic">Los ajustes se sincronizan automáticamente en todas las terminales.</p>
                                 </div>
                                 
                                 <motion.button 
@@ -449,7 +449,7 @@ const ConfiguracionPage: React.FC = () => {
                                     type="submit" 
                                     className="btn-luxury px-16 py-6 min-w-[280px]"
                                 >
-                                    Update Command Center
+                                    Guardar Configuraciones
                                 </motion.button>
                             </div>
                         </form>
@@ -471,15 +471,15 @@ const ConfiguracionPage: React.FC = () => {
                                     <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 shadow-xl shadow-emerald-500/5">
                                         <LockClosedIcon className="w-6 h-6" />
                                     </div>
-                                    <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">SRI Vault</h3>
+                                    <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Bóveda de Contraseñas SRI</h3>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span className="text-[8px] font-black text-emerald-500/60 uppercase tracking-widest">Secure Entry</span>
+                                    <span className="text-[8px] font-black text-emerald-500/60 uppercase tracking-widest">Cifrado Activo</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 mb-4">
                                 <input type="file" ref={fileInputRef} onChange={handleImportCSV} className="hidden" accept=".csv" />
                                 <button 
                                     onClick={() => fileInputRef.current?.click()} 
@@ -487,7 +487,7 @@ const ConfiguracionPage: React.FC = () => {
                                     className="btn-atelier flex-1 py-3 border-white/10 hover:bg-white/5 text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3"
                                 >
                                     {isImporting ? <Loader2Icon className="animate-spin w-3 h-3"/> : <ArrowDownTrayIcon className="w-3 h-3"/>}
-                                    Import CSV Protocol
+                                    IMPORTAR CLAVES SRI (CHROME)
                                 </button>
                                 
                                 <input type="file" ref={sriFileInputRef} onChange={handleImportSriPadron} className="hidden" accept=".csv" />
@@ -499,7 +499,7 @@ const ConfiguracionPage: React.FC = () => {
                                     {isImportingSri ? (
                                         <>
                                             <Loader2Icon className="animate-spin w-3 h-3 text-liquid-gold"/>
-                                            SYNCING ({sriImportProgress})
+                                            SINCRONIZANDO ({sriImportProgress})
                                         </>
                                     ) : (
                                         <>
@@ -512,12 +512,12 @@ const ConfiguracionPage: React.FC = () => {
                         </div>
 
                         {/* VAULT SEARCH */}
-                        <div className="px-8 pt-8 relative z-10">
+                        <div className="px-8 pt-2 relative z-10">
                             <div className="relative group">
                                 <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
                                 <input 
                                     type="text" 
-                                    placeholder="SCANNING ENTITIES..." 
+                                    placeholder="BUSCAR CLIENTE O RUC EN BÓVEDA..." 
                                     value={searchTerm} 
                                     onChange={e => setSearchTerm(e.target.value)} 
                                     className="input-atelier w-full pl-14 pr-6 py-4 bg-black/60 border-white/5 text-[11px] font-black uppercase tracking-widest"
@@ -542,7 +542,7 @@ const ConfiguracionPage: React.FC = () => {
                                             </div>
                                             <div>
                                                 <p className="text-[12px] font-black text-white uppercase tracking-tight leading-tight mb-1 group-hover/item:text-liquid-gold transition-colors">
-                                                    {c.origen || 'Anonymous Client'}
+                                                    {c.origen || 'Cliente Anónimo'}
                                                 </p>
                                                 <p className="text-[9px] font-mono font-bold text-slate-600 tracking-[0.2em] uppercase">
                                                     RUC: {c.ruc}
@@ -584,7 +584,7 @@ const ConfiguracionPage: React.FC = () => {
                             {filteredCredentials.length === 0 && (
                                 <div className="flex flex-col items-center justify-center h-[300px] opacity-20 grayscale">
                                     <CpuIcon className="w-12 h-12 text-slate-500 mb-6" />
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.6em]">Circuit Silent</p>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.6em]">SIN CONTRASEÑAS REGISTRADAS</p>
                                 </div>
                             )}
                         </div>
@@ -594,7 +594,7 @@ const ConfiguracionPage: React.FC = () => {
                             <div className="p-4 rounded-xl border border-liquid-gold/10 bg-liquid-gold/5 flex gap-4">
                                 <ShieldCheckIcon className="w-5 h-5 text-liquid-gold flex-shrink-0" />
                                 <p className="text-[9px] font-bold text-slate-400 leading-relaxed italic">
-                                    End-to-end encryption active. Credentials are protected by enterprise-grade hashing protocols.
+                                    Cifrado Extremo a Extremo. Tus contraseñas están resguardadas en un bóveda segura usando protocolos empresariales.
                                 </p>
                             </div>
                         </div>

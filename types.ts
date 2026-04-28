@@ -74,6 +74,8 @@ export interface Trabajo {
   responsable?: string;
   detalle?: string;
   observaciones?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Producto {

@@ -225,30 +225,49 @@ const ClientesPage: React.FC = () => {
 
 const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (c: Partial<Cliente>) => void; clientToEdit: Partial<Cliente> }> = ({ isOpen, onClose, onSave, clientToEdit }) => {
     const [formData, setFormData] = useState<Partial<Cliente>>(clientToEdit);
+    const [rucCedula, setRucCedula] = useState(clientToEdit.ruc || clientToEdit.cedula || '');
     
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         if (name === 'telefono') setFormData({ ...formData, telefono: [value] });
         else setFormData({ ...formData, [name]: value });
     };
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Auto-detect: 13 digits = RUC, otherwise = cédula
+        const isRuc = rucCedula.length === 13;
+        onSave({ 
+            ...formData, 
+            ruc: isRuc ? rucCedula : undefined,
+            cedula: isRuc ? rucCedula.substring(0, 10) : rucCedula
+        });
+    };
+
     return (
         <div className="fixed inset-0 bg-brand-dark/95 backdrop-blur-2xl z-[150] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-brand-dark/50 rounded-[3rem] shadow-luxury w-full max-w-xl overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
-                <div className="p-10 border-b border-white/5 flex justify-between items-center">
-                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-liquid-gold">Coleccionista</span></h2>
+            <div className="bg-brand-dark/50 rounded-[3rem] shadow-luxury w-full max-w-2xl overflow-hidden border border-white/10 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <div className="p-10 border-b border-white/5 flex justify-between items-center sticky top-0 bg-brand-dark/90 backdrop-blur-xl z-10">
+                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-liquid-gold">Cliente</span></h2>
                     <button onClick={onClose} className="text-slate-500 hover:text-white"><CloseIcon className="w-6 h-6" /></button>
                 </div>
-                <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 space-y-6">
-                    <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Nombre Completo / Razón Social</label>
-                        <input name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" placeholder="EJ: SANTIAGO CORDOVA" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="p-10 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Nombre Completo / Razón Social</label>
+                            <input name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all uppercase" placeholder="EJ: SANTIAGO CORDOVA" />
+                        </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Nombre Comercial <span className="text-slate-700">(Opcional)</span></label>
+                            <input name="nombreComercial" value={formData.nombreComercial || ''} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all uppercase" placeholder="EJ: TIENDA MIS ZAPATOS" />
+                        </div>
                         <div className="space-y-4">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">RUC / Cédula</label>
-                            <input name="ruc" value={formData.ruc || formData.cedula} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
+                            <input value={rucCedula} onChange={e => setRucCedula(e.target.value.replace(/\D/g, '').slice(0, 13))} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-mono font-bold focus:ring-2 focus:ring-liquid-gold transition-all tracking-wider" placeholder="0702065319001" />
+                            <p className="text-[9px] text-slate-600 font-bold ml-1">{rucCedula.length === 13 ? '✅ RUC detectado' : rucCedula.length === 10 ? '✅ Cédula detectada' : `${rucCedula.length}/10-13 dígitos`}</p>
                         </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Régimen</label>
                             <select name="regimen" value={formData.regimen} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all appearance-none">
@@ -257,6 +276,10 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                                 <option value={Regimen.EMPRENDEDOR}>Emprendedor (RIMPE)</option>
                             </select>
                         </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Dirección</label>
+                            <input name="direccion" value={formData.direccion || ''} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" placeholder="Pasaje, El Oro" />
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-4">
@@ -264,9 +287,13 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                             <input name="telefono" value={formData.telefono?.[0]} onChange={handleChange} required className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
                         </div>
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Email (Opcional)</label>
-                            <input name="email" type="email" value={formData.email} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Email <span className="text-slate-700">(Opcional)</span></label>
+                            <input name="email" type="email" value={formData.email || ''} onChange={handleChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all" />
                         </div>
+                    </div>
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block">Actividades Económicas <span className="text-slate-700">(Separadas por |)</span></label>
+                        <textarea name="actividades" value={formData.actividades || ''} onChange={handleChange} rows={2} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold focus:ring-2 focus:ring-liquid-gold transition-all text-sm" placeholder="• VENTA AL POR MENOR DE PRODUCTOS... | • SERVICIO DE IMPRESIÓN..." />
                     </div>
                     <div className="pt-6 flex justify-end gap-5">
                         <button type="button" onClick={onClose} className="px-8 py-5 text-slate-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-white transition-all">Descartar</button>

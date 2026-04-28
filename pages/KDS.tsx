@@ -29,9 +29,30 @@ const getUrgencyLevel = (dateStr?: string): UrgencyLevel => {
 };
 
 const urgencyConfig = {
-    critical: { border: 'border-l-rose-600', bg: 'bg-rose-600/10', text: 'text-rose-500', label: 'ENTREGA INMEDIATA', glow: 'shadow-[0_0_15px_rgba(225,29,72,0.2)]' },
-    warning: { border: 'border-l-liquid-gold', bg: 'bg-liquid-gold/10', text: 'text-liquid-gold', label: 'PRIORIDAD ALTA', glow: 'shadow-[0_0_15px_rgba(212,175,55,0.2)]' },
-    safe: { border: 'border-l-slate-800', bg: 'bg-white/5', text: 'text-slate-500', label: 'EN TIEMPO', glow: '' },
+    critical: { 
+        border: 'border-l-rose-600', 
+        bg: 'bg-rose-600/10', 
+        text: 'text-rose-500', 
+        label: 'CRÍTICO: ENTREGA HOY', 
+        glow: 'shadow-[0_0_20px_rgba(225,29,72,0.3)]',
+        animate: 'animate-pulse-slow'
+    },
+    warning: { 
+        border: 'border-l-liquid-gold', 
+        bg: 'bg-liquid-gold/10', 
+        text: 'text-liquid-gold', 
+        label: 'PRIORIDAD ALTA', 
+        glow: 'shadow-[0_0_15px_rgba(212,175,55,0.2)]',
+        animate: ''
+    },
+    safe: { 
+        border: 'border-l-slate-800', 
+        bg: 'bg-white/5', 
+        text: 'text-slate-500', 
+        label: 'ESTADO: ESTABLE', 
+        glow: '',
+        animate: ''
+    },
 };
 
 // --- COMPONENTES ---
@@ -59,6 +80,14 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
         return Math.min(100, Math.max(0, (elapsed / total) * 100));
     };
 
+    const getTimeInStage = () => {
+        const updatedAt = trabajo.updated_at || trabajo.fechaEntrada;
+        const diff = new Date().getTime() - new Date(updatedAt).getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    };
+
     const statusFlow = [
         TrabajoEstado.PENDIENTE,
         TrabajoEstado.EN_DISENO,
@@ -75,7 +104,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            whileHover={{ y: -4 }}
+            whileHover={{ y: -4, scale: 1.01 }}
             draggable
             onDragStart={(e: any) => {
                 if (e.dataTransfer) e.dataTransfer.setData("trabajoId", trabajo.id);
@@ -87,9 +116,10 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             onClick={() => onCardClick(trabajo)}
             className={`
                 relative group kds-card mb-5 cursor-pointer
-                border-l-2 ${style.border} border-t border-r border-b border-slate-200/50 dark:border-white/5
-                transition-all duration-700 rounded-[2rem] overflow-hidden p-6 md:p-8
-                hover:border-white/10 hover:shadow-2xl hover:shadow-black/50 bg-white/40 dark:bg-[#0a0a0a]/80 backdrop-blur-md
+                border-l-[3px] ${style.border} border-t border-r border-b border-slate-200/50 dark:border-white/5
+                transition-all duration-500 rounded-[2.2rem] overflow-hidden p-6 md:p-8
+                ${style.glow} ${style.animate}
+                hover:border-white/10 bg-white/40 dark:bg-[#0a0a0a]/90 backdrop-blur-xl
             `}
         >
             {/* --- ELITE EFFECTS LAYER --- */}
@@ -140,6 +170,10 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/20 dark:bg-white/5 border border-white/5 text-[8px] font-mono text-slate-500 italic">
+                        <ActivityIcon className="w-3 h-3 text-liquid-gold/40" />
+                        T_{getTimeInStage()}
+                    </div>
                     <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic ${style.bg} ${style.text} border border-white/5 backdrop-blur-md transition-all group-hover:scale-105`}>
                         {style.label}
                     </div>
@@ -231,12 +265,14 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (window.navigator.vibrate) window.navigator.vibrate(50);
+                                if (window.navigator.vibrate) window.navigator.vibrate([20, 40, 20]);
                                 onStatusChange(trabajo.id, nextStatus);
                             }}
-                            className="flex items-center gap-2 bg-liquid-gold text-brand-dark px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest italic shadow-lg active:scale-90 transition-all"
+                            className="flex items-center gap-3 bg-liquid-gold text-brand-dark px-5 py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest italic shadow-gold-glow active:scale-95 transition-all"
                         >
-                            <ArrowRightIcon className="w-3 h-3" /> {nextStatus}
+                            <span className="opacity-60 text-[8px]">NEXT:</span>
+                            {nextStatus}
+                            <ArrowRightIcon className="w-3.5 h-3.5" />
                         </button>
                     )}
                 </div>
@@ -425,25 +461,62 @@ const KDSPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Mobile Tab Selector */}
-                <div className="lg:hidden mt-8 flex gap-2 bg-white/5 p-1.5 rounded-2xl overflow-x-auto no-scrollbar border border-white/5">
-                    {KANBAN_COLUMNS.map((status) => (
-                        <button
-                            key={status}
-                            onClick={() => setActiveMobileTab(status as TrabajoEstado)}
-                            className={`
-                                px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap italic flex items-center gap-3
-                                ${activeMobileTab === status 
-                                    ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' 
-                                    : 'text-slate-500 bg-white/50 dark:bg-white/5'}
-                            `}
-                        >
-                            {status}
-                            <span className={`px-2 py-0.5 rounded-lg text-[8px] ${activeMobileTab === status ? 'bg-brand-dark/20' : 'bg-white/10'}`}>
-                                {columns[status]?.length || 0}
-                            </span>
-                        </button>
+                {/* Global Tactical Overview - New Section */}
+                <div className="flex gap-4 lg:gap-8 mt-10 px-4 lg:px-0 overflow-x-auto no-scrollbar">
+                    {[
+                        { label: 'Órdenes Activas', value: filteredTrabajos.length, icon: BoxIcon, color: 'text-white' },
+                        { label: 'Prioridad Crítica', value: filteredTrabajos.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical').length, icon: BoltIcon, color: 'text-rose-500' },
+                        { label: 'Valor en Taller', value: formatCurrency(filteredTrabajos.reduce((acc, t) => acc + t.total, 0)), icon: ActivityIcon, color: 'text-liquid-gold' },
+                    ].map((stat, i) => (
+                        <div key={i} className="flex items-center gap-4 bg-white/5 dark:bg-black/40 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl min-w-[200px]">
+                            <div className={`p-2 rounded-lg bg-white/5 ${stat.color}`}>
+                                <stat.icon className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest italic">{stat.label}</span>
+                                <span className={`text-sm font-black italic ${stat.color}`}>{stat.value}</span>
+                            </div>
+                        </div>
                     ))}
+                </div>
+
+                {/* Mobile Tab Selector - Industrial Style */}
+                <div className="lg:hidden mt-10 px-4">
+                    <div className="flex gap-2 bg-black/40 p-2 rounded-[2rem] overflow-x-auto no-scrollbar border border-white/5 backdrop-blur-xl">
+                        {KANBAN_COLUMNS.map((status, index) => {
+                            const isActive = activeMobileTab === status;
+                            return (
+                                <button
+                                    key={status}
+                                    onClick={() => {
+                                        if (window.navigator.vibrate) window.navigator.vibrate(10);
+                                        setActiveMobileTab(status as TrabajoEstado);
+                                    }}
+                                    className={`
+                                        relative px-6 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap italic flex items-center gap-3 overflow-hidden
+                                        ${isActive 
+                                            ? 'text-black z-10' 
+                                            : 'text-slate-500 hover:text-white'}
+                                    `}
+                                >
+                                    {isActive && (
+                                        <motion.div 
+                                            layoutId="activeKdsTab"
+                                            className="absolute inset-0 bg-liquid-gold shadow-gold-glow -z-10"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10">{status}</span>
+                                    <span className={`
+                                        relative z-10 px-2.5 py-1 rounded-lg text-[9px] font-mono
+                                        ${isActive ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'}
+                                    `}>
+                                        {columns[status]?.length || 0}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
@@ -474,15 +547,20 @@ const KDSPage: React.FC = () => {
                                 >
                                     {/* Cabecera de Columna */}
                                     <div className="p-8 flex justify-between items-center border-b border-white/5 bg-white/[0.01]">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${
-                                                status === 'Pendiente' ? 'bg-slate-700' :
-                                                status === 'En Diseño' ? 'bg-blue-500' :
-                                                status === 'En Proceso' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500'
-                                            }`} />
-                                            <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] text-[12px] italic">
-                                                {status}
-                                            </h3>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-1.5 h-1.5 rounded-full ${
+                                                    status === 'Pendiente' ? 'bg-slate-700' :
+                                                    status === 'En Diseño' ? 'bg-blue-500' :
+                                                    status === 'En Proceso' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500'
+                                                }`} />
+                                                <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] text-[12px] italic">
+                                                    {status}
+                                                </h3>
+                                            </div>
+                                            <span className="text-[7px] font-mono text-slate-600 dark:text-slate-700 tracking-widest pl-5 uppercase">
+                                                VALOR: {formatCurrency(columns[status].reduce((acc, curr) => acc + curr.total, 0))}
+                                            </span>
                                         </div>
                                         <div className="bg-white/5 px-3 py-1 rounded-xl text-[10px] font-black text-slate-500 border border-white/5 italic">
                                             {columns[status].length}
@@ -637,9 +715,30 @@ const KDSPage: React.FC = () => {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.2); }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.1); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.3); }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
+                
+                .custom-scrollbar-h::-webkit-scrollbar { height: 6px; }
+                .custom-scrollbar-h::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+                .custom-scrollbar-h::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.1); border-radius: 10px; }
+                
+                @keyframes pulse-slow {
+                    0%, 100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+                    50% { opacity: 0.9; transform: scale(0.99); filter: brightness(1.2); }
+                }
+                .animate-pulse-slow {
+                    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+
+                .vertical-text {
+                    writing-mode: vertical-rl;
+                    text-orientation: mixed;
+                }
+                
+                .shadow-gold-glow {
+                    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+                }
             `}</style>
         </div>
     );

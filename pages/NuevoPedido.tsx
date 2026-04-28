@@ -132,10 +132,11 @@ const NuevoPedidoPage: React.FC = () => {
                     clienteId: finalCliente!.id,
                     servicio: item.nombre || 'Servicio General',
                     detalle: isSriOrder 
-                        ? `[SRI ${sriMode}] ${sriActividad} | EST: ${sriEstablecimiento} | PTO: ${sriPuntoEmision} | CLAVE: ${sriClave || 'PENDIENTE'} | ${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}` 
+                        ? `${item.cantidad || 1}x ${item.nombre || 'DOCUMENTO SRI'} (${item.especificaciones?.tamano || 'ESTÁNDAR'})` 
                         : `${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}`,
+                    cantidad: item.cantidad || 1,
                     precio: item.precioFinal,
-                    abono: index === 0 ? abono : 0, // Only apply abono to the first job
+                    abono: index === 0 ? abono : 0,
                     saldo: item.precioFinal - (index === 0 ? abono : 0),
                     prioridad,
                     estado: TrabajoEstado.PENDIENTE,
@@ -143,7 +144,11 @@ const NuevoPedidoPage: React.FC = () => {
                     responsable: currentUser.nombre,
                     origen: 'Local',
                     esSRI: isSriOrder,
-                    estadoClave: isSriOrder ? (sriClave ? 'ENTREGADA' : 'PENDIENTE') : null,
+                    establecimiento: isSriOrder ? sriEstablecimiento : undefined,
+                    puntoEmision: isSriOrder ? sriPuntoEmision : undefined,
+                    tamano: item.especificaciones?.tamano || undefined,
+                    estadoClave: isSriOrder ? (sriClave ? 'LISTA' : 'PENDIENTE') : null,
+                    esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
                     actividadSeleccionada: isSriOrder ? sriActividad : null
                 }, currentUser.nombre, imageFile);
             }));
