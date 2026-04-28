@@ -8,7 +8,7 @@ import { validarIdentificacionEC } from '../../utils';
 import {
     SearchIcon, UserIcon, ShieldCheckIcon, CloseIcon, Loader2Icon,
     CheckCircleIcon, SparklesIcon, ArrowRightIcon, PhoneIcon,
-    UploadIcon, DocumentTextIcon, IdentificationIcon
+    UploadIcon, DocumentTextIcon, IdentificationIcon, MapPinIcon
 } from '../Icons';
 
 export const SriIdentityFlow: React.FC<{
