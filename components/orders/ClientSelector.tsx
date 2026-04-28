@@ -228,8 +228,8 @@ export const CreateClientModal: React.FC<{
         } else {
             setActividades([]);
         }
+        setTimeout(() => setHighlightFields([]), 3000);
     }
-    setTimeout(() => setHighlightFields([]), 3000);
 
 
 const addActividad = (text: string) => {
@@ -264,6 +264,24 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     setIsSaving(true);
     try {
+        if (!newClienteData.cedulaRuc || newClienteData.cedulaRuc === '9999999999' || newClienteData.cedulaRuc === '9999999999999') {
+            // No guardar en DB si no hay cédula real (Requerimiento 3)
+            const tempClient: Cliente = {
+                id: 'temporal_' + Date.now(),
+                nombre: newClienteData.nombre.toUpperCase(),
+                cedula: '9999999999',
+                ruc: undefined,
+                telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : []),
+                direccion: newClienteData.direccion,
+                email: newClienteData.email,
+                regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
+                creadoEn: new Date().toISOString(),
+            };
+            setSaveSuccess(true);
+            setTimeout(() => onClientCreated(tempClient), 800);
+            return;
+        }
+
         const newCliente = await addCliente({
             ...newClienteData,
             cedula: finalId, // Asegurar que siempre viaje algo

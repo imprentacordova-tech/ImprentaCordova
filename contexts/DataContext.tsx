@@ -208,7 +208,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 supabase.from('app_config').select('data').eq('id', 1).maybeSingle()
             ]);
 
-            if (cData) setClientes(cData.map(mapDBCliente) as any);
             if (tData) setTrabajos(tData.map(mapDBTrabajo) as any);
             if (pData) {
                 const mappedProducts = pData.map((p: any) => ({
@@ -306,7 +305,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const addCliente = async (clienteData: any) => {
         const dbReadyData = mapClienteToDB(clienteData);
-        const { data, error } = await supabase.from('clientes').insert([dbReadyData]).select().single();
+        let { data, error } = await supabase.from('clientes').insert([dbReadyData]).select().single();
+        
+        // If fiscal_data column doesn't exist, retry without it
+        if (error && error.message.includes('fiscal_data')) {
+            console.warn("⚠️ fiscal_data column missing. Retrying without it...");
+            const { fiscal_data, ...safeData } = dbReadyData;
+            const retry = await supabase.from('clientes').insert([safeData]).select().single();
+            data = retry.data;
+            error = retry.error;
+        }
+        
         if (error) throw error;
         const mapped = mapDBCliente(data);
         setClientes(prev => [mapped, ...prev]);

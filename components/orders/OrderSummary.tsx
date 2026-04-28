@@ -55,6 +55,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     sriData, setSriData, imprimirClave, setImprimirClave
 }) => {
     const [copied, setCopied] = useState(false);
+    const [showClave, setShowClave] = useState(false);
     const finalTotal = total ?? orderTotal ?? 0;
     const saldo = Math.max(0, finalTotal - abono);
 
@@ -240,14 +241,24 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                         <span className={`text-[10px] md:text-[8px] font-black px-5 py-2 md:px-3 md:py-1 rounded-full ${sriData?.estadoClave === 'LISTA' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-emerald-glow-sm' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'} uppercase tracking-widest`}>{sriData?.estadoClave || 'PENDIENTE'}</span>
                                     </div>
                                 </div>
-                                <div className="flex gap-5 md:gap-3 relative z-10">
-                                    <input 
-                                        type="text" 
-                                        value={sriData?.claveAcceso || ''} 
-                                        onChange={e => setSriData({...sriData, claveAcceso: e.target.value})} 
-                                        placeholder="CLAVE DE ACCESO..." 
-                                        className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-5 md:px-4 md:py-3 text-base md:text-xs font-mono text-white placeholder-slate-800 focus:border-blue-500/50 outline-none transition-all shadow-inner" 
-                                    />
+                                <div className="flex gap-2 relative z-10">
+                                    <div className="relative flex-grow">
+                                        <input 
+                                            type={showClave ? 'text' : 'password'} 
+                                            value={sriData?.claveAcceso || ''} 
+                                            onChange={e => setSriData({...sriData, claveAcceso: e.target.value})} 
+                                            placeholder="CLAVE DE ACCESO..." 
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 md:px-4 md:py-3 text-base md:text-xs font-mono text-white placeholder-slate-800 focus:border-blue-500/50 outline-none transition-all shadow-inner pr-14" 
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowClave(!showClave)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all"
+                                            title={showClave ? 'Ocultar clave' : 'Mostrar clave'}
+                                        >
+                                            <KeyIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                     <button 
                                         onClick={() => { navigator.clipboard.writeText(sriData?.claveAcceso || ''); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} 
                                         className={`p-5 md:p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-brand-blue text-white active:scale-95 shadow-lg shadow-blue-500/20'}`}
