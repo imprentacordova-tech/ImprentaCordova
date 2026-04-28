@@ -34,6 +34,23 @@ export interface Cliente {
   establecimientoPredeterminado?: string;
   puntoEmisionPredeterminado?: string;
   numEstablecimientosOpen?: number;
+  fiscal_data?: {
+    razon_social?: string;
+    nombre_comercial?: string;
+    estado_contribuyente?: string;
+    clase_contribuyente?: string;
+    tipo_contribuyente?: string;
+    obligado_contabilidad?: boolean;
+    actividades?: Array<{ codigo: string; descripcion: string }>;
+    establecimientos?: Array<{
+      codigo: string;
+      nombre: string;
+      direccion: string;
+      tipo: string;
+      estado: string;
+    }>;
+    ultima_sincronizacion?: string;
+  };
 }
 
 export interface Trabajo {
@@ -74,6 +91,8 @@ export interface Trabajo {
   responsable?: string;
   detalle?: string;
   observaciones?: string;
+  numeracion?: string;
+  autorizacion_sri?: string;
   created_at?: string;
   updated_at?: string;
 }

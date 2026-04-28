@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     CheckCircleIcon, SparklesIcon, PrinterIcon, 
     ArrowRightIcon, ArrowLeftIcon, CreditCardIcon, UserIcon,
-    ExclamationTriangleIcon, SearchIcon
+    ExclamationTriangleIcon, SearchIcon, BoltIcon
 } from '../Icons';
 import { Producto, Trabajo, TrabajoEstado, TrabajoTipo } from '../../types';
 import { useData } from '../../contexts/DataContext';
@@ -35,11 +35,13 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     const [acabado, setAcabado] = useState('Ninguno');
     const [precioCustom, setPrecioCustom] = useState<number>(0);
 
-    // Step 3: Cliente y Pago
     const [clienteNombre, setClienteNombre] = useState('');
     const [clienteTelefono, setClienteTelefono] = useState('');
     const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
     const [abono, setAbono] = useState<number>(0);
+
+    // Express Mode State
+    const [isExpressMode, setIsExpressMode] = useState(false);
 
     // Categorías comerciales
     const commercialCategories = useMemo(() => {
@@ -65,26 +67,28 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
         if (acabado !== 'Ninguno') base += (5 * (cantidad / 100));
         return base > 0 ? base : selectedProduct.precio;
     }, [selectedProduct, cantidad, acabado, precioCustom]);
-
-    const handleConfirm = () => {
-        if (!selectedProduct) return;
+    const handleConfirm = (directProduct?: Producto) => {
+        const product = directProduct || selectedProduct;
+        if (!product) return;
         
+        const finalPrice = directProduct ? directProduct.precio : precioFinal;
+
         const nuevoTrabajo: Partial<Trabajo> = {
             orden: Math.floor(100000 + Math.random() * 900000),
             clienteId: selectedClientId || 'cliente_express_comercial',
             titular: clienteNombre || 'Consumidor Final',
-            tipo: selectedProduct.nombre,
-            subtipo: `${cantidad} x ${tamano} - ${acabado}`,
-            cantidad,
-            tamano,
+            tipo: product.nombre,
+            subtipo: directProduct ? 'PEDIDO EXPRESS' : `${cantidad} x ${tamano} - ${acabado}`,
+            cantidad: directProduct ? 1 : cantidad,
+            tamano: directProduct ? 'Estandar' : tamano,
             estado: TrabajoEstado.PENDIENTE,
             fechaEntrada: new Date().toISOString(),
             fechaEntrega: new Date(Date.now() + 86400000 * 2).toISOString(),
-            total: precioFinal,
-            abono: abono,
-            saldo: precioFinal - abono,
-            prioridad: 'Normal',
-            detalle: `${cantidad} x ${tamano} - ${acabado}`,
+            total: finalPrice,
+            abono: directProduct ? finalPrice : abono,
+            saldo: directProduct ? 0 : finalPrice - abono,
+            prioridad: directProduct ? 'Alta' : 'Normal',
+            detalle: directProduct ? 'VENTA RÁPIDA DE MOSTRADOR' : `${cantidad} x ${tamano} - ${acabado}`,
             caduco: false,
             estadoClave: 'PENDIENTE',
             imprimirClave: false,
@@ -97,6 +101,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             clienteId: selectedClientId
         });
     };
+
 
     return (
         <>
@@ -116,7 +121,23 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                         {step === 3 && <span className="flex items-center gap-4">FINALIZACIÓN <span className="text-sm font-mono text-liquid-gold/20 tracking-tighter hidden sm:inline">DEPLOY_READY</span></span>}
                     </h2>
                 </div>
-                <div className="flex items-center gap-8 bg-black/60 p-5 rounded-[2.5rem] border border-white/10 shadow-inner">
+                <div className="flex items-center gap-8 bg-black/60 p-3 rounded-[2.5rem] border border-white/10 shadow-inner">
+                    {/* Turbo Mode Toggle */}
+                    <button 
+                        onClick={() => setIsExpressMode(!isExpressMode)}
+                        className={`flex items-center gap-4 px-6 py-3 rounded-2xl transition-all duration-700 border ${
+                            isExpressMode 
+                                ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_20px_rgba(37,99,235,0.5)]' 
+                                : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                        }`}
+                    >
+                        <BoltIcon className={`w-5 h-5 ${isExpressMode ? 'animate-pulse' : ''}`} />
+                        <div className="flex flex-col items-start leading-none">
+                            <span className="text-[9px] font-black uppercase tracking-widest">MODO TURBO</span>
+                            <span className="text-[7px] font-bold opacity-60 uppercase">{isExpressMode ? 'ACTIVO' : 'DESACTIVADO'}</span>
+                        </div>
+                    </button>
+
                     <div className="flex gap-4 px-4">
                         {[1, 2, 3].map(s => (
                             <div key={s} className="flex flex-col items-center gap-2">
@@ -198,7 +219,15 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                     <CommercialProductCard 
                                         key={p.id} 
                                         p={p} 
-                                        onSelect={() => { setSelectedProduct(p); setStep(2); }} 
+                                        isExpress={isExpressMode}
+                                        onSelect={() => { 
+                                            if (isExpressMode) {
+                                                handleConfirm(p);
+                                            } else {
+                                                setSelectedProduct(p); 
+                                                setStep(2); 
+                                            }
+                                        }} 
                                     />
                                 ))}
                             </div>
@@ -486,7 +515,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     );
 };
 
-const CommercialProductCard: React.FC<{ p: Producto; onSelect: () => void }> = ({ p, onSelect }) => {
+const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelect: () => void }> = ({ p, isExpress, onSelect }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
 
@@ -499,17 +528,23 @@ const CommercialProductCard: React.FC<{ p: Producto; onSelect: () => void }> = (
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className={`group relative bg-white/[0.01] backdrop-blur-3xl rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer ${
-                isHovered ? 'border-liquid-gold/30 bg-liquid-gold/5 shadow-gold-glow-sm' : 'border-white/5 hover:border-white/10'
+                isHovered 
+                    ? isExpress ? 'border-blue-500/30 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.2)]' : 'border-liquid-gold/30 bg-liquid-gold/5 shadow-gold-glow-sm' 
+                    : 'border-white/5 hover:border-white/10'
             }`}
             onClick={onSelect}
         >
             <div className="p-8 space-y-6 relative z-10">
                 <div className="flex justify-between items-start">
-                    <div className={`p-4 rounded-2xl transition-all duration-700 ${isHovered ? 'bg-liquid-gold text-black shadow-gold-glow scale-110' : 'bg-white/5 text-liquid-gold'}`}>
-                        <PrinterIcon className="w-6 h-6" />
+                    <div className={`p-4 rounded-2xl transition-all duration-700 ${
+                        isHovered 
+                            ? isExpress ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-liquid-gold text-black shadow-gold-glow scale-110' 
+                            : 'bg-white/5 text-liquid-gold'
+                    }`}>
+                        {isExpress ? <BoltIcon className="w-6 h-6" /> : <PrinterIcon className="w-6 h-6" />}
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                        <span className="text-2xl font-black text-white italic tracking-tighter transition-transform group-hover:scale-110">
+                        <span className={`text-2xl font-black italic tracking-tighter transition-transform group-hover:scale-110 ${isExpress ? 'text-blue-400' : 'text-white'}`}>
                             ${(p.precio || 0).toFixed(2)}
                         </span>
                         <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-full">Inversión Base</span>
@@ -517,6 +552,11 @@ const CommercialProductCard: React.FC<{ p: Producto; onSelect: () => void }> = (
                 </div>
 
                 <div className="space-y-2">
+                    {isExpress && (
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[7px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest italic animate-pulse">VENTA_TURBO_ACTIVA</span>
+                        </div>
+                    )}
                     <h3 className="text-lg font-black text-white uppercase tracking-tight italic truncate leading-none">
                         {p.nombre}
                     </h3>
@@ -535,7 +575,14 @@ const CommercialProductCard: React.FC<{ p: Producto; onSelect: () => void }> = (
                     >
                         <SparklesIcon className="w-3 h-3" /> {showDetails ? 'Cerrar' : 'Ficha'}
                     </button>
-                    <ArrowRightIcon className={`w-5 h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-1' : 'text-white/5'}`} />
+                    {isExpress ? (
+                        <div className="flex items-center gap-2 text-[8px] font-black text-blue-400 animate-bounce">
+                            <span>VENTA RÁPIDA</span>
+                            <ArrowRightIcon className="w-4 h-4" />
+                        </div>
+                    ) : (
+                        <ArrowRightIcon className={`w-5 h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-1' : 'text-white/5'}`} />
+                    )}
                 </div>
 
                 <AnimatePresence>

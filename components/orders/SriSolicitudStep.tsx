@@ -105,9 +105,25 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
     const [modo, setModo] = useState<'NUEVO' | 'RENOVACION'>(initialData.modo || 'NUEVO');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const [localActividades, setLocalActividades] = useState<string[]>(
-        cliente.actividades ? cliente.actividades.split('|').map(a => a.trim()).filter(a => a.length > 0) : []
-    );
+    const [localActividades, setLocalActividades] = useState<string[]>(() => {
+        // Priorizar actividades de fiscal_data (JSONB) si existen, sino usar el string anterior
+        if (cliente.fiscal_data?.actividades && cliente.fiscal_data.actividades.length > 0) {
+            return cliente.fiscal_data.actividades.map(a => a.descripcion);
+        }
+        return cliente.actividades ? cliente.actividades.split('|').map(a => a.trim()).filter(a => a.length > 0) : [];
+    });
+
+    const [availableEstablecimientos, setAvailableEstablecimientos] = useState<{codigo: string, nombre: string, direccion: string}[]>(() => {
+        if (cliente.fiscal_data?.establecimientos && cliente.fiscal_data.establecimientos.length > 0) {
+            return cliente.fiscal_data.establecimientos.map(e => ({
+                codigo: e.codigo,
+                nombre: e.nombre,
+                direccion: e.direccion
+            }));
+        }
+        return [{ codigo: '001', nombre: 'MATRIZ', direccion: cliente.direccion }];
+    });
+
     const [isAdding, setIsAdding] = useState(false);
     const [newActInput, setNewActInput] = useState('');
     const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -384,19 +400,29 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                 <label className="flex items-center gap-3 text-[11px] text-slate-400 font-black uppercase tracking-[0.4em]">
                                     <MapPinIcon className="w-4 h-4 text-liquid-gold" /> Establecimiento
                                 </label>
-                                <span className="text-[8px] font-mono text-liquid-gold/40">ID_SEG_001</span>
+                                <span className="text-[8px] font-mono text-liquid-gold/40">ID_SEG_LIST</span>
                             </div>
                             <div className="relative group">
-                                <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-12 bg-liquid-gold/20 group-focus-within:bg-liquid-gold transition-all" />
-                                <input 
-                                    type="text"
+                                <select 
                                     value={establecimiento}
-                                    onChange={(e) => setEstablecimiento(e.target.value.replace(/\D/g, '').substring(0,3))}
-                                    maxLength={3}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-3xl p-6 text-white font-black text-center text-4xl tracking-[0.8em] focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow font-mono"
-                                    placeholder="001"
-                                />
-                                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-liquid-gold/20 group-focus-within:w-24 group-focus-within:bg-liquid-gold transition-all" />
+                                    onChange={(e) => setEstablecimiento(e.target.value)}
+                                    className="w-full bg-black/60 border-2 border-white/5 rounded-3xl p-6 text-white font-black text-center text-4xl focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow font-mono appearance-none"
+                                >
+                                    {availableEstablecimientos.map(e => (
+                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-lg">
+                                            {e.codigo} - {e.nombre}
+                                        </option>
+                                    ))}
+                                    <option value="custom" className="bg-slate-900 text-white text-lg">+ OTRO</option>
+                                </select>
+                                {establecimiento === 'custom' && (
+                                    <input 
+                                        type="text"
+                                        onChange={(e) => setEstablecimiento(e.target.value.replace(/\D/g, '').substring(0,3))}
+                                        placeholder="002"
+                                        className="mt-4 w-full bg-black/60 border-2 border-liquid-gold/30 rounded-2xl p-4 text-white text-center text-2xl font-mono"
+                                    />
+                                )}
                             </div>
                         </div>
                         <div className="space-y-6">

@@ -91,7 +91,9 @@ const mapDBTrabajo = (t: any): Trabajo => ({
     actividadSeleccionada: t.actividad_seleccionada,
     claveAcceso: t.clave_acceso,
     arteAprobado: t.arte_aprobado,
-    fotoRetiroUrl: t.foto_retiro_url
+    fotoRetiroUrl: t.foto_retiro_url,
+    autorizacion_sri: t.autorizacion_sri,
+    numeracion: t.numeracion
 });
 
 // Mapping for Clientes
@@ -126,7 +128,8 @@ const mapDBCliente = (c: any): Cliente => {
         regimen: normalizedRegimen as Regimen,
         establecimientoPredeterminado: c.establecimiento_predeterminado,
         puntoEmisionPredeterminado: c.punto_emision_predeterminado,
-        numEstablecimientosOpen: c.num_establecimientos_open
+        numEstablecimientosOpen: c.num_establecimientos_open,
+        fiscal_data: c.fiscal_data
     };
 };
 
@@ -143,7 +146,8 @@ const mapClienteToDB = (c: any) => ({
     regimen: c.regimen,
     establecimiento_predeterminado: c.establecimientoPredeterminado,
     punto_emision_predeterminado: c.puntoEmisionPredeterminado,
-    num_establecimientos_open: c.numEstablecimientosOpen
+    num_establecimientos_open: c.numEstablecimientosOpen,
+    fiscal_data: c.fiscal_data
 });
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -323,6 +327,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (trabajoData.tamano) dbData.tamano = trabajoData.tamano;
         if (trabajoData.esRenovacion !== undefined) dbData.es_renovacion = trabajoData.esRenovacion;
         if (trabajoData.claveAcceso) dbData.clave_acceso = trabajoData.claveAcceso;
+        if (trabajoData.autorizacion_sri) dbData.autorizacion_sri = trabajoData.autorizacion_sri;
+        if (trabajoData.numeracion) dbData.numeracion = trabajoData.numeracion;
+        if (trabajoData.fechaVencimiento) dbData.fecha_vencimiento = trabajoData.fechaVencimiento;
         
         const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         if (error) throw error;

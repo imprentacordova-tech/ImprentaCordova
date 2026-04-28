@@ -27,7 +27,7 @@ const NuevoPedidoPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
-    const [missionCategory, setMissionCategory] = useState<'SRI' | 'COMERCIAL' | 'EXPRESS' | null>(null);
+    const [missionCategory, setMissionCategory] = useState<'SRI' | 'COMERCIAL' | null>(null);
     const [orderMode, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
@@ -72,9 +72,6 @@ const NuevoPedidoPage: React.FC = () => {
             if (step === 2) return items.length > 0;
             if (step === 3) return !!cliente;
             if (step === 4) return Math.abs(precio) > 0;
-        } else if (missionCategory === 'EXPRESS') {
-            if (step === 2) return !!detalle.trim() && precio > 0;
-            if (step === 4) return true;
         }
         
         return false;
@@ -82,23 +79,6 @@ const NuevoPedidoPage: React.FC = () => {
 
     const handleCreateOrder = async () => {
         let finalItems = [...items];
-        
-        // Si es modo EXPRESS y no hay items, creamos un item virtual a partir del detalle
-        if (missionCategory === 'EXPRESS' && finalItems.length === 0) {
-            if (!detalle && !precio) {
-                setError("Debe especificar el detalle o el precio del servicio express.");
-                return;
-            }
-            finalItems = [{
-                id: 'express_item_' + Date.now(),
-                nombre: 'Servicio Express',
-                descripcion: detalle,
-                cantidad: 1,
-                precioBase: precio,
-                precioFinal: precio,
-                especificaciones: { tamano: 'N/A', tipoPapel: 'N/A' }
-            } as any];
-        }
 
         if (finalItems.length === 0) {
             setError("Debe agregar al menos un ítem al pedido.");
@@ -148,10 +128,13 @@ const NuevoPedidoPage: React.FC = () => {
                     establecimiento: isSriOrder ? sriEstablecimiento : undefined,
                     puntoEmision: isSriOrder ? sriPuntoEmision : undefined,
                     tamano: item.especificaciones?.tamano || undefined,
-                    estadoClave: isSriOrder ? (sriClave ? 'LISTA' : 'PENDIENTE') : null,
+                    estadoClave: isSriOrder ? (sriClave ? 'LISTA' : 'PENDIENTE') : 'LISTA',
                     claveAcceso: isSriOrder ? sriClave : undefined,
                     esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
-                    actividadSeleccionada: isSriOrder ? sriActividad : null
+                    actividadSeleccionada: isSriOrder ? sriActividad : null,
+                    numeracion: item.especificaciones?.numerado,
+                    autorizacion_sri: item.especificaciones?.sri?.autorizacion,
+                    fechaVencimiento: item.especificaciones?.sri?.vencimiento
                 }, currentUser.nombre, imageFile);
             }));
 
@@ -176,15 +159,6 @@ const NuevoPedidoPage: React.FC = () => {
 
     // --- DYNAMIC STEPS LABELS ---
     const getSteps = () => {
-        if (missionCategory === 'EXPRESS') {
-            return [
-                { id: 1, label: 'CATEGORÍA', icon: LayoutDashboardIcon, code: '01' },
-                { id: 2, label: 'DESPLIEGUE', icon: BoltIcon, code: '02' },
-                { id: 4, label: 'CAPITAL', icon: CreditCardIcon, code: '03' },
-                { id: 5, label: 'TICKET', icon: RocketLaunchIcon, code: '04' }
-            ];
-        }
-
         if (missionCategory === 'SRI') {
             return [
                 { id: 1, label: 'CATEGORÍA', icon: LayoutDashboardIcon, code: '01' },
@@ -205,7 +179,7 @@ const NuevoPedidoPage: React.FC = () => {
         ];
     };
 
-    const handleSelectCategory = (category: 'SRI' | 'COMERCIAL' | 'EXPRESS') => {
+    const handleSelectCategory = (category: 'SRI' | 'COMERCIAL') => {
         setMissionCategory(category);
         setIsSidebarMinimized(false); // Expand sidebar when mission starts
         if (category === 'SRI') {
@@ -214,9 +188,6 @@ const NuevoPedidoPage: React.FC = () => {
         } else if (category === 'COMERCIAL') {
             setIsSriOrder(false);
             setOrderMode('CATALOG');
-        } else if (category === 'EXPRESS') {
-            setIsSriOrder(false);
-            setOrderMode('EXPRESS');
         }
         setStep(2);
     };
@@ -294,28 +265,66 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Manifiesto de Ítems */}
+            {items.length > 0 && (
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white/[0.02] backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl space-y-6"
+                >
+                    <div className="flex justify-between items-center">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Manifiesto de Ítems</p>
+                        <span className="text-[9px] font-mono text-liquid-gold/40">SEC_LOG_0x{items.length}</span>
+                    </div>
+
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {items.map((item, idx) => (
+                            <div key={idx} className="bg-black/40 p-4 rounded-2xl border border-white/5 group hover:border-liquid-gold/20 transition-all">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h5 className="text-[10px] font-black text-white uppercase italic tracking-tight">{item.nombre}</h5>
+                                    <span className="text-[8px] font-black text-liquid-gold bg-liquid-gold/10 px-2 py-0.5 rounded">x{item.cantidad}</span>
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                    <span className="text-[7px] text-slate-600 font-bold uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">SPEC: {item.especificaciones?.tamano || 'N/A'}</span>
+                                    <div className="h-px flex-1 bg-white/5" />
+                                    <span className="text-[10px] font-black text-white/80 italic">${item.precioFinal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Total Sincronizado</span>
+                        <span className="text-xl font-black text-liquid-gold italic">${precio.toFixed(2)}</span>
+                    </div>
+                </motion.div>
+            )}
+
             {/* Entity Context */}
             {cliente && (
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white/[0.02] backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group"
+                    className="bg-black/60 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/10 shadow-luxury space-y-6 relative overflow-hidden"
                 >
-                    <div className="space-y-4 relative z-10">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Sujeto Identificado</p>
-                        <div className="space-y-1">
-                            <h4 className="text-lg font-black text-white uppercase italic truncate">{cliente.nombre}</h4>
-                            <p className="text-[10px] font-bold text-liquid-gold/60 uppercase tracking-widest">{cliente.cedula || cliente.ruc}</p>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-3xl pointer-events-none" />
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
+                            <UserIcon className="w-6 h-6 text-slate-400" />
                         </div>
-                        <div className="flex gap-2">
-                            <span className="text-[7px] font-black px-2 py-1 bg-white/5 rounded-md border border-white/5 text-slate-400 uppercase tracking-widest">
-                                {cliente.regimen || 'GENERAL'}
-                            </span>
-                            {isSriOrder && (
-                                <span className="text-[7px] font-black px-2 py-1 bg-liquid-gold/10 rounded-md border border-liquid-gold/20 text-liquid-gold uppercase tracking-widest">
-                                    SRI_VERIFIED
-                                </span>
-                            )}
+                        <div>
+                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest leading-none mb-1">Titular del Protocolo</p>
+                            <p className="text-sm font-black text-white uppercase italic tracking-tighter truncate w-full">{cliente.nombre}</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 relative z-10">
+                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p className="text-[7px] text-slate-600 font-black uppercase tracking-widest mb-1">Identificación</p>
+                            <p className="text-[10px] font-mono font-black text-liquid-gold">{cliente.cedula || cliente.ruc}</p>
+                        </div>
+                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p className="text-[7px] text-slate-600 font-black uppercase tracking-widest mb-1">Régimen</p>
+                            <p className="text-[10px] font-black text-emerald-500 uppercase italic">{cliente.regimen || 'GENERAL'}</p>
                         </div>
                     </div>
                 </motion.div>
@@ -456,27 +465,14 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="flex flex-col md:flex-row min-h-[650px] relative gap-4 md:gap-0">
                                     
                                     {/* --- LASER SEPARATOR 1 --- */}
-                                    <div className="hidden md:block absolute left-[33.33%] inset-y-0 w-px z-20 pointer-events-none">
+                                    <div className="hidden md:block absolute left-[50%] inset-y-0 w-px z-20 pointer-events-none">
                                         <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
                                         <motion.div 
                                             animate={{ top: ['-20%', '120%'] }}
                                             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                                             className="absolute w-[2px] h-40 -left-[0.5px] bg-gradient-to-b from-transparent via-liquid-gold to-transparent blur-[2px]"
                                         />
-                                        <div className="absolute top-[20%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
-                                        <div className="absolute bottom-[20%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
-                                    </div>
-                                    
-                                    {/* --- LASER SEPARATOR 2 --- */}
-                                    <div className="hidden md:block absolute right-[33.33%] inset-y-0 w-px z-20 pointer-events-none">
-                                        <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-                                        <motion.div 
-                                            animate={{ top: ['120%', '-20%'] }}
-                                            transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                                            className="absolute w-[2px] h-40 -left-[0.5px] bg-gradient-to-b from-transparent via-liquid-gold to-transparent blur-[2px]"
-                                        />
-                                        <div className="absolute top-[40%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
-                                        <div className="absolute bottom-[40%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
+                                        <div className="absolute top-[50%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
                                     </div>
 
                                     {/* PILAR 01: SRI */}
@@ -542,54 +538,14 @@ const NuevoPedidoPage: React.FC = () => {
                                         <div className="space-y-8 relative z-10">
                                             <div className="space-y-2">
                                                 <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Branding Industrial</p>
-                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Artes<br/><span className="text-liquid-gold">Elite</span></h3>
+                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Artes<br/><span className="text-liquid-gold">Comercial</span></h3>
                                             </div>
                                             <div className="h-[2px] w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
-                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Tarjetas, brochures y catálogos de alta gama para marcas de prestigio.</p>
+                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Tarjetas, sellos, brochures y ventas rápidas de mostrador.</p>
                                         </div>
 
                                         <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
                                             <span>CONFIGURAR</span>
-                                            <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
-                                        </div>
-                                    </motion.button>
-
-                                    {/* PILAR 03: EXPRESS */}
-                                    <motion.button 
-                                        whileHover="hover"
-                                        onClick={() => handleSelectCategory('EXPRESS')}
-                                        className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
-                                    >
-                                        <div className="absolute inset-0 bg-blue-500/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
-                                        
-                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-0 group-hover/pilar:opacity-100 transition-all duration-700 -translate-x-4 group-hover/pilar:translate-x-0">
-                                            {['WARP_DRIVE', 'HOT_SWAP', 'INSTANT_V1'].map(t => (
-                                                <span key={t} className="[writing-mode:vertical-lr] text-[7px] font-black tracking-[0.5em] text-blue-400/40 uppercase italic">{t}</span>
-                                            ))}
-                                        </div>
-
-                                        <div className="relative">
-                                            <div className="w-40 h-40 bg-blue-500/5 rounded-[3rem] flex items-center justify-center text-blue-500 border border-blue-500/10 group-hover/pilar:scale-110 group-hover/pilar:bg-blue-500 group-hover/pilar:text-white transition-all duration-700 shadow-2xl group-hover/pilar:shadow-[0_0_50px_rgba(59,130,246,0.4)] relative overflow-hidden">
-                                                <motion.div 
-                                                    animate={{ x: [-100, 200] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 opacity-0 group-hover/pilar:opacity-100"
-                                                />
-                                                <BoltIcon className="w-20 h-20 relative z-10" />
-                                            </div>
-                                            <div className="absolute -bottom-4 -right-4 bg-black border border-blue-500/20 px-3 py-1 rounded-lg text-[8px] font-black text-blue-400 tracking-widest uppercase italic">0x_FAST</div>
-                                        </div>
-
-                                        <div className="space-y-8 relative z-10">
-                                            <div className="space-y-2">
-                                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Prioridad Crítica</p>
-                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Modo<br/><span className="text-blue-400">Turbo</span></h3>
-                                            </div>
-                                            <div className="h-[2px] w-16 bg-blue-500/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-[0_0_20px_rgba(59,130,246,0.3)]" />
-                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Servicio express para requerimientos de entrega inmediata.</p>
-                                        </div>
-
-                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-blue-500/20 bg-blue-500/5 flex items-center gap-4 text-[11px] font-black text-blue-400 group-hover/pilar:bg-blue-500 group-hover/pilar:text-white tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
-                                            <span>DESPLEGAR</span>
                                             <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
                                         </div>
                                     </motion.button>

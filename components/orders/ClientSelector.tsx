@@ -63,7 +63,8 @@ export const CreateClientModal: React.FC<{
         nombre: '', nombreComercial: '', cedulaRuc: '', email: '',
         direccion: 'Pasaje, El Oro', regimen: Regimen.GENERAL,
         establecimientoPredeterminado: '001', puntoEmisionPredeterminado: '001',
-        numEstablecimientosOpen: 1
+        numEstablecimientosOpen: 1,
+        fiscal_data: {} as any
     });
 
     const [telefonos, setTelefonos] = useState<string[]>([]);
@@ -196,7 +197,16 @@ export const CreateClientModal: React.FC<{
             regimen: regimenFinal,
             email: data.email || prev.email,
             numEstablecimientosOpen: data.numEstablecimientos || 1,
-            establecimientoPredeterminado: data.establecimientoPrincipal || '001'
+            establecimientoPredeterminado: data.establecimientoPrincipal || '001',
+            fiscal_data: {
+                razon_social: data.nombre,
+                nombre_comercial: data.nombreComercial || data.nombre,
+                estado_contribuyente: 'ACTIVO',
+                tipo_contribuyente: data.tipoPersona || 'PERSONA NATURAL',
+                obligado_contabilidad: data.obligadoContabilidad || false,
+                actividades: data.actividades ? data.actividades.split('|').map((a: string) => ({ descripcion: a.trim() })) : [],
+                ultima_sincronizacion: new Date().toISOString()
+            }
         }));
 
         if (data.telefono) {
@@ -261,6 +271,13 @@ const handleSubmit = async (e: React.FormEvent) => {
             telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : ['0990000000']),
             // Limpiar datos SRI si es modo express
             regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
+            fiscal_data: mode === 'SRI' ? {
+                ...newClienteData.fiscal_data,
+                razon_social: newClienteData.nombre,
+                nombre_comercial: newClienteData.nombreComercial || newClienteData.nombre,
+                actividades: actividades.map(a => ({ codigo: '', descripcion: a })),
+                ultima_sincronizacion: new Date().toISOString()
+            } : undefined
         });
         setSaveSuccess(true);
         setTimeout(() => onClientCreated(newCliente), 800);

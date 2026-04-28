@@ -40,7 +40,11 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
     
     // SRI specific (if applicable)
     const [sriAutorizacion, setSriAutorizacion] = useState('');
-    const [sriVence, setSriVence] = useState('');
+    const [sriVence, setSriVence] = useState(() => {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() + 1);
+        return d.toISOString().split('T')[0];
+    });
 
     // Additional Industrial Specs
     const [acabado, setAcabado] = useState('Ninguno');
@@ -51,6 +55,16 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
     const tintasOpciones = ['1 Color', '2 Colores', 'Full Color', 'Pantone / Especial'];
     const unitPrice = product.precio || 0;
     const [total, setTotal] = useState(unitPrice);
+
+    // Auto-calculate 'Hasta' for SRI/Numbered products
+    useEffect(() => {
+        if (numerado || product.esSRI) {
+            const startNum = parseInt(desde) || 1;
+            const totalSheets = cantidad * hojasPorTalonario;
+            const endNum = startNum + totalSheets - 1;
+            setHasta(endNum.toString().padStart(desde.length, '0'));
+        }
+    }, [desde, cantidad, hojasPorTalonario, numerado, product.esSRI]);
 
     // Dynamic Price Engine
     useEffect(() => {
@@ -286,9 +300,15 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                                     </>
                                                 )}
                                                 {product.esSRI && (
-                                                    <div className="space-y-2 col-span-2">
-                                                        <label className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">Autorización SRI</label>
-                                                        <input type="text" value={sriAutorizacion} onChange={e => setSriAutorizacion(e.target.value)} className="w-full bg-transparent border-b border-liquid-gold/50 pb-2 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all placeholder:text-slate-700" placeholder="Autorización de 10 o 37 dígitos" />
+                                                    <div className="grid grid-cols-2 gap-8 col-span-2">
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">Autorización SRI</label>
+                                                            <input type="text" value={sriAutorizacion} onChange={e => setSriAutorizacion(e.target.value)} className="w-full bg-transparent border-b border-liquid-gold/50 pb-2 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all placeholder:text-slate-700 font-mono" placeholder="10/37 DÍGITOS" />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">Fecha de Vencimiento</label>
+                                                            <input type="date" value={sriVence} onChange={e => setSriVence(e.target.value)} className="w-full bg-transparent border-b border-liquid-gold/50 pb-2 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all [color-scheme:dark]" />
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>

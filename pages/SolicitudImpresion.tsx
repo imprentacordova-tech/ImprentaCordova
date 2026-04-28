@@ -64,9 +64,19 @@ const SolicitudImpresionPage: React.FC = () => {
         const currentTrabajo = trabajos.find(t => t.id === trabajoId);
         if (currentTrabajo) {
             setTrabajo(currentTrabajo);
-            setCliente(clientes.find(c => c.id === currentTrabajo.clienteId) || null);
+            const foundCliente = clientes.find(c => c.id === currentTrabajo.clienteId) || null;
+            setCliente(foundCliente);
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
+
+    const getEstablecimientoAddress = () => {
+        if (!cliente || !trabajo) return '';
+        if (cliente.fiscal_data?.establecimientos) {
+            const est = cliente.fiscal_data.establecimientos.find(e => e.codigo === trabajo.establecimiento);
+            if (est) return est.direccion;
+        }
+        return cliente.direccion;
+    };
 
     const config = {
         emisorDireccionMatriz: cloudConfig?.direccion || 'Colón e/ Sucre y Av. Rocafuerte',
@@ -242,7 +252,10 @@ const SolicitudImpresionPage: React.FC = () => {
                                 <div className="flex flex-col">
                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] mb-1">Subject_Identification</span>
                                     <span className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight">{cliente.nombre}</span>
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase mt-1 opacity-70 italic">{cliente.nombreComercial || 'No_Brand_Name'}</span>
+                                    <div className="flex justify-between items-end mt-1">
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase opacity-70 italic">{cliente.nombreComercial || 'No_Brand_Name'}</span>
+                                        <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter max-w-[200px] truncate">{getEstablecimientoAddress()}</span>
+                                    </div>
                                 </div>
                                 <div className="h-px bg-slate-200 w-full" />
                                 <div className="flex gap-10">
