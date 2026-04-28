@@ -35,6 +35,7 @@ const ReciboEpson: React.FC = () => {
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isConsumidorFinal, setIsConsumidorFinal] = useState(false);
 
     useEffect(() => {
         if (!trabajoId || dataLoading) return;
@@ -129,6 +130,12 @@ const ReciboEpson: React.FC = () => {
                 <button onClick={handleWhatsApp} className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-green-600 transition-all"><WhatsAppIcon className="w-4 h-4"/> WhatsApp</button>
                 <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-black transition-all"><ArrowDownTrayIcon className="w-4 h-4"/> PDF</button>
                 <button onClick={handlePrint} className="flex items-center gap-2 bg-amber-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-amber-600 transition-all shadow-gold-glow"><PrinterIcon className="w-4 h-4"/> Imprimir</button>
+                <button 
+                    onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
+                    className={`ml-auto px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-liquid-gold text-brand-dark border-liquid-gold' : 'bg-transparent text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                >
+                    {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
+                </button>
             </div>
 
             {/* Canvas: 216mm x 165mm (Landscape approach for double copy on vertical sheet) */}
@@ -139,29 +146,30 @@ const ReciboEpson: React.FC = () => {
                 style={{ width: '216mm', height: '165mm', padding: '0' }}
             >
                 <div className="flex-1 flex flex-col p-[6mm]">
-                    <ReceiptBlock type="CLIENTE" trabajo={trabajo} cliente={cliente} config={config} ordenStr={ordenStr} fecha={fecha} qrSrc={qrSrc} />
+                    <ReceiptBlock type="CLIENTE" trabajo={trabajo} cliente={cliente} config={config} ordenStr={ordenStr} fecha={fecha} qrSrc={qrSrc} isConsumidorFinal={isConsumidorFinal} />
                 </div>
                 
                 <div className="perforation"></div>
                 
                 <div className="flex-1 flex flex-col p-[6mm]">
-                    <ReceiptBlock type="OPERADOR" trabajo={trabajo} cliente={cliente} config={config} ordenStr={ordenStr} fecha={fecha} qrSrc={qrSrc} />
+                    <ReceiptBlock type="OPERADOR" trabajo={trabajo} cliente={cliente} config={config} ordenStr={ordenStr} fecha={fecha} qrSrc={qrSrc} isConsumidorFinal={isConsumidorFinal} />
                 </div>
             </div>
         </div>
     );
 };
 
-const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc }: any) => {
+const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc, isConsumidorFinal }: any) => {
     let specs: any = null;
-    const detalleStr = trabajo.detalle || '';
+    const detalleStr = trabajo.detalle || trabajo.subtipo || '';
     try {
-        if (detalleStr.includes('| SPECS: ')) {
-            specs = JSON.parse(detalleStr.split('| SPECS: ')[1]);
+        const specMatch = detalleStr.match(/\|\s*(?:ESPECIFICACIONES|SPECS):\s*(.+)/i);
+        if (specMatch && specMatch[1]) {
+            specs = JSON.parse(specMatch[1]);
         }
     } catch(e) {}
 
-    const cleanDetail = detalleStr.split('| SPECS:')[0];
+    const cleanDetail = detalleStr.split(/\|\s*(?:ESPECIFICACIONES|SPECS):/i)[0].trim();
     const isOperator = type === 'OPERADOR';
 
     return (
@@ -195,12 +203,12 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc }
                 <div className="col-span-4 space-y-2">
                     <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                         <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest block mb-1">Entidad_Cliente</span>
-                        <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{cliente.nombre}</p>
+                        <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{isConsumidorFinal ? 'CONSUMIDOR FINAL' : cliente.nombre}</p>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
                         <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
                             <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">Cédula / RUC</span>
-                            <p className="text-[9px] font-bold text-slate-900 truncate">{cliente.cedula || cliente.ruc || '9999999999'}</p>
+                            <p className="text-[9px] font-bold text-slate-900 truncate">{isConsumidorFinal ? '9999999999999' : (cliente.cedula || cliente.ruc || '9999999999')}</p>
                         </div>
                     </div>
                 </div>

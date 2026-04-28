@@ -13,6 +13,7 @@ const ReciboAbonoPage: React.FC = () => {
     const [cliente, setCliente] = useState<Cliente | null>(null);
     // Default to Thermal for quick receipts
     const [isThermal, setIsThermal] = useState(true);
+    const [isConsumidorFinal, setIsConsumidorFinal] = useState(false);
 
     useEffect(() => {
         if (!trabajoId || dataLoading) return;
@@ -99,6 +100,12 @@ const ReciboAbonoPage: React.FC = () => {
                     >
                         <PrinterIcon className="w-5 h-5" /> Imprimir
                     </button>
+                    <button 
+                        onClick={() => setIsConsumidorFinal(!isConsumidorFinal)}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-lg transition-all hover:-translate-y-0.5 border ${isConsumidorFinal ? 'bg-amber-500 border-amber-500 text-white shadow-gold-glow' : 'bg-transparent text-slate-600 border-slate-300 hover:bg-slate-100'}`}
+                    >
+                        {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
+                    </button>
                 </div>
             </div>
 
@@ -133,11 +140,11 @@ const ReciboAbonoPage: React.FC = () => {
                     </div>
                     <div className="flex mb-1">
                         <span className="font-bold w-12">CLIENTE:</span>
-                        <span className="uppercase font-bold">{cliente.nombre}</span>
+                        <span className="uppercase font-bold">{isConsumidorFinal ? 'CONSUMIDOR FINAL' : cliente.nombre}</span>
                     </div>
                     <div className="flex">
                         <span className="font-bold w-12">RUC/CI:</span>
-                        <span>{cliente.ruc || cliente.cedula}</span>
+                        <span>{isConsumidorFinal ? '9999999999999' : (cliente.ruc || cliente.cedula || '9999999999')}</span>
                     </div>
                 </div>
 
@@ -152,7 +159,9 @@ const ReciboAbonoPage: React.FC = () => {
                         <span className="w-8 text-center font-bold">{trabajo.cantidad}</span>
                         <span className="flex-grow uppercase leading-tight pr-1">
                             <div className="font-bold">{trabajo.tipo}</div>
-                            <div className="text-[7px] font-medium normal-case italic">{trabajo.subtipo}</div>
+                            <div className="text-[7px] font-medium normal-case italic">
+                                {trabajo.subtipo ? trabajo.subtipo.split(/\|\s*(?:ESPECIFICACIONES|SPECS):/i)[0].trim() : ''}
+                            </div>
                         </span>
                         <span className="w-12 text-right font-bold">{formatCurrency(trabajo.total)}</span>
                     </div>

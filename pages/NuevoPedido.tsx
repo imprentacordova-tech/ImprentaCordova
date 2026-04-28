@@ -12,6 +12,7 @@ import {
     ChevronRightIcon
 } from '../components/Icons';
 import ClientSelector from '../components/orders/ClientSelector';
+import { SriIdentityFlow } from '../components/orders/SriIdentityFlow';
 import ServiceSelector from '../components/orders/ServiceSelector';
 import ProductConfigurator from '../components/orders/ProductConfigurator';
 import PhotoCapture from '../components/orders/PhotoCapture';
@@ -70,7 +71,7 @@ const NuevoPedidoPage: React.FC = () => {
         } else if (missionCategory === 'COMERCIAL') {
             if (step === 2) return items.length > 0;
             if (step === 3) return !!cliente;
-            if (step === 4) return precio > 0;
+            if (step === 4) return Math.abs(precio) > 0;
         } else if (missionCategory === 'EXPRESS') {
             if (step === 2) return !!detalle.trim() && precio > 0;
             if (step === 4) return true;
@@ -129,7 +130,7 @@ const NuevoPedidoPage: React.FC = () => {
             const results = await Promise.all(finalItems.map(async (item, index) => {
                 return await addTrabajo({
                     titular: finalCliente!.nombre,
-                    clienteId: finalCliente!.id,
+                    clienteId: finalCliente!.id ? finalCliente!.id : undefined,
                     servicio: item.nombre || 'Servicio General',
                     detalle: isSriOrder 
                         ? `${item.cantidad || 1}x ${item.nombre || 'DOCUMENTO SRI'} (${item.especificaciones?.tamano || 'ESTÁNDAR'})` 
@@ -607,18 +608,18 @@ const NuevoPedidoPage: React.FC = () => {
                                         <div className="space-y-4">
                                             <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA FISCAL</p>
                                             <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Identidad del <span className="text-gold-gradient">Contribuyente</span></h2>
-                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Validación obligatoria de datos tributarios para emisión autorizada.</p>
+                                            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Búsqueda inteligente: Base Local → Padrón SRI → PDF → Manual</p>
                                         </div>
-                                        <ClientSelector 
-                                            onSelect={(c) => { 
-                                                setCliente(c); 
-                                                if(c) {
-                                                    if (missionCategory === 'SRI') setStep(3);
-                                                    else setStep(3);
-                                                } 
+                                        <SriIdentityFlow 
+                                            onComplete={(c) => { 
+                                                setCliente(c);
+                                                // Auto-fill SRI fields from client data if available
+                                                if (c.establecimientoPredeterminado) setSriEstablecimiento(c.establecimientoPredeterminado);
+                                                if (c.puntoEmisionPredeterminado) setSriPuntoEmision(c.puntoEmisionPredeterminado);
+                                                if (c.actividades) setSriActividad(c.actividades);
+                                                setStep(3);
                                             }} 
-                                            selectedId={cliente?.id} 
-                                            hideQuickButtons={true}
+                                            onCancel={() => { setStep(1); setMissionCategory(null); }}
                                         />
                                     </div>
                                 ) : missionCategory === 'COMERCIAL' ? (
@@ -646,7 +647,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                     }
                                                     const result = await addTrabajo({
                                                         titular: finalCliente.nombre,
-                                                        clienteId: finalCliente.id || '',
+                                                        clienteId: finalCliente.id ? finalCliente.id : undefined,
                                                         servicio: trabajo.subtipo || 'Comercial',
                                                         detalle: trabajo.detalle || '',
                                                         precio: trabajo.total || 0,
@@ -675,6 +676,13 @@ const NuevoPedidoPage: React.FC = () => {
                                             }}
                                             onCancel={() => setStep(1)}
                                         />
+                                        {error && (
+                                            <div className="mt-6 text-center">
+                                                <span className="text-liquid-gold text-[12px] font-black uppercase tracking-widest animate-pulse border border-liquid-gold/30 bg-liquid-gold/10 px-6 py-3 rounded-xl inline-block shadow-gold-glow">
+                                                    {error}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="space-y-8 animate-fade-in">

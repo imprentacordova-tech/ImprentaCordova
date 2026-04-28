@@ -315,7 +315,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
 
         // Persist SRI-specific fields when present
-        if (trabajoData.esSRI !== undefined) dbData.es_sri = trabajoData.esSRI;
+        if (trabajoData.esSRI) dbData.es_sri = true;
         if (trabajoData.establecimiento) dbData.establecimiento = trabajoData.establecimiento;
         if (trabajoData.puntoEmision) dbData.punto_emision = trabajoData.puntoEmision;
         if (trabajoData.estadoClave) dbData.estado_clave = trabajoData.estadoClave;

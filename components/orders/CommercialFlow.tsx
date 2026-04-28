@@ -466,7 +466,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                             </button>
                             <button 
                                 onClick={handleConfirm} 
-                                disabled={!clienteNombre}
                                 className="flex-1 py-7 bg-liquid-gold text-black rounded-[2.5rem] font-black uppercase tracking-[0.4em] hover:bg-white disabled:opacity-20 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-6 shadow-gold-glow text-xl italic active:scale-95 transform scale-105"
                             >
                                 <PrinterIcon className="w-8 h-8" /> Desplegar Protocolo Industrial
