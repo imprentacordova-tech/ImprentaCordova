@@ -21,7 +21,7 @@ import {
     TruckIcon as Truck, Package2, Boxes, ScanLine, Rocket, Cpu, Flag,
     CloudUpload, Eraser, User, Database, Sliders, Layers as LayersLucide,
     TrendingUp as TrendingUpLucide, History, Server, Fingerprint, Command,
-    Terminal, Headphones, Scissors, Hand, FlaskConical, Home
+    Terminal, Headphones, Scissors, Hand, FlaskConical, Home, Trophy
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -135,6 +135,7 @@ export const CloudArrowUpIcon         = CloudUpload;
 export const PencilSquareIcon         = Pencil;
 export const EraserIcon               = Eraser;
 export const BeakerIcon               = FlaskConical;
+export const TrophyIcon               = Trophy;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LUCIDE ALIASES — Usuarios y Seguridad
