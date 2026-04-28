@@ -87,7 +87,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             total: finalPrice,
             abono: directProduct ? finalPrice : abono,
             saldo: directProduct ? 0 : finalPrice - abono,
-            prioridad: directProduct ? 'Alta' : 'Normal',
+            prioridad: directProduct ? 'Urgente' : 'Normal',
             detalle: directProduct ? 'VENTA RÁPIDA DE MOSTRADOR' : `${cantidad} x ${tamano} - ${acabado}`,
             caduco: false,
             estadoClave: 'PENDIENTE',
@@ -497,7 +497,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                 <ArrowLeftIcon className="w-4 h-4 md:w-6 md:h-6"/> Corregir
                             </button>
                             <button 
-                                onClick={handleConfirm} 
+                                onClick={() => handleConfirm()} 
                                 className="flex-1 order-1 sm:order-2 py-4 md:py-7 bg-liquid-gold text-black rounded-xl md:rounded-[2.5rem] font-black uppercase tracking-[0.15em] md:tracking-[0.4em] hover:bg-white disabled:opacity-20 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 md:gap-6 shadow-gold-glow text-base md:text-xl italic active:scale-95 transform sm:scale-105"
                             >
                                 <PrinterIcon className="w-5 h-5 md:w-8 md:h-8" /> Desplegar

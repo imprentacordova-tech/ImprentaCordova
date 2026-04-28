@@ -12,7 +12,6 @@ import {
     ChevronRightIcon
 } from '../components/Icons';
 import ClientSelector from '../components/orders/ClientSelector';
-import { SriIdentityFlow } from '../components/orders/SriIdentityFlow';
 import ServiceSelector from '../components/orders/ServiceSelector';
 import ProductConfigurator from '../components/orders/ProductConfigurator';
 import PhotoCapture from '../components/orders/PhotoCapture';
@@ -244,7 +243,7 @@ const NuevoPedidoPage: React.FC = () => {
                         </div>
                         <div className="text-right">
                             <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Ítems</p>
-                            <span className="text-xl font-black text-white italic">{items.length || (missionCategory === 'EXPRESS' ? '1' : '0')}</span>
+                            <span className="text-xl font-black text-white italic">{items.length || (orderMode === 'EXPRESS' ? '1' : '0')}</span>
                         </div>
                     </div>
 
@@ -561,16 +560,17 @@ const NuevoPedidoPage: React.FC = () => {
                                             <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Identidad del <span className="text-gold-gradient">Contribuyente</span></h2>
                                             <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Búsqueda inteligente: Base Local → Padrón SRI → PDF → Manual</p>
                                         </div>
-                                        <SriIdentityFlow 
-                                            onComplete={(c) => { 
+                                        <ClientSelector 
+                                            onSelect={(c) => { 
+                                                if(!c) return;
                                                 setCliente(c);
-                                                // Auto-fill SRI fields from client data if available
                                                 if (c.establecimientoPredeterminado) setSriEstablecimiento(c.establecimientoPredeterminado);
                                                 if (c.puntoEmisionPredeterminado) setSriPuntoEmision(c.puntoEmisionPredeterminado);
                                                 if (c.actividades) setSriActividad(c.actividades);
                                                 setStep(3);
                                             }} 
                                             onCancel={() => { setStep(1); setMissionCategory(null); }}
+                                            hideQuickButtons={true}
                                         />
                                     </div>
                                 ) : missionCategory === 'COMERCIAL' ? (
@@ -931,7 +931,7 @@ const NuevoPedidoPage: React.FC = () => {
                             <button 
                                 disabled={step === 1}
                                 onClick={() => {
-                                    if (missionCategory === 'EXPRESS' && step === 4) setStep(2);
+                                    if (orderMode === 'EXPRESS' && step === 4) setStep(2);
                                     else if (missionCategory === 'SRI' && step === 5) setStep(4);
                                     else setStep(s => s - 1);
                                 }}
@@ -942,11 +942,11 @@ const NuevoPedidoPage: React.FC = () => {
                             
                             <div className="flex items-center gap-6">
                                 {error && <span className="text-liquid-gold text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
-                                {((missionCategory === 'SRI' && step < 5) || (missionCategory === 'EXPRESS' && step < 4)) ? (
+                                {((missionCategory === 'SRI' && step < 5) || (orderMode === 'EXPRESS' && step < 4)) ? (
                                     <button 
                                         disabled={!canAdvance()}
                                         onClick={() => {
-                                            if (missionCategory === 'EXPRESS' && step === 2) setStep(4);
+                                            if (orderMode === 'EXPRESS' && step === 2) setStep(4);
                                             else setStep(s => s + 1);
                                         }}
                                         className="bg-white text-black px-16 py-6 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-liquid-gold transition-all disabled:opacity-20 flex items-center gap-4 group"

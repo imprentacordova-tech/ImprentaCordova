@@ -8,7 +8,7 @@ import {
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
     ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon,
     CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon, CreditCardIcon,
-    TrophyIcon
+    TrophyIcon, HomeIcon
 } from '../components/Icons';
 import { BottomSheet } from '../components/BottomSheet';
 import { motion, AnimatePresence } from 'framer-motion';

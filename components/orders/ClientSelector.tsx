@@ -92,7 +92,8 @@ export const CreateClientModal: React.FC<{
                 regimen: Regimen.GENERAL,
                 establecimientoPredeterminado: '001',
                 puntoEmisionPredeterminado: '001',
-                numEstablecimientosOpen: 1
+                numEstablecimientosOpen: 1,
+                fiscal_data: {}
             });
             setTelefonos([]);
             setActividades([]);
@@ -189,15 +190,16 @@ export const CreateClientModal: React.FC<{
             regimenFinal = data.regimen;
         }
 
-        setNewClienteData(prev => ({
-            ...prev,
-            nombre: data.nombre || prev.nombre,
-            cedulaRuc: data.ruc || prev.cedulaRuc,
-            direccion: data.direccion || prev.direccion,
+        setNewClienteData({
+            nombre: data.nombre || '',
+            nombreComercial: data.nombreComercial || '',
+            cedulaRuc: data.ruc || '',
+            email: data.email || '',
+            direccion: data.direccion || 'Pasaje, El Oro',
             regimen: regimenFinal,
-            email: data.email || prev.email,
             numEstablecimientosOpen: data.numEstablecimientos || 1,
             establecimientoPredeterminado: data.establecimientoPrincipal || '001',
+            puntoEmisionPredeterminado: data.puntoEmisionPrincipal || '001',
             fiscal_data: {
                 razon_social: data.nombre,
                 nombre_comercial: data.nombreComercial || data.nombre,
@@ -207,26 +209,25 @@ export const CreateClientModal: React.FC<{
                 actividades: data.actividades ? data.actividades.split('|').map((a: string) => ({ descripcion: a.trim() })) : [],
                 ultima_sincronizacion: new Date().toISOString()
             }
-        }));
+        });
 
         if (data.telefono) {
             const rawPhones = data.telefono.split(/[,;]/);
             const cleanPhones = rawPhones.map((p: string) => p.replace(/\D/g, '')).filter((p: string) => p.length >= 7);
-            setTelefonos(prev => Array.from(new Set([...prev, ...cleanPhones])));
+            setTelefonos(Array.from(new Set([...cleanPhones])));
+        } else {
+            setTelefonos([]);
         }
 
-        // Dividimos por saltos de línea (del PDF), por el separador de la DB (|) o por viñetas (•)
-        const cleaned = data.actividades.split(/[|\n•]/)
-            .map((a: string) => a.trim().toUpperCase())
-            .filter((a: string) => a.length > 4)
-            .map((a: string) => a.replace(/^\.*|[\.*]$/g, '').trim()); // Quitar puntos al inicio/final
-
-        // Unimos con las que ya estaban en el formulario (acumulación)
-        setActividades(prev => {
-            const combined = [...prev, ...cleaned];
-            // Filtramos duplicados manteniendo el orden
-            return combined.filter((item, index) => combined.indexOf(item) === index);
-        });
+        if (data.actividades) {
+            const cleaned = data.actividades.split(/[|\n•]/)
+                .map((a: string) => a.trim().toUpperCase())
+                .filter((a: string) => a.length > 4)
+                .map((a: string) => a.replace(/^\.*|[\.*]$/g, '').trim());
+            setActividades(cleaned.filter((item: string, index: number, self: string[]) => self.indexOf(item) === index));
+        } else {
+            setActividades([]);
+        }
     }
     setTimeout(() => setHighlightFields([]), 3000);
 
@@ -253,8 +254,8 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     // Validaciones según modo
     if (mode === 'SRI' && rucError) return;
-    if (mode === 'SRI' && !newClienteData.cedulaRuc) {
-        setRucError('El RUC es obligatorio para clientes SRI');
+    if (mode === 'SRI' && (!newClienteData.cedulaRuc || newClienteData.cedulaRuc === '9999999999' || newClienteData.cedulaRuc === '9999999999999')) {
+        setRucError('El RUC o Cédula real es obligatorio para clientes SRI.');
         return;
     }
 
@@ -589,10 +590,11 @@ interface ClientSelectorProps {
     onSelect: (cliente: Cliente | null) => void;
     selectedId?: string;
     onSkip?: () => void;
+    onCancel?: () => void;
     hideQuickButtons?: boolean;
 }
 
-const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, onSkip, hideQuickButtons }) => {
+const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, onSkip, onCancel, hideQuickButtons }) => {
     const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -838,15 +840,21 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
         )
     }
 
-    <CreateClientModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onClientCreated={(c) => { setIsCreateModalOpen(false); onSelect(c); }}
-        initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
-        initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
-        initialMode={hideQuickButtons ? 'SRI' : createMode}
-        isLocked={hideQuickButtons}
-    />
+            {onCancel && (
+                <button onClick={onCancel} className="mt-8 text-slate-500 hover:text-white text-[10px] md:text-xs font-black uppercase tracking-widest transition-colors w-full text-center py-4 active:scale-95 border-t border-white/5 pt-8">
+                    Abandonar Proceso
+                </button>
+            )}
+
+            <CreateClientModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onClientCreated={(c) => { setIsCreateModalOpen(false); onSelect(c); }}
+                initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
+                initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
+                initialMode={hideQuickButtons ? 'SRI' : createMode}
+                isLocked={hideQuickButtons}
+            />
         </div >
     );
 };
