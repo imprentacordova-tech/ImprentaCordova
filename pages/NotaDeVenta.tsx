@@ -2,13 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, Cliente } from '../types';
+import { Trabajo, Cliente, TrabajoEstado } from '../types';
 import { formatCurrency, numeroALetras } from '../utils';
 import { 
-    PrinterIcon, ArrowLeftIcon, CordovaLogo, 
-    MapPinIcon, WhatsAppIcon, CheckBadgeIcon, 
-    EnvelopeIcon, PhoneIcon, ArrowDownTrayIcon, Loader2Icon, InfoIcon
+    PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, Loader2Icon, 
+    CheckCircleIcon, SparklesIcon, TrophyIcon, ArrowRightIcon,
+    HomeIcon, CordovaLogo, MapPinIcon, CheckBadgeIcon, 
+    EnvelopeIcon, PhoneIcon, InfoIcon
 } from '../components/Icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 // Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
 declare const html2pdf: any;
@@ -22,12 +26,25 @@ const NotaDeVentaPage: React.FC = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isConsumidorFinal, setIsConsumidorFinal] = useState(false);
 
+    const { width, height } = useWindowSize();
+    const [isCelebrationVisible, setIsCelebrationVisible] = useState(false);
+
     useEffect(() => {
         if (!trabajoId || dataLoading) return;
-        const current = trabajos.find(t => t.id === trabajoId);
-        if (current) {
-            setTrabajo(current);
-            setCliente(clientes.find(c => c.id === current.clienteId) || null);
+        const currentTrabajo = trabajos.find(t => t.id === trabajoId);
+        if (currentTrabajo) {
+            setTrabajo(currentTrabajo);
+            const foundCliente = clientes.find(c => c.id === currentTrabajo.clienteId) || null;
+            setCliente(foundCliente);
+
+            // Trigger celebration if it's already delivered/finished
+            if (currentTrabajo.estado === TrabajoEstado.ENTREGADO) {
+                const hasCelebrated = sessionStorage.getItem(`celebrated_${currentTrabajo.id}`);
+                if (!hasCelebrated) {
+                    setIsCelebrationVisible(true);
+                    sessionStorage.setItem(`celebrated_${currentTrabajo.id}`, 'true');
+                }
+            }
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
 
@@ -61,13 +78,12 @@ const NotaDeVentaPage: React.FC = () => {
 
         setIsGenerating(true);
         
-        // Configuración optimizada para rendimiento y calidad (Escala 2 es suficiente para nitidez)
         const opt = {
             margin: 0,
             filename: `NV-${String(trabajo.orden).padStart(6,'0')}-${cliente.nombre.split(' ')[0]}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
-                scale: 2, // Reducido de 3 a 2 para mayor velocidad en móviles sin perder nitidez
+                scale: 2,
                 useCORS: true, 
                 letterRendering: true,
                 scrollY: 0,
@@ -82,7 +98,6 @@ const NotaDeVentaPage: React.FC = () => {
         };
 
         try {
-            // Pequeño delay para asegurar que el DOM esté estable
             await new Promise(resolve => setTimeout(resolve, 100));
             await html2pdf().set(opt).from(element).save();
         } catch (error) {
@@ -122,11 +137,84 @@ const NotaDeVentaPage: React.FC = () => {
 
     return (
         <div className="bg-slate-800 min-h-screen py-8 flex flex-col items-center justify-start overflow-y-auto font-sans">
-            {/* BARRA DE HERRAMIENTAS SUPERIOR (No sale en impresión) */}
-            <div className="w-full max-w-[148mm] flex justify-between mb-6 px-4 md:px-0 z-50">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/70 hover:text-white font-bold text-xs uppercase tracking-widest transition-colors">
-                    <ArrowLeftIcon className="w-4 h-4"/> Volver
-                </button>
+            <AnimatePresence>
+                {isCelebrationVisible && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-2xl"
+                    >
+                        <Confetti width={width} height={height} recycle={false} numberOfPieces={500} colors={['#F59E0B', '#FFFFFF', '#10B981']} />
+                        
+                        <motion.div 
+                            initial={{ scale: 0.8, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="max-w-2xl w-full bg-black/60 border border-white/10 p-12 rounded-[3.5rem] shadow-2xl text-center relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-yellow-500/20 rounded-full blur-[100px] -z-10" />
+                            
+                            <motion.div 
+                                initial={{ rotate: -20, scale: 0 }}
+                                animate={{ rotate: 0, scale: 1 }}
+                                transition={{ type: "spring", damping: 12, delay: 0.2 }}
+                                className="w-32 h-32 bg-yellow-500 rounded-full mx-auto flex items-center justify-center mb-8"
+                            >
+                                <TrophyIcon className="w-16 h-16 text-black" />
+                            </motion.div>
+
+                            <h2 className="text-5xl font-black text-white uppercase tracking-tighter italic mb-4 leading-none">
+                                ¡CIRCUITO CERRADO!
+                            </h2>
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-10 max-w-md mx-auto">
+                                El pedido ha sido entregado, el saldo liquidado y el dinero registrado en el sistema con éxito.
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-4 mb-10">
+                                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Orden Finalizada</p>
+                                    <p className="text-2xl font-black text-white italic">#{trabajo.orden}</p>
+                                </div>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-3xl">
+                                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Efectivo Recibido</p>
+                                    <p className="text-2xl font-black text-emerald-400 italic">{formatCurrency(trabajo.total)}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button 
+                                    onClick={() => setIsCelebrationVisible(false)}
+                                    className="px-10 py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-white transition-all flex items-center justify-center gap-3"
+                                >
+                                    Ver Comprobante
+                                </button>
+                                <button 
+                                    onClick={() => navigate('/dashboard')}
+                                    className="px-10 py-5 bg-yellow-500 text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                >
+                                    Ir al Dashboard <ArrowRightIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-10 no-print px-8 py-4 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl relative z-50">
+                <div className="flex gap-4">
+                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-3 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                            <HomeIcon className="w-4 h-4" />
+                        </div>
+                        Dashboard
+                    </button>
+                    <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                            <ArrowLeftIcon className="w-4 h-4" />
+                        </div>
+                        Atrás
+                    </button>
+                </div>
                 <div className="flex gap-3">
                     <button 
                         onClick={generatePDF} 

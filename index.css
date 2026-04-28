@@ -96,6 +96,19 @@
     @apply text-liquid-gold;
     text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
   }
+
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  .animate-scan {
+    animation: scan 4s linear infinite;
+  }
+
+  .animate-scan-slow {
+    animation: scan 12s linear infinite;
+  }
 }
 
 /* Scrollbar Minimalista */
@@ -114,6 +127,31 @@
 @keyframes scanline {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }
+}
+
+@keyframes luxury-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gold-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+  50% { transform: translateY(-15px) scale(1.1); opacity: 0.6; }
+}
+
+.animate-luxury-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  background-size: 200% 100%;
+  animation: luxury-shimmer 3s infinite;
+}
+
+.animate-gold-pulse {
+  animation: gold-pulse 4s ease-in-out infinite;
+}
+
+@keyframes gold-pulse {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3)); }
+  50% { filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.6)); }
 }
 
 .animate-scan {

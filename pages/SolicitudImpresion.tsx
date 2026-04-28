@@ -5,7 +5,7 @@ import { Cliente, Trabajo, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
     Loader2Icon, MapPinIcon, ExclamationTriangleIcon, ShieldCheckIcon,
-    FingerPrintIcon, CpuIcon, ActivityIcon, LockIcon
+    FingerPrintIcon, CpuIcon, ActivityIcon, LockIcon, HomeIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
@@ -461,12 +461,20 @@ const SolicitudImpresionPage: React.FC = () => {
             `}</style>
 
             <div className="w-full max-w-[210mm] flex justify-between items-center mb-12 no-print px-10 py-6 bg-white/5 backdrop-blur-2xl rounded-[3rem] border border-white/10 shadow-2xl relative z-50">
-                <button onClick={() => navigate(-1)} className="group flex items-center gap-4 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                    <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
-                        <ArrowLeftIcon className="w-5 h-5" />
-                    </div>
-                    Volver al Sistema
-                </button>
+                <div className="flex gap-6">
+                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-4 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                            <HomeIcon className="w-5 h-5" />
+                        </div>
+                        Dashboard
+                    </button>
+                    <button onClick={() => navigate(-1)} className="group flex items-center gap-4 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                            <ArrowLeftIcon className="w-5 h-5" />
+                        </div>
+                        Volver
+                    </button>
+                </div>
                 
                 <div className="flex gap-5">
                     <div className="hidden md:flex flex-col items-end justify-center mr-6 border-r border-white/10 pr-10">

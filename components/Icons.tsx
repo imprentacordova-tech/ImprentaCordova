@@ -21,7 +21,7 @@ import {
     TruckIcon as Truck, Package2, Boxes, ScanLine, Rocket, Cpu, Flag,
     CloudUpload, Eraser, User, Database, Sliders, Layers as LayersLucide,
     TrendingUp as TrendingUpLucide, History, Server, Fingerprint, Command,
-    Terminal, Headphones, Scissors, Hand, FlaskConical
+    Terminal, Headphones, Scissors, Hand, FlaskConical, Home
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -214,6 +214,7 @@ export const PieChartIcon         = PieChart;
 // ─────────────────────────────────────────────────────────────────────────────
 export const DashboardIcon    = LayoutDashboard;
 export const LayoutDashboardIcon = LayoutDashboard;
+export const HomeIcon         = Home;
 export const LayoutIcon       = Layout;
 export const GridIcon         = Grid;
 export const HashIcon         = Hash;

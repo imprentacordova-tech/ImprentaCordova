@@ -36,32 +36,32 @@ const staggerContainer = {
 const StatCard: React.FC<{ label: string; value: string; sub: string }> = ({ label, value, sub }) => (
     <motion.div 
         variants={fadeInUp}
-        className="text-center p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/5 group hover:border-liquid-gold/30 hover:bg-liquid-gold/5 transition-all duration-700 relative overflow-hidden box-border"
+        className="text-center p-8 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/5 group hover:border-liquid-gold/30 hover:bg-liquid-gold/5 transition-all duration-700 relative overflow-hidden box-border shadow-luxury"
     >
         <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        <p className="text-[10px] font-black text-liquid-gold/70 uppercase tracking-[0.4em] mb-3 relative z-10">{label}</p>
-        <p className="text-5xl lg:text-6xl font-display font-black text-white tracking-tighter mb-2 group-hover:scale-110 transition-transform duration-700 relative z-10 italic">{value}</p>
-        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] relative z-10">{sub}</p>
+        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.5em] mb-4 relative z-10 group-hover:text-liquid-gold/80 transition-colors">{label}</p>
+        <p className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter mb-2 group-hover:scale-105 transition-transform duration-700 relative z-10 italic drop-shadow-2xl">{value}</p>
+        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em] relative z-10">{sub}</p>
     </motion.div>
 );
 
 const ServiceCard: React.FC<{ title: string; desc: string; icon: any; index: number; activeIndex: number }> = ({ title, desc, icon: Icon, index, activeIndex }) => (
     <motion.div 
         variants={fadeInUp}
-        className={`group bg-white/5 backdrop-blur-xl p-12 rounded-[3.5rem] border transition-all duration-700 hover:-translate-y-3 relative overflow-hidden ${
-            index === activeIndex ? 'border-liquid-gold/40 bg-white/8 shadow-gold-glow-soft' : 'border-white/5 hover:border-liquid-gold/30 hover:bg-white/8'
+        className={`group bg-white/[0.02] backdrop-blur-3xl p-12 rounded-[3.5rem] border transition-all duration-1000 hover:-translate-y-4 relative overflow-hidden ${
+            index === activeIndex ? 'border-liquid-gold/40 bg-white/[0.05] shadow-gold-glow-soft' : 'border-white/5 hover:border-liquid-gold/30 hover:bg-white/[0.04]'
         }`}
     >
-        <div className="absolute top-0 right-0 w-40 h-40 bg-liquid-gold/5 rounded-full blur-3xl -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className={`w-20 h-20 rounded-[2rem] bg-brand-dark border flex items-center justify-center mb-10 transition-all duration-700 ${
-            index === activeIndex ? 'border-liquid-gold/40 shadow-gold-glow-soft scale-110' : 'border-white/10 group-hover:shadow-gold-glow-soft group-hover:border-liquid-gold/40'
+        <div className="absolute top-0 right-0 w-48 h-48 bg-liquid-gold/5 rounded-full blur-3xl -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+        <div className={`w-24 h-24 rounded-[2.5rem] bg-brand-dark border flex items-center justify-center mb-12 transition-all duration-1000 ${
+            index === activeIndex ? 'border-liquid-gold/40 shadow-gold-glow-soft scale-110' : 'border-white/10 group-hover:shadow-gold-glow-soft group-hover:border-liquid-gold/40 group-hover:scale-105'
         }`}>
-            <Icon className="w-10 h-10 text-liquid-gold" />
+            <Icon className="w-12 h-12 text-liquid-gold" />
         </div>
-        <h3 className="text-2xl font-display font-black text-white uppercase tracking-tight mb-5 leading-none transition-colors group-hover:text-gold-gradient italic">{title}</h3>
-        <p className="text-slate-400 leading-relaxed text-sm font-medium">{desc}</p>
-        <div className="mt-10 flex items-center gap-3 text-liquid-gold font-black text-[10px] uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-            Explorar Servicio <ArrowRightIcon className="w-4 h-4" />
+        <h3 className="text-3xl font-display font-black text-white uppercase tracking-tighter mb-6 leading-[0.9] transition-colors group-hover:text-gold-gradient italic">{title}</h3>
+        <p className="text-slate-500 leading-relaxed text-sm font-medium italic">{desc}</p>
+        <div className="mt-12 flex items-center gap-4 text-liquid-gold font-black text-[9px] uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
+            Consultar Ingeniería <ArrowRightIcon className="w-4 h-4" />
         </div>
     </motion.div>
 );
@@ -121,64 +121,67 @@ const LandingPage: React.FC = () => {
             <div className="fixed inset-0 bg-noise pointer-events-none z-[100]" />
             
             {/* --- NAVEGACIÓN OBSIDIAN --- */}
-            <motion.nav 
-                initial={{ y: -100 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 1, ease: "circOut" }}
-                className="fixed top-0 left-0 right-0 z-[100] bg-brand-dark/40 backdrop-blur-3xl border-b border-white/5 py-6"
-            >
-                <div className="container mx-auto px-6 flex justify-between items-center">
-                    <div className="flex items-center gap-5 group cursor-pointer">
+            <div className="fixed top-8 left-0 right-0 z-[100] px-6">
+                <motion.nav 
+                    initial={{ y: -100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="container mx-auto max-w-6xl bg-brand-dark/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] py-4 px-8 shadow-2xl flex justify-between items-center relative overflow-hidden"
+                >
+                    {/* Subtle Navigation Glow */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-liquid-gold/5 opacity-50" />
+                    
+                    <div className="flex items-center gap-6 group cursor-pointer relative z-10">
                         <div className="relative">
-                            <CordovaLogo className="h-12 w-auto group-hover:scale-110 transition-transform brightness-0 invert relative z-10" />
+                            <CordovaLogo className="h-10 w-auto group-hover:scale-110 transition-all duration-700 brightness-0 invert" />
                             <div className="absolute -inset-2 bg-liquid-gold/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div className="flex flex-col leading-none">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-1">Pasaje • Ecuador</span>
-                            <span className="text-2xl font-display font-black text-white uppercase tracking-tight group-hover:text-gold-gradient transition-colors italic">Córdova</span>
+                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.5em] mb-1">Pasaje • Ec</span>
+                            <span className="text-xl font-display font-black text-white uppercase tracking-tight group-hover:text-gold-gradient transition-colors italic">Córdova</span>
                         </div>
                     </div>
                     
-                    <div className="hidden lg:flex items-center gap-14 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
-                        <a href="#servicios" className="hover:text-liquid-gold transition-colors relative group">
+                    <div className="hidden lg:flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 relative z-10">
+                        <a href="#servicios" className="hover:text-liquid-gold transition-colors relative group py-2">
                             Servicios
-                            <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-liquid-gold transition-all group-hover:w-full" />
+                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-liquid-gold transition-all duration-500 group-hover:w-full" />
                         </a>
-                        <a href="#catalog" className="hover:text-liquid-gold transition-colors relative group">
+                        <a href="#catalog" className="hover:text-liquid-gold transition-colors relative group py-2">
                             Catálogo
-                            <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-liquid-gold transition-all group-hover:w-full" />
+                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-liquid-gold transition-all duration-500 group-hover:w-full" />
                         </a>
-                        <a href="#cotizador" className="hover:text-liquid-gold transition-colors relative group">
+                        <a href="#cotizador" className="hover:text-liquid-gold transition-colors relative group py-2">
                             Cotizador
-                            <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-liquid-gold transition-all group-hover:w-full" />
+                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-liquid-gold transition-all duration-500 group-hover:w-full" />
                         </a>
-                        <Link to="/tracking" className="px-6 py-2 bg-liquid-gold/10 border border-liquid-gold/30 text-liquid-gold rounded-full hover:bg-liquid-gold hover:text-brand-dark transition-all duration-500 box-border text-[9px] shadow-gold-glow-soft">
-                            Estado de Pedido
+                        <Link to="/tracking" className="px-6 py-2.5 bg-liquid-gold/10 border border-liquid-gold/20 text-liquid-gold rounded-full hover:bg-liquid-gold hover:text-brand-dark transition-all duration-700 box-border shadow-gold-glow-soft">
+                            Rastreo
                         </Link>
                     </div>
 
-                    <div className="flex items-center gap-5">
-                        <button onClick={() => setIsCartOpen(true)} className="relative p-4 bg-white/[0.03] rounded-2xl hover:bg-liquid-gold/10 hover:border-liquid-gold/30 border border-white/10 transition-all text-slate-400 hover:text-liquid-gold group">
-                            <ShoppingCartIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <div className="flex items-center gap-4 relative z-10">
+                        <button onClick={() => setIsCartOpen(true)} className="relative p-3.5 bg-white/[0.03] rounded-2xl hover:bg-liquid-gold/10 hover:border-liquid-gold/30 border border-white/5 transition-all text-slate-400 hover:text-liquid-gold group">
+                            <ShoppingCartIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             <AnimatePresence>
                                 {cartItems.length > 0 && (
                                     <motion.span 
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
                                         exit={{ scale: 0 }}
-                                        className="absolute -top-1 -right-1 bg-liquid-gold text-brand-dark text-[9px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-gold-glow"
+                                        className="absolute -top-1 -right-1 bg-liquid-gold text-brand-dark text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-gold-glow"
                                     >
                                         {cartItems.length}
                                     </motion.span>
                                 )}
                             </AnimatePresence>
                         </button>
-                        <Link to="/login" className="hidden sm:flex items-center gap-3 px-8 py-4 bg-white text-brand-dark rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gold-gradient hover:text-brand-dark transition-all duration-700 shadow-luxury active:scale-95">
-                            Gestión Interna
+                        <Link to="/login" className="hidden sm:flex items-center gap-3 px-7 py-3.5 bg-white text-brand-dark rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-gold-gradient transition-all duration-700 shadow-luxury active:scale-95">
+                            Elite Hub
                         </Link>
                     </div>
-                </div>
-            </motion.nav>
+                </motion.nav>
+            </div>
 
             {/* --- HERO OBSIDIAN & GOLD --- */}
             <section className="relative pt-48 pb-20 lg:pt-64 lg:pb-40 overflow-hidden">
@@ -200,13 +203,13 @@ const LandingPage: React.FC = () => {
                                 </p>
                             </motion.div>
                             
-                            <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[10rem] font-display font-black text-white leading-[0.8] tracking-tighter uppercase italic">
-                                Impresión <br/>
-                                <span className="text-gold-gradient text-glow">Arquitectónica</span>
+                            <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[11rem] font-display font-black text-white leading-[0.75] tracking-tighter uppercase italic">
+                                Ingeniería <br/>
+                                <span className="text-gold-gradient text-glow">Gráfica</span>
                             </motion.h1>
 
-                            <motion.p variants={fadeInUp} className="text-xl lg:text-2xl text-slate-400 font-medium max-w-2xl leading-relaxed tracking-tight">
-                                Transformamos conceptos en <span className="text-white font-black italic">arte tangible</span>. Líderes en gigantografías HD y acabados industriales con sello de autor.
+                            <motion.p variants={fadeInUp} className="text-xl lg:text-3xl text-slate-500 font-medium max-w-2xl leading-relaxed tracking-tight italic">
+                                Elevando el estándar industrial a <span className="text-white font-black">arte tangible</span>. Líderes en acabados de lujo y gigantografías HD.
                             </motion.p>
 
                             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-6 pt-6">
@@ -381,12 +384,12 @@ const LandingPage: React.FC = () => {
                                 transition={{ duration: 1 }}
                                 src={
                                     activeServiceIndex === 0 
-                                    ? "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2671&auto=format&fit=crop"
+                                    ? "/images/landing/printer_gold.png"
                                     : activeServiceIndex === 1
-                                    ? "https://images.unsplash.com/photo-1586762522674-5928a52140b5?q=80&w=2670&auto=format&fit=crop"
-                                    : "https://images.unsplash.com/photo-1606857521015-7f9fdf423740?q=80&w=2670&auto=format&fit=crop"
+                                    ? "/images/landing/talonarios.png"
+                                    : "/images/landing/branding.png"
                                 }
-                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent opacity-60" />
                             <motion.div 
@@ -412,8 +415,8 @@ const LandingPage: React.FC = () => {
                             className="relative h-[80vh] rounded-[5rem] overflow-hidden border border-white/10 shadow-luxury group"
                         >
                             <img 
-                                src="https://images.unsplash.com/photo-1614036417651-efe5912149d8?q=80&w=2670&auto=format&fit=crop" 
-                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[3s]" 
+                                src="/images/landing/business_cards.png" 
+                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[3s] scale-110 group-hover:scale-100" 
                                 alt="Industrial Detail"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-brand-dark/20" />
@@ -513,7 +516,7 @@ const LandingPage: React.FC = () => {
                         className="lg:w-1/2 relative group"
                     >
                         <div className="aspect-[4/5] bg-brand-dark rounded-[4.5rem] overflow-hidden border border-white/10 group-hover:border-liquid-gold/30 transition-all duration-1000 relative shadow-luxury">
-                             <img src="https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2671&auto=format&fit=crop" className="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-60 group-hover:scale-110 transition-all duration-[2s]" alt="Roland Machine" />
+                             <img src="/images/landing/printer_gold.png" className="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-60 group-hover:scale-110 transition-all duration-[2s]" alt="Roland Machine" />
                              <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-transparent flex flex-col justify-end p-16">
                                 <motion.div 
                                     whileHover={{ y: -5 }}

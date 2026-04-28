@@ -129,26 +129,35 @@ const mapDBCliente = (c: any): Cliente => {
         establecimientoPredeterminado: c.establecimiento_predeterminado,
         puntoEmisionPredeterminado: c.punto_emision_predeterminado,
         numEstablecimientosOpen: c.num_establecimientos_open,
-        fiscal_data: c.fiscal_data
+        // Safe access to fiscal_data
+        fiscal_data: c.fiscal_data || {}
     };
 };
 
-const mapClienteToDB = (c: any) => ({
-    cedula: c.cedula,
-    ruc: c.ruc,
-    nombre: c.nombre,
-    nombre_comercial: c.nombreComercial,
-    actividades: c.actividades,
-    direccion: c.direccion,
-    notas: c.notas,
-    telefono: c.telefono,
-    email: c.email,
-    regimen: c.regimen,
-    establecimiento_predeterminado: c.establecimientoPredeterminado,
-    punto_emision_predeterminado: c.puntoEmisionPredeterminado,
-    num_establecimientos_open: c.numEstablecimientosOpen,
-    fiscal_data: c.fiscal_data
-});
+const mapClienteToDB = (c: any) => {
+    const base: Record<string, any> = {
+        cedula: c.cedula,
+        ruc: c.ruc,
+        nombre: c.nombre,
+        nombre_comercial: c.nombreComercial,
+        actividades: c.actividades,
+        direccion: c.direccion,
+        notas: c.notas,
+        telefono: c.telefono,
+        email: c.email,
+        regimen: c.regimen,
+        establecimiento_predeterminado: c.establecimientoPredeterminado,
+        punto_emision_predeterminado: c.puntoEmisionPredeterminado,
+        num_establecimientos_open: c.numEstablecimientosOpen,
+    };
+    
+    // Only include fiscal_data if it has actual content to avoid schema errors if column is missing
+    if (c.fiscal_data && Object.keys(c.fiscal_data).length > 0) {
+        base.fiscal_data = c.fiscal_data;
+    }
+    
+    return base;
+};
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -168,12 +177,28 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const refreshData = useCallback(async (isAutoSeed = false) => {
         setSyncing(true);
         try {
+            // Intento de fetch de clientes con manejo de error para fiscal_data (columna que puede faltar)
+            let cQuery = supabase.from('clientes').select('*').order('creado_en', { ascending: false });
+            
+            // Si sabemos que fiscal_data está dando error, podríamos usar una selección explícita
+            // Pero intentaremos el fetch general y manejaremos el error si ocurre
+            const { data: cData, error: cError } = await cQuery;
+            
+            if (cError && cError.message.includes('fiscal_data')) {
+                console.warn("⚠️ Columna 'fiscal_data' no encontrada. Reintentando sin ella...");
+                const { data: fallbackData } = await supabase.from('clientes')
+                    .select('id, cedula, ruc, nombre, nombre_comercial, actividades, direccion, notas, telefono, email, creado_en, regimen, establecimiento_predeterminado, punto_emision_predeterminado, num_establecimientos_open')
+                    .order('creado_en', { ascending: false });
+                if (fallbackData) setClientes(fallbackData.map(mapDBCliente) as any);
+            } else if (cData) {
+                setClientes(cData.map(mapDBCliente) as any);
+            }
+
             const [
-                { data: cData }, { data: tData }, { data: pData }, 
+                { data: tData }, { data: pData }, 
                 { data: provData }, { data: invData }, { data: sriData },
                 { data: uData }, { data: configData }
             ] = await Promise.all([
-                supabase.from('clientes').select('*').order('creado_en', { ascending: false }),
                 supabase.from('trabajos').select('*').order('fecha_entrada', { ascending: false }),
                 supabase.from('productos').select('*').order('nombre'),
                 supabase.from('proveedores').select('*').order('nombre'),

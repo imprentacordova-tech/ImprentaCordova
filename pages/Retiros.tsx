@@ -7,11 +7,14 @@ import {
     SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, 
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
     ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon,
-    CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon, CreditCardIcon
+    CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon, CreditCardIcon,
+    TrophyIcon
 } from '../components/Icons';
 import { BottomSheet } from '../components/BottomSheet';
 import { motion, AnimatePresence } from 'framer-motion';
 import PhotoCapture from '../components/orders/PhotoCapture';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 const RetirosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -19,9 +22,11 @@ const RetirosPage: React.FC = () => {
     const { trabajos, clientes, loading, registerRetiro, uploadFile } = useData();
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [retiroPhoto, setRetiroPhoto] = useState<File | null>(null);
     const [showCamera, setShowCamera] = useState(false);
+    const { width, height } = useWindowSize();
 
     const filtered = useMemo(() => {
         const lower = searchTerm.toLowerCase();
@@ -47,7 +52,13 @@ const RetirosPage: React.FC = () => {
             }
 
             const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre, photoUrl);
-            navigate(`/nota-de-venta/${updated.id}`);
+            
+            // Trigger success celebration
+            setIsSuccess(true);
+            setIsProcessing(false);
+            
+            // We removed the auto-navigation to let the user see the success screen
+            // and choose their next action.
         } catch (error) {
             console.error("Error al registrar retiro:", error);
             alert("Error al procesar el retiro. Intente de nuevo.");
@@ -86,7 +97,13 @@ const RetirosPage: React.FC = () => {
             {/* --- CABECERA ELITE --- */}
             <div className="flex flex-col gap-10">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                    <div className="flex gap-10">
+                    <div className="flex items-center gap-10">
+                        <button 
+                            onClick={() => navigate('/dashboard')}
+                            className="p-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-3xl transition-all group shadow-2xl"
+                        >
+                            <HomeIcon className="w-6 h-6 text-slate-400 group-hover:text-liquid-gold transition-colors" />
+                        </button>
                         <div className="w-[1px] h-24 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
                         <div className="space-y-4">
                             <div className="flex items-center gap-5">
@@ -313,6 +330,80 @@ const RetirosPage: React.FC = () => {
                     </div>
                 </div>
             )}
+            {/* --- OVERLAY DE ÉXITO ELITE --- */}
+            <AnimatePresence>
+                {isSuccess && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-brand-dark/95 backdrop-blur-3xl"
+                    >
+                        <Confetti width={width} height={height} recycle={false} numberOfPieces={600} colors={['#F59E0B', '#FFFFFF', '#10B981']} />
+                        
+                        <motion.div 
+                            initial={{ scale: 0.5, opacity: 0, y: 50 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            transition={{ type: "spring", damping: 15 }}
+                            className="text-center space-y-8"
+                        >
+                            <div className="relative">
+                                <motion.div 
+                                    animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="w-40 h-40 bg-liquid-gold rounded-full mx-auto flex items-center justify-center shadow-[0_0_100px_rgba(245,158,11,0.5)]"
+                                >
+                                    <TrophyIcon className="w-20 h-20 text-brand-dark" />
+                                </motion.div>
+                                <div className="absolute inset-0 bg-liquid-gold/20 blur-[60px] -z-10 rounded-full" />
+                            </div>
+
+                            <div className="space-y-4">
+                                <h2 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
+                                    VENTA <span className="text-gold-gradient">CULMINADA</span>
+                                </h2>
+                                <p className="text-slate-400 font-bold uppercase tracking-[0.4em] text-sm">
+                                    Circuito de Producción Cerrado con Éxito
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-6">
+                                <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-8 py-3 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                                    <CheckCircleIcon className="w-5 h-5 text-emerald-400" />
+                                    <span className="text-emerald-400 font-black text-sm uppercase tracking-widest">Flujo de Caja Actualizado</span>
+                                </div>
+                                
+                                <div className="flex flex-wrap justify-center gap-4 mt-4">
+                                    <button 
+                                        onClick={() => {
+                                            setIsSuccess(false);
+                                            setSelectedTrabajo(null);
+                                        }}
+                                        className="px-10 py-5 bg-white/5 border border-white/10 hover:border-liquid-gold/40 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] transition-all hover:scale-105 backdrop-blur-xl"
+                                    >
+                                        Nueva Entrega
+                                    </button>
+                                    <button 
+                                        onClick={() => navigate('/dashboard')}
+                                        className="px-10 py-5 bg-liquid-gold text-brand-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-gold-glow hover:scale-105 transition-all"
+                                    >
+                                        Volver al Centro de Control
+                                    </button>
+                                </div>
+
+                                <motion.button 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 1 }}
+                                    onClick={() => navigate(`/nota-de-venta/${selectedTrabajo?.id}`)}
+                                    className="flex items-center gap-2 text-slate-500 hover:text-white font-mono text-[10px] uppercase tracking-widest transition-colors mt-4"
+                                >
+                                    <PrinterIcon className="w-3 h-3" /> Ver Comprobante Maestro
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
