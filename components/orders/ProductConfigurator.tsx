@@ -149,7 +149,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                             {['Vertical', 'Horizontal'].map(o => (
                                                 <button 
                                                     key={o} onClick={() => setOrientacion(o)}
-                                                    className={`py-4 px-8 rounded-full text-xs font-black uppercase tracking-widest transition-all ${orientacion === o ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                                                    className={`py-4 px-8 rounded-full text-xs font-black uppercase tracking-widest transition-all ${orientacion === o ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
                                                 >
                                                     {o}
                                                 </button>
@@ -185,7 +185,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                         {papeles.map(p => (
                                             <button
                                                 key={p} onClick={() => setTipoPapel(p)}
-                                                className={`py-3 px-6 rounded-full text-xs font-bold transition-all ${tipoPapel === p ? 'bg-white text-black' : 'border border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
+                                                className={`py-3 px-6 rounded-full text-xs font-bold transition-all ${tipoPapel === p ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'border border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
                                             >
                                                 {p}
                                             </button>
@@ -218,7 +218,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                     {acabados.map(a => (
                                         <button 
                                             key={a} onClick={() => setAcabado(a)}
-                                            className={`py-3 px-6 rounded-full text-xs font-bold transition-all ${acabado === a ? 'bg-white text-black' : 'border border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
+                                            className={`py-3 px-6 rounded-full text-xs font-bold transition-all ${acabado === a ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'border border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
                                         >
                                             {a}
                                         </button>
@@ -255,13 +255,13 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                 <div className="flex gap-6">
                                     <button 
                                         onClick={() => setNumerado(!numerado)}
-                                        className={`flex-1 py-6 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all ${numerado ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
+                                        className={`flex-1 py-6 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all ${numerado ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
                                     >
                                         Numeración {numerado && '• Activo'}
                                     </button>
                                     <button 
                                         onClick={() => setPerforado(!perforado)}
-                                        className={`flex-1 py-6 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all ${perforado ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
+                                        className={`flex-1 py-6 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all ${perforado ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
                                     >
                                         Perforado {perforado && '• Activo'}
                                     </button>
@@ -287,8 +287,8 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                                                 )}
                                                 {product.esSRI && (
                                                     <div className="space-y-2 col-span-2">
-                                                        <label className="text-[10px] font-bold text-brand-red uppercase tracking-[0.2em]">Autorización SRI</label>
-                                                        <input type="text" value={sriAutorizacion} onChange={e => setSriAutorizacion(e.target.value)} className="w-full bg-transparent border-b border-brand-red/50 pb-2 text-white font-black text-xl outline-none focus:border-brand-red transition-all" placeholder="Autorización de 10 o 37 dígitos" />
+                                                        <label className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">Autorización SRI</label>
+                                                        <input type="text" value={sriAutorizacion} onChange={e => setSriAutorizacion(e.target.value)} className="w-full bg-transparent border-b border-liquid-gold/50 pb-2 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all placeholder:text-slate-700" placeholder="Autorización de 10 o 37 dígitos" />
                                                     </div>
                                                 )}
                                             </div>
@@ -336,7 +336,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                 <div className="p-10 relative z-10">
                     <button
                         onClick={handleConfirm}
-                        className="w-full py-8 bg-white text-black rounded-full font-black uppercase tracking-[0.3em] text-sm hover:bg-liquid-gold hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-4 group"
+                        className="w-full py-8 bg-liquid-gold text-black rounded-full font-black uppercase tracking-[0.3em] text-sm hover:scale-[1.02] shadow-gold-glow active:scale-95 transition-all duration-300 flex items-center justify-center gap-4 group"
                     >
                         Fijar Especificación <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                     </button>

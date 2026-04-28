@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { extractDataFromSriPdf } from '../../services/pdfExtraction';
@@ -23,8 +24,8 @@ const InputField: React.FC<{
     [key: string]: any;
 }> = ({ label, name, value, onChange, isHighlighted, error, required, ...props }) => (
     <div className="group space-y-2">
-        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${error ? 'text-brand-red' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 group-focus-within:text-liquid-gold'}`}>
-            {label} {required && <span className="text-brand-red opacity-50">*</span>} {isHighlighted && "✨"}
+        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 group-focus-within:text-liquid-gold'}`}>
+            {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "✨"}
         </label>
         <input
             id={name}
@@ -33,14 +34,14 @@ const InputField: React.FC<{
             onChange={onChange}
             className={`w-full px-5 py-3.5 bg-white/5 border rounded-2xl text-white font-bold text-sm outline-none transition-all
                 ${error
-                    ? 'border-brand-red/50 bg-brand-red/5 focus:ring-1 focus:ring-brand-red text-white'
+                    ? 'border-rose-500/50 bg-rose-500/5 focus:ring-1 focus:ring-rose-500 text-white'
                     : isHighlighted
                         ? 'border-liquid-gold/50 bg-liquid-gold/5 focus:ring-1 focus:ring-liquid-gold'
                         : 'border-white/5 focus:border-white/20 focus:bg-white/10'
                 }`}
             {...props}
         />
-        {error && <p className="text-[9px] text-brand-red font-black mt-1 uppercase tracking-widest bg-brand-red/10 px-3 py-1 rounded-lg inline-block">{error}</p>}
+        {error && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block">{error}</p>}
     </div>
 );
 
@@ -286,7 +287,7 @@ return (
                             {mode === 'EXPRESS' ? 'IDENTIDAD EXPRESS' : 'PROTOCOLOS SRI (OFICIAL)'}
                         </h2>
                         <div className="text-[8px] md:text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                            <div className={`w-1.5 h-1.5 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold' : 'bg-brand-red'} animate-pulse`}></div>
+                            <div className={`w-1.5 h-1.5 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold' : 'bg-liquid-gold'} animate-pulse shadow-gold-glow-sm`}></div>
                             {mode === 'EXPRESS' ? 'Resumen para facturación simplificada' : 'Expediente industrial para tributación oficial'}
                         </div>
                     </div>
@@ -313,9 +314,9 @@ return (
                         <button
                             type="button"
                             onClick={() => setMode('SRI')}
-                            className={`flex-1 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all ${mode === 'SRI' ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}
+                            className={`flex-1 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all ${mode === 'SRI' ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-500 hover:text-white'}`}
                         >
-                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-red animate-pulse"></div>
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-black animate-pulse"></div>
                             Perfil SRI
                         </button>
                     </div>
@@ -362,7 +363,7 @@ return (
 
                         <div className="group space-y-2">
                             <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-focus-within:text-liquid-gold transition-colors">
-                                Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-brand-red opacity-50">*</span>}
+                                Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-rose-500 opacity-50">*</span>}
                             </label>
                             <div className={`flex flex-wrap gap-2 p-3.5 bg-white/5 border rounded-2xl transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-white/20 group-focus-within:bg-white/10'}`}>
                                 {telefonos.map((t, idx) => (
@@ -451,7 +452,7 @@ return (
                                                 <span key={i} className="bg-brand-dark/80 text-white text-[9px] font-bold px-4 py-2 rounded-xl flex items-center gap-3 border border-white/10 shadow-luxury animate-scale-in">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold"></div>
                                                     <span className="max-w-[300px] truncate">{a}</span>
-                                                    <button type="button" className="text-brand-red opacity-60 hover:opacity-100 font-black text-xs" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))}>&times;</button>
+                                                    <button type="button" className="text-rose-500 opacity-60 hover:opacity-100 font-black text-xs" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))}>&times;</button>
                                                 </span>
                                             ))}
                                         </div>
@@ -510,7 +511,7 @@ return (
                     type="submit"
                     form="create-client-form"
                     disabled={isSaving || saveSuccess || (mode === 'SRI' && !!rucError)}
-                    className="flex-[2] py-4 px-8 rounded-2xl bg-brand-red text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-red-500 shadow-xl shadow-red-900/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale active:scale-[0.98]"
+                    className="flex-[2] py-4 px-8 rounded-2xl bg-liquid-gold text-black font-black text-[10px] uppercase tracking-[0.2em] hover:scale-[1.02] shadow-gold-glow transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale active:scale-[0.98]"
                 >
                     {isSaving ? <Loader2Icon className="animate-spin w-5 h-5 md:w-6 md:h-6" /> : saveSuccess ? <CheckCircleIcon className="w-5 h-5 md:w-6 md:h-6" /> : mode === 'SRI' ? "Sincronizar Protocolo SRI" : "Autorizar Perfil Express"}
                 </button>
@@ -535,9 +536,9 @@ const ClientItem: React.FC<{
             onClick={() => onSelect(client)} 
             className={`p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === client.id ? 'bg-liquid-gold/10' : ''}`}
         >
-            <div className={`absolute inset-y-0 left-0 w-1 ${isSri ? 'bg-brand-red' : 'bg-liquid-gold'} transition-opacity ${selectedId === client.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+            <div className={`absolute inset-y-0 left-0 w-1 ${isSri ? 'bg-liquid-gold' : 'bg-liquid-gold/40'} transition-opacity ${selectedId === client.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
             <div className="flex items-center gap-5 relative z-10">
-                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${isSri ? 'bg-brand-red/20 text-brand-red' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${isSri ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
                     {(client.nombre || '?').charAt(0)}
                 </div>
                 <div className="min-w-0">
@@ -629,25 +630,35 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                 {/* Botón de Acción Principal Directo SRI */}
                 <button
                     onClick={() => handleOpenCreate('SRI')}
-                    className="w-full bg-brand-red/5 border-2 border-brand-red/20 p-8 rounded-[2.5rem] flex items-center justify-between gap-6 group hover:bg-brand-red/10 hover:border-brand-red/40 transition-all shadow-red-glow-soft relative overflow-hidden"
+                    className="w-full bg-liquid-gold/5 border-2 border-liquid-gold/20 p-8 rounded-[2.5rem] flex items-center justify-between gap-6 group hover:bg-liquid-gold/10 hover:border-liquid-gold/40 transition-all shadow-gold-glow-soft relative overflow-hidden"
                 >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 blur-[50px] -mr-16 -mt-16 group-hover:bg-brand-red/20 transition-all"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/10 blur-[50px] -mr-16 -mt-16 group-hover:bg-liquid-gold/20 transition-all"></div>
                     <div className="flex items-center gap-6 relative z-10">
-                        <div className="p-4 bg-brand-red text-white rounded-2xl shadow-red-glow group-hover:scale-110 transition-transform">
+                        <div className="p-4 bg-liquid-gold text-black rounded-2xl shadow-gold-glow group-hover:scale-110 transition-transform">
                             <UserPlusIcon className="w-8 h-8" />
                         </div>
                         <div className="text-left">
-                            <p className="text-[11px] font-black text-brand-red uppercase tracking-[0.5em] mb-1 italic">Protocolo de Alta Oficial</p>
+                            <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.5em] mb-1 italic">Protocolo de Alta Oficial</p>
                             <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">Inscribir como Nuevo Contribuyente SRI</h4>
                             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Sincronización instantánea con padrón El Oro y PDF</p>
                         </div>
                     </div>
-                    <ArrowRightIcon className="w-8 h-8 text-brand-red/30 group-hover:text-brand-red group-hover:translate-x-2 transition-all relative z-10" />
+                    <ArrowRightIcon className="w-8 h-8 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:translate-x-2 transition-all relative z-10" />
                 </button>
 
                 <div className="relative group">
                     <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
-                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all" />
+                    
+                    {/* Tactical Scanning Beam for Search Bar */}
+                    <div className="absolute inset-y-0 left-0 w-16 flex items-center justify-center z-20">
+                         <motion.div 
+                            animate={{ opacity: [0.3, 1, 0.3] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="w-px h-10 bg-liquid-gold shadow-gold-glow"
+                         />
+                    </div>
+
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all z-20" />
                     <input
                         type="text"
                         value={searchTerm}
@@ -655,13 +666,32 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                         placeholder="IDENTIFICAR CONTRIBUYENTE O CONSUMIDOR..."
                         className="w-full pl-16 pr-14 py-8 bg-black/40 border border-white/5 rounded-[2rem] text-xl font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
                     />
+
+                    {/* Biometric Data Streams (Visual Only) */}
+                    <div className="absolute right-20 top-1/2 -translate-y-1/2 flex gap-1 items-end h-4 pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity z-20">
+                        {[0.4, 0.7, 0.5, 0.9, 0.3].map((h, i) => (
+                            <motion.div 
+                                key={i}
+                                animate={{ height: [h*100 + '%', (1-h)*100 + '%', h*100 + '%'] }}
+                                transition={{ duration: 1 + i*0.2, repeat: Infinity }}
+                                className="w-1 bg-liquid-gold/40 rounded-full"
+                            />
+                        ))}
+                    </div>
+
                     {searchTerm && (
                         <button onClick={() => setSearchTerm('')} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors z-20">
                             <CloseIcon className="w-6 h-6" />
                         </button>
                     )}
                     {isSearchingPadron && (
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-liquid-gold to-transparent animate-pulse z-20" />
+                        <div className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden rounded-full z-20">
+                            <motion.div 
+                                animate={{ x: ['-100%', '100%'] }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                className="w-full h-full bg-gradient-to-r from-transparent via-liquid-gold to-transparent"
+                            />
+                        </div>
                     )}
                 </div>
 
@@ -701,9 +731,9 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
             <div className="bg-brand-dark/40 backdrop-blur-3xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden animate-slide-in-up divide-y divide-white/5">
                 {filteredClients.map((c) => (
                     <div key={c.id} onClick={() => onSelect(c)} className={`p-6 cursor-pointer hover:bg-white/[0.03] flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === c.id ? 'bg-liquid-gold/10' : ''}`}>
-                        <div className={`absolute inset-y-4 left-0 w-1 rounded-full ${c.ruc ? 'bg-brand-red' : 'bg-liquid-gold'} transition-all ${selectedId === c.id ? 'h-12 opacity-100' : 'h-4 opacity-0 group-hover:opacity-100 group-hover:h-8'}`}></div>
+                        <div className={`absolute inset-y-4 left-0 w-1 rounded-full ${c.ruc ? 'bg-liquid-gold' : 'bg-liquid-gold/40'} transition-all ${selectedId === c.id ? 'h-12 opacity-100' : 'h-4 opacity-0 group-hover:opacity-100 group-hover:h-8'}`}></div>
                         <div className="flex items-center gap-6 relative z-10">
-                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl transition-transform group-hover:scale-105 ${c.ruc ? 'bg-brand-red/10 text-brand-red border border-brand-red/20' : 'bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20'}`}>
+                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl transition-transform group-hover:scale-105 ${c.ruc ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20'}`}>
                                 {(c.nombre || '?').charAt(0)}
                             </div>
                             <div className="min-w-0">
@@ -713,7 +743,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                                         <IdentificationIcon className="w-3.5 h-3.5 opacity-50" /> {c.cedula || c.ruc}
                                     </span>
                                     {c.ruc ? (
-                                        <span className="text-[8px] font-black px-2 py-0.5 rounded bg-brand-red/10 text-brand-red border border-brand-red/20 uppercase tracking-widest italic">Contribuyente SRI</span>
+                                        <span className="text-[8px] font-black px-2 py-0.5 rounded bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20 uppercase tracking-widest italic">Contribuyente SRI</span>
                                     ) : (
                                         <span className="text-[8px] font-black px-2 py-0.5 rounded bg-white/5 text-slate-600 border border-white/10 uppercase tracking-widest italic">Cliente Final</span>
                                     )}
@@ -774,7 +804,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sin coincidencias en base de datos</p>
                         <button
                             onClick={() => handleOpenCreate(hideQuickButtons ? 'SRI' : 'EXPRESS')}
-                            className={`${hideQuickButtons ? 'bg-brand-red text-white px-8 py-3 rounded-xl shadow-red-glow' : 'text-liquid-gold border-b border-liquid-gold/30 pb-1'} text-[9px] font-black uppercase tracking-widest transition-all`}
+                            className={`${hideQuickButtons ? 'bg-liquid-gold text-black px-8 py-3 rounded-xl shadow-gold-glow' : 'text-liquid-gold border-b border-liquid-gold/30 pb-1'} text-[9px] font-black uppercase tracking-widest transition-all`}
                         >
                             {hideQuickButtons ? 'Inscribir como Nuevo Contribuyente SRI' : 'Dar de alta como nuevo cliente'}
                         </button>

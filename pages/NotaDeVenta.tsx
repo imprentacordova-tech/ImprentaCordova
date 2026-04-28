@@ -232,7 +232,8 @@ const NotaDeVentaPage: React.FC = () => {
                                 <tr className="border-b border-slate-100">
                                     <td className="py-2 text-center font-bold align-top">{trabajo.cantidad}</td>
                                     <td className="py-2 px-2 uppercase font-medium leading-tight align-top">
-                                        {trabajo.subtipo}
+                                        <div className="font-bold text-slate-900">{trabajo.tipo}</div>
+                                        <div className="text-[7px] text-slate-500 normal-case italic mt-0.5">{trabajo.subtipo}</div>
                                     </td>
                                     <td className="py-2 px-2 text-right align-top tabular-nums">{formatCurrency(trabajo.total / trabajo.cantidad)}</td>
                                     <td className="py-2 px-2 text-right font-bold align-top tabular-nums text-slate-900">{formatCurrency(trabajo.total)}</td>

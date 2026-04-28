@@ -55,16 +55,17 @@ const ProduccionPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] gap-6 pb-6 overflow-hidden">
+        <div className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-140px)] gap-6 pb-6 lg:overflow-hidden">
             
             {/* --- COLA DE MANUFACTURA --- */}
-            <div className="w-full lg:w-[320px] flex flex-col bg-black/20 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden">
-                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                    <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                        <PrinterIcon className="w-4 h-4 text-liquid-gold" />
-                        Despliegue
+            <div className="w-full lg:w-[350px] flex flex-col bg-black/20 backdrop-blur-md rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
+                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02] relative">
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                    <h2 className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 italic">
+                        <PrinterIcon className="w-4 h-4 text-liquid-gold shadow-gold-glow" />
+                        Vector de Manufactura
                     </h2>
-                    <span className="bg-liquid-gold/10 border border-liquid-gold/20 px-2.5 py-1 rounded-lg text-liquid-gold font-bold text-[9px] uppercase tracking-widest">{pendingJobs.length}</span>
+                    <span className="bg-liquid-gold/10 border border-liquid-gold/20 px-3 py-1.5 rounded-xl text-liquid-gold font-black text-[9px] uppercase tracking-widest italic">{pendingJobs.length}</span>
                 </div>
                 
                 <div className="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
@@ -98,23 +99,37 @@ const ProduccionPage: React.FC = () => {
             </div>
 
             {/* --- ÁREA DE TRABAJO --- */}
-            <div className="flex-1 flex flex-col bg-black/20 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden">
+            <div className="flex-1 flex flex-col bg-black/20 backdrop-blur-md rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl relative">
+                {/* HUD Overlay Decor */}
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none select-none">
+                    <div className="text-[60px] font-black italic tracking-tighter leading-none">MK_VIII</div>
+                </div>
+
                 {selectedJob ? (
                     <div className="flex flex-col h-full overflow-hidden">
                         
                         {/* HEADER DE TRABAJO */}
-                        <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/[0.01]">
-                            <div>
-                                <h1 className="text-xl font-black text-white uppercase tracking-tight">Protocolo <span className="text-liquid-gold">#{selectedJob.orden}</span></h1>
-                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Sustrato Industrial • {getClientName(selectedJob.clienteId)}</p>
+                        <div className="p-8 border-b border-white/5 flex flex-col xl:flex-row justify-between items-center gap-6 bg-white/[0.01] relative">
+                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/10 to-transparent" />
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-[1.5rem] bg-liquid-gold text-black flex items-center justify-center shadow-gold-glow">
+                                    <PrinterIcon className="w-8 h-8" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-3">
+                                        <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">Protocolo <span className="text-liquid-gold">#{selectedJob.orden}</span></h1>
+                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-white/5 text-slate-500 border border-white/10 italic">SYS_ACTIVE_NODE</span>
+                                    </div>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1 italic">Operación de Manufactura Industrial • {getClientName(selectedJob.clienteId)}</p>
+                                </div>
                             </div>
-                            <div className="flex gap-3">
+                            <div className="flex gap-4 w-full xl:w-auto">
                                 <button 
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={uploading}
-                                    className="flex items-center gap-2 px-6 py-3 bg-white/5 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-white/10 border border-white/10 transition-all hover:scale-105"
+                                    className="flex-1 xl:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-white/5 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-[1.2rem] hover:bg-white/10 border border-white/10 transition-all hover:scale-105 italic"
                                 >
-                                    {uploading ? <Loader2Icon className="animate-spin w-4 h-4 text-liquid-gold"/> : <CameraIcon className="w-4 h-4 text-liquid-gold"/>}
+                                    {uploading ? <Loader2Icon className="animate-spin w-4 h-4 text-liquid-gold"/> : <CameraIcon className="w-4 h-4 text-liquid-gold shadow-gold-glow"/>}
                                     <span>Registrar Despliegue</span>
                                 </button>
                                 <input 
@@ -126,10 +141,10 @@ const ProduccionPage: React.FC = () => {
                                 />
                                 <button 
                                     onClick={handleSendToVitrina}
-                                    className="flex items-center gap-3 px-8 py-3 bg-liquid-gold text-black font-black text-[10px] uppercase tracking-[0.3em] rounded-xl hover:bg-white transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:scale-105 active:scale-95 group relative overflow-hidden"
+                                    className="flex-1 xl:flex-none flex items-center justify-center gap-4 px-10 py-4 bg-liquid-gold text-black font-black text-[10px] uppercase tracking-[0.3em] rounded-[1.2rem] hover:bg-white transition-all shadow-gold-glow hover:scale-105 active:scale-95 group relative overflow-hidden italic"
                                 >
                                     <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
-                                    <CheckCircleIcon className="w-5 h-5"/> Validar y Finalizar
+                                    <CheckCircleIcon className="w-5 h-5"/> Validar Protocolo
                                 </button>
                             </div>
                         </div>

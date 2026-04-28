@@ -75,6 +75,41 @@ const MainActionButton: React.FC<{
     );
 };
 
+
+// --- TACTICAL STATUS COMPONENT ---
+const TacticalStatus: React.FC = () => {
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            {[
+                { label: 'Uptime', value: '99.98%', sub: 'SISTEMA ESTABLE', icon: ShieldCheckIcon, color: 'text-emerald-400' },
+                { label: 'Latencia', value: '14ms', sub: 'SYNC REALTIME', icon: BoltIcon, color: 'text-blue-400' },
+                { label: 'Memoria', value: '1.2GB', sub: 'OPTIMIZADO', icon: CircleStackIcon, color: 'text-liquid-gold' },
+                { label: 'Nodos', value: '3 Active', sub: 'RED INDUSTRIAL', icon: GlobeAltIcon, color: 'text-purple-400' }
+            ].map((stat, i) => (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    key={i} 
+                    className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-md relative overflow-hidden group"
+                >
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-all">
+                        <stat.icon className="w-8 h-8" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">{stat.label}</span>
+                        <span className={`text-xl font-black ${stat.color} tracking-tighter italic`}>{stat.value}</span>
+                        <div className="flex items-center gap-2 mt-2">
+                            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${stat.color.replace('text-', 'bg-')}`} />
+                            <span className="text-[7px] font-bold text-slate-600 uppercase tracking-widest">{stat.sub}</span>
+                        </div>
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    );
+};
+
 const DashboardPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
     const { trabajos, clientes, loading } = useData();
@@ -98,25 +133,20 @@ const DashboardPage: React.FC = () => {
 
     if (loading || !stats) return (
         <div className="h-[80vh] flex flex-col items-center justify-center gap-12 bg-brand-dark">
-            <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                className="w-24 h-24 border border-white/5 rounded-full relative p-2"
-            >
-                <div className="absolute inset-0 border-t-2 border-liquid-gold rounded-full shadow-gold-glow"></div>
-                <div className="w-full h-full bg-white/[0.02] rounded-full backdrop-blur-3xl flex items-center justify-center border border-white/5">
-                    <Loader2Icon className="w-8 h-8 text-liquid-gold animate-spin" />
-                </div>
-            </motion.div>
-            <div className="text-center space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.6em] text-liquid-gold italic">Sincronizando Sistema</p>
-                <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-700">Actualizando flujo de producción...</p>
+            <div className="relative">
+                <div className="w-24 h-24 rounded-full border-4 border-liquid-gold/20 animate-ping absolute inset-0" />
+                <Loader2Icon className="animate-spin w-24 h-24 text-liquid-gold relative z-10" />
+            </div>
+            <div className="text-center space-y-4">
+                <h3 className="text-2xl font-black text-white uppercase tracking-[0.4em] animate-pulse">Sincronizando Core</h3>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest text-center">Estableciendo enlace seguro con Supabase Realtime...</p>
             </div>
         </div>
     );
 
     return (
         <div className="max-w-[1400px] mx-auto space-y-16 pb-20 px-4 md:px-0 pt-10">
+            <TacticalStatus />
             
             {/* --- CABECERA --- */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 border-b border-white/5 pb-12">

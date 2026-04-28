@@ -73,8 +73,8 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             orden: Math.floor(100000 + Math.random() * 900000),
             clienteId: selectedClientId || 'cliente_express_comercial',
             titular: clienteNombre || 'Consumidor Final',
-            tipo: TrabajoTipo.GENERAL,
-            subtipo: selectedProduct.nombre,
+            tipo: selectedProduct.nombre,
+            subtipo: `${cantidad} x ${tamano} - ${acabado}`,
             cantidad,
             tamano,
             estado: TrabajoEstado.PENDIENTE,
@@ -128,7 +128,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                     <div className="w-[1px] h-10 bg-white/10 mx-2"></div>
                     <button 
                         onClick={onCancel}
-                        className="w-12 h-12 bg-white/5 hover:bg-brand-red/20 text-slate-500 hover:text-brand-red rounded-2xl transition-all border border-white/10 flex items-center justify-center group"
+                        className="w-12 h-12 bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white rounded-2xl transition-all border border-white/10 flex items-center justify-center group"
                     >
                         <ExclamationTriangleIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                     </button>
@@ -453,7 +453,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                     </div>
 
                                     <div className="flex justify-between items-center pt-4 relative z-10 px-4">
-                                        <span className="text-[12px] font-black text-brand-red/60 uppercase tracking-[0.3em] italic">Saldo en Despliegue</span>
+                                        <span className="text-[12px] font-black text-liquid-gold/60 uppercase tracking-[0.3em] italic">Saldo en Despliegue</span>
                                         <span className="text-3xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal - abono)}</span>
                                     </div>
                                 </div>

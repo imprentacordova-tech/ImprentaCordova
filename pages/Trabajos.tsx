@@ -35,16 +35,16 @@ const statusMeta: { [key in TrabajoEstado]: { label: string; icon: any; color: s
     },
 };
 
-const tipoStyles: { [key in TrabajoTipo]: string } = {
-    [TrabajoTipo.SRI]: 'border-blue-500/20 text-blue-400 bg-blue-500/10',
-    [TrabajoTipo.GENERAL]: 'border-white/10 text-white/40 bg-white/5',
+const getTipoStyle = (t: Trabajo) => {
+    if (t.esSRI) return 'border-blue-500/20 text-blue-400 bg-blue-500/10';
+    return 'border-white/10 text-white/40 bg-white/5';
 };
 
 const TrabajosPage: React.FC = () => {
     const { trabajos, clientes, loading } = useData();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [tipoFilter, setTipoFilter] = useState<TrabajoTipo | 'Todos'>('Todos');
+    const [tipoFilter, setTipoFilter] = useState<'Todos' | 'SRI' | 'GENERAL'>('Todos');
     const [estadoFilter, setEstadoFilter] = useState<TrabajoEstado | 'Todos'>('Todos');
 
     const filteredTrabajos = useMemo(() => {
@@ -54,8 +54,10 @@ const TrabajosPage: React.FC = () => {
             const searchMatch = lower === '' ||
                 cliente?.nombre.toLowerCase().includes(lower) ||
                 String(t.orden).includes(lower) ||
+                t.tipo.toLowerCase().includes(lower) ||
                 t.subtipo.toLowerCase().includes(lower);
-            const tipoMatch = tipoFilter === 'Todos' || t.tipo === tipoFilter;
+            const tipoMatch = tipoFilter === 'Todos' || 
+                (tipoFilter === 'SRI' ? t.esSRI : !t.esSRI);
             const estadoMatch = estadoFilter === 'Todos' || t.estado === estadoFilter;
             return searchMatch && tipoMatch && estadoMatch;
         });
@@ -123,12 +125,12 @@ const TrabajosPage: React.FC = () => {
                 </div>
                 <select 
                     value={tipoFilter} 
-                    onChange={e => setTipoFilter(e.target.value as TrabajoTipo | 'Todos')}
+                    onChange={e => setTipoFilter(e.target.value as 'Todos' | 'SRI' | 'GENERAL')}
                     className="input-atelier md:w-64 appearance-none text-[10px] font-black uppercase tracking-[0.2em] cursor-pointer"
                 >
                     <option value="Todos" className="bg-brand-dark">Logic: Comprehensive</option>
-                    <option value={TrabajoTipo.SRI} className="bg-brand-dark">Logic: S.R.I. Protocol</option>
-                    <option value={TrabajoTipo.GENERAL} className="bg-brand-dark">Logic: General Craft</option>
+                    <option value="SRI" className="bg-brand-dark">Logic: S.R.I. Protocol</option>
+                    <option value="GENERAL" className="bg-brand-dark">Logic: General Craft</option>
                 </select>
             </div>
 
@@ -181,7 +183,7 @@ const TrabajosPage: React.FC = () => {
                                                     <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest">{cliente?.regimen || 'GENERAL'}</p>
                                                 </td>
                                                 <td className="px-10 py-8">
-                                                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${tipoStyles[trabajo.tipo]}`}>
+                                                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getTipoStyle(trabajo)}`}>
                                                         {trabajo.tipo}
                                                     </span>
                                                 </td>

@@ -148,6 +148,7 @@ const NuevoPedidoPage: React.FC = () => {
                     puntoEmision: isSriOrder ? sriPuntoEmision : undefined,
                     tamano: item.especificaciones?.tamano || undefined,
                     estadoClave: isSriOrder ? (sriClave ? 'LISTA' : 'PENDIENTE') : null,
+                    claveAcceso: isSriOrder ? sriClave : undefined,
                     esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
                     actividadSeleccionada: isSriOrder ? sriActividad : null
                 }, currentUser.nombre, imageFile);
@@ -205,6 +206,7 @@ const NuevoPedidoPage: React.FC = () => {
 
     const handleSelectCategory = (category: 'SRI' | 'COMERCIAL' | 'EXPRESS') => {
         setMissionCategory(category);
+        setIsSidebarMinimized(false); // Expand sidebar when mission starts
         if (category === 'SRI') {
             setIsSriOrder(true);
             setOrderMode('CATALOG');
@@ -217,6 +219,138 @@ const NuevoPedidoPage: React.FC = () => {
         }
         setStep(2);
     };
+
+    // --- TELEMETRY SIDEBAR COMPONENT ---
+    const TelemetrySidebar = () => (
+        <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-4 sticky top-10 space-y-6"
+        >
+            {/* Mission Identity Card */}
+            <div className="bg-black/40 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <CpuIcon className="w-8 h-8 text-liquid-gold animate-pulse" />
+                </div>
+                
+                <div className="space-y-6 relative z-10">
+                    <div className="space-y-1">
+                        <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Status de Operación</p>
+                        <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter">Misión: <span className="text-liquid-gold">{missionCategory || 'PENDIENTE'}</span></h4>
+                    </div>
+
+                    <div className="h-px w-full bg-gradient-to-r from-liquid-gold/20 via-transparent to-transparent" />
+
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Fase Actual</span>
+                            <span className="text-[10px] font-black text-white uppercase italic bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">{getSteps().find(s => s.id === step)?.label || 'IDENTIDAD'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Protocolo</span>
+                            <span className="text-[10px] font-black text-liquid-gold uppercase italic">v5.0_ELITE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Financial Telemetry */}
+            <div className="bg-liquid-gold/5 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-liquid-gold/10 shadow-gold-glow-soft relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <div className="space-y-6 relative z-10">
+                    <div className="flex justify-between items-end">
+                        <div className="space-y-1">
+                            <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Valuación Real-Time</p>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-black text-white italic tracking-tighter">${precio.toFixed(2)}</span>
+                                <span className="text-[10px] font-black text-liquid-gold/60 uppercase italic">USD</span>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Ítems</p>
+                            <span className="text-xl font-black text-white italic">{items.length || (missionCategory === 'EXPRESS' ? '1' : '0')}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                            <span>Abono</span>
+                            <span className="text-emerald-500">${abono.toFixed(2)}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: precio > 0 ? `${Math.min(100, (abono/precio)*100)}%` : '0%' }}
+                                className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                            />
+                        </div>
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                            <span>Saldo Restante</span>
+                            <span className="text-white">${Math.max(0, precio - abono).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Entity Context */}
+            {cliente && (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white/[0.02] backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group"
+                >
+                    <div className="space-y-4 relative z-10">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Sujeto Identificado</p>
+                        <div className="space-y-1">
+                            <h4 className="text-lg font-black text-white uppercase italic truncate">{cliente.nombre}</h4>
+                            <p className="text-[10px] font-bold text-liquid-gold/60 uppercase tracking-widest">{cliente.cedula || cliente.ruc}</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <span className="text-[7px] font-black px-2 py-1 bg-white/5 rounded-md border border-white/5 text-slate-400 uppercase tracking-widest">
+                                {cliente.regimen || 'GENERAL'}
+                            </span>
+                            {isSriOrder && (
+                                <span className="text-[7px] font-black px-2 py-1 bg-liquid-gold/10 rounded-md border border-liquid-gold/20 text-liquid-gold uppercase tracking-widest">
+                                    SRI_VERIFIED
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* Mini Terminal Logs */}
+            <div className="bg-black/60 p-6 rounded-[2rem] border border-white/5 font-mono text-[8px] space-y-2 max-h-[150px] overflow-hidden opacity-40 hover:opacity-100 transition-opacity cursor-default group">
+                <div className="flex items-center gap-2 mb-4 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors">
+                    <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse" />
+                    <span className="font-black uppercase tracking-[0.2em]">Live_Telemetry</span>
+                </div>
+                <div className="space-y-1.5">
+                    <p className="text-emerald-500/80">[OK] SYSTEM_READY_V5.0</p>
+                    {missionCategory && <p className="text-white/60">[LOG] MISSION_INIT: {missionCategory}</p>}
+                    {step > 1 && <p className="text-white/60">[LOG] PHASE_STEP_{step}_ACTIVE</p>}
+                    {cliente && <p className="text-liquid-gold/60">[LOG] ENTITY_BIND: {cliente.id.substring(0,8)}</p>}
+                    {items.length > 0 && <p className="text-white/60">[LOG] ASSET_APPEND: {items.length} units</p>}
+                    <motion.p 
+                        animate={{ opacity: [0.2, 1, 0.2] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="text-white/20"
+                    >
+                        _WAITING_FOR_INPUT...
+                    </motion.p>
+                </div>
+            </div>
+
+            {/* Minimize Toggle */}
+            <button 
+                onClick={() => setIsSidebarMinimized(true)}
+                className="w-full py-4 text-[9px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors"
+            >
+                [ MINIMIZAR TELEMETRÍA ]
+            </button>
+        </motion.div>
+    );
 
     return (
         <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-40 px-4 sm:px-8 lg:px-14 pt-6 md:pt-10">
@@ -282,8 +416,22 @@ const NuevoPedidoPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
-                <div className={missionCategory === 'COMERCIAL' && step === 2 ? "lg:col-span-12 space-y-10" : (isSidebarMinimized ? "lg:col-span-12 space-y-10 transition-all duration-500" : "lg:col-span-8 space-y-10 transition-all duration-500")}>
+                <div className={isSidebarMinimized ? "lg:col-span-12 space-y-10 transition-all duration-500" : "lg:col-span-8 space-y-10 transition-all duration-500"}>
                     <AnimatePresence mode="wait">
+                        
+                        {/* Minimize Toggle (Floating) */}
+                        {isSidebarMinimized && missionCategory && step < 5 && (
+                            <motion.button 
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={() => setIsSidebarMinimized(false)}
+                                className="fixed right-10 bottom-40 z-50 p-6 bg-liquid-gold text-black rounded-full shadow-gold-glow group overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                                <LayoutDashboardIcon className="w-8 h-8 relative z-10" />
+                                <div className="absolute -top-12 -left-12 w-24 h-24 bg-white/10 blur-2xl rounded-full" />
+                            </motion.button>
+                        )}
                         
                         {/* PASO 1: CATEGORÍA (Arquitectura de 3 Pilares Elite) */}
                         {step === 1 && (
@@ -336,36 +484,36 @@ const NuevoPedidoPage: React.FC = () => {
                                         onClick={() => handleSelectCategory('SRI')}
                                         className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
                                     >
-                                        <div className="absolute inset-0 bg-brand-red/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
+                                        <div className="absolute inset-0 bg-liquid-gold/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
                                         
                                         {/* Telemetría Lateral Pilar */}
                                         <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-0 group-hover/pilar:opacity-100 transition-all duration-700 translate-x-4 group-hover/pilar:translate-x-0">
                                             {['SYS_AUTH', 'TR_ENCRYPT', 'FISCAL_V3'].map(t => (
-                                                <span key={t} className="[writing-mode:vertical-lr] text-[7px] font-black tracking-[0.5em] text-brand-red/40 uppercase italic">{t}</span>
+                                                <span key={t} className="[writing-mode:vertical-lr] text-[7px] font-black tracking-[0.5em] text-liquid-gold/40 uppercase italic">{t}</span>
                                             ))}
                                         </div>
 
                                         <div className="relative">
-                                            <div className="w-40 h-40 bg-brand-red/5 rounded-[3rem] flex items-center justify-center text-brand-red border border-brand-red/10 group-hover/pilar:scale-110 group-hover/pilar:bg-brand-red group-hover/pilar:text-white transition-all duration-700 shadow-2xl group-hover/pilar:shadow-red-glow relative overflow-hidden">
+                                            <div className="w-40 h-40 bg-liquid-gold/5 rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
                                                 <motion.div 
                                                     animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                                                     className="absolute inset-0 border border-dashed border-white/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
                                                 />
                                                 <ShieldCheckIcon className="w-20 h-20 relative z-10" />
                                             </div>
-                                            <div className="absolute -bottom-4 -right-4 bg-black border border-brand-red/20 px-3 py-1 rounded-lg text-[8px] font-black text-brand-red tracking-widest uppercase italic">0x_FISCAL</div>
+                                            <div className="absolute -bottom-4 -right-4 bg-black border border-liquid-gold/20 px-3 py-1 rounded-lg text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_FISCAL</div>
                                         </div>
 
                                         <div className="space-y-8 relative z-10">
                                             <div className="space-y-2">
-                                                <p className="text-[10px] font-black text-brand-red uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Protocolo Certificado</p>
-                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Vector<br/><span className="text-brand-red">SRI</span></h3>
+                                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Protocolo Certificado</p>
+                                                <h3 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Vector<br/><span className="text-liquid-gold">SRI</span></h3>
                                             </div>
-                                            <div className="h-[2px] w-16 bg-brand-red/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-red-glow" />
+                                            <div className="h-[2px] w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
                                             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Emisión de documentos tributarios con validación en tiempo real.</p>
                                         </div>
 
-                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-brand-red/20 bg-brand-red/5 flex items-center gap-4 text-[11px] font-black text-brand-red group-hover/pilar:bg-brand-red group-hover/pilar:text-white tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
+                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
                                             <span>AUTORIZAR</span>
                                             <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
                                         </div>
@@ -629,7 +777,7 @@ const NuevoPedidoPage: React.FC = () => {
                                 key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
                                 className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
-                                {missionCategory === 'SRI' ? (
+                                                {missionCategory === 'SRI' ? (
                                     <div className="space-y-12">
                                         {(isAddingItem || items.length === 0) ? (
                                             !servicio ? (
@@ -656,14 +804,14 @@ const NuevoPedidoPage: React.FC = () => {
                                             <div className="space-y-10">
                                                 <div className="grid grid-cols-1 gap-6">
                                                     {items.map((item, idx) => (
-                                                        <div key={idx} className="bg-black/60 p-6 rounded-[2rem] border border-white/5 flex items-center justify-between group/item hover:border-brand-red/30 transition-all">
+                                                        <div key={idx} className="bg-black/60 p-6 rounded-[2rem] border border-white/5 flex items-center justify-between group/item hover:border-liquid-gold/30 transition-all">
                                                             <div className="flex items-center gap-6">
-                                                                <div className="w-14 h-14 bg-brand-red/10 rounded-2xl flex items-center justify-center text-brand-red border border-brand-red/20 font-black italic relative overflow-hidden">
-                                                                    <div className="absolute inset-0 bg-brand-red/5 animate-pulse" />
+                                                                <div className="w-14 h-14 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 font-black italic relative overflow-hidden">
+                                                                    <div className="absolute inset-0 bg-liquid-gold/5 animate-pulse" />
                                                                     <span className="relative z-10">{idx + 1}</span>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-[13px] font-black uppercase tracking-tight italic text-white group-hover:text-brand-red transition-colors">{item.nombre}</h4>
+                                                                    <h4 className="text-[13px] font-black uppercase tracking-tight italic text-white group-hover:text-liquid-gold transition-colors">{item.nombre}</h4>
                                                                     <div className="flex gap-4 mt-1">
                                                                         <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">QTY: {item.cantidad}</span>
                                                                         <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">SPEC: {item.especificaciones.tamano}</span>
@@ -678,7 +826,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                                 <button onClick={() => {
                                                                     setItems(prev => prev.filter((_, i) => i !== idx));
                                                                     setPrecio(prev => prev - item.precioFinal);
-                                                                }} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-700 hover:bg-brand-red hover:text-white transition-all transform hover:rotate-90">
+                                                                }} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-700 hover:bg-orange-950 hover:text-white transition-all transform hover:rotate-90">
                                                                     <SolidBoxIcon className="w-4 h-4" />
                                                                 </button>
                                                             </div>
@@ -687,7 +835,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                 </div>
                                                 <button 
                                                     onClick={() => setIsAddingItem(true)}
-                                                    className="w-full py-6 border-2 border-dashed border-brand-red/10 rounded-3xl text-slate-600 font-black uppercase tracking-[0.4em] hover:border-brand-red/30 hover:text-brand-red transition-all italic flex items-center justify-center gap-4 group"
+                                                    className="w-full py-6 border-2 border-dashed border-liquid-gold/10 rounded-3xl text-slate-600 font-black uppercase tracking-[0.4em] hover:border-liquid-gold/30 hover:text-liquid-gold transition-all italic flex items-center justify-center gap-4 group"
                                                 >
                                                     <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                                                     Agregar Otro Producto Fiscal
@@ -791,7 +939,12 @@ const NuevoPedidoPage: React.FC = () => {
                                 key="step6" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                 className="bg-emerald-500/5 backdrop-blur-3xl p-10 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-12 shadow-luxury relative overflow-hidden"
                             >
-                                <div className="w-32 h-32 md:w-48 md:h-48 bg-emerald-500 rounded-[3rem] flex items-center justify-center mx-auto shadow-glow shadow-emerald-500/40">
+                                <div className="w-32 h-32 md:w-48 md:h-48 bg-liquid-gold rounded-[3rem] flex items-center justify-center mx-auto shadow-gold-glow relative overflow-hidden group">
+                                    <motion.div 
+                                        animate={{ y: [-50, 150] }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                        className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-transparent w-full h-1/2 pointer-events-none"
+                                    />
                                     <RocketLaunchIcon className="w-16 h-16 md:w-24 md:h-24 text-black animate-bounce" />
                                 </div>
                                 <div className="space-y-6">
@@ -801,20 +954,19 @@ const NuevoPedidoPage: React.FC = () => {
                                 <div className="flex flex-wrap justify-center gap-6">
                                     {createdTrabajoId && (
                                         <div className="flex gap-4">
-                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} className="px-8 py-6 bg-brand-red text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-red-glow hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A5 Doble)</button>
-                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} className="px-8 py-6 bg-white/10 text-white border border-brand-red/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-red/20 transition-all"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A4 Completo)</button>
+                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} className="px-8 py-6 bg-liquid-gold text-black rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-gold-glow hover:scale-105 transition-transform"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A5 Doble)</button>
+                                            <button onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} className="px-8 py-6 bg-white/10 text-white border border-liquid-gold/30 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-liquid-gold/20 transition-all"><PrinterIcon className="w-5 h-5" /> Solicitud SRI (A4 Completo)</button>
                                         </div>
                                     )}
                                     <button onClick={() => window.location.reload()} className="px-10 py-6 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Nueva Orden</button>
                                 </div>
                             </motion.div>
                         )}
-
                     </AnimatePresence>
 
-                    {/* CONTROLES DE NAVEGACIÓN (NO SE MUESTRAN EN COMERCIAL PORQUE TIENE SUS PROPIOS CONTROLES) */}
+                    {/* CONTROLES DE NAVEGACIÓN */}
                     {missionCategory !== 'COMERCIAL' && ((missionCategory === 'SRI' && step < 6) || (missionCategory !== 'SRI' && step < 5)) && (
-                        <div className="flex justify-between items-center px-10">
+                        <div className="flex justify-between items-center px-10 mt-10">
                             <button 
                                 disabled={step === 1}
                                 onClick={() => {
@@ -828,7 +980,7 @@ const NuevoPedidoPage: React.FC = () => {
                             </button>
                             
                             <div className="flex items-center gap-6">
-                                {error && <span className="text-brand-red text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
+                                {error && <span className="text-liquid-gold text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
                                 {((missionCategory === 'SRI' && step < 5) || (missionCategory === 'EXPRESS' && step < 4)) ? (
                                     <button 
                                         disabled={!canAdvance()}
@@ -855,62 +1007,9 @@ const NuevoPedidoPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* SIDEBAR DE RESUMEN EN TIEMPO REAL (COLLAPSIBLE) */}
-                {missionCategory !== 'COMERCIAL' && (
-                    <div className={`lg:col-span-4 sticky top-10 transition-all duration-500 z-40 ${isSidebarMinimized ? 'fixed right-4 translate-x-[calc(100%-4rem)] w-[400px]' : 'space-y-6 w-full'}`}>
-                        <button 
-                            onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
-                            className="absolute -left-12 top-4 bg-black border border-white/10 p-3 rounded-l-2xl text-liquid-gold shadow-xl hover:bg-white/5 transition-colors group"
-                        >
-                            <ShoppingCartIcon className="w-5 h-5" />
-                        </button>
-                        <div className={`bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden transition-all duration-500 ${isSidebarMinimized ? 'opacity-50 hover:opacity-100' : 'opacity-100'}`}>
-                            <div className="absolute top-0 right-0 p-6 opacity-[0.02] scale-150"><ShoppingCartIcon className="w-48 h-48 text-liquid-gold" /></div>
-                            <div className="relative z-10 space-y-8">
-                                <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Hoja de <span className="text-liquid-gold">Ruta</span></h3>
-                                
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Cliente</p>
-                                        <p className="text-xl font-black text-white italic truncate uppercase">{cliente?.nombre || quickName || '---'}</p>
-                                        {isSriOrder && <span className="text-[8px] text-brand-red font-black border border-brand-red/30 px-2 py-0.5 rounded-full">SRI ACTIVO</span>}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">Manifiesto de Items</p>
-                                        <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                            {items.length > 0 ? items.map((item, i) => (
-                                                <div key={i} className="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                                                    <span className="text-[9px] text-white font-black uppercase tracking-tighter truncate max-w-[120px] italic">{item.nombre}</span>
-                                                    <span className="text-[10px] font-black text-liquid-gold">${item.precioFinal.toFixed(2)}</span>
-                                                </div>
-                                            )) : <p className="text-[9px] text-slate-700 font-black uppercase tracking-widest italic">Esperando Protocolo...</p>}
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-6 border-t border-white/5 space-y-3">
-                                        <div className="flex justify-between items-end">
-                                            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Total</span>
-                                            <span className="text-2xl font-black text-white italic tracking-tighter">${precio.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-end">
-                                            <span className="text-[9px] text-emerald-600 font-black uppercase tracking-widest italic">Abono</span>
-                                            <span className="text-xl font-black text-emerald-500 italic tracking-tighter">-${abono.toFixed(2)}</span>
-                                        </div>
-                                        <div className="pt-3 flex justify-between items-end border-t border-white/5">
-                                            <span className="text-[10px] text-liquid-gold font-black uppercase tracking-widest italic">Saldo</span>
-                                            <span className="text-4xl font-black text-liquid-gold italic tracking-tighter shadow-gold-glow-sm">${(precio - abono).toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={`bg-white/[0.02] p-6 rounded-3xl border border-white/5 space-y-4 mt-6 transition-all duration-500 ${isSidebarMinimized ? 'opacity-50 hover:opacity-100' : 'opacity-100'}`}>
-                            <div className="flex items-center gap-3 text-liquid-gold"><SparklesIcon className="w-4 h-4" /><h4 className="text-[9px] font-black uppercase tracking-widest italic">Cálculo Preciso</h4></div>
-                            <PriceCalculatorDisplay onSelectPrice={setPrecio} />
-                        </div>
-                    </div>
+                {/* --- SIDEBAR TELEMETRÍA ELITE --- */}
+                {!isSidebarMinimized && missionCategory && step < 5 && (
+                    <TelemetrySidebar />
                 )}
             </div>
         </div>

@@ -41,7 +41,7 @@ export interface Trabajo {
   orden: number;
   clienteId: string;
   titular: string;
-  tipo: TrabajoTipo;
+  tipo: string;
   subtipo: string;
   cantidad: number;
   tamano: string;

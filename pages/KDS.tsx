@@ -11,8 +11,24 @@ import {
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { BottomSheet } from '../components/BottomSheet';
+
+const TacticalClock: React.FC = () => {
+    const [time, setTime] = useState(new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+    return (
+        <div className="flex flex-col items-end font-mono">
+            <span className="text-[10px] text-liquid-gold/60 tracking-[0.3em] font-black italic">SYSTEM_TIME_UTC</span>
+            <span className="text-sm text-white font-black italic tracking-tighter">
+                {time.toLocaleTimeString('es-EC', { hour12: false })}
+            </span>
+        </div>
+    );
+};
 
 // --- UTILIDADES ---
 type UrgencyLevel = 'critical' | 'warning' | 'safe';
@@ -30,11 +46,11 @@ const getUrgencyLevel = (dateStr?: string): UrgencyLevel => {
 
 const urgencyConfig = {
     critical: { 
-        border: 'border-l-rose-600', 
-        bg: 'bg-rose-600/10', 
-        text: 'text-rose-500', 
-        label: 'CRÍTICO: ENTREGA HOY', 
-        glow: 'shadow-[0_0_20px_rgba(225,29,72,0.3)]',
+        border: 'border-l-liquid-gold', 
+        bg: 'bg-liquid-gold/20', 
+        text: 'text-liquid-gold', 
+        label: 'PROTOCOLO CRÍTICO: URGENTE', 
+        glow: 'shadow-[0_0_25px_rgba(212,175,55,0.4)]',
         animate: 'animate-pulse-slow'
     },
     warning: { 
@@ -119,7 +135,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                 border-l-[3px] ${style.border} border-t border-r border-b border-slate-200/50 dark:border-white/5
                 transition-all duration-500 rounded-[2.2rem] overflow-hidden p-6 md:p-8
                 ${style.glow} ${style.animate}
-                hover:border-white/10 bg-white/40 dark:bg-[#0a0a0a]/90 backdrop-blur-xl
+                hover:border-liquid-gold/20 bg-white/40 dark:bg-[#0a0a0a]/90 backdrop-blur-xl
             `}
         >
             {/* --- ELITE EFFECTS LAYER --- */}
@@ -127,13 +143,17 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                 {/* Diagonal Holographic Sheen */}
                 <motion.div 
                     initial={{ x: '-100%', opacity: 0 }}
-                    whileHover={{ x: '100%', opacity: 0.15 }}
-                    transition={{ duration: 1.5, ease: "easeInOut" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent skew-x-[-20deg] z-20"
+                    whileHover={{ x: '100%', opacity: 0.25 }}
+                    transition={{ duration: 0.8, ease: "circOut" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-liquid-gold/10 to-transparent skew-x-[-25deg] z-20"
                 />
                 
+                {/* Tactical Corners */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-liquid-gold/20 rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-liquid-gold/20 rounded-br-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+
                 {/* Technical Grid Overlay (Corner) */}
-                <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.03] rotate-45 translate-x-12 -translate-y-12">
+                <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.05] rotate-45 translate-x-12 -translate-y-12">
                     <div className="grid grid-cols-4 gap-2">
                         {Array.from({ length: 16 }).map((_, i) => (
                             <div key={i} className="w-1 h-1 bg-white rounded-full" />
@@ -160,9 +180,9 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                         <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                            trabajo.estado === TrabajoEstado.PENDIENTE ? 'bg-rose-500 shadow-red-glow' :
-                            trabajo.estado === TrabajoEstado.EN_DISENO ? 'bg-blue-500 shadow-blue-glow' :
-                            trabajo.estado === TrabajoEstado.PROCESO ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500'
+                            trabajo.estado === TrabajoEstado.PENDIENTE ? 'bg-slate-600' :
+                            trabajo.estado === TrabajoEstado.EN_DISENO ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]' :
+                            trabajo.estado === TrabajoEstado.PROCESO ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
                         }`} />
                         <span className="text-[9px] font-black text-slate-500 dark:text-slate-500 tracking-[0.3em] uppercase italic">
                             PROTOCOLO-{String(trabajo.orden).padStart(5, '0')}
@@ -188,16 +208,15 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                             {cliente?.nombre || 'Consumidor Final'}
                         </h4>
                         <div className="flex items-center gap-2 flex-wrap">
-                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase tracking-widest opacity-80 italic truncate max-w-[200px]">{trabajo.subtipo}</p>
-                             {trabajo.tipo === 'sri' && (
-                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-brand-red/10 text-brand-red border border-brand-red/20 animate-pulse">SRI TERMINAL</span>
+                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase tracking-widest opacity-80 italic truncate max-w-[200px]">{trabajo.tipo} — {trabajo.subtipo.split('|')[0]}</p>
+                             {trabajo.esSRI && (
+                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20 animate-pulse">SRI TERMINAL</span>
                              )}
                              {cliente?.regimen === Regimen.NEGOCIO_POPULAR && (
-                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">RIMPE N.P.</span>
+                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-white/10 text-white/60 border border-white/20">RIMPE N.P.</span>
                              )}
                         </div>
                     </div>
-                    
                     <div className="flex items-center gap-3 flex-wrap">
                         <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.03] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 uppercase tracking-widest italic transition-colors group-hover:border-liquid-gold/30">
                             <LayersIcon className="w-3.5 h-3.5 text-liquid-gold/60" />
@@ -214,6 +233,28 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                                 <span>{formatDate(targetDate)}</span>
                             </div>
                         )}
+                    </div>
+
+                    {/* Industrial Progress Bar */}
+                    <div className="pt-2 space-y-1.5">
+                        <div className="flex justify-between items-center text-[7px] font-black tracking-[0.2em] text-slate-600 dark:text-slate-500 uppercase italic">
+                            <span>Velocidad de Despliegue</span>
+                            <span className="text-liquid-gold">{Math.round(getProgress())}%</span>
+                        </div>
+                        <div className="h-[3.5px] bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${getProgress()}%` }}
+                                transition={{ duration: 1, ease: "circOut" }}
+                                className="h-full bg-liquid-gold shadow-gold-glow relative"
+                            >
+                                <motion.div 
+                                    animate={{ opacity: [0, 1, 0], x: ['0%', '100%'] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                    className="absolute inset-0 bg-white"
+                                />
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
                 
@@ -248,7 +289,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5 relative z-10">
                 <div className="flex items-center gap-3">
                     {trabajo.saldo > 0 ? (
-                        <div className="flex items-center gap-2 text-rose-500 text-[8px] font-black uppercase tracking-widest italic bg-rose-500/5 px-3 py-1 rounded-lg border border-rose-500/10 group-hover:border-rose-500/30 transition-all">
+                        <div className="flex items-center gap-2 text-liquid-gold text-[8px] font-black uppercase tracking-widest italic bg-liquid-gold/10 px-3 py-1 rounded-lg border border-liquid-gold/20 group-hover:border-liquid-gold/40 transition-all">
                            <BoltIcon className="w-3 h-3 animate-pulse" /> {formatCurrency(trabajo.saldo)}
                         </div>
                     ) : (
@@ -286,8 +327,8 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                         animate={{ width: `${getProgress()}%` }}
                         transition={{ duration: 2, ease: "circOut" }}
                         className={`h-full ${
-                            urgency === 'critical' ? 'bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.5)]' : 
-                            urgency === 'warning' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-slate-800'
+                            urgency === 'critical' ? 'bg-liquid-gold shadow-gold-glow-strong' : 
+                            urgency === 'warning' ? 'bg-liquid-gold/60 shadow-gold-glow' : 'bg-slate-800'
                         }`} 
                     />
                 </div>
@@ -420,6 +461,20 @@ const KDSPage: React.FC = () => {
                         </h1>
                     </div>
 
+                    <div className="flex items-center gap-10">
+                        <div className="flex items-center gap-8 bg-white/5 px-6 py-4 rounded-[1.5rem] border border-white/5 backdrop-blur-xl">
+                            <div className="flex flex-col items-end border-r border-white/5 pr-8">
+                                <span className="text-[9px] text-slate-500 font-black tracking-[0.4em] uppercase italic">OPERADOR</span>
+                                <span className="text-xs font-black text-white uppercase italic">{currentUser?.nombre || 'GUEST_01'}</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-[9px] text-liquid-gold/60 font-black tracking-[0.4em] uppercase italic">LOAD</span>
+                                <span className="text-xs font-black text-liquid-gold italic">{Math.round((trabajos.filter(t => t.estado !== TrabajoEstado.ENTREGADO).length / 50) * 100)}%</span>
+                            </div>
+                            <TacticalClock />
+                        </div>
+                    </div>
+
                     <div className="flex flex-col md:flex-row gap-5 w-full xl:w-auto items-center">
                         <div className="relative group w-full md:w-[400px]">
                             <div className="absolute left-6 top-1/2 -translate-y-1/2">
@@ -465,7 +520,7 @@ const KDSPage: React.FC = () => {
                 <div className="flex gap-4 lg:gap-8 mt-10 px-4 lg:px-0 overflow-x-auto no-scrollbar">
                     {[
                         { label: 'Órdenes Activas', value: filteredTrabajos.length, icon: BoxIcon, color: 'text-white' },
-                        { label: 'Prioridad Crítica', value: filteredTrabajos.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical').length, icon: BoltIcon, color: 'text-rose-500' },
+                        { label: 'Prioridad Crítica', value: filteredTrabajos.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical').length, icon: BoltIcon, color: 'text-liquid-gold' },
                         { label: 'Valor en Taller', value: formatCurrency(filteredTrabajos.reduce((acc, t) => acc + t.total, 0)), icon: ActivityIcon, color: 'text-liquid-gold' },
                     ].map((stat, i) => (
                         <div key={i} className="flex items-center gap-4 bg-white/5 dark:bg-black/40 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl min-w-[200px]">
@@ -545,6 +600,13 @@ const KDSPage: React.FC = () => {
                                     onDragEnter={() => setDraggedOverColumn(colStatus)}
                                     onDrop={(e) => handleDrop(e, colStatus)}
                                 >
+                                    {/* Column Heatmap / Glow Effect */}
+                                    {columns[status].some(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical') && (
+                                        <div className="absolute inset-0 bg-liquid-gold/[0.03] animate-pulse pointer-events-none" />
+                                    )}
+                                    {columns[status].some(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'warning') && (
+                                        <div className="absolute inset-0 bg-liquid-gold/[0.02] pointer-events-none" />
+                                    )}
                                     {/* Cabecera de Columna */}
                                     <div className="p-8 flex justify-between items-center border-b border-white/5 bg-white/[0.01]">
                                         <div className="flex flex-col gap-1">
@@ -618,11 +680,11 @@ const KDSPage: React.FC = () => {
                                 </h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic">Identidad Industrial Vinculada</p>
-                                    {selectedTrabajo.tipo === 'sri' && (
-                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-brand-red/10 text-brand-red border border-brand-red/20">SRI</span>
+                                    {selectedTrabajo.esSRI && (
+                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20">SRI</span>
                                     )}
                                     {selCliente?.regimen === Regimen.NEGOCIO_POPULAR && (
-                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">RIMPE N.P.</span>
+                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-white/10 text-white/60 border border-white/20">RIMPE N.P.</span>
                                     )}
                                 </div>
                             </div>
@@ -654,16 +716,16 @@ const KDSPage: React.FC = () => {
                             </div>
                             <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-white/5">
                                 <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Saldo Pendiente</span>
-                                <span className={`text-xl font-black italic ${selectedTrabajo.saldo > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                <span className={`text-xl font-black italic ${selectedTrabajo.saldo > 0 ? 'text-liquid-gold shadow-gold-glow-sm' : 'text-emerald-500'}`}>
                                     {formatCurrency(selectedTrabajo.saldo)}
                                 </span>
                             </div>
                         </div>
 
                         {selectedTrabajo.actividadSeleccionada && (
-                            <div className="p-4 bg-brand-red/5 border border-brand-red/10 rounded-2xl flex items-center gap-3">
-                                <ShieldCheckIcon className="w-4 h-4 text-brand-red" />
-                                <span className="text-[9px] font-black text-brand-red uppercase tracking-widest italic">Actividad SRI:</span>
+                            <div className="p-4 bg-liquid-gold/5 border border-liquid-gold/10 rounded-2xl flex items-center gap-3">
+                                <ShieldCheckIcon className="w-4 h-4 text-liquid-gold" />
+                                <span className="text-[9px] font-black text-liquid-gold uppercase tracking-widest italic">Actividad SRI:</span>
                                 <span className="text-xs font-black text-white uppercase italic truncate">{selectedTrabajo.actividadSeleccionada}</span>
                             </div>
                         )}
@@ -678,7 +740,7 @@ const KDSPage: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            {selectedTrabajo.tipo === 'sri' && (
+                            {selectedTrabajo.esSRI && (
                                 <button 
                                     onClick={() => {
                                         setSelectedTrabajo(null);

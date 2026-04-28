@@ -7,7 +7,7 @@ import {
     SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, 
     ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
     ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon,
-    CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon
+    CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon, CreditCardIcon
 } from '../components/Icons';
 import { BottomSheet } from '../components/BottomSheet';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,18 +73,64 @@ const RetirosPage: React.FC = () => {
         return Math.floor(diff / (1000 * 3600 * 24));
     };
 
+    const totals = useMemo(() => {
+        const jobs = filtered;
+        return {
+            count: jobs.length,
+            totalSaldo: jobs.reduce((acc, t) => acc + (t.saldo || 0), 0)
+        };
+    }, [filtered]);
+
     return (
-        <div className="space-y-10 animate-fade-in pb-20">
-            <div className="flex flex-wrap justify-between items-end gap-4 p-6 lg:p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] shadow-luxury relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
-                <div className="relative z-10">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Despacho</p>
-                    <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">Vitrina de <span className="text-gold-gradient italic">Salidas</span></h1>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Gestión de entregas y arqueo de caja</p>
+        <div className="space-y-12 animate-fade-in pb-20 pt-6">
+            {/* --- CABECERA ELITE --- */}
+            <div className="flex flex-col gap-10">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div className="flex gap-10">
+                        <div className="w-[1px] h-24 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-5">
+                                <div className="h-[2px] w-12 bg-liquid-gold rounded-full shadow-gold-glow"></div>
+                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">CENTRO DE DESPACHO ESTRATÉGICO</p>
+                            </div>
+                            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
+                                VITRINA <span className="text-gold-gradient">SISTEMA</span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
+                        <div className="bg-black/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl flex items-center gap-6 shadow-luxury min-w-[200px]">
+                            <div className="p-3 bg-liquid-gold/10 rounded-2xl">
+                                <BoxIcon className="w-6 h-6 text-liquid-gold" />
+                            </div>
+                            <div>
+                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">En Vitrina</p>
+                                <p className="text-2xl font-black text-white italic tracking-tighter">{totals.count}</p>
+                            </div>
+                        </div>
+                        <div className="bg-black/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl flex items-center gap-6 shadow-luxury min-w-[240px]">
+                            <div className="p-3 bg-emerald-500/10 rounded-2xl">
+                                <CreditCardIcon className="w-6 h-6 text-emerald-400" />
+                            </div>
+                            <div>
+                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Saldo Pendiente</p>
+                                <p className="text-2xl font-black text-emerald-400 italic tracking-tighter">{formatCurrency(totals.totalSaldo)}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="relative z-10 w-full sm:w-80">
-                    <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <input type="text" placeholder="BUSCAR POR ORDEN O CLIENTE..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-12 pr-6 py-4 bg-white/5 border-2 border-white/5 focus:border-liquid-gold/30 rounded-2xl text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 outline-none focus:bg-white/10 transition-all duration-500" />
+
+                <div className="relative group max-w-2xl">
+                    <div className="absolute inset-0 bg-liquid-gold/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-liquid-gold/60" />
+                    <input 
+                        type="text" 
+                        placeholder="IDENTIFICAR MANIFIESTO O CLIENTE..." 
+                        value={searchTerm} 
+                        onChange={e => setSearchTerm(e.target.value)} 
+                        className="w-full pl-16 pr-8 py-6 bg-white/[0.02] border border-white/10 focus:border-liquid-gold/40 rounded-[2rem] text-sm font-black text-white uppercase tracking-widest placeholder:text-slate-700 outline-none focus:bg-white/[0.05] transition-all duration-500 backdrop-blur-md shadow-inner"
+                    />
                 </div>
             </div>
 

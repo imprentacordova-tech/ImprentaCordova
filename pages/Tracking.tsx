@@ -292,7 +292,7 @@ const TrackingPage: React.FC = () => {
                     </form>
                     
                     {error && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[#e11d48] text-[10px] font-black uppercase tracking-widest bg-red-50 px-4 py-2 rounded-full border border-red-100">
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-liquid-gold text-[10px] font-black uppercase tracking-widest bg-liquid-gold/5 px-4 py-2 rounded-full border border-liquid-gold/20">
                             {error}
                         </motion.div>
                     )}
@@ -397,7 +397,12 @@ const TrackingPage: React.FC = () => {
                                     <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 shadow-xl flex flex-col gap-6 backdrop-blur-3xl">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <span className="text-[10px] font-black text-gold-bright uppercase tracking-widest italic">Manifiesto Técnico</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-black text-gold-bright uppercase tracking-widest italic">Manifiesto Técnico</span>
+                                                    {currentJob.esSRI && (
+                                                        <span className="bg-gold-bright/20 text-gold-bright text-[8px] font-black px-2 py-0.5 rounded border border-gold-bright/30 animate-pulse">AUTORIZADO_SRI</span>
+                                                    )}
+                                                </div>
                                                 <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">{currentJob.subtipo}</h3>
                                             </div>
                                             <div className="bg-white/5 px-3 py-1 rounded-full text-[8px] font-mono text-slate-500 font-bold uppercase tracking-widest">Protocolo v2.4</div>
@@ -422,8 +427,13 @@ const TrackingPage: React.FC = () => {
                                                         { label: 'Sustrato', value: parsedSpecs.tipoPapel, icon: LayersIcon },
                                                         { label: 'Formato', value: parsedSpecs.tamano, icon: MapPinIcon },
                                                         { label: 'Volumen', value: parsedSpecs.copias, icon: HashIcon },
-                                                        { label: 'Secuencia', value: parsedSpecs.numerado, icon: QrCodeIcon }
-                                                    ].map(spec => (
+                                                        { label: 'Secuencia', value: parsedSpecs.numerado, icon: QrCodeIcon },
+                                                        ...(currentJob.esSRI ? [
+                                                            { label: 'Sede', value: currentJob.establecimiento, icon: GlobeAltIcon },
+                                                            { label: 'Punto', value: currentJob.puntoEmision, icon: ZapIcon },
+                                                            { label: 'Trámite', value: currentJob.actividadSeleccionada, icon: ShieldCheckIcon }
+                                                        ] : [])
+                                                    ].filter(s => s.value).map(spec => (
                                                         <div key={spec.label} className="flex items-center justify-between px-5 py-3 bg-white/[0.03] rounded-2xl group hover:bg-white/5 hover:border-gold-bright/20 border border-transparent transition-all">
                                                             <div className="flex items-center gap-3">
                                                                 <spec.icon className="w-4 h-4 text-slate-600 group-hover:text-gold-bright transition-colors" />
@@ -451,8 +461,8 @@ const TrackingPage: React.FC = () => {
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Telemetría en Tiempo Real</span>
                                             </div>
                                             <div className="flex gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-ping" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold" />
                                             </div>
                                         </div>
                                         <div className="flex-1 overflow-y-auto no-scrollbar font-mono text-[10px] space-y-4 pr-2 relative z-10">

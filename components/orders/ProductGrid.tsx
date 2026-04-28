@@ -138,7 +138,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
             <div className="flex flex-col xl:flex-row gap-6 items-center justify-between bg-brand-dark/40 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/5 shadow-luxury">
                 <div className="flex items-center gap-6">
                     <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
-                        <button onClick={() => onSetJobType(TrabajoTipo.SRI)} className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.SRI ? 'bg-brand-red text-white shadow-red-glow' : 'text-slate-500 hover:text-white'}`}>Talonarios SRI</button>
+                        <button onClick={() => onSetJobType(TrabajoTipo.SRI)} className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.SRI ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-500 hover:text-white'}`}>Talonarios SRI</button>
                         <button onClick={() => onSetJobType(TrabajoTipo.GENERAL)} className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${jobType === TrabajoTipo.GENERAL ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' : 'text-slate-500 hover:text-white'}`}>Papelería General</button>
                     </div>
                 </div>
@@ -215,7 +215,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                             {selectedSize && (
                                 <div className="space-y-6 animate-slide-in-up">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse"></div> 2. CONFIGURACIÓN DE VARIACIÓN
+                                        <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse"></div> 2. CONFIGURACIÓN DE VARIACIÓN
                                     </label>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                         {availableQuantities.map(q => (
@@ -246,7 +246,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductAction, productsInCa
                                         <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10 w-full md:w-auto">
                                             <button 
                                                 onClick={() => setPerforar(!perforar)} 
-                                                className={`w-full sm:w-auto px-6 py-4 rounded-2xl border flex items-center justify-center gap-3 transition-all ${perforar ? 'bg-brand-red border-brand-red text-white shadow-red-glow' : 'bg-white/5 text-slate-500 border-white/10 hover:text-white'}`}
+                                                className={`w-full sm:w-auto px-6 py-4 rounded-2xl border flex items-center justify-center gap-3 transition-all ${perforar ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 text-slate-500 border-white/10 hover:text-white'}`}
                                             >
                                                 <SparklesIcon className="w-4 h-4"/> 
                                                 <span className="text-[10px] font-black uppercase tracking-wider">Perforar</span>

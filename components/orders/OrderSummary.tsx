@@ -68,9 +68,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 {setPrioridad && (
                                     <button 
                                         onClick={() => setPrioridad(prioridad === 'Normal' ? 'Urgente' : 'Normal')}
-                                        className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase transition-all flex items-center gap-2 border ${prioridad === 'Urgente' ? 'bg-brand-red/20 border-brand-red text-brand-red animate-pulse' : 'bg-white/5 border-white/10 text-slate-400'}`}
+                                        className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase transition-all flex items-center gap-2 border ${prioridad === 'Urgente' ? 'bg-liquid-gold/20 border-liquid-gold text-liquid-gold animate-pulse' : 'bg-white/5 border-white/10 text-slate-400'}`}
                                     >
-                                        <div className={`w-1.5 h-1.5 rounded-full ${prioridad === 'Urgente' ? 'bg-brand-red' : 'bg-slate-600'}`}></div>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${prioridad === 'Urgente' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-slate-600'}`}></div>
                                         {prioridad === 'Urgente' ? 'Prioridad Alta' : 'Urgencia'}
                                     </button>
                                 )}
@@ -137,7 +137,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                                 <span className="px-2 text-[10px] font-black text-white">{item.cantidad}</span>
                                                 <button onClick={() => onUpdateQuantity(id, item.cantidad + 1)} className="px-2 py-0.5 text-slate-500 hover:text-white">+</button>
                                             </div>
-                                            <button onClick={() => onRemoveItem(id)} className="p-2 text-slate-600 hover:text-brand-red transition-all bg-white/5 rounded-lg border border-white/5">
+                                            <button onClick={() => onRemoveItem(id)} className="p-2 text-slate-600 hover:text-liquid-gold transition-all bg-white/5 rounded-lg border border-white/5 hover:border-liquid-gold/30">
                                                 <TrashIcon className="w-3 h-3"/>
                                             </button>
                                         </div>
@@ -279,11 +279,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                          <div className="grid grid-cols-3 gap-3">
                              <button onClick={() => suggestAbono(0.5)} className="py-3 rounded-2xl bg-white/5 border border-white/10 text-slate-400 font-black text-[9px] uppercase hover:bg-white/10 hover:text-white transition-all">Sugerir 50%</button>
                              <button onClick={() => suggestAbono(1)} className="py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-black text-[9px] uppercase hover:bg-emerald-500 hover:text-white transition-all">Sugerir 100%</button>
-                             <button onClick={() => setAbono(0)} className="py-3 rounded-2xl bg-white/5 border border-white/10 text-slate-600 font-black text-[9px] uppercase hover:text-brand-red transition-all">Limpiar</button>
+                             <button onClick={() => setAbono(0)} className="py-3 rounded-2xl bg-white/5 border border-white/10 text-slate-600 font-black text-[9px] uppercase hover:text-liquid-gold transition-all">Limpiar</button>
                          </div>
                     </div>
 
-                    <div className={`flex justify-between items-center p-6 rounded-[2.5rem] border transition-all duration-700 ${saldo === 0 && orderTotal > 0 ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-brand-red/10 border-brand-red/30 text-brand-red opacity-100'}`}>
+                    <div className={`flex justify-between items-center p-6 rounded-[2.5rem] border transition-all duration-700 ${saldo === 0 && orderTotal > 0 ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-liquid-gold/10 border-liquid-gold/30 text-liquid-gold opacity-100'}`}>
                         <div>
                             <span className="text-[9px] font-black uppercase opacity-60 block tracking-[0.3em] mb-1">Saldo a Liquidar</span>
                             <span className="text-3xl font-black tracking-tighter tabular-nums">{formatCurrency(saldo)}</span>
@@ -293,7 +293,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 <CheckCircleIcon className="w-8 h-8" />
                             </div>
                         ) : (
-                            <div className="bg-brand-red/20 p-2 rounded-full">
+                            <div className="bg-liquid-gold/20 p-2 rounded-full">
                                 <ArrowRightIcon className="w-8 h-8 opacity-40" />
                             </div>
                         )}

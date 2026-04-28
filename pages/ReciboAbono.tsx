@@ -150,7 +150,10 @@ const ReciboAbonoPage: React.FC = () => {
                     </div>
                     <div className="flex text-[10px] items-start">
                         <span className="w-8 text-center font-bold">{trabajo.cantidad}</span>
-                        <span className="flex-grow uppercase leading-tight pr-1">{trabajo.subtipo}</span>
+                        <span className="flex-grow uppercase leading-tight pr-1">
+                            <div className="font-bold">{trabajo.tipo}</div>
+                            <div className="text-[7px] font-medium normal-case italic">{trabajo.subtipo}</div>
+                        </span>
                         <span className="w-12 text-right font-bold">{formatCurrency(trabajo.total)}</span>
                     </div>
                 </div>

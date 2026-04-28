@@ -83,12 +83,13 @@ const mapDBTrabajo = (t: any): Trabajo => ({
     estadoClave: t.estado_clave,
     imprimirClave: t.imprimir_clave,
     esRenovacion: t.es_renovacion,
-    esSRI: t.es_sri ?? false,
+    esSRI: t.es_sri === true || t.tipo?.toLowerCase() === 'sri',
     tamano: t.tamano,
     establecimiento: t.establecimiento,
     puntoEmision: t.punto_emision,
     fechaVencimiento: t.fecha_vencimiento,
     actividadSeleccionada: t.actividad_seleccionada,
+    claveAcceso: t.clave_acceso,
     arteAprobado: t.arte_aprobado,
     fotoRetiroUrl: t.foto_retiro_url
 });
@@ -300,8 +301,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const dbData: Record<string, any> = {
             cliente_id: trabajoData.clienteId || trabajoData.cliente_id,
             titular: trabajoData.titular,
-            tipo: trabajoData.servicio || trabajoData.tipo,
-            subtipo: trabajoData.detalle || trabajoData.subtipo,
+            tipo: trabajoData.tipo || trabajoData.servicio,
+            subtipo: trabajoData.subtipo || trabajoData.detalle,
             cantidad: trabajoData.cantidad || 1,
             total: trabajoData.precio || trabajoData.total,
             abono: trabajoData.abono || 0,
@@ -321,6 +322,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (trabajoData.actividadSeleccionada) dbData.actividad_seleccionada = trabajoData.actividadSeleccionada;
         if (trabajoData.tamano) dbData.tamano = trabajoData.tamano;
         if (trabajoData.esRenovacion !== undefined) dbData.es_renovacion = trabajoData.esRenovacion;
+        if (trabajoData.claveAcceso) dbData.clave_acceso = trabajoData.claveAcceso;
         
         const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         if (error) throw error;
@@ -534,8 +536,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return await addTrabajo({
             clienteId: cliente.id,
             titular: cliente.nombre,
-            tipo: TrabajoTipo.GENERAL,
-            subtipo: items.map(i => i.nombre).join(', '),
+            tipo: items.map(i => i.nombre).join(', ') || 'Pedido Web',
+            subtipo: 'Orden Pública / Ecommerce',
             total: totalItems,
             abono: 0,
             saldo: totalItems,

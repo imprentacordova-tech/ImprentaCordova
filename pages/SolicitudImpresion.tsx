@@ -4,18 +4,57 @@ import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
-    Loader2Icon
+    Loader2Icon, MapPinIcon, ExclamationTriangleIcon, ShieldCheckIcon,
+    FingerPrintIcon, CpuIcon, ActivityIcon, LockIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 
 declare const html2pdf: any;
+
+const DigitalSeal = () => (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none z-0">
+        <div className="w-[600px] h-[600px] border-[12px] border-black rounded-full flex items-center justify-center rotate-12 relative">
+            <div className="absolute inset-4 border-2 border-black rounded-full border-dashed animate-reverse-spin" style={{ animationDuration: '60s' }} />
+            <div className="text-[50px] font-black text-center leading-tight uppercase tracking-tighter">
+                CORDOVA ELITE PROTOCOL<br/>
+                <span className="text-[70px]">SRI_AUTH_2026</span><br/>
+                SECURE_INDUSTRIAL_INTAKE
+            </div>
+        </div>
+    </div>
+);
+
+const SecurityWatermark = () => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none opacity-[0.02] z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[120%] flex flex-wrap gap-20 rotate-[-25deg]">
+            {Array.from({ length: 40 }).map((_, i) => (
+                <div key={i} className="text-[10px] font-mono font-black whitespace-nowrap tracking-[0.5em]">
+                    CORDOVA_ELITE_SYSTEM_INTEGRITY_VERIFIED_AUTHENTIC_DOCUMENT_NO_COPIES
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
+const TacticalStatusBar = ({ id }: { id: string }) => (
+    <div className="w-full flex justify-between items-center px-4 py-1.5 bg-slate-100 border-t border-slate-300 font-mono text-[7px] text-slate-500 font-black uppercase tracking-[0.2em] relative z-20">
+        <div className="flex gap-4">
+            <span className="flex items-center gap-1"><CpuIcon className="w-2.5 h-2.5" /> SYSTEM_HASH: {id.substring(0, 12)}</span>
+            <span className="flex items-center gap-1"><ActivityIcon className="w-2.5 h-2.5" /> LATENCY: 12ms</span>
+        </div>
+        <div className="flex gap-4">
+            <span className="flex items-center gap-1"><LockIcon className="w-2.5 h-2.5" /> ENCRYPTION: AES_256_GCM</span>
+            <span>BUILD_v2.0.26_STABLE</span>
+        </div>
+    </div>
+);
 
 const SolicitudImpresionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const format = queryParams.get('format') || 'a4'; // 'a4' o 'a5'
+    const format = queryParams.get('format') || 'a4'; 
     const { trabajos, clientes, sriCredentials, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
@@ -29,9 +68,8 @@ const SolicitudImpresionPage: React.FC = () => {
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
 
-    // Mapeo de config para la plantilla
     const config = {
-        emisorDireccionMatriz: 'Colón e/ Sucre y Av. Rocafuerte',
+        emisorDireccionMatriz: cloudConfig?.direccion || 'Colón e/ Sucre y Av. Rocafuerte',
         emisorTelefono: cloudConfig?.imprentaTelefono || '0993083943 • 0962585172',
         emisorRuc: cloudConfig?.emisorRuc || cloudConfig?.imprentaRuc || '0702065319001',
         imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '8634',
@@ -43,17 +81,20 @@ const SolicitudImpresionPage: React.FC = () => {
         if (!element || !trabajo) return;
         const opt = {
             margin: 0,
-            filename: `Solicitud-SRI-${trabajo.orden}-${cliente?.ruc || cliente?.cedula}.pdf`,
+            filename: `Elite-SRI-${trabajo.orden}-${cliente?.ruc || cliente?.cedula}.pdf`,
             image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         html2pdf().from(element).set(opt).save();
     };
 
     if (dataLoading || !config || !trabajo || !cliente) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100">
-            <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b]">
+            <div className="flex flex-col items-center gap-4">
+                <Loader2Icon className="w-12 h-12 text-amber-500 animate-spin" />
+                <span className="text-amber-500 font-mono text-xs uppercase tracking-[0.3em] animate-pulse">Initializing Elite Protocol...</span>
+            </div>
         </div>
     );
 
@@ -63,10 +104,6 @@ const SolicitudImpresionPage: React.FC = () => {
     const anio = fechaHoy.getFullYear().toString();
     const hora = fechaHoy.toLocaleTimeString('es-EC', {hour: '2-digit', minute:'2-digit'});
 
-    const subtipoOriginal = trabajo.subtipo.toLowerCase();
-    
-    // Parse workflow: "100x FACTURAS (1/4 OFICIO)", "50x RETENCIONES"
-    // Split by comma then find quantity and description
     const rawSubtipo = trabajo.subtipo || '';
     const parsedJobItems = rawSubtipo.split(',').map(part => {
         const trimmed = part.trim();
@@ -97,7 +134,6 @@ const SolicitudImpresionPage: React.FC = () => {
     const hasSriKey = sriCredentials.some(c => c.ruc === cliente.ruc);
     const isContingencyLimit = (cliente.regimen === 'General' || cliente.regimen === 'Rimpe Emprendedor') && trabajo.esSRI;
 
-    // Mapear el catálogo estándar con los items del trabajo
     const mappedItems = standardTypes.map(st => {
         const match = parsedJobItems.find(pj => pj.descripcion.includes(st.key));
         if (match) {
@@ -107,7 +143,7 @@ const SolicitudImpresionPage: React.FC = () => {
                 estab: trabajo.establecimiento || '001', 
                 punto: trabajo.puntoEmision || '001', 
                 isChecked: true,
-                precio: (trabajo.total / (parsedJobItems.length || 1)).toFixed(2) // Estimación simple si hay múltiples
+                precio: (trabajo.total / (parsedJobItems.length || 1)).toFixed(2)
             };
         }
         return { tipo: st.label, cant: '', estab: '', punto: '', isChecked: false, precio: '' };
@@ -116,285 +152,338 @@ const SolicitudImpresionPage: React.FC = () => {
     const RucArray = (cliente.ruc || cliente.cedula || '9999999999001').split('').slice(0, 13);
     while (RucArray.length < 13) RucArray.push('');
 
-    // Función principal para renderizar el formulario (ya sea la mitad A5 o la A4 completa)
     const renderFormulario = (variant: 'cliente' | 'imprenta' | 'full') => {
-        // Configuraciones de color dinámicas según la variante
         const isClient = variant === 'cliente';
-        
-        const headerBg = isClient ? 'bg-amber-100' : 'bg-[#1f2124]';
-        const headerBorder = isClient ? 'border-amber-600' : 'border-[#1f2124]';
-        const headerText = isClient ? 'text-amber-900' : 'text-white';
-        const accentText = isClient ? 'text-amber-700' : 'text-brand-blue';
-        const subtitleBg = isClient ? 'bg-amber-50' : 'bg-gray-200';
-        const tableHeaderBg = isClient ? 'bg-amber-600' : 'bg-[#1f2124]';
-        const tableBorder = isClient ? 'border-amber-600' : 'border-[#1f2124]';
-        const cintaBg = isClient ? 'bg-amber-700' : 'bg-[#1f2124]';
-        const totalBg = isClient ? 'bg-amber-800' : 'bg-[#1f2124]';
-        const checkboxActive = isClient ? 'bg-amber-100 text-amber-900' : 'bg-sky-50 text-black';
-        
-        // Ajustes de tamaño si es A5 (Doble)
         const isA5 = format === 'a5';
-        const paddingClass = isA5 ? 'p-3' : 'p-6';
+        
+        const headerBg = isClient ? 'bg-slate-50' : 'bg-[#0f1113]';
+        const headerBorder = isClient ? 'border-slate-300' : 'border-black';
+        const headerText = isClient ? 'text-slate-900' : 'text-white';
+        const tableHeaderBg = isClient ? 'bg-slate-800' : 'bg-black';
+        const checkboxActive = isClient ? 'bg-slate-100 text-slate-900' : 'bg-amber-50 text-black';
+        
+        const paddingClass = isA5 ? 'p-5' : 'p-10';
         const mainTextSize = isA5 ? 'text-[10px]' : 'text-xs';
         const titleSize = isA5 ? 'text-2xl' : 'text-4xl';
-        const subtitleSize = isA5 ? 'text-sm' : 'text-xl';
-        const tableTextSize = isA5 ? 'text-[9px]' : 'text-xs';
-        const cintaTextSize = isA5 ? 'text-[8px]' : 'text-[10px]';
+        const tableTextSize = isA5 ? 'text-[9px]' : 'text-[11px]';
 
         return (
-            <div className={`relative flex flex-col box-border text-black ${paddingClass} h-full ${variant === 'imprenta' ? 'border-t-2 border-dashed border-gray-400 mt-2 pt-4' : ''}`}>
+            <div className={`relative flex flex-col box-border text-black ${paddingClass} h-full ${variant === 'imprenta' ? 'mt-0 pt-10' : ''} bg-white overflow-hidden`}>
                 
-                {/* 1. HEADER */}
-                <div className={`${headerBg} ${headerText} rounded-t-xl overflow-hidden border-2 ${headerBorder} flex flex-col shadow-inner`}>
-                    <div className={`flex justify-between items-center px-4 py-1 ${isClient ? 'bg-amber-200' : 'bg-[#1a1c1e]'}`}>
-                        <h1 className={`${titleSize} font-black italic tracking-tighter w-full text-center`} style={{ fontFamily: 'Impact, sans-serif' }}>
-                            <span className={`${headerText} ${isA5?'text-3xl':'text-5xl'} mr-2`}>I</span>IMPRENTA CORDOVA
-                        </h1>
-                    </div>
-                    <div className={`px-4 ${isA5?'py-1':'py-2'} text-center border-t ${isClient ? 'border-amber-900/20' : 'border-white/20'}`}>
-                        <div className={`flex justify-center flex-wrap gap-x-2 ${isA5?'text-[9px]':'text-[11px]'} font-bold`}>
-                            <span>Direc.: {config.emisorDireccionMatriz || 'Colón e/ Sucre y Av. Rocafuerte'}</span>
-                            <span className="flex items-center gap-1 mx-2"><PrinterIcon className="w-3 h-3"/> {config.emisorTelefono || '0993083943 • 0962585172'}</span>
-                        </div>
-                        <div className={`flex justify-center flex-wrap gap-x-4 mt-0.5 ${isA5?'text-[9px]':'text-[11px]'} items-center`}>
-                            <span className={`font-bold underline decoration-${isClient?'amber-900':'white'}/50 underline-offset-2`}>RUC: {config.emisorRuc || '0702065319001'}</span>
-                            <span>•</span>
-                            <span className="font-bold">CODIGO AUT SRI: {config.imprentaAutorizacion || '8634'}</span>
-                            <span>•</span>
-                            <span className={`flex items-center gap-1 ${isA5?'text-[8px]':'text-[10px]'}`}>Email: {config.emisorEmail || 'imprentacordova@gmail.com'}</span>
-                        </div>
-                    </div>
-                </div>
+                <div className="absolute inset-0 opacity-[0.02] pointer-events-none select-none z-0" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                <SecurityWatermark />
+                <DigitalSeal />
 
-                {/* 2. TÍTULO SECUNDARIO */}
-                <div className={`${subtitleBg} border-x-2 border-b-2 ${headerBorder} text-center ${isA5?'py-1':'py-2'} px-2 relative z-10 flex items-center justify-center gap-4`} style={{ backgroundImage: 'radial-gradient(#999 1px, transparent 1px)', backgroundSize: '4px 4px' }}>
-                    <h2 className={`${subtitleSize} font-black text-black uppercase tracking-widest bg-white/95 inline-block px-6 ${isA5?'py-0':'py-0.5'} rounded shadow-sm border border-slate-300`}>
-                        Solicitud de Autorización de Impresión SRI
-                    </h2>
-                    {isContingencyLimit && (
-                        <div className="bg-brand-red text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-tighter shadow-lg border-2 border-white animate-pulse">
-                            Límite Contingencia: 25H
-                        </div>
-                    )}
-                </div>
-                
-                <div className="absolute right-4 top-2 bg-white/90 rounded border-2 border-black px-2 py-0.5 font-black text-[10px] uppercase shadow-md z-20 transform rotate-3">
-                    {isClient ? 'Copia CLIENTE' : variant === 'imprenta' ? 'Copia IMPRENTA' : 'ORIGINAL'}
-                </div>
-
-                {/* 3. DATOS DEL CLIENTE */}
-                <div className={`${isA5?'mt-2':'mt-6'} px-1 space-y-${isA5?'2':'4'} ${mainTextSize} font-bold font-sans text-black`}>
-                    <div className="flex items-end border-b-2 border-black border-dashed pb-0.5">
-                        <span className={`whitespace-nowrap italic mr-2 ${isA5?'text-[11px]':'text-[13px]'}`}>Apellidos y Nombres:</span>
-                        <span className={`flex-grow font-black uppercase ${isA5?'text-xs':'text-sm'}`}>{cliente.nombre}</span>
-                    </div>
-                    <div className="flex items-end border-b-2 border-black border-dashed pb-0.5">
-                        <span className={`whitespace-nowrap italic mr-2 ${isA5?'text-[11px]':'text-[13px]'}`}>Razón Social:</span>
-                        <span className={`flex-grow font-black uppercase ${isA5?'text-xs':'text-sm'}`}>{cliente.nombreComercial || cliente.nombre}</span>
-                    </div>
-                    <div className="flex items-end border-b-2 border-black border-dashed pb-0.5">
-                        <span className={`whitespace-nowrap italic mr-2 ${isA5?'text-[11px]':'text-[13px]'}`}>Actividad Ec.:</span>
-                        <span className={`flex-grow font-black uppercase ${isA5?'text-xs':'text-sm'}`}>{trabajo.actividadSeleccionada || cliente.actividades || 'SEGÚN RUC'}</span>
-                        {isRimpe && <span className={`ml-2 bg-black text-white ${isA5?'text-[7px]':'text-[8px]'} font-black px-2 py-0.5 rounded uppercase tracking-wider`}>RIMPE N.P.</span>}
-                    </div>
-                    
-                    {cliente.regimen === Regimen.NEGOCIO_POPULAR && (
-                        <div className="flex items-end border-b-2 border-black border-dashed pb-0.5 pt-0.5">
-                            <span className={`whitespace-nowrap italic mr-2 ${isA5?'text-[11px]':'text-[13px]'}`}>Cumplimiento Tributario:</span>
-                            <div className="flex items-center gap-2 flex-grow">
-                                <div className={`${isA5?'w-3 h-3 text-[8px]':'w-4 h-4 text-[10px]'} border-2 border-black flex items-center justify-center font-black pb-0.5 bg-white`}>x</div>
-                                <span className={`font-black ${isA5?'text-xs':'text-sm'} uppercase`}>Al día: verificado {dia}/{mes}/{anio}</span>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* FILA DE RUC */}
-                    <div className={`flex items-end pb-0.5 ${isA5?'pt-1':'pt-2'}`}>
-                        <span className={`whitespace-nowrap italic mr-4 font-black ${isA5?'text-[12px]':'text-[15px]'}`}>RUC:</span>
-                        <div className={`flex border-2 border-black ${isA5?'h-6':'h-8'} shadow-sm`}>
-                            {RucArray.map((digit, i) => (
-                                <div key={i} className={`${isA5?'w-4':'w-6'} flex items-center justify-center font-bold ${isA5?'text-xs':'text-sm'} ${i !== 0 ? 'border-l-2 border-black' : ''}`}>
-                                    {digit}
+                <div className={`${headerBg} ${headerText} rounded-3xl overflow-hidden border-2 ${headerBorder} flex flex-col shadow-2xl relative z-10 mb-6`}>
+                    <div className={`flex justify-between items-center px-8 py-3 ${isClient ? 'bg-slate-100 border-b border-slate-200' : 'bg-black'}`}>
+                        <div className="flex items-center gap-6">
+                            <div className="relative">
+                                <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                                    <FingerPrintIcon className="w-8 h-8" />
                                 </div>
-                            ))}
-                        </div>
-                        <span className={`whitespace-nowrap italic ml-6 mr-2 font-black ${isA5?'text-[12px]':'text-[15px]'}`}>Clave:</span>
-                        <div className={`flex-grow border-b-2 border-black border-dashed pb-0.5 px-2 flex items-center justify-center font-black ${isA5?'text-xs':'text-sm'} relative`}>
-                            {hasSriKey ? (
-                                <span className="text-emerald-600 flex items-center gap-1">
-                                    ENCONTRADA <span className="text-[10px]">✅</span>
-                                </span>
-                            ) : (
-                                <span>{trabajo.estadoClave === 'LISTA' ? '************' : 'PENDIENTE'}</span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* FILA DE FECHAS */}
-                    <div className={`flex items-center justify-between ${isA5?'pt-1':'pt-3'} ${isA5?'text-[11px]':'text-[13px]'}`}>
-                        <div className="flex items-center">
-                            <span className="italic whitespace-nowrap mr-2">Hora:</span>
-                            <span className="font-black border-b-2 border-black border-dashed px-2 py-0.5">{hora}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                            <span className="italic whitespace-nowrap">Fecha:</span>
-                            <div className={`flex border-2 border-black font-black ${isA5?'text-xs':'text-sm'} shadow-sm bg-white`}>
-                                <div className={`px-2 ${isA5?'py-0.5':'py-1'} border-r-2 border-black relative`}><span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[7px] bg-white px-1">DÍA</span>{dia}</div>
-                                <div className={`px-2 ${isA5?'py-0.5':'py-1'} border-r-2 border-black relative`}><span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[7px] bg-white px-1">MES</span>{mes}</div>
-                                <div className={`px-2 ${isA5?'py-0.5':'py-1'} relative`}><span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[7px] bg-white px-1">AÑO</span>{anio}</div>
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-slate-200">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className={`${titleSize} font-black tracking-tighter leading-none flex items-center gap-2`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                                    CORDOVA <span className="text-amber-500 italic">ELITE</span>
+                                </h1>
+                                <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em] opacity-40">Industrial_Printing_Engine_v2.6</span>
                             </div>
                         </div>
-                        
-                        <div className="flex items-center gap-1">
-                            <span className="italic whitespace-nowrap border-b-2 border-black border-dashed flex-grow px-1 py-0.5">Entrega: </span>
-                            <div className={`flex ${headerBg} ${headerText} text-[9px] font-bold p-0.5 gap-px rounded shadow-sm`}>
-                                {['L','M','M','J','V','S'].map((d, i) => {
-                                    const deliveryDay = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega).getDay() : -1;
-                                    const isTarget = (deliveryDay === (i + 1));
-                                    return (
-                                        <div key={i} className={`w-4 h-4 flex items-center justify-center rounded-sm transition-all ${isTarget ? 'bg-white text-black font-black scale-110 shadow-lg' : 'opacity-50'}`}>
-                                            {d}
-                                        </div>
-                                    );
-                                })}
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="bg-amber-500/10 border border-amber-500/20 px-4 py-1 rounded-lg">
+                                <span className="text-[12px] font-black text-amber-500 uppercase tracking-widest">ORDEN #{trabajo.orden}</span>
                             </div>
+                            <span className="text-[8px] font-mono opacity-50 uppercase tracking-[0.2em]">SEQ_ID: {trabajo.id.substring(0,8).toUpperCase()}</span>
                         </div>
                     </div>
-
-                    {/* TELEFONOS */}
-                    <div className={`flex items-end border-b-2 border-black border-dashed pb-0.5 ${isA5?'pt-1':'pt-3'}`}>
-                        <span className={`whitespace-nowrap italic ${isA5?'text-[11px]':'text-[13px]'}`}>Telef:</span>
-                        <div className={`flex items-center gap-2 mx-2 ${isA5?'text-[9px]':'text-[11px]'}`}>
-                            <span>Mismo</span><div className="w-3 h-3 border border-black flex items-center justify-center font-black pb-0.5 shadow-sm">x</div>
+                    
+                    <div className={`px-8 ${isA5?'py-2':'py-4'} flex justify-between items-center border-t ${isClient ? 'border-slate-200' : 'border-white/5'}`}>
+                        <div className={`flex gap-8 ${isA5?'text-[10px]':'text-[12px]'} font-bold`}>
+                            <div className="flex flex-col">
+                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Matriz_Location</span>
+                                <span className="flex items-center gap-2"><MapPinIcon className="w-3.5 h-3.5 text-amber-500"/> {config.emisorDireccionMatriz}</span>
+                            </div>
+                            <div className="flex flex-col border-l border-slate-200 pl-8">
+                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Comm_Link</span>
+                                <span className="flex items-center gap-2"><PrinterIcon className="w-3.5 h-3.5 text-amber-500"/> {config.emisorTelefono}</span>
+                            </div>
                         </div>
-                        <span className={`flex-grow font-black ${isA5?'text-xs':'text-sm'} text-center`}>{cliente.telefono.join('  •  ')}</span>
+                        <div className="flex gap-4">
+                            <div className="bg-slate-100 px-4 py-1.5 rounded-xl border border-slate-200 flex flex-col items-center">
+                                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">SRI_AUTH_TOKEN</span>
+                                <span className="text-[10px] font-mono font-black text-slate-800">{config.imprentaAutorizacion}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* 4. TABLA PRINCIPAL DE SOLICITUD */}
-                <div className={`${isA5?'mt-2':'mt-6'} flex-grow border-4 ${tableBorder} rounded-xl overflow-hidden flex flex-col shadow-sm`}>
-                    <div className={`${tableHeaderBg} text-white text-center ${isA5?'py-1':'py-2.5'} font-black ${isA5?'text-xs':'text-sm'} uppercase tracking-widest shadow-inner`}>
-                        SOLICITO LA ELABORACIÓN DE LOS DOCUMENTOS:
+                <div className="flex items-center gap-4 mb-6 relative z-10">
+                    <div className="flex-grow h-px bg-slate-200" />
+                    <div className="flex items-center gap-3 bg-white border-2 border-slate-800 px-8 py-2 rounded-2xl shadow-xl transform rotate-[-0.5deg]">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
+                        <h2 className={`${isA5?'text-xs':'text-sm'} font-black text-slate-800 uppercase tracking-[0.3em]`}>
+                            Solicitud de Autorización de Impresión
+                        </h2>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
                     </div>
-                    <table className={`w-full text-center ${tableTextSize} font-bold text-black border-collapse flex-grow bg-white`}>
-                        <thead>
-                            <tr className={`border-b-4 ${tableBorder}`}>
-                                <th className={`py-1 border-r-2 border-black w-[12%]`} rowSpan={2}>TAMAÑO</th>
-                                <th className={`py-1 px-1 border-r-2 border-black w-[35%]`} rowSpan={2}>TIPO DE DOCUMENTO</th>
-                                <th className="py-0 px-0 relative w-[13%] border-r-2 border-black" rowSpan={2}>
-                                    <div className="py-0.5">PAPEL</div>
-                                </th>
-                                <th className="py-1 text-[8px] border-r-2 border-black w-[10%]" rowSpan={2}>ESTAB.</th>
-                                <th className="py-1 text-[8px] border-r-2 border-black w-[10%]" rowSpan={2}>PUNTO E.</th>
-                                <th className="py-1 border-r-2 border-black w-[10%]" rowSpan={2}>CANT.</th>
-                                <th className="py-1 w-[10%]" rowSpan={2}>PRECIO</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {mappedItems.map((item, idx) => (
-                                <tr key={idx} className={`border-b border-black ${item.isChecked ? checkboxActive : ''}`}>
-                                    <td className={`py-0.5 border-r border-black font-bold text-[9px] uppercase ${item.isChecked?'':'text-transparent'}`}>{item.isChecked ? trabajo.tamano : '-'}</td>
-                                    <td className={`text-left pl-2 uppercase ${isA5?'text-[10px]':'text-[12px]'} ${isA5?'h-6':'h-8'} border-r border-black font-black tracking-wide relative`}>
-                                        {item.isChecked && <div className={`absolute left-0 top-0 bottom-0 w-1 ${isClient?'bg-amber-600':'bg-[#1f2124]'}`}></div>}
-                                        {item.tipo}
-                                    </td>
-                                    <td className="p-0 align-middle border-r border-black">
-                                        <div className="flex h-full w-full justify-center gap-2">
-                                            {item.isChecked && <div className="w-3 h-3 border border-black bg-white flex items-center justify-center font-black pb-0.5">x</div>}
-                                        </div>
-                                    </td>
-                                    <td className="py-0.5 font-mono border-r border-black">{item.isChecked?item.estab:''}</td>
-                                    <td className="py-0.5 font-mono border-r border-black">{item.isChecked?item.punto:''}</td>
-                                    <td className={`py-0.5 ${isA5?'text-sm':'text-xl'} font-black border-r border-black`}>{item.isChecked?item.cant:''}</td>
-                                    <td className="py-0.5 font-mono font-bold">${item.isChecked ? item.precio : ''}</td>
+                    <div className="flex-grow h-px bg-slate-200" />
+                </div>
+
+                <div className={`grid grid-cols-12 gap-8 ${isA5?'mb-6':'mb-10'} relative z-10`}>
+                    <div className="col-span-7 space-y-4">
+                        <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <ActivityIcon className="w-20 h-20" />
+                            </div>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] mb-1">Subject_Identification</span>
+                                    <span className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight">{cliente.nombre}</span>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase mt-1 opacity-70 italic">{cliente.nombreComercial || 'No_Brand_Name'}</span>
+                                </div>
+                                <div className="h-px bg-slate-200 w-full" />
+                                <div className="flex gap-10">
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Regimen_Mode</span>
+                                        <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm ${isRimpe ? 'bg-slate-900 text-white' : 'bg-amber-100 text-amber-800 border border-amber-200'}`}>
+                                            {cliente.regimen || 'GENERAL_STANDARD'}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Object_Scope</span>
+                                        <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight line-clamp-1">
+                                            {trabajo.actividadSeleccionada || 'ACTIVIDAD_TRIBUTARIA_DEFAULT'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] px-4">RUC_National_Registry</span>
+                            <div className="flex gap-1.5 p-1.5 bg-slate-100 border-2 border-slate-800 rounded-2xl shadow-xl">
+                                {RucArray.map((digit, i) => (
+                                    <div key={i} className="flex-grow h-12 bg-white flex items-center justify-center font-mono font-black text-xl text-slate-900 border border-slate-200 rounded-xl shadow-inner">
+                                        {digit}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-span-5 flex flex-col gap-4">
+                        <div className="bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-2 border-white/10 flex flex-col justify-between h-full">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full translate-x-16 -translate-y-16 blur-2xl" />
+                            <div className="flex justify-between items-start relative z-10">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.3em] mb-1">Auth_Status</span>
+                                    {hasSriKey || trabajo.estadoClave === 'LISTA' ? (
+                                        <span className="text-xl font-black text-white flex items-center gap-3">
+                                            <ShieldCheckIcon className="w-7 h-7 text-emerald-400" /> SECURE_OK
+                                        </span>
+                                    ) : (
+                                        <span className="text-xl font-black text-white/40 italic">UNVERIFIED_PENDING</span>
+                                    )}
+                                </div>
+                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
+                                    <LockIcon className="w-6 h-6 text-amber-500" />
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 mt-6 relative z-10">
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center">
+                                    <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Timestamp</span>
+                                    <span className="font-mono text-sm font-black tracking-widest">{hora}</span>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center">
+                                    <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Cycle_Date</span>
+                                    <span className="font-mono text-sm font-black tracking-widest">{dia}.{mes}.{anio}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-grow border-2 border-slate-900 rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] relative z-10 bg-white mb-6">
+                    <div className={`${tableHeaderBg} text-white flex justify-between items-center px-10 py-3.5 font-black uppercase tracking-[0.4em] relative overflow-hidden`}>
+                        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff, #fff 1px, transparent 1px, transparent 10px)' }} />
+                        <span className="text-[10px] relative z-10 flex items-center gap-3">
+                            <ActivityIcon className="w-4 h-4 text-amber-500" /> Industrial_Production_Matrix_v2
+                        </span>
+                        <span className="text-[9px] opacity-40 font-mono relative z-10">LOG_STREAM: {Math.random().toString(36).substring(7).toUpperCase()}</span>
+                    </div>
+                    
+                    <div className="flex-grow overflow-hidden">
+                        <table className={`w-full text-center ${tableTextSize} font-bold text-slate-800 border-collapse h-full`}>
+                            <thead>
+                                <tr className="border-b-2 border-slate-900 bg-slate-50">
+                                    <th className="py-2.5 border-r border-slate-200 w-[12%] uppercase tracking-widest text-[8px] text-slate-400">Spec_Size</th>
+                                    <th className="py-2.5 px-6 border-r border-slate-200 w-[40%] text-left uppercase tracking-widest text-[8px] text-slate-400">Category_Descriptor</th>
+                                    <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Estab</th>
+                                    <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Pnt_Em</th>
+                                    <th className="py-2.5 border-r border-slate-200 w-[12%] text-[8px] text-slate-400 uppercase tracking-widest">Quantity</th>
+                                    <th className="py-2.5 w-[16%] text-[8px] text-slate-400 uppercase tracking-widest">Unit_Value</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {mappedItems.map((item, idx) => (
+                                    <tr key={idx} className={`border-b border-slate-100 last:border-0 ${item.isChecked ? checkboxActive : 'opacity-[0.15]'}`}>
+                                        <td className="py-1 font-mono text-[9px] border-r border-slate-100">{item.isChecked ? (trabajo.tamano || 'A5') : ''}</td>
+                                        <td className={`text-left pl-8 uppercase ${isA5?'text-[10px]':'text-[12px]'} ${isA5?'h-7':'h-9'} border-r border-slate-100 font-black tracking-tighter relative`}>
+                                            {item.isChecked && <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
+                                            {item.tipo}
+                                        </td>
+                                        <td className="py-1 font-mono border-r border-slate-100">{item.isChecked?item.estab:''}</td>
+                                        <td className="py-1 font-mono border-r border-slate-100">{item.isChecked?item.punto:''}</td>
+                                        <td className={`py-1 ${isA5?'text-sm':'text-xl'} font-black border-r border-slate-100 text-slate-900`}>{item.isChecked?item.cant:''}</td>
+                                        <td className="py-1 font-mono font-black text-slate-700">{item.isChecked ? `$${item.precio}` : ''}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                {/* 5. CINTA DE REGLAS */}
-                <div className={`${isA5?'mt-2':'mt-4'} ${cintaBg} text-white ${isA5?'p-1.5':'p-3'} border-2 border-black ${cintaTextSize} font-bold flex`}>
-                    <div className="w-[30%] px-2 text-lg font-black uppercase tracking-widest flex items-center leading-none border-r border-dashed border-white/30">
-                        IMPORTANTE:
+                <div className="grid grid-cols-12 gap-8 items-stretch relative z-10 mb-6">
+                    <div className="col-span-8 flex flex-col gap-6">
+                        <div className="bg-slate-900 text-white rounded-3xl p-6 border-2 border-white/5 shadow-2xl flex items-center gap-8 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-2 opacity-5 rotate-12"><ExclamationTriangleIcon className="w-16 h-16" /></div>
+                            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-amber-500 border border-white/10 shrink-0">
+                                <LockIcon className="w-7 h-7" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em] mb-1">Safety_Notice_Protocol</span>
+                                <p className="text-[9px] font-bold uppercase tracking-wider leading-relaxed opacity-80">
+                                    Este documento constituye una orden de producción vinculante. La custodia de los comprobantes autorizados es responsabilidad exclusiva del sujeto pasivo según normativa vigente del SRI.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-6">
+                            <div className="flex-grow bg-slate-50 border-2 border-slate-200 rounded-[2rem] p-8 h-36 flex flex-col justify-end items-center relative group">
+                                <div className="absolute top-4 left-1/2 -translate-x-1/2 opacity-10"><FingerPrintIcon className="w-16 h-16" /></div>
+                                <div className="w-[80%] h-px bg-slate-400 mb-3" />
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Auth_Contributor_Signature</span>
+                            </div>
+                            <div className="w-32 bg-slate-100 rounded-[2rem] border-2 border-slate-200 flex flex-col items-center justify-center p-4">
+                                <div className="w-14 h-14 bg-white rounded-xl border border-slate-300 flex flex-center items-center justify-center mb-2 shadow-inner">
+                                    <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest text-center">Digit_Stamp</span>
+                                </div>
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">D-STAMP</span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="w-[70%] pl-3 flex flex-col justify-center">
-                        <p className="mb-0.5 leading-tight">PASADO EL MES NO NOS HACEMOS RESPONSABLES. SIN RECIBO PIERDE DERECHO A RETIRAR EL TRABAJO.</p>
-                    </div>
-                </div>
 
-                {/* 6. PIE Y FIRMAS */}
-                <div className={`${isA5?'mt-2':'mt-3'} flex border-2 border-black text-[9px] text-black relative bg-white ${isA5?'h-20':'h-32'}`}>
-                    {/* Legal Declare */}
-                    <div className="w-[45%] p-2 border-r-2 border-black flex flex-col justify-between">
-                        <p className="italic leading-tight text-justify">
-                            Declaro que los datos son exactos, asumo la responsabilidad. En caso de terceros, adjuntar poder especial.
-                        </p>
-                    </div>
-                    {/* Firma */}
-                    <div className="w-[55%] flex flex-col justify-end p-2">
-                        <div className="border-t border-black border-dashed mx-auto w-[80%] pt-0.5 text-center font-black italic mb-1">
-                            Firma del Solicitante
+                    <div className="col-span-4 flex flex-col gap-3">
+                        <div className="flex-grow bg-slate-900 rounded-[2.5rem] p-8 border-2 border-amber-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col justify-between text-white relative overflow-hidden group">
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl group-hover:bg-amber-500/10 transition-colors" />
+                            
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Gross_Value</span>
+                                    <span className="font-mono text-lg font-bold">{formatCurrency(trabajo.total)}</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Initial_Credit</span>
+                                    <span className="font-mono text-lg font-bold text-emerald-400">-{formatCurrency(trabajo.abono)}</span>
+                                </div>
+                            </div>
+                            
+                            <div className="pt-6 flex flex-col items-end relative z-10">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                                    <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.5em]">Net_Balance</span>
+                                </div>
+                                <span className="text-5xl font-black italic tracking-tighter leading-none shadow-gold-glow-text">{formatCurrency(trabajo.saldo)}</span>
+                            </div>
+                        </div>
+                        <div className="bg-slate-100 rounded-2xl p-2.5 text-center border border-slate-200">
+                            <span className="text-[8px] font-mono text-slate-500 font-black uppercase tracking-[0.5em]">SRI_VERIFIED_PROTOCOL_v2.0.26</span>
                         </div>
                     </div>
                 </div>
 
-                {/* 7. BARRA TOTALES */}
-                <div className={`${isA5?'mt-2':'mt-3'} ${totalBg} text-white rounded-b-xl px-4 ${isA5?'py-2':'py-4'} flex justify-between font-black uppercase ${isA5?'text-sm':'text-xl'} border-2 border-black shadow-inner items-center`}>
-                    <div className="flex items-center gap-2">
-                        <span>Valor</span> 
-                        <div className="bg-white text-black px-2 shadow-inner min-w-[60px] text-center rounded">{formatCurrency(trabajo.total).replace('$','')}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span>Abona</span> 
-                        <div className="bg-white text-black px-2 shadow-inner min-w-[60px] text-center rounded">{formatCurrency(trabajo.abono).replace('$','')}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span>Saldo</span> 
-                        <div className="bg-white text-black px-2 shadow-inner min-w-[60px] text-center rounded ring-1 ring-white/50">{formatCurrency(trabajo.saldo).replace('$','')}</div>
-                    </div>
-                </div>
-
+                <TacticalStatusBar id={trabajo.id} />
             </div>
         );
     };
 
     return (
-        <div className="bg-slate-300 min-h-screen py-12 flex flex-col items-center overflow-y-auto font-sans">
-            {/* ... */}
-            {/* Ocultado el CSS global del render principal anterior porque se inyectó arriba */}
+        <div className="bg-[#0f1113] min-h-screen py-16 flex flex-col items-center overflow-y-auto font-sans relative">
+            <style>{`
+                @media print {
+                    .no-print { display: none !important; }
+                    body { background: white !important; margin: 0 !important; }
+                    .page-container { 
+                        box-shadow: none !important; 
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        border: none !important;
+                        width: 210mm !important;
+                        height: 297mm !important;
+                    }
+                }
+                .page-container {
+                    width: 210mm;
+                    height: 297mm;
+                    background: white;
+                    position: relative;
+                }
+                .web-shadow {
+                    box-shadow: 0 60px 150px -30px rgba(0,0,0,0.8);
+                }
+                @keyframes reverse-spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(-360deg); }
+                }
+                .animate-reverse-spin {
+                    animation: reverse-spin linear infinite;
+                }
+                .shadow-gold-glow-text {
+                    text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+                }
+            `}</style>
 
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-6 no-print px-6 py-4 bg-white/70 backdrop-blur-xl rounded-2xl shadow-sm border border-white/50">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-700 font-black text-xs uppercase tracking-widest hover:text-brand-blue transition-colors bg-white px-4 py-2 rounded-xl shadow-sm">
-                    <ArrowLeftIcon className="w-4 h-4" /> Volver
-                </button>
-                <div className="flex gap-3">
-                    <div className="bg-brand-blue/10 text-brand-blue font-bold px-4 py-2 rounded-xl text-xs uppercase flex items-center border border-brand-blue/20">
-                        MODO: {format === 'a5' ? 'DOBLE (A5)' : 'COMPLETO (A4)'}
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-12 no-print px-10 py-6 bg-white/5 backdrop-blur-2xl rounded-[3rem] border border-white/10 shadow-2xl relative z-50">
+                <button onClick={() => navigate(-1)} className="group flex items-center gap-4 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                    <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                        <ArrowLeftIcon className="w-5 h-5" />
                     </div>
-                    <button onClick={handleDownloadPdf} className="bg-white border-2 border-slate-200 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest hover:border-brand-blue/30 transition-all flex items-center gap-2 shadow-sm text-slate-700">
-                        <ArrowDownTrayIcon className="w-4 h-4" /> Descargar PDF
+                    Volver al Sistema
+                </button>
+                
+                <div className="flex gap-5">
+                    <div className="hidden md:flex flex-col items-end justify-center mr-6 border-r border-white/10 pr-10">
+                        <span className="text-[8px] font-black text-amber-500/50 uppercase tracking-[0.5em] mb-1">Target_Format</span>
+                        <span className="text-[12px] font-black text-white uppercase tracking-widest">
+                            {format === 'a5' ? 'Dual Industrial (A5)' : 'Master Protocol (A4)'}
+                        </span>
+                    </div>
+                    
+                    <button onClick={handleDownloadPdf} className="bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-[2rem] font-black text-[10px] uppercase tracking-widest text-white transition-all flex items-center gap-4 active:scale-95">
+                        <ArrowDownTrayIcon className="w-6 h-6 text-amber-500" /> Exportar PDF
                     </button>
-                    <button onClick={() => window.print()} className="bg-[#1f2124] text-white px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:shadow-black/30 flex items-center gap-2 hover:bg-black transition-all">
-                        <PrinterIcon className="w-4 h-4"/> Imprimir Hoja
+                    
+                    <button onClick={() => window.print()} className="bg-amber-500 text-black px-12 py-4 rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_-10px_rgba(245,158,11,0.5)] hover:shadow-amber-500/40 flex items-center gap-4 hover:scale-105 transition-all active:scale-95">
+                        <PrinterIcon className="w-6 h-6"/> Ejecutar Impresión
                     </button>
                 </div>
             </div>
 
-            {/* CONTENEDOR PRINCIPAL A4 */}
-            <div id="documento-maestro-sri" className="page-container web-shadow shadow-2xl rounded">
+            <div id="documento-maestro-sri" className="page-container web-shadow rounded-[0.5rem] relative z-10 scale-[0.95] origin-top">
                 {format === 'a5' ? (
                     <div className="flex flex-col h-[297mm]">
-                        {/* MITAD SUPERIOR: CLIENTE */}
                         <div className="h-[148.5mm] overflow-hidden">
                             {renderFormulario('cliente')}
                         </div>
-                        {/* LÍNEA DE CORTE */}
-                        <div className="w-full h-0 border-t-2 border-dashed border-gray-400 my-0 relative z-50">
-                            <span className="absolute left-4 -top-3 bg-white px-2 text-[10px] text-gray-500 font-mono">✂ Línea de corte / Perforado</span>
+                        <div className="w-full h-0 border-t-4 border-dashed border-slate-300 my-0 relative z-50">
+                            <div className="absolute left-1/2 -translate-x-1/2 -top-5 bg-white border-2 border-slate-800 px-8 py-2 rounded-full text-[9px] text-slate-800 font-black flex items-center gap-4 shadow-2xl">
+                                <span className="rotate-90 text-[12px]">✂</span> PERFORADO DE SEGURIDAD / LÍNEA DE CORTE INDUSTRIAL
+                            </div>
                         </div>
-                        {/* MITAD INFERIOR: IMPRENTA */}
                         <div className="h-[148.5mm] overflow-hidden">
                             {renderFormulario('imprenta')}
                         </div>
@@ -404,6 +493,11 @@ const SolicitudImpresionPage: React.FC = () => {
                         {renderFormulario('full')}
                     </div>
                 )}
+            </div>
+            
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px]" />
             </div>
         </div>
     );

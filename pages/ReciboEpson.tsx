@@ -209,7 +209,7 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc }
                 <div className="col-span-8 grid grid-cols-4 gap-2">
                     <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm col-span-2">
                         <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TIPO DE TRABAJO</span>
-                        <p className="text-[9px] font-black text-slate-900 uppercase truncate">{trabajo.servicio}</p>
+                        <p className="text-[9px] font-black text-slate-900 uppercase truncate">{trabajo.tipo}</p>
                     </div>
                     <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
                         <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">CANTIDAD</span>

@@ -195,7 +195,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                         <div className="flex items-center justify-between flex-wrap gap-6">
                             <div className="space-y-2">
                                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic flex items-center gap-2">
-                                    <ShieldCheckIcon className="w-3 h-3 text-brand-red"/> Protocolo de Régimen Automático
+                                    <ShieldCheckIcon className="w-3 h-3 text-liquid-gold"/> Protocolo de Régimen Automático
                                 </p>
                                 <p className="text-[9px] text-slate-700 font-bold uppercase tracking-widest max-w-md">
                                     {effectiveRegimen 
@@ -211,7 +211,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                         onClick={() => setManualRegimen(reg)}
                                         className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
                                             effectiveRegimen === reg 
-                                                ? 'bg-brand-red text-white shadow-red-glow' 
+                                                ? 'bg-liquid-gold text-black shadow-gold-glow-sm' 
                                                 : 'text-slate-600 hover:text-slate-400'
                                         }`}
                                     >
@@ -221,7 +221,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                 {manualRegimen && (
                                     <button 
                                         onClick={() => setManualRegimen(null)}
-                                        className="px-3 text-slate-700 hover:text-brand-red transition-colors"
+                                        className="px-3 text-slate-700 hover:text-rose-500 transition-colors"
                                     >
                                         &times;
                                     </button>
@@ -275,7 +275,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                                     
                                     {/* Badge SRI */}
                                     {p.esSRI && (
-                                        <div className="absolute top-4 left-4 bg-brand-red text-white text-[9px] font-black px-3 py-1 rounded-xl uppercase tracking-[0.2em] flex items-center gap-2 shadow-red-glow z-20">
+                                        <div className="absolute top-4 left-4 bg-liquid-gold text-black text-[9px] font-black px-3 py-1 rounded-xl uppercase tracking-[0.2em] flex items-center gap-2 shadow-gold-glow-sm z-20">
                                             <ShieldCheckIcon className="w-3 h-3" /> SRI PROTOCOL
                                         </div>
                                     )}

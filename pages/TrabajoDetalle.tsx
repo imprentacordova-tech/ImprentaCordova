@@ -53,7 +53,7 @@ const TrabajoDetallePage: React.FC = () => {
                     <ArrowLeftIcon className="w-4 h-4"/> Regresar
                 </button>
                 <div className="flex flex-wrap gap-3">
-                    {trabajo.tipo === TrabajoTipo.SRI ? (
+                    {trabajo.esSRI ? (
                         <button onClick={() => navigate(`/solicitud-impresion/${trabajo.id}`)} className="px-6 py-3 bg-brand-blue/20 text-blue-400 border border-brand-blue/30 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg hover:bg-brand-blue/30 transition-all flex items-center gap-2">
                             <DocumentTextIcon className="w-4 h-4" /> Solicitud SRI
                         </button>
@@ -104,12 +104,15 @@ const TrabajoDetallePage: React.FC = () => {
 
                         <div className="mt-10 space-y-4 relative z-10">
                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-3"><BoxIcon className="w-5 h-5 text-liquid-gold"/> Detalle Técnico del Encargo</h3>
-                            <p className="text-xl font-bold text-slate-300 leading-relaxed uppercase tracking-tight">{trabajo.subtipo}</p>
+                            <div className="space-y-1">
+                                <p className="text-2xl font-black text-white uppercase tracking-tight">{trabajo.tipo}</p>
+                                <p className="text-sm font-bold text-slate-400 leading-relaxed uppercase tracking-tight italic">{trabajo.subtipo.split('|')[0]}</p>
+                            </div>
                         </div>
                     </div>
 
                     {/* BLOQUE TÉCNICO SRI (SOLIDIFICACIÓN) */}
-                    {trabajo.tipo === TrabajoTipo.SRI && (
+                    {trabajo.esSRI && (
                         <div className="bg-slate-950 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden border border-white/5 animate-slide-in-up">
                             <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheckIcon className="w-32 h-32" /></div>
                             <div className="relative z-10">
