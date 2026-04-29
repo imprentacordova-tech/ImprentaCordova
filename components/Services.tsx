@@ -228,8 +228,8 @@ const Services: React.FC = () => {
                         <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">
                             PRECISIÓN INDUSTRIAL_V5.0
                         </p>
-                        <h2 className="text-5xl md:text-7xl lg:text-9xl font-display font-black text-white leading-[0.8] tracking-[-0.04em] uppercase italic">
-                            ELITE{' '}
+                        <h2 className="text-5xl md:text-7xl lg:text-[8rem] font-display font-black text-white leading-[0.8] tracking-[-0.04em] uppercase italic">
+                            CÓRDOVA{' '}
                             <br />
                             <span className="text-gold-gradient drop-shadow-gold">IMPRESIÓN</span>
                         </h2>

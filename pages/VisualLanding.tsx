@@ -175,24 +175,23 @@ const VisualLanding: React.FC = () => {
                                 ESTÁNDAR INDUSTRIAL CÓRDOVA
                             </span>
                         </div>
-                        
-                        <h1 className="text-6xl sm:text-8xl md:text-[8.5rem] font-black leading-[0.82] tracking-[-0.04em] text-printing-dark italic uppercase select-none relative group/hero">
-                            <span className="block overflow-hidden">
+                                      <h1 className="flex flex-col items-center select-none relative group/hero">
+                            <span className="block overflow-hidden h-[1em] sm:h-[1.1em]">
                                 <motion.span 
                                     initial={{ y: "100%" }}
                                     animate={{ y: 0 }}
-                                    transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                    className="block hover:text-printing-blue transition-colors duration-500"
+                                    transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                                    className="block text-6xl sm:text-8xl md:text-[9.5rem] font-black leading-none tracking-[-0.04em] text-printing-dark italic uppercase hover:text-printing-blue transition-colors duration-500"
                                 >
                                     IMPRENTA
                                 </motion.span>
                             </span>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-br from-printing-blue via-printing-cyan to-printing-blue not-italic block mt-2">
+                            <span className="block overflow-hidden h-[1.1em] -mt-2 sm:-mt-4 md:-mt-6">
                                 <motion.span 
                                     initial={{ y: "100%" }}
                                     animate={{ y: 0 }}
-                                    transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                                    className="block drop-shadow-[0_0_30px_rgba(0,71,171,0.15)] hover:drop-shadow-[0_0_50px_rgba(0,71,171,0.3)] transition-all duration-700 tracking-[-0.06em]"
+                                    transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                                    className="block text-6xl sm:text-8xl md:text-[9.5rem] font-black leading-none tracking-[-0.06em] not-italic text-transparent bg-clip-text bg-gradient-to-br from-printing-blue via-printing-cyan to-printing-blue"
                                 >
                                     CÓRDOVA.
                                 </motion.span>
@@ -248,7 +247,9 @@ const VisualLanding: React.FC = () => {
                     </div>
                     <span className="text-[8px] font-mono text-slate-400 tracking-[0.8em] uppercase">Desplazar</span>
                 </motion.div>
-                     {/* --- SECTION: THE VISION (DYNAMIC SHOWCASE) --- */}
+            </header>
+
+            {/* --- SECTION: THE VISION (DYNAMIC SHOWCASE) --- */}
             <section id="vision" className="relative py-40 lg:py-60 bg-white">
                 <div className="max-w-[90rem] mx-auto px-8 lg:px-16 grid lg:grid-cols-[1fr_1.2fr] gap-24 items-start">
                     
