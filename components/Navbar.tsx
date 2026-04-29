@@ -46,10 +46,10 @@ const Navbar: React.FC = () => {
     return (
         <>
             {/* ── Barra Superior de Marca ── */}
-            <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-[#0a0a0a] flex items-center justify-center overflow-hidden px-6 border-b border-white/5">
-                <div className="flex items-center gap-6 text-white/40">
+            <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-printing-dark flex items-center justify-center overflow-hidden px-6 border-b border-slate-800">
+                <div className="flex items-center gap-6 text-white/50">
                     <span className="text-[8px] font-black uppercase tracking-[0.6em] italic">
-                        Imprenta Autorizada SRI · <span className="text-liquid-gold font-bold">PASAJE, EL ORO</span>
+                        Imprenta Autorizada SRI · <span className="text-printing-yellow font-bold">PASAJE, EL ORO</span>
                     </span>
                 </div>
             </div>
@@ -58,7 +58,7 @@ const Navbar: React.FC = () => {
             <nav
                 className={`fixed top-10 inset-x-0 z-50 transition-all duration-500 ${
                     scrolled
-                        ? 'bg-[#020617]/90 backdrop-blur-2xl border-b border-white/5 shadow-2xl py-2'
+                        ? 'bg-white/80 backdrop-blur-2xl border-b border-slate-200 shadow-xl py-2'
                         : 'bg-transparent py-4'
                 }`}
             >
@@ -71,12 +71,12 @@ const Navbar: React.FC = () => {
                             className="group flex items-center gap-4 shrink-0 transition-transform hover:scale-105"
                             aria-label="Imprenta Córdova — Inicio"
                         >
-                            <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-gold-glow-sm transition-all">
+                            <div className="w-10 h-10 bg-printing-blue border border-printing-blue/20 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-printing-blue/20 transition-all text-white">
                                 <CordovaLogo className="w-6 h-6" />
                             </div>
                             <div className="flex flex-col leading-none">
-                                <span className="font-display font-black text-xl italic text-white tracking-tighter">CÓRDOVA</span>
-                                <span className="font-display font-black text-[9px] text-liquid-gold tracking-[0.4em] uppercase">Atelier Gráfico</span>
+                                <span className="font-display font-black text-xl italic text-printing-dark tracking-tighter">CÓRDOVA</span>
+                                <span className="font-display font-black text-[9px] text-printing-blue tracking-[0.4em] uppercase">Atelier Gráfico</span>
                             </div>
                         </a>
 
@@ -86,10 +86,10 @@ const Navbar: React.FC = () => {
                                 <a
                                     key={link.name}
                                     href={link.href}
-                                    className="group relative px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-liquid-gold transition-colors italic"
+                                    className="group relative px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-printing-blue transition-colors italic"
                                 >
                                     {link.name}
-                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 bg-liquid-gold group-hover:w-4 transition-all duration-300 rounded-full" />
+                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 bg-printing-blue group-hover:w-4 transition-all duration-300 rounded-full" />
                                 </a>
                             ))}
                         </div>
@@ -100,7 +100,7 @@ const Navbar: React.FC = () => {
                                 href="https://wa.me/593993083943"
                                 target="_blank"
                                 rel="noreferrer"
-                                className="group px-8 py-3 bg-gold-bright text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white shadow-lg shadow-gold-bright/20 transition-all flex items-center gap-3 active:scale-95 italic"
+                                className="group px-8 py-3 bg-printing-blue text-white rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-printing-dark shadow-lg shadow-printing-blue/20 transition-all flex items-center gap-3 active:scale-95 italic"
                             >
                                 <WhatsAppIcon className="w-4 h-4" />
                                 <span>Canal de WhatsApp</span>
