@@ -8,13 +8,14 @@ import {
     EnvelopeIcon, CordovaLogo, StarIcon, PrinterIcon, CheckBadgeIcon, ClockIcon,
     SearchIcon, SparklesIcon, MonitorIcon, MessageCircleIcon, ChevronRightIcon,
     Loader2Icon, WalletIcon, ExclamationTriangleIcon, LayersIcon, WhatsAppIcon,
-    PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon
+    PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon,
+    ActivityIcon, CpuIcon, LayoutIcon, RocketLaunchIcon, HomeIcon, BoltIcon, ZapIcon, FileTextIcon
 } from '../components/Icons';
 import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
 import { Producto, TrabajoEstado, TrabajoTipo, Regimen } from '../types';
-import { formatCurrency } from '../utils';
-import { useScroll, useTransform } from 'framer-motion';
+import { formatCurrency, generateWhatsAppLink } from '../utils';
+import { useScroll, useTransform, useSpring } from 'framer-motion';
 
 // --- ANIMATION VARIANTS ---
 const fadeInUp = {
@@ -80,9 +81,20 @@ const LandingPage: React.FC = () => {
         target: targetRef,
         offset: ["start end", "end start"]
     });
+    const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-    const imageOpacity = useTransform(scrollYProgress, [0, 0.3, 0.6, 0.9], [0.1, 1, 1, 0.1]);
-    const imageScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1.1, 0.8]);
+    const imageOpacity = useTransform(smoothProgress, [0, 0.3, 0.6, 0.9], [0.1, 1, 1, 0.1]);
+    const imageScale = useTransform(smoothProgress, [0, 0.5, 1], [0.8, 1.1, 0.8]);
+
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     // IA Quality Tester State
     const [isTesting, setIsTesting] = useState(false);
@@ -116,9 +128,74 @@ const LandingPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-brand-blue font-sans selection:bg-brand-red selection:text-brand-blue overflow-x-hidden relative">
-            {/* Cinematic Overlay Effects */}
+            {/* --- CINEMATIC OVERLAY (GRAIN & NOISE) --- */}
             <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none z-0" />
-            <div className="fixed inset-0 bg-noise pointer-events-none z-[100]" />
+            <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] bg-noise mix-blend-overlay" />
+            
+            {/* --- INDUSTRIAL INK PARTICLES --- */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                {[...Array(20)].map((_, i) => (
+                    <motion.div
+                        key={i}
+                        animate={{
+                            y: [0, -150, 0],
+                            x: [0, Math.random() * 60 - 30, 0],
+                            opacity: [0.03, 0.15, 0.03],
+                            scale: [1, 1.2, 1]
+                        }}
+                        transition={{
+                            duration: 15 + Math.random() * 10,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: Math.random() * 5
+                        }}
+                        className="absolute w-2 h-2 bg-brand-red rounded-full blur-[2px]"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`
+                        }}
+                    />
+                ))}
+            </div>
+
+            {/* --- DYNAMIC SCANNER (MOUSE INTERACTION) --- */}
+            <div 
+                className="fixed w-[400px] h-[400px] pointer-events-none z-[110] border-[0.5px] border-brand-red/20 rounded-full hidden lg:block transition-transform duration-500 ease-out"
+                style={{ 
+                    left: mousePosition.x - 200,
+                    top: mousePosition.y - 200,
+                    background: 'radial-gradient(circle, rgba(225,29,72,0.03) 0%, transparent 75%)',
+                }}
+            >
+                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-brand-red/30 animate-scan-slow" />
+                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-brand-red/30 animate-scan-slow" />
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 font-mono text-[7px] text-brand-red/40 tracking-[0.8em] uppercase whitespace-nowrap">
+                    CORDOVA_PRECISION_AXIS: {Math.round(mousePosition.x)},{Math.round(mousePosition.y)}
+                </div>
+            </div>
+
+            {/* --- VERTICAL TELEMETRY HUD --- */}
+            <div className="fixed top-1/3 left-[2%] z-50 hidden 2xl:flex flex-col gap-10 text-[8px] font-mono tracking-[0.8em] uppercase vertical-text opacity-30 pointer-events-none">
+                <span className="flex items-center gap-3 text-brand-red">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" /> CORDOVA_INDUSTRIAL_V4
+                </span>
+                <span className="flex items-center gap-3 text-white">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/20" /> SYSTEM_NOMINAL
+                </span>
+                <div className="w-[1px] h-32 bg-gradient-to-b from-brand-red/40 via-brand-red/10 to-transparent mx-auto mt-6" />
+            </div>
+
+            <div className="fixed top-1/3 right-[2%] z-50 hidden 2xl:flex flex-col gap-12 text-[7px] font-mono text-white/20 tracking-[0.6em] uppercase pointer-events-none">
+                <div className="space-y-4 border-l border-brand-red/10 pl-6">
+                    <p>RESOLUTION: 1440DPI</p>
+                    <p>ENGINE: ROLAND_PRO</p>
+                    <p>STATUS: ACTIVE</p>
+                </div>
+                <div className="space-y-4 border-l border-brand-red/10 pl-6">
+                    <p>COORD_X: {Math.round(mousePosition.x)}</p>
+                    <p>COORD_Y: {Math.round(mousePosition.y)}</p>
+                </div>
+            </div>
             
             {/* --- NAVEGACIÓN OBSIDIAN --- */}
             <div className="fixed top-8 left-0 right-0 z-[100] px-6">
@@ -203,13 +280,38 @@ const LandingPage: React.FC = () => {
                                 </p>
                             </motion.div>
                             
-                            <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[11rem] font-display font-black text-white leading-[0.85] tracking-[-0.04em] uppercase italic">
-                                Ingeniería <br/>
-                                <span className="text-text-brand-red text-glow">Gráfica</span>
-                            </motion.h1>
+                            <div className="relative mb-8">
+                                <h1 className="flex flex-col items-start gap-2 select-none relative group/title">
+                                    <motion.div variants={fadeInUp} className="relative">
+                                        <span className="text-7xl sm:text-9xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-white italic uppercase">
+                                            IMPRENTA
+                                        </span>
+                                        {/* Technical decorative lines */}
+                                        <div className="absolute -right-8 -top-8 w-20 h-20 border-t-2 border-r-2 border-brand-red/20 rounded-tr-[3rem] transition-all duration-1000 group-hover/title:border-brand-red/40" />
+                                        <div className="absolute -left-8 -bottom-8 w-20 h-20 border-b-2 border-l-2 border-brand-red/20 rounded-bl-[3rem] transition-all duration-1000 group-hover/title:border-brand-red/40" />
+                                    </motion.div>
+
+                                    <motion.span 
+                                        variants={fadeInUp}
+                                        className="text-text-brand-red text-5xl sm:text-7xl md:text-[8rem] font-black leading-none tracking-tight drop-shadow-2xl italic text-glow"
+                                    >
+                                        CÓRDOVA.
+                                    </motion.span>
+                                    
+                                    {/* Floating technical nomenclature */}
+                                    <div className="hidden lg:block absolute left-full top-1/2 -translate-y-1/2 ml-16 opacity-30 pointer-events-none group-hover/title:opacity-60 transition-opacity duration-1000">
+                                        <div className="space-y-3 font-mono text-[8px] uppercase tracking-[0.5em] text-slate-400 leading-relaxed whitespace-nowrap border-l border-brand-red/20 pl-8">
+                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-brand-red rounded-full" /> PRECISION_INDEX: 0.9997</p>
+                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-white/40 rounded-full" /> INK_STABILITY: NOMINAL</p>
+                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-white/40 rounded-full" /> MATRIX_COORD: {Math.round(mousePosition.x / 10)}X</p>
+                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-white/40 rounded-full" /> CORDOVA_CORE_V4</p>
+                                        </div>
+                                    </div>
+                                </h1>
+                            </div>
 
                             <motion.p variants={fadeInUp} className="text-xl lg:text-3xl text-slate-500 font-medium max-w-2xl leading-relaxed tracking-tight italic">
-                                Elevando el estándar industrial a <span className="text-white font-black">arte tangible</span>. Líderes en acabados de lujo y gigantografías HD.
+                                Ingeniería visual y manufactura de <span className="text-white font-black">precisión absoluta</span> para marcas que lideran la industria global.
                             </motion.p>
 
                             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-6 pt-6">
@@ -377,11 +479,25 @@ const LandingPage: React.FC = () => {
                         </div>
 
                         <div className="lg:col-span-4 h-[600px] relative rounded-[4rem] overflow-hidden border border-white/10 shadow-luxury group">
+                            {/* Animated Scanner Line for the image */}
+                            <motion.div 
+                                animate={{ top: ["-10%", "110%"] }}
+                                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                className="absolute left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-brand-red/30 to-transparent z-20 pointer-events-none"
+                            />
+
+                            {/* Technical HUD for image */}
+                            <div className="absolute top-10 left-10 z-20 font-mono text-[7px] text-white/30 tracking-[0.4em] pointer-events-none group-hover:text-brand-red/40 transition-colors">
+                                <p>SENSING_MODULE: ACTIVATED</p>
+                                <p>SPECTROMETRY: NOMINAL</p>
+                                <p>DEPTH: 1440DPI</p>
+                            </div>
+
                             <motion.img 
                                 key={activeServiceIndex}
-                                initial={{ opacity: 0, scale: 1.2 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 1 }}
+                                initial={{ opacity: 0, scale: 1.2, filter: "blur(20px)" }}
+                                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                                transition={{ duration: 1.2, ease: "easeOut" }}
                                 src={
                                     activeServiceIndex === 0 
                                     ? "/images/landing/printer_gold.png"
