@@ -168,6 +168,8 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                     </button>
                 </div>
             </div>
+            
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
 
             <AnimatePresence mode="wait">
                 {/* PASO 1: SELECCION DE PRODUCTO (ESTILO SERVICE SELECTOR) */}
