@@ -18,7 +18,37 @@
     --printing-white: #ffffff;
     --printing-gray: #f8fafc;
     --printing-dark: #0f172a;
+    --printing-red: #e11d48;
   }
+
+  /* Printing Theme Utilities */
+  .bg-printing-blue { background-color: var(--printing-blue); }
+  .text-printing-blue { color: var(--printing-blue); }
+  .border-printing-blue { border-color: var(--printing-blue); }
+
+  .bg-printing-yellow { background-color: var(--printing-yellow); }
+  .text-printing-yellow { color: var(--printing-yellow); }
+  .border-printing-yellow { border-color: var(--printing-yellow); }
+
+  .bg-printing-magenta { background-color: var(--printing-magenta); }
+  .text-printing-magenta { color: var(--printing-magenta); }
+  .border-printing-magenta { border-color: var(--printing-magenta); }
+
+  .bg-printing-cyan { background-color: var(--printing-cyan); }
+  .text-printing-cyan { color: var(--printing-cyan); }
+  .border-printing-cyan { border-color: var(--printing-cyan); }
+
+  .bg-printing-dark { background-color: var(--printing-dark); }
+  .text-printing-dark { color: var(--printing-dark); }
+  .border-printing-dark { border-color: var(--printing-dark); }
+
+  .bg-printing-gray { background-color: var(--printing-gray); }
+  .text-printing-gray { color: var(--printing-gray); }
+  .border-printing-gray { border-color: var(--printing-gray); }
+
+  .bg-printing-red { background-color: var(--printing-red); }
+  .text-printing-red { color: var(--printing-red); }
+  .border-printing-red { border-color: var(--printing-red); }
 
   body {
     @apply tracking-tight antialiased;
@@ -82,6 +112,29 @@
   
   .input-atelier:focus + label {
     @apply text-liquid-gold;
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #f2ca50 0%, #FFF8DC 50%, #D4AF37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    @apply font-black drop-shadow-sm;
+  }
+
+  .glass-printing {
+    @apply bg-white/70 backdrop-blur-2xl border border-slate-200/50 shadow-xl;
+  }
+
+  .btn-printing-blue {
+    @apply px-8 py-3 bg-printing-blue text-white rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-printing-dark shadow-lg shadow-printing-blue/20 transition-all flex items-center gap-3 active:scale-95 italic;
+  }
+
+  .text-printing-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-printing-blue via-printing-cyan to-printing-blue;
+  }
+
+  .industrial-card {
+    @apply bg-white border border-slate-100 rounded-3xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500;
   }
 
   .btn-luxury {

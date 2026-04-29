@@ -28,7 +28,7 @@ const MobileLink: React.FC<{
         className="group flex items-center justify-between px-6 py-5 rounded-2xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300"
     >
     <span className="text-[12px] font-black uppercase tracking-[0.2em]">{name}</span>
-    <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-liquid-gold" />
+    <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-printing-blue" />
     </motion.a>
 );
 
@@ -144,7 +144,7 @@ const Navbar: React.FC = () => {
                                 <div className="h-px bg-slate-100 my-8" />
                                 <a
                                     href="https://wa.me/593993083943"
-                                    className="w-full py-6 bg-blue-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-blue-500/20"
+                                    className="w-full py-6 bg-printing-blue text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-printing-blue/20"
                                 >
                                     <WhatsAppIcon className="w-5 h-5" />
                                     Enlace de WhatsApp

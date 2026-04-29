@@ -52,7 +52,7 @@ const VisualLanding: React.FC = () => {
             {/* --- CINEMATIC OVERLAY (GRAIN & NOISE) --- */}
             <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.04] bg-noise mix-blend-overlay" />
             
-            {/* --- GOLDEN INK PARTICLES --- */}
+            {/* --- INDUSTRIAL INK PARTICLES --- */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 {[...Array(20)].map((_, i) => (
                     <motion.div
@@ -69,7 +69,7 @@ const VisualLanding: React.FC = () => {
                             ease: "easeInOut",
                             delay: Math.random() * 5
                         }}
-                        className="absolute w-1 h-1 bg-liquid-gold rounded-full blur-[1px]"
+                        className="absolute w-1 h-1 bg-printing-cyan rounded-full blur-[1px]"
                         style={{
                             top: `${Math.random() * 100}%`,
                             left: `${Math.random() * 100}%`
@@ -80,17 +80,17 @@ const VisualLanding: React.FC = () => {
 
             {/* --- DYNAMIC SCANNER (MOUSE INTERACTION) --- */}
             <div 
-                className="fixed w-[400px] h-[400px] pointer-events-none z-[60] border-[0.5px] border-liquid-gold/20 rounded-full hidden lg:block transition-transform duration-300 ease-out"
+                className="fixed w-[400px] h-[400px] pointer-events-none z-[60] border-[0.5px] border-printing-blue/30 rounded-full hidden lg:block transition-transform duration-300 ease-out"
                 style={{ 
                     left: mousePosition.x - 200,
                     top: mousePosition.y - 200,
-                    background: 'radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%)',
-                    boxShadow: 'inset 0 0 40px rgba(212,175,55,0.05)'
+                    background: 'radial-gradient(circle, rgba(0,71,171,0.05) 0%, transparent 70%)',
+                    boxShadow: 'inset 0 0 40px rgba(0,71,171,0.05)'
                 }}
             >
-                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-liquid-gold/20 animate-scan-slow" />
-                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-liquid-gold/20 animate-scan-slow" />
-                <div className="absolute -top-12 left-1/2 -translate-x-1/2 font-mono text-[7px] text-liquid-gold/40 tracking-[0.4em] uppercase">
+                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-printing-blue/40 animate-scan-slow" />
+                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-printing-blue/40 animate-scan-slow" />
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 font-mono text-[7px] text-printing-blue/60 tracking-[0.4em] uppercase">
                     SCAN_PROXIMITY_COORD: {Math.round(mousePosition.x)},{Math.round(mousePosition.y)}
                 </div>
             </div>
@@ -133,12 +133,12 @@ const VisualLanding: React.FC = () => {
                 </motion.div>
 
                 {/* Telemetry HUD */}
-                <div className="absolute top-1/3 left-[4%] hidden 2xl:flex flex-col gap-6 text-[9px] font-mono text-liquid-gold/30 tracking-[0.6em] uppercase vertical-text">
+                <div className="absolute top-1/3 left-[4%] hidden 2xl:flex flex-col gap-6 text-[9px] font-mono text-printing-blue/30 tracking-[0.6em] uppercase vertical-text">
                     <span className="flex items-center gap-2">
-                        <div className="w-1 h-1 bg-liquid-gold rounded-full" /> CÓRDOVA_SYSTEMS
+                        <div className="w-2 h-2 rounded-full bg-printing-blue" /> CÓRDOVA_SYSTEMS
                     </span>
                     <span>v4.2.0_INDUSTRIAL_ELITE</span>
-                    <div className="w-[1px] h-32 bg-gradient-to-b from-liquid-gold/20 via-liquid-gold/40 to-transparent mx-auto mt-6" />
+                    <div className="w-[1px] h-32 bg-gradient-to-b from-printing-blue/20 via-printing-blue/40 to-transparent mx-auto mt-6" />
                 </div>
 
                 <div className="absolute top-1/3 right-[4%] hidden 2xl:flex flex-col gap-8 text-[8px] font-mono text-white/20 tracking-[0.4em] uppercase">
@@ -191,7 +191,7 @@ const VisualLanding: React.FC = () => {
                             </span>
                         </h1>
                         
-                        <p className="text-slate-400 font-medium text-xl md:text-3xl max-w-4xl mx-auto tracking-wide mt-12 leading-relaxed">
+                        <p className="text-slate-600 font-medium text-xl md:text-2xl max-w-4xl mx-auto tracking-wide mt-12 leading-relaxed">
                             Ingeniería visual para marcas que dominan su industria.
                         </p>
                     </motion.div>
@@ -206,20 +206,20 @@ const VisualLanding: React.FC = () => {
                             href={generateWhatsAppLink("593993083943", "Solicitud de protocolo de impresión industrial.")}
                             whileHover={{ scale: 1.02, y: -5 }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full sm:w-auto relative group overflow-hidden bg-printing-blue text-white px-16 py-8 rounded-[2rem] font-black uppercase tracking-[0.5em] text-[12px] shadow-xl flex items-center justify-center gap-8 italic transition-all duration-500"
+                            className="w-full sm:w-auto relative group overflow-hidden bg-printing-blue text-white px-8 md:px-16 py-6 md:py-8 rounded-2xl md:rounded-[2rem] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[10px] md:text-[12px] shadow-xl flex items-center justify-center gap-6 md:gap-8 italic transition-all duration-500"
                         >
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out" />
                             <span className="relative z-10">INICIAR MISIÓN</span> 
-                            <ChevronRightIcon className="w-6 h-6 relative z-10 group-hover:translate-x-4 transition-transform duration-500" />
+                            <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6 relative z-10 group-hover:translate-x-4 transition-transform duration-500" />
                         </motion.a>
 
                         <motion.button
                             onClick={() => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' })}
                             whileHover={{ scale: 1.02, y: -5 }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full sm:w-auto bg-white backdrop-blur-2xl text-printing-dark px-16 py-8 rounded-[2rem] font-black uppercase tracking-[0.5em] text-[12px] flex items-center justify-center gap-8 group border border-slate-200 hover:border-printing-blue/30 hover:bg-slate-50 transition-all duration-700 italic"
+                            className="w-full sm:w-auto bg-white backdrop-blur-2xl text-printing-dark px-8 md:px-16 py-6 md:py-8 rounded-2xl md:rounded-[2rem] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[10px] md:text-[12px] flex items-center justify-center gap-6 md:gap-8 group border border-slate-200 hover:border-printing-blue/30 hover:bg-slate-50 transition-all duration-700 italic"
                         >
-                            EXPLORAR ARSENAL <LayoutIcon className="w-6 h-6 opacity-40 group-hover:rotate-45 transition-transform duration-500" />
+                            EXPLORAR ARSENAL <LayoutIcon className="w-5 h-5 md:w-6 md:h-6 opacity-40 group-hover:rotate-45 transition-transform duration-500" />
                         </motion.button>
                     </motion.div>
                 </div>
@@ -231,11 +231,11 @@ const VisualLanding: React.FC = () => {
                     transition={{ delay: 1.5, duration: 2 }}
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
                 >
-                    <div className="w-[1px] h-20 bg-gradient-to-b from-liquid-gold via-liquid-gold/20 to-transparent relative">
+                    <div className="w-[1px] h-20 bg-gradient-to-b from-printing-blue via-printing-blue/20 to-transparent relative">
                         <motion.div 
                             animate={{ top: ["0%", "100%", "0%"] }}
                             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute left-1/2 -translate-x-1/2 w-1 h-4 bg-liquid-gold rounded-full shadow-gold-glow"
+                            className="absolute left-1/2 -translate-x-1/2 w-1 h-4 bg-printing-blue rounded-full shadow-lg shadow-printing-blue/40"
                         />
                     </div>
                     <span className="text-[9px] font-mono text-slate-500 tracking-[0.6em] uppercase">Desplazar</span>
@@ -308,7 +308,7 @@ const VisualLanding: React.FC = () => {
                             <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-printing-dark italic uppercase leading-[0.85]">
                                 PODER <br/> <span className="text-printing-blue not-italic">LEGAL.</span>
                             </h2>
-                            <p className="text-slate-500 font-medium text-xl leading-relaxed max-w-2xl">
+                            <p className="text-slate-600 font-medium text-lg md:text-xl leading-relaxed max-w-2xl">
                                 Manufactura certificada de comprobantes físicos bajo normativas estrictas del SRI. Seguridad total en cada folio impreso.
                             </p>
                             <div className="flex gap-4">
@@ -337,7 +337,7 @@ const VisualLanding: React.FC = () => {
                             <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-printing-dark italic uppercase leading-[0.85]">
                                 DISEÑO <br/> <span className="text-printing-magenta not-italic">SUPREMO.</span>
                             </h2>
-                            <p className="text-slate-500 font-medium text-xl leading-relaxed max-w-2xl">
+                            <p className="text-slate-600 font-medium text-lg md:text-xl leading-relaxed max-w-2xl">
                                 Acabados que desafían lo convencional. Sectorizado UV, laminados Soft-Touch y panelería de alta gramaje para marcas de lujo.
                             </p>
                             <motion.a 
@@ -357,19 +357,19 @@ const VisualLanding: React.FC = () => {
                             className="space-y-10 pl-4 border-l-[2px] border-printing-red/20"
                         >
                             <div className="flex items-center gap-6">
-                                <span className="text-[14px] font-black uppercase tracking-[1em] text-brand-red italic">03_FACTORY</span>
+                                <span className="text-[14px] font-black uppercase tracking-[1em] text-printing-red italic">03_FACTORY</span>
                                 <div className="flex-1 h-[1px] bg-slate-200" />
                             </div>
                             <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-printing-dark italic uppercase leading-[0.85]">
-                                ESCALA <br/> <span className="text-brand-red not-italic">ABSOLUTA.</span>
+                                ESCALA <br/> <span className="text-printing-red not-italic">ABSOLUTA.</span>
                             </h2>
-                            <p className="text-slate-500 font-medium text-xl leading-relaxed max-w-2xl">
+                            <p className="text-slate-600 font-medium text-lg md:text-xl leading-relaxed max-w-2xl">
                                 Gran formato con precisión microscópica. Vallas, lonas y señalética industrial con tintas eco-solventes de máxima duración.
                             </p>
                             <div className="pt-10">
                                 <motion.button 
                                     whileHover={{ scale: 1.05 }}
-                                    className="px-12 py-6 border-2 border-brand-red/30 text-brand-red rounded-[2rem] font-black uppercase tracking-widest text-[11px] hover:bg-brand-red hover:text-white hover:border-brand-red transition-all flex items-center gap-4 italic"
+                                    className="px-12 py-6 border-2 border-printing-red/30 text-printing-red rounded-[2rem] font-black uppercase tracking-widest text-[11px] hover:bg-printing-red hover:text-white hover:border-printing-red transition-all flex items-center gap-4 italic"
                                 >
                                     <ZapIcon className="w-6 h-6" /> Cotizar Producción Masiva
                                 </motion.button>
@@ -398,7 +398,7 @@ const VisualLanding: React.FC = () => {
                                 <h3 className="text-6xl lg:text-8xl font-black text-printing-dark italic uppercase tracking-tighter leading-[0.85]">
                                     CENTRO DE <br/> <span className="text-printing-blue not-italic">CONTROL.</span>
                                 </h3>
-                                <p className="text-slate-500 font-medium text-xl max-w-2xl leading-relaxed">
+                                <p className="text-slate-600 font-medium text-lg md:text-xl max-w-2xl leading-relaxed">
                                     Seguimiento en tiempo real de cada fase de producción. Transparencia total desde la aprobación del arte hasta la entrega final.
                                 </p>
                             </div>
@@ -406,9 +406,9 @@ const VisualLanding: React.FC = () => {
                             <motion.a 
                                 href="#/tracking"
                                 whileHover={{ scale: 1.05, x: 20 }}
-                                className="inline-flex bg-printing-blue text-white px-16 py-8 rounded-[2rem] font-black uppercase tracking-[0.5em] text-[12px] shadow-xl items-center gap-8 italic transition-all"
+                                className="inline-flex bg-printing-blue text-white px-10 md:px-16 py-6 md:py-8 rounded-2xl md:rounded-[2rem] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[10px] md:text-[12px] shadow-xl items-center gap-6 md:gap-8 italic transition-all"
                             >
-                                <RocketLaunchIcon className="w-8 h-8" /> ENTRAR A CONSOLA
+                                <RocketLaunchIcon className="w-6 h-6 md:w-8 md:h-8" /> ENTRAR A CONSOLA
                             </motion.a>
                         </div>
 
@@ -416,9 +416,9 @@ const VisualLanding: React.FC = () => {
                         <div className="bg-printing-gray border border-slate-200 rounded-[4rem] p-12 font-mono text-xs space-y-10 shadow-inner relative">
                             <div className="flex items-center justify-between border-b border-slate-200 pb-8">
                                 <div className="flex gap-3">
-                                    <div className="w-3 h-3 rounded-full bg-brand-red shadow-[0_0_10px_#ef4444]" />
-                                    <div className="w-3 h-3 rounded-full bg-printing-yellow shadow-[0_0_10px_#f59e0b]" />
-                                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
+                                    <div className="w-3 h-3 rounded-full bg-printing-red shadow-[0_0_10px_rgba(225,29,72,0.4)]" />
+                                    <div className="w-3 h-3 rounded-full bg-printing-yellow shadow-[0_0_10px_rgba(245,158,11,0.4)]" />
+                                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
                                 </div>
                                 <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase">NODE_STATUS: ONLINE</span>
                             </div>
