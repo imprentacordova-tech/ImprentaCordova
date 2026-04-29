@@ -115,10 +115,10 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                         <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow"></div>
                         <p className="text-[8px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.3em] md:tracking-[0.5em] italic">Misión Comercial Rápida</p>
                     </div>
-                    <h2 className="text-2xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">
-                        {step === 1 && <span className="flex items-center gap-2 md:gap-4">SUMINISTROS</span>}
-                        {step === 2 && <span className="flex items-center gap-2 md:gap-4">CONFIGURACIÓN</span>}
-                        {step === 3 && <span className="flex items-center gap-2 md:gap-4">FINALIZACIÓN</span>}
+                    <h2 className="text-2xl md:text-5xl font-black text-white uppercase italic tracking-[-0.04em] leading-none">
+                        {step === 1 && <span className="flex items-center gap-2 md:gap-4">SUMINISTROS INDUSTRIALES</span>}
+                        {step === 2 && <span className="flex items-center gap-2 md:gap-4">CONFIGURACIÓN ELITE</span>}
+                        {step === 3 && <span className="flex items-center gap-2 md:gap-4">DESPLIEGUE FINAL</span>}
                     </h2>
                 </div>
                 
@@ -256,8 +256,8 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                     <PrinterIcon className="w-6 h-6 md:w-10 md:h-10" />
                                 </div>
                                 <div className="space-y-0.5 md:space-y-1 overflow-hidden">
-                                    <p className="text-[7px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.2em] md:tracking-[0.4em] italic">Protocolo:</p>
-                                    <h3 className="text-lg md:text-4xl font-black text-white uppercase tracking-tighter italic leading-none truncate">{selectedProduct.nombre}</h3>
+                                    <p className="text-[7px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.2em] md:tracking-[0.4em] italic">Protocolo Maestro:</p>
+                                    <h3 className="text-lg md:text-4xl font-black text-white uppercase tracking-[-0.04em] italic leading-none truncate">{selectedProduct.nombre}</h3>
                                 </div>
                             </div>
                             <button onClick={() => setStep(1)} className="relative z-10 w-full md:w-auto px-4 py-2.5 md:px-8 md:py-4 bg-white/5 hover:bg-white/10 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-lg md:rounded-2xl transition-all border border-white/5 flex items-center justify-center gap-2 group active:scale-95">
@@ -336,7 +336,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                     animate={{ scale: 1, opacity: 1 }}
                                     className="relative z-10 space-y-1 mb-6 md:mb-12"
                                 >
-                                    <span className="text-4xl md:text-8xl font-black text-white italic tracking-tighter leading-none block drop-shadow-2xl">
+                                    <span className="text-4xl md:text-8xl font-black text-white italic tracking-[-0.04em] leading-none block drop-shadow-2xl">
                                         {formatCurrency(precioFinal)}
                                     </span>
                                     <span className="text-[7px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.3em] md:tracking-[0.4em] opacity-60">Sincronización de Costos</span>
@@ -383,7 +383,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                         <UserIcon className="w-5 h-5 md:w-8 md:h-8" />
                                     </div>
                                     <div className="space-y-0.5 md:space-y-1">
-                                        <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter italic">Identidad</h3>
+                                        <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-[-0.04em] italic">Identidad Industrial</h3>
                                         <p className="text-[7px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Asignación de Titular</p>
                                     </div>
                                 </div>
@@ -449,7 +449,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                         <CreditCardIcon className="w-5 h-5 md:w-8 md:h-8" />
                                     </div>
                                     <div className="space-y-0.5 md:space-y-1">
-                                        <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter italic">Liquidación</h3>
+                                        <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-[-0.04em] italic">Liquidación Maestra</h3>
                                         <p className="text-[7px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Reserva de Cupo</p>
                                     </div>
                                 </div>
@@ -462,7 +462,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                             <span className="text-[10px] md:text-[12px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] italic">Inversión</span>
                                             <p className="text-[6px] md:text-[8px] text-slate-700 font-black uppercase tracking-widest hidden sm:block">I.V.A. e Impuestos Incluidos</p>
                                         </div>
-                                        <span className="text-2xl md:text-5xl font-black text-white italic tracking-tighter shadow-gold-glow-sm">{formatCurrency(precioFinal)}</span>
+                                        <span className="text-2xl md:text-5xl font-black text-white italic tracking-[-0.04em] shadow-gold-glow-sm">{formatCurrency(precioFinal)}</span>
                                     </div>
 
                                     <div className="bg-black/40 p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-white/5 relative z-10 space-y-2 md:space-y-4 group/abono hover:border-liquid-gold/30 transition-all shadow-inner">
@@ -486,7 +486,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
                                     <div className="flex justify-between items-center pt-1 md:pt-4 relative z-10 px-1 md:px-4">
                                         <span className="text-[10px] md:text-[12px] font-black text-liquid-gold/60 uppercase tracking-[0.2em] md:tracking-[0.3em] italic">Saldo</span>
-                                        <span className="text-lg md:text-3xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal - abono)}</span>
+                                        <span className="text-lg md:text-3xl font-black text-white italic tracking-[-0.04em]">{formatCurrency(precioFinal - abono)}</span>
                                     </div>
                                 </div>
                             </div>
