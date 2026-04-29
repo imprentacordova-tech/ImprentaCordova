@@ -70,12 +70,20 @@ const TrabajosPage: React.FC = () => {
             {/* --- HEADER --- */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 relative z-10">
                 <div className="space-y-6">
-                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-6xl sm:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        Production <span className="text-gold-gradient drop-shadow-gold">Flow</span>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-printing-blue italic">Telemetría de Producción</span>
+                    </div>
+                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                        FLUJO DE <span className="text-gold-gradient drop-shadow-gold">TRABAJOS</span>
                     </motion.h1>
                     <div className="flex items-center gap-6">
                         <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] flex items-center gap-4">
-                            <span className="w-12 h-[1px] bg-liquid-gold/30"></span> Mission Control Alpha
+                            <span className="w-12 h-[1px] bg-liquid-gold/30"></span> IMPRENTA CÓRDOVA ALPHA
                         </p>
                         <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
                             <ActivityIcon className="w-3 h-3 text-emerald-400 animate-pulse" />
@@ -223,7 +231,7 @@ const TrabajosPage: React.FC = () => {
                 className="flex items-center justify-center gap-6 p-10 bg-white/[0.01] rounded-3xl border border-dashed border-white/5 opacity-30"
             >
                 <SparklesIcon className="w-5 h-5 text-liquid-gold" />
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em]">All mission data synchronized via Cordova Core Integrity Sync</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em]">Sincronización de datos vía NÚCLEO DE INTEGRIDAD IMPRENTA CÓRDOVA</p>
             </motion.div>
         </div>
     );

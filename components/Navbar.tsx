@@ -10,7 +10,7 @@ import {
 const navLinks = [
     { name: 'Inicio',        href: '#/'            },
     { name: 'Documentos SRI', href: '#/sri'         },
-    { name: 'Imprenta',      href: '#/imprenta'    },
+    { name: 'Imprenta Córdova', href: '#/imprenta'    },
     { name: 'Rastreo',       href: '#/tracking'    },
     { name: 'Administración', href: '#/login'       },
 ];
@@ -48,8 +48,13 @@ const Navbar: React.FC = () => {
             {/* ── Barra Superior de Marca ── */}
             <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-printing-dark flex items-center justify-center overflow-hidden px-6 border-b border-slate-800">
                 <div className="flex items-center gap-6 text-white/50">
-                    <span className="text-[8px] font-black uppercase tracking-[0.6em] italic">
-                        Imprenta Autorizada SRI · <span className="text-printing-yellow font-bold">PASAJE, EL ORO</span>
+                    <div className="flex gap-1">
+                        <div className="w-1 h-1 rounded-full bg-printing-cyan animate-pulse" />
+                        <div className="w-1 h-1 rounded-full bg-printing-yellow animate-pulse delay-75" />
+                        <div className="w-1 h-1 rounded-full bg-printing-red animate-pulse delay-150" />
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white italic">
+                        IMPRENTA CÓRDOVA AUTORIZADA SRI · <span className="text-printing-yellow font-bold">PASAJE, EL ORO</span>
                     </span>
                 </div>
             </div>
@@ -75,8 +80,8 @@ const Navbar: React.FC = () => {
                                 <CordovaLogo className="w-6 h-6" />
                             </div>
                             <div className="flex flex-col leading-none">
-                                <span className="font-display font-black text-xl italic text-printing-dark tracking-tighter">CÓRDOVA</span>
-                                <span className="font-display font-black text-[9px] text-printing-blue tracking-[0.4em] uppercase">Atelier Gráfico</span>
+                                <span className="font-display font-black text-xl italic text-printing-dark tracking-[-0.04em]">IMPRENTA CÓRDOVA</span>
+                                <span className="font-display font-black text-[9px] text-printing-blue tracking-[0.6em] uppercase">Excelencia Gráfica</span>
                             </div>
                         </a>
 

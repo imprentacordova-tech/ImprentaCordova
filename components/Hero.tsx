@@ -13,7 +13,7 @@ import { analyzeImageQualityForPrint } from '../services/geminiService';
 const Stat: React.FC<{ label: string; value: string; sub: string }> = ({ label, value, sub }) => (
     <div className="text-center group">
         <p className="text-[9px] font-black text-liquid-gold/60 uppercase tracking-[0.4em] mb-2 group-hover:text-liquid-gold transition-colors">{label}</p>
-        <p className="text-3xl md:text-5xl font-display font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-700 inline-block">{value}</p>
+        <p className="text-3xl md:text-5xl font-display font-black text-white tracking-[-0.04em] group-hover:scale-110 transition-transform duration-700 inline-block">{value}</p>
         <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.2em] mt-1">{sub}</p>
     </div>
 );
@@ -80,7 +80,7 @@ const Hero: React.FC = () => {
                             initial={{ opacity: 0, y: 40 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1.4, delay: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
-                            className="text-6xl md:text-[7.5rem] lg:text-[8rem] font-display font-black text-white leading-[0.85] tracking-tighter"
+                            className="text-6xl md:text-[7.5rem] lg:text-[8rem] font-display font-black text-white leading-[0.85] tracking-[-0.04em]"
                         >
                             IMPRESIÓN{' '}
                             <br className="hidden md:block" />
@@ -204,7 +204,7 @@ const Hero: React.FC = () => {
                                             </button>
                                         </div>
                                         <div className="space-y-4">
-                                            <h3 className="text-4xl font-display font-black text-white leading-none tracking-tight">{testResult.veredicto}</h3>
+                                            <h3 className="text-4xl font-display font-black text-white leading-none tracking-[-0.04em]">{testResult.veredicto}</h3>
                                             <div className="p-6 bg-white/[0.03] rounded-2xl border border-white/5">
                                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Observación del Atelier:</p>
                                                 <p className="text-base font-medium text-slate-300 italic leading-relaxed">"{testResult.calidad}"</p>
@@ -226,7 +226,7 @@ const Hero: React.FC = () => {
                                                 <SparklesIcon className="w-6 h-6 text-liquid-gold" />
                                             </div>
                                             <div>
-                                                <h3 className="text-2xl font-display font-black text-white leading-none tracking-tight">
+                                                <h3 className="text-2xl font-display font-black text-white leading-none tracking-[-0.04em]">
                                                     VISION{' '}
                                                     <span className="font-editorial italic font-normal text-liquid-gold">A.I.</span>
                                                 </h3>

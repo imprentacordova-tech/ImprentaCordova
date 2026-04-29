@@ -217,12 +217,17 @@ const GestionUsuariosPage: React.FC = () => {
             {/* --- HEADER --- */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 relative z-10">
                 <div>
-                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-6xl sm:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
+                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
                         Access <span className="text-gold-gradient">Portal</span>
                     </motion.h1>
-                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] mt-6 flex items-center gap-4">
-                        <span className="w-12 h-[1px] bg-liquid-gold/30"></span> Protocolo de Identidad Atelier
-                    </p>
+                    <div className="flex items-center gap-4 mt-6">
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Protocolo de Identidad Atelier</p>
+                    </div>
                 </div>
                 <button 
                     onClick={() => setEditingUser({})} 

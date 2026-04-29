@@ -138,7 +138,7 @@ const LandingPage: React.FC = () => {
                         </div>
                         <div className="flex flex-col leading-none">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.5em] mb-1">Pasaje • Ec</span>
-                            <span className="text-xl font-display font-black text-white uppercase tracking-tight group-hover:text-text-brand-red transition-colors italic">Córdova</span>
+                            <span className="text-xl font-display font-black text-white uppercase tracking-[-0.04em] group-hover:text-text-brand-red transition-colors italic">IMPRENTA CÓRDOVA</span>
                         </div>
                     </div>
                     
@@ -203,7 +203,7 @@ const LandingPage: React.FC = () => {
                                 </p>
                             </motion.div>
                             
-                            <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[11rem] font-display font-black text-white leading-[0.75] tracking-tighter uppercase italic">
+                            <motion.h1 variants={fadeInUp} className="text-6xl md:text-8xl lg:text-[11rem] font-display font-black text-white leading-[0.85] tracking-[-0.04em] uppercase italic">
                                 Ingeniería <br/>
                                 <span className="text-text-brand-red text-glow">Gráfica</span>
                             </motion.h1>
@@ -217,7 +217,7 @@ const LandingPage: React.FC = () => {
                                     <WhatsAppIcon className="w-6 h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
                                 </a>
                                 <button onClick={() => fileInputRef.current?.click()} className="px-14 py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 flex items-center justify-center gap-4 active:scale-95 group">
-                                    <MonitorIcon className="w-6 h-6 group-hover:text-brand-red transition-colors"/> Analizador de Manifiesto
+                                    <MonitorIcon className="w-6 h-6 group-hover:text-brand-red transition-colors"/> Analizador de Ingeniería de Arte
                                 </button>
                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileTest} />
                             </motion.div>
@@ -350,7 +350,7 @@ const LandingPage: React.FC = () => {
                         className="max-w-4xl mb-24"
                     >
                         <motion.span variants={fadeInUp} className="text-brand-red font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Atelier de Soluciones</motion.span>
-                        <motion.h2 variants={fadeInUp} className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-tighter leading-none italic mb-10">
+                        <motion.h2 variants={fadeInUp} className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] leading-none italic mb-10">
                             PULIENDO TU <br/> <span className="text-text-brand-red text-glow">VISIÓN DIGITAL</span>
                         </motion.h2>
                         <motion.p variants={fadeInUp} className="text-xl lg:text-2xl text-slate-500 max-w-3xl leading-relaxed tracking-tight font-medium">Fusión de artesanía clásica y vanguardia tecnológica. Cada proyecto es una pieza única de ingeniería visual.</motion.p>
@@ -431,9 +431,9 @@ const LandingPage: React.FC = () => {
                                 <motion.h2 
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
-                                    className="text-6xl md:text-9xl font-display font-black text-white uppercase italic leading-none tracking-tighter"
+                                    className="text-6xl md:text-9xl font-display font-black text-white uppercase italic leading-none tracking-[-0.04em]"
                                 >
-                                    EL ESTÁNDAR <br/> <span className="text-text-brand-red">CÓRDOVA</span>
+                                    EL ESTÁNDAR <br/> <span className="text-text-brand-red text-glow">IMPRENTA CÓRDOVA</span>
                                 </motion.h2>
                             </div>
                         </motion.div>
@@ -541,7 +541,7 @@ const LandingPage: React.FC = () => {
                             viewport={{ once: true }}
                         >
                             <span className="text-brand-red font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Colección Exclusiva</span>
-                            <h2 className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-tighter italic">
+                            <h2 className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] italic leading-none">
                                 EL MUESTRARIO <br/> <span className="text-text-brand-red text-glow">DEFINITIVO</span>
                             </h2>
                         </motion.div>
@@ -595,7 +595,7 @@ const LandingPage: React.FC = () => {
                                 </div>
                                 <div className="px-5 pb-5 flex flex-col flex-grow relative z-10">
                                     <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-3">{p.categoria}</p>
-                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-text-brand-red transitionColors italic transition-all duration-700 tracking-tighter">{p.nombre}</h3>
+                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-text-brand-red transition-colors italic transition-all duration-700 tracking-[-0.04em]">{p.nombre}</h3>
                                     <div className="mt-auto flex justify-between items-center pt-8 border-t border-white/5">
                                         <div className="flex flex-col">
                                             <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.2em]">Honorario Base</span>
@@ -629,8 +629,8 @@ const LandingPage: React.FC = () => {
                                     <div className="absolute -inset-4 bg-brand-red/20 rounded-full blur-2xl animate-pulse" />
                                 </div>
                                 <div className="flex flex-col leading-none">
-                                    <span className="text-4xl font-display font-black tracking-tighter uppercase italic text-text-brand-red">CÓRDOVA</span>
-                                    <span className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-600 mt-2">Boutique Gráfica</span>
+                                    <span className="text-4xl font-display font-black tracking-[-0.04em] uppercase italic text-text-brand-red">IMPRENTA CÓRDOVA</span>
+                                    <span className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-600 mt-2">Boutique Gráfica Industrial</span>
                                 </div>
                             </div>
                             <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-md italic tracking-tight italic">"Excelencia técnica en Pasaje, El Oro. La imprenta de confianza para líderes y empresas resilientes."</p>

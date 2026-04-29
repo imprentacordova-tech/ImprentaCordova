@@ -61,10 +61,16 @@ const ProduccionPage: React.FC = () => {
             <div className="w-full lg:w-[350px] flex flex-col bg-black/20 backdrop-blur-md rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
                 <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02] relative">
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
-                    <h2 className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 italic">
-                        <PrinterIcon className="w-4 h-4 text-liquid-gold shadow-gold-glow" />
-                        Vector de Manufactura
-                    </h2>
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                            <div className="w-1 h-1 rounded-full bg-cyan-500 animate-pulse" />
+                            <div className="w-1 h-1 rounded-full bg-yellow-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                        <h2 className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 italic">
+                            Vector de Manufactura
+                        </h2>
+                    </div>
                     <span className="bg-liquid-gold/10 border border-liquid-gold/20 px-3 py-1.5 rounded-xl text-liquid-gold font-black text-[9px] uppercase tracking-widest italic">{pendingJobs.length}</span>
                 </div>
                 

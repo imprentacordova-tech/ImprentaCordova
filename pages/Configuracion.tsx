@@ -82,12 +82,12 @@ const itemVariants = {
 };
 
 const DEFAULT_CONFIG = {
-    emisorRazonSocial: 'IMPRENTA CORDOVA',
+    emisorRazonSocial: 'IMPRENTA CÓRDOVA',
     emisorRuc: '1104212564001',
     emisorEstablecimiento: '001',
     emisorPuntoEmision: '001',
     secuencialInicio: 1,
-    imprentaNombre: 'IMPRENTA CORDOVA',
+    imprentaNombre: 'IMPRENTA CÓRDOVA',
     imprentaRuc: '1104212564001',
     imprentaAutorizacion: '1111',
     imprentaTelefono: '0987654321',
@@ -313,10 +313,14 @@ const ConfiguracionPage: React.FC = () => {
             <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-white/5 pb-10">
                 <div>
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="w-10 h-[1px] bg-liquid-gold/50"></div>
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
                         <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Arquitectura del Sistema</span>
                     </div>
-                    <h1 className="text-6xl sm:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
+                    <h1 className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
                         Centro <span className="text-gold-gradient">de Mando</span>
                     </h1>
                 </div>

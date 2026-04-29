@@ -192,14 +192,18 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <FingerPrintIcon className="w-8 h-8" />
                                 </div>
                                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-slate-200">
-                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                    <div className="flex gap-0.5">
+                                        <div className="w-1 h-1 bg-printing-cyan rounded-full animate-pulse" />
+                                        <div className="w-1 h-1 bg-printing-yellow rounded-full animate-pulse delay-75" />
+                                        <div className="w-1 h-1 bg-printing-red rounded-full animate-pulse delay-150" />
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <h1 className={`${titleSize} font-black tracking-tighter leading-none flex items-center gap-2`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                                    CORDOVA <span className="text-amber-500 italic">ELITE</span>
+                                <h1 className={`${titleSize} font-black tracking-[-0.04em] leading-none flex items-center gap-2`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                                    IMPRENTA CÓRDOVA <span className="text-amber-500 italic">ELITE</span>
                                 </h1>
-                                <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em] opacity-40">Industrial_Printing_Engine_v2.6</span>
+                                <span className="text-[10px] font-mono font-black uppercase tracking-[0.6em] opacity-40">Industrial_Printing_Engine_v2.6</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">

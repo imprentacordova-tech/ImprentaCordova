@@ -133,11 +133,16 @@ const VisualLanding: React.FC = () => {
                 </motion.div>
 
                 {/* Telemetry HUD */}
-                <div className="absolute top-1/3 left-[4%] hidden 2xl:flex flex-col gap-6 text-[9px] font-mono text-printing-blue/30 tracking-[0.6em] uppercase vertical-text">
-                    <span className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-printing-blue" /> CÓRDOVA_SYSTEMS
+                <div className="absolute top-1/3 left-[4%] hidden 2xl:flex flex-col gap-6 text-[9px] font-mono tracking-[0.6em] uppercase vertical-text">
+                    <span className="flex items-center gap-2 text-printing-blue">
+                        <div className="w-2 h-2 rounded-full bg-printing-blue" /> IMPRENTA_CÓRDOVA_SYSTEMS
                     </span>
-                    <span>v4.2.0_INDUSTRIAL_ELITE</span>
+                    <span className="flex items-center gap-2 text-printing-yellow">
+                        <div className="w-2 h-2 rounded-full bg-printing-yellow" /> ANALYTICS_ACTIVE
+                    </span>
+                    <span className="flex items-center gap-2 text-printing-red">
+                        <div className="w-2 h-2 rounded-full bg-printing-red" /> PROD_READY
+                    </span>
                     <div className="w-[1px] h-32 bg-gradient-to-b from-printing-blue/20 via-printing-blue/40 to-transparent mx-auto mt-6" />
                 </div>
 
@@ -164,11 +169,11 @@ const VisualLanding: React.FC = () => {
                         <div className="inline-flex items-center gap-6 px-8 py-3 border border-printing-blue/20 bg-printing-blue/5 rounded-full mb-10 backdrop-blur-md">
                             <div className="w-2 h-2 rounded-full bg-printing-blue animate-pulse shadow-[0_0_15px_rgba(0,71,171,0.4)]" />
                             <span className="text-[10px] font-black uppercase tracking-[0.8em] text-printing-blue italic">
-                                ESTÁNDAR INDUSTRIAL PREMIUN
+                                ESTÁNDAR INDUSTRIAL PREMIUM
                             </span>
                         </div>
                         
-                        <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black leading-[0.85] tracking-tighter text-printing-dark italic uppercase select-none relative group/hero">
+                        <h1 className="text-6xl sm:text-7xl md:text-[10rem] font-black leading-[0.8] tracking-[-0.06em] text-printing-dark italic uppercase select-none relative group/hero">
                             <span className="block overflow-hidden">
                                 <motion.span 
                                     initial={{ y: "100%" }}
@@ -184,7 +189,7 @@ const VisualLanding: React.FC = () => {
                                     initial={{ y: "100%" }}
                                     animate={{ y: 0 }}
                                     transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                                    className="block drop-shadow-[0_0_40px_rgba(0,71,171,0.2)] hover:drop-shadow-[0_0_60px_rgba(0,71,171,0.4)] transition-all duration-700"
+                                    className="block drop-shadow-[0_0_40px_rgba(0,71,171,0.2)] hover:drop-shadow-[0_0_60px_rgba(0,71,171,0.4)] transition-all duration-700 tracking-[-0.08em]"
                                 >
                                     CÓRDOVA.
                                 </motion.span>
@@ -284,7 +289,7 @@ const VisualLanding: React.FC = () => {
                                 className="flex flex-col gap-4"
                             >
                                 <span className="text-[10px] font-black text-printing-blue uppercase tracking-[0.8em] italic">Capacidad Activa</span>
-                                <h3 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none">
+                                <h3 className="text-4xl md:text-5xl font-black italic uppercase tracking-[-0.04em] leading-none">
                                     {Math.round(imageIndex.get()) === 0 ? 'LOGÍSTICA SRI' : 
                                      Math.round(imageIndex.get()) === 1 ? 'ALTA ESTAMPACIÓN' : 'DIMENSIÓN INDUSTRIAL'}
                                 </h3>
@@ -305,7 +310,7 @@ const VisualLanding: React.FC = () => {
                                 <span className="text-[14px] font-black uppercase tracking-[1em] text-printing-blue italic">01_FISCAL</span>
                                 <div className="flex-1 h-[1px] bg-slate-200" />
                             </div>
-                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-printing-dark italic uppercase leading-[0.85]">
+                            <h2 className="text-5xl md:text-7xl font-black tracking-[-0.04em] text-printing-dark italic uppercase leading-[0.85]">
                                 PODER <br/> <span className="text-printing-blue not-italic">LEGAL.</span>
                             </h2>
                             <p className="text-slate-600 font-medium text-lg md:text-xl leading-relaxed max-w-2xl">
@@ -334,7 +339,7 @@ const VisualLanding: React.FC = () => {
                                 <span className="text-[14px] font-black uppercase tracking-[1em] text-printing-magenta italic">02_ATELIER</span>
                                 <div className="flex-1 h-[1px] bg-slate-200" />
                             </div>
-                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-printing-dark italic uppercase leading-[0.85]">
+                            <h2 className="text-5xl md:text-7xl font-black tracking-[-0.04em] text-printing-dark italic uppercase leading-[0.85]">
                                 DISEÑO <br/> <span className="text-printing-magenta not-italic">SUPREMO.</span>
                             </h2>
                             <p className="text-slate-600 font-medium text-lg md:text-xl leading-relaxed max-w-2xl">
@@ -360,7 +365,7 @@ const VisualLanding: React.FC = () => {
                                 <span className="text-[14px] font-black uppercase tracking-[1em] text-printing-red italic">03_FACTORY</span>
                                 <div className="flex-1 h-[1px] bg-slate-200" />
                             </div>
-                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-printing-dark italic uppercase leading-[0.85]">
+                            <h2 className="text-5xl md:text-7xl font-black tracking-[-0.04em] text-printing-dark italic uppercase leading-[0.85]">
                                 ESCALA <br/> <span className="text-printing-red not-italic">ABSOLUTA.</span>
                             </h2>
                             <p className="text-slate-600 font-medium text-lg md:text-xl leading-relaxed max-w-2xl">
@@ -395,7 +400,7 @@ const VisualLanding: React.FC = () => {
                                     <ActivityIcon className="w-5 h-5 text-printing-blue" />
                                     <span className="text-[10px] font-mono text-printing-blue tracking-[0.6em] uppercase">SISTEMA_DE_RASTREO_v4</span>
                                 </div>
-                                <h3 className="text-6xl lg:text-8xl font-black text-printing-dark italic uppercase tracking-tighter leading-[0.85]">
+                                <h3 className="text-6xl lg:text-8xl font-black text-printing-dark italic uppercase tracking-[-0.04em] leading-[0.85]">
                                     CENTRO DE <br/> <span className="text-printing-blue not-italic">CONTROL.</span>
                                 </h3>
                                 <p className="text-slate-600 font-medium text-lg md:text-xl max-w-2xl leading-relaxed">
@@ -433,7 +438,7 @@ const VisualLanding: React.FC = () => {
                                     <div className="flex justify-between items-end">
                                         <div className="space-y-2">
                                             <p className="text-[9px] text-slate-400 uppercase tracking-widest">Progreso de Manufactura</p>
-                                            <p className="text-2xl font-black text-printing-dark italic tracking-tighter uppercase">96.8% COMPLETE</p>
+                                            <p className="text-2xl font-black text-printing-dark italic tracking-[-0.04em] uppercase">96.8% COMPLETE</p>
                                         </div>
                                         <div className="w-16 h-16 rounded-full border-4 border-printing-blue/10 border-t-printing-blue animate-spin" />
                                     </div>
@@ -462,7 +467,7 @@ const VisualLanding: React.FC = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         className="space-y-10"
                     >
-                        <h2 className="text-6xl md:text-9xl font-black text-slate-100 italic uppercase tracking-tighter select-none">
+                        <h2 className="text-6xl md:text-9xl font-black text-slate-100 italic uppercase tracking-[-0.06em] select-none">
                             IMPRENTA CÓRDOVA
                         </h2>
                         

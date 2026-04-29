@@ -50,8 +50,8 @@ const NotaDeVentaPage: React.FC = () => {
 
     // Mapear config de Supabase al formato esperado por la plantilla
     const config = {
-        emisorNombreComercial: cloudConfig?.imprentaNombre || 'IMPRENTA CORDOVA',
-        emisorRazonSocial: cloudConfig?.emisorRazonSocial || 'IMPRENTA CORDOVA',
+        emisorNombreComercial: cloudConfig?.imprentaNombre || 'IMPRENTA CÓRDOVA',
+        emisorRazonSocial: cloudConfig?.emisorRazonSocial || 'IMPRENTA CÓRDOVA',
         emisorRuc: cloudConfig?.emisorRuc || '1104212564001',
         emisorEstablecimiento: cloudConfig?.emisorEstablecimiento || '001',
         emisorPuntoEmision: cloudConfig?.emisorPuntoEmision || '001',
@@ -60,7 +60,7 @@ const NotaDeVentaPage: React.FC = () => {
         emisorEmail: '',
         autorizacionSRI: cloudConfig?.imprentaAutorizacion || '',
         emisorTipoContribuyente: 'CONTRIBUYENTE RIMPE',
-        imprentaNombre: cloudConfig?.imprentaNombre || 'IMPRENTA CORDOVA',
+        imprentaNombre: cloudConfig?.imprentaNombre || 'IMPRENTA CÓRDOVA',
         imprentaRuc: cloudConfig?.imprentaRuc || '',
         imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '',
         fechaAutorizacion: cloudConfig?.imprentaFechaAut || '01/01/20--',
@@ -264,8 +264,13 @@ const NotaDeVentaPage: React.FC = () => {
                         <div className="flex flex-col gap-2 w-[60%]">
                             <div className="flex items-center gap-3">
                                 <CordovaLogo className="h-10 w-auto" />
-                                <div>
-                                    <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">{config.emisorNombreComercial}</h1>
+                                <div className="flex flex-col">
+                                    <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="w-1 h-1 rounded-full bg-printing-cyan" />
+                                        <div className="w-1 h-1 rounded-full bg-printing-yellow" />
+                                        <div className="w-1 h-1 rounded-full bg-printing-red" />
+                                    </div>
+                                    <h1 className="text-xl font-black text-slate-900 uppercase tracking-[-0.04em] leading-none">{config.emisorNombreComercial}</h1>
                                     <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.2em]">Servicios Gráficos</p>
                                 </div>
                             </div>

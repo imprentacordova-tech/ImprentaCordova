@@ -126,8 +126,15 @@ const ClientesPage: React.FC = () => {
             <div className="flex flex-wrap justify-between items-end gap-4 p-6 lg:p-8 bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] shadow-luxury relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none transition-opacity group-hover:opacity-50"></div>
                 <div className="relative z-10">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 font-inter italic">Directorio</p>
-                    <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">Clientes</h1>
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-printing-blue italic">Directorio Industrial</span>
+                    </div>
+                    <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-[-0.04em] leading-tight">Garantía de <span className="text-liquid-gold">CLIENTES</span></h1>
                 </div>
                 <button onClick={() => setSelectedClient({ id: '', nombre: '', email: '', telefono: [''], ruc: '', cedula: '', regimen: Regimen.GENERAL, creadoEn: new Date().toISOString() })} className="relative z-10 flex items-center justify-center gap-3 bg-liquid-gold text-brand-dark font-black py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl shadow-gold-glow hover:bg-white hover:text-brand-dark transition-all duration-500 text-[10px] uppercase tracking-[0.2em] overflow-hidden group/btn">
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out"></div>

@@ -114,9 +114,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     </motion.div>
                     
                     <div className="space-y-3">
-                        <h1 className="text-4xl md:text-5xl font-display font-black text-white tracking-tighter uppercase italic leading-none">
-                            PROTOCOLO <br/>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright not-italic font-editorial font-normal">CENTRAL</span>
+                        <h1 className="text-4xl md:text-5xl font-display font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                            IMPRENTA <br/>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright not-italic font-editorial font-normal">CÓRDOVA</span>
                         </h1>
                         <div className="flex items-center gap-3">
                             <div className="h-[1px] w-8 bg-gold-bright/30"></div>
@@ -232,8 +232,12 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 {/* System Logs Footer */}
                 <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-40">
                     <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Núcleo Activo</span>
+                        <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Núcleo Activo • IMPRENTA CÓRDOVA</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">v2.6 Hyperion Engine</span>
@@ -294,8 +298,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     transition={{ duration: 1.5, ease: "easeOut" as any, delay: 0.5 }}
                     className="mt-12 max-w-lg"
                 >
-                    <h2 className="text-3xl font-display font-black text-white tracking-widest uppercase italic mb-6">
-                        Imprenta <span className="text-gold-bright">Córdova</span>
+                    <h2 className="text-3xl font-display font-black text-white tracking-[-0.04em] uppercase italic mb-6">
+                        IMPRENTA <span className="text-gold-bright">CÓRDOVA</span>
                     </h2>
                     <p className="text-slate-400 font-medium leading-relaxed text-sm">
                         Plataforma de gestión operativa avanzada. Optimización de procesos, seguimiento de producción y control financiero centralizado en tiempo real.

@@ -273,8 +273,8 @@ const OffsetCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[]; 
                             <CpuIcon className="w-8 h-8" />
                         </div>
                         <div className="space-y-1">
-                            <h2 className="font-bold text-white text-3xl tracking-tighter italic uppercase">Núcleo <span className="text-liquid-gold">Técnico</span></h2>
-                            <p className="text-[10px] text-liquid-gold/40 font-black uppercase tracking-[0.5em]">Parámetros de Ingeniería</p>
+                            <h2 className="font-bold text-white text-3xl tracking-[-0.04em] italic uppercase">NÚCLEO <span className="text-liquid-gold">TÉCNICO</span></h2>
+                            <p className="text-[10px] text-liquid-gold/40 font-black uppercase tracking-[0.5em]">IMPRENTA CÓRDOVA ALPHA</p>
                         </div>
                     </div>
 
@@ -557,8 +557,8 @@ const DigitalCalculator: React.FC<{ costs: CostConfig; proveedores: Proveedor[];
                         <RocketLaunchIcon className="w-10 h-10" />
                     </div>
                     <div className="space-y-1">
-                        <h2 className="font-bold text-white text-4xl tracking-tighter italic uppercase">Flujo <span className="text-liquid-gold">Digital</span></h2>
-                        <p className="text-[11px] text-liquid-gold/40 font-black uppercase tracking-[0.5em]">Rendimiento On-Demand</p>
+                        <h2 className="font-bold text-white text-4xl tracking-[-0.04em] italic uppercase">FLUJO <span className="text-liquid-gold">DIGITAL</span></h2>
+                        <p className="text-[11px] text-liquid-gold/40 font-black uppercase tracking-[0.5em]">IMPRENTA CÓRDOVA ON-DEMAND</p>
                     </div>
                 </div>
 
@@ -963,8 +963,13 @@ const CalculadoraPreciosPage: React.FC = () => {
                             <CpuIcon className="w-6 h-6 text-black" />
                         </div>
                         <div className="space-y-0.5">
-                            <h3 className="text-white font-black text-sm uppercase tracking-tighter italic leading-none">Cordova</h3>
-                            <p className="text-liquid-gold/40 font-black text-[8px] uppercase tracking-widest italic">Engineering Hub</p>
+                            <h3 className="text-white font-black text-sm uppercase tracking-[-0.04em] italic leading-none text-nowrap">IMPRENTA CÓRDOVA</h3>
+                            <div className="flex gap-1 items-center mt-1">
+                                <div className="w-1 h-1 rounded-full bg-cyan-500 animate-pulse" />
+                                <div className="w-1 h-1 rounded-full bg-yellow-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                                <p className="text-liquid-gold/40 font-black text-[7px] uppercase tracking-widest italic ml-1">Core active</p>
+                            </div>
                         </div>
                     </div>
                     <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
@@ -1012,11 +1017,11 @@ const CalculadoraPreciosPage: React.FC = () => {
                             key={mode}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="text-6xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-none"
+                            className="text-6xl lg:text-8xl font-black text-white tracking-[-0.04em] uppercase italic leading-none"
                         >
-                            {mode === 'HUB' ? 'Engineering' : ''} 
+                            {mode === 'HUB' ? 'ENGINEERING' : ''} 
                             <span className="text-gold-gradient">
-                                {mode === 'HUB' ? ' Hub' : mode === 'OFFSET' ? 'Industrial Offset' : mode === 'DIGITAL' ? 'Digital Boutique' : 'Calibración Maestro'}
+                                {mode === 'HUB' ? ' HUB' : mode === 'OFFSET' ? 'INDUSTRIAL OFFSET' : mode === 'DIGITAL' ? 'DIGITAL BOUTIQUE' : 'CALIBRACIÓN MAESTRO'}
                             </span>
                         </motion.h1>
                     </div>
@@ -1044,7 +1049,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                                 <div className="relative p-16 rounded-[4rem] bg-gradient-to-br from-liquid-gold/10 to-transparent border border-liquid-gold/20 overflow-hidden shadow-gold-glow-soft">
                                     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-liquid-gold/5 blur-[120px] -mr-32 -mt-32"></div>
                                     <div className="relative z-10 max-w-2xl">
-                                        <h2 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none mb-8">Ecosistema de <br/> <span className="text-liquid-gold">Ingeniería Atelier</span></h2>
+                                        <h2 className="text-6xl font-black text-white italic tracking-[-0.04em] uppercase leading-none mb-8">ECOSISTEMA DE <br/> <span className="text-liquid-gold">INGENIERÍA CÓRDOVA</span></h2>
                                         <p className="text-[12px] font-black text-slate-500 uppercase tracking-[0.5em] leading-loose italic">Calibración de algoritmos de producción para optimización de rentabilidad industrial y precisión de costos.</p>
                                     </div>
                                 </div>

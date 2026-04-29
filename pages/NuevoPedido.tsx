@@ -208,10 +208,17 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
                 
                 <div className="space-y-6 relative z-10">
-                    <div className="space-y-1">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
                         <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Status de Operación</p>
-                        <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter">Misión: <span className="text-liquid-gold">{missionCategory || 'PENDIENTE'}</span></h4>
                     </div>
+                    <h4 className="text-2xl font-black text-white uppercase italic tracking-[-0.04em]">Misión: <span className="text-liquid-gold">{missionCategory || 'PENDIENTE'}</span></h4>
+                </div>
 
                     <div className="h-px w-full bg-gradient-to-r from-liquid-gold/20 via-transparent to-transparent" />
 
@@ -452,7 +459,7 @@ const NuevoPedidoPage: React.FC = () => {
                                         <p className="text-[9px] md:text-[12px] font-black text-liquid-gold uppercase tracking-[0.5em] md:tracking-[1em] italic">MODALIDAD_DE_INGRESO_V5.0</p>
                                         <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-liquid-gold/40" />
                                     </div>
-                                    <h2 className="text-3xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none">Tipo de <span className="text-gold-gradient drop-shadow-gold">Misión</span></h2>
+                                    <h2 className="text-3xl md:text-8xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">Tipo de <span className="text-gold-gradient drop-shadow-gold">Misión</span></h2>
                                     <p className="text-slate-500 text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] italic opacity-60">Seleccione el vector de despliegue industrial requerido</p>
                                 </div>
 

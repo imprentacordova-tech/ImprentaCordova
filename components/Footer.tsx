@@ -95,7 +95,7 @@ const Footer: React.FC = () => {
                                 <SparklesIcon className="w-4 h-4" />
                                 <span className="text-[9px] font-black uppercase tracking-[0.5em] italic text-gold-bright/60">Atención Pyme · Pasaje, El Oro</span>
                             </div>
-                            <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none italic uppercase">
+                            <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-[-0.04em] leading-none italic uppercase">
                                 ¿Listo para <br className="hidden md:block"/> <span className="text-white/20 not-italic font-editorial font-normal">IMPRIMIR?</span>
                             </h2>
                             <p className="text-slate-500 max-w-md font-light text-sm italic">
@@ -136,8 +136,8 @@ const Footer: React.FC = () => {
                             <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-[1.2rem] flex items-center justify-center shadow-lg shrink-0">
                                 <CordovaLogo className="w-9 h-9" />
                             </div>
-                            <div className="leading-none">
-                                <h3 className="font-display font-black text-2xl text-white tracking-tighter italic uppercase">CORDOVA</h3>
+                             <div className="leading-none">
+                                <h3 className="font-display font-black text-2xl text-white tracking-[-0.04em] italic uppercase">IMPRENTA CÓRDOVA</h3>
                                 <h3 className="font-display font-black text-[10px] text-gold-bright/60 tracking-[0.5em] uppercase">Atelier</h3>
                             </div>
                         </div>
@@ -233,7 +233,7 @@ const Footer: React.FC = () => {
             <div className="border-t border-white/5">
                 <div className="container mx-auto px-6 lg:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em]">
-                        Imprenta Córdova · Archivo de Excelencia · Pasaje, Ecuador
+                        IMPRENTA CÓRDOVA · Archivo de Excelencia · Pasaje, Ecuador
                     </p>
                     <div className="flex gap-8">
                         {links.legal.map(l => (

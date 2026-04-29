@@ -153,13 +153,19 @@ const DashboardPage: React.FC = () => {
                 <div className="flex gap-10">
                     <div className="w-[1px] h-32 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
                     <div className="space-y-4">
-                        <div className="flex items-center gap-5">
-                            <div className="h-[2px] w-12 bg-liquid-gold rounded-full shadow-gold-glow"></div>
-                            <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">NÚCLEO DE OPERACIONES ESTRATÉGICAS</p>
+                        <div>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="flex gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                                </div>
+                                <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Estado del Sistema • v5.0</span>
+                            </div>
+                             <h1 className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                                IMPRENTA CÓRDOVA <span className="text-gold-gradient">Elite</span>
+                            </h1>
                         </div>
-                        <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter uppercase italic leading-none">
-                            SISTEMA <span className="text-gold-gradient">NUCLEUS</span>
-                        </h1>
                         <p className="text-slate-500 text-lg font-light tracking-tight italic">
                             Sincronización Maestra para <span className="text-white font-bold">{currentUser.nombre.split(' ')[0]}</span>.
                         </p>

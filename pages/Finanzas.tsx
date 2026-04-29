@@ -122,10 +122,14 @@ const FinanzasPage: React.FC = () => {
             <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-white/5 pb-10">
                 <div className="space-y-4">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-[1px] bg-liquid-gold/40"></div>
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
                         <span className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.6em]">Telemetría Financiera Industrial</span>
                     </div>
-                    <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tighter uppercase italic leading-none">
+                    <h1 className="text-5xl sm:text-6xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
                         Bóveda de <span className="text-gold-gradient">Capital</span>
                     </h1>
                 </div>

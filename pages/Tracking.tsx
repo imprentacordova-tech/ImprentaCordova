@@ -189,7 +189,7 @@ const TrackingPage: React.FC = () => {
     };
 
     const handleGeneratePaymentLink = (job: Trabajo) => {
-        const message = `*ORDEN #${job.orden}*\nSaldo: ${formatCurrency(job.saldo)}\n\n*DATOS BANCARIOS:*\n🏦 Banco Pichincha\n💳 Cta: 123456789\n👤 Imprenta Córdova`;
+        const message = `*ORDEN #${job.orden}*\nSaldo: ${formatCurrency(job.saldo)}\n\n*DATOS BANCARIOS:*\n🏦 Banco Pichincha\n💳 Cta: 123456789\n👤 IMPRENTA CÓRDOVA`;
         window.open(`https://wa.me/593993083943?text=${encodeURIComponent(message)}`, '_blank');
     };
 
@@ -255,44 +255,48 @@ const TrackingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-brand-dark text-white font-sans selection:bg-gold-bright selection:text-brand-dark overflow-x-hidden flex flex-col relative">
-            <SEO title="Rastreo Elite | Imprenta Córdova" description="Seguimiento de alta precisión para sus proyectos de impresión." />
+        <div className="min-h-screen bg-printing-gray text-slate-800 font-sans selection:bg-printing-blue/10 selection:text-printing-blue overflow-x-hidden flex flex-col relative">
+            <SEO title="Rastreo Industrial | Imprenta Córdova" description="Seguimiento de alta precisión para sus proyectos de impresión industrial." />
             <Navbar />
 
             {/* Cinematic Background Layer */}
-            <div className="fixed inset-0 pointer-events-none z-0 bg-brand-dark">
-                <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gold-bright/5 rounded-full blur-[120px] opacity-60" />
-                <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-brand-dark rounded-full blur-[100px] opacity-40" />
-                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, #fff 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
+            <div className="fixed inset-0 pointer-events-none z-0 bg-printing-gray">
+                <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-printing-blue/5 rounded-full blur-[120px] opacity-60" />
+                <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-printing-cyan/5 rounded-full blur-[100px] opacity-40" />
+                <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, #000 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
             </div>
 
             <div className="relative z-10 flex-1 flex flex-col pt-32 p-4 lg:p-8 gap-8 max-w-[1600px] mx-auto w-full">
                 
                 {/* Header Section */}
                 <div className="text-center space-y-4 max-w-2xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 px-4 py-1.5 bg-gold-bright/5 border border-gold-bright/10 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-gold-bright rounded-full animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-bright">SISTEMA DE TELEMETRÍA INDUSTRIAL</span>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-5 py-2 bg-printing-blue/5 border border-printing-blue/10 rounded-full">
+                        <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 bg-printing-cyan rounded-full animate-pulse" />
+                            <div className="w-1.5 h-1.5 bg-printing-yellow rounded-full animate-pulse delay-75" />
+                            <div className="w-1.5 h-1.5 bg-printing-red rounded-full animate-pulse delay-150" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-printing-blue italic">TELEMETRÍA INDUSTRIAL IMPRENTA CÓRDOVA</span>
                     </motion.div>
-                    <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-white uppercase italic">
-                        Control de <span className="text-gold-gradient">Producción</span>
+                    <h1 className="text-4xl lg:text-7xl font-black tracking-[-0.04em] text-printing-dark uppercase italic leading-none">
+                        Estado de <span className="text-printing-blue not-italic">Producción</span>
                     </h1>
                 </div>
 
                 {/* Search Bar HUD */}
                 <div className="flex flex-col items-center justify-center gap-4">
-                    <form onSubmit={handleSearch} className="flex items-center gap-4 bg-white/5 border border-white/10 px-6 lg:px-8 py-4 lg:py-5 rounded-[2rem] lg:rounded-[2.5rem] focus-within:border-gold-bright focus-within:ring-4 focus-within:ring-gold-bright/5 transition-all group w-full max-w-3xl shadow-2xl backdrop-blur-xl">
-                        <SearchIcon className={`w-5 h-5 lg:w-6 h-6 ${searching ? 'text-gold-bright animate-spin' : 'text-slate-400'}`} />
+                    <form onSubmit={handleSearch} className="flex items-center gap-4 bg-white border border-slate-200 px-6 lg:px-8 py-4 lg:py-5 rounded-2xl lg:rounded-[2.5rem] focus-within:border-printing-blue focus-within:ring-4 focus-within:ring-printing-blue/5 transition-all group w-full max-w-3xl shadow-xl backdrop-blur-xl">
+                        <SearchIcon className={`w-5 h-5 lg:w-6 h-6 ${searching ? 'text-printing-blue animate-spin' : 'text-slate-400'}`} />
                         <input 
                             type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                             placeholder="N° Orden, Cédula o RUC..."
-                            className="bg-transparent border-none p-0 text-xs lg:text-sm font-bold text-white placeholder:text-slate-600 focus:ring-0 uppercase tracking-widest w-full"
+                            className="bg-transparent border-none p-0 text-xs lg:text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:ring-0 uppercase tracking-widest w-full"
                         />
-                        <button type="submit" className="bg-gold-bright text-brand-dark px-4 lg:px-6 py-2 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-widest hover:bg-white transition-colors">Vincular</button>
+                        <button type="submit" className="bg-printing-blue text-white px-4 lg:px-6 py-2 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-widest hover:bg-printing-dark transition-colors">Vincular</button>
                     </form>
                     
                     {error && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-liquid-gold text-[10px] font-black uppercase tracking-widest bg-liquid-gold/5 px-4 py-2 rounded-full border border-liquid-gold/20">
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-printing-red text-[10px] font-black uppercase tracking-widest bg-printing-red/5 px-4 py-2 rounded-full border border-printing-red/20">
                             {error}
                         </motion.div>
                     )}
@@ -309,7 +313,7 @@ const TrackingPage: React.FC = () => {
                                 <button
                                     key={job.id}
                                     onClick={() => setSelectedJobId(job.id)}
-                                    className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedJobId === job.id ? 'bg-gold-bright text-brand-dark shadow-lg shadow-gold-bright/20' : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'}`}
+                                    className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedJobId === job.id ? 'bg-printing-blue text-white shadow-lg shadow-printing-blue/20' : 'bg-white text-slate-400 hover:text-printing-blue border border-slate-200'}`}
                                 >
                                     Orden #{job.orden}
                                 </button>
@@ -324,9 +328,9 @@ const TrackingPage: React.FC = () => {
                         {currentJob ? (
                             <div className="grid grid-cols-12 gap-8">
                                 {/* Visual Asset Console */}
-                                <div className="col-span-12 lg:col-span-7 bg-white/[0.02] border border-white/5 rounded-[3rem] overflow-hidden flex flex-col group shadow-2xl relative backdrop-blur-3xl">
+                                <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200 rounded-[2rem] md:rounded-[3rem] overflow-hidden flex flex-col group shadow-2xl relative">
                                     <div className="absolute top-8 left-8 flex items-center gap-4 z-20">
-                                        <div className="bg-gold-bright px-4 py-2 rounded-xl text-brand-dark shadow-lg">
+                                        <div className="bg-printing-blue px-4 py-2 rounded-xl text-white shadow-lg">
                                             <span className="text-[10px] font-black tracking-widest uppercase italic">ORDEN: {String(currentJob.orden).padStart(6, '0')}</span>
                                         </div>
                                     </div>
@@ -359,10 +363,10 @@ const TrackingPage: React.FC = () => {
                                                 const isCurrent = currentJob?.estado === step.value;
                                                 return (
                                                     <div key={step.value} className="flex flex-col items-center gap-2 shrink-0">
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 ${isCurrent ? 'bg-gold-bright border-gold-bright text-brand-dark shadow-xl shadow-gold-bright/20 scale-110' : isCompleted ? 'bg-gold-bright/10 border-gold-bright/20 text-gold-bright' : 'bg-transparent border-white/5 text-slate-600'}`}>
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 ${isCurrent ? 'bg-printing-blue border-printing-blue text-white shadow-xl shadow-printing-blue/20 scale-110' : isCompleted ? 'bg-printing-blue/10 border-printing-blue/20 text-printing-blue' : 'bg-transparent border-slate-100 text-slate-300'}`}>
                                                             <step.icon className="w-5 h-5" />
                                                         </div>
-                                                        <span className={`text-[8px] font-black uppercase tracking-widest ${isCurrent ? 'text-gold-bright' : 'text-slate-600'}`}>{step.label}</span>
+                                                        <span className={`text-[8px] font-black uppercase tracking-widest ${isCurrent ? 'text-printing-blue' : 'text-slate-400'}`}>{step.label}</span>
                                                     </div>
                                                 );
                                             })}
@@ -382,7 +386,7 @@ const TrackingPage: React.FC = () => {
                                                 <motion.button 
                                                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                     onClick={() => handleGeneratePaymentLink(currentJob)}
-                                                    className="flex-1 sm:flex-none bg-gold-bright text-brand-dark px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-gold-bright/20 italic"
+                                                    className="flex-1 sm:flex-none bg-printing-blue text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-printing-blue/20 italic"
                                                 >
                                                     Liquidar Saldo
                                                 </motion.button>
@@ -394,28 +398,28 @@ const TrackingPage: React.FC = () => {
                                 {/* Manifest & Terminal Console */}
                                 <div className="col-span-12 lg:col-span-5 flex flex-col gap-8">
                                     {/* Product Manifest */}
-                                    <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 shadow-xl flex flex-col gap-6 backdrop-blur-3xl">
+                                    <div className="bg-white border border-slate-200 rounded-[2rem] md:rounded-[3rem] p-8 shadow-xl flex flex-col gap-6">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black text-gold-bright uppercase tracking-widest italic">Manifiesto Técnico</span>
+                                                    <span className="text-[10px] font-black text-printing-blue uppercase tracking-widest italic">Manifiesto Industrial</span>
                                                     {currentJob.esSRI && (
-                                                        <span className="bg-gold-bright/20 text-gold-bright text-[8px] font-black px-2 py-0.5 rounded border border-gold-bright/30 animate-pulse">AUTORIZADO_SRI</span>
+                                                        <span className="bg-printing-blue/10 text-printing-blue text-[8px] font-black px-2 py-0.5 rounded border border-printing-blue/30 animate-pulse">AUTORIZADO_SRI</span>
                                                     )}
                                                 </div>
-                                                <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">{currentJob.subtipo}</h3>
+                                                <h3 className="text-2xl font-black text-printing-dark italic tracking-tighter uppercase">{currentJob.subtipo}</h3>
                                             </div>
-                                            <div className="bg-white/5 px-3 py-1 rounded-full text-[8px] font-mono text-slate-500 font-bold uppercase tracking-widest">Protocolo v2.4</div>
+                                            <div className="bg-slate-50 px-3 py-1 rounded-full text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest border border-slate-100">Protocolo v4.2</div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5">
-                                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block mb-1">Capital Proyectado</span>
-                                                <div className="text-2xl font-black text-white">{formatCurrency(currentJob.total)}</div>
+                                            <div className="p-5 bg-slate-50 rounded-2xl md:rounded-3xl border border-slate-100">
+                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Capital Proyectado</span>
+                                                <div className="text-2xl font-black text-slate-800">{formatCurrency(currentJob.total)}</div>
                                             </div>
-                                            <div className="p-5 bg-gold-bright/10 rounded-3xl border border-gold-bright/20">
-                                                <span className="text-[8px] font-black text-gold-bright/60 uppercase tracking-widest block mb-1">Balance Pendiente</span>
-                                                <div className="text-2xl font-black text-gold-bright">{formatCurrency(currentJob.saldo)}</div>
+                                            <div className="p-5 bg-printing-blue/5 rounded-2xl md:rounded-3xl border border-printing-blue/10">
+                                                <span className="text-[8px] font-black text-printing-blue/60 uppercase tracking-widest block mb-1">Balance Pendiente</span>
+                                                <div className="text-2xl font-black text-printing-blue">{formatCurrency(currentJob.saldo)}</div>
                                             </div>
                                         </div>
 
@@ -434,35 +438,36 @@ const TrackingPage: React.FC = () => {
                                                             { label: 'Trámite', value: currentJob.actividadSeleccionada, icon: ShieldCheckIcon }
                                                         ] : [])
                                                     ].filter(s => s.value).map(spec => (
-                                                        <div key={spec.label} className="flex items-center justify-between px-5 py-3 bg-white/[0.03] rounded-2xl group hover:bg-white/5 hover:border-gold-bright/20 border border-transparent transition-all">
+                                                        <div key={spec.label} className="flex items-center justify-between px-5 py-3 bg-slate-50 rounded-xl md:rounded-2xl group hover:bg-white hover:border-printing-blue/20 border border-slate-100 transition-all">
                                                             <div className="flex items-center gap-3">
-                                                                <spec.icon className="w-4 h-4 text-slate-600 group-hover:text-gold-bright transition-colors" />
-                                                                <span className="text-[10px] font-black text-slate-500 uppercase group-hover:text-white italic">{spec.label}</span>
+                                                                <spec.icon className="w-4 h-4 text-slate-400 group-hover:text-printing-blue transition-colors" />
+                                                                <span className="text-[10px] font-black text-slate-500 uppercase group-hover:text-slate-800 italic">{spec.label}</span>
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-white uppercase italic tracking-widest">{spec.value}</span>
+                                                            <span className="text-[10px] font-bold text-slate-700 uppercase italic tracking-widest">{spec.value}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
                                         
-                                        <div className="p-6 bg-gold-bright/5 border border-gold-bright/10 rounded-3xl">
-                                            <span className="text-[8px] font-black text-gold-bright uppercase tracking-widest block mb-2 italic">Comentario del Taller</span>
-                                            <p className="text-[11px] font-medium text-slate-400 italic leading-relaxed uppercase tracking-wider">{cleanDetalle || "Procesando especificaciones adicionales..."}</p>
+                                        <div className="p-6 bg-printing-blue/5 border border-printing-blue/10 rounded-[2rem]">
+                                            <span className="text-[8px] font-black text-printing-blue uppercase tracking-widest block mb-2 italic">Comentario de Taller IMPRENTA CÓRDOVA</span>
+                                            <p className="text-[11px] font-medium text-slate-600 italic leading-relaxed uppercase tracking-wider">{cleanDetalle || "Procesando especificaciones adicionales..."}</p>
                                         </div>
                                     </div>
 
                                     {/* Real-time Telemetry Console */}
-                                    <div className="flex-1 bg-black/40 border border-white/5 rounded-[3rem] p-8 flex flex-col min-h-[300px] shadow-2xl relative overflow-hidden group/console backdrop-blur-3xl">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gold-bright/10 blur-3xl rounded-full" />
+                                    <div className="flex-1 bg-printing-dark border border-slate-800 rounded-[2rem] md:rounded-[3rem] p-8 flex flex-col min-h-[300px] shadow-2xl relative overflow-hidden group/console">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-printing-blue/10 blur-3xl rounded-full" />
                                         <div className="flex items-center justify-between mb-6 relative z-10">
                                             <div className="flex items-center gap-3">
-                                                <ActivityIcon className="w-4 h-4 text-gold-bright animate-pulse" />
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Telemetría en Tiempo Real</span>
+                                                <ActivityIcon className="w-4 h-4 text-printing-blue animate-pulse" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Telemetría de Taller</span>
                                             </div>
                                             <div className="flex gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-ping" />
-                                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-printing-cyan animate-pulse" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-printing-yellow animate-pulse delay-75" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-printing-red animate-pulse delay-150" />
                                             </div>
                                         </div>
                                         <div className="flex-1 overflow-y-auto no-scrollbar font-mono text-[10px] space-y-4 pr-2 relative z-10">
@@ -472,7 +477,7 @@ const TrackingPage: React.FC = () => {
                                                     <span className="text-slate-300 group-hover/log:text-white transition-colors uppercase tracking-widest">{log.msg}</span>
                                                 </div>
                                             ))}
-                                            <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2 }} className="text-gold-bright font-bold uppercase tracking-widest pt-4 border-t border-white/5 italic">
+                                            <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2 }} className="text-printing-blue font-bold uppercase tracking-widest pt-4 border-t border-white/5 italic">
                                                 {`> ESTATUS: ${currentJob.estado.replace('_', ' ')}`}
                                             </motion.div>
                                         </div>
@@ -493,8 +498,8 @@ const TrackingPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="text-center space-y-4">
-                                    <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase">Esperando Enlace</h2>
-                                    <p className="text-[11px] text-slate-600 uppercase tracking-[1em] italic pl-4">Ingrese_su_ID_para_vincular</p>
+                                    <h2 className="text-5xl font-black text-printing-dark italic tracking-tighter uppercase">Esperando Enlace</h2>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-[1em] italic pl-4">Ingrese_su_ID_para_vincular</p>
                                 </div>
                             </div>
                         )}
@@ -506,7 +511,7 @@ const TrackingPage: React.FC = () => {
             <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100]">
                 <motion.div 
                     layout 
-                    className={`rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.5)] border transition-all duration-700 ${isVoiceActive ? 'bg-brand-dark border-gold-bright/30 p-8 w-[450px]' : 'bg-gold-bright border-transparent p-4'}`}
+                    className={`rounded-[2rem] md:rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.15)] border transition-all duration-700 ${isVoiceActive ? 'bg-white border-printing-blue/30 p-8 w-[90vw] md:w-[450px]' : 'bg-printing-blue border-transparent p-4'}`}
                 >
                     <AnimatePresence mode="wait">
                         {isVoiceActive ? (
@@ -528,7 +533,7 @@ const TrackingPage: React.FC = () => {
                         ) : (
                             <motion.button 
                                 key="inactive" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startVoiceTracking} 
-                                className="text-brand-dark flex items-center gap-4 px-6 py-2"
+                                className="text-white flex items-center gap-4 px-6 py-2"
                             >
                                 <HeadphonesIcon className="w-6 h-6" />
                                 {foundJobs.length > 0 && <span className="text-[11px] font-black uppercase tracking-[0.5em] italic">Centro de Control</span>}

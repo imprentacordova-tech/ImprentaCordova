@@ -253,8 +253,15 @@ const Header: React.FC<{
                 </button>
 
                 <div className="flex flex-col">
-                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic mb-0.5">Centro de Control</p>
-                    <h2 className="text-xl font-black text-white uppercase tracking-tighter italic">Imprenta Córdova</h2>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Centro de Control</p>
+                    </div>
+                    <h2 className="text-xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">IMPRENTA CÓRDOVA</h2>
                 </div>
 
                 <div className="hidden xl:flex h-8 w-px bg-white/5 mx-2" />
@@ -371,7 +378,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
             <div className="animate-scan opacity-[0.03] z-[100]" />
             <div className="absolute inset-0 pointer-events-none z-[99] opacity-[0.02] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
             
-            <SEO title="Imprenta Córdova | Backend Administrativo" includeLocalBusiness={false} robots={false} />
+            <SEO title="IMPRENTA CÓRDOVA · Archivo de Excelencia · Pasaje, Ecuador" includeLocalBusiness={false} robots={false} />
 
             {/* ── Desktop/Mobile Sidebar Drawer Overlay ── */}
             <div
@@ -390,7 +397,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                                 <CordovaLogo className="w-8 h-8" />
                             </div>
                             <div className="text-center">
-                                <h1 className="font-display font-black text-xl leading-none tracking-widest text-slate-900 dark:text-white uppercase">Módulos</h1>
+                                <h1 className="font-display font-black text-xl leading-none tracking-[-0.04em] text-slate-900 dark:text-white uppercase italic">IMPRENTA CÓRDOVA</h1>
                                 <p className="text-[8px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.4em] mt-2">Gestión Administrativa</p>
                             </div>
                         </div>
