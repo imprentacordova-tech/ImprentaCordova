@@ -289,7 +289,8 @@ const VisualLanding: React.FC = () => {
                             <span className="text-[9px] font-black text-slate-400 tracking-[1em] uppercase italic">Desplazar</span>
                         </motion.div>
                     </div>
-                </header>
+                </div>
+            </header>
 
             {/* --- SECTION: THE VISION (DYNAMIC SHOWCASE) --- */}
             <section id="vision" className="relative py-40 lg:py-60 bg-white">

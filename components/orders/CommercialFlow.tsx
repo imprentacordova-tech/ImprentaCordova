@@ -109,18 +109,28 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
             
             {/* Header / Steps Navigation (Optimized) */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-16 gap-4 md:gap-8 border-b border-white/10 pb-6 md:pb-10 relative z-10">
-                <div className="space-y-1 md:space-y-3">
-                    <div className="flex items-center gap-2 md:gap-3">
-                        <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow"></div>
-                        <p className="text-[8px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.3em] md:tracking-[0.5em] italic">Misión Comercial Rápida</p>
+            <div className="bg-brand-dark/95 backdrop-blur-3xl p-6 md:p-12 border-b border-white/5 relative overflow-hidden -mx-6 md:-mx-10 -mt-6 md:-mt-10 mb-8 md:mb-16">
+                {/* Industrial Grid Background */}
+                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+                     style={{ backgroundImage: 'linear-gradient(var(--printing-blue) 1px, transparent 1px), linear-gradient(90deg, var(--printing-blue) 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
+                />
+                
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-4">
+                            <div className="px-3 py-1 bg-printing-blue/20 border border-printing-blue/40 rounded-md">
+                                <span className="text-[8px] font-mono text-printing-blue tracking-[0.4em] uppercase">SYSTEM: ACTIVE</span>
+                            </div>
+                            <span className="text-[8px] font-mono text-slate-500 tracking-[0.4em] uppercase">ELITE_WORKFLOW_v4.2</span>
+                        </div>
+                        <div className="flex items-center gap-4 md:gap-8">
+                            <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter">
+                                {step === 1 && <>Suministros <span className="text-gold-gradient">Industriales.</span></>}
+                                {step === 2 && <>Configuración <span className="text-gold-gradient">Elite.</span></>}
+                                {step === 3 && <>Despliegue <span className="text-gold-gradient">Final.</span></>}
+                            </h2>
+                        </div>
                     </div>
-                    <h2 className="text-2xl md:text-5xl font-black text-white uppercase italic tracking-[-0.04em] leading-none">
-                        {step === 1 && <span className="flex items-center gap-2 md:gap-4">SUMINISTROS INDUSTRIALES</span>}
-                        {step === 2 && <span className="flex items-center gap-2 md:gap-4">CONFIGURACIÓN ELITE</span>}
-                        {step === 3 && <span className="flex items-center gap-2 md:gap-4">DESPLIEGUE FINAL</span>}
-                    </h2>
-                </div>
                 
                 <div className="flex items-center gap-2 md:gap-6 w-full md:w-auto">
                     <div className="flex-1 md:flex-none flex items-center gap-3 bg-black/40 p-2 md:p-3 rounded-2xl border border-white/10 shadow-inner overflow-x-auto no-scrollbar">
@@ -538,7 +548,20 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
             onClick={onSelect}
         >
             <div className="p-5 md:p-8 space-y-4 md:space-y-6 relative z-10">
-                <div className="flex justify-between items-start">
+                {/* Animated Scan Line on Hover */}
+                <AnimatePresence>
+                    {isHovered && (
+                        <motion.div 
+                            initial={{ top: '-10%' }}
+                            animate={{ top: '110%' }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                            className={`absolute left-0 right-0 h-[1px] z-20 pointer-events-none ${isExpress ? 'bg-blue-400/30 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'bg-liquid-gold/30 shadow-gold-glow-sm'}`}
+                        />
+                    )}
+                </AnimatePresence>
+
+                <div className="flex justify-between items-start relative z-30">
                     <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all duration-700 ${
                         isHovered 
                             ? isExpress ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-liquid-gold text-black shadow-gold-glow scale-110' 
@@ -554,7 +577,7 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                     </div>
                 </div>
 
-                <div className="space-y-1.5 md:space-y-2">
+                <div className="space-y-1.5 md:space-y-2 relative z-30">
                     {isExpress && (
                         <div className="flex items-center gap-2 mb-1 md:mb-2">
                             <span className="text-[6px] md:text-[7px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest italic animate-pulse">VENTA_TURBO_ACTIVA</span>
@@ -568,7 +591,7 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                     </p>
                 </div>
 
-                <div className="pt-4 md:pt-6 border-t border-white/5 flex justify-between items-center">
+                <div className="pt-4 md:pt-6 border-t border-white/5 flex justify-between items-center relative z-30">
                     <button 
                         onClick={(e) => {
                             e.stopPropagation();
