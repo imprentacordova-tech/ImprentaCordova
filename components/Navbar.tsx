@@ -45,17 +45,22 @@ const Navbar: React.FC = () => {
 
     return (
         <>
-            {/* ── Barra Superior de Marca ── */}
-            <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-brand-dark flex items-center justify-center overflow-hidden px-6 border-b border-white/5">
-                <div className="flex items-center gap-6 text-white/50">
-                    <div className="flex gap-1.5">
-                        <div className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
-                        <div className="w-1 h-1 rounded-full bg-yellow-400 animate-pulse delay-75" />
-                        <div className="w-1 h-1 rounded-full bg-brand-red animate-pulse delay-150" />
+            {/* ── Barra Superior de Marca (Cinta de Seguridad Industrial) ── */}
+            <div className="fixed top-0 inset-x-0 z-[60] h-10 bg-black flex items-center justify-center overflow-hidden px-6 border-b border-white/10">
+                <div className="absolute inset-0 bg-gradient-to-r from-printing-blue/20 via-transparent to-printing-blue/20 opacity-50" />
+                <div className="flex items-center gap-8 text-white/50 relative z-10">
+                    <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-printing-cyan animate-pulse shadow-[0_0_8px_#00aeef]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-printing-magenta animate-pulse delay-75 shadow-[0_0_8px_#be123c]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-printing-yellow animate-pulse delay-150 shadow-[0_0_8px_#f59e0b]" />
                     </div>
-                    <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white/80 italic">
-                        IMPRENTA CÓRDOVA AUTORIZADA SRI · <span className="text-liquid-gold font-bold">PASAJE, EL ORO</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic">
+                        IMPRENTA CÓRDOVA AUTORIZADA SRI · <span className="text-gold-gradient font-black">ESTÁNDAR ELITE</span>
                     </span>
+                    <div className="hidden md:flex items-center gap-2 text-[8px] font-mono text-printing-blue/60 uppercase tracking-widest">
+                        <div className="w-1 h-1 bg-printing-blue/40 rounded-full" />
+                        SYSTEM_ACTIVE: 100%
+                    </div>
                 </div>
             </div>
 
@@ -86,29 +91,31 @@ const Navbar: React.FC = () => {
                         </a>
 
                         {/* ── Enlaces Escritorio ── */}
-                        <div className="hidden lg:flex items-center gap-2">
+                        <div className="hidden lg:flex items-center gap-4">
                             {navLinks.map(link => (
                                 <a
                                     key={link.name}
                                     href={link.href}
-                                    className="group relative px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors italic"
+                                    className="group relative px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-white transition-all duration-500 italic"
                                 >
-                                    {link.name}
-                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 bg-liquid-gold group-hover:w-4 transition-all duration-300 rounded-full" />
+                                    <span className="relative z-10">{link.name}</span>
+                                    <motion.span 
+                                        className="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-printing-blue to-transparent w-0 group-hover:w-full transition-all duration-700"
+                                    />
                                 </a>
                             ))}
                         </div>
 
                         {/* ── CTAs Escritorio ── */}
-                        <div className="hidden lg:flex items-center gap-4">
+                        <div className="hidden lg:flex items-center gap-6">
                             <a
                                 href="https://wa.me/593993083943"
                                 target="_blank"
                                 rel="noreferrer"
-                                className="group px-8 py-3 bg-white text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-liquid-gold shadow-lg transition-all flex items-center gap-3 active:scale-95 italic"
+                                className="group px-10 py-3.5 bg-white text-printing-dark rounded-xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-printing-blue hover:text-white shadow-[0_10px_30px_rgba(255,255,255,0.1)] hover:shadow-[0_15px_40px_rgba(0,71,171,0.3)] transition-all duration-700 flex items-center gap-4 active:scale-95 italic border border-white/10"
                             >
-                                <WhatsAppIcon className="w-4 h-4" />
-                                <span>WhatsApp Elite</span>
+                                <WhatsAppIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                                <span>CANAL ELITE</span>
                             </a>
                         </div>
 

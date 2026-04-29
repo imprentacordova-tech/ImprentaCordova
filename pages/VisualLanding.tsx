@@ -158,96 +158,138 @@ const VisualLanding: React.FC = () => {
                 </div>
 
                 <div className="relative z-20 text-center space-y-12 max-w-[90rem] px-6 w-full">
-                    <motion.div
-                        initial={{ opacity: 0, y: 80 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="space-y-6"
-                        style={{ filter: textBlur }}
-                    >
-                        <div className="inline-flex items-center gap-8 px-10 py-4 border border-printing-blue/10 bg-printing-blue/5 rounded-full mb-8 backdrop-blur-sm">
-                            <div className="flex gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-printing-cyan animate-pulse" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-printing-magenta animate-pulse delay-75" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-printing-yellow animate-pulse delay-150" />
-                            </div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.8em] text-printing-blue italic">
-                                ESTÁNDAR INDUSTRIAL CÓRDOVA
-                            </span>
+                 {/* --- HERO SECTION: CINEMATIC INDUSTRIAL --- */}
+                    <div className="relative pt-32 pb-40 px-6 overflow-hidden">
+                        {/* Background Technical Elements */}
+                        <div className="absolute inset-0 z-0">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,_#1e293b_0%,_transparent_70%)] opacity-50" />
+                            <div className="absolute inset-0" 
+                                 style={{ 
+                                     backgroundImage: `radial-gradient(#1e293b 1px, transparent 1px)`, 
+                                     backgroundSize: '40px 40px',
+                                     opacity: 0.15 
+                                 }} 
+                            />
+                            {/* Animated Scanner Line */}
+                            <motion.div 
+                                animate={{ top: ["-10%", "110%"] }}
+                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-printing-blue/20 to-transparent z-10"
+                            />
                         </div>
-                                      <h1 className="flex flex-col items-center select-none relative group/hero">
-                            <span className="block overflow-hidden h-[1em] sm:h-[1.1em]">
-                                <motion.span 
-                                    initial={{ y: "100%" }}
-                                    animate={{ y: 0 }}
-                                    transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                    className="block text-6xl sm:text-8xl md:text-[9.5rem] font-black leading-none tracking-[-0.04em] text-printing-dark italic uppercase hover:text-printing-blue transition-colors duration-500"
+
+                        <div className="relative z-10 max-w-7xl mx-auto text-center">
+                            {/* Industrial Badge */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="inline-flex items-center gap-4 px-5 py-2.5 rounded-full bg-printing-dark/40 backdrop-blur-md border border-white/5 mb-12 shadow-2xl"
+                            >
+                                <div className="flex gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-printing-cyan animate-pulse" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-printing-magenta animate-pulse delay-75" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-printing-yellow animate-pulse delay-150" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-400 italic">
+                                    ESTÁNDAR INDUSTRIAL CÓRDOVA
+                                </span>
+                            </motion.div>
+
+                            {/* Main Nomenclature */}
+                            <div className="relative mb-12 group">
+                                <h1 className="flex flex-col items-center gap-2 select-none">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                                        className="relative"
+                                    >
+                                        <span className="text-7xl sm:text-9xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-printing-dark italic uppercase">
+                                            IMPRENTA
+                                        </span>
+                                        {/* Decorative Technical Line */}
+                                        <div className="absolute -right-4 -top-4 w-12 h-12 border-t-2 border-r-2 border-printing-blue/20 rounded-tr-xl" />
+                                        <div className="absolute -left-4 -bottom-4 w-12 h-12 border-b-2 border-l-2 border-printing-blue/20 rounded-bl-xl" />
+                                    </motion.div>
+
+                                    <motion.span 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                        className="text-gold-gradient text-5xl sm:text-7xl md:text-[8rem] font-black leading-none tracking-tight drop-shadow-2xl"
+                                    >
+                                        CÓRDOVA.
+                                    </motion.span>
+                                </h1>
+                                
+                                {/* Micro telemetry details */}
+                                <div className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-32 text-left opacity-20 group-hover:opacity-40 transition-opacity duration-700">
+                                    <p className="font-mono text-[8px] uppercase tracking-widest text-slate-400 leading-relaxed">
+                                        precision_index: 0.9997<br />
+                                        ink_viscosity: stable<br />
+                                        matrix_alignment: optimal<br />
+                                        cordoba_arts_coord: 1827.55A
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <motion.p 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 0.6 }}
+                                transition={{ delay: 0.8, duration: 1 }}
+                                className="text-slate-400 font-medium text-lg md:text-xl max-w-2xl mx-auto tracking-wide mb-16 leading-relaxed"
+                            >
+                                Ingeniería visual y manufactura de precisión para marcas que lideran la industria global.
+                            </motion.p>
+
+                            {/* Actions */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 1, delay: 0.9 }}
+                                className="flex flex-col sm:flex-row items-center justify-center gap-10"
+                            >
+                                <motion.a
+                                    href={generateWhatsAppLink("593993083943", "Solicitud de protocolo industrial IMPRENTA CORDOVA.")}
+                                    whileHover={{ scale: 1.05, y: -4 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full sm:w-auto relative group overflow-hidden bg-printing-blue text-white px-16 py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[11px] shadow-[0_20px_50px_rgba(0,71,171,0.3)] flex items-center justify-center gap-6 italic transition-all duration-700"
                                 >
-                                    IMPRENTA
-                                </motion.span>
-                            </span>
-                            <span className="block overflow-hidden h-[1.1em] -mt-2 sm:-mt-4 md:-mt-6">
-                                <motion.span 
-                                    initial={{ y: "100%" }}
-                                    animate={{ y: 0 }}
-                                    transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                                    className="block text-6xl sm:text-8xl md:text-[9.5rem] font-black leading-none tracking-[-0.06em] not-italic text-transparent bg-clip-text bg-gradient-to-br from-printing-blue via-printing-cyan to-printing-blue"
+                                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out" />
+                                    <span className="relative z-10">INICIAR PROYECTO</span> 
+                                    <ChevronRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-3 transition-transform duration-700" />
+                                </motion.a>
+
+                                <motion.button
+                                    onClick={() => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' })}
+                                    whileHover={{ scale: 1.05, y: -4 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full sm:w-auto bg-printing-dark/5 backdrop-blur-3xl text-printing-dark px-16 py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[11px] flex items-center justify-center gap-6 group border border-printing-dark/10 hover:border-printing-blue/40 hover:bg-white transition-all duration-700 italic"
                                 >
-                                    CÓRDOVA.
-                                </motion.span>
-                            </span>
-                        </h1>
+                                    EXPLORAR CAPACIDADES <LayoutIcon className="w-5 h-5 opacity-40 group-hover:rotate-45 transition-transform duration-700" />
+                                </motion.button>
+                            </motion.div>
+                        </div>
                         
-                        <p className="text-slate-500 font-medium text-lg md:text-xl max-w-3xl mx-auto tracking-wide mt-10 leading-relaxed">
-                            Ingeniería visual y manufactura de precisión para marcas que lideran la industria.
-                        </p>
-                    </motion.div>
-
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, delay: 0.7 }}
-                        className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-6"
-                    >
-                        <motion.a
-                            href={generateWhatsAppLink("593993083943", "Solicitud de protocolo industrial IMPRENTA CORDOVA.")}
-                            whileHover={{ scale: 1.02, y: -4 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full sm:w-auto relative group overflow-hidden bg-printing-blue text-white px-10 md:px-14 py-6 md:py-7 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] md:text-[11px] shadow-2xl flex items-center justify-center gap-6 italic transition-all duration-500"
-                        >
-                            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-                            <span className="relative z-10">INICIAR PROYECTO</span> 
-                            <ChevronRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-3 transition-transform duration-500" />
-                        </motion.a>
-
-                        <motion.button
-                            onClick={() => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' })}
-                            whileHover={{ scale: 1.02, y: -4 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full sm:w-auto bg-white/50 backdrop-blur-xl text-printing-dark px-10 md:px-14 py-6 md:py-7 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] md:text-[11px] flex items-center justify-center gap-6 group border border-slate-200 hover:border-printing-blue/20 hover:bg-white transition-all duration-500 italic"
-                        >
-                            EXPLORAR CAPACIDADES <LayoutIcon className="w-5 h-5 opacity-40 group-hover:rotate-45 transition-transform duration-500" />
-                        </motion.button>
-                    </motion.div>
-                </div>
-                
-                {/* Scroll Indicator */}
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.2, duration: 1.5 }}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
-                >
-                    <div className="w-[1px] h-16 bg-gradient-to-b from-printing-blue/60 via-printing-blue/10 to-transparent relative">
+                        {/* Scroll Indicator */}
                         <motion.div 
-                            animate={{ top: ["0%", "100%", "0%"] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute left-1/2 -translate-x-1/2 w-1 h-3 bg-printing-blue rounded-full shadow-lg"
-                        />
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.5, duration: 1.5 }}
+                            className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
+                        >
+                            <div className="w-[1px] h-20 bg-gradient-to-b from-printing-blue/60 via-printing-blue/10 to-transparent relative">
+                                <motion.div 
+                                    animate={{ top: ["0%", "100%", "0%"] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="absolute left-1/2 -translate-x-1/2 w-1.5 h-4 bg-printing-blue rounded-full shadow-[0_0_15px_rgba(0,71,171,0.5)]"
+                                />
+                            </div>
+                            <span className="text-[9px] font-black text-slate-400 tracking-[1em] uppercase italic">Desplazar</span>
+                        </motion.div>
                     </div>
-                    <span className="text-[8px] font-mono text-slate-400 tracking-[0.8em] uppercase">Desplazar</span>
-                </motion.div>
-            </header>
+                </header>
 
             {/* --- SECTION: THE VISION (DYNAMIC SHOWCASE) --- */}
             <section id="vision" className="relative py-40 lg:py-60 bg-white">
