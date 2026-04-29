@@ -564,7 +564,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     <div className="space-y-12">
                                         <div className="space-y-4">
                                             <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] md:tracking-[0.8em] italic">ETAPA FISCAL</p>
-                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Identidad del <span className="text-gold-gradient">Contribuyente</span></h2>
+                                            <h2 className="text-3xl md:text-6xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">Identidad del <span className="text-gold-gradient">Contribuyente</span></h2>
                                             <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Búsqueda inteligente: Base Local → Padrón SRI → PDF → Manual</p>
                                         </div>
                                         <ClientSelector 
@@ -717,7 +717,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     <div className="space-y-12">
                                         <div className="space-y-4">
                                             <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">ESPECIFICACIÓN COMERCIAL</p>
-                                            <h2 className="text-6xl font-black text-white uppercase tracking-tighter italic leading-none">Detalles del <span className="text-gold-gradient">Trabajo</span></h2>
+                                            <h2 className="text-6xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">Detalles del <span className="text-gold-gradient">Trabajo</span></h2>
                                         </div>
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                                             <div className="space-y-8">

@@ -17,9 +17,10 @@ const services = [
             'Lonas, banners y vinilos con tecnología Roland High-Fidelity. Colores saturados que resisten sol, lluvia y el paso del tiempo.',
         icon: PrinterIcon,
         imageUrl: 'https://images.unsplash.com/photo-1520697517317-6767553cc51a?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-liquid-gold',
-        glow: 'shadow-gold-glow',
+        accent: 'text-cyan-400',
+        glow: 'shadow-[0_0_20px_rgba(34,211,238,0.3)]',
         featured: true,
+        cmyk: 'C'
     },
     {
         id: '2',
@@ -33,6 +34,7 @@ const services = [
         accent: 'text-brand-red',
         glow: 'shadow-[0_0_20px_rgba(225,29,72,0.3)]',
         featured: false,
+        cmyk: 'M'
     },
     {
         id: '3',
@@ -43,9 +45,10 @@ const services = [
             'Declaraciones de IVA Mensual y Semestral, Impuesto a la Renta, Anexos Transaccionales, RUC y RISE. Tus cifras en orden.',
         icon: CalculatorIcon,
         imageUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-blue-400',
-        glow: 'shadow-[0_0_20px_rgba(96,165,250,0.2)]',
+        accent: 'text-yellow-400',
+        glow: 'shadow-[0_0_20px_rgba(250,204,21,0.2)]',
         featured: false,
+        cmyk: 'Y'
     },
     {
         id: '4',
@@ -56,9 +59,10 @@ const services = [
             'Desde tarjetas de presentación premium hasta folletos corporativos. Diseño estratégico para que tu marca cause primera impresión.',
         icon: PaletteIcon,
         imageUrl: 'https://images.unsplash.com/photo-1586075010683-2350bcbc085c?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-purple-400',
-        glow: 'shadow-[0_0_20px_rgba(167,139,250,0.2)]',
+        accent: 'text-white',
+        glow: 'shadow-[0_0_20px_rgba(255,255,255,0.1)]',
         featured: false,
+        cmyk: 'K'
     },
     {
         id: '5',
@@ -82,8 +86,8 @@ const services = [
             'Sellos automáticos y de madera al instante, empastados de tesis y encuadernación de archivos contables con acabados de lujo.',
         icon: LayersIcon,
         imageUrl: 'https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-emerald-400',
-        glow: 'shadow-[0_0_20px_rgba(52,211,153,0.2)]',
+        accent: 'text-cyan-400',
+        glow: 'shadow-[0_0_20px_rgba(34,211,238,0.2)]',
         featured: false,
     },
 ];
@@ -100,11 +104,18 @@ const itemVariants = {
 };
 
 // --- Featured card (large) ----------------------------------------------------
-const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, description, icon: Icon, imageUrl, accent, glow }) => (
+const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, description, icon: Icon, imageUrl, accent, glow, cmyk }) => (
     <motion.div
         variants={itemVariants}
         className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 hover:border-liquid-gold/20 transition-all duration-1000 shadow-luxury hover:-translate-y-2 min-h-[520px] flex flex-col justify-end cursor-default"
     >
+        {/* CMYK Ribbon */}
+        {cmyk && (
+            <div className="absolute top-0 right-10 flex gap-1 z-30">
+                <div className={`w-1 h-12 ${cmyk === 'C' ? 'bg-cyan-500' : cmyk === 'M' ? 'bg-brand-red' : cmyk === 'Y' ? 'bg-yellow-400' : 'bg-white/20'} opacity-50 group-hover:opacity-100 transition-opacity`} />
+            </div>
+        )}
+
         {/* Background image */}
         <div className="absolute inset-0 z-0">
             <img
@@ -124,20 +135,20 @@ const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, descripti
                 <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:${glow} transition-all duration-500`}>
                     <Icon className={`w-7 h-7 ${accent}`} />
                 </div>
-                <span className={`text-[9px] font-black uppercase tracking-[0.5em] ${accent} opacity-70`}>{subtitle}</span>
+                <span className={`text-[9px] font-black uppercase tracking-[0.5em] ${accent} opacity-70 italic`}>{subtitle}</span>
             </div>
 
             <div>
-                <h3 className="text-4xl lg:text-5xl font-display font-black text-white tracking-[-0.04em] leading-none mb-4">
+                <h3 className="text-4xl lg:text-5xl font-display font-black text-white tracking-[-0.04em] leading-none mb-4 italic">
                     {title}
                 </h3>
-                <p className="text-slate-400 text-base font-light leading-relaxed max-w-md">
+                <p className="text-slate-400 text-base font-light leading-relaxed max-w-md uppercase tracking-tight opacity-80">
                     {description}
                 </p>
             </div>
 
             {/* CTA */}
-            <div className="pt-2 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 group-hover:text-liquid-gold transition-colors duration-500">
+            <div className="pt-2 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 group-hover:text-liquid-gold transition-colors duration-500 italic">
                 <span>Solicitar Cotización</span>
                 <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -147,12 +158,17 @@ const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, descripti
 
 // --- Compact card -------------------------------------------------------------
 const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
-    index, title, subtitle, description, icon: Icon, imageUrl, accent, glow, delay = 0,
+    index, title, subtitle, description, icon: Icon, imageUrl, accent, glow, cmyk, delay = 0,
 }) => (
     <motion.div
         variants={itemVariants}
         className="group relative overflow-hidden rounded-[2rem] border border-white/5 hover:border-white/15 transition-all duration-700 shadow-luxury hover:-translate-y-2 flex flex-col"
     >
+        {/* CMYK Accent line */}
+        {cmyk && (
+            <div className={`absolute top-0 left-0 w-full h-[2px] ${cmyk === 'C' ? 'bg-cyan-500' : cmyk === 'M' ? 'bg-brand-red' : cmyk === 'Y' ? 'bg-yellow-400' : 'bg-white/20'} z-30 opacity-30 group-hover:opacity-100 transition-opacity`} />
+        )}
+
         {/* Image */}
         <div className="relative h-44 overflow-hidden shrink-0">
             <img
@@ -162,7 +178,7 @@ const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-brand-dark/90 pointer-events-none" />
             {/* Index number */}
-            <span className="absolute top-5 left-6 text-5xl font-display font-black text-white/5 group-hover:text-liquid-gold/10 transition-colors duration-700 leading-none">
+            <span className="absolute top-5 left-6 text-5xl font-display font-black text-white/5 group-hover:text-liquid-gold/10 transition-colors duration-700 leading-none italic">
                 {index}
             </span>
             {/* Icon */}
@@ -173,14 +189,14 @@ const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
 
         {/* Body */}
         <div className="p-8 flex-grow flex flex-col gap-3 bg-brand-dark border-t border-white/5">
-            <p className={`text-[9px] font-black uppercase tracking-[0.4em] ${accent} opacity-60`}>{subtitle}</p>
-            <h3 className="text-2xl font-display font-black text-white tracking-[-0.04em] leading-tight group-hover:text-liquid-gold transition-colors duration-500">
+            <p className={`text-[9px] font-black uppercase tracking-[0.4em] ${accent} opacity-60 italic`}>{subtitle}</p>
+            <h3 className="text-2xl font-display font-black text-white tracking-[-0.04em] leading-tight group-hover:text-liquid-gold transition-colors duration-500 italic">
                 {title}
             </h3>
-            <p className="text-slate-500 text-sm font-light leading-relaxed flex-grow">
+            <p className="text-slate-500 text-sm font-light leading-relaxed flex-grow uppercase tracking-tight opacity-70">
                 {description}
             </p>
-            <div className="pt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-700 group-hover:text-liquid-gold transition-colors duration-500 border-t border-white/5 mt-2">
+            <div className="pt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-700 group-hover:text-liquid-gold transition-colors duration-500 border-t border-white/5 mt-2 italic">
                 <span>Ver detalle</span>
                 <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -209,17 +225,17 @@ const Services: React.FC = () => {
                     className="mb-20 lg:mb-28 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 border-l-2 border-liquid-gold pl-10"
                 >
                     <div className="space-y-5">
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em]">
-                            Servicios Especializados
+                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">
+                            PRECISIÓN INDUSTRIAL_V5.0
                         </p>
-                        <h2 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white leading-[0.85] tracking-[-0.04em] uppercase">
-                            ARTE{' '}
+                        <h2 className="text-5xl md:text-7xl lg:text-9xl font-display font-black text-white leading-[0.8] tracking-[-0.04em] uppercase italic">
+                            ELITE{' '}
                             <br />
-                            <span className="text-white/15">INDUSTRIAL</span>
+                            <span className="text-gold-gradient drop-shadow-gold">IMPRESIÓN</span>
                         </h2>
                     </div>
-                    <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed italic pb-2 lg:text-right">
-                        Desde la primera impresión hasta el acabado final, cada detalle es una declaración de intención hacia la excelencia.
+                    <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed italic pb-2 lg:text-right uppercase tracking-wider opacity-60">
+                        Soberanía visual a través de ingeniería gráfica de vanguardia.
                     </p>
                 </motion.div>
 

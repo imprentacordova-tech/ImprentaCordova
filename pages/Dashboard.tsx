@@ -44,7 +44,7 @@ const MainActionButton: React.FC<{
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.5 }}
             onClick={onClick}
-            className={`group relative flex flex-col items-start p-8 rounded-[2.5rem] border bg-gradient-to-br ${colorMap[color]} backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-2xl overflow-hidden h-64`}
+            className={`group relative flex flex-col items-start p-6 rounded-[2rem] border bg-gradient-to-br ${colorMap[color]} backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-2xl overflow-hidden h-56`}
         >
             {/* Holographic Sheen Effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
@@ -54,22 +54,22 @@ const MainActionButton: React.FC<{
             {/* Industrial Internal Scanline */}
             <div className="absolute left-0 w-full h-[1px] bg-white/10 top-0 group-hover:top-full transition-all duration-[3s] ease-linear pointer-events-none" />
 
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-125 group-hover:rotate-6">
-                <Icon className="w-40 h-40" />
+            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-125 group-hover:rotate-6">
+                <Icon className="w-32 h-32" />
             </div>
             
-            <div className={`w-14 h-14 rounded-2xl ${iconBgMap[color]} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-white/5 relative z-10`}>
-                <Icon className="w-7 h-7" />
+            <div className={`w-12 h-12 rounded-2xl ${iconBgMap[color]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500 border border-white/5 relative z-10`}>
+                <Icon className="w-6 h-6" />
                 <div className="absolute inset-0 rounded-2xl bg-white/20 scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-0 transition-all duration-700" />
             </div>
             
             <div className="mt-auto space-y-1 relative z-10">
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic text-left">{label}</h3>
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] text-left">{sub}</p>
+                <h3 className="text-xl font-black text-white uppercase tracking-[-0.04em] italic text-left">{label}</h3>
+                <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.3em] text-left">{sub}</p>
             </div>
 
-            <div className="absolute bottom-6 right-8 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all group-hover:scale-110">
-                <ChevronRightIcon className="w-5 h-5 text-white/40 group-hover:text-white transition-colors" />
+            <div className="absolute bottom-6 right-6 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all group-hover:scale-110">
+                <ChevronRightIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
             </div>
         </motion.button>
     );
@@ -162,7 +162,7 @@ const DashboardPage: React.FC = () => {
                                 </div>
                                 <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Estado del Sistema • v5.0</span>
                             </div>
-                             <h1 className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                             <h1 className="text-5xl sm:text-6xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
                                 IMPRENTA CÓRDOVA <span className="text-gold-gradient">Elite</span>
                             </h1>
                         </div>
@@ -237,7 +237,7 @@ const DashboardPage: React.FC = () => {
                     
                     <div className="relative z-10 space-y-8">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Telemetría Central</h3>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-[-0.04em] italic">Telemetría Central</h3>
                             <button onClick={() => navigate('/registro')} className="text-[10px] font-black text-liquid-gold uppercase tracking-widest hover:underline italic">Ver Registro Histórico</button>
                         </div>
                         
@@ -283,7 +283,7 @@ const DashboardPage: React.FC = () => {
                         <div className="w-12 h-12 bg-liquid-gold rounded-2xl flex items-center justify-center text-black shadow-gold-glow">
                             <SparklesIcon className="w-6 h-6" />
                         </div>
-                        <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic">Córdova Nucleus <span className="text-liquid-gold">v3.0</span></h4>
+                        <h4 className="text-2xl font-black text-white uppercase tracking-[-0.04em] italic">Córdova Nucleus <span className="text-liquid-gold">v3.0</span></h4>
                         <p className="text-sm text-slate-500 font-light leading-relaxed italic uppercase tracking-wider">
                             Arquitectura de gestión industrial para la elite de la producción gráfica regional.
                         </p>

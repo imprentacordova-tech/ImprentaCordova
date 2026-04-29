@@ -217,7 +217,7 @@ export const SriIdentityFlow: React.FC<{
                     >
                         {/* Status Badge */}
                         <div className="flex justify-between items-center mb-6 md:mb-10">
-                            <h3 className="text-white font-black uppercase italic tracking-tighter text-sm md:text-2xl">Perfil de Identidad</h3>
+                            <h3 className="text-white font-black uppercase italic tracking-[-0.04em] text-sm md:text-2xl">Perfil de Identidad</h3>
                             <div className="flex gap-2">
                                 {searchStatus === 'found_local' && (
                                     <div className="bg-liquid-gold/20 border border-liquid-gold/50 text-liquid-gold px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl flex items-center gap-2 shadow-gold-glow-sm">
@@ -244,7 +244,7 @@ export const SriIdentityFlow: React.FC<{
                             <div className="mb-6 md:mb-10 p-5 md:p-8 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-center justify-between gap-5 md:gap-8 group hover:bg-white/10 transition-colors relative z-10 overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-liquid-gold/30" />
                                 <div className="text-center md:text-left">
-                                    <h4 className="text-white font-black uppercase italic tracking-tighter text-base md:text-2xl">Lector de Padrón PDF</h4>
+                                    <h4 className="text-white font-black uppercase italic tracking-[-0.04em] text-base md:text-2xl">Lector de Padrón PDF</h4>
                                     <p className="text-slate-400 text-[8px] md:text-xs font-bold uppercase tracking-widest mt-1 md:mt-2">Extracción instantánea de datos SRI</p>
                                 </div>
                                 <input type="file" accept="application/pdf" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
