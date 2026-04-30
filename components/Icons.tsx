@@ -283,6 +283,9 @@ export const SolidClockIcon   = Clock;
 export const CalendarDaysIcon = CalendarDays;
 export const CalendarIcon     = Calendar;
 export const MagnifyingGlassIcon = Search;
+export const BarChartIcon        = BarChart2;
+export const ToolIcon            = Wrench;
+export const GlobeIcon           = Globe;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LUCIDE ALIASES — Logística

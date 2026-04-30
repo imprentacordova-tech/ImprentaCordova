@@ -22,9 +22,10 @@ export default {
         'accent-blue': '#bfcdff',
       },
       fontFamily: {
-        sans: ['"Manrope"', 'sans-serif'],
-        display: ['"Epilogue"', 'sans-serif'],
-        editorial: ['"Outfit"', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+        tech: ['"Orbitron"', 'sans-serif'],
       },
       boxShadow: {
         'luxury': '0 25px 50px -12px rgba(0, 0, 0, 0.7)',

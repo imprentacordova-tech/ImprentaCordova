@@ -105,7 +105,9 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
     return (
         <>
-            {/* Background Industrial Grid */}
+            {/* Background Industrial Layers */}
+            <div className="absolute inset-0 bg-obsidian-mesh opacity-90 pointer-events-none" />
+            <div className="absolute inset-0 noise-overlay opacity-[0.03] pointer-events-none" />
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
             
             {/* Header / Steps Navigation (Optimized) */}
@@ -536,114 +538,116 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
     const [showDetails, setShowDetails] = useState(false);
 
     return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className={`group relative bg-white/[0.01] backdrop-blur-3xl rounded-[2rem] md:rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer ${
-                isHovered 
-                    ? isExpress ? 'border-blue-500/30 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.2)]' : 'border-liquid-gold/30 bg-liquid-gold/5 shadow-gold-glow-sm' 
-                    : 'border-white/5 hover:border-white/10'
-            }`}
-            onClick={onSelect}
-        >
-            <div className="p-5 md:p-8 space-y-4 md:space-y-6 relative z-10">
-                {/* Animated Scan Line on Hover */}
-                <AnimatePresence>
-                    {isHovered && (
-                        <motion.div 
-                            initial={{ top: '-10%' }}
-                            animate={{ top: '110%' }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                            className={`absolute left-0 right-0 h-[1px] z-20 pointer-events-none ${isExpress ? 'bg-blue-400/30 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'bg-liquid-gold/30 shadow-gold-glow-sm'}`}
-                        />
-                    )}
-                </AnimatePresence>
+        <PerspectiveCard>
+            <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`group relative bg-white/[0.01] backdrop-blur-3xl rounded-[2rem] md:rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer h-full ${
+                    isHovered 
+                        ? isExpress ? 'border-blue-500/30 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.2)]' : 'border-liquid-gold/30 bg-liquid-gold/5 shadow-gold-glow-sm' 
+                        : 'border-white/5 hover:border-white/10'
+                }`}
+                onClick={onSelect}
+            >
+                <div className="p-5 md:p-8 space-y-4 md:space-y-6 relative z-10">
+                    {/* Animated Scan Line on Hover */}
+                    <AnimatePresence>
+                        {isHovered && (
+                            <motion.div 
+                                initial={{ top: '-10%' }}
+                                animate={{ top: '110%' }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                className={`absolute left-0 right-0 h-[1px] z-20 pointer-events-none ${isExpress ? 'bg-blue-400/30 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'bg-liquid-gold/30 shadow-gold-glow-sm'}`}
+                            />
+                        )}
+                    </AnimatePresence>
 
-                <div className="flex justify-between items-start relative z-30">
-                    <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all duration-700 ${
-                        isHovered 
-                            ? isExpress ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-liquid-gold text-black shadow-gold-glow scale-110' 
-                            : 'bg-white/5 text-liquid-gold'
-                    }`}>
-                        {isExpress ? <BoltIcon className="w-5 h-5 md:w-6 md:h-6" /> : <PrinterIcon className="w-5 h-5 md:w-6 md:h-6" />}
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                        <span className={`text-xl md:text-2xl font-black italic tracking-tighter transition-transform group-hover:scale-110 ${isExpress ? 'text-blue-400' : 'text-white'}`}>
-                            ${(p.precio || 0).toFixed(2)}
-                        </span>
-                        <span className="text-[6px] md:text-[7px] font-black text-slate-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-full">Inversión Base</span>
-                    </div>
-                </div>
-
-                <div className="space-y-1.5 md:space-y-2 relative z-30">
-                    {isExpress && (
-                        <div className="flex items-center gap-2 mb-1 md:mb-2">
-                            <span className="text-[6px] md:text-[7px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest italic animate-pulse">VENTA_TURBO_ACTIVA</span>
+                    <div className="flex justify-between items-start relative z-30">
+                        <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all duration-700 ${
+                            isHovered 
+                                ? isExpress ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-liquid-gold text-black shadow-gold-glow scale-110' 
+                                : 'bg-white/5 text-liquid-gold'
+                        }`}>
+                            {isExpress ? <BoltIcon className="w-5 h-5 md:w-6 md:h-6" /> : <PrinterIcon className="w-5 h-5 md:w-6 md:h-6" />}
                         </div>
-                    )}
-                    <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight italic truncate leading-none">
-                        {p.nombre}
-                    </h3>
-                    <p className="text-[8px] md:text-[9px] text-slate-600 font-bold uppercase tracking-widest truncate">
-                        {p.categoria || 'Suministro General'}
-                    </p>
-                </div>
-
-                <div className="pt-4 md:pt-6 border-t border-white/5 flex justify-between items-center relative z-30">
-                    <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setShowDetails(!showDetails);
-                        }}
-                        className="text-[7px] md:text-[8px] font-black text-slate-600 hover:text-liquid-gold uppercase tracking-[0.2em] transition-colors flex items-center gap-1.5 md:gap-2 active:scale-90"
-                    >
-                        <SparklesIcon className="w-3 h-3" /> {showDetails ? 'Cerrar' : 'Ficha'}
-                    </button>
-                    {isExpress ? (
-                        <div className="flex items-center gap-1.5 md:gap-2 text-[7px] md:text-[8px] font-black text-blue-400 animate-bounce">
-                            <span>VENTA RÁPIDA</span>
-                            <ArrowRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        <div className="flex flex-col items-end gap-1">
+                            <span className={`text-xl md:text-2xl font-black italic tracking-tighter transition-transform group-hover:scale-110 ${isExpress ? 'text-blue-400' : 'text-white'}`}>
+                                ${(p.precio || 0).toFixed(2)}
+                            </span>
+                            <span className="text-[6px] md:text-[7px] font-black text-slate-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-full">Inversión Base</span>
                         </div>
-                    ) : (
-                        <ArrowRightIcon className={`w-4 h-4 md:w-5 md:h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-1' : 'text-white/5'}`} />
-                    )}
-                </div>
+                    </div>
 
-                <AnimatePresence>
-                    {showDetails && (
-                        <motion.div 
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
+                    <div className="space-y-1.5 md:space-y-2 relative z-30">
+                        {isExpress && (
+                            <div className="flex items-center gap-2 mb-1 md:mb-2">
+                                <span className="text-[6px] md:text-[7px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest italic animate-pulse">VENTA_TURBO_ACTIVA</span>
+                            </div>
+                        )}
+                        <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight italic truncate leading-none">
+                            {p.nombre}
+                        </h3>
+                        <p className="text-[8px] md:text-[9px] text-slate-600 font-bold uppercase tracking-widest truncate">
+                            {p.categoria || 'Suministro General'}
+                        </p>
+                    </div>
+
+                    <div className="pt-4 md:pt-6 border-t border-white/5 flex justify-between items-center relative z-30">
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDetails(!showDetails);
+                            }}
+                            className="text-[7px] md:text-[8px] font-black text-slate-600 hover:text-liquid-gold uppercase tracking-[0.2em] transition-colors flex items-center gap-1.5 md:gap-2 active:scale-90"
                         >
-                            <div className="mt-3 md:mt-4 p-4 md:p-6 bg-black/60 rounded-2xl md:rounded-3xl border border-white/10 space-y-3 md:space-y-4">
-                                <p className="text-[9px] md:text-[10px] text-slate-300 font-bold uppercase tracking-widest flex items-center gap-2">
-                                    <SparklesIcon className="w-3 h-3 text-liquid-gold" /> Especificaciones Técnicas
-                                </p>
-                                <p className="text-[9px] md:text-[10px] text-slate-400 font-medium italic leading-relaxed">
-                                    {p.descripcion || 'Servicio de manufactura personalizada con estándares de calidad industrial Córdova.'}
-                                </p>
-                                <div className="grid grid-cols-2 gap-2 md:gap-3 pt-3 md:pt-4 border-t border-white/5">
-                                    <div className="space-y-1">
-                                        <p className="text-[6px] md:text-[7px] text-slate-600 font-black uppercase">Entrega Est.</p>
-                                        <p className="text-[8px] md:text-[9px] text-white font-bold">24-48 Horas</p>
-                                    </div>
-                                    <div className="space-y-1 text-right">
-                                        <p className="text-[6px] md:text-[7px] text-slate-600 font-black uppercase">Protocolo</p>
-                                        <p className="text-[8px] md:text-[9px] text-liquid-gold font-bold uppercase">Elite</p>
+                            <SparklesIcon className="w-3 h-3" /> {showDetails ? 'Cerrar' : 'Ficha'}
+                        </button>
+                        {isExpress ? (
+                            <div className="flex items-center gap-1.5 md:gap-2 text-[7px] md:text-[8px] font-black text-blue-400 animate-bounce">
+                                <span>VENTA RÁPIDA</span>
+                                <ArrowRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                            </div>
+                        ) : (
+                            <ArrowRightIcon className={`w-4 h-4 md:w-5 md:h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-1' : 'text-white/5'}`} />
+                        )}
+                    </div>
+
+                    <AnimatePresence>
+                        {showDetails && (
+                            <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="mt-3 md:mt-4 p-4 md:p-6 bg-black/60 rounded-2xl md:rounded-3xl border border-white/10 space-y-3 md:space-y-4">
+                                    <p className="text-[9px] md:text-[10px] text-slate-300 font-bold uppercase tracking-widest flex items-center gap-2">
+                                        <SparklesIcon className="w-3 h-3 text-liquid-gold" /> Especificaciones Técnicas
+                                    </p>
+                                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium italic leading-relaxed">
+                                        {p.descripcion || 'Servicio de manufactura personalizada con estándares de calidad industrial Córdova.'}
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2 md:gap-3 pt-3 md:pt-4 border-t border-white/5">
+                                        <div className="space-y-1">
+                                            <p className="text-[6px] md:text-[7px] text-slate-600 font-black uppercase">Entrega Est.</p>
+                                            <p className="text-[8px] md:text-[9px] text-white font-bold">24-48 Horas</p>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                            <p className="text-[6px] md:text-[7px] text-slate-600 font-black uppercase">Protocolo</p>
+                                            <p className="text-[8px] md:text-[9px] text-liquid-gold font-bold uppercase">Elite</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </motion.div>
+        </PerspectiveCard>
     );
 };

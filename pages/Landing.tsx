@@ -9,8 +9,15 @@ import {
     SearchIcon, SparklesIcon, MonitorIcon, MessageCircleIcon, ChevronRightIcon,
     Loader2Icon, WalletIcon, ExclamationTriangleIcon, LayersIcon, WhatsAppIcon,
     PaletteIcon, ReceiptIcon, InfoIcon, UploadIcon, MicIcon,
-    ActivityIcon, CpuIcon, LayoutIcon, RocketLaunchIcon, HomeIcon, BoltIcon, ZapIcon, FileTextIcon
+    ActivityIcon, CpuIcon, LayoutIcon, RocketLaunchIcon, HomeIcon, BoltIcon, ZapIcon, FileTextIcon,
+    BarChartIcon, ToolIcon, GlobeIcon
 } from '../components/Icons';
+import { ProductionWorkflow } from '../components/ProductionWorkflow';
+import { TelemetryNav } from '../components/TelemetryNav';
+import { SystemMonitor } from '../components/SystemMonitor';
+import { MagneticButton } from '../components/MagneticButton';
+import { PerspectiveCard } from '../components/PerspectiveCard';
+import { CursorHUD } from '../components/CursorHUD';
 import { useData } from '../contexts/DataContext';
 import { analyzeImageQualityForPrint } from '../services/geminiService';
 import { Producto, TrabajoEstado, TrabajoTipo, Regimen } from '../types';
@@ -127,8 +134,11 @@ const LandingPage: React.FC = () => {
     const subtotal = cartItems.reduce((acc, item) => acc + (item.producto.precio * item.cantidad), 0);
 
     return (
-        <div className="min-h-screen bg-brand-blue font-sans selection:bg-brand-red selection:text-brand-blue overflow-x-hidden relative">
-            {/* --- CINEMATIC OVERLAY (GRAIN & NOISE & ARCHITECT GRID) --- */}
+        <div className="min-h-screen bg-brand-blue font-sans selection:bg-brand-red selection:text-white overflow-x-hidden relative">
+            <div className="noise-overlay" />
+            <CursorHUD />
+            
+            {/* --- NAVEGACIÓN TELEMETRÍA --- */}
             <div className="fixed inset-0 bg-obsidian-liquid pointer-events-none z-0" />
             <div className="fixed inset-0 bg-architect-grid pointer-events-none z-0 opacity-60" />
             <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] bg-noise mix-blend-overlay" />
@@ -289,8 +299,8 @@ const LandingPage: React.FC = () => {
                             
                             <div className="relative mb-6 md:mb-8">
                                 <h1 className="flex flex-col items-start gap-1 md:gap-2 select-none relative group/title">
-                                    <motion.div variants={fadeInUp} className="relative">
-                                        <span className="text-[3.5rem] sm:text-8xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-white italic uppercase">
+                                    <motion.div variants={fadeInUp} className="relative group">
+                                        <span className="text-[3.5rem] sm:text-8xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-white italic uppercase animate-glitch">
                                             IMPRENTA
                                         </span>
                                         {/* Precision geometry decorators */}
@@ -332,12 +342,16 @@ const LandingPage: React.FC = () => {
                             </motion.p>
 
                             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 md:gap-6 pt-4 md:pt-6">
-                                <a href="https://wa.me/593993083943" className="group px-8 md:px-14 py-5 md:py-7 bg-white text-brand-blue rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] md:tracking-[0.35em] shadow-luxury hover:bg-brand-red transition-all duration-700 flex items-center justify-center gap-3 md:gap-4 active:scale-95 touch-premium">
-                                    <WhatsAppIcon className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
-                                </a>
-                                <button onClick={() => fileInputRef.current?.click()} className="px-8 md:px-14 py-5 md:py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] md:tracking-[0.35em] hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 flex items-center justify-center gap-3 md:gap-4 active:scale-95 group touch-premium">
-                                    <MonitorIcon className="w-5 h-5 md:w-6 md:h-6 group-hover:text-brand-red transition-colors"/> Analizador IA
-                                </button>
+                                <MagneticButton>
+                                    <a href="https://wa.me/593993083943" className="group px-8 md:px-14 py-5 md:py-7 bg-white text-brand-blue rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] md:tracking-[0.35em] shadow-luxury hover:bg-brand-red hover:text-white transition-all duration-700 flex items-center justify-center gap-3 md:gap-4 active:scale-95 touch-premium">
+                                        <WhatsAppIcon className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
+                                    </a>
+                                </MagneticButton>
+                                <MagneticButton>
+                                    <button onClick={() => fileInputRef.current?.click()} className="w-full px-8 md:px-14 py-5 md:py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] md:tracking-[0.35em] hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 flex items-center justify-center gap-3 md:gap-4 active:scale-95 group touch-premium">
+                                        <MonitorIcon className="w-5 h-5 md:w-6 md:h-6 group-hover:text-brand-red transition-colors"/> Analizador IA
+                                    </button>
+                                </MagneticButton>
                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileTest} />
                             </motion.div>
 
@@ -541,7 +555,6 @@ const LandingPage: React.FC = () => {
 
             {/* --- DESIGN PHILOSOPHY: THE BLUEPRINT --- */}
             <section className="py-20 md:py-32 lg:py-48 relative overflow-hidden">
-                {/* Architectural grid background for this section */}
                 <div className="absolute inset-0 bg-architect-grid-fine opacity-40 pointer-events-none" />
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
                 
@@ -653,6 +666,12 @@ const LandingPage: React.FC = () => {
                 
                 <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
             </section>
+
+            {/* --- WORKFLOW INDUSTRIAL --- */}
+            <ProductionWorkflow />
+
+            {/* --- SYSTEM MONITOR DASHBOARD --- */}
+            <SystemMonitor />
 
             {/* --- SECCIÓN GALERÍA INMERSIVA --- */}
             <section className="py-16 md:py-20 overflow-hidden bg-brand-blue/50">
@@ -789,9 +808,11 @@ const LandingPage: React.FC = () => {
                             viewport={{ once: true }}
                         >
                             <span className="text-brand-red font-black text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] mb-4 md:mb-6 block italic">Colección Exclusiva</span>
-                            <h2 className="text-4xl md:text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] italic leading-none">
-                                EL MUESTRARIO <br/> <span className="text-brand-red text-glow">DEFINITIVO</span>
+                            <h2 className="text-4xl md:text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] italic leading-none relative z-10">
+                                EL MUESTRARIO <br/> <span className="text-brand-red text-glow animate-glitch">DEFINITIVO</span>
                             </h2>
+                            <div className="absolute -left-10 -top-10 w-32 h-32 border-l border-t border-brand-red/20 pointer-events-none" />
+                            <div className="absolute -right-10 -bottom-10 w-32 h-32 border-r border-b border-brand-red/20 pointer-events-none" />
                         </motion.div>
                         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex gap-4">
                             <button className="px-6 md:px-8 py-3 md:py-4 bg-white/[0.03] border border-white/10 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-slate-400 hover:border-brand-red/40 hover:text-white transition-all shadow-xl touch-premium">
@@ -810,55 +831,80 @@ const LandingPage: React.FC = () => {
                         {loading ? [...Array(4)].map((_, i) => (
                             <div key={i} className="bg-white/[0.03] rounded-[4rem] h-[550px] animate-pulse border border-white/5" />
                         )) : productos.filter(p => p.esActivo !== false && p.visiblePublico !== false).slice(0, 8).map(p => (
-                            <motion.article 
-                                key={p.id} 
-                                variants={fadeInUp}
-                                whileHover={{ y: -15 }}
-                                className="group bg-white/[0.02] backdrop-blur-2xl rounded-[4rem] border border-white/5 hover:border-brand-red/30 overflow-hidden transition-all duration-1000 p-5 flex flex-col shadow-2xl relative"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-red/[0.02] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                                <div className="h-72 rounded-[3rem] overflow-hidden relative mb-10 shadow-inner">
-                                    {p.imagenUrl ? (
-                                        <img src={p.imagenUrl} className="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-125" alt={p.nombre}/>
-                                    ) : (
-                                        <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-700">
-                                            <BoxIcon className="w-20 h-20 opacity-20"/>
+                            <PerspectiveCard key={p.id}>
+                                <motion.article 
+                                    variants={fadeInUp}
+                                    whileHover={{ y: -15 }}
+                                    className="group bg-white/[0.02] backdrop-blur-2xl rounded-[4rem] border border-white/5 hover:border-brand-red/30 overflow-hidden transition-all duration-1000 p-5 flex flex-col shadow-2xl relative h-full"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-brand-red/[0.02] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                    <div className="h-72 rounded-[3rem] overflow-hidden relative mb-10 shadow-inner">
+                                        {p.imagenUrl ? (
+                                            <img src={p.imagenUrl} className="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-125" alt={p.nombre}/>
+                                        ) : (
+                                            <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-700">
+                                                <BoxIcon className="w-20 h-20 opacity-20"/>
+                                            </div>
+                                        )}
+                                        
+                                        {/* --- TECHNICAL OVERLAY --- */}
+                                        <div className="absolute inset-0 bg-brand-blue/95 opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col items-center justify-center p-8 text-center backdrop-blur-xl">
+                                            <div className="mb-6 space-y-3 w-full">
+                                                <div className="flex justify-between items-center text-[8px] font-mono text-slate-500 uppercase tracking-widest border-b border-white/10 pb-2">
+                                                    <span>Resolución</span>
+                                                    <span className="text-white">1440 DPI</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[8px] font-mono text-slate-500 uppercase tracking-widest border-b border-white/10 pb-2">
+                                                    <span>Sustrato</span>
+                                                    <span className="text-white">Industrial Premium</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[8px] font-mono text-slate-500 uppercase tracking-widest border-b border-white/10 pb-2">
+                                                    <span>Durabilidad</span>
+                                                    <span className="text-white">UV_RESISTANT</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <p className="text-slate-400 text-xs font-medium leading-relaxed mb-8 italic tracking-tight px-4 line-clamp-3">{p.descripcion}</p>
+                                            
+                                            <button 
+                                                onClick={() => handleAddToCart(p)} 
+                                                className="w-full bg-white text-brand-blue py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-brand-red transition-all active:scale-95 flex items-center justify-center gap-3"
+                                            >
+                                                <ZapIcon className="w-4 h-4" /> Solicitar Proyecto
+                                            </button>
                                         </div>
-                                    )}
-                                    <div className="absolute inset-0 bg-brand-blue/90 opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col items-center justify-center p-10 text-center backdrop-blur-md">
-                                        <p className="text-white text-sm font-medium leading-relaxed mb-8 italic tracking-tight">{p.descripcion}</p>
-                                        <button 
-                                            onClick={() => handleAddToCart(p)} 
-                                            className="bg-white text-brand-blue px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-brand-red transition-all active:scale-95"
-                                        >
-                                            Solicitar Proyecto
-                                        </button>
+
+                                        {p.esSRI && (
+                                            <div className="absolute top-6 left-6 flex items-center gap-2 bg-brand-blue/80 backdrop-blur-md border border-brand-red/40 px-4 py-2 rounded-full shadow-red-glow-soft">
+                                                <ShieldCheckIcon className="w-3 h-3 text-brand-red" />
+                                                <span className="text-brand-red text-[8px] font-black tracking-[0.2em] uppercase">Validación SRI</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    {p.esSRI && (
-                                        <div className="absolute top-6 left-6 flex items-center gap-2 bg-brand-blue/80 backdrop-blur-md border border-brand-red/40 px-4 py-2 rounded-full shadow-red-glow-soft">
-                                            <ShieldCheckIcon className="w-3 h-3 text-brand-red" />
-                                            <span className="text-brand-red text-[8px] font-black tracking-[0.2em] uppercase">Validación SRI</span>
+                                    <div className="px-5 pb-5 flex flex-col flex-grow relative z-10">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">{p.categoria}</p>
+                                            <div className="flex gap-1">
+                                                {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-2.5 h-2.5 text-brand-red/40" />)}
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="px-5 pb-5 flex flex-col flex-grow relative z-10">
-                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-3">{p.categoria}</p>
-                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-brand-red italic transition-all duration-700 tracking-[-0.04em]">{p.nombre}</h3>
-                                    <div className="mt-auto flex justify-between items-center pt-8 border-t border-white/5">
-                                        <div className="flex flex-col">
-                                            <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.2em]">Honorario Base</span>
-                                            <span className="text-4xl font-display font-black text-white tracking-tighter italic text-glow">{formatCurrency(p.precio)}</span>
+                                        <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-brand-red italic transition-all duration-700 tracking-[-0.04em]">{p.nombre}</h3>
+                                        <div className="mt-auto flex justify-between items-center pt-8 border-t border-white/5">
+                                            <div className="flex flex-col">
+                                                <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.2em]">Inversión Base</span>
+                                                <span className="text-4xl font-display font-black text-white tracking-tighter italic text-glow">{formatCurrency(p.precio)}</span>
+                                            </div>
+                                            <motion.button 
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={() => handleAddToCart(p)} 
+                                                className="w-16 h-16 bg-white/[0.05] border border-white/10 text-white rounded-3xl hover:bg-white hover:text-brand-blue transition-all flex items-center justify-center shadow-luxury group/add"
+                                            >
+                                                <AddIcon className="w-7 h-7 group-hover:rotate-90 transition-transform duration-500"/>
+                                            </motion.button>
                                         </div>
-                                        <motion.button 
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={() => handleAddToCart(p)} 
-                                            className="w-16 h-16 bg-white/[0.05] border border-white/10 text-white rounded-3xl hover:bg-white hover:text-brand-blue transition-all flex items-center justify-center shadow-luxury"
-                                        >
-                                            <AddIcon className="w-7 h-7"/>
-                                        </motion.button>
                                     </div>
-                                </div>
-                            </motion.article>
+                                </motion.article>
+                            </PerspectiveCard>
                         ))}
                     </motion.div>
                 </div>
@@ -914,8 +960,15 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     <div className="pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10 text-[10px] font-black text-slate-700 uppercase tracking-[0.6em]">
-                        <p>Imprenta Córdova · Estándar Industrial</p>
+                        <div className="flex items-center gap-4">
+                            <div className="w-2 h-2 rounded-full bg-brand-red animate-ping" />
+                            <p>Imprenta Córdova · Estándar Industrial V4.0.2</p>
+                        </div>
                         <div className="flex gap-14">
+                            <div className="hidden lg:flex items-center gap-3 font-mono text-[8px] text-slate-800 animate-terminal-flicker">
+                                <span>TERMINAL_ACTIVE:</span>
+                                <span className="text-slate-600">CONNECTED_VIA_SUPABASE_SECURE_GATEWAY</span>
+                            </div>
                             <a href="#" className="hover:text-brand-red transition-colors">Compliance</a>
                             <a href="#" className="hover:text-brand-red transition-colors">SRI Legal</a>
                         </div>
@@ -1006,6 +1059,9 @@ const LandingPage: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* --- TELEMETRY NAVIGATION --- */}
+            <TelemetryNav />
         </div>
     );
 };
