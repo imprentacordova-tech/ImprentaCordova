@@ -30,7 +30,7 @@ const InputField: React.FC<{
             name={name}
             value={value}
             onChange={onChange}
-            className={`peer w-full bg-white/[0.02] border p-6 pt-8 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-2 transition-all uppercase italic placeholder-transparent
+            className={`peer w-full bg-white/[0.02] border p-4 pt-7 pb-3 rounded-2xl text-white font-black text-base focus:ring-2 transition-all uppercase italic placeholder-transparent
                 ${error
                     ? 'border-rose-500/50 focus:ring-rose-500/30 focus:border-rose-500/50'
                     : isHighlighted
@@ -40,10 +40,10 @@ const InputField: React.FC<{
             placeholder={label}
             {...props}
         />
-        <label htmlFor={name} className={`absolute left-6 top-3 text-[9px] font-black uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 peer-focus:text-brand-red'}`}>
+        <label htmlFor={name} className={`absolute left-5 top-2.5 text-[8px] font-black uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-2.5 peer-focus:text-[8px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 peer-focus:text-brand-red'}`}>
             {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "✨"}
         </label>
-        {error && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block absolute -bottom-6 left-4 z-20">{error}</p>}
+        {error && <p className="text-[8px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-lg inline-block absolute -bottom-5 left-4 z-20">{error}</p>}
     </div>
 );
 
@@ -414,12 +414,12 @@ return (
                         />
 
                         <div className="group space-y-2 relative md:col-span-1">
-                            <div className={`flex flex-wrap gap-2 p-6 pt-8 pb-4 bg-white/[0.02] rounded-[2rem] border transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-brand-red/50 group-focus-within:ring-2 group-focus-within:ring-brand-red/30'}`}>
-                                <PhoneIcon className={`absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 z-10 transition-colors ${highlightFields.includes('telefono') ? 'text-liquid-gold' : 'text-slate-600 group-focus-within:text-brand-red'}`} />
-                                <div className="pl-10 flex flex-wrap gap-2 items-center w-full">
+                            <div className={`flex flex-wrap gap-2 p-4 pt-7 pb-3 bg-white/[0.02] rounded-2xl border transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-brand-red/50 group-focus-within:ring-2 group-focus-within:ring-brand-red/30'}`}>
+                                <PhoneIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 z-10 transition-colors ${highlightFields.includes('telefono') ? 'text-liquid-gold' : 'text-slate-600 group-focus-within:text-brand-red'}`} />
+                                <div className="pl-8 flex flex-wrap gap-2 items-center w-full">
                                     {telefonos.map((t, idx) => (
-                                        <span key={idx} className="bg-liquid-gold text-brand-dark px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 shadow-luxury animate-scale-in">
-                                            <PhoneIcon className="w-3 h-3" /> {t}
+                                        <span key={idx} className="bg-liquid-gold text-brand-dark px-2.5 py-1 rounded-xl text-[9px] font-black flex items-center gap-1.5 shadow-luxury animate-scale-in">
+                                            <PhoneIcon className="w-2.5 h-2.5" /> {t}
                                             <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
                                         </span>
                                     ))}
@@ -431,11 +431,11 @@ return (
                                         onChange={e => setCurrentTelefono(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
                                         onBlur={() => currentTelefono && addTelefono(currentTelefono)}
-                                        className="bg-transparent border-none outline-none text-lg font-black text-white flex-grow min-w-[150px] placeholder:text-slate-600 italic uppercase"
+                                        className="bg-transparent border-none outline-none text-base font-black text-white flex-grow min-w-[120px] placeholder:text-slate-700 italic uppercase"
                                     />
                                 </div>
                             </div>
-                            <label htmlFor="telefono-input" className="absolute left-16 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic pointer-events-none transition-colors group-focus-within:text-brand-red">
+                            <label htmlFor="telefono-input" className="absolute left-14 top-2.5 text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] italic pointer-events-none transition-colors group-focus-within:text-brand-red">
                                 Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-rose-500 opacity-50">*</span>}
                             </label>
                         </div>
@@ -743,13 +743,13 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                          />
                     </div>
 
-                    <SearchIcon className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all z-20" />
+                    <SearchIcon className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all z-20" />
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="BUSCAR CLIENTE O RUC..."
-                        className="w-full pl-14 md:pl-16 pr-12 md:pr-14 py-5 md:py-8 bg-black/40 border border-white/5 rounded-[1.5rem] md:rounded-[2rem] text-base md:text-xl font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
+                        className="w-full pl-14 md:pl-16 pr-12 md:pr-14 py-4 md:py-6 bg-black/40 border border-white/5 rounded-[1.2rem] md:rounded-[1.5rem] text-sm md:text-lg font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
                     />
 
                     {/* Biometric Data Streams (Visual Only) */}

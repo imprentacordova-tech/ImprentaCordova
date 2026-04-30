@@ -372,8 +372,8 @@ const NuevoPedidoPage: React.FC = () => {
     );
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-16 pb-40 px-3 sm:px-8 lg:px-14 pt-4 md:pt-10">            {/* --- INDICADOR DE PASOS (OPTIMIZADO PARA MÓVIL) --- */}
-            <div className="flex justify-between items-center bg-black/40 backdrop-blur-3xl p-3 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group no-scrollbar overflow-x-auto sticky top-0 z-[60] -mx-1 sm:mx-0">
+        <div className="max-w-[1300px] mx-auto space-y-4 md:space-y-8 pb-20 px-3 sm:px-6 lg:px-10 pt-2 md:pt-6">            {/* --- INDICADOR DE PASOS (OPTIMIZADO PARA MÓVIL) --- */}
+            <div className="flex justify-between items-center bg-black/60 backdrop-blur-3xl p-2 md:p-3 rounded-xl md:rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden group no-scrollbar overflow-x-auto sticky top-0 z-[60] -mx-1 sm:mx-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.05] via-transparent to-liquid-gold/[0.05] pointer-events-none"></div>
                 {getSteps().map((s, idx) => (
                     <React.Fragment key={s.id}>
@@ -389,19 +389,19 @@ const NuevoPedidoPage: React.FC = () => {
                                     />
                                 )}
                                 
-                                <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 border relative overflow-hidden ${
+                                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 border relative overflow-hidden ${
                                     step >= s.id 
                                         ? 'bg-black border-liquid-gold shadow-gold-glow-sm' 
                                         : 'bg-white/5 border-white/10 text-slate-700'
-                                } ${step === s.id ? 'scale-110 shadow-gold-glow ring-2 ring-liquid-gold/20' : ''}`}>
+                                } ${step === s.id ? 'scale-110 shadow-gold-glow ring-1 ring-liquid-gold/20' : ''}`}>
                                     {step === s.id && (
                                         <motion.div 
-                                            animate={{ y: [-40, 40] }}
+                                            animate={{ y: [-30, 30] }}
                                             transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
                                             className="absolute inset-0 bg-gradient-to-b from-transparent via-liquid-gold/15 to-transparent w-full h-1/2 pointer-events-none"
                                         />
                                     )}
-                                    <s.icon className={`w-4 h-4 md:w-6 md:h-6 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
+                                    <s.icon className={`w-3.5 h-3.5 md:w-5 md:h-5 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
                                 </div>
                             </div>
                             
@@ -444,110 +444,59 @@ const NuevoPedidoPage: React.FC = () => {
                             </motion.button>
                         )}
                         
-                        {/* PASO 1: CATEGORÍA (Arquitectura de 3 Pilares Elite) */}
+                        {/* PASO 1: CATEGORÍA (Arquitectura Táctica de Alta Densidad) */}
                         {step === 1 && (
                             <motion.div 
                                 key="step1" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }}
-                                className="bg-black/40 backdrop-blur-[40px] p-6 sm:p-16 lg:p-24 rounded-[2.5rem] md:rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden group/modal"
+                                className="bg-black/40 backdrop-blur-[40px] p-6 sm:p-10 lg:p-16 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group/modal"
                             >
-                                {/* Grid de Fondo Técnico */}
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
                                 
-                                <div className="space-y-4 md:space-y-6 mb-12 md:mb-20 text-center relative z-10">
-                                    <div className="flex items-center justify-center gap-4 mb-2">
-                                        <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-liquid-gold/40" />
-                                        <p className="text-[9px] md:text-[12px] font-black text-liquid-gold uppercase tracking-[0.5em] md:tracking-[1em] italic">MODALIDAD_DE_INGRESO_V5.0</p>
-                                        <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-liquid-gold/40" />
+                                <div className="space-y-4 mb-10 text-center relative z-10">
+                                    <div className="flex items-center justify-center gap-4 mb-1">
+                                        <div className="h-px w-8 bg-gradient-to-r from-transparent to-liquid-gold/40" />
+                                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">MODALIDAD_OPERATIVA_V5</p>
+                                        <div className="h-px w-8 bg-gradient-to-l from-transparent to-liquid-gold/40" />
                                     </div>
-                                    <h2 className="text-3xl md:text-8xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">Tipo de <span className="text-gold-gradient drop-shadow-gold">Misión</span></h2>
-                                    <p className="text-slate-500 text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] italic opacity-60">Seleccione el vector de despliegue industrial requerido</p>
+                                    <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">Tipo de <span className="text-gold-gradient">Misión</span></h2>
                                 </div>
 
-                                <div className="flex flex-col md:flex-row md:min-h-[650px] relative gap-4 md:gap-0">
-                                    
-                                    {/* --- LASER SEPARATOR 1 --- */}
-                                    <div className="hidden md:block absolute left-[50%] inset-y-0 w-px z-20 pointer-events-none">
-                                        <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-                                        <motion.div 
-                                            animate={{ top: ['-20%', '120%'] }}
-                                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                                            className="absolute w-[2px] h-40 -left-[0.5px] bg-gradient-to-b from-transparent via-liquid-gold to-transparent blur-[2px]"
-                                        />
-                                        <div className="absolute top-[50%] -left-1 w-2 h-2 rounded-full bg-liquid-gold/20 blur-sm" />
-                                    </div>
-
-                                    {/* PILAR 01: SRI */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 relative">
+                                    {/* VECTOR SRI */}
                                     <motion.button 
                                         whileHover="hover"
                                         onClick={() => handleSelectCategory('SRI')}
-                                        className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
+                                        className="group/pilar relative p-8 md:p-12 rounded-[2rem] bg-liquid-gold/5 border border-liquid-gold/10 flex flex-col items-center gap-6 transition-all duration-500 overflow-hidden"
                                     >
-                                        <div className="absolute inset-0 bg-liquid-gold/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
-                                        
-                                        {/* Telemetría Lateral Pilar */}
-                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-0 group-hover/pilar:opacity-100 transition-all duration-700 translate-x-4 group-hover/pilar:translate-x-0">
-                                            {['SYS_AUTH', 'TR_ENCRYPT', 'FISCAL_V3'].map(t => (
-                                                <span key={t} className="[writing-mode:vertical-lr] text-[7px] font-black tracking-[0.5em] text-liquid-gold/40 uppercase italic">{t}</span>
-                                            ))}
+                                        <div className="absolute inset-0 bg-liquid-gold/5 opacity-0 group-hover/pilar:opacity-100 transition-opacity" />
+                                        <div className="w-20 h-20 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all shadow-xl group-hover/pilar:shadow-gold-glow">
+                                            <ShieldCheckIcon className="w-10 h-10" />
                                         </div>
-
-                                        <div className="relative">
-                                            <div className="w-32 h-32 md:w-40 md:h-40 bg-liquid-gold/5 rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
-                                                <motion.div 
-                                                    animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                                    className="absolute inset-0 border border-dashed border-white/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
-                                                />
-                                                <ShieldCheckIcon className="w-16 h-16 md:w-20 md:h-20 relative z-10" />
-                                            </div>
-                                            <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-black border border-liquid-gold/20 px-2 md:px-3 py-1 rounded-lg text-[7px] md:text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_FISCAL</div>
+                                        <div className="text-center space-y-2">
+                                            <h3 className="text-2xl md:text-4xl font-black text-white uppercase italic leading-none">Vector <span className="text-liquid-gold">SRI</span></h3>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest max-w-[200px] mx-auto">Emisión fiscal con validación oficial en tiempo real.</p>
                                         </div>
-
-                                        <div className="space-y-4 md:space-y-8 relative z-10">
-                                            <div className="space-y-2">
-                                                <p className="text-[9px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Protocolo Certificado</p>
-                                                <h3 className="text-4xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Vector<br/><span className="text-liquid-gold">SRI</span></h3>
-                                            </div>
-                                            <div className="h-[2px] w-12 md:w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
-                                            <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Emisión de documentos tributarios con validación en tiempo real.</p>
-                                        </div>
-
-                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
-                                            <span>AUTORIZAR</span>
-                                            <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
+                                        <div className="py-3 px-8 rounded-xl border border-liquid-gold/20 bg-liquid-gold/5 text-[10px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.2em] uppercase transition-all italic">
+                                            INICIAR PROTOCOLO
                                         </div>
                                     </motion.button>
 
-                                    {/* PILAR 02: COMERCIAL */}
+                                    {/* VECTOR COMERCIAL */}
                                     <motion.button 
                                         whileHover="hover"
                                         onClick={() => handleSelectCategory('COMERCIAL')}
-                                        className="flex-1 group/pilar relative p-12 lg:p-20 text-center flex flex-col items-center justify-center gap-14 transition-all duration-700 z-10 overflow-hidden"
+                                        className="group/pilar relative p-8 md:p-12 rounded-[2rem] bg-liquid-gold/5 border border-liquid-gold/10 flex flex-col items-center gap-6 transition-all duration-500 overflow-hidden"
                                     >
-                                        <div className="absolute inset-0 bg-liquid-gold/[0.02] opacity-0 group-hover/pilar:opacity-100 transition-opacity duration-700" />
-                                        
-                                        <div className="relative">
-                                            <div className="w-32 h-32 md:w-40 md:h-40 bg-liquid-gold/5 rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/10 group-hover/pilar:scale-110 group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all duration-700 shadow-2xl group-hover/pilar:shadow-gold-glow relative overflow-hidden">
-                                                <motion.div 
-                                                    animate={{ rotate: -360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                                                    className="absolute inset-0 border border-dashed border-black/10 rounded-full scale-150 opacity-0 group-hover/pilar:opacity-20"
-                                                />
-                                                <BookOpenIcon className="w-16 h-16 md:w-20 md:h-20 relative z-10" />
-                                            </div>
-                                            <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-black border border-liquid-gold/20 px-2 md:px-3 py-1 rounded-lg text-[7px] md:text-[8px] font-black text-liquid-gold tracking-widest uppercase italic">0x_ELITE</div>
+                                        <div className="absolute inset-0 bg-liquid-gold/5 opacity-0 group-hover/pilar:opacity-100 transition-opacity" />
+                                        <div className="w-20 h-20 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black transition-all shadow-xl group-hover/pilar:shadow-gold-glow">
+                                            <BookOpenIcon className="w-10 h-10" />
                                         </div>
-
-                                        <div className="space-y-4 md:space-y-8 relative z-10">
-                                            <div className="space-y-2">
-                                                <p className="text-[9px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic opacity-40 group-hover/pilar:opacity-100 transition-opacity">Branding Industrial</p>
-                                                <h3 className="text-4xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">Artes<br/><span className="text-liquid-gold">Comercial</span></h3>
-                                            </div>
-                                            <div className="h-[2px] w-12 md:w-16 bg-liquid-gold/20 mx-auto group-hover/pilar:w-40 transition-all duration-700 shadow-gold-glow" />
-                                            <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60 group-hover/pilar:opacity-100 transition-opacity">Tarjetas, sellos, brochures y ventas rápidas de mostrador.</p>
+                                        <div className="text-center space-y-2">
+                                            <h3 className="text-2xl md:text-4xl font-black text-white uppercase italic leading-none">Artes <span className="text-liquid-gold">Comerciales</span></h3>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest max-w-[200px] mx-auto">Ventas rápidas, branding industrial y catálogo elite.</p>
                                         </div>
-
-                                        <div className="mt-4 py-4 px-10 rounded-2xl border border-liquid-gold/20 bg-liquid-gold/5 flex items-center gap-4 text-[11px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.5em] uppercase transition-all duration-500 italic shadow-lg">
-                                            <span>CONFIGURAR</span>
-                                            <ArrowRightIcon className="w-5 h-5 translate-x-0 group-hover/pilar:translate-x-2 transition-transform" />
+                                        <div className="py-3 px-8 rounded-xl border border-liquid-gold/20 bg-liquid-gold/5 text-[10px] font-black text-liquid-gold group-hover/pilar:bg-liquid-gold group-hover/pilar:text-black tracking-[0.2em] uppercase transition-all italic">
+                                            DESPLEGAR CATÁLOGO
                                         </div>
                                     </motion.button>
                                 </div>

@@ -198,28 +198,27 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 relative pb-6 md:pb-10 border-b border-white/10 z-10">
                 <div className="absolute top-0 left-0 w-24 md:w-32 h-1 bg-liquid-gold shadow-gold-glow" />
-                <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto">
+                <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="min-w-0">
-                        <h2 className="text-3xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-2 md:mb-3 leading-none truncate">
+                        <h2 className="text-2xl md:text-4xl font-black text-white italic tracking-tighter uppercase mb-1 leading-none truncate">
                             Protocolo <span className="text-liquid-gold">Elite</span>
                         </h2>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[8px] md:text-[11px] flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 bg-liquid-gold rounded-full animate-pulse" />
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[7px] md:text-[9px] flex items-center gap-2">
+                                <span className="w-1 h-1 md:w-2 bg-liquid-gold rounded-full animate-pulse" />
                                 Validación Tributaria
                             </p>
-                            <span className="bg-liquid-gold/10 text-liquid-gold text-[7px] md:text-[9px] font-black px-2.5 md:px-4 py-1 md:py-1.5 rounded-full border border-liquid-gold/20 tracking-tighter uppercase italic shadow-gold-glow-sm w-fit">OMEGA_AUTH_ACTIVE</span>
                         </div>
                     </div>
                 </div>
-                <div className="w-full md:w-auto bg-liquid-gold/5 border border-liquid-gold/20 px-5 md:px-10 py-4 md:py-6 rounded-2xl md:rounded-[2.5rem] flex items-center gap-5 md:gap-8 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
+                <div className="w-full md:w-auto bg-liquid-gold/5 border border-liquid-gold/20 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-6 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
                     <div className="absolute inset-0 bg-liquid-gold/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <div className="w-10 h-10 md:w-16 md:h-16 bg-liquid-gold/20 rounded-xl md:rounded-[2rem] flex items-center justify-center text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-strong flex-shrink-0">
-                        <FingerPrintIcon className="w-5 h-5 md:w-8 md:h-8" />
+                    <div className="w-8 h-8 md:w-12 md:h-12 bg-liquid-gold/20 rounded-lg md:rounded-xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-soft flex-shrink-0">
+                        <FingerPrintIcon className="w-4 h-4 md:w-6 md:h-6" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[8px] md:text-[10px] text-liquid-gold/60 font-black uppercase tracking-widest mb-1 md:mb-2">ID_CONTRIBUYENTE</p>
-                        <p className="text-white font-black italic tracking-tight uppercase text-xs md:text-xl leading-none truncate">{cliente.nombre}</p>
+                        <p className="text-[7px] md:text-[9px] text-liquid-gold/60 font-black uppercase tracking-widest mb-0.5 md:mb-1">ID_CONTRIBUYENTE</p>
+                        <p className="text-white font-black italic tracking-tight uppercase text-[10px] md:text-base leading-none truncate">{cliente.nombre}</p>
                     </div>
                 </div>
             </div>
@@ -394,38 +393,29 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                 <div className="bg-white/[0.01] border border-white/10 rounded-[2rem] md:rounded-[5rem] p-6 md:p-16 space-y-10 md:space-y-16 relative overflow-hidden backdrop-blur-3xl shadow-luxury">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/5 blur-[120px] pointer-events-none" />
                     
-                    <div className="grid grid-cols-2 gap-6 md:gap-12 relative z-10">
-                        <div className="space-y-5 md:space-y-8">
-                            <label className="flex items-center gap-3 md:gap-4 text-[9px] md:text-[12px] text-slate-400 font-black uppercase tracking-wider md:tracking-[0.5em] ml-1">
-                                <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 text-liquid-gold" /> Establ.
+                    <div className="grid grid-cols-2 gap-4 md:gap-6 relative z-10">
+                        <div className="space-y-3 md:space-y-4">
+                            <label className="flex items-center gap-2 md:gap-3 text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-wider md:tracking-[0.3em] ml-1">
+                                <MapPinIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-liquid-gold" /> Establ.
                             </label>
                             <div className="relative group">
                                 <select 
                                     value={establecimiento}
                                     onChange={(e) => setEstablecimiento(e.target.value)}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-2xl md:rounded-[2rem] p-4 md:p-8 text-white font-black text-center text-2xl md:text-5xl focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow font-mono appearance-none outline-none"
+                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 text-white font-black text-center text-xl md:text-3xl focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono appearance-none outline-none"
                                 >
                                     {availableEstablecimientos.map(e => (
-                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-xs md:text-xl">
+                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-base">
                                             {e.codigo}
                                         </option>
                                     ))}
-                                    <option value="custom" className="bg-slate-900 text-white text-xs md:text-xl">+ OTRO</option>
+                                    <option value="custom" className="bg-slate-900 text-white text-[10px] md:text-base">+ OTRO</option>
                                 </select>
-                                {establecimiento === 'custom' && (
-                                    <input 
-                                        type="text"
-                                        inputMode="numeric"
-                                        onChange={(e) => setEstablecimiento(e.target.value.replace(/\D/g, '').substring(0,3))}
-                                        placeholder="002"
-                                        className="mt-4 md:mt-6 w-full bg-black/60 border-2 border-liquid-gold/30 rounded-xl md:rounded-[1.5rem] p-4 md:p-6 text-white text-center text-xl md:text-3xl font-mono outline-none"
-                                    />
-                                )}
                             </div>
                         </div>
-                        <div className="space-y-5 md:space-y-8">
-                            <label className="flex items-center gap-3 md:gap-4 text-[9px] md:text-[12px] text-slate-400 font-black uppercase tracking-wider md:tracking-[0.5em] ml-1">
-                                <HashtagIcon className="w-4 h-4 md:w-5 md:h-5 text-liquid-gold" /> Punto Em.
+                        <div className="space-y-3 md:space-y-4">
+                            <label className="flex items-center gap-2 md:gap-3 text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-wider md:tracking-[0.3em] ml-1">
+                                <HashtagIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-liquid-gold" /> Punto Em.
                             </label>
                             <div className="relative group">
                                 <input 
@@ -434,10 +424,9 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                     value={puntoEmision}
                                     onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').substring(0,3))}
                                     maxLength={3}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-2xl md:rounded-[2rem] p-4 md:p-8 text-white font-black text-center text-2xl md:text-5xl tracking-[0.1em] md:tracking-[0.8em] focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow font-mono outline-none"
+                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 text-white font-black text-center text-xl md:text-3xl tracking-[0.1em] md:tracking-[0.4em] focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono outline-none"
                                     placeholder="001"
                                 />
-                                <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 w-8 md:w-20 h-1 md:h-1.5 bg-liquid-gold/20 group-focus-within:w-16 md:group-focus-within:w-40 group-focus-within:bg-liquid-gold transition-all" />
                             </div>
                         </div>
                     </div>
