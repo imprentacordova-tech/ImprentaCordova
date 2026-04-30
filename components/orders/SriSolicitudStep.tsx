@@ -223,7 +223,7 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 md:gap-12 relative z-10">
                 <div className="space-y-8 md:space-y-12">
                     <div className="space-y-5 md:space-y-8">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:gap-6 ml-1">
@@ -310,21 +310,21 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                                     {actividad === acc && (
                                                         <motion.div 
                                                             layoutId="glow" 
-                                                            className="absolute inset-0 bg-gradient-to-r from-liquid-gold/10 via-transparent to-liquid-gold/10 pointer-events-none" 
+                                                            className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-liquid-gold/5 pointer-events-none" 
                                                         />
                                                     )}
-                                                    <div className="flex flex-col gap-2 relative z-10 min-w-0">
-                                                        <div className="flex items-center gap-2 md:gap-3">
-                                                            <LayersIcon className={`w-3 h-3 md:w-4 md:h-4 ${actividad === acc ? 'text-liquid-gold' : 'text-slate-600'}`} />
-                                                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40 font-mono">NODE_REG_{idx + 1}</span>
+                                                    <div className="flex flex-col gap-1.5 relative z-10 min-w-0 w-full">
+                                                        <div className="flex items-center gap-2">
+                                                            <LayersIcon className={`w-3 h-3 ${actividad === acc ? 'text-liquid-gold' : 'text-slate-600'}`} />
+                                                            <span className="text-[7px] font-black uppercase tracking-[0.2em] opacity-40 font-mono">NODE_REG_{idx + 1}</span>
                                                         </div>
-                                                        <span className={`text-[11px] md:text-[15px] font-black uppercase italic tracking-tight leading-snug pr-12 md:pr-20 transition-colors truncate sm:whitespace-normal ${actividad === acc ? 'text-white' : 'group-hover:text-white'}`}>
+                                                        <span className={`text-[10px] md:text-[13px] font-black uppercase italic tracking-tight leading-tight pr-14 transition-colors ${actividad === acc ? 'text-white' : 'group-hover:text-white'}`}>
                                                             {acc}
                                                         </span>
                                                     </div>
                                                     {actividad === acc && (
-                                                        <div className="relative z-10 w-9 h-9 md:w-14 md:h-14 bg-liquid-gold rounded-xl md:rounded-2xl flex items-center justify-center text-black shadow-lg flex-shrink-0">
-                                                            <CheckBadgeIcon className="w-5 h-5 md:w-8 md:h-8" />
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-liquid-gold rounded-lg flex items-center justify-center text-black shadow-lg flex-shrink-0 z-10">
+                                                            <CheckBadgeIcon className="w-5 h-5 md:w-6 md:h-6" />
                                                         </div>
                                                     )}
                                                 </button>
@@ -390,8 +390,8 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white/[0.01] border border-white/10 rounded-[2rem] md:rounded-[5rem] p-6 md:p-16 space-y-10 md:space-y-16 relative overflow-hidden backdrop-blur-3xl shadow-luxury">
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/5 blur-[120px] pointer-events-none" />
+                <div className="bg-white/[0.01] border border-white/5 rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 space-y-8 md:space-y-12 relative overflow-hidden backdrop-blur-3xl shadow-luxury self-start">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 blur-[100px] pointer-events-none" />
                     
                     <div className="grid grid-cols-2 gap-4 md:gap-6 relative z-10">
                         <div className="space-y-3 md:space-y-4">
@@ -402,7 +402,7 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                 <select 
                                     value={establecimiento}
                                     onChange={(e) => setEstablecimiento(e.target.value)}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 text-white font-black text-center text-xl md:text-3xl focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono appearance-none outline-none"
+                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl p-3 md:p-4 text-white font-black text-center text-xl md:text-2xl focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono appearance-none outline-none"
                                 >
                                     {availableEstablecimientos.map(e => (
                                         <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-base">
@@ -424,7 +424,7 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                     value={puntoEmision}
                                     onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').substring(0,3))}
                                     maxLength={3}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 text-white font-black text-center text-xl md:text-3xl tracking-[0.1em] md:tracking-[0.4em] focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono outline-none"
+                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl p-3 md:p-4 text-white font-black text-center text-xl md:text-2xl tracking-[0.1em] md:tracking-[0.2em] focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono outline-none"
                                     placeholder="001"
                                 />
                             </div>
@@ -446,11 +446,11 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                 type="password"
                                 value={clave}
                                 onChange={(e) => setClave(e.target.value)}
-                                className="w-full bg-black/60 border-2 border-white/5 rounded-2xl md:rounded-[3rem] p-5 md:p-10 text-white font-mono text-base md:text-2xl tracking-[0.6em] md:tracking-[1.2em] focus:border-liquid-gold focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow outline-none"
+                                className="w-full bg-black/60 border-2 border-white/5 rounded-2xl md:rounded-[2rem] p-4 md:p-6 text-white font-mono text-base md:text-xl tracking-[0.6em] md:tracking-[0.8em] focus:border-liquid-gold focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow outline-none"
                                 placeholder="••••••••"
                             />
-                            <div className="absolute top-1/2 right-6 md:right-12 -translate-y-1/2 w-10 h-10 md:w-16 md:h-16 bg-liquid-gold/10 rounded-xl md:rounded-2xl flex items-center justify-center text-liquid-gold/40 group-focus-within:text-liquid-gold group-focus-within:shadow-gold-glow transition-all">
-                                <ShieldCheckIcon className="w-5 h-5 md:w-8 md:h-8" />
+                            <div className="absolute top-1/2 right-4 md:right-6 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-liquid-gold/10 rounded-lg flex items-center justify-center text-liquid-gold/40 group-focus-within:text-liquid-gold group-focus-within:shadow-gold-glow transition-all">
+                                <ShieldCheckIcon className="w-5 h-5" />
                             </div>
                         </div>
                     </div>
