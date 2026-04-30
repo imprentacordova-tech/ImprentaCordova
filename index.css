@@ -656,3 +656,191 @@ html.cordova .text-brand-red {
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 .mb-safe { margin-bottom: env(safe-area-inset-bottom); }
 .bottom-safe { bottom: env(safe-area-inset-bottom); }
+
+/* ============================================= */
+/* CINEMATIC LANDING - OBSIDIAN PRECISION ENGINE */
+/* ============================================= */
+
+/* Architectural Grid Overlay */
+.bg-architect-grid {
+  background-image:
+    linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.bg-architect-grid-fine {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Gold Shimmer Text Mask */
+@keyframes gold-shimmer-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.text-shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    #e11d48 0%,
+    #e11d48 35%,
+    #D4AF37 45%,
+    #FFF8DC 50%,
+    #D4AF37 55%,
+    #e11d48 65%,
+    #e11d48 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer-sweep 6s ease-in-out infinite;
+}
+
+/* Obsidian Liquid Canvas */
+.bg-obsidian-liquid {
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 175, 55, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(225, 29, 72, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 20% 60%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+    linear-gradient(180deg, #020617 0%, #0a0f1e 50%, #020617 100%);
+}
+
+/* Precision Crosshair */
+@keyframes crosshair-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.05); }
+}
+
+.animate-crosshair {
+  animation: crosshair-pulse 4s ease-in-out infinite;
+}
+
+/* Blueprint Dimension Line */
+@keyframes dimension-draw {
+  0% { width: 0; opacity: 0; }
+  50% { width: 100%; opacity: 0.6; }
+  100% { width: 100%; opacity: 0.3; }
+}
+
+.animate-dimension-draw {
+  animation: dimension-draw 1.5s ease-out forwards;
+}
+
+/* Precision Counter Tick */
+@keyframes counter-tick {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-counter-tick {
+  animation: counter-tick 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Obsidian Reveal */
+@keyframes obsidian-reveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0% 0 0); }
+}
+
+.animate-obsidian-reveal {
+  animation: obsidian-reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+/* Golden Line Trace */
+@keyframes gold-line-trace {
+  0% { width: 0; }
+  100% { width: 100%; }
+}
+
+.animate-gold-trace {
+  animation: gold-line-trace 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Mobile Cinematic Hero */
+@keyframes mobile-hero-breathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.02); filter: brightness(1.05); }
+}
+
+.animate-hero-breathe {
+  animation: mobile-hero-breathe 8s ease-in-out infinite;
+}
+
+/* Mobile Swipe Indicator */
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(0); opacity: 0.4; }
+  50% { transform: translateX(8px); opacity: 1; }
+}
+
+.animate-swipe-hint {
+  animation: swipe-hint 2s ease-in-out infinite;
+}
+
+/* Blueprint Hover Card */
+.blueprint-card {
+  position: relative;
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blueprint-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, transparent 40%, rgba(212, 175, 55, 0.1) 50%, transparent 60%);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blueprint-card:hover::before {
+  opacity: 1;
+}
+
+/* Precision Ruler Marks */
+.ruler-marks {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.1) 0px,
+    rgba(212, 175, 55, 0.1) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+}
+
+/* Mobile Premium Touch Target */
+@media (max-width: 768px) {
+  .touch-premium {
+    min-height: 56px;
+    min-width: 56px;
+  }
+}
+
+/* Stagger entrance for mobile cards */
+@keyframes slide-up-stagger {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up-stagger 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Gradient border glow for featured sections */
+.border-gradient-gold {
+  border-image: linear-gradient(135deg, rgba(212, 175, 55, 0.3), transparent, rgba(212, 175, 55, 0.3)) 1;
+}
+
+/* Frosted mobile nav */
+@supports (-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px)) {
+  .mobile-nav-frost {
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    backdrop-filter: blur(30px) saturate(200%);
+    background-color: rgba(2, 6, 23, 0.75);
+  }
+}

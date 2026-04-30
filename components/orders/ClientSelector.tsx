@@ -5,6 +5,7 @@ import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { extractDataFromSriPdf } from '../../services/pdfExtraction';
 import { sriLookupService, SriRucData } from '../../services/sriLookupService';
+import { logActivity } from '../../services/activityLogService';
 import { validarIdentificacionEC } from '../../utils';
 import {
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon,
@@ -23,25 +24,26 @@ const InputField: React.FC<{
     required?: boolean;
     [key: string]: any;
 }> = ({ label, name, value, onChange, isHighlighted, error, required, ...props }) => (
-    <div className="group space-y-2">
-        <label htmlFor={name} className={`block text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 group-focus-within:text-liquid-gold'}`}>
-            {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "✨"}
-        </label>
+    <div className="relative group">
         <input
             id={name}
             name={name}
             value={value}
             onChange={onChange}
-            className={`w-full px-5 py-3.5 bg-white/5 border rounded-2xl text-white font-bold text-sm outline-none transition-all
+            className={`peer w-full bg-white/[0.02] border p-6 pt-8 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-2 transition-all uppercase italic placeholder-transparent
                 ${error
-                    ? 'border-rose-500/50 bg-rose-500/5 focus:ring-1 focus:ring-rose-500 text-white'
+                    ? 'border-rose-500/50 focus:ring-rose-500/30 focus:border-rose-500/50'
                     : isHighlighted
-                        ? 'border-liquid-gold/50 bg-liquid-gold/5 focus:ring-1 focus:ring-liquid-gold'
-                        : 'border-white/5 focus:border-white/20 focus:bg-white/10'
+                        ? 'border-liquid-gold/50 focus:ring-liquid-gold/30 focus:border-liquid-gold/50'
+                        : 'border-white/5 focus:ring-brand-red/30 focus:border-brand-red/50'
                 }`}
+            placeholder={label}
             {...props}
         />
-        {error && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block">{error}</p>}
+        <label htmlFor={name} className={`absolute left-6 top-3 text-[9px] font-black uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 peer-focus:text-brand-red'}`}>
+            {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "✨"}
+        </label>
+        {error && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block absolute -bottom-6 left-4 z-20">{error}</p>}
     </div>
 );
 
@@ -123,6 +125,13 @@ export const CreateClientModal: React.FC<{
                         }
                     } catch (err) {
                         console.error("Error doing padron lookup:", err);
+                        logActivity(
+                            "Sistema",
+                            "App",
+                            "SRI_SCAN_FAILURE",
+                            `Fallo búsqueda padrón SRI RUC ${newClienteData.cedulaRuc}: ${(err as Error).message || 'Error'}`,
+                            "Clientes"
+                        );
                     } finally {
                         setIsScanning(false);
                     }
@@ -169,6 +178,13 @@ export const CreateClientModal: React.FC<{
         } catch (error) {
             console.error("Error extracted SRI PDF:", error);
             setRucError("Error al leer el PDF. Asegúrese de que sea un certificado del SRI.");
+            logActivity(
+                "Sistema",
+                "App",
+                "SRI_SCAN_FAILURE",
+                `Fallo al extraer PDF SRI: ${(error as Error).message || 'Error desconocido'}`,
+                "Clientes"
+            );
         } finally {
             setIsScanning(false);
             if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input
@@ -397,27 +413,31 @@ return (
                             placeholder={mode === 'EXPRESS' ? "Ej: JUAN PÉREZ" : "Especifique Razón Social completa"}
                         />
 
-                        <div className="group space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-focus-within:text-liquid-gold transition-colors">
+                        <div className="group space-y-2 relative md:col-span-1">
+                            <div className={`flex flex-wrap gap-2 p-6 pt-8 pb-4 bg-white/[0.02] rounded-[2rem] border transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-brand-red/50 group-focus-within:ring-2 group-focus-within:ring-brand-red/30'}`}>
+                                <PhoneIcon className={`absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 z-10 transition-colors ${highlightFields.includes('telefono') ? 'text-liquid-gold' : 'text-slate-600 group-focus-within:text-brand-red'}`} />
+                                <div className="pl-10 flex flex-wrap gap-2 items-center w-full">
+                                    {telefonos.map((t, idx) => (
+                                        <span key={idx} className="bg-liquid-gold text-brand-dark px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 shadow-luxury animate-scale-in">
+                                            <PhoneIcon className="w-3 h-3" /> {t}
+                                            <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
+                                        </span>
+                                    ))}
+                                    <input
+                                        id="telefono-input"
+                                        type="tel"
+                                        placeholder="Añadir teléfono..."
+                                        value={currentTelefono}
+                                        onChange={e => setCurrentTelefono(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
+                                        onBlur={() => currentTelefono && addTelefono(currentTelefono)}
+                                        className="bg-transparent border-none outline-none text-lg font-black text-white flex-grow min-w-[150px] placeholder:text-slate-600 italic uppercase"
+                                    />
+                                </div>
+                            </div>
+                            <label htmlFor="telefono-input" className="absolute left-16 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic pointer-events-none transition-colors group-focus-within:text-brand-red">
                                 Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-rose-500 opacity-50">*</span>}
                             </label>
-                            <div className={`flex flex-wrap gap-2 p-3.5 bg-white/5 border rounded-2xl transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-white/20 group-focus-within:bg-white/10'}`}>
-                                {telefonos.map((t, idx) => (
-                                    <span key={idx} className="bg-liquid-gold text-brand-dark px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 shadow-luxury animate-scale-in">
-                                        <PhoneIcon className="w-3 h-3" /> {t}
-                                        <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
-                                    </span>
-                                ))}
-                                <input
-                                    type="tel"
-                                    placeholder="Añadir teléfono..."
-                                    value={currentTelefono}
-                                    onChange={e => setCurrentTelefono(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
-                                    onBlur={() => currentTelefono && addTelefono(currentTelefono)}
-                                    className="bg-transparent border-none outline-none text-sm font-bold text-white flex-grow min-w-[150px] placeholder:text-slate-700"
-                                />
-                            </div>
                         </div>
                     </div>
 
@@ -425,26 +445,54 @@ return (
                     {mode === 'SRI' ? (
                         <div className="space-y-8 animate-fade-in">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <InputField
-                                    label="RUC (13 Dígitos)"
-                                    name="cedulaRuc"
-                                    value={newClienteData.cedulaRuc}
-                                    onChange={e => setNewClienteData({ ...newClienteData, cedulaRuc: e.target.value })}
-                                    maxLength={13}
-                                    required
-                                    isHighlighted={highlightFields.includes('cedulaRuc')}
-                                    error={rucError}
-                                    placeholder="0101234567001"
-                                />
-                                <InputField
-                                    label="Email de Facturación"
-                                    name="email"
-                                    type="email"
-                                    value={newClienteData.email}
-                                    onChange={e => setNewClienteData({ ...newClienteData, email: e.target.value })}
-                                    isHighlighted={highlightFields.includes('email')}
-                                    placeholder="correo@ejemplo.com"
-                                />
+                                <div className="bg-black/20 p-6 md:p-8 rounded-[3rem] border border-white/5 space-y-6 relative overflow-hidden md:col-span-2">
+                                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-liquid-gold/10 rounded-full blur-3xl pointer-events-none" />
+                                    {isScanning && (
+                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-liquid-gold/50 animate-scan-y z-40 overflow-hidden">
+                                            <div className="w-1/3 h-full bg-liquid-gold shadow-[0_0_15px_#D4AF37] animate-pulse" />
+                                        </div>
+                                    )}
+                                    <div className="relative group">
+                                        <ShieldCheckIcon className={`absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-500 ${newClienteData.cedulaRuc.length >= 10 && !rucError ? 'text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] scale-110' : 'text-slate-600 group-focus-within:text-liquid-gold'}`} />
+                                        <input 
+                                            id="cedulaRuc"
+                                            name="cedulaRuc"
+                                            value={newClienteData.cedulaRuc} 
+                                            onChange={e => setNewClienteData({ ...newClienteData, cedulaRuc: e.target.value.replace(/\D/g, '').slice(0, 13) })} 
+                                            required 
+                                            className="peer w-full bg-white/[0.02] border border-white/10 p-8 pt-10 pb-4 pl-20 rounded-[2rem] text-white font-black text-2xl focus:ring-2 focus:ring-liquid-gold/30 focus:border-liquid-gold/50 transition-all tracking-[0.2em] italic placeholder-transparent" 
+                                            placeholder="RUC Oficial" 
+                                        />
+                                        <label htmlFor="cedulaRuc" className="absolute left-20 top-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-8 peer-placeholder-shown:text-lg peer-placeholder-shown:text-slate-600 peer-focus:top-4 peer-focus:text-[10px] peer-focus:text-liquid-gold pointer-events-none">
+                                            ID_Tributario (RUC Oficial)
+                                        </label>
+                                        <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                                            {isScanning ? (
+                                                <>
+                                                    <p className="text-[9px] text-liquid-gold font-black uppercase tracking-[0.3em] animate-pulse hidden sm:block">EXTRAYENDO_DATA...</p>
+                                                    <Loader2Icon className="w-5 h-5 text-liquid-gold animate-spin" />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className="text-[9px] text-emerald-500 font-black uppercase tracking-[0.3em] hidden sm:block">{newClienteData.cedulaRuc.length === 13 && !rucError ? 'RUC_VÁLIDO' : ''}</p>
+                                                    <div className={`w-2 h-2 rounded-full ${newClienteData.cedulaRuc.length >= 10 && !rucError ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-slate-700'} transition-all duration-500`} />
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {rucError && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block">{rucError}</p>}
+                                </div>
+                                <div className="md:col-span-2">
+                                    <InputField
+                                        label="Email de Facturación"
+                                        name="email"
+                                        type="email"
+                                        value={newClienteData.email}
+                                        onChange={e => setNewClienteData({ ...newClienteData, email: e.target.value })}
+                                        isHighlighted={highlightFields.includes('email')}
+                                        placeholder="correo@ejemplo.com"
+                                    />
+                                </div>
                             </div>
 
                             <div className="p-8 bg-white/2 rounded-[2.5rem] border border-white/5 space-y-8 relative overflow-hidden">

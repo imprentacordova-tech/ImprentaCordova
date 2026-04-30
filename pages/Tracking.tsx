@@ -333,7 +333,7 @@ const TrackingPage: React.FC = () => {
                             <div className="absolute -inset-2 bg-brand-red/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div className="flex flex-col leading-none">
-                            <span className="text-[10px] font-black text-white uppercase tracking-[-0.04em] italic group-hover:text-text-brand-red transition-colors">TRACKING_SYSTEM</span>
+                            <span className="text-[10px] font-black text-white uppercase tracking-[-0.04em] italic group-hover:text-brand-red transition-colors">TRACKING_SYSTEM</span>
                         </div>
                     </Link>
                     
@@ -341,7 +341,7 @@ const TrackingPage: React.FC = () => {
                         <Link to="/" className="p-3 bg-white/[0.03] rounded-2xl border border-white/5 text-slate-400 hover:text-white transition-all">
                             <HomeIcon className="w-5 h-5" />
                         </Link>
-                        <Link to="/login" className="px-6 py-3 bg-white text-brand-blue rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-text-brand-red transition-all duration-700 shadow-luxury">
+                        <Link to="/login" className="px-6 py-3 bg-white text-brand-blue rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-brand-red transition-all duration-700 shadow-luxury">
                             Elite Hub
                         </Link>
                     </div>
@@ -361,7 +361,7 @@ const TrackingPage: React.FC = () => {
                         <span className="text-[9px] font-black uppercase tracking-[0.6em] text-slate-400 italic">CORDOVA INDUSTRIAL TELEMETRY</span>
                     </motion.div>
                     <h1 className="text-5xl lg:text-8xl font-black tracking-[-0.04em] text-white uppercase italic leading-none">
-                        VÍNCULO DE <span className="text-text-brand-red text-glow not-italic">PRODUCCIÓN</span>
+                        VÍNCULO DE <span className="text-brand-red text-glow not-italic">PRODUCCIÓN</span>
                     </h1>
                 </div>
 
@@ -380,7 +380,7 @@ const TrackingPage: React.FC = () => {
                             placeholder="ORDEN, CÉDULA O RUC..."
                             className="bg-transparent border-none p-0 text-sm font-black text-white placeholder:text-slate-600 focus:ring-0 uppercase tracking-[0.3em] w-full italic"
                         />
-                        <button type="submit" className="bg-white text-brand-blue px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-text-brand-red transition-all duration-500 shadow-xl active:scale-95">Vincular</button>
+                        <button type="submit" className="bg-white text-brand-blue px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-red transition-all duration-500 shadow-xl active:scale-95">Vincular</button>
                     </motion.form>
                     
                     {error && (
@@ -470,7 +470,7 @@ const TrackingPage: React.FC = () => {
                                             <motion.button 
                                                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                 onClick={() => handleGeneratePaymentLink(currentJob)}
-                                                className="flex-1 xl:flex-none bg-white text-brand-blue px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-luxury italic hover:bg-text-brand-red transition-all"
+                                                className="flex-1 xl:flex-none bg-white text-brand-blue px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-luxury italic hover:bg-brand-red transition-all"
                                             >
                                                 Contactar Taller
                                             </motion.button>

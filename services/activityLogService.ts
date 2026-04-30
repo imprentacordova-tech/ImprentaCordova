@@ -46,6 +46,8 @@ export type ActivityAction =
   | 'COMPLETAR_TAREA'
   | 'ACCESO_MODULO'
   | 'FINALIZADO_DIRECTO'
+  | 'SRI_SCAN_FAILURE'
+  | 'ALERTA_STOCK'
   | (string & {});
 
 /**

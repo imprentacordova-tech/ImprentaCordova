@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import Papa from 'papaparse';
 import { 
     BoxIcon, InventoryIcon, ExclamationTriangleIcon, AddIcon, PencilIcon, 
     SearchIcon, TrashIcon, CloseIcon, Loader2Icon, ActivityIcon, TrendingDownIcon,
-    CubeIcon, TruckIcon
+    CubeIcon, TruckIcon, ArrowDownTrayIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { InventoryItem, User } from '../types';
@@ -59,6 +60,65 @@ const itemVariants = {
     }
 };
 
+const InputField: React.FC<{
+    label: string;
+    name: string;
+    value: any;
+    onChange: (e: React.ChangeEvent<any>) => void;
+    type?: string;
+    isHighlighted?: boolean;
+    error?: string;
+    required?: boolean;
+    options?: {value: string, label: string}[];
+    [key: string]: any;
+}> = ({ label, name, value, onChange, type = 'text', isHighlighted, error, required, options, ...props }) => (
+    <div className="relative group">
+        {type === 'select' ? (
+            <select
+                id={name}
+                name={name}
+                value={value}
+                onChange={onChange}
+                className={`peer w-full bg-white/[0.02] border p-6 pt-8 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-2 transition-all uppercase italic appearance-none cursor-pointer
+                    ${error
+                        ? 'border-rose-500/50 focus:ring-rose-500/30 focus:border-rose-500/50'
+                        : isHighlighted
+                            ? 'border-liquid-gold/50 focus:ring-liquid-gold/30 focus:border-liquid-gold/50'
+                            : 'border-white/5 focus:ring-brand-red/30 focus:border-brand-red/50'
+                    }`}
+                {...props}
+            >
+                {options?.map(opt => (
+                    <option key={opt.value} value={opt.value} className="bg-slate-900">{opt.label}</option>
+                ))}
+            </select>
+        ) : (
+            <input
+                id={name}
+                name={name}
+                type={type}
+                value={value}
+                onChange={onChange}
+                className={`peer w-full bg-white/[0.02] border p-6 pt-8 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-2 transition-all uppercase italic placeholder-transparent
+                    ${error
+                        ? 'border-rose-500/50 focus:ring-rose-500/30 focus:border-rose-500/50'
+                        : isHighlighted
+                            ? 'border-liquid-gold/50 focus:ring-liquid-gold/30 focus:border-liquid-gold/50'
+                            : 'border-white/5 focus:ring-brand-red/30 focus:border-brand-red/50'
+                    }`}
+                placeholder={label}
+                {...props}
+            />
+        )}
+        <label htmlFor={name} className={`absolute left-6 top-3 text-[9px] font-black uppercase tracking-[0.4em] italic transition-all pointer-events-none
+            ${(type === 'select' || value !== '') ? 'top-3 text-[9px]' : 'peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px]'}
+            ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 peer-focus:text-brand-red'}`}>
+            {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "✨"}
+        </label>
+        {error && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block absolute -bottom-6 left-4 z-20">{error}</p>}
+    </div>
+);
+
 const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (item: Partial<InventoryItem>) => void; item: Partial<InventoryItem> | null }> = ({ isOpen, onClose, onSave, item }) => {
     const { proveedores } = useData();
     const [formData, setFormData] = useState<Partial<InventoryItem>>({});
@@ -89,72 +149,72 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
 
                     <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción del Material</label>
-                                <input 
-                                    type="text" name="item" value={formData.item || ''} 
-                                    onChange={e => setFormData({...formData, item: e.target.value})} 
-                                    required className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-xl font-bold text-white italic focus:border-liquid-gold/50 outline-none transition-all placeholder:text-slate-800" 
-                                    placeholder="Ej: Papel Couché 150g..." 
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Alianza Estratégica (Proveedor)</label>
-                                <select 
-                                    name="proveedorId" value={formData.proveedorId || ''} 
-                                    onChange={e => setFormData({...formData, proveedorId: e.target.value})} 
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-sm font-black text-white focus:border-liquid-gold/50 outline-none transition-all cursor-pointer uppercase italic"
-                                >
-                                    <option value="" className="bg-slate-900">SIN PROVEEDOR ASIGNADO</option>
-                                    {proveedores.map(p => (
-                                        <option key={p.id} value={p.id} className="bg-slate-900">👑 {p.nombre}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <InputField 
+                                label="Descripción del Material" 
+                                name="item" 
+                                value={formData.item || ''} 
+                                onChange={e => setFormData({...formData, item: e.target.value})} 
+                                required 
+                            />
+                            <InputField 
+                                label="Alianza Estratégica (Proveedor)" 
+                                name="proveedorId" 
+                                type="select"
+                                value={formData.proveedorId || ''} 
+                                onChange={e => setFormData({...formData, proveedorId: e.target.value})} 
+                                options={[
+                                    { value: '', label: 'SIN PROVEEDOR ASIGNADO' },
+                                    ...proveedores.map(p => ({ value: p.id, label: `👑 ${p.nombre}` }))
+                                ]}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Existencias</label>
-                                <input 
-                                    type="number" step="0.001" name="cantidad" value={formData.cantidad || ''} 
-                                    onChange={e => setFormData({...formData, cantidad: parseFloat(e.target.value)})} 
-                                    required className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-xl font-bold text-white focus:border-liquid-gold/50 outline-none transition-all" 
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Unidad</label>
-                                <select 
-                                    name="unidad" value={formData.unidad || 'Resmas'} 
-                                    onChange={e => setFormData({...formData, unidad: e.target.value})} 
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-sm font-black text-white uppercase focus:border-liquid-gold/50 outline-none transition-all cursor-pointer"
-                                >
-                                    <option value="Resmas">Resmas</option>
-                                    <option value="Pliegos">Pliegos</option>
-                                    <option value="Metros">Metros</option>
-                                    <option value="Unidades">Unidades</option>
-                                    <option value="Kilos">Kilos</option>
-                                </select>
-                            </div>
+                            <InputField 
+                                label="Existencias" 
+                                name="cantidad" 
+                                type="number"
+                                step="0.001"
+                                value={formData.cantidad || ''} 
+                                onChange={e => setFormData({...formData, cantidad: parseFloat(e.target.value)})} 
+                                required 
+                            />
+                            <InputField 
+                                label="Unidad" 
+                                name="unidad" 
+                                type="select"
+                                value={formData.unidad || 'Resmas'} 
+                                onChange={e => setFormData({...formData, unidad: e.target.value})} 
+                                options={[
+                                    { value: 'Resmas', label: 'Resmas' },
+                                    { value: 'Pliegos', label: 'Pliegos' },
+                                    { value: 'Metros', label: 'Metros' },
+                                    { value: 'Unidades', label: 'Unidades' },
+                                    { value: 'Kilos', label: 'Kilos' }
+                                ]}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/5">
-                            <div className="space-y-3">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Inversión Unit ($)</label>
-                                <input 
-                                    type="number" step="0.01" name="costoUnitario" value={formData.costoUnitario || ''} 
-                                    onChange={e => setFormData({...formData, costoUnitario: parseFloat(e.target.value)})} 
-                                    required className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 text-xl font-bold text-white focus:border-liquid-gold/50 outline-none transition-all" 
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="block text-[9px] font-black text-rose-500/70 uppercase tracking-widest ml-1">Límite de Alerta</label>
-                                <input 
-                                    type="number" step="0.1" name="minimo" value={formData.minimo || ''} 
-                                    onChange={e => setFormData({...formData, minimo: parseFloat(e.target.value)})} 
-                                    required className="w-full bg-black/40 border border-rose-500/20 rounded-2xl py-5 px-6 text-xl font-bold text-rose-400 focus:border-rose-500/50 outline-none transition-all" 
-                                />
-                            </div>
+                            <InputField 
+                                label="Inversión Unit ($)" 
+                                name="costoUnitario" 
+                                type="number"
+                                step="0.01"
+                                value={formData.costoUnitario || ''} 
+                                onChange={e => setFormData({...formData, costoUnitario: parseFloat(e.target.value)})} 
+                                required 
+                            />
+                            <InputField 
+                                label="Límite de Alerta" 
+                                name="minimo" 
+                                type="number"
+                                step="0.1"
+                                value={formData.minimo || ''} 
+                                onChange={e => setFormData({...formData, minimo: parseFloat(e.target.value)})} 
+                                required 
+                                error={formData.cantidad !== undefined && formData.minimo !== undefined && formData.cantidad <= formData.minimo ? "Existencia crítica" : undefined}
+                            />
                         </div>
 
                         <div className="flex gap-4 pt-8">
@@ -175,6 +235,51 @@ const InventarioPage: React.FC = () => {
     const { inventario, loading, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [itemToEdit, setItemToEdit] = useState<Partial<InventoryItem> | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsImporting(true);
+        
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: async function(results) {
+                try {
+                    for (const row of results.data as any[]) {
+                        const itemStr = row['ITEM'] || row['item'] || row['Descripción'];
+                        if (!itemStr) continue;
+                        
+                        const cantidad = parseFloat(row['CANTIDAD'] || row['cantidad'] || row['Existencias']) || 0;
+                        const minimo = parseFloat(row['MINIMO'] || row['minimo'] || row['Límite']) || 1;
+                        const costo = parseFloat(row['COSTO'] || row['costo'] || row['Inversión']) || 0;
+                        const unidad = row['UNIDAD'] || row['unidad'] || 'Unidades';
+                        
+                        await addInventoryItem({
+                            item: itemStr,
+                            cantidad: cantidad,
+                            minimo: minimo,
+                            costoUnitario: costo,
+                            unidad: unidad,
+                            fechaUltimaCompra: new Date().toISOString()
+                        } as any);
+                    }
+                    logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', `Importó inventario en bloque`, 'Insumos');
+                } catch (err) {
+                    console.error("Error importando CSV de inventario", err);
+                } finally {
+                    setIsImporting(false);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                }
+            },
+            error: function(err) {
+                console.error("Error parsing CSV", err);
+                setIsImporting(false);
+            }
+        });
+    };
 
     const kpis = useMemo(() => {
         const valorTotal = inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0);
@@ -194,6 +299,11 @@ const InventarioPage: React.FC = () => {
             await addInventoryItem(item as any);
             logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', `Registró nuevo material: ${item.item}`, 'Insumos');
         }
+        
+        if (item.cantidad !== undefined && item.minimo !== undefined && item.cantidad <= item.minimo) {
+            logActivity(currentUser.nombre, currentUser.rol, 'ALERTA_STOCK', `Stock crítico de ${item.item}: ${item.cantidad} ${item.unidad || 'Unidades'}`, 'Insumos');
+        }
+        
         setItemToEdit(null);
     };
 
@@ -219,16 +329,34 @@ const InventarioPage: React.FC = () => {
                         Bóveda de <span className="text-gold-gradient">Activos</span>
                     </h1>
                 </div>
-                
-                <motion.button 
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setItemToEdit({})} 
-                    className="flex items-center gap-4 px-12 py-5 bg-white text-black font-black rounded-2xl shadow-[0_10px_30px_rgba(255,255,255,0.1)] uppercase text-[10px] tracking-[0.2em] group"
-                >
-                    <AddIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
-                    <span>Nuevo Registro</span>
-                </motion.button>
+                <div className="flex gap-4">
+                    <input 
+                        type="file" 
+                        accept=".csv" 
+                        className="hidden" 
+                        ref={fileInputRef} 
+                        onChange={handleImportCSV} 
+                    />
+                    <motion.button 
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => fileInputRef.current?.click()} 
+                        disabled={isImporting}
+                        className="flex items-center gap-4 px-10 py-5 bg-white/5 border border-white/10 text-white font-black rounded-2xl shadow-[0_10px_30px_rgba(255,255,255,0.05)] uppercase text-[10px] tracking-[0.2em] group disabled:opacity-50"
+                    >
+                        {isImporting ? <Loader2Icon className="w-5 h-5 animate-spin text-liquid-gold" /> : <ArrowDownTrayIcon className="w-5 h-5 text-liquid-gold group-hover:-translate-y-1 transition-transform" />}
+                        <span className="hidden sm:inline">Importar CSV</span>
+                    </motion.button>
+                    <motion.button 
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setItemToEdit({})} 
+                        className="flex items-center gap-4 px-12 py-5 bg-white text-black font-black rounded-2xl shadow-[0_10px_30px_rgba(255,255,255,0.1)] uppercase text-[10px] tracking-[0.2em] group"
+                    >
+                        <AddIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
+                        <span>Nuevo Registro</span>
+                    </motion.button>
+                </div>
             </motion.div>
 
             {/* --- MÉTRICAS --- */}

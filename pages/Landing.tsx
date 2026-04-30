@@ -37,31 +37,31 @@ const staggerContainer = {
 const StatCard: React.FC<{ label: string; value: string; sub: string }> = ({ label, value, sub }) => (
     <motion.div 
         variants={fadeInUp}
-        className="text-center p-8 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/5 group hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 relative overflow-hidden box-border shadow-luxury"
+        className="text-center p-4 md:p-8 bg-white/[0.02] backdrop-blur-3xl rounded-2xl md:rounded-[2.5rem] border border-white/5 group hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 relative overflow-hidden box-border shadow-luxury"
     >
         <div className="absolute inset-0 bg-gradient-to-br from-brand-red/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.5em] mb-4 relative z-10 group-hover:text-brand-red/80 transition-colors">{label}</p>
-        <p className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter mb-2 group-hover:scale-105 transition-transform duration-700 relative z-10 italic drop-shadow-2xl">{value}</p>
-        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em] relative z-10">{sub}</p>
+        <p className="text-[7px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] md:tracking-[0.5em] mb-2 md:mb-4 relative z-10 group-hover:text-brand-red/80 transition-colors">{label}</p>
+        <p className="text-3xl md:text-5xl lg:text-7xl font-display font-black text-white tracking-tighter mb-1 md:mb-2 group-hover:scale-105 transition-transform duration-700 relative z-10 italic drop-shadow-2xl">{value}</p>
+        <p className="text-[8px] md:text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] relative z-10">{sub}</p>
     </motion.div>
 );
 
 const ServiceCard: React.FC<{ title: string; desc: string; icon: any; index: number; activeIndex: number }> = ({ title, desc, icon: Icon, index, activeIndex }) => (
     <motion.div 
         variants={fadeInUp}
-        className={`group bg-white/[0.02] backdrop-blur-3xl p-12 rounded-[3.5rem] border transition-all duration-1000 hover:-translate-y-4 relative overflow-hidden ${
+        className={`group bg-white/[0.02] backdrop-blur-3xl p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-1000 hover:-translate-y-4 relative overflow-hidden ${
             index === activeIndex ? 'border-brand-red/40 bg-white/[0.05] shadow-red-glow-soft' : 'border-white/5 hover:border-brand-red/30 hover:bg-white/[0.04]'
         }`}
     >
         <div className="absolute top-0 right-0 w-48 h-48 bg-brand-red/5 rounded-full blur-3xl -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className={`w-24 h-24 rounded-[2.5rem] bg-brand-blue border flex items-center justify-center mb-12 transition-all duration-1000 ${
+        <div className={`w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2.5rem] bg-brand-blue border flex items-center justify-center mb-8 md:mb-12 transition-all duration-1000 ${
             index === activeIndex ? 'border-brand-red/40 shadow-red-glow-soft scale-110' : 'border-white/10 group-hover:shadow-red-glow-soft group-hover:border-brand-red/40 group-hover:scale-105'
         }`}>
-            <Icon className="w-12 h-12 text-brand-red" />
+            <Icon className="w-8 h-8 md:w-12 md:h-12 text-brand-red" />
         </div>
-        <h3 className="text-3xl font-display font-black text-white uppercase tracking-tighter mb-6 leading-[0.9] transition-colors group-hover:text-text-brand-red italic">{title}</h3>
-        <p className="text-slate-500 leading-relaxed text-sm font-medium italic">{desc}</p>
-        <div className="mt-12 flex items-center gap-4 text-brand-red font-black text-[9px] uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
+        <h3 className="text-xl md:text-3xl font-display font-black text-white uppercase tracking-tighter mb-4 md:mb-6 leading-[0.9] transition-colors group-hover:text-brand-red italic">{title}</h3>
+        <p className="text-slate-500 leading-relaxed text-xs md:text-sm font-medium italic">{desc}</p>
+        <div className="mt-8 md:mt-12 flex items-center gap-4 text-brand-red font-black text-[9px] uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
             Consultar Ingeniería <ArrowRightIcon className="w-4 h-4" />
         </div>
     </motion.div>
@@ -128,8 +128,9 @@ const LandingPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-brand-blue font-sans selection:bg-brand-red selection:text-brand-blue overflow-x-hidden relative">
-            {/* --- CINEMATIC OVERLAY (GRAIN & NOISE) --- */}
-            <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none z-0" />
+            {/* --- CINEMATIC OVERLAY (GRAIN & NOISE & ARCHITECT GRID) --- */}
+            <div className="fixed inset-0 bg-obsidian-liquid pointer-events-none z-0" />
+            <div className="fixed inset-0 bg-architect-grid pointer-events-none z-0 opacity-60" />
             <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] bg-noise mix-blend-overlay" />
             
             {/* --- INDUSTRIAL INK PARTICLES --- */}
@@ -177,10 +178,10 @@ const LandingPage: React.FC = () => {
             {/* --- VERTICAL TELEMETRY HUD --- */}
             <div className="fixed top-1/3 left-[2%] z-50 hidden 2xl:flex flex-col gap-10 text-[8px] font-mono tracking-[0.8em] uppercase vertical-text opacity-30 pointer-events-none">
                 <span className="flex items-center gap-3 text-brand-red">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" /> CORDOVA_INDUSTRIAL_V4
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse inline-block" /> CORDOVA_INDUSTRIAL_V4
                 </span>
                 <span className="flex items-center gap-3 text-white">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/20" /> SYSTEM_NOMINAL
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/20 inline-block" /> SYSTEM_NOMINAL
                 </span>
                 <div className="w-[1px] h-32 bg-gradient-to-b from-brand-red/40 via-brand-red/10 to-transparent mx-auto mt-6" />
             </div>
@@ -215,7 +216,7 @@ const LandingPage: React.FC = () => {
                         </div>
                         <div className="flex flex-col leading-none">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.5em] mb-1">Pasaje • Ec</span>
-                            <span className="text-xl font-display font-black text-white uppercase tracking-[-0.04em] group-hover:text-text-brand-red transition-colors italic">IMPRENTA CÓRDOVA</span>
+                            <span className="text-xl font-display font-black text-white uppercase tracking-[-0.04em] group-hover:text-brand-red transition-colors italic">IMPRENTA CÓRDOVA</span>
                         </div>
                     </div>
                     
@@ -253,7 +254,7 @@ const LandingPage: React.FC = () => {
                                 )}
                             </AnimatePresence>
                         </button>
-                        <Link to="/login" className="hidden sm:flex items-center gap-3 px-7 py-3.5 bg-white text-brand-blue rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-text-brand-red transition-all duration-700 shadow-luxury active:scale-95">
+                        <Link to="/login" className="hidden sm:flex items-center gap-3 px-7 py-3.5 bg-white text-brand-blue rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-brand-red transition-all duration-700 shadow-luxury active:scale-95">
                             Elite Hub
                         </Link>
                     </div>
@@ -261,10 +262,15 @@ const LandingPage: React.FC = () => {
             </div>
 
             {/* --- HERO OBSIDIAN & GOLD --- */}
-            <section className="relative pt-48 pb-20 lg:pt-64 lg:pb-40 overflow-hidden">
+            <section className="relative pt-36 pb-16 md:pt-48 lg:pt-64 lg:pb-40 overflow-hidden">
                 {/* Hero Accents */}
-                <div className="absolute top-0 right-0 w-[1200px] h-[1200px] bg-brand-red/5 rounded-full blur-[180px] -mr-80 -mt-80 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-500/5 rounded-full blur-[160px] -ml-40 -mb-40 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-[600px] md:w-[1200px] h-[600px] md:h-[1200px] bg-brand-red/5 rounded-full blur-[120px] md:blur-[180px] -mr-40 md:-mr-80 -mt-40 md:-mt-80 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-indigo-500/5 rounded-full blur-[100px] md:blur-[160px] -ml-20 md:-ml-40 -mb-20 md:-mb-40 pointer-events-none" />
+                {/* Precision Crosshair Center */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] pointer-events-none hidden md:block animate-crosshair">
+                    <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-gradient-to-r from-transparent via-brand-red/10 to-transparent" />
+                    <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-gradient-to-b from-transparent via-brand-red/10 to-transparent" />
+                </div>
                 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="grid lg:grid-cols-12 gap-20 items-center">
@@ -274,57 +280,68 @@ const LandingPage: React.FC = () => {
                             variants={staggerContainer}
                             className="lg:col-span-7 space-y-12"
                         >
-                            <motion.div variants={fadeInUp} className="inline-flex items-center gap-4 px-6 py-2.5 bg-white/[0.03] border border-white/10 rounded-full text-slate-400 backdrop-blur-md">
-                                <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-                                    Pasión por la excelencia gráfica. Innovación y compromiso en cada impresión para elevar la identidad de tu marca.
+                            <motion.div variants={fadeInUp} className="inline-flex items-center gap-3 md:gap-4 px-4 md:px-6 py-2 md:py-2.5 bg-white/[0.03] border border-white/10 rounded-full text-slate-400 backdrop-blur-md">
+                                <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse shrink-0" />
+                                <p className="text-slate-400 text-xs md:text-sm leading-relaxed max-w-sm">
+                                    Ingeniería gráfica de precisión. Cada impresión es una pieza de artesanía industrial.
                                 </p>
                             </motion.div>
                             
-                            <div className="relative mb-8">
-                                <h1 className="flex flex-col items-start gap-2 select-none relative group/title">
+                            <div className="relative mb-6 md:mb-8">
+                                <h1 className="flex flex-col items-start gap-1 md:gap-2 select-none relative group/title">
                                     <motion.div variants={fadeInUp} className="relative">
-                                        <span className="text-7xl sm:text-9xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-white italic uppercase">
+                                        <span className="text-[3.5rem] sm:text-8xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-white italic uppercase">
                                             IMPRENTA
                                         </span>
-                                        {/* Technical decorative lines */}
-                                        <div className="absolute -right-8 -top-8 w-20 h-20 border-t-2 border-r-2 border-brand-red/20 rounded-tr-[3rem] transition-all duration-1000 group-hover/title:border-brand-red/40" />
-                                        <div className="absolute -left-8 -bottom-8 w-20 h-20 border-b-2 border-l-2 border-brand-red/20 rounded-bl-[3rem] transition-all duration-1000 group-hover/title:border-brand-red/40" />
+                                        {/* Precision geometry decorators */}
+                                        <div className="absolute -right-4 md:-right-8 -top-4 md:-top-8 w-12 md:w-20 h-12 md:h-20 border-t-2 border-r-2 border-brand-red/20 rounded-tr-2xl md:rounded-tr-[3rem] transition-all duration-1000 group-hover/title:border-brand-red/40" />
+                                        <div className="absolute -left-4 md:-left-8 -bottom-4 md:-bottom-8 w-12 md:w-20 h-12 md:h-20 border-b-2 border-l-2 border-brand-red/20 rounded-bl-2xl md:rounded-bl-[3rem] transition-all duration-1000 group-hover/title:border-brand-red/40" />
                                     </motion.div>
 
                                     <motion.span 
                                         variants={fadeInUp}
-                                        className="text-text-brand-red text-5xl sm:text-7xl md:text-[8rem] font-black leading-none tracking-tight drop-shadow-2xl italic text-glow"
+                                        className="text-shimmer-gold text-[2.8rem] sm:text-7xl md:text-[8rem] font-black leading-none tracking-tight drop-shadow-2xl italic"
                                     >
                                         CÓRDOVA.
                                     </motion.span>
                                     
+                                    {/* Architectural dimension line */}
+                                    <motion.div 
+                                        variants={fadeInUp}
+                                        className="w-full mt-3 md:mt-4 flex items-center gap-3"
+                                    >
+                                        <div className="flex-grow h-[0.5px] bg-gradient-to-r from-brand-red/40 via-brand-red/20 to-transparent" />
+                                        <span className="text-[7px] md:text-[8px] font-mono text-brand-red/40 tracking-[0.5em] uppercase whitespace-nowrap">EST. PASAJE — EC</span>
+                                        <div className="w-1 h-1 rounded-full bg-brand-red/30" />
+                                    </motion.div>
+                                    
                                     {/* Floating technical nomenclature */}
                                     <div className="hidden lg:block absolute left-full top-1/2 -translate-y-1/2 ml-16 opacity-30 pointer-events-none group-hover/title:opacity-60 transition-opacity duration-1000">
                                         <div className="space-y-3 font-mono text-[8px] uppercase tracking-[0.5em] text-slate-400 leading-relaxed whitespace-nowrap border-l border-brand-red/20 pl-8">
-                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-brand-red rounded-full" /> PRECISION_INDEX: 0.9997</p>
-                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-white/40 rounded-full" /> INK_STABILITY: NOMINAL</p>
-                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-white/40 rounded-full" /> MATRIX_COORD: {Math.round(mousePosition.x / 10)}X</p>
-                                            <p className="flex items-center gap-3"><div className="w-1 h-1 bg-white/40 rounded-full" /> CORDOVA_CORE_V4</p>
+                                            <p className="flex items-center gap-3"><span className="w-1 h-1 bg-brand-red rounded-full inline-block" /> PRECISION_INDEX: 0.9997</p>
+                                            <p className="flex items-center gap-3"><span className="w-1 h-1 bg-white/40 rounded-full inline-block" /> INK_STABILITY: NOMINAL</p>
+                                            <p className="flex items-center gap-3"><span className="w-1 h-1 bg-white/40 rounded-full inline-block" /> MATRIX_COORD: {Math.round(mousePosition.x / 10)}X</p>
+                                            <p className="flex items-center gap-3"><span className="w-1 h-1 bg-white/40 rounded-full inline-block" /> CORDOVA_CORE_V4</p>
                                         </div>
                                     </div>
                                 </h1>
                             </div>
 
-                            <motion.p variants={fadeInUp} className="text-xl lg:text-3xl text-slate-500 font-medium max-w-2xl leading-relaxed tracking-tight italic">
-                                Ingeniería visual y manufactura de <span className="text-white font-black">precisión absoluta</span> para marcas que lideran la industria global.
+                            <motion.p variants={fadeInUp} className="text-base md:text-xl lg:text-3xl text-slate-500 font-medium max-w-2xl leading-relaxed tracking-tight italic">
+                                Ingeniería visual y manufactura de <span className="text-white font-black">precisión absoluta</span> para marcas que lideran.
                             </motion.p>
 
-                            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-6 pt-6">
-                                <a href="https://wa.me/593993083943" className="group px-14 py-7 bg-white text-brand-blue rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] shadow-luxury hover:bg-text-brand-red transition-all duration-700 flex items-center justify-center gap-4 active:scale-95">
-                                    <WhatsAppIcon className="w-6 h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
+                            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 md:gap-6 pt-4 md:pt-6">
+                                <a href="https://wa.me/593993083943" className="group px-8 md:px-14 py-5 md:py-7 bg-white text-brand-blue rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] md:tracking-[0.35em] shadow-luxury hover:bg-brand-red transition-all duration-700 flex items-center justify-center gap-3 md:gap-4 active:scale-95 touch-premium">
+                                    <WhatsAppIcon className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-125 transition-transform duration-500"/> Apertura de Proyecto
                                 </a>
-                                <button onClick={() => fileInputRef.current?.click()} className="px-14 py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 flex items-center justify-center gap-4 active:scale-95 group">
-                                    <MonitorIcon className="w-6 h-6 group-hover:text-brand-red transition-colors"/> Analizador de Ingeniería de Arte
+                                <button onClick={() => fileInputRef.current?.click()} className="px-8 md:px-14 py-5 md:py-7 bg-white/[0.03] border border-white/5 text-slate-300 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] md:tracking-[0.35em] hover:border-brand-red/30 hover:bg-brand-red/5 transition-all duration-700 flex items-center justify-center gap-3 md:gap-4 active:scale-95 group touch-premium">
+                                    <MonitorIcon className="w-5 h-5 md:w-6 md:h-6 group-hover:text-brand-red transition-colors"/> Analizador IA
                                 </button>
                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileTest} />
                             </motion.div>
 
-                            <motion.div variants={fadeInUp} className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-16">
+                            <motion.div variants={fadeInUp} className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 pt-8 md:pt-16">
                                 <StatCard label="TRAYECTORIA" value="Vanguardia" sub="Innovación" />
                                 <StatCard label="PRECISIÓN" value="HD" sub="Roland Tech" />
                                 <StatCard label="PORTAFOLIO" value="10k" sub="Proyectos" />
@@ -360,7 +377,7 @@ const LandingPage: React.FC = () => {
                                                         <Loader2Icon className="w-full h-full animate-spin text-brand-red" />
                                                         <div className="absolute inset-0 border-4 border-brand-red/20 rounded-full" />
                                                     </div>
-                                                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest italic group-hover:text-text-brand-red transition-colors">Analizador Óptico</h3>
+                                                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest italic group-hover:text-brand-red transition-colors">Analizador Óptico</h3>
                                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3">Sincronizando Perfil de Color</p>
                                                 </div>
                                                 <div className="absolute top-0 left-0 w-full h-[2px] bg-brand-red shadow-red-glow animate-scan z-20" />
@@ -449,13 +466,13 @@ const LandingPage: React.FC = () => {
                         whileInView="animate"
                         viewport={{ once: true }}
                         variants={staggerContainer}
-                        className="max-w-4xl mb-24"
+                        className="max-w-4xl mb-16 md:mb-24"
                     >
-                        <motion.span variants={fadeInUp} className="text-brand-red font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Atelier de Soluciones</motion.span>
-                        <motion.h2 variants={fadeInUp} className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] leading-none italic mb-10">
-                            PULIENDO TU <br/> <span className="text-text-brand-red text-glow">VISIÓN DIGITAL</span>
+                        <motion.span variants={fadeInUp} className="text-brand-red font-black text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] mb-4 md:mb-6 block italic">Atelier de Soluciones</motion.span>
+                        <motion.h2 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] leading-none italic mb-6 md:mb-10">
+                            PULIENDO TU <br/> <span className="text-brand-red text-glow">VISIÓN DIGITAL</span>
                         </motion.h2>
-                        <motion.p variants={fadeInUp} className="text-xl lg:text-2xl text-slate-500 max-w-3xl leading-relaxed tracking-tight font-medium">Fusión de artesanía clásica y vanguardia tecnológica. Cada proyecto es una pieza única de ingeniería visual.</motion.p>
+                        <motion.p variants={fadeInUp} className="text-base md:text-xl lg:text-2xl text-slate-500 max-w-3xl leading-relaxed tracking-tight font-medium">Fusión de artesanía clásica y vanguardia tecnológica. Cada proyecto es una pieza única de ingeniería visual.</motion.p>
                     </motion.div>
 
                     <motion.div 
@@ -522,13 +539,128 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
+            {/* --- DESIGN PHILOSOPHY: THE BLUEPRINT --- */}
+            <section className="py-20 md:py-32 lg:py-48 relative overflow-hidden">
+                {/* Architectural grid background for this section */}
+                <div className="absolute inset-0 bg-architect-grid-fine opacity-40 pointer-events-none" />
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
+                
+                <div className="container mx-auto px-6 relative z-10">
+                    <motion.div 
+                        initial="initial"
+                        whileInView="animate"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="max-w-4xl mb-16 md:mb-24"
+                    >
+                        <motion.span variants={fadeInUp} className="text-brand-red font-black text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] mb-4 md:mb-6 block italic">Filosofía de Diseño</motion.span>
+                        <motion.h2 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] leading-none italic mb-6 md:mb-10">
+                            EL PLANO <br/> <span className="text-shimmer-gold">MAESTRO</span>
+                        </motion.h2>
+                        <motion.p variants={fadeInUp} className="text-base md:text-xl lg:text-2xl text-slate-500 max-w-3xl leading-relaxed tracking-tight font-medium">No dejamos nada al azar. Cada milímetro está calculado, cada tono verificado, cada acabado perfeccionado.</motion.p>
+                    </motion.div>
+
+                    <motion.div 
+                        initial="initial"
+                        whileInView="animate"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10"
+                    >
+                        {/* Principle 1: Precision */}
+                        <motion.div variants={fadeInUp} className="blueprint-card group bg-white/[0.02] backdrop-blur-3xl p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-white/5 hover:border-brand-red/30 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-8 ruler-marks opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            <div className="absolute top-6 right-6 md:top-10 md:right-10 font-mono text-[7px] text-brand-red/30 tracking-[0.5em] uppercase group-hover:text-brand-red/60 transition-colors">01</div>
+                            
+                            <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[2rem] border border-white/10 flex items-center justify-center mb-8 md:mb-12 group-hover:border-brand-red/40 group-hover:shadow-red-glow-soft transition-all duration-700">
+                                <CpuIcon className="w-7 h-7 md:w-10 md:h-10 text-brand-red" />
+                            </div>
+                            
+                            <h3 className="text-xl md:text-3xl font-display font-black text-white uppercase tracking-tighter mb-3 md:mb-4 italic leading-[0.9]">Precisión<br/>Micrométrica</h3>
+                            
+                            <div className="w-full h-[0.5px] bg-gradient-to-r from-brand-red/30 to-transparent mb-4 md:mb-6 group-hover:animate-gold-trace" />
+                            
+                            <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-medium italic mb-6 md:mb-10">Calibración exacta de cabezales Roland a 1440 DPI. Perfiles ICC certificados para fidelidad cromática absoluta en cada sustrato.</p>
+                            
+                            {/* Blueprint dimension annotations */}
+                            <div className="flex items-center gap-3 text-[7px] md:text-[8px] font-mono text-slate-600 uppercase tracking-[0.3em]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-brand-red/40" />
+                                <span>RES: 1440DPI</span>
+                                <span className="mx-2 text-white/10">|</span>
+                                <span>DELTA_E: ≤ 1.0</span>
+                            </div>
+                        </motion.div>
+
+                        {/* Principle 2: Order */}
+                        <motion.div variants={fadeInUp} className="blueprint-card group bg-white/[0.02] backdrop-blur-3xl p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-white/5 hover:border-brand-red/30 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-8 ruler-marks opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            <div className="absolute top-6 right-6 md:top-10 md:right-10 font-mono text-[7px] text-brand-red/30 tracking-[0.5em] uppercase group-hover:text-brand-red/60 transition-colors">02</div>
+
+                            <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[2rem] border border-white/10 flex items-center justify-center mb-8 md:mb-12 group-hover:border-brand-red/40 group-hover:shadow-red-glow-soft transition-all duration-700">
+                                <LayoutIcon className="w-7 h-7 md:w-10 md:h-10 text-brand-red" />
+                            </div>
+                            
+                            <h3 className="text-xl md:text-3xl font-display font-black text-white uppercase tracking-tighter mb-3 md:mb-4 italic leading-[0.9]">Orden<br/>Absoluto</h3>
+                            
+                            <div className="w-full h-[0.5px] bg-gradient-to-r from-brand-red/30 to-transparent mb-4 md:mb-6 group-hover:animate-gold-trace" />
+                            
+                            <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-medium italic mb-6 md:mb-10">Flujo de producción orquestado por IA. Desde el boceto hasta el sustrato final, cada paso es auditado, trazado y optimizado.</p>
+
+                            <div className="flex items-center gap-3 text-[7px] md:text-[8px] font-mono text-slate-600 uppercase tracking-[0.3em]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-brand-red/40" />
+                                <span>WORKFLOW: 5_STAGES</span>
+                                <span className="mx-2 text-white/10">|</span>
+                                <span>QA: ACTIVE</span>
+                            </div>
+                        </motion.div>
+
+                        {/* Principle 3: Elegance */}
+                        <motion.div variants={fadeInUp} className="blueprint-card group bg-white/[0.02] backdrop-blur-3xl p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-white/5 hover:border-brand-red/30 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-8 ruler-marks opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            <div className="absolute top-6 right-6 md:top-10 md:right-10 font-mono text-[7px] text-brand-red/30 tracking-[0.5em] uppercase group-hover:text-brand-red/60 transition-colors">03</div>
+
+                            <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[2rem] border border-white/10 flex items-center justify-center mb-8 md:mb-12 group-hover:border-brand-red/40 group-hover:shadow-red-glow-soft transition-all duration-700">
+                                <SparklesIcon className="w-7 h-7 md:w-10 md:h-10 text-brand-red" />
+                            </div>
+                            
+                            <h3 className="text-xl md:text-3xl font-display font-black text-white uppercase tracking-tighter mb-3 md:mb-4 italic leading-[0.9]">Elegancia<br/>Industrial</h3>
+                            
+                            <div className="w-full h-[0.5px] bg-gradient-to-r from-brand-red/30 to-transparent mb-4 md:mb-6 group-hover:animate-gold-trace" />
+                            
+                            <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-medium italic mb-6 md:mb-10">Acabados que trascienden lo ordinario. Barniz UV selectivo, foil metálico, troquel láser. Tu marca merece el estándar más alto.</p>
+
+                            <div className="flex items-center gap-3 text-[7px] md:text-[8px] font-mono text-slate-600 uppercase tracking-[0.3em]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-brand-red/40" />
+                                <span>FINISH: PREMIUM</span>
+                                <span className="mx-2 text-white/10">|</span>
+                                <span>GRADE: ELITE</span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+
+                    {/* Precision measurement bar — mobile visible */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="mt-12 md:mt-20 flex items-center gap-4 md:gap-6 justify-center"
+                    >
+                        <div className="h-[0.5px] flex-grow bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
+                        <span className="text-[7px] md:text-[8px] font-mono text-brand-red/40 tracking-[0.5em] uppercase whitespace-nowrap">CORDOVA_DESIGN_PROTOCOL_V4</span>
+                        <div className="h-[0.5px] flex-grow bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
+                    </motion.div>
+                </div>
+                
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
+            </section>
+
             {/* --- SECCIÓN GALERÍA INMERSIVA --- */}
-            <section className="py-20 overflow-hidden bg-brand-blue/50">
-                <div className="container mx-auto px-6">
-                    <div className="flex flex-col gap-32">
+            <section className="py-16 md:py-20 overflow-hidden bg-brand-blue/50">
+                <div className="container mx-auto px-4 md:px-6">
+                    <div className="flex flex-col gap-16 md:gap-32">
                         <motion.div 
                             style={{ scale: imageScale, opacity: imageOpacity }}
-                            className="relative h-[80vh] rounded-[5rem] overflow-hidden border border-white/10 shadow-luxury group"
+                            className="relative h-[50vh] md:h-[80vh] rounded-[2.5rem] md:rounded-[5rem] overflow-hidden border border-white/10 shadow-luxury group"
                         >
                             <img 
                                 src="/images/landing/business_cards.png" 
@@ -536,20 +668,20 @@ const LandingPage: React.FC = () => {
                                 alt="Industrial Detail"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-brand-blue/20" />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 md:p-10">
                                 <motion.span 
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    className="text-brand-red font-black text-[12px] uppercase tracking-[1em] mb-8"
+                                    className="text-brand-red font-black text-[9px] md:text-[12px] uppercase tracking-[0.5em] md:tracking-[1em] mb-4 md:mb-8"
                                 >
                                     Artesanía Tecnológica
                                 </motion.span>
                                 <motion.h2 
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
-                                    className="text-6xl md:text-9xl font-display font-black text-white uppercase italic leading-none tracking-[-0.04em]"
+                                    className="text-3xl md:text-6xl lg:text-9xl font-display font-black text-white uppercase italic leading-none tracking-[-0.04em]"
                                 >
-                                    EL ESTÁNDAR <br/> <span className="text-text-brand-red text-glow">IMPRENTA CÓRDOVA</span>
+                                    EL ESTÁNDAR <br/> <span className="text-brand-red text-glow">IMPRENTA CÓRDOVA</span>
                                 </motion.h2>
                             </div>
                         </motion.div>
@@ -558,22 +690,22 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* --- COTIZADOR RÁPIDO --- */}
-            <section id="cotizador" className="py-32 lg:py-48 relative overflow-hidden">
+            <section id="cotizador" className="py-20 md:py-32 lg:py-48 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/[0.01]" />
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-red/20 to-transparent" />
                 
-                <div className="container mx-auto px-6 flex flex-col lg:flex-row gap-24 items-center relative z-10">
+                <div className="container mx-auto px-4 md:px-6 flex flex-col lg:flex-row gap-12 md:gap-24 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="lg:w-1/2 space-y-12"
+                        className="lg:w-1/2 space-y-8 md:space-y-12"
                     >
-                        <div className="space-y-4">
-                            <span className="text-brand-red font-black text-[10px] uppercase tracking-[0.4em] italic">Calculadora de Inversión</span>
-                            <h2 className="text-5xl lg:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none italic">
-                                PROYECTA TU <br/> <span className="text-text-brand-red">ÉXITO</span>
+                        <div className="space-y-3 md:space-y-4">
+                            <span className="text-brand-red font-black text-[9px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.4em] italic">Calculadora de Inversión</span>
+                            <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none italic">
+                                PROYECTA TU <br/> <span className="text-brand-red">ÉXITO</span>
                             </h2>
                         </div>
                         
@@ -648,21 +780,21 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* --- CATÁLOGO PREMIUM --- */}
-            <section id="catalog" className="py-32 lg:py-56 relative">
-                <div className="container mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
+            <section id="catalog" className="py-20 md:py-32 lg:py-56 relative">
+                <div className="container mx-auto px-4 md:px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-24 gap-8 md:gap-12">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                         >
-                            <span className="text-brand-red font-black text-[10px] uppercase tracking-[0.5em] mb-6 block italic">Colección Exclusiva</span>
-                            <h2 className="text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] italic leading-none">
-                                EL MUESTRARIO <br/> <span className="text-text-brand-red text-glow">DEFINITIVO</span>
+                            <span className="text-brand-red font-black text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] mb-4 md:mb-6 block italic">Colección Exclusiva</span>
+                            <h2 className="text-4xl md:text-6xl lg:text-8xl font-display font-black text-white uppercase tracking-[-0.04em] italic leading-none">
+                                EL MUESTRARIO <br/> <span className="text-brand-red text-glow">DEFINITIVO</span>
                             </h2>
                         </motion.div>
                         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex gap-4">
-                            <button className="px-8 py-4 bg-white/[0.03] border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] text-slate-400 hover:border-brand-red/40 hover:text-white transition-all shadow-xl">
+                            <button className="px-6 md:px-8 py-3 md:py-4 bg-white/[0.03] border border-white/10 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-slate-400 hover:border-brand-red/40 hover:text-white transition-all shadow-xl touch-premium">
                                 Filtrar Colecciones
                             </button>
                         </motion.div>
@@ -697,7 +829,7 @@ const LandingPage: React.FC = () => {
                                         <p className="text-white text-sm font-medium leading-relaxed mb-8 italic tracking-tight">{p.descripcion}</p>
                                         <button 
                                             onClick={() => handleAddToCart(p)} 
-                                            className="bg-white text-brand-blue px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-text-brand-red transition-all active:scale-95"
+                                            className="bg-white text-brand-blue px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-luxury hover:bg-brand-red transition-all active:scale-95"
                                         >
                                             Solicitar Proyecto
                                         </button>
@@ -711,7 +843,7 @@ const LandingPage: React.FC = () => {
                                 </div>
                                 <div className="px-5 pb-5 flex flex-col flex-grow relative z-10">
                                     <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-3">{p.categoria}</p>
-                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-text-brand-red transition-colors italic transition-all duration-700 tracking-[-0.04em]">{p.nombre}</h3>
+                                    <h3 className="font-display font-black text-white text-2xl uppercase leading-[0.9] mb-10 group-hover:text-brand-red italic transition-all duration-700 tracking-[-0.04em]">{p.nombre}</h3>
                                     <div className="mt-auto flex justify-between items-center pt-8 border-t border-white/5">
                                         <div className="flex flex-col">
                                             <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.2em]">Honorario Base</span>
@@ -733,24 +865,24 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* --- FOOTER OBSIDIAN --- */}
-            <footer className="bg-brand-blue text-white pt-48 pb-16 relative overflow-hidden border-t border-white/10">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-red/5 rounded-full blur-[200px] -mr-40 -mt-40 pointer-events-none" />
+            <footer className="bg-brand-blue text-white pt-24 md:pt-48 pb-12 md:pb-16 relative overflow-hidden border-t border-white/10">
+                <div className="absolute top-0 right-0 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-brand-red/5 rounded-full blur-[120px] md:blur-[200px] -mr-20 md:-mr-40 -mt-20 md:-mt-40 pointer-events-none" />
                 
-                <div className="container mx-auto px-6 relative z-10">
-                    <div className="grid lg:grid-cols-12 gap-24 mb-32">
-                        <div className="lg:col-span-5 space-y-12">
-                            <div className="flex items-center gap-6">
+                <div className="container mx-auto px-4 md:px-6 relative z-10">
+                    <div className="grid lg:grid-cols-12 gap-12 md:gap-24 mb-16 md:mb-32">
+                        <div className="lg:col-span-5 space-y-8 md:space-y-12">
+                            <div className="flex items-center gap-4 md:gap-6">
                                 <div className="relative">
-                                    <CordovaLogo className="h-20 w-auto brightness-0 invert relative z-10" />
+                                    <CordovaLogo className="h-14 md:h-20 w-auto brightness-0 invert relative z-10" />
                                     <div className="absolute -inset-4 bg-brand-red/20 rounded-full blur-2xl animate-pulse" />
                                 </div>
                                 <div className="flex flex-col leading-none">
-                                    <span className="text-4xl font-display font-black tracking-[-0.04em] uppercase italic text-text-brand-red">IMPRENTA CÓRDOVA</span>
-                                    <span className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-600 mt-2">Boutique Gráfica Industrial</span>
+                                    <span className="text-2xl md:text-4xl font-display font-black tracking-[-0.04em] uppercase italic text-brand-red">IMPRENTA CÓRDOVA</span>
+                                    <span className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-slate-600 mt-1 md:mt-2">Boutique Gráfica Industrial</span>
                                 </div>
                             </div>
-                            <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-md italic tracking-tight italic">"Excelencia técnica en Pasaje, El Oro. La imprenta de confianza para líderes y empresas resilientes."</p>
-                            <div className="flex gap-6">
+                            <p className="text-base md:text-xl text-slate-500 font-medium leading-relaxed max-w-md italic tracking-tight">"Excelencia técnica en Pasaje, El Oro. La imprenta de confianza para líderes y empresas resilientes."</p>
+                            <div className="flex gap-4 md:gap-6">
                                 {[MessageCircleIcon, PaletteIcon, UsersIcon].map((Icon, i) => (
                                     <motion.a 
                                         key={i} 
@@ -836,7 +968,7 @@ const LandingPage: React.FC = () => {
                                             className="flex justify-between items-center group"
                                         >
                                             <div className="min-w-0 flex-grow pr-12">
-                                                <p className="text-2xl font-display font-black text-white group-hover:text-text-brand-red transition-all truncate italic uppercase">{item.producto.nombre}</p>
+                                                <p className="text-2xl font-display font-black text-white group-hover:text-brand-red transition-all truncate italic uppercase">{item.producto.nombre}</p>
                                                 <div className="flex items-center gap-4 mt-3">
                                                     <span className="px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.cantidad} UNIDAD(ES)</span>
                                                     <span className="text-[10px] font-bold text-brand-red uppercase tracking-[0.2em]">{formatCurrency(item.producto.precio)} C/U</span>
@@ -865,7 +997,7 @@ const LandingPage: React.FC = () => {
                                             </motion.span>
                                         </div>
                                     </div>
-                                    <button onClick={() => window.open(`https://wa.me/593993083943?text=Hola,%20solicito%20concierge%20para%20los%20siguientes%20proyectos`)} className="w-full py-9 bg-white text-brand-blue font-black rounded-[2.5rem] shadow-red-glow uppercase tracking-[0.4em] text-xs hover:bg-text-brand-red hover:-translate-y-1 transition-all duration-700 flex items-center justify-center gap-5 group active:scale-[0.98]">
+                                    <button onClick={() => window.open(`https://wa.me/593993083943?text=Hola,%20solicito%20concierge%20para%20los%20siguientes%20proyectos`)} className="w-full py-9 bg-white text-brand-blue font-black rounded-[2.5rem] shadow-red-glow uppercase tracking-[0.4em] text-xs hover:bg-brand-red hover:-translate-y-1 transition-all duration-700 flex items-center justify-center gap-5 group active:scale-[0.98]">
                                         FORMALIZAR PROYECTO <WhatsAppIcon className="w-8 h-8 group-hover:scale-125 transition-transform duration-500"/>
                                     </button>
                                 </div>
