@@ -36,7 +36,12 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
     // Extraer categorías únicas
     const categories = useMemo(() => {
         const cats = new Set(productos.map(p => p.categoria || 'General'));
-        return ['Todas', ...Array.from(cats)];
+        const list = Array.from(cats);
+        // Aseguramos que 'SRI' esté presente si hay productos SRI
+        if (productos.some(p => p.esSRI) && !cats.has('SRI')) {
+            list.push('SRI');
+        }
+        return ['Todas', ...list.sort()];
     }, [productos]);
 
     const filtered = useMemo(() => {
@@ -46,16 +51,21 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
 
             const matchesSearch = (p.nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory = activeCategory === 'Todas' || (p.categoria || 'General') === activeCategory;
+            
+            // Lógica de categoría: si es 'SRI', filtramos por el flag esSRI, no por el nombre de categoría
+            const matchesCategory = activeCategory === 'Todas' 
+                ? true 
+                : (activeCategory === 'SRI' ? p.esSRI : (p.categoria || 'General') === activeCategory);
             
             // Inteligencia de Régimen Elite para categoría SRI:
-            if (activeCategory === 'SRI') {
-                // Si estamos en categoría SRI, solo mostrar productos marcados como esSRI
-                if (!p.esSRI) return false;
+            if (activeCategory === 'SRI' || p.esSRI) {
+                // Si el producto no es SRI y estamos en categoría SRI, fuera.
+                if (activeCategory === 'SRI' && !p.esSRI) return false;
 
                 if (effectiveRegimen) {
                     const name = (p.nombre || '').toUpperCase();
                     const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
+                    const isEmprendedor = effectiveRegimen === Regimen.EMPRENDEDOR;
 
                     // LISTA ESTRICTA RIMPE NEGOCIO POPULAR (Sincronizada con base legal SRI)
                     const docsPopular = [
@@ -69,20 +79,21 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                         'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
                         'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 
                         'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
-                        'FACTURERO', 'COMPROBANTE'
+                        'FACTURERO', 'COMPROBANTE', 'RETENCION'
                     ];
 
                     // LISTA ESTRICTA REGIMEN GENERAL / EMPRENDEDOR (Sincronizada con base legal SRI)
                     const docsGeneral = [
                         'FACTURA', 
                         'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
+                        'NOTAS DE CREDITO', // Añadido: vital para General/Emprendedor
                         'NOTAS DE DEBITO', 
                         'GUIAS DE REMISION', 
                         'ACTA ENTREGA - RECEPCIÓN DE BOTELLAS PLASTICAS NO RETORNABLES DE PET',
                         'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS', 
                         'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
                         'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 
-                        'FACTURERO', 'COMPROBANTE'
+                        'FACTURERO', 'COMPROBANTE', 'RETENCION'
                     ];
 
                     const allowedDocs = isPopular ? docsPopular : docsGeneral;
@@ -91,12 +102,19 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                     const isBaseTypeAllowed = allowedDocs.some(doc => name.includes(doc));
                     if (!isBaseTypeAllowed) return false;
 
-                    // Filtro secundario: Asegurar que el tag del nombre coincida con el régimen
+                    // Filtro secundario por TAGS en el nombre (Refinado para Emprendedor)
                     if (isPopular) {
+                        // Negocio Popular: Solo ve lo suyo o lo genérico (RIMPE)
                         if (name.includes('(GENERAL)') || name.includes('(REGIMEN GENERAL')) return false;
+                        if (name.includes('(EMPRENDEDOR)')) return false;
+                    } else if (isEmprendedor) {
+                        // Emprendedor: Ve General y lo marcado específicamente para Emprendedor o RIMPE genérico
+                        if (name.includes('(RIMPE NEGOCIO POPULAR)')) return false;
+                        if (name.includes('NOTA DE VENTA')) return false; // Nota de venta prohibida
                     } else {
-                        if (name.includes('(RIMPE)') || name.includes('(RIMPE NEGOCIO POPULAR')) return false;
-                        if (name.includes('NOTA DE VENTA')) return false; // Nota de venta prohibida en General
+                        // Regimen General: NO ve nada de RIMPE
+                        if (name.includes('(RIMPE)') || name.includes('(RIMPE NEGOCIO POPULAR') || name.includes('(EMPRENDEDOR)')) return false;
+                        if (name.includes('NOTA DE VENTA')) return false; // Nota de venta prohibida
                     }
                 }
             }
