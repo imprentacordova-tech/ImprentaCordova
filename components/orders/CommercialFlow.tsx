@@ -169,7 +169,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 </div>
             </div>
         </div>
-    </div>
             
     <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
 

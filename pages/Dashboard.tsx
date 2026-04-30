@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { TrabajoEstado, User } from '../types';
+import { TrabajoEstado, User, Regimen } from '../types';
 import { 
     SolidBoxIcon, AddIcon, Loader2Icon, 
     ArrowRightIcon, PaletteIcon, PrinterIcon,
@@ -10,10 +10,12 @@ import {
     CpuIcon, RocketLaunchIcon, CircleStackIcon,
     BoltIcon, AdjustmentsHorizontalIcon, CubeTransparentIcon,
     BookOpenIcon, UsersIcon, ReceiptIcon, DocumentIcon,
-    ChevronRightIcon
+    ChevronRightIcon, PlusIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProductionPulse, AreaLoad, LiveLogs } from '../components/dashboard/TelemetryModule';
+import { getActivityLog, ActivityEntry } from '../services/activityLogService';
 
 // --- ACCIÓN PRINCIPAL (BOTONES DEL DASHBOARD) ---
 const MainActionButton: React.FC<{ 
@@ -46,12 +48,10 @@ const MainActionButton: React.FC<{
             onClick={onClick}
             className={`group relative flex flex-col items-start p-6 rounded-[2rem] border bg-gradient-to-br ${colorMap[color]} backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-2xl overflow-hidden h-56`}
         >
-            {/* Holographic Sheen Effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-[1.5s] ease-in-out" />
             </div>
 
-            {/* Industrial Internal Scanline */}
             <div className="absolute left-0 w-full h-[1px] bg-white/10 top-0 group-hover:top-full transition-all duration-[3s] ease-linear pointer-events-none" />
 
             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-125 group-hover:rotate-6">
@@ -60,12 +60,11 @@ const MainActionButton: React.FC<{
             
             <div className={`w-12 h-12 rounded-2xl ${iconBgMap[color]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500 border border-white/5 relative z-10`}>
                 <Icon className="w-6 h-6" />
-                <div className="absolute inset-0 rounded-2xl bg-white/20 scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-0 transition-all duration-700" />
             </div>
             
-            <div className="mt-auto space-y-1 relative z-10">
-                <h3 className="text-xl font-black text-white uppercase tracking-[-0.04em] italic text-left">{label}</h3>
-                <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.3em] text-left">{sub}</p>
+            <div className="mt-auto space-y-1 relative z-10 text-left">
+                <h3 className="text-xl font-black text-white uppercase tracking-[-0.04em] italic">{label}</h3>
+                <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.3em]">{sub}</p>
             </div>
 
             <div className="absolute bottom-6 right-6 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all group-hover:scale-110">
@@ -74,7 +73,6 @@ const MainActionButton: React.FC<{
         </motion.button>
     );
 };
-
 
 // --- TACTICAL STATUS COMPONENT ---
 const TacticalStatus: React.FC = () => {
@@ -112,14 +110,22 @@ const TacticalStatus: React.FC = () => {
 
 const DashboardPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { trabajos, clientes, loading } = useData();
+    const { trabajos, clientes, loading, addCliente } = useData();
     const navigate = useNavigate();
+    const [logs, setLogs] = useState<ActivityEntry[]>([]);
+
+    useEffect(() => {
+        const fetchLogs = async () => {
+            const data = await getActivityLog(20);
+            setLogs(data);
+        };
+        fetchLogs();
+        const interval = setInterval(fetchLogs, 30000); 
+        return () => clearInterval(interval);
+    }, []);
     
     const stats = useMemo(() => {
         if (loading || !trabajos) return null;
-        const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        
         const activeJobs = trabajos.filter(t => t.estado !== TrabajoEstado.ENTREGADO);
         const sriClients = clientes.filter(c => c.regimen?.toLowerCase().includes('sri') || c.ruc).length;
         
@@ -130,6 +136,12 @@ const DashboardPage: React.FC = () => {
             enProduccion: activeJobs.filter(t => t.estado === TrabajoEstado.PROCESO).length
         };
     }, [trabajos, clientes, loading]);
+
+    const handleQuickAddClient = () => {
+        // En un escenario real, esto abriría un modal de creación rápida.
+        // Por ahora, navegamos a clientes con un flag.
+        navigate('/clientes?action=new');
+    };
 
     if (loading || !stats) return (
         <div className="h-[80vh] flex flex-col items-center justify-center gap-12 bg-brand-dark">
@@ -153,151 +165,107 @@ const DashboardPage: React.FC = () => {
                 <div className="flex gap-10">
                     <div className="w-[1px] h-32 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
                     <div className="space-y-4">
-                        <div>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="flex gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
-                                </div>
-                                <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Estado del Sistema • v5.0</span>
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="flex gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
                             </div>
-                             <h1 className="text-5xl sm:text-6xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
-                                IMPRENTA CÓRDOVA <span className="text-gold-gradient">Elite</span>
-                            </h1>
+                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Estado del Sistema • v5.0</span>
                         </div>
+                        <h1 className="text-5xl sm:text-6xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                            IMPRENTA CÓRDOVA <span className="text-gold-gradient">Elite</span>
+                        </h1>
                         <p className="text-slate-500 text-lg font-light tracking-tight italic">
                             Sincronización Maestra para <span className="text-white font-bold">{currentUser.nombre.split(' ')[0]}</span>.
                         </p>
                     </div>
                 </div>
 
-                <div className="bg-black/60 border border-white/10 rounded-[2.5rem] p-8 flex items-center gap-10 backdrop-blur-3xl shadow-luxury relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
-                    <div className="text-center relative z-10">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Manifiestos en Curso</p>
-                        <p className="text-4xl font-black text-white italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalActivos}</p>
+                <div className="flex flex-col items-end gap-6">
+                    <div className="bg-black/60 border border-white/10 rounded-[2.5rem] p-8 flex items-center gap-10 backdrop-blur-3xl shadow-luxury relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
+                        <div className="text-center relative z-10">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Manifiestos en Curso</p>
+                            <p className="text-4xl font-black text-white italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalActivos}</p>
+                        </div>
+                        <div className="w-[1px] h-12 bg-white/10 relative z-10"></div>
+                        <div className="text-center relative z-10">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Fase de Despliegue</p>
+                            <p className="text-4xl font-black text-blue-400 italic tracking-tighter group-hover:scale-110 transition-transform">{stats.enProduccion}</p>
+                        </div>
+                        <div className="absolute top-4 right-4 flex gap-1">
+                            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse delay-75"></div>
+                        </div>
                     </div>
-                    <div className="w-[1px] h-12 bg-white/10 relative z-10"></div>
-                    <div className="text-center relative z-10">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Fase de Despliegue</p>
-                        <p className="text-4xl font-black text-blue-400 italic tracking-tighter group-hover:scale-110 transition-transform">{stats.enProduccion}</p>
-                    </div>
-                    {/* Tiny animated signal */}
-                    <div className="absolute top-4 right-4 flex gap-1">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse delay-75"></div>
-                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse delay-150"></div>
-                    </div>
+                    
+                    <motion.button 
+                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                        onClick={handleQuickAddClient}
+                        className="flex items-center gap-4 bg-liquid-gold text-brand-blue px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-gold-glow italic"
+                    >
+                        <UserPlusIcon className="w-5 h-5" />
+                        Vincular Nuevo Cliente
+                    </motion.button>
                 </div>
             </div>
 
             {/* --- ACCIONES OPERATIVAS --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <MainActionButton 
-                    label="Catálogo" 
-                    sub="Bóveda de Activos Gráficos" 
-                    icon={BookOpenIcon} 
-                    onClick={() => navigate('/productos')} 
-                    color="blue" 
-                    delay={0.1}
+                    label="Catálogo" sub="Bóveda de Activos Gráficos" icon={BookOpenIcon} 
+                    onClick={() => navigate('/productos')} color="blue" delay={0.1}
                 />
                 <MainActionButton 
-                    label="Clientes SRI" 
-                    sub="Soberanía Fiscal" 
-                    icon={ShieldCheckIcon} 
-                    onClick={() => navigate('/clientes')} 
-                    color="red" 
-                    delay={0.2}
+                    label="Clientes SRI" sub="Soberanía Fiscal" icon={ShieldCheckIcon} 
+                    onClick={() => navigate('/clientes')} color="red" delay={0.2}
                 />
                 <MainActionButton 
-                    label="Nuevo Pedido" 
-                    sub="Protocolo de Manufactura" 
-                    icon={RocketLaunchIcon} 
-                    onClick={() => navigate('/nuevo')} 
-                    color="gold" 
-                    delay={0.3}
+                    label="Nuevo Pedido" sub="Protocolo de Manufactura" icon={RocketLaunchIcon} 
+                    onClick={() => navigate('/nuevo')} color="gold" delay={0.3}
                 />
                 <MainActionButton 
-                    label="Manifiestos" 
-                    sub="Estado Patrimonial" 
-                    icon={ReceiptIcon} 
-                    onClick={() => navigate('/trabajos')} 
-                    color="yellow" 
-                    delay={0.4}
+                    label="Manifiestos" sub="Estado Patrimonial" icon={ReceiptIcon} 
+                    onClick={() => navigate('/trabajos')} color="yellow" delay={0.4}
                 />
             </div>
 
-            {/* --- SECCIÓN INFERIOR: TELEMETRÍA & NÚCLEO --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <div className="lg:col-span-8 bg-white/[0.01] border border-white/5 rounded-[3rem] p-10 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-5 transition-opacity duration-1000">
-                        <MonitorIcon className="w-64 h-64 text-white" />
-                    </div>
-                    
-                    <div className="relative z-10 space-y-8">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-[-0.04em] italic">Telemetría Central</h3>
-                            <button onClick={() => navigate('/registro')} className="text-[10px] font-black text-liquid-gold uppercase tracking-widest hover:underline italic">Ver Registro Histórico</button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[2rem] space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
-                                        <ShieldCheckIcon className="w-5 h-5" />
-                                    </div>
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Cumplimiento Tributario SRI</p>
-                                </div>
-                                <p className="text-xs text-slate-400 font-light leading-relaxed italic uppercase tracking-wider">
-                                    Sincronización activa con servidores oficiales. Los trámites institucionales están validados.
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Enlace Activo</span>
-                                </div>
-                            </div>
-
-                            <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[2rem] space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
-                                        <CpuIcon className="w-5 h-5" />
-                                    </div>
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Algoritmo de Precisión</p>
-                                </div>
-                                <p className="text-xs text-slate-400 font-light leading-relaxed italic uppercase tracking-wider">
-                                    Algoritmos de precisión calibrados según el mercado de sustratos y tintas actual.
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                    <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Máxima Precisión</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            {/* --- SECCIÓN INFERIOR: TELEMETRÍA AVANZADA --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group hover:bg-white/[0.02] transition-colors">
+                    <ProductionPulse trabajos={trabajos} />
                 </div>
 
-                <div className="lg:col-span-4 bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col justify-between shadow-gold-glow-soft relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                    <div className="space-y-6 relative z-10">
-                        <div className="w-12 h-12 bg-liquid-gold rounded-2xl flex items-center justify-center text-black shadow-gold-glow">
-                            <SparklesIcon className="w-6 h-6" />
-                        </div>
-                        <h4 className="text-2xl font-black text-white uppercase tracking-[-0.04em] italic">Córdova Nucleus <span className="text-liquid-gold">v3.0</span></h4>
-                        <p className="text-sm text-slate-500 font-light leading-relaxed italic uppercase tracking-wider">
-                            Arquitectura de gestión industrial para la elite de la producción gráfica regional.
-                        </p>
-                    </div>
+                <div className="lg:col-span-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group hover:bg-white/[0.02] transition-colors">
+                    <AreaLoad trabajos={trabajos} />
+                </div>
 
-                    <div className="pt-10 space-y-4 border-t border-white/5 relative z-10">
-                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">
-                            <span>Enlace Técnico</span>
-                            <span className="text-liquid-gold">Maestro</span>
-                        </div>
-                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">
-                            <span>Núcleo de Datos</span>
-                            <span className="text-emerald-500">Cifrado</span>
-                        </div>
+                <div className="lg:col-span-4 bg-black/40 border border-white/10 rounded-[2.5rem] p-8 h-[300px] relative overflow-hidden group shadow-gold-glow-soft">
+                    <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <LiveLogs logs={logs} />
+                </div>
+            </div>
+
+            {/* --- FOOTER INFO --- */}
+            <div className="pt-10 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/5 opacity-50">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-liquid-gold rounded-xl flex items-center justify-center text-black shadow-gold-glow">
+                        <SparklesIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-black text-white uppercase tracking-widest italic">Córdova Nucleus <span className="text-liquid-gold">v5.0</span></h4>
+                        <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.2em]">Arquitectura de gestión industrial para la elite</p>
+                    </div>
+                </div>
+                <div className="flex gap-8">
+                    <div className="text-right">
+                        <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Núcleo de Datos</p>
+                        <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest italic">Cifrado AES-256</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Enlace Técnico</p>
+                        <p className="text-[10px] font-bold text-liquid-gold uppercase tracking-widest italic">Maestro Sincronizado</p>
                     </div>
                 </div>
             </div>
@@ -306,4 +274,3 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
-
