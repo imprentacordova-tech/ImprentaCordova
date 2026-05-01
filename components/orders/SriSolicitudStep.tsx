@@ -192,54 +192,54 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
     };
 
     return (
-        <div className="space-y-6 md:space-y-12 relative overflow-hidden px-1 md:px-0">
+        <div className="space-y-4 md:space-y-6 relative overflow-hidden px-1 md:px-0">
             {/* Tactical Grid Background Overlay */}
             <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:40px_40px] z-0" />
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 relative pb-6 md:pb-10 border-b border-white/10 z-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 relative pb-4 md:pb-6 border-b border-white/10 z-10">
                 <div className="absolute top-0 left-0 w-24 md:w-32 h-1 bg-liquid-gold shadow-gold-glow" />
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="min-w-0">
-                        <h2 className="text-2xl md:text-4xl font-black text-white italic tracking-tighter uppercase mb-1 leading-none truncate">
+                        <h2 className="text-xl md:text-3xl font-black text-white italic tracking-tighter uppercase mb-0.5 leading-none truncate">
                             Protocolo <span className="text-liquid-gold">Elite</span>
                         </h2>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[7px] md:text-[9px] flex items-center gap-2">
-                                <span className="w-1 h-1 md:w-2 bg-liquid-gold rounded-full animate-pulse" />
+                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[7px] md:text-[8px] flex items-center gap-2">
+                                <span className="w-1 h-1 md:w-1.5 bg-liquid-gold rounded-full animate-pulse" />
                                 Validación Tributaria
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="w-full md:w-auto bg-liquid-gold/5 border border-liquid-gold/20 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-6 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
+                <div className="w-full md:w-auto bg-liquid-gold/5 border border-liquid-gold/20 px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-5 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
                     <div className="absolute inset-0 bg-liquid-gold/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <div className="w-8 h-8 md:w-12 md:h-12 bg-liquid-gold/20 rounded-lg md:rounded-xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-soft flex-shrink-0">
-                        <FingerPrintIcon className="w-4 h-4 md:w-6 md:h-6" />
+                    <div className="w-7 h-7 md:w-10 md:h-10 bg-liquid-gold/20 rounded-lg md:rounded-xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-soft flex-shrink-0">
+                        <FingerPrintIcon className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[7px] md:text-[9px] text-liquid-gold/60 font-black uppercase tracking-widest mb-0.5 md:mb-1">ID_CONTRIBUYENTE</p>
-                        <p className="text-white font-black italic tracking-tight uppercase text-[10px] md:text-base leading-none truncate">{cliente.nombre}</p>
+                        <p className="text-[6px] md:text-[8px] text-liquid-gold/60 font-black uppercase tracking-widest mb-0.5">ID_CONTRIBUYENTE</p>
+                        <p className="text-white font-black italic tracking-tight uppercase text-[9px] md:text-sm leading-none truncate">{cliente.nombre}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 md:gap-12 relative z-10">
-                <div className="space-y-8 md:space-y-12">
-                    <div className="space-y-5 md:space-y-8">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:gap-6 ml-1">
-                            <label className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[13px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em]">
-                                <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-liquid-gold animate-pulse" />
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 md:gap-10 relative z-10">
+                <div className="space-y-6 md:space-y-8">
+                    <div className="space-y-4 md:space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4 ml-1">
+                            <label className="flex items-center gap-2 md:gap-3 text-[9px] md:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">
+                                <SparklesIcon className="w-4 h-4 text-liquid-gold animate-pulse" />
                                 Actividad Económica
                             </label>
                             <button 
                                 onClick={() => setIsAdding(true)}
-                                className="w-full sm:w-auto text-[9px] md:text-[11px] bg-white/5 hover:bg-liquid-gold px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl text-white hover:text-black font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 border border-white/10 hover:border-liquid-gold shadow-lg active:scale-95"
+                                className="w-full sm:w-auto text-[8px] md:text-[10px] bg-white/5 hover:bg-liquid-gold px-4 py-2 md:py-3 rounded-lg md:rounded-xl text-white hover:text-black font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/10 hover:border-liquid-gold shadow-lg active:scale-95"
                             >
-                                <PlusIcon className="w-3 h-3 md:w-4 md:h-4" /> Inyectar Registro
+                                <PlusIcon className="w-3 h-3" /> Inyectar Registro
                             </button>
                         </div>
                         
-                        <div className="space-y-4 md:space-y-5 max-h-[300px] md:max-h-[500px] overflow-y-auto pr-2 md:pr-6 custom-scrollbar">
+                        <div className="space-y-3 md:space-y-4 max-h-[250px] md:max-h-[400px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar">
                             <AnimatePresence mode="popLayout">
                                 {isAdding && (
                                     <motion.div 
@@ -301,9 +301,9 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                             <div className="group relative">
                                                 <button
                                                     onClick={() => setActividad(acc)}
-                                                    className={`w-full text-left p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] border-2 transition-all duration-500 flex items-center justify-between overflow-hidden relative ${
+                                                    className={`w-full text-left p-4 md:p-6 rounded-xl md:rounded-[1.5rem] border-2 transition-all duration-500 flex items-center justify-between overflow-hidden relative ${
                                                         actividad === acc 
-                                                        ? 'bg-liquid-gold/10 border-liquid-gold text-white shadow-gold-glow-strong' 
+                                                        ? 'bg-liquid-gold/10 border-liquid-gold text-white shadow-gold-glow-sm' 
                                                         : 'bg-white/[0.03] border-white/5 text-slate-500 hover:border-white/20 hover:bg-white/[0.05]'
                                                     }`}
                                                 >
@@ -366,14 +366,14 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                         </div>
                     </div>
 
-                    <div className="space-y-5 md:space-y-8">
-                        <label className="text-[10px] md:text-[13px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] ml-1 font-mono">Execution_Mode_Select</label>
-                        <div className="flex bg-black/60 p-2 md:p-3 rounded-2xl md:rounded-[3rem] border border-white/10 gap-3 md:gap-4 shadow-inner">
+                    <div className="space-y-4 md:space-y-6">
+                        <label className="text-[9px] md:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] ml-1 font-mono">Execution_Mode_Select</label>
+                        <div className="flex bg-black/60 p-1.5 md:p-2 rounded-xl md:rounded-[2rem] border border-white/10 gap-2 md:gap-3 shadow-inner">
                             {(['NUEVO', 'RENOVACION'] as const).map(m => (
                                 <button
                                     key={m}
                                     onClick={() => setModo(m)}
-                                    className={`flex-1 py-4 md:py-6 rounded-xl md:rounded-[2.5rem] text-[8px] md:text-[11px] font-black uppercase tracking-widest md:tracking-[0.4em] transition-all duration-500 relative overflow-hidden ${
+                                    className={`flex-1 py-3 md:py-4 rounded-lg md:rounded-[1.5rem] text-[7px] md:text-[10px] font-black uppercase tracking-widest md:tracking-[0.2em] transition-all duration-500 relative overflow-hidden ${
                                         modo === m ? 'text-black' : 'text-slate-600 hover:text-white hover:bg-white/5'
                                     }`}
                                 >
@@ -390,7 +390,7 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-10 lg:p-12 space-y-8 md:space-y-10 relative overflow-hidden shadow-2xl self-start">
+                <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 space-y-6 md:space-y-8 relative overflow-hidden shadow-2xl self-start">
                     {/* Industrial Scanners Background */}
                     <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/[0.03] blur-[120px] pointer-events-none" />
                     <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/[0.02] blur-[100px] pointer-events-none" />
@@ -481,9 +481,9 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                         <button 
                             onClick={handleContinue}
                             disabled={!actividad || isProcessing}
-                            className={`w-full py-6 md:py-10 rounded-2xl md:rounded-[3rem] font-black uppercase tracking-[0.3em] md:tracking-[0.6em] text-[11px] md:text-[14px] flex items-center justify-center gap-4 md:gap-8 transition-all duration-700 shadow-2xl group active:scale-95 italic relative overflow-hidden ${
+                            className={`w-full py-5 md:py-7 rounded-xl md:rounded-[2rem] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-[13px] flex items-center justify-center gap-4 md:gap-6 transition-all duration-700 shadow-2xl group active:scale-95 italic relative overflow-hidden ${
                                 actividad && !isProcessing
-                                ? 'bg-liquid-gold text-black hover:bg-white hover:shadow-gold-glow-strong' 
+                                ? 'bg-liquid-gold text-black hover:bg-white hover:shadow-gold-glow-sm' 
                                 : 'bg-white/5 text-slate-700 cursor-not-allowed border border-white/5'
                             }`}
                         >
@@ -517,7 +517,7 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                 </div>
             </div>
 
-            <div className="flex justify-center pt-10 md:pt-16 relative z-10 pb-6">
+            <div className="flex justify-center pt-6 md:pt-10 relative z-10 pb-4">
                 <button 
                     onClick={onBack}
                     className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[13px] text-slate-600 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] hover:text-liquid-gold transition-all duration-500 group active:scale-95"

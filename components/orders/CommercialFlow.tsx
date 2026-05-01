@@ -271,165 +271,127 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             {/* Background Industrial Layers */}
             <div className="absolute inset-0 bg-obsidian-mesh opacity-90 pointer-events-none" />
             <div className="absolute inset-0 noise-overlay opacity-[0.03] pointer-events-none" />
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
             
-            {/* Header / Steps Navigation (Minimalist) */}
-            <div className="bg-black/80 backdrop-blur-3xl p-8 md:p-14 border-b border-white/10 relative overflow-hidden -mx-6 md:-mx-10 -mt-6 md:-mt-10 mb-12">
-                <div className="flex flex-col md:flex-row justify-between items-center relative z-10 gap-8">
-                    <div className="space-y-4 text-center md:text-left">
-                        <div className="flex items-center justify-center md:justify-start gap-4">
-                            <span className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">CATÁLOGO_ELITE</span>
-                            <div className="h-px w-12 bg-liquid-gold/20" />
-                        </div>
-                        <h2 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
-                            {step === 1 && <>Protocolo de <span className="text-gold-gradient">Suministros.</span></>}
-                            {step === 2 && <>Configuración <span className="text-gold-gradient">Industrial.</span></>}
-                            {step === 3 && <>Finalizar <span className="text-gold-gradient">Orden.</span></>}
-                        </h2>
-                    </div>
-                
-                    <div className="flex items-center gap-6">
-                        <div className="bg-white/5 p-2 rounded-2xl border border-white/10 flex items-center gap-3">
-                            <button 
-                                onClick={() => setIsExpressMode(!isExpressMode)}
-                                className={`px-6 py-3 rounded-xl transition-all duration-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-3 ${
-                                    isExpressMode 
-                                        ? 'bg-blue-600 text-white shadow-blue-glow' 
-                                        : 'bg-transparent text-slate-600 hover:text-white'
-                                }`}
-                            >
-                                <BoltIcon className="w-4 h-4" /> TURBO_MODE
-                            </button>
-                            <div className="w-px h-6 bg-white/10" />
-                            <div className="flex gap-3 px-4">
-                                {[1, 2, 3].map(s => (
-                                    <div key={s} className={`w-3 h-3 rounded-full transition-all duration-700 ${step === s ? 'bg-liquid-gold shadow-gold-glow scale-125' : step > s ? 'bg-liquid-gold/40' : 'bg-white/10'}`} />
-                                ))}
-                            </div>
-                        </div>
-
+            {/* Stepper Industrial - Optimized for Zero-Scroll */}
+            <div className="flex items-center justify-between bg-black/40 backdrop-blur-xl border border-white/5 p-1.5 rounded-2xl mb-8 overflow-x-auto no-scrollbar gap-3 shadow-luxury relative z-20">
+                {[
+                    { s: 1, id: 'CATÁLOGO', icon: SparklesIcon },
+                    { s: 2, id: 'CONFIGURACIÓN', icon: BoltIcon },
+                    { s: 3, id: 'DESPLIEGUE', icon: CheckCircleIcon }
+                ].map((item, idx) => (
+                    <div key={item.s} className="flex items-center gap-3 flex-1">
                         <button 
-                            onClick={onCancel}
-                            className="w-14 h-14 bg-white/5 hover:bg-red-500/20 text-slate-500 hover:text-red-500 rounded-2xl transition-all border border-white/10 flex items-center justify-center group active:scale-90"
+                            onClick={() => step > item.s && setStep(item.s as 1 | 2 | 3)}
+                            className={`flex-1 flex items-center gap-3 p-3 rounded-xl transition-all duration-500 group relative overflow-hidden ${
+                                step === item.s 
+                                    ? 'bg-liquid-gold shadow-gold-glow-sm' 
+                                    : step > item.s ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'opacity-30 grayscale cursor-not-allowed'
+                            }`}
                         >
-                            <ExclamationTriangleIcon className="w-6 h-6 transition-transform group-hover:rotate-12" />
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                                step === item.s ? 'bg-black text-liquid-gold' : 'bg-white/5 text-slate-400'
+                            }`}>
+                                <item.icon className="w-4 h-4" />
+                            </div>
+                            <div className="text-left hidden md:block">
+                                <p className={`text-[7px] font-black uppercase tracking-[0.1em] ${step === item.s ? 'text-black/60' : 'text-slate-500'}`}>PASO_0{item.s}</p>
+                                <p className={`text-[10px] font-black uppercase tracking-tighter ${step === item.s ? 'text-black italic' : 'text-white'}`}>{item.id}</p>
+                            </div>
                         </button>
+                        {idx < 2 && <div className="hidden lg:block w-6 h-px bg-white/5" />}
                     </div>
+                ))}
+                <div className="px-4 py-2 border-l border-white/5 hidden xl:flex flex-col items-end gap-0.5">
+                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">VER</span>
+                    <span className="text-[9px] font-black text-liquid-gold italic">5.1.0_ELITE</span>
                 </div>
             </div>
-            
-            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
 
             <AnimatePresence mode="wait">
                 {/* PASO 1: SELECCION DE PRODUCTO */}
                 {step === 1 && (
-                    <motion.div key="s1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-12">
-                        {/* Unified Diagnostic Header */}
-                        <div className="bg-black/60 border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl relative">
-                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
-                            
-                            <div className="p-4 md:p-6 flex flex-col lg:flex-row items-center gap-6">
-                                {/* Search Terminal */}
-                                <div className="flex-1 relative group w-full">
-                                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-600 group-focus-within:text-liquid-gold transition-colors z-20" />
-                                    <input 
-                                        type="text" 
-                                        value={search} 
-                                        onChange={e => setSearch(e.target.value)} 
-                                        placeholder="FILTRAR MATRIZ DE PRODUCTOS..." 
-                                        className="w-full pl-16 pr-8 py-5 bg-black/40 border border-white/5 rounded-2xl text-lg font-black text-white focus:border-liquid-gold/20 transition-all placeholder:text-slate-800 italic outline-none relative z-10 uppercase tracking-tighter" 
-                                    />
-                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse" />
-                                        <span className="text-[7px] font-black text-liquid-gold/40 uppercase tracking-[0.4em]">SYNC_ACTIVE</span>
-                                    </div>
-                                </div>
-
-                                {/* Dynamic Filter Array */}
-                                <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar w-full lg:w-auto">
-                                    {commercialCategories.map(cat => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => setActiveCategory(cat)}
-                                            className={`px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] transition-all relative whitespace-nowrap ${
-                                                activeCategory === cat ? 'text-black bg-liquid-gold shadow-gold-glow-sm' : 'text-slate-500 hover:text-white hover:bg-white/5'
-                                            }`}
-                                        >
-                                            <span className="relative z-10 italic">{cat}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Telemetry Bar (Bottom of HUD) */}
-                            <div className="bg-liquid-gold/[0.02] border-t border-white/5 px-8 py-2 flex justify-between items-center">
-                                <div className="flex gap-6">
-                                    <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                                        <div className="w-1 h-1 rounded-full bg-blue-500" /> DATABASE_LOCAL: CONNECTED
-                                    </span>
-                                    <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                                        <div className="w-1 h-1 rounded-full bg-emerald-500" /> ENCRYPTION: AES_256
-                                    </span>
-                                </div>
-                                <span className="text-[7px] font-black text-liquid-gold/40 uppercase tracking-widest italic">
-                                    LOG_STREAMING_v5.0.4
-                                </span>
-                            </div>
+                    <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8 h-full flex flex-col">
+                        {/* Selector de Categoría Compacto */}
+                        <div className="bg-black/60 border border-white/5 p-1.5 rounded-full inline-flex items-center gap-1 shadow-luxury overflow-x-auto no-scrollbar max-w-full">
+                            {commercialCategories.map(cat => (
+                                <button 
+                                    key={cat} 
+                                    onClick={() => setActiveCategory(cat)} 
+                                    className={`px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-500 whitespace-nowrap ${
+                                        activeCategory === cat 
+                                            ? 'bg-liquid-gold text-black shadow-gold-glow-sm italic scale-105 z-10' 
+                                            : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
                         </div>
 
-                        {commercialProducts.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-8 max-h-[60vh] md:max-h-[600px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar pb-10">
-                                {commercialProducts.map(p => (
-                                    <CommercialProductCard 
-                                        key={p.id} 
-                                        p={p} 
-                                        isExpress={isExpressMode}
-                                        onSelect={() => { 
-                                            if (isExpressMode) {
-                                                handleConfirm(p);
-                                            } else {
-                                                setSelectedProduct(p); 
-                                                setStep(2); 
-                                            }
-                                        }} 
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="col-span-full py-20 md:py-40 text-center space-y-6 md:space-y-8 bg-white/[0.01] rounded-[2rem] md:rounded-[4rem] border border-white/5 border-dashed">
-                                <PrinterIcon className="w-16 h-16 md:w-24 md:h-24 mx-auto text-slate-800 opacity-30" />
-                                <div className="space-y-2 px-4">
-                                    <p className="text-base md:text-xl font-black text-slate-700 uppercase tracking-widest italic">Protocolo No Localizado</p>
-                                    <p className="text-[8px] md:text-[10px] text-slate-800 font-black uppercase tracking-[0.4em]">Ajuste los filtros o use el buscador</p>
-                                </div>
-                            </div>
-                        )}
-                    </motion.div>
+                        {/* Internal Scrollable Product Grid */}
+                        <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar max-h-[calc(100vh-280px)]">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-12">
+                            {commercialProducts.map(p => (
+                                <motion.div 
+                                    key={p.id} 
+                                    layout
+                                    whileHover={{ y: -10 }}
+                                    onClick={() => { setSelectedProduct(p); setStep(2); }}
+                                    className="group cursor-pointer"
+                                >
+                                    <div className="bg-[#111111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-luxury group-hover:border-liquid-gold/30 transition-all duration-500 relative overflow-hidden h-[380px] flex flex-col justify-between">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        
+                                        <div className="relative flex justify-between items-start">
+                                            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-liquid-gold border border-white/5 shadow-inner group-hover:bg-liquid-gold/10 transition-colors">
+                                                <PrinterIcon className="w-8 h-8" />
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Inversión_Unit</p>
+                                                <p className="text-2xl font-black text-white italic tracking-tighter">{formatCurrency(p.precio)}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="h-px w-12 bg-liquid-gold/30 group-hover:w-full transition-all duration-700" />
+                                            <div className="space-y-1">
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-liquid-gold transition-colors truncate">{p.nombre}</h3>
+                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">{p.categoria || 'OPERACIÓN_NORMAL'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-green-glow" />
+                                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">STOCK_READY</span>
+                                            </div>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleConfirm(p); }} 
+                                                className="px-6 py-2 bg-white/5 hover:bg-liquid-gold text-white hover:text-black rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-luxury group-hover:scale-105 active:scale-95"
+                                            >
+                                                EXPRESS
+                                            </button>
+                                        </div>
+
+                                        {/* Blueprint Scan Effect on Hover */}
+                                        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-10 transition-opacity duration-700">
+                                            <div className="absolute inset-0 bg-[linear-gradient(rgba(212,175,55,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
+                                            <div className="absolute top-0 left-0 w-full h-1 bg-liquid-gold/50 shadow-gold-glow animate-scan-slow" />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
                 )}
 
                 {/* PASO 2: DETALLES Y PRECIO (CONFIGURACION PREMIUM) */}
                 {step === 2 && selectedProduct && (
-                    <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
-                        {/* Header Compacto */}
-                        <div className="bg-black/60 border border-white/10 p-6 rounded-3xl flex justify-between items-center gap-6 shadow-luxury">
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 bg-liquid-gold text-black rounded-2xl flex items-center justify-center shadow-gold-glow">
-                                    <PrinterIcon className="w-8 h-8" />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.3em] italic">Protocolo Seleccionado</p>
-                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic">{selectedProduct.nombre}</h3>
-                                </div>
-                            </div>
-                            <button onClick={() => setStep(1)} className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 flex items-center gap-3 group">
-                                <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> CAMBIAR
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            {/* Columna de Configuración (8/12) */}
+                    <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                             <div className="lg:col-span-8">
-                                <div className="bg-black/60 border border-white/5 p-10 rounded-[3rem] space-y-12 shadow-inner relative overflow-hidden group/config">
+                                <div className="bg-black/60 border border-white/5 p-6 md:p-8 rounded-[2rem] space-y-8 shadow-inner relative overflow-hidden group/config">
                                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                                     
                                     <div className="space-y-6">
