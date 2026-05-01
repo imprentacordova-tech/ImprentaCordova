@@ -176,7 +176,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState('Todas');
-    const [showDetails, setShowDetails] = useState<string | null>(null);
 
     // Step 2: Detalles
     const [cantidad, setCantidad] = useState(100);
@@ -212,15 +211,16 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     const precioFinal = useMemo(() => {
         if (precioCustom > 0) return precioCustom;
         if (!selectedProduct) return 0;
-        let base = selectedProduct.precio * (cantidad / 100); // asumiendo precio por 100
+        let base = selectedProduct.precio * (cantidad / 100); 
         if (acabado !== 'Ninguno') base += (5 * (cantidad / 100));
         return base > 0 ? base : selectedProduct.precio;
     }, [selectedProduct, cantidad, acabado, precioCustom]);
+
     const handleConfirm = (directProduct?: Producto) => {
         const product = directProduct || selectedProduct;
         if (!product) return;
         
-        const finalPrice = directProduct ? directProduct.precio : precioFinal;
+        const finalPrice = directProduct ? product.precio : precioFinal;
 
         const nuevoTrabajo: Partial<Trabajo> = {
             orden: Math.floor(100000 + Math.random() * 900000),
@@ -250,7 +250,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             clienteId: selectedClientId
         });
     };
-
 
     return (
         <>
@@ -304,7 +303,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 </div>
             </div>
             
-    <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
 
             <AnimatePresence mode="wait">
                 {/* PASO 1: SELECCION DE PRODUCTO */}
@@ -478,6 +477,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                                     </button>
                                                 ))}
                                             </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -511,14 +511,13 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                                 </div>
                                             </div>
                                         </div>
+                                        <button 
+                                            onClick={() => setStep(3)}
+                                            className="mt-12 w-full py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-gold-glow flex items-center justify-center gap-4 group italic text-xs"
+                                        >
+                                            PROCEDER <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                        </button>
                                     </div>
-
-                                    <button 
-                                        onClick={() => setStep(3)}
-                                        className="mt-12 w-full py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-gold-glow flex items-center justify-center gap-4 group italic text-xs"
-                                    >
-                                        PROCEDER <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -526,7 +525,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 )}
 
                 {/* PASO 3: FINALIZACION (IDENTIDAD Y CAPITAL) */}
-                {/* PASO 3: DESPLIEGUE FINAL */}
                 {step === 3 && selectedProduct && (
                     <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -681,5 +679,3 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
         </>
     );
 };
-
-

@@ -53,6 +53,7 @@ const NotaDeVentaPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isConsumidorFinal, setIsConsumidorFinal] = useState(false);
+    const [isRetrying, setIsRetrying] = useState(false);
 
     const { width, height } = useWindowSize();
     const [isCelebrationVisible, setIsCelebrationVisible] = useState(false);
@@ -62,6 +63,7 @@ const NotaDeVentaPage: React.FC = () => {
         
         const fetchDirectly = async () => {
             if (!trabajoId) return;
+            setIsRetrying(true);
             console.log("[NotaDeVenta] Iniciando búsqueda directa en Supabase...");
             try {
                 // Fetch Trabajo
@@ -92,6 +94,8 @@ const NotaDeVentaPage: React.FC = () => {
             } catch (err) {
                 console.error("[NotaDeVenta] Error en fetch directo:", err);
                 setError("No se pudo recuperar el documento desde la base de datos.");
+            } finally {
+                setIsRetrying(false);
             }
         };
 
