@@ -8,7 +8,7 @@ import {
 import { Producto, Trabajo, TrabajoEstado, TrabajoTipo } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { formatCurrency } from '../../utils';
-import { PerspectiveCard } from '@/components/PerspectiveCard';
+import { PerspectiveCard } from '../PerspectiveCard';
 
 interface CommercialFlowProps {
     onComplete: (data: {
@@ -28,79 +28,62 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
         <PerspectiveCard>
             <motion.div
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`group relative bg-white/[0.01] backdrop-blur-3xl rounded-[2rem] md:rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer h-full ${
+                className={`group relative bg-black/40 backdrop-blur-xl rounded-[2rem] border transition-all duration-500 overflow-hidden cursor-pointer h-full ${
                     isHovered 
-                        ? isExpress ? 'border-blue-500/30 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.2)]' : 'border-liquid-gold/30 bg-liquid-gold/5 shadow-gold-glow-sm' 
-                        : 'border-white/5 hover:border-white/10'
+                        ? isExpress ? 'border-blue-500/40 shadow-blue-glow' : 'border-liquid-gold/40 shadow-luxury-gold' 
+                        : 'border-white/5'
                 }`}
                 onClick={onSelect}
             >
-                <div className="p-5 md:p-8 space-y-4 md:space-y-6 relative z-10">
-                    <AnimatePresence>
-                        {isHovered && (
-                            <motion.div 
-                                initial={{ top: '-10%' }}
-                                animate={{ top: '110%' }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                className={`absolute left-0 right-0 h-[1px] z-20 pointer-events-none ${isExpress ? 'bg-blue-400/30 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'bg-liquid-gold/30 shadow-gold-glow-sm'}`}
-                            />
-                        )}
-                    </AnimatePresence>
+                {/* Subtle Gradient Glow */}
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700 ${isExpress ? 'bg-blue-500' : 'bg-liquid-gold'}`} />
 
-                    <div className="flex justify-between items-start relative z-30">
-                        <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all duration-700 ${
+                <div className="p-6 md:p-10 space-y-6 relative z-10">
+                    <div className="flex justify-between items-start">
+                        <div className={`p-4 rounded-2xl transition-all duration-700 ${
                             isHovered 
-                                ? isExpress ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-liquid-gold text-black shadow-gold-glow scale-110' 
+                                ? isExpress ? 'bg-blue-600 text-white' : 'bg-liquid-gold text-black scale-110' 
                                 : 'bg-white/5 text-liquid-gold'
                         }`}>
-                            {isExpress ? <BoltIcon className="w-5 h-5 md:w-6 md:h-6" /> : <PrinterIcon className="w-5 h-5 md:w-6 md:h-6" />}
+                            {isExpress ? <BoltIcon className="w-6 h-6" /> : <PrinterIcon className="w-6 h-6" />}
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                            <span className={`text-xl md:text-2xl font-black italic tracking-tighter transition-transform group-hover:scale-110 ${isExpress ? 'text-blue-400' : 'text-white'}`}>
+                        <div className="text-right">
+                            <span className={`text-2xl md:text-3xl font-black italic tracking-tighter block leading-none ${isExpress ? 'text-blue-400' : 'text-white'}`}>
                                 ${(p.precio || 0).toFixed(2)}
                             </span>
-                            <span className="text-[6px] md:text-[7px] font-black text-slate-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-full">Inversión Base</span>
+                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1 block">PRECIO_BASE</span>
                         </div>
                     </div>
 
-                    <div className="space-y-1.5 md:space-y-2 relative z-30">
+                    <div className="space-y-2">
                         {isExpress && (
-                            <div className="flex items-center gap-2 mb-1 md:mb-2">
-                                <span className="text-[6px] md:text-[7px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest italic animate-pulse">VENTA_TURBO_ACTIVA</span>
-                            </div>
+                            <span className="inline-block text-[8px] font-black bg-blue-600/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded uppercase tracking-widest italic animate-pulse mb-1">
+                                Express_Protocol
+                            </span>
                         )}
-                        <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight italic truncate leading-none">
+                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic leading-tight group-hover:text-liquid-gold transition-colors">
                             {p.nombre}
                         </h3>
-                        <p className="text-[8px] md:text-[9px] text-slate-600 font-bold uppercase tracking-widest truncate">
-                            {p.categoria || 'Suministro General'}
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em]">
+                            {p.categoria || 'GENERAL'}
                         </p>
                     </div>
 
-                    <div className="pt-4 md:pt-6 border-t border-white/5 flex justify-between items-center relative z-30">
+                    <div className="pt-6 border-t border-white/5 flex justify-between items-center">
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setShowDetails(!showDetails);
                             }}
-                            className="text-[7px] md:text-[8px] font-black text-slate-600 hover:text-liquid-gold uppercase tracking-[0.2em] transition-colors flex items-center gap-1.5 md:gap-2 active:scale-90"
+                            className="text-[8px] font-black text-slate-500 hover:text-white uppercase tracking-[0.3em] transition-colors flex items-center gap-2"
                         >
-                            <SparklesIcon className="w-3 h-3" /> {showDetails ? 'Cerrar' : 'Ficha'}
+                            <SparklesIcon className="w-3 h-3 text-liquid-gold" /> {showDetails ? 'OCULTAR' : 'DETALLES'}
                         </button>
-                        {isExpress ? (
-                            <div className="flex items-center gap-1.5 md:gap-2 text-[7px] md:text-[8px] font-black text-blue-400 animate-bounce">
-                                <span>VENTA RÁPIDA</span>
-                                <ArrowRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            </div>
-                        ) : (
-                            <ArrowRightIcon className={`w-4 h-4 md:w-5 md:h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-1' : 'text-white/5'}`} />
-                        )}
+                        <ArrowRightIcon className={`w-5 h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-2' : 'text-white/10'}`} />
                     </div>
 
                     <AnimatePresence>
@@ -109,24 +92,15 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
+                                className="overflow-hidden pt-4"
                             >
-                                <div className="mt-3 md:mt-4 p-4 md:p-6 bg-black/60 rounded-2xl md:rounded-3xl border border-white/10 space-y-3 md:space-y-4">
-                                    <p className="text-[9px] md:text-[10px] text-slate-300 font-bold uppercase tracking-widest flex items-center gap-2">
-                                        <SparklesIcon className="w-3 h-3 text-liquid-gold" /> Especificaciones Técnicas
+                                <div className="p-5 bg-black/60 rounded-2xl border border-white/5 space-y-3">
+                                    <p className="text-[10px] text-slate-400 italic leading-relaxed">
+                                        {p.descripcion || 'Servicio de manufactura de alta precisión bajo estándares de calidad Córdova.'}
                                     </p>
-                                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium italic leading-relaxed">
-                                        {p.descripcion || 'Servicio de manufactura personalizada con estándares de calidad industrial Córdova.'}
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-2 md:gap-3 pt-3 md:pt-4 border-t border-white/5">
-                                        <div className="space-y-1">
-                                            <p className="text-[6px] md:text-[7px] text-slate-600 font-black uppercase">Entrega Est.</p>
-                                            <p className="text-[8px] md:text-[9px] text-white font-bold">24-48 Horas</p>
-                                        </div>
-                                        <div className="space-y-1 text-right">
-                                            <p className="text-[6px] md:text-[7px] text-slate-600 font-black uppercase">Protocolo</p>
-                                            <p className="text-[8px] md:text-[9px] text-liquid-gold font-bold uppercase">Elite</p>
-                                        </div>
+                                    <div className="flex justify-between items-center pt-3 border-t border-white/5">
+                                        <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Protocolo</span>
+                                        <span className="text-[9px] font-black text-liquid-gold uppercase italic tracking-widest">v5.0_ELITE</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -229,124 +203,85 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
             <div className="absolute inset-0 noise-overlay opacity-[0.03] pointer-events-none" />
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
             
-            {/* Header / Steps Navigation (Optimized) */}
-            <div className="bg-brand-dark/95 backdrop-blur-3xl p-6 md:p-12 border-b border-white/5 relative overflow-hidden -mx-6 md:-mx-10 -mt-6 md:-mt-10 mb-8 md:mb-16">
-                {/* Industrial Grid Background */}
-                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-                     style={{ backgroundImage: 'linear-gradient(var(--printing-blue) 1px, transparent 1px), linear-gradient(90deg, var(--printing-blue) 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
-                />
-                
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-4">
-                            <div className="px-3 py-1 bg-printing-blue/20 border border-printing-blue/40 rounded-md">
-                                <span className="text-[8px] font-mono text-printing-blue tracking-[0.4em] uppercase">SYSTEM: ACTIVE</span>
-                            </div>
-                            <span className="text-[8px] font-mono text-slate-500 tracking-[0.4em] uppercase">ELITE_WORKFLOW_v4.2</span>
+            {/* Header / Steps Navigation (Minimalist) */}
+            <div className="bg-black/80 backdrop-blur-3xl p-8 md:p-14 border-b border-white/10 relative overflow-hidden -mx-6 md:-mx-10 -mt-6 md:-mt-10 mb-12">
+                <div className="flex flex-col md:flex-row justify-between items-center relative z-10 gap-8">
+                    <div className="space-y-4 text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-4">
+                            <span className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">CATÁLOGO_ELITE</span>
+                            <div className="h-px w-12 bg-liquid-gold/20" />
                         </div>
-                        <div className="flex items-center gap-4 md:gap-8">
-                            <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter">
-                                {step === 1 && <>Suministros <span className="text-gold-gradient">Industriales.</span></>}
-                                {step === 2 && <>Configuración <span className="text-gold-gradient">Elite.</span></>}
-                                {step === 3 && <>Despliegue <span className="text-gold-gradient">Final.</span></>}
-                            </h2>
-                        </div>
+                        <h2 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+                            {step === 1 && <>Suministros <span className="text-gold-gradient">Premium.</span></>}
+                            {step === 2 && <>Configuración <span className="text-gold-gradient">Tactical.</span></>}
+                            {step === 3 && <>Finalizar <span className="text-gold-gradient">Despliegue.</span></>}
+                        </h2>
                     </div>
                 
-                <div className="flex items-center gap-2 md:gap-6 w-full md:w-auto">
-                    <div className="flex-1 md:flex-none flex items-center gap-3 bg-black/40 p-2 md:p-3 rounded-2xl border border-white/10 shadow-inner overflow-x-auto no-scrollbar">
-                        {/* Turbo Mode Toggle - Larger for mobile */}
+                    <div className="flex items-center gap-6">
+                        <div className="bg-white/5 p-2 rounded-2xl border border-white/10 flex items-center gap-3">
+                            <button 
+                                onClick={() => setIsExpressMode(!isExpressMode)}
+                                className={`px-6 py-3 rounded-xl transition-all duration-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-3 ${
+                                    isExpressMode 
+                                        ? 'bg-blue-600 text-white shadow-blue-glow' 
+                                        : 'bg-transparent text-slate-600 hover:text-white'
+                                }`}
+                            >
+                                <BoltIcon className="w-4 h-4" /> TURBO_MODE
+                            </button>
+                            <div className="w-px h-6 bg-white/10" />
+                            <div className="flex gap-3 px-4">
+                                {[1, 2, 3].map(s => (
+                                    <div key={s} className={`w-3 h-3 rounded-full transition-all duration-700 ${step === s ? 'bg-liquid-gold shadow-gold-glow scale-125' : step > s ? 'bg-liquid-gold/40' : 'bg-white/10'}`} />
+                                ))}
+                            </div>
+                        </div>
+
                         <button 
-                            onClick={() => setIsExpressMode(!isExpressMode)}
-                            className={`flex items-center gap-3 md:gap-4 px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl transition-all duration-700 border flex-shrink-0 active:scale-95 ${
-                                isExpressMode 
-                                    ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' 
-                                    : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
-                            }`}
+                            onClick={onCancel}
+                            className="w-14 h-14 bg-white/5 hover:bg-red-500/20 text-slate-500 hover:text-red-500 rounded-2xl transition-all border border-white/10 flex items-center justify-center group active:scale-90"
                         >
-                            <BoltIcon className={`w-4 h-4 md:w-5 md:h-5 ${isExpressMode ? 'animate-pulse' : ''}`} />
-                            <div className="flex flex-col items-start leading-none">
-                                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">TURBO</span>
-                                <span className="text-[6px] md:text-[8px] font-bold opacity-60 uppercase">{isExpressMode ? 'ACTIVADO' : 'OFF'}</span>
-                            </div>
+                            <ExclamationTriangleIcon className="w-6 h-6 transition-transform group-hover:rotate-12" />
                         </button>
-
-                        <div className="flex gap-2 md:gap-4 px-2">
-                            {[1, 2, 3].map(s => (
-                                <div key={s} className="flex flex-col items-center gap-1.5">
-                                    <div className={`h-1.5 md:h-2 transition-all duration-700 rounded-full ${step === s ? 'w-6 md:w-12 bg-liquid-gold shadow-gold-glow' : step > s ? 'w-3 md:w-6 bg-liquid-gold/40' : 'w-2 md:w-4 bg-white/10'}`} />
-                                    <span className={`text-[6px] md:text-[8px] font-black uppercase tracking-widest ${step === s ? 'text-liquid-gold' : 'text-slate-800'}`}>PH_{s}</span>
-                                </div>
-                            ))}
-                        </div>
                     </div>
-
-                    <button 
-                        onClick={onCancel}
-                        className="w-12 h-12 md:w-16 md:h-16 bg-white/5 hover:bg-red-500/10 text-slate-500 hover:text-red-500 rounded-2xl transition-all border border-white/10 flex items-center justify-center group flex-shrink-0 active:scale-90"
-                    >
-                        <ExclamationTriangleIcon className="w-5 h-5 md:w-7 md:h-7 transition-transform group-hover:rotate-12" />
-                    </button>
                 </div>
             </div>
-        </div>
             
     <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
 
             <AnimatePresence mode="wait">
-                {/* PASO 1: SELECCION DE PRODUCTO (ESTILO SERVICE SELECTOR) */}
+                {/* PASO 1: SELECCION DE PRODUCTO */}
                 {step === 1 && (
-                    <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4 md:space-y-12">
-                        <div className="space-y-4 md:space-y-8 bg-black/40 p-4 md:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 shadow-inner relative overflow-hidden group">
-                            {/* Scanning Beam */}
-                            <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/10 animate-scan pointer-events-none" />
-                            
-                            <div className="absolute top-0 right-0 p-10 opacity-[0.03] scale-100 md:scale-150 rotate-12 transition-transform group-hover:scale-[1.7] hidden md:block"><PrinterIcon className="w-64 h-64 text-liquid-gold" /></div>
-                            
-                            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 md:gap-10 relative z-10">
-                                <div className="space-y-3 md:space-y-4 flex-grow max-w-2xl w-full">
-                                    <div className="flex items-center justify-between px-1">
-                                        <label className="text-[9px] md:text-[11px] text-slate-600 font-black uppercase tracking-widest italic">Búsqueda Técnica</label>
-                                        <span className="text-[6px] md:text-[9px] text-liquid-gold/30 font-mono tracking-tighter">SEARCH_REDUX_ACTIVE</span>
-                                    </div>
-                                    <div className="relative group">
-                                        <SearchIcon className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-5 w-5 md:h-7 md:w-7 text-slate-600 group-focus-within:text-liquid-gold transition-colors" />
-                                        <input 
-                                            type="text" 
-                                            value={search} 
-                                            onChange={e => setSearch(e.target.value)} 
-                                            placeholder="Buscar protocolo comercial..." 
-                                            className="w-full pl-11 md:pl-16 pr-4 md:pr-8 py-3 md:py-7 bg-black/40 border-2 border-white/5 rounded-xl md:rounded-[2.5rem] text-sm md:text-2xl font-black text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic shadow-inner outline-none" 
-                                        />
-                                    </div>
-                                </div>
+                    <motion.div key="s1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-12">
+                        {/* Search & Filter Bar */}
+                        <div className="flex flex-col lg:flex-row items-stretch gap-6">
+                            <div className="flex-1 relative group">
+                                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-600 group-focus-within:text-liquid-gold transition-colors" />
+                                <input 
+                                    type="text" 
+                                    value={search} 
+                                    onChange={e => setSearch(e.target.value)} 
+                                    placeholder="Buscar producto..." 
+                                    className="w-full pl-16 pr-8 py-6 bg-black/60 border border-white/10 rounded-3xl text-xl font-black text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic outline-none shadow-luxury" 
+                                />
+                            </div>
 
-                                <div className="flex-shrink-0 w-full lg:w-auto">
-                                    <label className="text-[8px] md:text-[10px] text-slate-600 font-black uppercase tracking-widest ml-2 md:ml-4 mb-2 md:mb-4 block italic text-center lg:text-left">Categorías Estratégicas</label>
-                                    <div className="flex flex-nowrap justify-start gap-1.5 md:gap-2 bg-black/60 p-1 md:p-2 rounded-xl md:rounded-[2.5rem] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
-                                        {commercialCategories.map(cat => (
-                                            <button
-                                                key={cat}
-                                                onClick={() => setActiveCategory(cat)}
-                                                className={`px-3 md:px-6 py-2 md:py-4 rounded-lg md:rounded-[2rem] text-[7px] md:text-[9px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap relative flex items-center gap-1.5 md:gap-2 group/tab ${
-                                                    activeCategory === cat 
-                                                        ? 'text-black z-10' 
-                                                        : 'text-slate-500 hover:text-white'
-                                                }`}
-                                            >
-                                                {activeCategory === cat && (
-                                                    <motion.div 
-                                                        layoutId="activeTab"
-                                                        className="absolute inset-0 bg-liquid-gold rounded-lg md:rounded-[2rem] shadow-gold-glow -z-10"
-                                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                                    />
-                                                )}
-                                                <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full transition-all ${activeCategory === cat ? 'bg-black' : 'bg-slate-800 group-hover/tab:bg-liquid-gold'}`}></div>
-                                                {cat}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                            <div className="flex gap-2 p-2 bg-black/40 rounded-3xl border border-white/5 overflow-x-auto no-scrollbar">
+                                {commercialCategories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        className={`px-8 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all relative flex items-center gap-3 whitespace-nowrap ${
+                                            activeCategory === cat ? 'text-black' : 'text-slate-500 hover:text-white'
+                                        }`}
+                                    >
+                                        {activeCategory === cat && (
+                                            <motion.div layoutId="catTab" className="absolute inset-0 bg-liquid-gold rounded-2xl shadow-gold-glow" />
+                                        )}
+                                        <span className="relative z-10">{cat}</span>
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
@@ -382,50 +317,45 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
                 {/* PASO 2: DETALLES Y PRECIO (CONFIGURACION PREMIUM) */}
                 {step === 2 && selectedProduct && (
-                    <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4 md:space-y-6">
+                    <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
                         {/* Header Compacto */}
-                        <div className="bg-white/[0.03] border border-white/5 p-3 md:p-6 rounded-xl md:rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden group shadow-xl">
-                            <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.02] via-transparent to-transparent"></div>
-                            <div className="relative z-10 flex items-center gap-3 md:gap-4 w-full">
-                                <div className="w-10 h-10 md:w-14 md:h-14 bg-liquid-gold text-black rounded-lg md:rounded-xl flex items-center justify-center shadow-gold-glow flex-shrink-0">
-                                    <PrinterIcon className="w-5 h-5 md:w-7 md:h-7" />
+                        <div className="bg-black/60 border border-white/10 p-6 rounded-3xl flex justify-between items-center gap-6 shadow-luxury">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-liquid-gold text-black rounded-2xl flex items-center justify-center shadow-gold-glow">
+                                    <PrinterIcon className="w-8 h-8" />
                                 </div>
-                                <div className="space-y-0 overflow-hidden">
-                                    <p className="text-[7px] md:text-[9px] font-black text-liquid-gold uppercase tracking-[0.2em] italic">Protocolo Maestro:</p>
-                                    <h3 className="text-base md:text-2xl font-black text-white uppercase tracking-tight italic leading-none truncate">{selectedProduct.nombre}</h3>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.3em] italic">Protocolo Seleccionado</p>
+                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic">{selectedProduct.nombre}</h3>
                                 </div>
                             </div>
-                            <button onClick={() => setStep(1)} className="relative z-10 w-full md:w-auto px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[8px] md:text-[9px] font-black uppercase tracking-widest rounded-lg md:rounded-xl transition-all border border-white/5 flex items-center justify-center gap-2 group active:scale-95">
-                                <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> Cambiar
+                            <button onClick={() => setStep(1)} className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 flex items-center gap-3 group">
+                                <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> CAMBIAR
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Columna de Configuración (8/12) */}
-                            <div className="lg:col-span-8 space-y-4 md:space-y-6">
-                                <div className="bg-white/[0.01] border border-white/5 p-4 md:p-8 rounded-xl md:rounded-[2.5rem] space-y-4">
-                                    <div className="space-y-2 md:space-y-3">
-                                        <div className="flex justify-between items-center px-1">
-                                            <label className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest italic flex items-center gap-2">
-                                                <SparklesIcon className="w-3 h-3 text-liquid-gold"/> Volumen Industrial
-                                            </label>
-                                        </div>
-                                        <div className="flex flex-col md:flex-row gap-4 items-center">
-                                            <div className="relative group w-full md:w-48">
+                            <div className="lg:col-span-8 space-y-8">
+                                <div className="bg-black/40 border border-white/5 p-10 rounded-[3rem] space-y-10 shadow-inner">
+                                    <div className="space-y-4">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic ml-2">Volumen de Manufactura</label>
+                                        <div className="flex gap-8 items-center">
+                                            <div className="relative group">
                                                 <input 
                                                     type="number" 
                                                     value={cantidad} 
                                                     onChange={e => setCantidad(Number(e.target.value))} 
-                                                    className="w-full bg-black/40 border-2 border-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl text-white text-2xl md:text-3xl font-black italic outline-none focus:border-liquid-gold/30 transition-all text-center tracking-tighter shadow-inner" 
+                                                    className="bg-black/60 border border-white/10 w-48 p-6 rounded-2xl text-4xl font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all text-center tracking-tighter shadow-luxury" 
                                                 />
-                                                <div className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-slate-700 font-black italic text-[10px] uppercase">un</div>
+                                                <div className="absolute -right-12 top-1/2 -translate-y-1/2 text-slate-800 font-black italic text-xs uppercase tracking-widest">UNITS</div>
                                             </div>
-                                            <div className="flex flex-wrap gap-1.5 justify-center md:justify-start">
-                                                {[100, 500, 1000, 2500, 5000].map(q => (
+                                            <div className="flex flex-wrap gap-2">
+                                                {[100, 500, 1000, 5000].map(q => (
                                                     <button 
                                                         key={q} 
                                                         onClick={() => setCantidad(q)} 
-                                                        className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all border active:scale-95 ${cantidad === q ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow-sm' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}
+                                                        className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${cantidad === q ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}
                                                     >
                                                         {q}
                                                     </button>
@@ -434,73 +364,70 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest italic ml-1">Dimensión Técnica</label>
-                                            <div className="relative group">
-                                                <input type="text" value={tamano} onChange={e => setTamano(e.target.value)} className="w-full bg-black/40 border-2 border-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl text-white text-xs md:text-sm font-bold outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800" placeholder="Ej: 10x15cm" />
-                                                <div className="flex gap-1.5 mt-2 overflow-x-auto no-scrollbar">
-                                                    {['A4', 'A5', 'Oficio', 'Tarjetas'].map(t => (
-                                                        <button key={t} onClick={() => setTamano(t)} className={`px-2 py-1 rounded-md text-[7px] font-black uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${tamano === t ? 'bg-white/10 text-white' : 'text-slate-600 hover:text-slate-400'}`}>{t}</button>
-                                                    ))}
-                                                </div>
+                                    <div className="grid grid-cols-2 gap-10">
+                                        <div className="space-y-4">
+                                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic ml-2">Dimensiones</label>
+                                            <input type="text" value={tamano} onChange={e => setTamano(e.target.value)} className="w-full bg-black/60 border border-white/10 p-6 rounded-2xl text-lg font-black text-white outline-none focus:border-liquid-gold/30 transition-all shadow-luxury" placeholder="Ej: 10x15cm" />
+                                            <div className="flex gap-2">
+                                                {['A4', 'A5', 'Oficio', 'Tarjetas'].map(t => (
+                                                    <button key={t} onClick={() => setTamano(t)} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${tamano === t ? 'bg-white/10 text-white shadow-luxury' : 'text-slate-700 hover:text-slate-400'}`}>{t}</button>
+                                                ))}
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest italic ml-1">Finalizado Estético</label>
-                                            <select 
-                                                value={acabado} 
-                                                onChange={e => setAcabado(e.target.value)} 
-                                                className="w-full bg-black/40 border-2 border-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl text-white text-xs font-bold outline-none focus:border-liquid-gold/30 transition-all appearance-none cursor-pointer shadow-inner"
-                                            >
-                                                <option value="Ninguno">Estándar</option>
-                                                <option value="Plastificado Brillante">Brillante</option>
-                                                <option value="Plastificado Mate">Mate</option>
-                                                <option value="Troquelado">Corte Especial</option>
-                                            </select>
+                                        <div className="space-y-4">
+                                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic ml-2">Acabado Elite</label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {['Ninguno', 'Brillante', 'Mate', 'Uv_Selective'].map(a => (
+                                                    <button 
+                                                        key={a} 
+                                                        onClick={() => setAcabado(a)} 
+                                                        className={`px-4 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${acabado === a ? 'bg-liquid-gold/20 border-liquid-gold text-liquid-gold shadow-gold-glow-sm' : 'bg-white/5 border-white/5 text-slate-600 hover:text-slate-400'}`}
+                                                    >
+                                                        {a}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            {/* Columna de Precio y Acción (4/12) */}
-                            <div className="lg:col-span-4 flex flex-col gap-4">
-                                <div className="flex-1 bg-white/[0.02] border-2 border-white/5 p-4 md:p-8 rounded-xl md:rounded-[2.5rem] flex flex-col justify-center items-center text-center relative overflow-hidden group shadow-2xl min-h-[180px]">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-liquid-gold/5 rounded-full blur-[40px] -mr-12 -mt-12 transition-opacity group-hover:opacity-100 opacity-40"></div>
+
+                            {/* Columna de Valuación (4/12) */}
+                            <div className="lg:col-span-4">
+                                <div className="bg-black/60 border border-liquid-gold/20 p-8 rounded-[3rem] h-full flex flex-col justify-between shadow-luxury-gold relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-110 transition-transform">
+                                        <SparklesIcon className="w-32 h-32 text-liquid-gold" />
+                                    </div>
                                     
-                                    <p className="text-[8px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2 z-10 italic">Inversión Final</p>
-                                    <motion.div 
-                                        key={precioFinal}
-                                        initial={{ scale: 0.8, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        className="relative z-10 space-y-1 mb-4"
-                                    >
-                                        <span className="text-3xl md:text-5xl font-black text-white italic tracking-tighter leading-none block drop-shadow-2xl">
-                                            {formatCurrency(precioFinal)}
-                                        </span>
-                                        <span className="text-[7px] font-black text-liquid-gold uppercase tracking-[0.2em] opacity-60">Sincronizado</span>
-                                    </motion.div>
-                                    
-                                    <div className="w-full space-y-2 z-10">
-                                        <div className="relative max-w-[140px] mx-auto">
-                                            <input 
-                                                type="number" 
-                                                placeholder="0.00" 
-                                                value={precioCustom || ''} 
-                                                onChange={e => setPrecioCustom(Number(e.target.value))}
-                                                className="w-full bg-white/5 border border-white/10 p-2 md:p-3 rounded-xl text-center text-white text-sm md:text-lg font-black outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic"
-                                            />
-                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-liquid-gold/20 font-black italic text-xs">$</div>
+                                    <div className="space-y-6 relative z-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse" />
+                                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Valuación Real-Time</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-slate-600 font-black text-[10px] uppercase tracking-widest italic">
+                                                <span>Inversión Base</span>
+                                                <span>{formatCurrency(selectedProduct.precio)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-slate-600 font-black text-[10px] uppercase tracking-widest italic">
+                                                <span>Escalado Vol.</span>
+                                                <span>x{cantidad/100}</span>
+                                            </div>
+                                            <div className="h-px bg-white/5 my-4" />
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Total Estimado</span>
+                                                <div className="text-6xl font-black text-white italic tracking-tighter leading-none">
+                                                    {formatCurrency(precioFinal)}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <button onClick={() => setStep(3)} className="w-full py-4 md:py-5 bg-liquid-gold text-black rounded-xl md:rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-3 shadow-gold-glow italic active:scale-95">
-                                        Siguiente <ArrowRightIcon className="w-4 h-4" />
-                                    </button>
-                                    <button onClick={() => setStep(1)} className="w-full py-2 bg-white/5 text-white/40 text-[8px] font-black uppercase tracking-widest rounded-lg hover:text-white transition-all">
-                                        Volver al Catálogo
+                                    <button 
+                                        onClick={() => setStep(3)}
+                                        className="mt-12 w-full py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-gold-glow flex items-center justify-center gap-4 group italic text-xs"
+                                    >
+                                        PROCEDER <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
                                 </div>
                             </div>
@@ -509,35 +436,38 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 )}
 
                 {/* PASO 3: FINALIZACION (IDENTIDAD Y CAPITAL) */}
+                {/* PASO 3: DESPLIEGUE FINAL */}
                 {step === 3 && selectedProduct && (
-                    <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4 md:space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                                    <div className="w-8 h-8 md:w-10 md:h-10 bg-liquid-gold/10 rounded-lg flex items-center justify-center text-liquid-gold shadow-inner">
-                                        <UserIcon className="w-4 h-4 md:w-5 md:h-5" />
+                    <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Identidad del Cliente */}
+                            <div className="bg-black/40 border border-white/5 p-10 rounded-[3rem] space-y-8 shadow-inner">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
+                                        <UserIcon className="w-6 h-6" />
                                     </div>
-                                    <div className="space-y-0">
-                                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic">Identidad</h3>
-                                        <p className="text-[7px] md:text-[8px] text-slate-500 font-black uppercase tracking-widest italic">Asignación de Titular</p>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Identidad_Cliente</h3>
+                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Vínculo de Operación</p>
                                     </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic ml-1">Nombre / Razón Social</label>
+
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Nombre o Razón Social</label>
                                         <div className="relative group">
                                             <input 
                                                 type="text" 
                                                 value={clienteNombre} 
                                                 onChange={e => setClienteNombre(e.target.value.toUpperCase())} 
-                                                className="w-full bg-black/40 border-2 border-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl text-xs md:text-sm font-bold outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 shadow-inner" 
-                                                placeholder="BUSCAR O CREAR PERFIL..." 
+                                                className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 shadow-luxury" 
+                                                placeholder="BUSCAR CLIENTE..." 
                                             />
                                             <AnimatePresence>
-                                                {clienteNombre.length > 2 && !selectedClientId && (
+                                                {clienteNombre.length > 1 && !selectedClientId && (
                                                     <motion.div 
-                                                        initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                                                        className="absolute top-full left-0 right-0 mt-1 bg-brand-dark/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-luxury z-50 max-h-48 overflow-y-auto custom-scrollbar overflow-hidden"
+                                                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                                                        className="absolute top-full left-0 right-0 mt-2 bg-brand-dark border border-white/10 rounded-2xl shadow-luxury-gold z-50 max-h-64 overflow-y-auto no-scrollbar overflow-hidden"
                                                     >
                                                         {clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).length > 0 ? (
                                                             clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).map(c => (
@@ -548,19 +478,18 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                                                         setClienteTelefono(c.telefono[0] || '');
                                                                         setSelectedClientId(c.id);
                                                                     }}
-                                                                    className="w-full p-2.5 text-left hover:bg-liquid-gold/10 text-white font-black text-[9px] md:text-xs border-b border-white/5 flex justify-between items-center group transition-colors"
+                                                                    className="w-full p-5 text-left hover:bg-white/5 border-b border-white/5 flex justify-between items-center transition-colors"
                                                                 >
-                                                                    <div className="flex items-center gap-2 overflow-hidden">
-                                                                        <div className="w-5 h-5 rounded-md bg-liquid-gold/20 flex items-center justify-center text-liquid-gold text-[8px] flex-shrink-0">{c.nombre.charAt(0)}</div>
-                                                                        <span className="uppercase italic tracking-tight truncate">{c.nombre}</span>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className="w-8 h-8 rounded-xl bg-liquid-gold/20 flex items-center justify-center text-liquid-gold font-black">{c.nombre.charAt(0)}</div>
+                                                                        <span className="text-sm font-black text-white uppercase italic">{c.nombre}</span>
                                                                     </div>
-                                                                    <span className="text-[6px] md:text-[8px] text-slate-600 group-hover:text-liquid-gold transition-colors font-bold uppercase tracking-widest flex-shrink-0">{c.telefono[0] || 'SIN TELÉFONO'}</span>
+                                                                    <span className="text-[10px] font-black text-slate-600 tracking-widest">{c.telefono[0] || 'NO_PHONE'}</span>
                                                                 </button>
                                                             ))
                                                         ) : (
-                                                            <div className="p-4 text-center space-y-1">
-                                                                <p className="text-[8px] text-slate-600 font-black uppercase tracking-widest">No hay perfiles</p>
-                                                                <p className="text-[7px] text-liquid-gold font-bold uppercase tracking-widest">Se creará nuevo</p>
+                                                            <div className="p-6 text-center">
+                                                                <p className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em]">Creando Nuevo Perfil</p>
                                                             </div>
                                                         )}
                                                     </motion.div>
@@ -568,71 +497,67 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                             </AnimatePresence>
                                         </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic ml-1">WhatsApp</label>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Canal WhatsApp</label>
                                         <div className="relative">
-                                            <input type="text" value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} className="w-full bg-black/40 border-2 border-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl text-xs md:text-sm font-bold outline-none focus:border-liquid-gold/30 transition-all shadow-inner" placeholder="099-000-0000" />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-liquid-gold/20"><PrinterIcon className="w-4 h-4" /></div>
+                                            <input type="text" value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all shadow-luxury" placeholder="099-000-0000" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                                    <div className="w-8 h-8 md:w-10 md:h-10 bg-liquid-gold/10 rounded-lg flex items-center justify-center text-liquid-gold shadow-inner">
-                                        <CreditCardIcon className="w-4 h-4 md:w-5 md:h-5" />
+                            {/* Liquidación de Pago */}
+                            <div className="bg-black/60 border border-liquid-gold/10 p-10 rounded-[3rem] space-y-8 shadow-luxury-gold">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
+                                        <CreditCardIcon className="w-6 h-6" />
                                     </div>
-                                    <div className="space-y-0">
-                                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic">Liquidación</h3>
-                                        <p className="text-[7px] md:text-[8px] text-slate-500 font-black uppercase tracking-widest italic">Reserva de Cupo</p>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Liquidación</h3>
+                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Aseguramiento de Capital</p>
                                     </div>
                                 </div>
-                                
-                                <div className="bg-white/[0.02] p-4 md:p-6 rounded-xl md:rounded-[2rem] border-2 border-white/5 space-y-4 relative overflow-hidden group shadow-xl">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    
-                                    <div className="flex justify-between items-center relative z-10 border-b border-white/5 pb-3">
-                                        <div className="space-y-0">
-                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Inversión</span>
-                                        </div>
-                                        <span className="text-xl md:text-3xl font-black text-white italic tracking-tighter shadow-gold-glow-sm">{formatCurrency(precioFinal)}</span>
+
+                                <div className="space-y-8 bg-black/40 p-8 rounded-3xl border border-white/5 shadow-inner">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Total Misión</span>
+                                        <span className="text-5xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal)}</span>
                                     </div>
 
-                                    <div className="bg-black/40 p-3 md:p-4 rounded-xl md:rounded-2xl border border-white/5 relative z-10 flex justify-between items-center hover:border-liquid-gold/30 transition-all shadow-inner">
-                                        <span className="text-[10px] font-black text-liquid-gold uppercase tracking-widest italic flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse"></div> Abono
-                                        </span>
-                                        <div className="relative">
-                                            <input 
-                                                type="number" 
-                                                value={abono || ''} 
-                                                onChange={e => setAbono(Number(e.target.value))}
-                                                className="w-24 md:w-32 bg-transparent border-b border-liquid-gold/30 py-1 text-right text-liquid-gold font-black text-lg md:text-2xl outline-none focus:border-liquid-gold transition-all"
-                                                placeholder="0.00"
-                                            />
-                                            <span className="absolute -left-3 top-1/2 -translate-y-1/2 text-liquid-gold/40 font-black italic text-sm">$</span>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center text-liquid-gold">
+                                            <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Abono Inicial</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl font-black italic">$</span>
+                                                <input 
+                                                    type="number" 
+                                                    value={abono || ''} 
+                                                    onChange={e => setAbono(Number(e.target.value))}
+                                                    className="w-32 bg-transparent border-b border-liquid-gold text-right text-3xl font-black italic outline-none py-1"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center text-slate-500">
+                                            <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Saldo Pendiente</span>
+                                            <span className="text-2xl font-black italic">{formatCurrency(precioFinal - abono)}</span>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="flex justify-between items-center relative z-10 px-1">
-                                        <span className="text-[10px] font-black text-liquid-gold/60 uppercase tracking-widest italic">Saldo</span>
-                                        <span className="text-lg md:text-xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal - abono)}</span>
-                                    </div>
+                                <div className="pt-4 flex gap-4">
+                                    <button onClick={() => setStep(2)} className="px-8 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest transition-all border border-white/10 text-[10px] flex items-center gap-3">
+                                        <ArrowLeftIcon className="w-4 h-4" /> VOLVER
+                                    </button>
+                                    <button 
+                                        onClick={() => handleConfirm()} 
+                                        className="flex-1 py-5 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.4em] hover:scale-[1.02] transition-all shadow-gold-glow-strong italic text-xs flex items-center justify-center gap-4"
+                                    >
+                                        EJECUTAR MISIÓN <CheckCircleIcon className="w-6 h-6" />
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="flex gap-3 pt-4 border-t border-white/5">
-                            <button onClick={() => setStep(2)} className="px-6 py-3 bg-white/5 text-white rounded-xl font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2 border border-white/5 active:scale-95 text-[9px]">
-                                <ArrowLeftIcon className="w-4 h-4"/> Corregir
-                            </button>
-                            <button 
-                                onClick={() => handleConfirm()} 
-                                className="flex-1 py-3 bg-liquid-gold text-black rounded-xl font-black uppercase tracking-[0.2em] hover:bg-white disabled:opacity-20 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-gold-glow text-[11px] italic active:scale-95"
-                            >
-                                <PrinterIcon className="w-4 h-4" /> Desplegar Orden
-                            </button>
                         </div>
                     </motion.div>
                 )}

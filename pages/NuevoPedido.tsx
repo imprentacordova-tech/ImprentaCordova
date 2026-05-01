@@ -950,7 +950,7 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
 
                 {/* --- SIDEBAR TELEMETRÍA ELITE --- */}
-                {!isSidebarMinimized && missionCategory && step < 5 && (
+                {!isSidebarMinimized && missionCategory && (missionCategory === 'COMERCIAL' ? step !== 2 : true) && step < 5 && (
                     <TelemetrySidebar />
                 )}
             </div>
