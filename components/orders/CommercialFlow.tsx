@@ -32,10 +32,10 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                 animate={{ opacity: 1, y: 0 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`group relative bg-[#050505]/80 backdrop-blur-2xl rounded-[2rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full flex flex-col justify-between p-8 ${
+                className={`group relative bg-white/80 dark:bg-[#050505]/80 backdrop-blur-2xl rounded-[2rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full flex flex-col justify-between p-8 ${
                     isHovered 
                         ? isExpress ? 'border-blue-500/50 shadow-blue-glow scale-[1.01]' : 'border-liquid-gold/50 shadow-gold-glow scale-[1.01]' 
-                        : 'border-white/5 shadow-2xl'
+                        : 'border-slate-200 dark:border-white/5 shadow-2xl'
                 }`}
                 onClick={onSelect}
             >
@@ -67,14 +67,14 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                         </div>
                         <div className="text-right">
                             <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mb-1">UNIT_INVESTMENT</p>
-                            <span className={`text-2xl font-black italic tracking-tighter block leading-none ${isExpress ? 'text-blue-400' : 'text-white'}`}>
+                            <span className={`text-2xl font-black italic tracking-tighter block leading-none ${isExpress ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>
                                 {formatCurrency(p.precio)}
                             </span>
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
                             {p.nombre}
                         </h3>
                         <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.3em]">

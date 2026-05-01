@@ -205,7 +205,7 @@ const VisualLanding: React.FC = () => {
                                         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                                         className="relative"
                                     >
-                                        <span className="text-7xl sm:text-9xl md:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-printing-dark italic uppercase">
+                                        <span className="text-6xl sm:text-8xl md:text-9xl lg:text-[11rem] font-black leading-[0.8] tracking-[-0.04em] text-printing-dark italic uppercase">
                                             IMPRENTA
                                         </span>
                                         {/* Decorative Technical Line */}
@@ -217,7 +217,7 @@ const VisualLanding: React.FC = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                                        className="text-gold-gradient text-5xl sm:text-7xl md:text-[8rem] font-black leading-none tracking-tight drop-shadow-2xl"
+                                        className="text-gold-gradient text-5xl sm:text-7xl md:text-8xl lg:text-[8rem] font-black leading-none tracking-tight drop-shadow-2xl"
                                     >
                                         CÓRDOVA.
                                     </motion.span>
@@ -254,7 +254,7 @@ const VisualLanding: React.FC = () => {
                                     href={generateWhatsAppLink("593993083943", "Solicitud de protocolo industrial IMPRENTA CORDOVA.")}
                                     whileHover={{ scale: 1.05, y: -4 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full sm:w-auto relative group overflow-hidden bg-printing-blue text-white px-16 py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[11px] shadow-[0_20px_50px_rgba(0,71,171,0.3)] flex items-center justify-center gap-6 italic transition-all duration-700"
+                                    className="w-full sm:w-auto relative group overflow-hidden bg-printing-blue text-white px-8 sm:px-16 py-5 sm:py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[10px] sm:text-[11px] shadow-[0_20px_50px_rgba(0,71,171,0.3)] flex items-center justify-center gap-6 italic transition-all duration-700"
                                 >
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out" />
                                     <span className="relative z-10">INICIAR PROYECTO</span> 
@@ -265,7 +265,7 @@ const VisualLanding: React.FC = () => {
                                     onClick={() => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' })}
                                     whileHover={{ scale: 1.05, y: -4 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full sm:w-auto bg-printing-dark/5 backdrop-blur-3xl text-printing-dark px-16 py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[11px] flex items-center justify-center gap-6 group border border-printing-dark/10 hover:border-printing-blue/40 hover:bg-white transition-all duration-700 italic"
+                                    className="w-full sm:w-auto bg-printing-dark/5 backdrop-blur-3xl text-printing-dark px-8 sm:px-16 py-5 sm:py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[10px] sm:text-[11px] flex items-center justify-center gap-6 group border border-printing-dark/10 hover:border-printing-blue/40 hover:bg-white transition-all duration-700 italic"
                                 >
                                     EXPLORAR CAPACIDADES <LayoutIcon className="w-5 h-5 opacity-40 group-hover:rotate-45 transition-transform duration-700" />
                                 </motion.button>
@@ -293,11 +293,11 @@ const VisualLanding: React.FC = () => {
             </header>
 
             {/* --- SECTION: THE VISION (DYNAMIC SHOWCASE) --- */}
-            <section id="vision" className="relative py-40 lg:py-60 bg-white">
-                <div className="max-w-[90rem] mx-auto px-8 lg:px-16 grid lg:grid-cols-[1fr_1.2fr] gap-24 items-start">
+            <section id="vision" className="relative py-32 lg:py-60 bg-white">
+                <div className="max-w-[90rem] mx-auto px-6 lg:px-16 grid lg:grid-cols-[1fr_1.2fr] gap-16 lg:gap-24 items-start">
                     
                     {/* Fixed Monolith Preview */}
-                    <div className="sticky top-32 h-[75vh] rounded-[3.5rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-slate-100 bg-slate-50 relative group">
+                    <div className="sticky top-20 lg:top-32 h-[45vh] lg:h-[75vh] rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-slate-100 bg-slate-50 relative group">
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-printing-blue/5 to-printing-blue/10 z-10" />
                         
                         {/* Interactive Scan Effect */}
@@ -343,7 +343,7 @@ const VisualLanding: React.FC = () => {
                     </div>
 
                     {/* Scrolling Narrative Content */}
-                    <div className="space-y-48 py-10 relative">
+                    <div className="space-y-24 lg:space-y-48 py-10 relative">
                         {/* CENTRAL_FISCAL */}
                         <motion.div 
                             initial={{ opacity: 0, y: 40 }}
@@ -430,12 +430,12 @@ const VisualLanding: React.FC = () => {
             </section>
 
             {/* --- SECTION: CONTROL CENTER (TRACKING) --- */}
-            <section className="py-60 bg-printing-gray relative overflow-hidden">
+            <section className="py-40 lg:py-60 bg-printing-gray relative overflow-hidden">
                 {/* Decorative Background Grid */}
                 <div className="absolute inset-0 z-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#0047ab 1px, transparent 1px), linear-gradient(90deg, #0047ab 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
                 
-                <div className="max-w-[100rem] mx-auto px-8 relative z-10">
-                    <div className="bg-white border border-slate-200 rounded-[5rem] p-16 lg:p-32 grid xl:grid-cols-2 gap-32 items-center shadow-2xl relative overflow-hidden">
+                <div className="max-w-[100rem] mx-auto px-6 lg:px-8 relative z-10">
+                    <div className="bg-white border border-slate-200 rounded-[2rem] md:rounded-[5rem] p-8 md:p-16 lg:p-32 grid xl:grid-cols-2 gap-16 xl:gap-32 items-center shadow-2xl relative overflow-hidden">
                         {/* Glow Spots */}
                         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-printing-blue/5 blur-[150px] -z-10" />
                         
@@ -512,7 +512,7 @@ const VisualLanding: React.FC = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         className="space-y-10"
                     >
-                        <h2 className="text-6xl md:text-9xl font-black text-slate-100 italic uppercase tracking-[-0.06em] select-none">
+                        <h2 className="text-5xl md:text-9xl font-black text-slate-100 italic uppercase tracking-[-0.06em] select-none">
                             IMPRENTA CÓRDOVA
                         </h2>
                         

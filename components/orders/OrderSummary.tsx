@@ -107,7 +107,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 <div key={item.id} className="group relative flex flex-col p-6 md:p-5 elite-hud-card">
                                     <div className="flex justify-between items-start mb-6 md:mb-3">
                                         <div className="min-w-0 flex-grow pr-4">
-                                            <p className="text-[15px] md:text-[12px] font-black uppercase tracking-tight text-white mb-3 md:mb-1">{item.nombre}</p>
+                                            <p className="text-[15px] md:text-[12px] font-black uppercase tracking-tight text-slate-900 dark:text-white mb-3 md:mb-1">{item.nombre}</p>
                                             <div className="flex items-center gap-4 md:gap-3">
                                                 <span className="text-[11px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest">{item.cantidad} UNID.</span>
                                                 <div className="w-1.5 h-1.5 md:w-1 md:h-1 rounded-full bg-slate-700"></div>
@@ -126,7 +126,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                                     />
                                                 </div>
                                             ) : (
-                                                <span className="text-[16px] md:text-[13px] font-black text-white italic tracking-tighter">{formatCurrency(item.precio)}</span>
+                                                <span className="text-xl md:text-sm font-black text-slate-900 dark:text-white italic tracking-tighter">{formatCurrency(item.precio)}</span>
                                             )}
                                         </div>
                                     </div>

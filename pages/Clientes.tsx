@@ -323,7 +323,7 @@ const ClientesPage: React.FC = () => {
             <SEO title="Elite Directory | Imprenta Córdova" description="Gestión industrial avanzada de activos humanos y corporativos." />
 
             {/* --- ELITE HEADER HUD --- */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 p-10 lg:p-14 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[4rem] shadow-2xl relative overflow-hidden group">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 sm:gap-10 p-6 sm:p-10 lg:p-14 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] sm:rounded-[3rem] lg:rounded-[4rem] shadow-2xl relative overflow-hidden group mx-4 lg:mx-0">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-brand-red/5 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
                 
                 <div className="flex gap-10 relative z-10">
@@ -337,7 +337,7 @@ const ClientesPage: React.FC = () => {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 italic">VÍNCULO_CORPORATIVO_ACTIVO</span>
                         </div>
-                        <h1 className="text-5xl lg:text-7xl font-black text-white uppercase italic tracking-tighter leading-none">
+                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white uppercase italic tracking-tighter leading-none">
                             GARANTÍA DE <span className="text-brand-red text-glow not-italic">CLIENTES</span>
                         </h1>
                         <p className="text-slate-500 text-xl font-medium tracking-tight italic opacity-60">Soberanía de datos para la elite comercial.</p>
@@ -348,7 +348,7 @@ const ClientesPage: React.FC = () => {
                     <motion.button 
                         whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                         onClick={() => setSelectedClient({ id: '', nombre: '', email: '', telefono: [''], ruc: '', cedula: '', regimen: Regimen.GENERAL, creadoEn: new Date().toISOString() })} 
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-4 bg-brand-red text-brand-blue font-black py-5 px-10 rounded-2xl shadow-red-glow-soft hover:bg-white hover:text-brand-blue transition-all duration-700 text-[11px] uppercase tracking-widest italic"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-4 bg-brand-red text-brand-blue font-black py-4 sm:py-5 px-6 sm:px-10 w-full rounded-xl sm:rounded-2xl shadow-red-glow-soft hover:bg-white hover:text-brand-blue transition-all duration-700 text-[10px] sm:text-[11px] uppercase tracking-widest italic"
                     >
                         <UserPlusIcon className="w-5 h-5" /> VINCULAR_NUEVO_ACTIVO
                     </motion.button>
@@ -364,22 +364,22 @@ const ClientesPage: React.FC = () => {
                         type="text" placeholder="BUSCAR POR NOMBRE, RUC O CÉDULA..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full bg-white/[0.02] border border-white/10 p-7 pl-20 rounded-[2.5rem] text-white font-black focus:ring-4 focus:ring-brand-red/5 focus:border-brand-red/20 transition-all shadow-2xl text-base uppercase tracking-[0.2em] placeholder:text-slate-700 italic backdrop-blur-xl"
+                        className="w-full bg-white/[0.02] border border-white/10 p-5 pl-16 sm:p-7 sm:pl-20 rounded-[2rem] sm:rounded-[2.5rem] text-white font-black focus:ring-4 focus:ring-brand-red/5 focus:border-brand-red/20 transition-all shadow-2xl text-xs sm:text-base uppercase tracking-[0.2em] placeholder:text-slate-700 italic backdrop-blur-xl"
                     />
                 </div>
             </div>
 
             {/* --- ELITE DIRECTORY HUD --- */}
-            <div className="flex-grow bg-white/[0.01] backdrop-blur-3xl rounded-[4rem] shadow-4xl border border-white/10 overflow-hidden relative group/table">
+            <div className="flex-grow bg-white/[0.01] backdrop-blur-3xl rounded-[2rem] sm:rounded-[4rem] shadow-4xl border border-white/10 overflow-hidden relative group/table mx-4 lg:mx-0">
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-red/[0.01] to-transparent pointer-events-none" />
                 <div className="overflow-x-auto h-full no-scrollbar">
                     <table className="min-w-full divide-y divide-white/5">
                         <thead className="bg-black/40 sticky top-0 backdrop-blur-2xl z-20 border-b border-white/10">
                             <tr>
-                                <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">ACTIVO_CORPORATIVO</th>
-                                <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">ID_TRIBUTARIO</th>
-                                <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">RÉGIMEN_FISCAL</th>
-                                <th className="px-10 py-8 text-right text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">OPERACIONES</th>
+                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-left text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">ACTIVO_CORPORATIVO</th>
+                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-left text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">ID_TRIBUTARIO</th>
+                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-left text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">RÉGIMEN_FISCAL</th>
+                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-right text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">OPERACIONES</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 bg-transparent relative z-10">
@@ -395,8 +395,8 @@ const ClientesPage: React.FC = () => {
                                     key={c.id} 
                                     className="hover:bg-white/[0.03] transition-all duration-700 group/row relative"
                                 >
-                                    <td className="px-10 py-8">
-                                        <div className="flex items-center gap-6">
+                                    <td className="px-4 sm:px-10 py-6 sm:py-8">
+                                        <div className="flex items-center gap-4 sm:gap-6">
                                             <div className="w-14 h-14 rounded-2xl bg-brand-red/10 border border-brand-red/20 flex items-center justify-center font-black text-brand-red shadow-red-glow-soft transition-all group-hover/row:scale-110 group-hover/row:bg-brand-red group-hover/row:text-brand-blue group-hover/row:shadow-red-glow flex-shrink-0 italic">
                                                 {(c.nombre || '?').charAt(0)}
                                             </div>
@@ -406,14 +406,14 @@ const ClientesPage: React.FC = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-10 py-8">
-                                        <div className="flex items-center gap-3">
+                                    <td className="px-4 sm:px-10 py-6 sm:py-8">
+                                        <div className="flex items-center gap-2 sm:gap-3">
                                             <FileTextIcon className="w-4 h-4 text-slate-600 group-hover/row:text-brand-red transition-colors" />
                                             <span className="font-mono text-sm font-black text-slate-400 group-hover/row:text-white transition-colors tracking-widest">{c.ruc || c.cedula}</span>
                                         </div>
                                     </td>
-                                    <td className="px-10 py-8">
-                                        <span className={`px-5 py-2 inline-flex text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all duration-700 ${
+                                    <td className="px-4 sm:px-10 py-6 sm:py-8">
+                                        <span className={`px-4 py-2 sm:px-5 sm:py-2 inline-flex text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all duration-700 ${
                                             c.regimen === Regimen.NEGOCIO_POPULAR 
                                             ? 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-orange-500/5 group-hover/row:bg-orange-500 group-hover/row:text-brand-blue' 
                                             : c.regimen === Regimen.EMPRENDEDOR
@@ -423,8 +423,8 @@ const ClientesPage: React.FC = () => {
                                             {c.regimen.replace('_', ' ')}
                                         </span>
                                     </td>
-                                    <td className="px-10 py-8 text-right">
-                                        <div className="flex justify-end gap-3 opacity-40 group-hover/row:opacity-100 transition-opacity duration-700">
+                                    <td className="px-4 sm:px-10 py-6 sm:py-8 text-right">
+                                        <div className="flex justify-end gap-1 sm:gap-3 opacity-100 sm:opacity-40 group-hover/row:opacity-100 transition-opacity duration-700">
                                             <button onClick={() => setMarketingClient(c)} className="p-4 text-brand-red hover:bg-brand-red/10 rounded-2xl transition-all border border-transparent hover:border-brand-red/20 shadow-sm hover:shadow-red-glow" title="Sincronizar IA">
                                                 <SparklesIcon className="w-5 h-5" />
                                             </button>

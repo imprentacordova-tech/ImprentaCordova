@@ -118,7 +118,7 @@ const NuevoPedidoPage: React.FC = () => {
                         ? `${item.cantidad || 1}x ${item.nombre || 'DOCUMENTO SRI'} (${item.especificaciones?.tamano || 'ESTÁNDAR'})` 
                         : `${item.descripcion || ''} | ESPECIFICACIONES: ${JSON.stringify(item.especificaciones)}`,
                     cantidad: item.cantidad || 1,
-                    precio: item.precioFinal,
+                    precio: item.precioFinal || (item as any).total || 0,
                     abono: index === 0 ? abono : 0,
                     saldo: item.precioFinal - (index === 0 ? abono : 0),
                     prioridad,
@@ -151,7 +151,7 @@ const NuevoPedidoPage: React.FC = () => {
             
             refreshData().catch(() => {});
             setCreatedTrabajoId(results[0].id); // Use first job ID for receipts
-            setStep(isSriOrder ? 6 : 5); 
+            setStep(6); 
         } catch (err: any) {
             console.error('[NuevoPedido] Error:', err);
             setError(err.message || 'Error al procesar la orden.');
@@ -278,10 +278,13 @@ const NuevoPedidoPage: React.FC = () => {
         );
     };
 
+    const showSidebar = !isSidebarMinimized && missionCategory && step < 5;
+
     return (
         <div className="elite-terminal">
             <div className="elite-viewport px-3 sm:px-6 lg:px-10 py-4">
-                <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-8 pb-20">
+                <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 pb-20">
+                    <div className={`space-y-4 md:space-y-8 transition-all duration-500 ${showSidebar ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
             {/* --- ELITE COMPACT STEPPER --- */}
             <div className="sticky top-0 z-[60] -mx-3 sm:mx-0 bg-black/80 backdrop-blur-3xl border-b border-white/5 py-3 md:py-4 px-4 md:px-10 flex items-center justify-between gap-6 overflow-x-auto no-scrollbar">
                 <div className="flex items-center gap-1 md:gap-3 flex-1">
@@ -853,12 +856,13 @@ const NuevoPedidoPage: React.FC = () => {
                             </div>
                         </div>
                     )}
-                </div>
+                    </div>
 
-                {/* --- SIDEBAR TELEMETRÍA ELITE --- */}
-                {!isSidebarMinimized && missionCategory && step < 5 && (
-                    <TelemetrySidebar />
-                )}
+                    {/* --- SIDEBAR TELEMETRÍA ELITE --- */}
+                    {showSidebar && (
+                        <TelemetrySidebar />
+                    )}
+                </div>
             </div>
         </div>
     </div>

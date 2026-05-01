@@ -46,7 +46,7 @@ const MainActionButton: React.FC<{
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.5 }}
             onClick={onClick}
-            className={`group relative flex flex-col items-start p-6 rounded-[2rem] border bg-gradient-to-br ${colorMap[color]} backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-2xl overflow-hidden h-56`}
+            className={`group relative flex flex-col items-start p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border bg-gradient-to-br ${colorMap[color]} backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-2xl overflow-hidden h-40 sm:h-56`}
         >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-[1.5s] ease-in-out" />
@@ -63,7 +63,7 @@ const MainActionButton: React.FC<{
             </div>
             
             <div className="mt-auto space-y-1 relative z-10 text-left">
-                <h3 className="text-xl font-black text-white uppercase tracking-[-0.04em] italic">{label}</h3>
+                <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-[-0.04em] italic">{label}</h3>
                 <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.3em]">{sub}</p>
             </div>
 
@@ -161,8 +161,8 @@ const DashboardPage: React.FC = () => {
             <TacticalStatus />
             
             {/* --- CABECERA --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 border-b border-white/5 pb-12">
-                <div className="flex gap-10">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-white/5 pb-12">
+                <div className="flex gap-10 w-full xl:w-auto">
                     <div className="w-[1px] h-32 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
                     <div className="space-y-4">
                         <div className="flex items-center gap-4 mb-4">
@@ -173,7 +173,7 @@ const DashboardPage: React.FC = () => {
                             </div>
                             <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Estado del Sistema • v5.0</span>
                         </div>
-                        <h1 className="text-5xl sm:text-6xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
                             IMPRENTA CÓRDOVA <span className="text-gold-gradient">Elite</span>
                         </h1>
                         <p className="text-slate-500 text-lg font-light tracking-tight italic">
@@ -182,17 +182,17 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-6">
-                    <div className="bg-black/60 border border-white/10 rounded-[2.5rem] p-8 flex items-center gap-10 backdrop-blur-3xl shadow-luxury relative overflow-hidden group">
+                <div className="flex flex-col items-start xl:items-end gap-6 w-full xl:w-auto mt-6 xl:mt-0">
+                    <div className="bg-black/60 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 flex flex-wrap sm:flex-nowrap items-center gap-6 sm:gap-10 backdrop-blur-3xl shadow-luxury relative overflow-hidden group w-full xl:w-auto justify-between sm:justify-start">
                         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
-                        <div className="text-center relative z-10">
+                        <div className="text-center sm:text-left relative z-10 flex-1 sm:flex-none">
                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Manifiestos en Curso</p>
-                            <p className="text-4xl font-black text-white italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalActivos}</p>
+                            <p className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter group-hover:scale-110 transition-transform origin-left">{stats.totalActivos}</p>
                         </div>
-                        <div className="w-[1px] h-12 bg-white/10 relative z-10"></div>
-                        <div className="text-center relative z-10">
+                        <div className="hidden sm:block w-[1px] h-12 bg-white/10 relative z-10"></div>
+                        <div className="text-center sm:text-left relative z-10 flex-1 sm:flex-none">
                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Fase de Despliegue</p>
-                            <p className="text-4xl font-black text-blue-400 italic tracking-tighter group-hover:scale-110 transition-transform">{stats.enProduccion}</p>
+                            <p className="text-3xl sm:text-4xl font-black text-blue-400 italic tracking-tighter group-hover:scale-110 transition-transform origin-left">{stats.enProduccion}</p>
                         </div>
                         <div className="absolute top-4 right-4 flex gap-1">
                             <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -203,7 +203,7 @@ const DashboardPage: React.FC = () => {
                     <motion.button 
                         whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                         onClick={handleQuickAddClient}
-                        className="flex items-center gap-4 bg-liquid-gold text-brand-blue px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-gold-glow italic"
+                        className="flex items-center justify-center w-full xl:w-auto gap-4 bg-liquid-gold text-brand-blue px-8 py-4 rounded-xl sm:rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-gold-glow italic"
                     >
                         <UserPlusIcon className="w-5 h-5" />
                         Vincular Nuevo Cliente
@@ -212,7 +212,7 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* --- ACCIONES OPERATIVAS --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                 <MainActionButton 
                     label="Catálogo" sub="Bóveda de Activos Gráficos" icon={BookOpenIcon} 
                     onClick={() => navigate('/productos')} color="blue" delay={0.1}

@@ -64,7 +64,7 @@ const TrabajosPage: React.FC = () => {
     }, [trabajos, clientes, searchTerm, tipoFilter, estadoFilter]);
 
     return (
-        <div className="max-w-7xl mx-auto space-y-16 pb-40 px-6 sm:px-12 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto space-y-10 sm:space-y-16 pb-40 px-4 sm:px-12 relative overflow-hidden">
             <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
 
             {/* --- HEADER --- */}
@@ -78,7 +78,7 @@ const TrabajosPage: React.FC = () => {
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-printing-blue italic">Telemetría de Producción</span>
                     </div>
-                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-5xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
                         FLUJO DE <span className="text-gold-gradient drop-shadow-gold">TRABAJOS</span>
                     </motion.h1>
                     <div className="flex items-center gap-6">
@@ -93,18 +93,18 @@ const TrabajosPage: React.FC = () => {
                 </div>
                 <Link 
                     to="/nuevo" 
-                    className="btn-luxury px-12 py-6 text-sm flex items-center gap-4 group"
+                    className="btn-luxury px-8 py-4 sm:px-12 sm:py-6 text-xs sm:text-sm flex items-center justify-center w-full xl:w-auto gap-4 group"
                 >
-                    <AddIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+                    <AddIcon className="w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-90 transition-transform duration-500" />
                     <span>Initialize Mission</span>
                 </Link>
             </div>
 
             {/* --- QUICK STATS / TABS --- */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 relative z-10">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 relative z-10">
                 <button 
                     onClick={() => setEstadoFilter('Todos')}
-                    className={`p-6 rounded-[2rem] border transition-all text-center flex flex-col items-center gap-2 ${estadoFilter === 'Todos' ? 'glass-card-luxury border-liquid-gold/30 shadow-gold-glow-sm' : 'bg-white/5 border-white/5 opacity-50 hover:opacity-100'}`}
+                    className={`p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border transition-all text-center flex flex-col items-center gap-2 ${estadoFilter === 'Todos' ? 'glass-card-luxury border-liquid-gold/30 shadow-gold-glow-sm' : 'bg-white/5 border-white/5 opacity-50 hover:opacity-100'}`}
                 >
                     <SparklesIcon className={`w-5 h-5 ${estadoFilter === 'Todos' ? 'text-liquid-gold' : 'text-slate-500'}`} />
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">TODOS</span>
@@ -113,7 +113,7 @@ const TrabajosPage: React.FC = () => {
                     <button 
                         key={status}
                         onClick={() => setEstadoFilter(status as TrabajoEstado)}
-                        className={`p-6 rounded-[2rem] border transition-all text-center flex flex-col items-center gap-2 ${estadoFilter === status ? `glass-card-luxury ${meta.border} ${meta.glow}` : 'bg-white/5 border-white/5 opacity-50 hover:opacity-100'}`}
+                        className={`p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border transition-all text-center flex flex-col items-center gap-2 ${estadoFilter === status ? `glass-card-luxury ${meta.border} ${meta.glow}` : 'bg-white/5 border-white/5 opacity-50 hover:opacity-100'}`}
                     >
                         <meta.icon className={`w-5 h-5 ${estadoFilter === status ? meta.color : 'text-slate-500'}`} />
                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{meta.label}</span>
