@@ -870,13 +870,13 @@ const NuevoPedidoPage: React.FC = () => {
                                             missionCategory === 'SRI' ? (
                                                 <>
                                                     <button 
-                                                        onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} 
+                                                        onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a5`, '_blank')} 
                                                         className="px-8 py-6 bg-liquid-gold text-black rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-gold-glow hover:scale-105 active:scale-95 transition-all italic"
                                                     >
                                                         <PrinterIcon className="w-5 h-5" /> SRI (A5 DOBLE)
                                                     </button>
                                                     <button 
-                                                        onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} 
+                                                        onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a4`, '_blank')} 
                                                         className="px-8 py-6 bg-white/5 text-white border-2 border-liquid-gold/30 rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-liquid-gold/20 active:scale-95 transition-all italic"
                                                     >
                                                         <PrinterIcon className="w-5 h-5" /> SRI (A4 FULL)

@@ -13,16 +13,44 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
+import { supabase } from '../services/supabase';
+import { AlertTriangleIcon } from '../components/Icons';
 
 // Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
 declare const html2pdf: any;
 
+const mapDBTrabajo = (t: any): Trabajo => ({
+    ...t,
+    clienteId: t.cliente_id,
+    fechaEntrada: t.fecha_entrada,
+    fechaEntrega: t.fecha_entrega,
+    creadoPor: t.creado_por,
+    actualizadoPor: t.actualizado_por,
+    fotoOriginalUrl: t.foto_original_url,
+    fotoEvidenciaUrl: t.foto_evidencia_url,
+    estadoClave: t.estado_clave,
+    imprimirClave: t.imprimir_clave,
+    esRenovacion: t.es_renovacion,
+    esSRI: t.es_sri === true || t.tipo?.toLowerCase() === 'sri',
+    tamano: t.tamano,
+    establecimiento: t.establecimiento,
+    puntoEmision: t.punto_emision,
+    fechaVencimiento: t.fecha_vencimiento,
+    actividadSeleccionada: t.actividad_seleccionada,
+    claveAcceso: t.clave_acceso,
+    arteAprobado: t.arte_aprobado,
+    fotoRetiroUrl: t.foto_retiro_url,
+    autorizacion_sri: t.autorizacion_sri,
+    numeracion: t.numeracion
+});
+
 const NotaDeVentaPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
-    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
+    const { trabajos, clientes, config: cloudConfig, loading: dataLoading, refreshData } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isConsumidorFinal, setIsConsumidorFinal] = useState(false);
 
@@ -30,20 +58,66 @@ const NotaDeVentaPage: React.FC = () => {
     const [isCelebrationVisible, setIsCelebrationVisible] = useState(false);
 
     useEffect(() => {
-        if (!trabajoId || dataLoading) return;
+        console.log(`[NotaDeVenta] Montando para trabajoId: ${trabajoId}`);
+        
+        const fetchDirectly = async () => {
+            if (!trabajoId) return;
+            console.log("[NotaDeVenta] Iniciando búsqueda directa en Supabase...");
+            try {
+                // Fetch Trabajo
+                const { data: tData, error: tError } = await supabase
+                    .from('trabajos')
+                    .select('*')
+                    .eq('id', trabajoId)
+                    .single();
+                
+                if (tError) throw tError;
+                if (tData) {
+                    const mappedT = mapDBTrabajo(tData);
+                    setTrabajo(mappedT);
+                    console.log("[NotaDeVenta] Trabajo recuperado vía fetch directo:", mappedT.id);
+
+                    // Fetch Cliente
+                    const { data: cData, error: cError } = await supabase
+                        .from('clientes')
+                        .select('*')
+                        .eq('id', mappedT.clienteId)
+                        .single();
+                    
+                    if (!cError && cData) {
+                        setCliente(cData);
+                        console.log("[NotaDeVenta] Cliente recuperado vía fetch directo:", cData.nombre);
+                    }
+                }
+            } catch (err) {
+                console.error("[NotaDeVenta] Error en fetch directo:", err);
+                setError("No se pudo recuperar el documento desde la base de datos.");
+            }
+        };
+
+        if (dataLoading) return;
+
         const currentTrabajo = trabajos.find(t => t.id === trabajoId);
         if (currentTrabajo) {
+            console.log("[NotaDeVenta] Trabajo encontrado en cache local.");
             setTrabajo(currentTrabajo);
             const foundCliente = clientes.find(c => c.id === currentTrabajo.clienteId) || null;
-            setCliente(foundCliente);
+            if (foundCliente) {
+                setCliente(foundCliente);
+            } else {
+                fetchDirectly(); // Fallback for client
+            }
+        } else {
+            console.warn(`[NotaDeVenta] Trabajo no encontrado en cache local: ${trabajoId}`);
+            fetchDirectly();
+        }
 
-            // Trigger celebration if it's already delivered/finished
-            if (currentTrabajo.estado === TrabajoEstado.ENTREGADO) {
-                const hasCelebrated = sessionStorage.getItem(`celebrated_${currentTrabajo.id}`);
-                if (!hasCelebrated) {
-                    setIsCelebrationVisible(true);
-                    sessionStorage.setItem(`celebrated_${currentTrabajo.id}`, 'true');
-                }
+        // Trigger celebration if it's already delivered/finished
+        if (currentTrabajo?.estado === TrabajoEstado.ENTREGADO) {
+            const hasCelebrated = sessionStorage.getItem(`celebrated_${currentTrabajo.id}`);
+            if (!hasCelebrated) {
+                setIsCelebrationVisible(true);
+                sessionStorage.setItem(`celebrated_${currentTrabajo.id}`, 'true');
             }
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
@@ -109,25 +183,37 @@ const NotaDeVentaPage: React.FC = () => {
         }
     };
 
-    if (dataLoading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900">
-            <Loader2Icon className="w-10 h-10 text-brand-blue animate-spin" />
+    if (dataLoading || (isRetrying && !trabajo)) return (
+        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-20 h-20 border-4 border-liquid-gold/20 border-t-liquid-gold rounded-full animate-spin mb-8 shadow-gold-glow"></div>
+            <h2 className="text-2xl font-black text-white uppercase tracking-[0.3em] mb-4">Sincronizando Archivos</h2>
+            <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Buscando registro en el núcleo de datos...</p>
         </div>
     );
 
     if (!trabajo || !cliente) return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 gap-6 p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                <InfoIcon className="w-10 h-10 text-liquid-gold opacity-50" />
+        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-6 text-center">
+            <div className="p-8 rounded-[3rem] bg-red-500/10 border border-red-500/20 mb-10 shadow-luxury animate-pulse">
+                <AlertTriangleIcon className="w-16 h-16 text-brand-red mx-auto mb-6" />
+                <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 italic">Documento No Encontrado</h2>
+                <p className="text-slate-400 font-bold text-sm max-w-md mx-auto leading-relaxed">
+                    {error || "La orden solicitada no existe, el cliente está desvinculado o ha sido eliminada del sistema."}
+                </p>
             </div>
-            <h2 className="text-white font-black text-2xl uppercase tracking-tighter italic">Documento No Encontrado</h2>
-            <p className="text-slate-400 text-sm max-w-xs italic">La orden solicitada no existe o ha sido eliminada del sistema.</p>
-            <button 
-                onClick={() => navigate('/trabajos')} 
-                className="bg-liquid-gold text-brand-dark px-8 py-3 rounded-2xl font-black uppercase text-[11px] tracking-widest italic shadow-lg"
-            >
-                Volver a Trabajos
-            </button>
+            <div className="flex gap-4">
+                <button 
+                    onClick={() => navigate(-1)}
+                    className="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all"
+                >
+                    Regresar
+                </button>
+                <button 
+                    onClick={() => refreshData()}
+                    className="px-10 py-5 bg-liquid-gold rounded-2xl text-[10px] font-black text-black uppercase tracking-widest hover:scale-105 transition-all shadow-gold-glow-sm"
+                >
+                    Reintentar Sincronización
+                </button>
+            </div>
         </div>
     );
 

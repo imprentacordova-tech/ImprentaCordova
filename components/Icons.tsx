@@ -111,6 +111,7 @@ export const CheckBadgeIcon           = BadgeCheck;
 export const CheckIcon                = Check;
 export const Loader2Icon              = Loader2;
 export const ExclamationTriangleIcon  = AlertTriangle;
+export const AlertTriangleIcon         = AlertTriangle;
 export const InfoIcon                 = Info;
 export const SparklesIcon             = Sparkles;
 export const BoltIcon                 = Zap;

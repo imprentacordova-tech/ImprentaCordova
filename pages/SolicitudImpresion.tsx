@@ -5,9 +5,11 @@ import { Cliente, Trabajo, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
     Loader2Icon, MapPinIcon, ExclamationTriangleIcon, ShieldCheckIcon,
-    FingerPrintIcon, CpuIcon, ActivityIcon, LockIcon, HomeIcon
+    FingerPrintIcon, CpuIcon, ActivityIcon, LockIcon, HomeIcon,
+    AlertTriangleIcon
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
+import { supabase } from '../services/supabase';
 
 declare const html2pdf: any;
 
@@ -49,6 +51,31 @@ const TacticalStatusBar = ({ id }: { id: string }) => (
     </div>
 );
 
+const mapDBTrabajo = (t: any): Trabajo => ({
+    ...t,
+    clienteId: t.cliente_id,
+    fechaEntrada: t.fecha_entrada,
+    fechaEntrega: t.fecha_entrega,
+    creadoPor: t.creado_por,
+    actualizadoPor: t.actualizado_por,
+    fotoOriginalUrl: t.foto_original_url,
+    fotoEvidenciaUrl: t.foto_evidencia_url,
+    estadoClave: t.estado_clave,
+    imprimirClave: t.imprimir_clave,
+    esRenovacion: t.es_renovacion,
+    esSRI: t.es_sri === true || t.tipo?.toLowerCase() === 'sri',
+    tamano: t.tamano,
+    establecimiento: t.establecimiento,
+    puntoEmision: t.punto_emision,
+    fechaVencimiento: t.fecha_vencimiento,
+    actividadSeleccionada: t.actividad_seleccionada,
+    claveAcceso: t.clave_acceso,
+    arteAprobado: t.arte_aprobado,
+    fotoRetiroUrl: t.foto_retiro_url,
+    autorizacion_sri: t.autorizacion_sri,
+    numeracion: t.numeracion
+});
+
 const SolicitudImpresionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
@@ -58,14 +85,58 @@ const SolicitudImpresionPage: React.FC = () => {
     const { trabajos, clientes, sriCredentials, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [isRetrying, setIsRetrying] = useState(false);
 
     useEffect(() => {
-        if (!trabajoId || dataLoading) return;
+        if (!trabajoId) return;
+
+        const fetchDirectly = async () => {
+            console.log("[SolicitudImpresion] Iniciando búsqueda directa...");
+            setIsRetrying(true);
+            try {
+                const { data: tData, error: tError } = await supabase
+                    .from('trabajos')
+                    .select('*')
+                    .eq('id', trabajoId)
+                    .single();
+                
+                if (tError) throw tError;
+                if (tData) {
+                    const mappedT = mapDBTrabajo(tData);
+                    setTrabajo(mappedT);
+                    
+                    const { data: cData, error: cError } = await supabase
+                        .from('clientes')
+                        .select('*')
+                        .eq('id', mappedT.clienteId)
+                        .single();
+                    
+                    if (!cError && cData) {
+                        setCliente(cData);
+                    }
+                }
+            } catch (err) {
+                console.error("[SolicitudImpresion] Error en fetch directo:", err);
+                setError("Documento no encontrado en la base de datos.");
+            } finally {
+                setIsRetrying(false);
+            }
+        };
+
+        if (dataLoading) return;
+
         const currentTrabajo = trabajos.find(t => t.id === trabajoId);
         if (currentTrabajo) {
             setTrabajo(currentTrabajo);
             const foundCliente = clientes.find(c => c.id === currentTrabajo.clienteId) || null;
-            setCliente(foundCliente);
+            if (foundCliente) {
+                setCliente(foundCliente);
+            } else {
+                fetchDirectly();
+            }
+        } else {
+            fetchDirectly();
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
 
@@ -99,12 +170,30 @@ const SolicitudImpresionPage: React.FC = () => {
         html2pdf().from(element).set(opt).save();
     };
 
-    if (dataLoading || !config || !trabajo || !cliente) return (
+    if (dataLoading || isRetrying) return (
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b]">
             <div className="flex flex-col items-center gap-4">
                 <Loader2Icon className="w-12 h-12 text-amber-500 animate-spin" />
                 <span className="text-amber-500 font-mono text-xs uppercase tracking-[0.3em] animate-pulse">Initializing Elite Protocol...</span>
             </div>
+        </div>
+    );
+
+    if (error || !trabajo || !cliente) return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0b] p-6 text-center">
+            <div className="p-8 rounded-[3rem] bg-red-500/10 border border-red-500/20 mb-10 shadow-luxury">
+                <AlertTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-6" />
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-4 italic">Documento No Encontrado</h2>
+                <p className="text-slate-400 font-bold text-sm max-w-md mx-auto leading-relaxed uppercase">
+                    {error || "El registro solicitado no está disponible en la base de datos local ni remota."}
+                </p>
+            </div>
+            <button 
+                onClick={() => navigate('/dashboard')}
+                className="px-10 py-5 bg-amber-500 rounded-2xl text-[10px] font-black text-black uppercase tracking-widest hover:scale-105 transition-all shadow-gold-glow"
+            >
+                Volver al Centro de Mando
+            </button>
         </div>
     );
 
