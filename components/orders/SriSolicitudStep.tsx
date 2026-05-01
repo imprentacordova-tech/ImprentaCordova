@@ -390,68 +390,85 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white/[0.01] border border-white/5 rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 space-y-8 md:space-y-12 relative overflow-hidden backdrop-blur-3xl shadow-luxury self-start">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 blur-[100px] pointer-events-none" />
+                <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-10 lg:p-12 space-y-8 md:space-y-10 relative overflow-hidden shadow-2xl self-start">
+                    {/* Industrial Scanners Background */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/[0.03] blur-[120px] pointer-events-none" />
+                    <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/[0.02] blur-[100px] pointer-events-none" />
                     
                     <div className="grid grid-cols-2 gap-4 md:gap-6 relative z-10">
-                        <div className="space-y-3 md:space-y-4">
-                            <label className="flex items-center gap-2 md:gap-3 text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-wider md:tracking-[0.3em] ml-1">
-                                <MapPinIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-liquid-gold" /> Establ.
-                            </label>
-                            <div className="relative group">
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 px-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold/40 animate-pulse" />
+                                <span className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">Establecimiento</span>
+                            </div>
+                            <div className="relative group/input">
+                                <div className="absolute inset-0 bg-liquid-gold/5 blur-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity rounded-2xl" />
                                 <select 
                                     value={establecimiento}
                                     onChange={(e) => setEstablecimiento(e.target.value)}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl p-3 md:p-4 text-white font-black text-center text-xl md:text-2xl focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono appearance-none outline-none"
+                                    className="relative w-full bg-black/60 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-6 text-white font-black text-center text-2xl md:text-4xl focus:bg-black/80 transition-all duration-500 shadow-inner font-mono appearance-none outline-none cursor-pointer tracking-tighter"
                                 >
                                     {availableEstablecimientos.map(e => (
-                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-base">
+                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-base italic">
                                             {e.codigo}
                                         </option>
                                     ))}
                                     <option value="custom" className="bg-slate-900 text-white text-[10px] md:text-base">+ OTRO</option>
                                 </select>
+                                <MapPinIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
                             </div>
                         </div>
-                        <div className="space-y-3 md:space-y-4">
-                            <label className="flex items-center gap-2 md:gap-3 text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-wider md:tracking-[0.3em] ml-1">
-                                <HashtagIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-liquid-gold" /> Punto Em.
-                            </label>
-                            <div className="relative group">
+
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 px-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold/40 animate-pulse" />
+                                <span className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">Punto Emisión</span>
+                            </div>
+                            <div className="relative group/input">
+                                <div className="absolute inset-0 bg-liquid-gold/5 blur-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity rounded-2xl" />
                                 <input 
                                     type="text"
                                     inputMode="numeric"
                                     value={puntoEmision}
                                     onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').substring(0,3))}
                                     maxLength={3}
-                                    className="w-full bg-black/60 border-2 border-white/5 rounded-xl p-3 md:p-4 text-white font-black text-center text-xl md:text-2xl tracking-[0.1em] md:tracking-[0.2em] focus:border-liquid-gold/30 focus:bg-liquid-gold/5 transition-all duration-500 shadow-xl focus:shadow-gold-glow font-mono outline-none"
+                                    className="relative w-full bg-black/60 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-6 text-white font-black text-center text-2xl md:text-4xl tracking-[0.2em] md:tracking-[0.3em] focus:bg-black/80 transition-all duration-500 shadow-inner font-mono outline-none placeholder:text-slate-900"
                                     placeholder="001"
                                 />
+                                <HashtagIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="space-y-5 md:space-y-8 relative z-10">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between ml-1 md:ml-2 gap-3 md:gap-4">
-                            <label className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[13px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em]">
+                    <div className="space-y-5 relative z-10 pt-2">
+                        <div className="flex items-center justify-between px-2">
+                            <label className="flex items-center gap-3 text-[9px] md:text-[11px] text-slate-400 font-black uppercase tracking-widest italic">
                                 <KeyIcon className="w-4 h-4 md:w-5 md:h-5 text-liquid-gold" /> Credencial SRI
                             </label>
-                            <div className="flex items-center gap-2 md:gap-3 bg-liquid-gold/10 px-4 md:px-5 py-1.5 md:py-2 rounded-full border border-liquid-gold/20 w-fit">
-                                <ShieldIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-liquid-gold animate-pulse" />
-                                <span className="text-[8px] md:text-[10px] font-black text-liquid-gold uppercase tracking-widest italic">Encrypted_Link</span>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-liquid-gold/5 border border-liquid-gold/20 rounded-full">
+                                <span className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
+                                <span className="text-[7px] md:text-[9px] text-liquid-gold font-black uppercase tracking-tighter">Encrypted_Link</span>
                             </div>
                         </div>
-                        <div className="relative group">
+                        <div className="relative group/pass">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/20 via-transparent to-liquid-gold/20 blur-2xl opacity-0 group-focus-within/pass:opacity-100 transition-opacity duration-1000" />
                             <input 
                                 type="password"
                                 value={clave}
                                 onChange={(e) => setClave(e.target.value)}
-                                className="w-full bg-black/60 border-2 border-white/5 rounded-2xl md:rounded-[2rem] p-4 md:p-6 text-white font-mono text-base md:text-xl tracking-[0.6em] md:tracking-[0.8em] focus:border-liquid-gold focus:bg-liquid-gold/5 transition-all duration-500 shadow-2xl focus:shadow-gold-glow outline-none"
+                                className="relative w-full bg-black/80 border border-white/5 group-focus-within/pass:border-liquid-gold/50 rounded-2xl md:rounded-3xl p-5 md:p-8 text-white font-mono text-xl md:text-4xl tracking-[0.8em] md:tracking-[1.2em] focus:bg-black transition-all duration-500 shadow-2xl outline-none placeholder:text-slate-900"
                                 placeholder="••••••••"
                             />
-                            <div className="absolute top-1/2 right-4 md:right-6 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-liquid-gold/10 rounded-lg flex items-center justify-center text-liquid-gold/40 group-focus-within:text-liquid-gold group-focus-within:shadow-gold-glow transition-all">
-                                <ShieldCheckIcon className="w-5 h-5" />
+                            <div className="absolute top-1/2 right-4 md:right-8 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/[0.02] rounded-xl border border-white/5 flex items-center justify-center text-white/10 group-focus-within/pass:text-liquid-gold group-focus-within/pass:border-liquid-gold/30 transition-all duration-500">
+                                <ShieldCheckIcon className="w-5 h-5 md:w-7 md:h-7" />
                             </div>
+                            
+                            {/* Scanning line animation */}
+                            <motion.div 
+                                animate={{ top: ['0%', '100%', '0%'] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                                className="absolute left-0 right-0 h-[1px] bg-liquid-gold/30 blur-sm opacity-0 group-focus-within/pass:opacity-100 pointer-events-none"
+                            />
                         </div>
                     </div>
 

@@ -67,61 +67,47 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                     const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
                     const isEmprendedor = effectiveRegimen === Regimen.EMPRENDEDOR;
 
-                    // LISTA ESTRICTA RIMPE NEGOCIO POPULAR (Sincronizada con base legal SRI)
+                    // NORMALIZACIÓN PARA BÚSQUEDA ROBUSTA
+                    const cleanName = name.replace(/\(.*\)/, '').trim(); 
+                    
                     const docsPopular = [
-                        'FACTURA', 
-                        'NOTA DE VENTA', 
-                        'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS',
-                        'NOTAS DE CREDITO', 
-                        'NOTAS DE DEBITO', 
-                        'GUIAS DE REMISION', 
-                        'BOLETOS O ENTRADAS A ESPECTACULOS PUBLICOS', 
-                        'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
-                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 
-                        'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
-                        'FACTURERO', 'COMPROBANTE', 'RETENCION'
+                        'FACTURA', 'NOTA DE VENTA', 'LIQUIDACION DE COMPRA',
+                        'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 
+                        'BOLETOS', 'ENTRADAS', 'FACTURERO', 'COMPROBANTE', 'RETENCION'
                     ];
 
-                    // LISTA ESTRICTA REGIMEN GENERAL / EMPRENDEDOR (Sincronizada con base legal SRI)
                     const docsGeneral = [
-                        'FACTURA', 
-                        'LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS',
-                        'NOTAS DE CREDITO', // Añadido: vital para General/Emprendedor
-                        'NOTAS DE DEBITO', 
-                        'GUIAS DE REMISION', 
-                        'ACTA ENTREGA - RECEPCIÓN DE BOTELLAS PLASTICAS NO RETORNABLES DE PET',
-                        'LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS', 
-                        'LIQUIDACION DE COMPRA DE VEHICULOS USADOS',
-                        'ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS', 
+                        'FACTURA', 'LIQUIDACION DE COMPRA', 'NOTAS DE CREDITO', 
+                        'NOTAS DE DEBITO', 'GUIAS DE REMISION', 'ACTA ENTREGA',
                         'FACTURERO', 'COMPROBANTE', 'RETENCION'
                     ];
 
                     const allowedDocs = isPopular ? docsPopular : docsGeneral;
-                    
-                    // Verificamos si el nombre del producto contiene alguna de las frases permitidas
-                    const isBaseTypeAllowed = allowedDocs.some(doc => name.includes(doc));
+                    const isBaseTypeAllowed = allowedDocs.some(doc => cleanName.includes(doc) || name.includes(doc));
                     if (!isBaseTypeAllowed) return false;
 
-                    // Filtro secundario por TAGS en el nombre (Refinado para Emprendedor)
                     if (isPopular) {
-                        // Negocio Popular: Solo ve lo suyo o lo genérico (RIMPE)
-                        if (name.includes('(GENERAL)') || name.includes('(REGIMEN GENERAL')) return false;
-                        if (name.includes('(EMPRENDEDOR)')) return false;
+                        if (name.includes('(GENERAL)') || name.includes('(EMPRENDEDOR)')) return false;
                     } else if (isEmprendedor) {
-                        // Emprendedor: Ve General y lo marcado específicamente para Emprendedor o RIMPE genérico
                         if (name.includes('(RIMPE NEGOCIO POPULAR)')) return false;
-                        if (name.includes('NOTA DE VENTA')) return false; // Nota de venta prohibida
+                        if (name.includes('NOTA DE VENTA')) return false;
                     } else {
-                        // Regimen General: NO ve nada de RIMPE
-                        if (name.includes('(RIMPE)') || name.includes('(RIMPE NEGOCIO POPULAR') || name.includes('(EMPRENDEDOR)')) return false;
-                        if (name.includes('NOTA DE VENTA')) return false; // Nota de venta prohibida
+                        if (name.includes('(RIMPE NEGOCIO POPULAR)')) return false;
+                        if (name.includes('NOTA DE VENTA')) return false;
                     }
                 }
             }
-
-            return matchesSearch && matchesCategory;
+            return true;
         });
     }, [productos, searchTerm, activeCategory, effectiveRegimen]);
+
+    // Fallback Elite: Si el filtro de régimen es muy estricto y no deja nada, mostrar todo lo SRI
+    const finalFiltered = useMemo(() => {
+        if (activeCategory === 'SRI' && filtered.length === 0 && !searchTerm) {
+            return productos.filter(p => p.esSRI && p.esActivo !== false);
+        }
+        return filtered;
+    }, [filtered, activeCategory, productos, searchTerm]);
 
     // Conteo por categoría
     const categoryCounts = useMemo(() => {
@@ -248,7 +234,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                 className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 max-h-[1000px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar pb-20"
             >
                 <AnimatePresence mode="popLayout">
-                    {filtered.map((p) => {
+                    {finalFiltered.map((p) => {
                         const isSelected = selectedId === p.id;
                         return (
                             <motion.button
@@ -340,7 +326,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                 </AnimatePresence>
                 
                 {/* Fallback para servicio personalizado */}
-                {searchTerm && filtered.length === 0 && (
+                {searchTerm && finalFiltered.length === 0 && (
                     <motion.button 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}

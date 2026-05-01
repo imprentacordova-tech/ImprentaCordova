@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
+import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
 import { logActivity } from '../services/activityLogService';
 import { Cliente, User, TrabajoEstado } from '../types';
@@ -199,76 +200,76 @@ const NuevoPedidoPage: React.FC = () => {
         <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-4 sticky top-10 space-y-6"
+            className="lg:col-span-4 sticky top-10 space-y-4"
         >
             {/* Mission Identity Card */}
-            <div className="bg-black/40 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <CpuIcon className="w-8 h-8 text-liquid-gold animate-pulse" />
+            <div className="bg-black/60 backdrop-blur-3xl p-6 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <CpuIcon className="w-6 h-6 text-liquid-gold animate-pulse" />
                 </div>
                 
-                <div className="space-y-6 relative z-10">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                <div className="space-y-4 relative z-10">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="flex gap-1">
+                                <div className="w-1 h-1 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
+                                <div className="w-1 h-1 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                <div className="w-1 h-1 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                            </div>
+                            <p className="text-[8px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Status de Operación</p>
                         </div>
-                        <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Status de Operación</p>
+                        <h4 className="text-xl font-black text-white uppercase italic tracking-tighter leading-none">Misión: <span className="text-liquid-gold">{missionCategory || 'PENDIENTE'}</span></h4>
                     </div>
-                    <h4 className="text-2xl font-black text-white uppercase italic tracking-[-0.04em]">Misión: <span className="text-liquid-gold">{missionCategory || 'PENDIENTE'}</span></h4>
-                </div>
 
                     <div className="h-px w-full bg-gradient-to-r from-liquid-gold/20 via-transparent to-transparent" />
 
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Fase Actual</span>
-                            <span className="text-[10px] font-black text-white uppercase italic bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">{getSteps().find(s => s.id === step)?.label || 'IDENTIDAD'}</span>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest block">Fase Actual</span>
+                            <span className="text-[9px] font-black text-white uppercase italic bg-white/5 px-2 py-0.5 rounded border border-white/5 block text-center truncate">{getSteps().find(s => s.id === step)?.label || 'IDENTIDAD'}</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Protocolo</span>
-                            <span className="text-[10px] font-black text-liquid-gold uppercase italic">v5.0_ELITE</span>
+                        <div className="space-y-1">
+                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest block">Protocolo</span>
+                            <span className="text-[9px] font-black text-liquid-gold uppercase italic block text-center">v5.0_ELITE</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Financial Telemetry */}
-            <div className="bg-liquid-gold/5 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-liquid-gold/10 shadow-gold-glow-soft relative overflow-hidden group">
+            <div className="bg-liquid-gold/[0.03] backdrop-blur-3xl p-6 rounded-3xl border border-liquid-gold/10 shadow-gold-glow-soft relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 
-                <div className="space-y-6 relative z-10">
+                <div className="space-y-5 relative z-10">
                     <div className="flex justify-between items-end">
                         <div className="space-y-1">
-                            <p className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Valuación Real-Time</p>
+                            <p className="text-[8px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Valuación Real-Time</p>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-black text-white italic tracking-tighter">${precio.toFixed(2)}</span>
-                                <span className="text-[10px] font-black text-liquid-gold/60 uppercase italic">USD</span>
+                                <span className="text-3xl font-black text-white italic tracking-tighter tabular-nums">${precio.toFixed(2)}</span>
+                                <span className="text-[8px] font-black text-liquid-gold/60 uppercase italic">USD</span>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Ítems</p>
-                            <span className="text-xl font-black text-white italic">{items.length || (orderMode === 'EXPRESS' ? '1' : '0')}</span>
+                            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Ítems</p>
+                            <span className="text-lg font-black text-white italic">{items.length || (orderMode === 'EXPRESS' ? '1' : '0')}</span>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
                             <span>Abono</span>
-                            <span className="text-emerald-500">${abono.toFixed(2)}</span>
+                            <span className="text-emerald-500 tabular-nums">${abono.toFixed(2)}</span>
                         </div>
-                        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+                        <div className="h-1 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
                             <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: precio > 0 ? `${Math.min(100, (abono/precio)*100)}%` : '0%' }}
                                 className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
                             />
                         </div>
-                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
                             <span>Saldo Restante</span>
-                            <span className="text-white">${Math.max(0, precio - abono).toFixed(2)}</span>
+                            <span className="text-white tabular-nums">${Math.max(0, precio - abono).toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
@@ -279,32 +280,32 @@ const NuevoPedidoPage: React.FC = () => {
                 <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/[0.02] backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl space-y-6"
+                    className="bg-white/[0.01] backdrop-blur-3xl p-6 rounded-3xl border border-white/5 shadow-2xl space-y-4"
                 >
                     <div className="flex justify-between items-center">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Manifiesto de Ítems</p>
-                        <span className="text-[9px] font-mono text-liquid-gold/40">SEC_LOG_0x{items.length}</span>
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Manifiesto de Ítems</p>
+                        <span className="text-[8px] font-mono text-liquid-gold/40">LOG_0x{items.length}</span>
                     </div>
 
-                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                         {items.map((item, idx) => (
-                            <div key={idx} className="bg-black/40 p-4 rounded-2xl border border-white/5 group hover:border-liquid-gold/20 transition-all">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h5 className="text-[10px] font-black text-white uppercase italic tracking-tight">{item.nombre}</h5>
-                                    <span className="text-[8px] font-black text-liquid-gold bg-liquid-gold/10 px-2 py-0.5 rounded">x{item.cantidad}</span>
+                            <div key={idx} className="bg-black/30 p-3 rounded-xl border border-white/5 group hover:border-liquid-gold/20 transition-all">
+                                <div className="flex justify-between items-start mb-1">
+                                    <h5 className="text-[9px] font-black text-white uppercase italic tracking-tight truncate flex-1">{item.nombre}</h5>
+                                    <span className="text-[7px] font-black text-liquid-gold bg-liquid-gold/10 px-1.5 py-0.5 rounded ml-2">x{item.cantidad}</span>
                                 </div>
-                                <div className="flex gap-3 items-center">
-                                    <span className="text-[7px] text-slate-600 font-bold uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">SPEC: {item.especificaciones?.tamano || 'N/A'}</span>
+                                <div className="flex gap-2 items-center">
+                                    <span className="text-[6px] text-slate-600 font-bold uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">SPEC: {item.especificaciones?.tamano || 'N/A'}</span>
                                     <div className="h-px flex-1 bg-white/5" />
-                                    <span className="text-[10px] font-black text-white/80 italic">${item.precioFinal.toFixed(2)}</span>
+                                    <span className="text-[9px] font-black text-white/80 italic tabular-nums">${item.precioFinal.toFixed(2)}</span>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Total Sincronizado</span>
-                        <span className="text-xl font-black text-liquid-gold italic">${precio.toFixed(2)}</span>
+                    <div className="pt-3 border-t border-white/5 flex justify-between items-center">
+                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Sincronizado</span>
+                        <span className="text-lg font-black text-liquid-gold italic tabular-nums">${precio.toFixed(2)}</span>
                     </div>
                 </motion.div>
             )}
@@ -314,47 +315,47 @@ const NuevoPedidoPage: React.FC = () => {
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-black/60 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/10 shadow-luxury space-y-6 relative overflow-hidden"
+                    className="bg-black/60 backdrop-blur-3xl p-6 rounded-3xl border border-white/10 shadow-luxury space-y-4 relative overflow-hidden"
                 >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-3xl pointer-events-none" />
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
-                            <UserIcon className="w-6 h-6 text-slate-400" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-liquid-gold/5 blur-3xl pointer-events-none" />
+                    <div className="flex items-center gap-3 relative z-10">
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                            <UserIcon className="w-5 h-5 text-slate-400" />
                         </div>
-                        <div>
-                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest leading-none mb-1">Titular del Protocolo</p>
-                            <p className="text-sm font-black text-white uppercase italic tracking-tighter truncate w-full">{cliente.nombre}</p>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest leading-none mb-1">Titular Protocolo</p>
+                            <p className="text-xs font-black text-white uppercase italic tracking-tighter truncate">{cliente.nombre}</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 relative z-10">
-                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <p className="text-[7px] text-slate-600 font-black uppercase tracking-widest mb-1">Identificación</p>
-                            <p className="text-[10px] font-mono font-black text-liquid-gold">{cliente.cedula || cliente.ruc}</p>
+                    <div className="grid grid-cols-2 gap-3 relative z-10">
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <p className="text-[6px] text-slate-600 font-black uppercase tracking-widest mb-0.5">Identificación</p>
+                            <p className="text-[9px] font-mono font-black text-liquid-gold truncate">{cliente.cedula || cliente.ruc}</p>
                         </div>
-                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <p className="text-[7px] text-slate-600 font-black uppercase tracking-widest mb-1">Régimen</p>
-                            <p className="text-[10px] font-black text-emerald-500 uppercase italic">{cliente.regimen || 'GENERAL'}</p>
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <p className="text-[6px] text-slate-600 font-black uppercase tracking-widest mb-0.5">Régimen</p>
+                            <p className="text-[9px] font-black text-emerald-500 uppercase italic truncate">{cliente.regimen || 'GENERAL'}</p>
                         </div>
                     </div>
                 </motion.div>
             )}
 
             {/* Mini Terminal Logs */}
-            <div className="bg-black/60 p-6 rounded-[2rem] border border-white/5 font-mono text-[8px] space-y-2 max-h-[150px] overflow-hidden opacity-40 hover:opacity-100 transition-opacity cursor-default group">
-                <div className="flex items-center gap-2 mb-4 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors">
-                    <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse" />
+            <div className="bg-black/40 p-4 rounded-2xl border border-white/5 font-mono text-[7px] space-y-2 max-h-[120px] overflow-hidden opacity-40 hover:opacity-100 transition-opacity cursor-default group">
+                <div className="flex items-center gap-2 mb-2 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors">
+                    <div className="w-1 h-1 rounded-full bg-liquid-gold animate-pulse" />
                     <span className="font-black uppercase tracking-[0.2em]">Live_Telemetry</span>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                     <p className="text-emerald-500/80">[OK] SYSTEM_READY_V5.0</p>
-                    {missionCategory && <p className="text-white/60">[LOG] MISSION_INIT: {missionCategory}</p>}
-                    {step > 1 && <p className="text-white/60">[LOG] PHASE_STEP_{step}_ACTIVE</p>}
-                    {cliente && <p className="text-liquid-gold/60">[LOG] ENTITY_BIND: {cliente.id.substring(0,8)}</p>}
-                    {items.length > 0 && <p className="text-white/60">[LOG] ASSET_APPEND: {items.length} units</p>}
+                    {missionCategory && <p className="text-white/40">[LOG] MISSION_INIT: {missionCategory}</p>}
+                    {step > 1 && <p className="text-white/40">[LOG] PHASE_STEP_{step}_ACTIVE</p>}
+                    {cliente && <p className="text-liquid-gold/40">[LOG] ENTITY_BIND: {cliente.id.substring(0,8)}</p>}
+                    {items.length > 0 && <p className="text-white/40">[LOG] ASSET_APPEND: {items.length} units</p>}
                     <motion.p 
                         animate={{ opacity: [0.2, 1, 0.2] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
-                        className="text-white/20"
+                        className="text-white/10"
                     >
                         _WAITING_FOR_INPUT...
                     </motion.p>
@@ -364,67 +365,67 @@ const NuevoPedidoPage: React.FC = () => {
             {/* Minimize Toggle */}
             <button 
                 onClick={() => setIsSidebarMinimized(true)}
-                className="w-full py-4 text-[9px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors"
+                className="w-full py-2 text-[8px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2"
             >
-                [ MINIMIZAR TELEMETRÍA ]
+                <div className="w-4 h-px bg-slate-800" />
+                MINIMIZAR TELEMETRÍA
+                <div className="w-4 h-px bg-slate-800" />
             </button>
         </motion.div>
     );
 
     return (
-        <div className="max-w-[1300px] mx-auto space-y-4 md:space-y-8 pb-20 px-3 sm:px-6 lg:px-10 pt-2 md:pt-6">            {/* --- INDICADOR DE PASOS (OPTIMIZADO PARA MÓVIL) --- */}
-            <div className="flex justify-between items-center bg-black/60 backdrop-blur-3xl p-2 md:p-3 rounded-xl md:rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden group no-scrollbar overflow-x-auto sticky top-0 z-[60] -mx-1 sm:mx-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.05] via-transparent to-liquid-gold/[0.05] pointer-events-none"></div>
-                {getSteps().map((s, idx) => (
-                    <React.Fragment key={s.id}>
-                        <div 
-                            onClick={() => step > s.id && setStep(s.id)}
-                            className={`flex flex-col items-center gap-1.5 md:gap-3 relative z-10 flex-shrink-0 group/step cursor-pointer transition-all ${step === s.id ? 'opacity-100 scale-105' : 'opacity-40 hover:opacity-100'}`}
-                        >
-                            <div className="relative">
-                                {step === s.id && (
-                                    <motion.div 
-                                        layoutId="stepGlow"
-                                        className="absolute -inset-2 bg-liquid-gold/20 blur-lg rounded-full"
-                                    />
-                                )}
-                                
-                                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 border relative overflow-hidden ${
-                                    step >= s.id 
-                                        ? 'bg-black border-liquid-gold shadow-gold-glow-sm' 
-                                        : 'bg-white/5 border-white/10 text-slate-700'
-                                } ${step === s.id ? 'scale-110 shadow-gold-glow ring-1 ring-liquid-gold/20' : ''}`}>
-                                    {step === s.id && (
-                                        <motion.div 
-                                            animate={{ y: [-30, 30] }}
-                                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-                                            className="absolute inset-0 bg-gradient-to-b from-transparent via-liquid-gold/15 to-transparent w-full h-1/2 pointer-events-none"
-                                        />
-                                    )}
-                                    <s.icon className={`w-3.5 h-3.5 md:w-5 md:h-5 transition-colors duration-500 ${step >= s.id ? 'text-liquid-gold' : 'text-slate-700'}`} />
+        <div className="max-w-[1300px] mx-auto space-y-4 md:space-y-8 pb-20 px-3 sm:px-6 lg:px-10 pt-2 md:pt-6">
+            {/* --- ELITE COMPACT STEPPER --- */}
+            <div className="sticky top-0 z-[60] -mx-3 sm:mx-0 bg-black/80 backdrop-blur-3xl border-b border-white/5 py-3 md:py-4 px-4 md:px-10 flex items-center justify-between gap-6 overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-1 md:gap-3 flex-1">
+                    {getSteps().map((s, idx) => {
+                        const isActive = step === s.id;
+                        const isPast = step > s.id;
+                        return (
+                            <React.Fragment key={s.id}>
+                                <div 
+                                    onClick={() => isPast && setStep(s.id)}
+                                    className={`flex items-center gap-2 md:gap-3 cursor-pointer group/step transition-all ${isActive ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}
+                                >
+                                    <div className={`w-8 h-8 md:w-11 md:h-11 rounded-lg flex items-center justify-center transition-all duration-500 border relative overflow-hidden ${
+                                        isActive ? 'bg-liquid-gold border-liquid-gold shadow-gold-glow scale-110' : isPast ? 'bg-white/10 border-liquid-gold/30 text-liquid-gold' : 'bg-white/5 border-white/10 text-slate-700'
+                                    }`}>
+                                        <s.icon className={`w-3.5 h-3.5 md:w-5 md:h-5 ${isActive ? 'text-black' : isPast ? 'text-liquid-gold' : 'text-slate-800'}`} />
+                                        {isActive && (
+                                            <motion.div 
+                                                animate={{ x: [-50, 50] }}
+                                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-1/2 pointer-events-none"
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="hidden sm:flex flex-col">
+                                        <span className={`text-[8px] font-black tracking-widest uppercase italic leading-none ${isActive ? 'text-liquid-gold' : 'text-slate-800'}`}>Step_0{s.id}</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-tighter italic ${isActive ? 'text-white' : 'text-slate-600'}`}>{s.label}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="flex flex-col items-center gap-0">
-                                <span className={`text-[6px] md:text-[8px] font-black tracking-widest ${step >= s.id ? 'text-liquid-gold/80' : 'text-slate-800'}`}>{(s as any).code}</span>
-                                <span className={`text-[8px] md:text-[11px] font-black uppercase tracking-tighter italic transition-all ${
-                                    step >= s.id ? 'text-white' : 'text-slate-700'
-                                } ${step === s.id ? 'text-liquid-gold font-black' : ''} whitespace-nowrap`}>{s.label}</span>
-                            </div>
-                        </div>
-
-                        {idx < getSteps().length - 1 && (
-                            <div className="flex-1 min-w-[15px] md:min-w-[40px] h-[1px] md:h-[2px] bg-white/5 mx-1 md:mx-4 relative overflow-hidden rounded-full self-center mb-4 md:mb-6">
-                                <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: step > s.id ? '100%' : '0%' }}
-                                    className="absolute inset-0 bg-liquid-gold shadow-gold-glow"
-                                />
-                            </div>
-                        )}
-                    </React.Fragment>
-                ))}
+                                {idx < getSteps().length - 1 && (
+                                    <div className={`h-[1px] flex-1 min-w-[10px] max-w-[40px] transition-all duration-1000 ${isPast ? 'bg-liquid-gold/40' : 'bg-white/5'}`} />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+                <div className="flex items-center gap-4 border-l border-white/10 pl-6 h-10">
+                    <div className="hidden lg:flex flex-col text-right">
+                        <span className="text-[7px] font-mono text-slate-500 tracking-[0.3em]">SYSTEM_VERSION</span>
+                        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">4.2.0_ELITE</span>
+                    </div>
+                    <button 
+                        onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
+                        className="w-10 h-10 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-slate-600 hover:text-liquid-gold rounded-lg transition-all border border-white/10 flex items-center justify-center active:scale-90"
+                    >
+                        <SparklesIcon className={`w-5 h-5 transition-transform duration-700 ${isSidebarMinimized ? '' : 'rotate-180'}`} />
+                    </button>
+                </div>
             </div>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start relative">
                 <div className={isSidebarMinimized ? "lg:col-span-12 space-y-6 md:space-y-12 transition-all duration-500" : "lg:col-span-8 space-y-6 md:space-y-12 transition-all duration-500"}>
@@ -507,7 +508,7 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 2 && (
                             <motion.div 
                                 key="step2" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-4 sm:p-8 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 {missionCategory === 'SRI' ? (
                                     <div className="space-y-12">
@@ -638,7 +639,7 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 3 && (
                             <motion.div 
                                 key="step3" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-4 sm:p-8 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                 {missionCategory === 'SRI' ? (
                                     cliente && (
@@ -689,11 +690,10 @@ const NuevoPedidoPage: React.FC = () => {
                             </motion.div>
                         )}
 
-                        {/* PASO 4: PRODUCTOS (SRI) o COBRO (OTRO) */}
                         {step === 4 && (
                             <motion.div 
                                 key="step4" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-6 sm:p-14 lg:p-20 rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className="bg-white/[0.01] backdrop-blur-3xl p-4 sm:p-8 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 shadow-luxury relative overflow-hidden"
                             >
                                                 {missionCategory === 'SRI' ? (
                                     <div className="space-y-12">
@@ -820,70 +820,91 @@ const NuevoPedidoPage: React.FC = () => {
                             />
                         )}
 
-                        {/* PASO 6: FINALIZADO */}
+                        {/* PASO 6: FINALIZADO - ELITE MISSION COMPLETE */}
                         {step === 6 && (
                             <motion.div 
-                                key="step6_final" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                                className="bg-emerald-500/5 backdrop-blur-3xl p-8 md:p-24 rounded-[3rem] md:rounded-[5rem] border border-emerald-500/20 text-center space-y-8 md:space-y-16 shadow-luxury relative overflow-hidden"
+                                key="step6_final" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                                className="bg-emerald-950/20 backdrop-blur-3xl p-8 md:p-20 rounded-[3rem] md:rounded-[4rem] border border-emerald-500/10 text-center space-y-10 md:space-y-12 shadow-luxury relative overflow-hidden"
                             >
-                                {/* Celebratory Background Elements */}
-                                <div className="absolute inset-0 pointer-events-none">
-                                    <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-emerald-500/20 to-transparent" />
-                                    <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-emerald-500/20 to-transparent" />
-                                </div>
+                                {/* Scanning Beam Success */}
+                                <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-500/20 animate-scan pointer-events-none" />
                                 
-                                <div className="relative z-10 space-y-10">
-                                    <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-emerald-500 shadow-emerald-500/50 shadow-2xl mb-8">
-                                        <CheckCircleIcon className="w-16 h-16 text-white" />
+                                <div className="relative z-10 space-y-8">
+                                    <div className="inline-flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-full bg-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.4)] mb-4 relative">
+                                        <CheckCircleIcon className="w-12 h-12 md:w-16 md:h-16 text-white" />
+                                        <div className="absolute inset-0 rounded-full border-4 border-white/20 animate-ping"></div>
                                     </div>
                                     
-                                    <div className="space-y-4">
-                                        <p className="text-emerald-500 font-black uppercase tracking-[0.5em] text-xs">Misión Completada</p>
+                                    <div className="space-y-3">
+                                        <p className="text-emerald-400 font-black uppercase tracking-[0.6em] text-[10px] italic">MISIÓN_EJECUTADA_SATISFACTORIAMENTE</p>
                                         <h2 className="text-5xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none">Despliegue <span className="text-emerald-500">Exitoso</span></h2>
-                                        <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">El protocolo industrial ha sido ejecutado. El pedido #{createdTrabajoId?.substring(0, 8)} ya está en el sistema.</p>
+                                        <div className="flex items-center justify-center gap-4 text-slate-400">
+                                            <div className="h-[1px] w-12 bg-white/10"></div>
+                                            <p className="text-sm md:text-lg font-mono tracking-widest text-emerald-500/60 uppercase">Protocolo #{createdTrabajoId?.substring(0, 8)}</p>
+                                            <div className="h-[1px] w-12 bg-white/10"></div>
+                                        </div>
                                     </div>
 
-                                    {/* Botones de Impresión Condicionales */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto px-4 relative z-10">
+                                    {/* Mission Summary Cards (Elite Style) */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                                        <div className="bg-black/40 border border-white/5 p-6 rounded-2xl md:rounded-[2rem] text-left space-y-2 group hover:border-emerald-500/20 transition-all">
+                                            <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest italic">TITULAR_REGISTRADO</p>
+                                            <p className="text-white font-black uppercase italic truncate">{cliente?.nombre || 'CONSUMIDOR FINAL'}</p>
+                                            <p className="text-[10px] text-emerald-500/40 font-mono">STATUS: SYNCED</p>
+                                        </div>
+                                        <div className="bg-black/40 border border-white/5 p-6 rounded-2xl md:rounded-[2rem] text-left space-y-2 group hover:border-emerald-500/20 transition-all">
+                                            <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest italic">INVERSIÓN_FINAL</p>
+                                            <p className="text-liquid-gold font-black text-2xl italic tabular-nums">{formatCurrency(items.reduce((acc, it) => acc + it.precioFinal, 0))}</p>
+                                            <p className="text-[10px] text-emerald-500/40 font-mono">PAYMENT: CAPTURED</p>
+                                        </div>
+                                        <div className="bg-black/40 border border-white/5 p-6 rounded-2xl md:rounded-[2rem] text-left space-y-2 group hover:border-emerald-500/20 transition-all">
+                                            <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest italic">CRONOGRAMA</p>
+                                            <p className="text-white font-black uppercase italic">{prioridad === 'Urgente' ? 'Prioridad 24H' : 'Estándar 48H'}</p>
+                                            <p className="text-[10px] text-emerald-500/40 font-mono">LOGISTICS: READY</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Conditional Print Actions */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto pt-6">
                                         {createdTrabajoId && (
                                             missionCategory === 'SRI' ? (
                                                 <>
                                                     <button 
                                                         onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a5`, '_blank')} 
-                                                        className="px-8 py-7 bg-liquid-gold text-black rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-gold-glow hover:scale-105 active:scale-95 transition-all"
+                                                        className="px-8 py-6 bg-liquid-gold text-black rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-gold-glow hover:scale-105 active:scale-95 transition-all italic"
                                                     >
-                                                        <PrinterIcon className="w-5 h-5 md:w-7 md:h-7" /> SRI (A5 DOBLE)
+                                                        <PrinterIcon className="w-5 h-5" /> SRI (A5 DOBLE)
                                                     </button>
                                                     <button 
                                                         onClick={() => window.open(`/#/solicitud-sri/${createdTrabajoId}?format=a4`, '_blank')} 
-                                                        className="px-8 py-7 bg-white/5 text-white border border-liquid-gold/30 rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-liquid-gold/20 active:scale-95 transition-all"
+                                                        className="px-8 py-6 bg-white/5 text-white border-2 border-liquid-gold/30 rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-liquid-gold/20 active:scale-95 transition-all italic"
                                                     >
-                                                        <PrinterIcon className="w-5 h-5 md:w-7 md:h-7" /> SRI (A4 COMPLETO)
+                                                        <PrinterIcon className="w-5 h-5" /> SRI (A4 FULL)
                                                     </button>
                                                 </>
                                             ) : (
                                                 <button 
                                                     onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} 
-                                                    className="col-span-2 px-10 py-6 bg-white text-black rounded-2xl md:rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-luxury hover:scale-105 active:scale-95 transition-all"
+                                                    className="col-span-2 px-10 py-6 bg-white text-black rounded-2xl md:rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 shadow-luxury hover:scale-105 active:scale-95 transition-all italic"
                                                 >
-                                                    <PrinterIcon className="w-5 h-5 md:w-6 md:h-6" /> Imprimir Recibo
+                                                    <PrinterIcon className="w-5 h-5" /> Imprimir Recibo Térmico
                                                 </button>
                                             )
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row gap-6 justify-center pt-10">
-                                        <button onClick={() => navigate('/dashboard')} className="px-12 py-6 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest rounded-2xl border border-white/10 transition-all italic">Panel de Control</button>
-                                        <button onClick={() => window.location.reload()} className="px-12 py-6 bg-emerald-500 text-black font-black uppercase tracking-widest rounded-2xl shadow-lg hover:scale-105 transition-all italic">Nueva Misión</button>
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t border-white/5">
+                                        <button onClick={() => navigate('/dashboard')} className="px-10 py-5 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest rounded-2xl border border-white/10 transition-all italic text-[10px]">Ir al Centro de Mando</button>
+                                        <button onClick={() => window.location.reload()} className="px-10 py-5 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg hover:scale-105 transition-all italic text-[10px]">Nueva Orden de Manufactura</button>
                                     </div>
-                                </div>
-                            </motion.div>
+                                    </div>
+                                </motion.div>
                         )}
                     </AnimatePresence>
 
-                    {/* CONTROLES DE NAVEGACIÓN */}
+                    {/* CONTROLES DE NAVEGACIÓN - ELITE TACTICAL */}
                     {missionCategory !== 'COMERCIAL' && ((missionCategory === 'SRI' && step < 6) || (missionCategory !== 'SRI' && step < 5)) && (
-                        <div className="flex justify-between items-center px-10 mt-10">
+                        <div className="flex justify-between items-center px-4 md:px-10 mt-6 md:mt-10 border-t border-white/5 pt-8">
                             <button 
                                 disabled={step === 1}
                                 onClick={() => {
@@ -891,32 +912,36 @@ const NuevoPedidoPage: React.FC = () => {
                                     else if (missionCategory === 'SRI' && step === 5) setStep(4);
                                     else setStep(s => s - 1);
                                 }}
-                                className="flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase tracking-widest hover:text-white disabled:opacity-0 transition-all"
+                                className="flex items-center gap-3 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] hover:text-white disabled:opacity-0 transition-all italic"
                             >
-                                <ArrowRightIcon className="w-5 h-5 rotate-180" /> Paso Anterior
+                                <ArrowRightIcon className="w-4 h-4 rotate-180" /> REGRESAR
                             </button>
                             
                             <div className="flex items-center gap-6">
-                                {error && <span className="text-liquid-gold text-[10px] font-black uppercase tracking-widest animate-pulse">{error}</span>}
-                                {((missionCategory === 'SRI' && step < 5) || (orderMode === 'EXPRESS' && step < 4)) ? (
+                                {error && (
+                                    <div className="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                        <span className="text-red-500 text-[8px] font-black uppercase tracking-widest animate-pulse">ALERTA: {error}</span>
+                                    </div>
+                                )}
+                                {((missionCategory === 'SRI' && step < 5) || (orderMode === 'EXPRESS' && step < 2)) ? (
                                     <button 
                                         disabled={!canAdvance()}
                                         onClick={() => {
                                             if (orderMode === 'EXPRESS' && step === 2) setStep(4);
                                             else setStep(s => s + 1);
                                         }}
-                                        className="bg-white text-black px-16 py-6 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-liquid-gold transition-all disabled:opacity-20 flex items-center gap-4 group"
+                                        className="bg-white text-black px-12 md:px-16 py-5 md:py-6 rounded-xl md:rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-liquid-gold transition-all disabled:opacity-20 flex items-center gap-4 group italic shadow-luxury"
                                     >
-                                        Continuar <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                        Siguiente Fase <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
                                 ) : (step === 4 && missionCategory !== 'SRI') || (step === 5 && missionCategory === 'SRI') ? (
                                     <button 
                                         disabled={!canAdvance() || loading}
                                         onClick={handleCreateOrder}
-                                        className="bg-liquid-gold text-black px-20 py-7 rounded-3xl text-[11px] font-black uppercase tracking-[0.3em] shadow-gold-glow-strong hover:scale-105 transition-all flex items-center gap-5"
+                                        className="bg-liquid-gold text-black px-16 md:px-20 py-6 md:py-7 rounded-2xl md:rounded-3xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] shadow-gold-glow-strong hover:scale-105 transition-all flex items-center gap-5 italic"
                                     >
                                         {loading ? <Loader2Icon className="animate-spin w-5 h-5" /> : <RocketLaunchIcon className="w-6 h-6" />}
-                                        {loading ? 'Procesando...' : 'Finalizar Pedido'}
+                                        {loading ? 'DESPLEGANDO...' : 'EJECUTAR MISIÓN'}
                                     </button>
                                 ) : null}
                             </div>
