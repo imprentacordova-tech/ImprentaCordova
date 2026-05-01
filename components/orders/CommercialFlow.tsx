@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     CheckCircleIcon, SparklesIcon, PrinterIcon, 
     ArrowRightIcon, ArrowLeftIcon, CreditCardIcon, UserIcon,
-    ExclamationTriangleIcon, SearchIcon, BoltIcon
+    ExclamationTriangleIcon, SearchIcon, BoltIcon, Loader2Icon
 } from '../Icons';
 import { Producto, Trabajo, TrabajoEstado, TrabajoTipo } from '../../types';
 import { useData } from '../../contexts/DataContext';
@@ -190,6 +190,7 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
     // Express Mode State
     const [isExpressMode, setIsExpressMode] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Categorías comerciales
     const commercialCategories = useMemo(() => {
@@ -216,39 +217,53 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
         return base > 0 ? base : selectedProduct.precio;
     }, [selectedProduct, cantidad, acabado, precioCustom]);
 
-    const handleConfirm = (directProduct?: Producto) => {
+    const handleConfirm = async (directProduct?: Producto) => {
         const product = directProduct || selectedProduct;
-        if (!product) return;
-        
-        const finalPrice = directProduct ? product.precio : precioFinal;
+        if (!product) {
+            console.error("[CommercialFlow] Failure: No diagnostic product targeted.");
+            return;
+        }
 
-        const nuevoTrabajo: Partial<Trabajo> = {
-            orden: Math.floor(100000 + Math.random() * 900000),
-            clienteId: selectedClientId || 'cliente_express_comercial',
-            titular: clienteNombre || 'Consumidor Final',
-            tipo: product.nombre,
-            subtipo: directProduct ? 'PEDIDO EXPRESS' : `${cantidad} x ${tamano} - ${acabado}`,
-            cantidad: directProduct ? 1 : cantidad,
-            tamano: directProduct ? 'Estandar' : tamano,
-            estado: TrabajoEstado.PENDIENTE,
-            fechaEntrada: new Date().toISOString(),
-            fechaEntrega: new Date(Date.now() + 86400000 * 2).toISOString(),
-            total: finalPrice,
-            abono: directProduct ? finalPrice : abono,
-            saldo: directProduct ? 0 : finalPrice - abono,
-            prioridad: directProduct ? 'Urgente' : 'Normal',
-            detalle: directProduct ? 'VENTA RÁPIDA DE MOSTRADOR' : `${cantidad} x ${tamano} - ${acabado}`,
-            caduco: false,
-            estadoClave: 'PENDIENTE',
-            imprimirClave: false,
-        };
+        setIsSubmitting(true);
+        console.log("[CommercialFlow] Initiating Protocol for:", product.nombre);
 
-        onComplete({
-            trabajo: nuevoTrabajo,
-            clienteNombre: clienteNombre || 'Consumidor Final',
-            clienteTelefono,
-            clienteId: selectedClientId
-        });
+        try {
+            const finalPrice = directProduct ? product.precio : precioFinal;
+            
+            const nuevoTrabajo: Partial<Trabajo> = {
+                orden: Math.floor(100000 + Math.random() * 900000),
+                clienteId: selectedClientId || 'cliente_express_comercial',
+                titular: clienteNombre.trim() || 'Consumidor Final',
+                tipo: product.nombre,
+                subtipo: directProduct ? 'PEDIDO EXPRESS' : `${cantidad} x ${tamano} - ${acabado}`,
+                cantidad: directProduct ? 1 : cantidad,
+                tamano: directProduct ? 'Estandar' : tamano,
+                estado: TrabajoEstado.PENDIENTE,
+                fechaEntrada: new Date().toISOString(),
+                fechaEntrega: new Date(Date.now() + 86400000 * 2).toISOString(),
+                total: finalPrice,
+                abono: directProduct ? finalPrice : abono,
+                saldo: directProduct ? 0 : finalPrice - abono,
+                prioridad: directProduct ? 'Urgente' : 'Normal',
+                detalle: directProduct ? 'VENTA RÁPIDA DE MOSTRADOR' : `${cantidad} x ${tamano} - ${acabado}`,
+                caduco: false,
+                estadoClave: 'PENDIENTE',
+                imprimirClave: false,
+            };
+
+            console.log("[CommercialFlow] Mission Payload:", nuevoTrabajo);
+
+            await onComplete({
+                trabajo: nuevoTrabajo,
+                clienteNombre: (clienteNombre.trim() || 'Consumidor Final'),
+                clienteTelefono: clienteTelefono.trim(),
+                clienteId: selectedClientId
+            });
+        } catch (error) {
+            console.error("[CommercialFlow] Mission Critical Error:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -527,123 +542,177 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 {/* PASO 3: FINALIZACION (IDENTIDAD Y CAPITAL) */}
                 {step === 3 && selectedProduct && (
                     <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Identidad del Cliente */}
-                            <div className="bg-black/40 border border-white/5 p-10 rounded-[3rem] space-y-8 shadow-inner">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
-                                        <UserIcon className="w-6 h-6" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Identidad_Cliente</h3>
-                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Vínculo de Operación</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Nombre o Razón Social</label>
-                                        <div className="relative group">
-                                            <input 
-                                                type="text" 
-                                                value={clienteNombre} 
-                                                onChange={e => setClienteNombre(e.target.value.toUpperCase())} 
-                                                className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 shadow-luxury" 
-                                                placeholder="BUSCAR CLIENTE..." 
-                                            />
-                                            <AnimatePresence>
-                                                {clienteNombre.length > 1 && !selectedClientId && (
-                                                    <motion.div 
-                                                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                                                        className="absolute top-full left-0 right-0 mt-2 bg-brand-dark border border-white/10 rounded-2xl shadow-luxury-gold z-50 max-h-64 overflow-y-auto no-scrollbar overflow-hidden"
-                                                    >
-                                                        {clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).length > 0 ? (
-                                                            clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).map(c => (
-                                                                <button 
-                                                                    key={c.id} 
-                                                                    onClick={() => { 
-                                                                        setClienteNombre(c.nombre); 
-                                                                        setClienteTelefono(c.telefono[0] || '');
-                                                                        setSelectedClientId(c.id);
-                                                                    }}
-                                                                    className="w-full p-5 text-left hover:bg-white/5 border-b border-white/5 flex justify-between items-center transition-colors"
-                                                                >
-                                                                    <div className="flex items-center gap-4">
-                                                                        <div className="w-8 h-8 rounded-xl bg-liquid-gold/20 flex items-center justify-center text-liquid-gold font-black">{c.nombre.charAt(0)}</div>
-                                                                        <span className="text-sm font-black text-white uppercase italic">{c.nombre}</span>
-                                                                    </div>
-                                                                    <span className="text-[10px] font-black text-slate-600 tracking-widest">{c.telefono[0] || 'NO_PHONE'}</span>
-                                                                </button>
-                                                            ))
-                                                        ) : (
-                                                            <div className="p-6 text-center">
-                                                                <p className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em]">Creando Nuevo Perfil</p>
-                                                            </div>
-                                                        )}
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Canal WhatsApp</label>
-                                        <div className="relative">
-                                            <input type="text" value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all shadow-luxury" placeholder="099-000-0000" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Liquidación de Pago */}
-                            <div className="bg-black/60 border border-liquid-gold/10 p-10 rounded-[3rem] space-y-8 shadow-luxury-gold">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
-                                        <CreditCardIcon className="w-6 h-6" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Liquidación</h3>
-                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Aseguramiento de Capital</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-8 bg-black/40 p-8 rounded-3xl border border-white/5 shadow-inner">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Total Misión</span>
-                                        <span className="text-5xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal)}</span>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center text-liquid-gold">
-                                            <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Abono Inicial</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-2xl font-black italic">$</span>
-                                                <input 
-                                                    type="number" 
-                                                    value={abono || ''} 
-                                                    onChange={e => setAbono(Number(e.target.value))}
-                                                    className="w-32 bg-transparent border-b border-liquid-gold text-right text-3xl font-black italic outline-none py-1"
-                                                    placeholder="0.00"
-                                                />
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            {/* Identidad del Cliente & Liquidación (8/12) */}
+                            <div className="lg:col-span-8 space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Identidad del Cliente */}
+                                    <div className="bg-black/40 border border-white/5 p-10 rounded-[3rem] space-y-8 shadow-inner relative overflow-hidden group">
+                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
+                                                <UserIcon className="w-6 h-6" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Identidad_Cliente</h3>
+                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Vínculo de Operación</p>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between items-center text-slate-500">
-                                            <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Saldo Pendiente</span>
-                                            <span className="text-2xl font-black italic">{formatCurrency(precioFinal - abono)}</span>
+
+                                        <div className="space-y-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Nombre o Razón Social</label>
+                                                <div className="relative group">
+                                                    <input 
+                                                        type="text" 
+                                                        value={clienteNombre} 
+                                                        onChange={e => setClienteNombre(e.target.value.toUpperCase())} 
+                                                        className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 shadow-luxury" 
+                                                        placeholder="BUSCAR CLIENTE..." 
+                                                    />
+                                                    <AnimatePresence>
+                                                        {clienteNombre.length > 1 && !selectedClientId && (
+                                                            <motion.div 
+                                                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                                                                className="absolute top-full left-0 right-0 mt-2 bg-brand-dark border border-white/10 rounded-2xl shadow-luxury-gold z-50 max-h-64 overflow-y-auto no-scrollbar overflow-hidden"
+                                                            >
+                                                                {clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).length > 0 ? (
+                                                                    clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).map(c => (
+                                                                        <button 
+                                                                            key={c.id} 
+                                                                            onClick={() => { 
+                                                                                setClienteNombre(c.nombre); 
+                                                                                setClienteTelefono(c.telefono[0] || '');
+                                                                                setSelectedClientId(c.id);
+                                                                            }}
+                                                                            className="w-full p-5 text-left hover:bg-white/5 border-b border-white/5 flex justify-between items-center transition-colors"
+                                                                        >
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="w-8 h-8 rounded-xl bg-liquid-gold/20 flex items-center justify-center text-liquid-gold font-black">{c.nombre.charAt(0)}</div>
+                                                                                <span className="text-sm font-black text-white uppercase italic">{c.nombre}</span>
+                                                                            </div>
+                                                                            <span className="text-[10px] font-black text-slate-600 tracking-widest">{c.telefono[0] || 'NO_PHONE'}</span>
+                                                                        </button>
+                                                                    ))
+                                                                ) : (
+                                                                    <div className="p-6 text-center">
+                                                                        <p className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em]">Creando Nuevo Perfil</p>
+                                                                    </div>
+                                                                )}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Canal WhatsApp</label>
+                                                <div className="relative">
+                                                    <input type="text" value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all shadow-luxury" placeholder="099-000-0000" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Liquidación de Pago */}
+                                    <div className="bg-black/60 border border-liquid-gold/10 p-10 rounded-[3rem] space-y-8 shadow-luxury-gold relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
+                                                <CreditCardIcon className="w-6 h-6" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Liquidación</h3>
+                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Aseguramiento de Capital</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-8 bg-black/40 p-8 rounded-3xl border border-white/5 shadow-inner">
+                                            <div className="flex justify-between items-end">
+                                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Total Misión</span>
+                                                <span className="text-5xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal)}</span>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center text-liquid-gold">
+                                                    <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Abono Inicial</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-2xl font-black italic">$</span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={abono || ''} 
+                                                            onChange={e => setAbono(Number(e.target.value))}
+                                                            className="w-32 bg-transparent border-b border-liquid-gold text-right text-3xl font-black italic outline-none py-1"
+                                                            placeholder="0.00"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center text-slate-500">
+                                                    <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Saldo Pendiente</span>
+                                                    <span className="text-2xl font-black italic">{formatCurrency(precioFinal - abono)}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="pt-4 flex gap-4">
-                                    <button onClick={() => setStep(2)} className="px-8 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest transition-all border border-white/10 text-[10px] flex items-center gap-3">
+                                    <button onClick={() => setStep(2)} className="px-8 py-6 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest transition-all border border-white/10 text-[10px] flex items-center gap-3">
                                         <ArrowLeftIcon className="w-4 h-4" /> VOLVER
                                     </button>
                                     <button 
                                         onClick={() => handleConfirm()} 
-                                        className="flex-1 py-5 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.4em] hover:scale-[1.02] transition-all shadow-gold-glow-strong italic text-xs flex items-center justify-center gap-4"
+                                        disabled={isSubmitting}
+                                        className="flex-1 py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-gold-glow-strong italic text-xs flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-wait"
                                     >
-                                        EJECUTAR MISIÓN <CheckCircleIcon className="w-6 h-6" />
+                                        {isSubmitting ? 'INICIANDO PROTOCOLO...' : 'INICIAR PROTOCOLO'} 
+                                        {isSubmitting ? <Loader2Icon className="w-6 h-6 animate-spin" /> : <CheckCircleIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" />}
                                     </button>
+                                </div>
+                            </div>
+
+                            {/* Tactical Telemetry HUD (4/12) - Filling the gap */}
+                            <div className="lg:col-span-4">
+                                <div className="bg-black/80 border border-white/5 rounded-[3rem] p-8 h-full flex flex-col gap-8 shadow-luxury relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                    
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Status de Operación</span>
+                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-green-glow" />
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
+                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Misión Actual</p>
+                                                <p className="text-sm font-black text-white italic uppercase tracking-tighter">COMERCIAL_ORDER_{Math.floor(Math.random() * 999)}</p>
+                                            </div>
+                                            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
+                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Protocolo de Carga</p>
+                                                <p className="text-sm font-black text-liquid-gold italic uppercase tracking-tighter">v5.0_ELITE_TERMINAL</p>
+                                            </div>
+                                            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
+                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Fase de Despliegue</p>
+                                                <p className="text-sm font-black text-white italic uppercase tracking-tighter">FINAL_AUTHORIZATION</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col justify-end space-y-6">
+                                        <div className="h-px bg-white/5 w-full" />
+                                        <div className="space-y-4">
+                                            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em] italic">Live_Telemetry_Stream</p>
+                                            <div className="space-y-2 font-mono text-[9px]">
+                                                <p className="text-emerald-500/60">[OK] SYSTEM_READY_V5.0</p>
+                                                <p className="text-slate-600">[LOG] MISSION_INIT: COMERCIAL</p>
+                                                <p className="text-slate-600">[LOG] PHASE_STEP_3_ACTIVE</p>
+                                                <p className="text-liquid-gold animate-pulse">_WAITING_FOR_FINAL_AUTH...</p>
+                                            </div>
+                                        </div>
+                                        <button className="w-full py-3 bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white rounded-xl text-[8px] font-black uppercase tracking-[0.3em] transition-all border border-white/5 italic">
+                                            MINIMIZAR TELEMETRÍA
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
