@@ -152,9 +152,21 @@ const NuevoPedidoPage: React.FC = () => {
             refreshData().catch(() => {});
             setCreatedTrabajoId(results[0].id); // Use first job ID for receipts
             setStep(6); 
+            
+            // Auto-trigger PDF generation
+            if (isSriOrder) {
+                setTimeout(() => {
+                    window.open(`/#/solicitud-impresion/${results[0].id}?format=a5`, '_blank');
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    window.open(`/#/recibo-epson/${results[0].id}`, '_blank');
+                }, 500);
+            }
         } catch (err: any) {
             console.error('[NuevoPedido] Error:', err);
             setError(err.message || 'Error al procesar la orden.');
+            alert(`ATENCIÓN: ${err.message || 'Error al procesar la orden. Verifique los datos e intente de nuevo.'}`);
         } finally {
             setLoading(false);
         }

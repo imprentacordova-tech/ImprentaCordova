@@ -365,7 +365,23 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (trabajoData.numeracion) dbData.numeracion = trabajoData.numeracion;
         if (trabajoData.fechaVencimiento) dbData.fecha_vencimiento = trabajoData.fechaVencimiento;
         
-        const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
+        let { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
+        
+        if (error && (error.message.includes('autorizacion_sri') || error.message.includes('fecha_vencimiento') || error.message.includes('numeracion') || error.message.includes('es_renovacion') || error.message.includes('actividad_seleccionada') || error.message.includes('estado_clave'))) {
+            console.warn("⚠️ New columns missing in 'trabajos'. Retrying without them...", error.message);
+            const fallbackData = { ...dbData };
+            delete fallbackData.autorizacion_sri;
+            delete fallbackData.fecha_vencimiento;
+            delete fallbackData.numeracion;
+            delete fallbackData.es_renovacion;
+            delete fallbackData.actividad_seleccionada;
+            delete fallbackData.estado_clave;
+            
+            const retry = await supabase.from('trabajos').insert([fallbackData]).select().single();
+            data = retry.data;
+            error = retry.error;
+        }
+
         if (error) throw error;
 
         // Si hay una imagen, subirla
