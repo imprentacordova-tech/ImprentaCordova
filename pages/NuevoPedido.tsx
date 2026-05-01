@@ -631,24 +631,24 @@ const NuevoPedidoPage: React.FC = () => {
                                             <div className="space-y-10">
                                                 <div className="grid grid-cols-1 gap-6">
                                                     {items.map((item, idx) => (
-                                                        <div key={idx} className="bg-black/60 p-6 rounded-[2rem] border border-white/5 flex items-center justify-between group/item hover:border-liquid-gold/30 transition-all">
-                                                            <div className="flex items-center gap-6">
-                                                                <div className="w-14 h-14 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 font-black italic relative overflow-hidden">
+                                                        <div key={idx} className="bg-black/60 p-4 md:p-6 rounded-[2rem] border border-white/5 flex flex-col md:flex-row md:items-center justify-between group/item hover:border-liquid-gold/30 transition-all gap-4 md:gap-0">
+                                                            <div className="flex items-center gap-4 md:gap-6">
+                                                                <div className="w-12 h-12 md:w-14 md:h-14 shrink-0 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 font-black italic relative overflow-hidden">
                                                                     <div className="absolute inset-0 bg-liquid-gold/5 animate-pulse" />
                                                                     <span className="relative z-10">{idx + 1}</span>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-[13px] font-black uppercase tracking-tight italic text-white group-hover:text-liquid-gold transition-colors">{item.nombre}</h4>
-                                                                    <div className="flex gap-4 mt-1">
+                                                                    <h4 className="text-[12px] md:text-[13px] font-black uppercase tracking-tight italic text-white group-hover:text-liquid-gold transition-colors">{item.nombre}</h4>
+                                                                    <div className="flex flex-wrap gap-2 md:gap-4 mt-1">
                                                                         <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">QTY: {item.cantidad}</span>
                                                                         <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">SPEC: {item.especificaciones.tamano}</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center gap-10">
-                                                                <div className="text-right">
+                                                            <div className="flex items-center justify-between w-full md:w-auto md:gap-10 pt-2 md:pt-0 border-t border-white/5 md:border-none mt-2 md:mt-0">
+                                                                <div className="text-left md:text-right">
                                                                     <p className="text-[8px] text-slate-700 font-black uppercase tracking-widest mb-1">Valuación</p>
-                                                                    <span className="text-2xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
+                                                                    <span className="text-xl md:text-2xl font-black text-white italic tracking-tighter">${item.precioFinal.toFixed(2)}</span>
                                                                 </div>
                                                                 <button onClick={() => {
                                                                     setItems(prev => prev.filter((_, i) => i !== idx));

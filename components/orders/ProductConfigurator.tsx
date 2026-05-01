@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ArrowRightIcon, BoxIcon, 
@@ -109,7 +110,8 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
         });
     };
 
-    return (
+    // Usar Portal para escapar el stacking context del Stepper (transform/backdrop-blur)
+    const modalContent = (
         <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -422,6 +424,9 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
             </div>
         </motion.div>
     );
+
+    if (typeof document === 'undefined') return null;
+    return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default ProductConfigurator;
