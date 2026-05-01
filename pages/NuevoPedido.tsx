@@ -508,7 +508,7 @@ const NuevoPedidoPage: React.FC = () => {
                         {step === 2 && (
                             <motion.div 
                                 key="step2" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }}
-                                className="bg-white/[0.01] backdrop-blur-3xl p-4 sm:p-8 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 shadow-luxury relative overflow-hidden"
+                                className={`${missionCategory === 'COMERCIAL' ? 'bg-transparent border-none p-0 shadow-none' : 'bg-white/[0.01] backdrop-blur-3xl p-4 sm:p-8 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 shadow-luxury'} relative overflow-hidden`}
                             >
                                 {missionCategory === 'SRI' ? (
                                     <div className="space-y-12">
@@ -950,7 +950,7 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
 
                 {/* --- SIDEBAR TELEMETRÍA ELITE --- */}
-                {!isSidebarMinimized && missionCategory && (missionCategory === 'COMERCIAL' ? step !== 2 : true) && step < 5 && (
+                {!isSidebarMinimized && missionCategory && (missionCategory === 'COMERCIAL' ? (step !== 2 && step !== 1) : true) && step < 5 && (
                     <TelemetrySidebar />
                 )}
             </div>

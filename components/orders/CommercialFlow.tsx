@@ -32,10 +32,10 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                 animate={{ opacity: 1, y: 0 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`group relative bg-black/60 backdrop-blur-2xl rounded-[2.5rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full ${
+                className={`group relative bg-[#0a0a0a] backdrop-blur-2xl rounded-[2rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full ${
                     isHovered 
-                        ? isExpress ? 'border-blue-500/50 shadow-blue-glow scale-[1.02]' : 'border-liquid-gold/50 shadow-luxury-gold scale-[1.02]' 
-                        : 'border-white/10 shadow-2xl'
+                        ? isExpress ? 'border-blue-500/50 shadow-blue-glow scale-[1.01]' : 'border-liquid-gold/50 shadow-luxury-gold scale-[1.01]' 
+                        : 'border-white/5 shadow-2xl'
                 }`}
                 onClick={onSelect}
             >
@@ -58,8 +58,9 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                     )}
                 </AnimatePresence>
 
-                {/* Subtle Gradient Glow */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-1000 ${isExpress ? 'bg-blue-600/10' : 'bg-liquid-gold/10'}`} />
+                {/* Blueprint Overlay (Elite Effect) */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] pointer-events-none transition-opacity duration-1000 z-0" 
+                     style={{ backgroundImage: 'repeating-linear-gradient(45deg, #d4af37 0, #d4af37 1px, transparent 0, transparent 50%)', backgroundSize: '10px 10px' }} />
 
                 <div className="p-8 md:p-10 space-y-8 relative z-10">
                     <div className="flex justify-between items-start">
@@ -91,17 +92,17 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                                 <div className="h-px flex-1 bg-blue-500/10" />
                             </div>
                         )}
-                        <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
+                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
                             {p.nombre}
                         </h3>
                         
                         <div className="flex items-center gap-4">
-                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] border-l-2 border-liquid-gold/30 pl-3">
+                            <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.3em] border-l-2 border-liquid-gold/30 pl-3">
                                 {p.categoria || 'GENERAL'}
                             </p>
                             <div className="h-1 w-1 rounded-full bg-slate-800" />
-                            <p className="text-[8px] text-slate-700 font-black uppercase tracking-widest">
-                                PRECISION_LVL: ELITE
+                            <p className="text-[7px] text-slate-700 font-black uppercase tracking-widest">
+                                UNIT_ID: {p.id?.substring(0, 4)}
                             </p>
                         </div>
                     </div>
@@ -266,10 +267,10 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                             <span className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">CATÁLOGO_ELITE</span>
                             <div className="h-px w-12 bg-liquid-gold/20" />
                         </div>
-                        <h2 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
-                            {step === 1 && <>Suministros <span className="text-gold-gradient">Premium.</span></>}
-                            {step === 2 && <>Configuración <span className="text-gold-gradient">Tactical.</span></>}
-                            {step === 3 && <>Finalizar <span className="text-gold-gradient">Despliegue.</span></>}
+                        <h2 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
+                            {step === 1 && <>Protocolo de <span className="text-gold-gradient">Suministros.</span></>}
+                            {step === 2 && <>Configuración <span className="text-gold-gradient">Industrial.</span></>}
+                            {step === 3 && <>Finalizar <span className="text-gold-gradient">Orden.</span></>}
                         </h2>
                     </div>
                 
@@ -309,43 +310,56 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 {/* PASO 1: SELECCION DE PRODUCTO */}
                 {step === 1 && (
                     <motion.div key="s1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-12">
-                        {/* Search & Filter Bar */}
-                        <div className="flex flex-col lg:flex-row items-stretch gap-6">
-                            <div className="flex-1 relative group">
-                                <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-600 group-focus-within:text-liquid-gold transition-colors z-20" />
-                                <input 
-                                    type="text" 
-                                    value={search} 
-                                    onChange={e => setSearch(e.target.value)} 
-                                    placeholder="ACCESO AL SISTEMA DE PRODUCTOS..." 
-                                    className="w-full pl-16 pr-8 py-7 bg-black/80 border border-white/10 rounded-3xl text-xl font-black text-white focus:border-liquid-gold/40 transition-all placeholder:text-slate-800 italic outline-none shadow-luxury-gold-sm relative z-10 uppercase tracking-tighter" 
-                                />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
-                                    <span className="text-[7px] font-black text-slate-700 uppercase tracking-[0.4em] italic">Terminal_Active</span>
-                                    <div className="w-2 h-2 rounded-full bg-liquid-gold/40 animate-pulse" />
+                        {/* Unified Diagnostic Header */}
+                        <div className="bg-black/60 border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl relative">
+                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                            
+                            <div className="p-4 md:p-6 flex flex-col lg:flex-row items-center gap-6">
+                                {/* Search Terminal */}
+                                <div className="flex-1 relative group w-full">
+                                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-600 group-focus-within:text-liquid-gold transition-colors z-20" />
+                                    <input 
+                                        type="text" 
+                                        value={search} 
+                                        onChange={e => setSearch(e.target.value)} 
+                                        placeholder="FILTRAR MATRIZ DE PRODUCTOS..." 
+                                        className="w-full pl-16 pr-8 py-5 bg-black/40 border border-white/5 rounded-2xl text-lg font-black text-white focus:border-liquid-gold/20 transition-all placeholder:text-slate-800 italic outline-none relative z-10 uppercase tracking-tighter" 
+                                    />
+                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse" />
+                                        <span className="text-[7px] font-black text-liquid-gold/40 uppercase tracking-[0.4em]">SYNC_ACTIVE</span>
+                                    </div>
+                                </div>
+
+                                {/* Dynamic Filter Array */}
+                                <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar w-full lg:w-auto">
+                                    {commercialCategories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setActiveCategory(cat)}
+                                            className={`px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] transition-all relative whitespace-nowrap ${
+                                                activeCategory === cat ? 'text-black bg-liquid-gold shadow-gold-glow-sm' : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                            }`}
+                                        >
+                                            <span className="relative z-10 italic">{cat}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 p-3 bg-black/60 rounded-[2rem] border border-white/10 overflow-x-auto no-scrollbar shadow-inner relative overflow-hidden">
-                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(90deg, #d4af37 1px, transparent 1px)', backgroundSize: '10px 100%' }} />
-                                {commercialCategories.map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setActiveCategory(cat)}
-                                        className={`px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all relative flex items-center gap-3 whitespace-nowrap group/tab ${
-                                            activeCategory === cat ? 'text-black' : 'text-slate-500 hover:text-white'
-                                        }`}
-                                    >
-                                        {activeCategory === cat && (
-                                            <motion.div layoutId="catTab" className="absolute inset-0 bg-liquid-gold rounded-2xl shadow-gold-glow" />
-                                        )}
-                                        <span className="relative z-10 italic">{cat}</span>
-                                        {activeCategory !== cat && (
-                                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-liquid-gold group-hover/tab:w-4 transition-all duration-500" />
-                                        )}
-                                    </button>
-                                ))}
+                            {/* Telemetry Bar (Bottom of HUD) */}
+                            <div className="bg-liquid-gold/[0.02] border-t border-white/5 px-8 py-2 flex justify-between items-center">
+                                <div className="flex gap-6">
+                                    <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="w-1 h-1 rounded-full bg-blue-500" /> DATABASE_LOCAL: CONNECTED
+                                    </span>
+                                    <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="w-1 h-1 rounded-full bg-emerald-500" /> ENCRYPTION: AES_256
+                                    </span>
+                                </div>
+                                <span className="text-[7px] font-black text-liquid-gold/40 uppercase tracking-widest italic">
+                                    LOG_STREAMING_v5.0.4
+                                </span>
                             </div>
                         </div>
 
@@ -400,58 +414,70 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Columna de Configuración (8/12) */}
-                            <div className="lg:col-span-8 space-y-8">
-                                <div className="bg-black/40 border border-white/5 p-10 rounded-[3rem] space-y-10 shadow-inner">
-                                    <div className="space-y-4">
-                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic ml-2">Volumen de Manufactura</label>
-                                        <div className="flex gap-8 items-center">
-                                            <div className="relative group">
-                                                <input 
-                                                    type="number" 
-                                                    value={cantidad} 
-                                                    onChange={e => setCantidad(Number(e.target.value))} 
-                                                    className="bg-black/60 border border-white/10 w-48 p-6 rounded-2xl text-4xl font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all text-center tracking-tighter shadow-luxury" 
-                                                />
-                                                <div className="absolute -right-12 top-1/2 -translate-y-1/2 text-slate-800 font-black italic text-xs uppercase tracking-widest">UNITS</div>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {[100, 500, 1000, 5000].map(q => (
-                                                    <button 
-                                                        key={q} 
-                                                        onClick={() => setCantidad(q)} 
-                                                        className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${cantidad === q ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}
-                                                    >
-                                                        {q}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+                            <div className="lg:col-span-8">
+                                <div className="bg-black/60 border border-white/5 p-10 rounded-[3rem] space-y-12 shadow-inner relative overflow-hidden group/config">
+                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                    
+                                    <div className="space-y-6">
+                                         <div className="flex items-center gap-3">
+                                             <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse" />
+                                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Volumen de Manufactura</label>
+                                         </div>
+                                         <div className="flex flex-col md:flex-row gap-10 items-stretch md:items-center">
+                                             <div className="relative group">
+                                                 <input 
+                                                     type="number" 
+                                                     value={cantidad} 
+                                                     onChange={e => setCantidad(Number(e.target.value))} 
+                                                     className="bg-black/80 border-2 border-white/10 w-full md:w-56 p-8 rounded-3xl text-5xl font-black text-white italic outline-none focus:border-liquid-gold/50 transition-all text-center tracking-tighter shadow-luxury-gold-sm" 
+                                                 />
+                                                 <div className="absolute -right-4 -top-4 px-3 py-1 bg-liquid-gold text-black text-[8px] font-black uppercase italic rounded-lg shadow-gold-glow">UNITS_READY</div>
+                                             </div>
+                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+                                                 {[100, 500, 1000, 5000].map(q => (
+                                                     <button 
+                                                         key={q} 
+                                                         onClick={() => setCantidad(q)} 
+                                                         className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${cantidad === q ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow scale-105' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white hover:border-white/20'}`}
+                                                     >
+                                                         {q}
+                                                     </button>
+                                                 ))}
+                                             </div>
+                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-10">
-                                        <div className="space-y-4">
-                                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic ml-2">Dimensiones</label>
-                                            <input type="text" value={tamano} onChange={e => setTamano(e.target.value)} className="w-full bg-black/60 border border-white/10 p-6 rounded-2xl text-lg font-black text-white outline-none focus:border-liquid-gold/30 transition-all shadow-luxury" placeholder="Ej: 10x15cm" />
-                                            <div className="flex gap-2">
-                                                {['A4', 'A5', 'Oficio', 'Tarjetas'].map(t => (
-                                                    <button key={t} onClick={() => setTamano(t)} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${tamano === t ? 'bg-white/10 text-white shadow-luxury' : 'text-slate-700 hover:text-slate-400'}`}>{t}</button>
-                                                ))}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-blue-glow" />
+                                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Dimensiones de Corte</label>
+                                            </div>
+                                            <div className="relative">
+                                                <input type="text" value={tamano} onChange={e => setTamano(e.target.value)} className="w-full bg-black/80 border-2 border-white/10 p-6 rounded-2xl text-xl font-black text-white outline-none focus:border-blue-500/30 transition-all shadow-inner uppercase italic" placeholder="Ej: 10x15cm" />
+                                                <div className="flex gap-2 mt-4">
+                                                    {['A4', 'A5', 'Oficio', 'Tarjetas'].map(t => (
+                                                        <button key={t} onClick={() => setTamano(t)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${tamano === t ? 'bg-blue-600 text-white shadow-blue-glow' : 'bg-white/5 text-slate-700 hover:text-slate-400'}`}>{t}</button>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic ml-2">Acabado Elite</label>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-emerald-glow" />
+                                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Procesamiento de Acabado</label>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
                                                 {['Ninguno', 'Brillante', 'Mate', 'Uv_Selective'].map(a => (
                                                     <button 
                                                         key={a} 
                                                         onClick={() => setAcabado(a)} 
-                                                        className={`px-4 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${acabado === a ? 'bg-liquid-gold/20 border-liquid-gold text-liquid-gold shadow-gold-glow-sm' : 'bg-white/5 border-white/5 text-slate-600 hover:text-slate-400'}`}
+                                                        className={`px-4 py-5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all border-2 ${acabado === a ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-emerald-glow' : 'bg-white/5 border-white/5 text-slate-600 hover:text-slate-400'}`}
                                                     >
                                                         {a}
                                                     </button>
                                                 ))}
                                             </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -626,6 +652,24 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Keyboard Shortcuts Legend (Tactical HUD) */}
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 px-8 py-3 bg-black/60 backdrop-blur-xl border border-white/5 rounded-full shadow-2xl z-50 pointer-events-none opacity-40 hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-2">
+                    <kbd className="px-2 py-1 bg-white/10 rounded text-[8px] font-black text-liquid-gold border border-white/10">S</kbd>
+                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">SEARCH_TERMINAL</span>
+                </div>
+                <div className="w-px h-3 bg-white/10" />
+                <div className="flex items-center gap-2">
+                    <kbd className="px-2 py-1 bg-white/10 rounded text-[8px] font-black text-liquid-gold border border-white/10">C</kbd>
+                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">CATEGORIES</span>
+                </div>
+                <div className="w-px h-3 bg-white/10" />
+                <div className="flex items-center gap-2">
+                    <kbd className="px-2 py-1 bg-white/10 rounded text-[8px] font-black text-liquid-gold border border-white/10">ESC</kbd>
+                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">CANCEL_MISSION</span>
+                </div>
+            </div>
 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
