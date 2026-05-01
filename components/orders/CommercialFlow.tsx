@@ -32,58 +32,106 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                 animate={{ opacity: 1, y: 0 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`group relative bg-black/40 backdrop-blur-xl rounded-[2rem] border transition-all duration-500 overflow-hidden cursor-pointer h-full ${
+                className={`group relative bg-black/60 backdrop-blur-2xl rounded-[2.5rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full ${
                     isHovered 
-                        ? isExpress ? 'border-blue-500/40 shadow-blue-glow' : 'border-liquid-gold/40 shadow-luxury-gold' 
-                        : 'border-white/5'
+                        ? isExpress ? 'border-blue-500/50 shadow-blue-glow scale-[1.02]' : 'border-liquid-gold/50 shadow-luxury-gold scale-[1.02]' 
+                        : 'border-white/10 shadow-2xl'
                 }`}
                 onClick={onSelect}
             >
-                {/* Subtle Gradient Glow */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700 ${isExpress ? 'bg-blue-500' : 'bg-liquid-gold'}`} />
+                {/* HUD Decorative Corners */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/5 rounded-tl-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/5 rounded-tr-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/5 rounded-bl-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/5 rounded-br-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
 
-                <div className="p-6 md:p-10 space-y-6 relative z-10">
+                {/* Scanning Line Animation */}
+                <AnimatePresence>
+                    {isHovered && (
+                        <motion.div 
+                            initial={{ top: '-10%' }}
+                            animate={{ top: '110%' }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            className={`absolute left-0 right-0 h-[2px] z-20 pointer-events-none blur-[1px] ${isExpress ? 'bg-blue-400 shadow-blue-glow' : 'bg-liquid-gold shadow-gold-glow'}`}
+                        />
+                    )}
+                </AnimatePresence>
+
+                {/* Subtle Gradient Glow */}
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-1000 ${isExpress ? 'bg-blue-600/10' : 'bg-liquid-gold/10'}`} />
+
+                <div className="p-8 md:p-10 space-y-8 relative z-10">
                     <div className="flex justify-between items-start">
-                        <div className={`p-4 rounded-2xl transition-all duration-700 ${
+                        <div className={`p-5 rounded-2xl transition-all duration-1000 ${
                             isHovered 
-                                ? isExpress ? 'bg-blue-600 text-white' : 'bg-liquid-gold text-black scale-110' 
+                                ? isExpress ? 'bg-blue-600 text-white rotate-[360deg]' : 'bg-liquid-gold text-black rotate-[360deg] scale-110' 
                                 : 'bg-white/5 text-liquid-gold'
                         }`}>
-                            {isExpress ? <BoltIcon className="w-6 h-6" /> : <PrinterIcon className="w-6 h-6" />}
+                            {isExpress ? <BoltIcon className="w-7 h-7" /> : <PrinterIcon className="w-7 h-7" />}
                         </div>
-                        <div className="text-right">
-                            <span className={`text-2xl md:text-3xl font-black italic tracking-tighter block leading-none ${isExpress ? 'text-blue-400' : 'text-white'}`}>
+                        <div className="text-right space-y-1">
+                            <div className="flex items-center justify-end gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full ${isHovered ? 'bg-green-400 animate-pulse' : 'bg-slate-700'}`} />
+                                <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">ESTADO: OK</span>
+                            </div>
+                            <span className={`text-3xl md:text-4xl font-black italic tracking-tighter block leading-none drop-shadow-2xl ${isExpress ? 'text-blue-400' : 'text-white'}`}>
                                 ${(p.precio || 0).toFixed(2)}
                             </span>
-                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1 block">PRECIO_BASE</span>
+                            <span className="text-[7px] font-black text-slate-600 uppercase tracking-[0.3em] block">UNIT_INVESTMENT</span>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {isExpress && (
-                            <span className="inline-block text-[8px] font-black bg-blue-600/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded uppercase tracking-widest italic animate-pulse mb-1">
-                                Express_Protocol
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[8px] font-black bg-blue-600/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full uppercase tracking-widest italic animate-pulse">
+                                    Turbo_Protocol_v5
+                                </span>
+                                <div className="h-px flex-1 bg-blue-500/10" />
+                            </div>
                         )}
-                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic leading-tight group-hover:text-liquid-gold transition-colors">
+                        <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
                             {p.nombre}
                         </h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em]">
-                            {p.categoria || 'GENERAL'}
-                        </p>
+                        
+                        <div className="flex items-center gap-4">
+                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] border-l-2 border-liquid-gold/30 pl-3">
+                                {p.categoria || 'GENERAL'}
+                            </p>
+                            <div className="h-1 w-1 rounded-full bg-slate-800" />
+                            <p className="text-[8px] text-slate-700 font-black uppercase tracking-widest">
+                                PRECISION_LVL: ELITE
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                    {/* Telemetry Metadata Grid */}
+                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5 opacity-40 group-hover:opacity-100 transition-opacity duration-700">
+                        <div className="space-y-1">
+                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest block">LATENCY_SYNC</span>
+                            <span className="text-[9px] font-black text-white italic">0.02ms</span>
+                        </div>
+                        <div className="space-y-1 text-right">
+                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest block">SECURITY_LAYER</span>
+                            <span className="text-[9px] font-black text-liquid-gold italic">AES-256</span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2">
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setShowDetails(!showDetails);
                             }}
-                            className="text-[8px] font-black text-slate-500 hover:text-white uppercase tracking-[0.3em] transition-colors flex items-center gap-2"
+                            className="text-[8px] font-black text-slate-500 hover:text-white uppercase tracking-[0.4em] transition-colors flex items-center gap-3 group/btn"
                         >
-                            <SparklesIcon className="w-3 h-3 text-liquid-gold" /> {showDetails ? 'OCULTAR' : 'DETALLES'}
+                            <SparklesIcon className="w-4 h-4 text-liquid-gold group-hover/btn:rotate-90 transition-transform" /> 
+                            {showDetails ? 'CLOSE_X' : 'SPECS_DATA'}
                         </button>
-                        <ArrowRightIcon className={`w-5 h-5 transition-all duration-500 ${isHovered ? 'text-liquid-gold translate-x-2' : 'text-white/10'}`} />
+                        <div className={`p-3 rounded-xl transition-all duration-500 ${isHovered ? 'bg-liquid-gold text-black scale-110 shadow-gold-glow' : 'bg-white/5 text-white/20'}`}>
+                            <ArrowRightIcon className="w-5 h-5" />
+                        </div>
                     </div>
 
                     <AnimatePresence>
@@ -92,15 +140,22 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden pt-4"
+                                className="overflow-hidden"
                             >
-                                <div className="p-5 bg-black/60 rounded-2xl border border-white/5 space-y-3">
-                                    <p className="text-[10px] text-slate-400 italic leading-relaxed">
-                                        {p.descripcion || 'Servicio de manufactura de alta precisión bajo estándares de calidad Córdova.'}
+                                <div className="mt-6 p-6 bg-black/80 rounded-3xl border border-liquid-gold/20 space-y-4 shadow-inner relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-liquid-gold/5 blur-2xl rounded-full" />
+                                    <p className="text-[10px] text-slate-400 italic leading-relaxed relative z-10 font-medium">
+                                        {p.descripcion || 'Suministro industrial de alta fidelidad. Procesado bajo normas internacionales de manufactura premium.'}
                                     </p>
-                                    <div className="flex justify-between items-center pt-3 border-t border-white/5">
-                                        <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Protocolo</span>
-                                        <span className="text-[9px] font-black text-liquid-gold uppercase italic tracking-widest">v5.0_ELITE</span>
+                                    <div className="flex justify-between items-center pt-4 border-t border-white/5 relative z-10">
+                                        <div className="flex flex-col">
+                                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest">Protocol</span>
+                                            <span className="text-[10px] font-black text-liquid-gold uppercase italic tracking-widest">v5.0_ELITE</span>
+                                        </div>
+                                        <div className="flex flex-col text-right">
+                                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest">Cert</span>
+                                            <span className="text-[10px] font-black text-white uppercase italic tracking-widest">ISO_9001</span>
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
@@ -257,29 +312,38 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                         {/* Search & Filter Bar */}
                         <div className="flex flex-col lg:flex-row items-stretch gap-6">
                             <div className="flex-1 relative group">
-                                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-600 group-focus-within:text-liquid-gold transition-colors" />
+                                <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-600 group-focus-within:text-liquid-gold transition-colors z-20" />
                                 <input 
                                     type="text" 
                                     value={search} 
                                     onChange={e => setSearch(e.target.value)} 
-                                    placeholder="Buscar producto..." 
-                                    className="w-full pl-16 pr-8 py-6 bg-black/60 border border-white/10 rounded-3xl text-xl font-black text-white focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 italic outline-none shadow-luxury" 
+                                    placeholder="ACCESO AL SISTEMA DE PRODUCTOS..." 
+                                    className="w-full pl-16 pr-8 py-7 bg-black/80 border border-white/10 rounded-3xl text-xl font-black text-white focus:border-liquid-gold/40 transition-all placeholder:text-slate-800 italic outline-none shadow-luxury-gold-sm relative z-10 uppercase tracking-tighter" 
                                 />
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+                                    <span className="text-[7px] font-black text-slate-700 uppercase tracking-[0.4em] italic">Terminal_Active</span>
+                                    <div className="w-2 h-2 rounded-full bg-liquid-gold/40 animate-pulse" />
+                                </div>
                             </div>
 
-                            <div className="flex gap-2 p-2 bg-black/40 rounded-3xl border border-white/5 overflow-x-auto no-scrollbar">
+                            <div className="flex gap-3 p-3 bg-black/60 rounded-[2rem] border border-white/10 overflow-x-auto no-scrollbar shadow-inner relative overflow-hidden">
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(90deg, #d4af37 1px, transparent 1px)', backgroundSize: '10px 100%' }} />
                                 {commercialCategories.map(cat => (
                                     <button
                                         key={cat}
                                         onClick={() => setActiveCategory(cat)}
-                                        className={`px-8 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all relative flex items-center gap-3 whitespace-nowrap ${
+                                        className={`px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all relative flex items-center gap-3 whitespace-nowrap group/tab ${
                                             activeCategory === cat ? 'text-black' : 'text-slate-500 hover:text-white'
                                         }`}
                                     >
                                         {activeCategory === cat && (
                                             <motion.div layoutId="catTab" className="absolute inset-0 bg-liquid-gold rounded-2xl shadow-gold-glow" />
                                         )}
-                                        <span className="relative z-10">{cat}</span>
+                                        <span className="relative z-10 italic">{cat}</span>
+                                        {activeCategory !== cat && (
+                                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-liquid-gold group-hover/tab:w-4 transition-all duration-500" />
+                                        )}
                                     </button>
                                 ))}
                             </div>
