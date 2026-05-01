@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     CheckCircleIcon, SparklesIcon, PrinterIcon, 
     ArrowRightIcon, ArrowLeftIcon, CreditCardIcon, UserIcon,
-    ExclamationTriangleIcon, SearchIcon, BoltIcon, Loader2Icon
+    BoltIcon, Loader2Icon, SearchIcon
 } from '../Icons';
-import { Producto, Trabajo, TrabajoEstado, TrabajoTipo } from '../../types';
+import { Producto, Trabajo, TrabajoEstado } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { formatCurrency } from '../../utils';
-import { PerspectiveCard } from '../PerspectiveCard';
+import PerspectiveCard from '../PerspectiveCard';
 
 interface CommercialFlowProps {
     onComplete: (data: {
@@ -25,16 +25,16 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
     const [showDetails, setShowDetails] = useState(false);
 
     return (
-        <PerspectiveCard>
+        <PerspectiveCard className="h-full">
             <motion.div
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`group relative bg-[#0a0a0a] backdrop-blur-2xl rounded-[2rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full ${
+                className={`group relative bg-[#050505]/80 backdrop-blur-2xl rounded-[2rem] border transition-all duration-700 overflow-hidden cursor-pointer h-full flex flex-col justify-between p-8 ${
                     isHovered 
-                        ? isExpress ? 'border-blue-500/50 shadow-blue-glow scale-[1.01]' : 'border-liquid-gold/50 shadow-luxury-gold scale-[1.01]' 
+                        ? isExpress ? 'border-blue-500/50 shadow-blue-glow scale-[1.01]' : 'border-liquid-gold/50 shadow-gold-glow scale-[1.01]' 
                         : 'border-white/5 shadow-2xl'
                 }`}
                 onClick={onSelect}
@@ -42,9 +42,7 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                 {/* HUD Decorative Corners */}
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/5 rounded-tl-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/5 rounded-tr-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/5 rounded-bl-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/5 rounded-br-[2rem] group-hover:border-liquid-gold/40 transition-colors duration-700" />
-
+                
                 {/* Scanning Line Animation */}
                 <AnimatePresence>
                     {isHovered && (
@@ -58,110 +56,44 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
                     )}
                 </AnimatePresence>
 
-                {/* Blueprint Overlay (Elite Effect) */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] pointer-events-none transition-opacity duration-1000 z-0" 
-                     style={{ backgroundImage: 'repeating-linear-gradient(45deg, #d4af37 0, #d4af37 1px, transparent 0, transparent 50%)', backgroundSize: '10px 10px' }} />
-
-                <div className="p-8 md:p-10 space-y-8 relative z-10">
+                <div className="space-y-6 relative z-10">
                     <div className="flex justify-between items-start">
-                        <div className={`p-5 rounded-2xl transition-all duration-1000 ${
+                        <div className={`p-4 rounded-xl transition-all duration-1000 ${
                             isHovered 
                                 ? isExpress ? 'bg-blue-600 text-white rotate-[360deg]' : 'bg-liquid-gold text-black rotate-[360deg] scale-110' 
                                 : 'bg-white/5 text-liquid-gold'
                         }`}>
-                            {isExpress ? <BoltIcon className="w-7 h-7" /> : <PrinterIcon className="w-7 h-7" />}
+                            {isExpress ? <BoltIcon className="w-6 h-6" /> : <PrinterIcon className="w-6 h-6" />}
                         </div>
-                        <div className="text-right space-y-1">
-                            <div className="flex items-center justify-end gap-2">
-                                <div className={`w-1.5 h-1.5 rounded-full ${isHovered ? 'bg-green-400 animate-pulse' : 'bg-slate-700'}`} />
-                                <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">ESTADO: OK</span>
-                            </div>
-                            <span className={`text-3xl md:text-4xl font-black italic tracking-tighter block leading-none drop-shadow-2xl ${isExpress ? 'text-blue-400' : 'text-white'}`}>
-                                ${(p.precio || 0).toFixed(2)}
+                        <div className="text-right">
+                            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mb-1">UNIT_INVESTMENT</p>
+                            <span className={`text-2xl font-black italic tracking-tighter block leading-none ${isExpress ? 'text-blue-400' : 'text-white'}`}>
+                                {formatCurrency(p.precio)}
                             </span>
-                            <span className="text-[7px] font-black text-slate-600 uppercase tracking-[0.3em] block">UNIT_INVESTMENT</span>
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        {isExpress && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-[8px] font-black bg-blue-600/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full uppercase tracking-widest italic animate-pulse">
-                                    Turbo_Protocol_v5
-                                </span>
-                                <div className="h-px flex-1 bg-blue-500/10" />
-                            </div>
-                        )}
-                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-liquid-gold transition-colors duration-500">
                             {p.nombre}
                         </h3>
-                        
-                        <div className="flex items-center gap-4">
-                            <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.3em] border-l-2 border-liquid-gold/30 pl-3">
-                                {p.categoria || 'GENERAL'}
-                            </p>
-                            <div className="h-1 w-1 rounded-full bg-slate-800" />
-                            <p className="text-[7px] text-slate-700 font-black uppercase tracking-widest">
-                                UNIT_ID: {p.id?.substring(0, 4)}
-                            </p>
-                        </div>
+                        <p className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.3em]">
+                            {p.categoria || 'GENERAL_OPS'}
+                        </p>
                     </div>
+                </div>
 
-                    {/* Telemetry Metadata Grid */}
-                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5 opacity-40 group-hover:opacity-100 transition-opacity duration-700">
-                        <div className="space-y-1">
-                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest block">LATENCY_SYNC</span>
-                            <span className="text-[9px] font-black text-white italic">0.02ms</span>
-                        </div>
-                        <div className="space-y-1 text-right">
-                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest block">SECURITY_LAYER</span>
-                            <span className="text-[9px] font-black text-liquid-gold italic">AES-256</span>
-                        </div>
+                <div className="pt-6 border-t border-white/5 flex items-center justify-between mt-auto">
+                    <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-green-glow" />
+                        <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">READY</span>
                     </div>
-
-                    <div className="flex justify-between items-center pt-2">
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDetails(!showDetails);
-                            }}
-                            className="text-[8px] font-black text-slate-500 hover:text-white uppercase tracking-[0.4em] transition-colors flex items-center gap-3 group/btn"
-                        >
-                            <SparklesIcon className="w-4 h-4 text-liquid-gold group-hover/btn:rotate-90 transition-transform" /> 
-                            {showDetails ? 'CLOSE_X' : 'SPECS_DATA'}
-                        </button>
-                        <div className={`p-3 rounded-xl transition-all duration-500 ${isHovered ? 'bg-liquid-gold text-black scale-110 shadow-gold-glow' : 'bg-white/5 text-white/20'}`}>
-                            <ArrowRightIcon className="w-5 h-5" />
-                        </div>
-                    </div>
-
-                    <AnimatePresence>
-                        {showDetails && (
-                            <motion.div 
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="mt-6 p-6 bg-black/80 rounded-3xl border border-liquid-gold/20 space-y-4 shadow-inner relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-16 h-16 bg-liquid-gold/5 blur-2xl rounded-full" />
-                                    <p className="text-[10px] text-slate-400 italic leading-relaxed relative z-10 font-medium">
-                                        {p.descripcion || 'Suministro industrial de alta fidelidad. Procesado bajo normas internacionales de manufactura premium.'}
-                                    </p>
-                                    <div className="flex justify-between items-center pt-4 border-t border-white/5 relative z-10">
-                                        <div className="flex flex-col">
-                                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest">Protocol</span>
-                                            <span className="text-[10px] font-black text-liquid-gold uppercase italic tracking-widest">v5.0_ELITE</span>
-                                        </div>
-                                        <div className="flex flex-col text-right">
-                                            <span className="text-[6px] font-black text-slate-600 uppercase tracking-widest">Cert</span>
-                                            <span className="text-[10px] font-black text-white uppercase italic tracking-widest">ISO_9001</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onSelect(); }} 
+                        className="px-5 py-2 bg-white/5 hover:bg-liquid-gold text-white hover:text-black rounded-lg font-black text-[9px] uppercase tracking-widest transition-all italic"
+                    >
+                        {isExpress ? 'EXPRESS_BOOT' : 'CONFIGURE'}
+                    </button>
                 </div>
             </motion.div>
         </PerspectiveCard>
@@ -188,8 +120,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
     const [abono, setAbono] = useState<number>(0);
 
-    // Express Mode State
-    const [isExpressMode, setIsExpressMode] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Categorías comerciales
@@ -219,17 +149,11 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
     const handleConfirm = async (directProduct?: Producto) => {
         const product = directProduct || selectedProduct;
-        if (!product) {
-            console.error("[CommercialFlow] Failure: No diagnostic product targeted.");
-            return;
-        }
+        if (!product) return;
 
         setIsSubmitting(true);
-        console.log("[CommercialFlow] Initiating Protocol for:", product.nombre);
-
         try {
             const finalPrice = directProduct ? product.precio : precioFinal;
-            
             const nuevoTrabajo: Partial<Trabajo> = {
                 orden: Math.floor(100000 + Math.random() * 900000),
                 clienteId: selectedClientId || 'cliente_express_comercial',
@@ -251,8 +175,6 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                 imprimirClave: false,
             };
 
-            console.log("[CommercialFlow] Mission Payload:", nuevoTrabajo);
-
             await onComplete({
                 trabajo: nuevoTrabajo,
                 clienteNombre: (clienteNombre.trim() || 'Consumidor Final'),
@@ -267,191 +189,108 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
     };
 
     return (
-        <>
-            {/* Background Industrial Layers */}
-            <div className="absolute inset-0 bg-obsidian-mesh opacity-90 pointer-events-none" />
-            <div className="absolute inset-0 noise-overlay opacity-[0.03] pointer-events-none" />
-            
-            {/* Stepper Industrial - Optimized for Zero-Scroll */}
-            <div className="flex items-center justify-between bg-black/40 backdrop-blur-xl border border-white/5 p-1.5 rounded-2xl mb-8 overflow-x-auto no-scrollbar gap-3 shadow-luxury relative z-20">
-                {[
-                    { s: 1, id: 'CATÁLOGO', icon: SparklesIcon },
-                    { s: 2, id: 'CONFIGURACIÓN', icon: BoltIcon },
-                    { s: 3, id: 'DESPLIEGUE', icon: CheckCircleIcon }
-                ].map((item, idx) => (
-                    <div key={item.s} className="flex items-center gap-3 flex-1">
-                        <button 
-                            onClick={() => step > item.s && setStep(item.s as 1 | 2 | 3)}
-                            className={`flex-1 flex items-center gap-3 p-3 rounded-xl transition-all duration-500 group relative overflow-hidden ${
-                                step === item.s 
-                                    ? 'bg-liquid-gold shadow-gold-glow-sm' 
-                                    : step > item.s ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'opacity-30 grayscale cursor-not-allowed'
-                            }`}
-                        >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                                step === item.s ? 'bg-black text-liquid-gold' : 'bg-white/5 text-slate-400'
-                            }`}>
-                                <item.icon className="w-4 h-4" />
-                            </div>
-                            <div className="text-left hidden md:block">
-                                <p className={`text-[7px] font-black uppercase tracking-[0.1em] ${step === item.s ? 'text-black/60' : 'text-slate-500'}`}>PASO_0{item.s}</p>
-                                <p className={`text-[10px] font-black uppercase tracking-tighter ${step === item.s ? 'text-black italic' : 'text-white'}`}>{item.id}</p>
-                            </div>
-                        </button>
-                        {idx < 2 && <div className="hidden lg:block w-6 h-px bg-white/5" />}
-                    </div>
-                ))}
-                <div className="px-4 py-2 border-l border-white/5 hidden xl:flex flex-col items-end gap-0.5">
-                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">VER</span>
-                    <span className="text-[9px] font-black text-liquid-gold italic">5.1.0_ELITE</span>
-                </div>
-            </div>
-
+        <div className="space-y-6">
             <AnimatePresence mode="wait">
                 {/* PASO 1: SELECCION DE PRODUCTO */}
                 {step === 1 && (
-                    <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8 h-full flex flex-col">
-                        {/* Selector de Categoría Compacto */}
-                        <div className="bg-black/60 border border-white/5 p-1.5 rounded-full inline-flex items-center gap-1 shadow-luxury overflow-x-auto no-scrollbar max-w-full">
-                            {commercialCategories.map(cat => (
-                                <button 
-                                    key={cat} 
-                                    onClick={() => setActiveCategory(cat)} 
-                                    className={`px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-500 whitespace-nowrap ${
-                                        activeCategory === cat 
-                                            ? 'bg-liquid-gold text-black shadow-gold-glow-sm italic scale-105 z-10' 
-                                            : 'text-slate-500 hover:text-white hover:bg-white/5'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
+                    <motion.div key="s1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-8 h-full flex flex-col">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="bg-black/60 border border-white/5 p-1.5 rounded-full inline-flex items-center gap-1 shadow-luxury overflow-x-auto no-scrollbar max-w-full">
+                                {commercialCategories.map(cat => (
+                                    <button 
+                                        key={cat} 
+                                        onClick={() => setActiveCategory(cat)} 
+                                        className={`px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-500 whitespace-nowrap ${
+                                            activeCategory === cat 
+                                                ? 'bg-liquid-gold text-black shadow-gold-glow-sm italic scale-105 z-10' 
+                                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="relative group w-full md:w-72">
+                                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input 
+                                    type="text" 
+                                    value={search} 
+                                    onChange={e => setSearch(e.target.value)} 
+                                    placeholder="FILTRAR CATÁLOGO..." 
+                                    className="w-full bg-white/5 border border-white/5 rounded-full pl-12 pr-6 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-liquid-gold/30 transition-all"
+                                />
+                            </div>
                         </div>
 
-                        {/* Internal Scrollable Product Grid */}
-                        <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar max-h-[calc(100vh-280px)]">
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-12">
-                            {commercialProducts.map(p => (
-                                <motion.div 
-                                    key={p.id} 
-                                    layout
-                                    whileHover={{ y: -10 }}
-                                    onClick={() => { setSelectedProduct(p); setStep(2); }}
-                                    className="group cursor-pointer"
-                                >
-                                    <div className="bg-[#111111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-luxury group-hover:border-liquid-gold/30 transition-all duration-500 relative overflow-hidden h-[380px] flex flex-col justify-between">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        
-                                        <div className="relative flex justify-between items-start">
-                                            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-liquid-gold border border-white/5 shadow-inner group-hover:bg-liquid-gold/10 transition-colors">
-                                                <PrinterIcon className="w-8 h-8" />
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Inversión_Unit</p>
-                                                <p className="text-2xl font-black text-white italic tracking-tighter">{formatCurrency(p.precio)}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div className="h-px w-12 bg-liquid-gold/30 group-hover:w-full transition-all duration-700" />
-                                            <div className="space-y-1">
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-liquid-gold transition-colors truncate">{p.nombre}</h3>
-                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">{p.categoria || 'OPERACIÓN_NORMAL'}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-green-glow" />
-                                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">STOCK_READY</span>
-                                            </div>
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); handleConfirm(p); }} 
-                                                className="px-6 py-2 bg-white/5 hover:bg-liquid-gold text-white hover:text-black rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-luxury group-hover:scale-105 active:scale-95"
-                                            >
-                                                EXPRESS
-                                            </button>
-                                        </div>
-
-                                        {/* Blueprint Scan Effect on Hover */}
-                                        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-10 transition-opacity duration-700">
-                                            <div className="absolute inset-0 bg-[linear-gradient(rgba(212,175,55,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
-                                            <div className="absolute top-0 left-0 w-full h-1 bg-liquid-gold/50 shadow-gold-glow animate-scan-slow" />
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                        {/* High-Density Product Grid */}
+                        <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar max-h-[calc(100vh-320px)]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                                {commercialProducts.map(p => (
+                                    <CommercialProductCard 
+                                        key={p.id} 
+                                        p={p} 
+                                        isExpress={p.precio < 20} // Just a heuristic for express items
+                                        onSelect={() => { setSelectedProduct(p); setStep(2); }}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
                 )}
 
-                {/* PASO 2: DETALLES Y PRECIO (CONFIGURACION PREMIUM) */}
+                {/* PASO 2: DETALLES Y CONFIGURACIÓN */}
                 {step === 2 && selectedProduct && (
-                    <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                    <motion.div key="s2" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }} className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                             <div className="lg:col-span-8">
-                                <div className="bg-black/60 border border-white/5 p-6 md:p-8 rounded-[2rem] space-y-8 shadow-inner relative overflow-hidden group/config">
-                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                <div className="bg-[#050505]/90 border border-white/5 p-8 rounded-[2.5rem] space-y-10 shadow-2xl relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
                                     
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-16 h-16 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-sm">
+                                            <SparklesIcon className="w-8 h-8" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">{selectedProduct.nombre}</h2>
+                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em]">CONFIGURACIÓN_INDUSTRIAL_v5.1</p>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-6">
-                                         <div className="flex items-center gap-3">
-                                             <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse" />
-                                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Volumen de Manufactura</label>
-                                         </div>
-                                         <div className="flex flex-col md:flex-row gap-10 items-stretch md:items-center">
-                                             <div className="relative group">
+                                         <label className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic block ml-2">Volumen de Manufactura</label>
+                                         <div className="flex flex-col md:flex-row gap-8 items-center">
+                                             <div className="relative group w-full md:w-auto">
                                                  <input 
                                                      type="number" 
                                                      value={cantidad} 
                                                      onChange={e => setCantidad(Number(e.target.value))} 
-                                                     className="bg-black/80 border-2 border-white/10 w-full md:w-56 p-8 rounded-3xl text-5xl font-black text-white italic outline-none focus:border-liquid-gold/50 transition-all text-center tracking-tighter shadow-luxury-gold-sm" 
+                                                     className="bg-black/60 border-2 border-white/5 w-full md:w-56 p-6 rounded-3xl text-5xl font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all text-center tracking-tighter" 
                                                  />
-                                                 <div className="absolute -right-4 -top-4 px-3 py-1 bg-liquid-gold text-black text-[8px] font-black uppercase italic rounded-lg shadow-gold-glow">UNITS_READY</div>
+                                                 <div className="absolute -right-4 -top-4 px-3 py-1 bg-liquid-gold text-black text-[8px] font-black uppercase italic rounded-lg shadow-gold-glow">QUANTITY_SYNC</div>
                                              </div>
-                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1 w-full">
                                                  {[100, 500, 1000, 5000].map(q => (
-                                                     <button 
-                                                         key={q} 
-                                                         onClick={() => setCantidad(q)} 
-                                                         className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${cantidad === q ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow scale-105' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white hover:border-white/20'}`}
-                                                     >
-                                                         {q}
-                                                     </button>
+                                                     <button key={q} onClick={() => setCantidad(q)} className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${cantidad === q ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow-sm scale-105' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}>{q}</button>
                                                  ))}
                                              </div>
                                          </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                        <div className="space-y-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-blue-glow" />
-                                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Dimensiones de Corte</label>
-                                            </div>
-                                            <div className="relative">
-                                                <input type="text" value={tamano} onChange={e => setTamano(e.target.value)} className="w-full bg-black/80 border-2 border-white/10 p-6 rounded-2xl text-xl font-black text-white outline-none focus:border-blue-500/30 transition-all shadow-inner uppercase italic" placeholder="Ej: 10x15cm" />
-                                                <div className="flex gap-2 mt-4">
-                                                    {['A4', 'A5', 'Oficio', 'Tarjetas'].map(t => (
-                                                        <button key={t} onClick={() => setTamano(t)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${tamano === t ? 'bg-blue-600 text-white shadow-blue-glow' : 'bg-white/5 text-slate-700 hover:text-slate-400'}`}>{t}</button>
-                                                    ))}
-                                                </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                                        <div className="space-y-4">
+                                            <label className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic block ml-2">Dimensiones</label>
+                                            <input type="text" value={tamano} onChange={e => setTamano(e.target.value)} className="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-lg font-black text-white outline-none focus:border-liquid-gold/30 transition-all italic" placeholder="Ej: 10x15cm" />
+                                            <div className="flex flex-wrap gap-2">
+                                                {['A4', 'A5', 'Oficio', 'Tarjetas'].map(t => (
+                                                    <button key={t} onClick={() => setTamano(t)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${tamano === t ? 'bg-liquid-gold text-black italic' : 'bg-white/5 text-slate-500 hover:text-white'}`}>{t}</button>
+                                                ))}
                                             </div>
                                         </div>
-                                        <div className="space-y-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-emerald-glow" />
-                                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Procesamiento de Acabado</label>
-                                            </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic block ml-2">Acabado</label>
                                             <div className="grid grid-cols-2 gap-3">
-                                                {['Ninguno', 'Brillante', 'Mate', 'Uv_Selective'].map(a => (
-                                                    <button 
-                                                        key={a} 
-                                                        onClick={() => setAcabado(a)} 
-                                                        className={`px-4 py-5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all border-2 ${acabado === a ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-emerald-glow' : 'bg-white/5 border-white/5 text-slate-600 hover:text-slate-400'}`}
-                                                    >
-                                                        {a}
-                                                    </button>
+                                                {['Ninguno', 'Brillante', 'Mate', 'UV_Laca'].map(a => (
+                                                    <button key={a} onClick={() => setAcabado(a)} className={`py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${acabado === a ? 'bg-liquid-gold/10 border-liquid-gold text-liquid-gold italic' : 'bg-white/5 border-white/5 text-slate-600 hover:text-white'}`}>{a}</button>
                                                 ))}
                                             </div>
                                         </div>
@@ -459,254 +298,163 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
                                 </div>
                             </div>
 
-                            {/* Columna de Valuación (4/12) */}
-                            <div className="lg:col-span-4">
-                                <div className="bg-black/60 border border-liquid-gold/20 p-8 rounded-[3rem] h-full flex flex-col justify-between shadow-luxury-gold relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-110 transition-transform">
-                                        <SparklesIcon className="w-32 h-32 text-liquid-gold" />
+                            <div className="lg:col-span-4 flex flex-col gap-4">
+                                <div className="bg-liquid-gold p-8 rounded-[2.5rem] flex flex-col justify-between shadow-gold-glow relative overflow-hidden flex-1">
+                                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                                        <BoltIcon className="w-32 h-32 text-black" />
                                     </div>
-                                    
-                                    <div className="space-y-6 relative z-10">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse" />
-                                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Valuación Real-Time</span>
+                                    <div className="space-y-4 relative z-10">
+                                        <p className="text-[10px] font-black text-black/60 uppercase tracking-[0.4em] italic">Valuación_Misión</p>
+                                        <div className="text-6xl font-black text-black italic tracking-tighter leading-none">{formatCurrency(precioFinal)}</div>
+                                        <div className="pt-6 space-y-2 border-t border-black/10">
+                                            <div className="flex justify-between text-[9px] font-black text-black/60 uppercase tracking-widest italic"><span>Escalado Vol.</span><span>x{cantidad/100}</span></div>
+                                            <div className="flex justify-between text-[9px] font-black text-black/60 uppercase tracking-widest italic"><span>Base Ops</span><span>{formatCurrency(selectedProduct.precio)}</span></div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between text-slate-600 font-black text-[10px] uppercase tracking-widest italic">
-                                                <span>Inversión Base</span>
-                                                <span>{formatCurrency(selectedProduct.precio)}</span>
-                                            </div>
-                                            <div className="flex justify-between text-slate-600 font-black text-[10px] uppercase tracking-widest italic">
-                                                <span>Escalado Vol.</span>
-                                                <span>x{cantidad/100}</span>
-                                            </div>
-                                            <div className="h-px bg-white/5 my-4" />
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Total Estimado</span>
-                                                <div className="text-6xl font-black text-white italic tracking-tighter leading-none">
-                                                    {formatCurrency(precioFinal)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button 
-                                            onClick={() => setStep(3)}
-                                            className="mt-12 w-full py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-gold-glow flex items-center justify-center gap-4 group italic text-xs"
-                                        >
-                                            PROCEDER <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                                        </button>
                                     </div>
+                                    <button onClick={() => setStep(3)} className="mt-10 w-full py-6 bg-black text-white rounded-2xl font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl italic text-[11px] flex items-center justify-center gap-4">
+                                        PROCEDER <ArrowRightIcon className="w-5 h-5" />
+                                    </button>
                                 </div>
+                                <button onClick={() => setStep(1)} className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-widest transition-all italic">
+                                    ELEGIR_OTRO_PRODUCTO
+                                </button>
                             </div>
                         </div>
                     </motion.div>
                 )}
 
-                {/* PASO 3: FINALIZACION (IDENTIDAD Y CAPITAL) */}
+                {/* PASO 3: FINALIZACIÓN */}
                 {step === 3 && selectedProduct && (
-                    <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            {/* Identidad del Cliente & Liquidación (8/12) */}
-                            <div className="lg:col-span-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* Identidad del Cliente */}
-                                    <div className="bg-black/40 border border-white/5 p-10 rounded-[3rem] space-y-8 shadow-inner relative overflow-hidden group">
-                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
-                                                <UserIcon className="w-6 h-6" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Identidad_Cliente</h3>
-                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Vínculo de Operación</p>
-                                            </div>
-                                        </div>
+                    <motion.div key="s3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Identidad del Cliente */}
+                            <div className="bg-[#050505]/90 border border-white/5 p-10 rounded-[3rem] space-y-8 shadow-inner relative overflow-hidden group">
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
+                                        <UserIcon className="w-6 h-6" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Identidad_Cliente</h3>
+                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Vínculo de Operación</p>
+                                    </div>
+                                </div>
 
-                                        <div className="space-y-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Nombre o Razón Social</label>
-                                                <div className="relative group">
-                                                    <input 
-                                                        type="text" 
-                                                        value={clienteNombre} 
-                                                        onChange={e => setClienteNombre(e.target.value.toUpperCase())} 
-                                                        className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800 shadow-luxury" 
-                                                        placeholder="BUSCAR CLIENTE..." 
-                                                    />
-                                                    <AnimatePresence>
-                                                        {clienteNombre.length > 1 && !selectedClientId && (
-                                                            <motion.div 
-                                                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                                                                className="absolute top-full left-0 right-0 mt-2 bg-brand-dark border border-white/10 rounded-2xl shadow-luxury-gold z-50 max-h-64 overflow-y-auto no-scrollbar overflow-hidden"
-                                                            >
-                                                                {clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).length > 0 ? (
-                                                                    clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).map(c => (
-                                                                        <button 
-                                                                            key={c.id} 
-                                                                            onClick={() => { 
-                                                                                setClienteNombre(c.nombre); 
-                                                                                setClienteTelefono(c.telefono[0] || '');
-                                                                                setSelectedClientId(c.id);
-                                                                            }}
-                                                                            className="w-full p-5 text-left hover:bg-white/5 border-b border-white/5 flex justify-between items-center transition-colors"
-                                                                        >
-                                                                            <div className="flex items-center gap-4">
-                                                                                <div className="w-8 h-8 rounded-xl bg-liquid-gold/20 flex items-center justify-center text-liquid-gold font-black">{c.nombre.charAt(0)}</div>
-                                                                                <span className="text-sm font-black text-white uppercase italic">{c.nombre}</span>
-                                                                            </div>
-                                                                            <span className="text-[10px] font-black text-slate-600 tracking-widest">{c.telefono[0] || 'NO_PHONE'}</span>
-                                                                        </button>
-                                                                    ))
-                                                                ) : (
-                                                                    <div className="p-6 text-center">
-                                                                        <p className="text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em]">Creando Nuevo Perfil</p>
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Nombre o Razón Social</label>
+                                        <div className="relative group">
+                                            <input 
+                                                type="text" 
+                                                value={clienteNombre} 
+                                                onChange={e => setClienteNombre(e.target.value.toUpperCase())} 
+                                                className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all placeholder:text-slate-800" 
+                                                placeholder="BUSCAR CLIENTE..." 
+                                            />
+                                            <AnimatePresence>
+                                                {clienteNombre.length > 1 && !selectedClientId && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                                                        className="absolute top-full left-0 right-0 mt-2 bg-brand-dark border border-white/10 rounded-2xl shadow-luxury-gold z-50 max-h-64 overflow-y-auto no-scrollbar"
+                                                    >
+                                                        {clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).length > 0 ? (
+                                                            clientes.filter(c => c.nombre.toLowerCase().includes(clienteNombre.toLowerCase())).map(c => (
+                                                                <button 
+                                                                    key={c.id} 
+                                                                    onClick={() => { 
+                                                                        setClienteNombre(c.nombre); 
+                                                                        setClienteTelefono(c.telefono[0] || '');
+                                                                        setSelectedClientId(c.id);
+                                                                    }}
+                                                                    className="w-full p-5 text-left hover:bg-white/5 border-b border-white/5 flex justify-between items-center transition-colors"
+                                                                >
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className="w-8 h-8 rounded-xl bg-liquid-gold/20 flex items-center justify-center text-liquid-gold font-black">{c.nombre.charAt(0)}</div>
+                                                                        <span className="text-sm font-black text-white uppercase italic">{c.nombre}</span>
                                                                     </div>
-                                                                )}
-                                                            </motion.div>
+                                                                    <span className="text-[10px] font-black text-slate-600 tracking-widest">{c.telefono[0] || 'NO_PHONE'}</span>
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <div className="p-6 text-center text-[10px] text-liquid-gold font-black uppercase tracking-[0.4em]">Perfiles No Hallados</div>
                                                         )}
-                                                    </AnimatePresence>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Canal WhatsApp</label>
-                                                <div className="relative">
-                                                    <input type="text" value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all shadow-luxury" placeholder="099-000-0000" />
-                                                </div>
-                                            </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </div>
-
-                                    {/* Liquidación de Pago */}
-                                    <div className="bg-black/60 border border-liquid-gold/10 p-10 rounded-[3rem] space-y-8 shadow-luxury-gold relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
-                                                <CreditCardIcon className="w-6 h-6" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Liquidación</h3>
-                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Aseguramiento de Capital</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-8 bg-black/40 p-8 rounded-3xl border border-white/5 shadow-inner">
-                                            <div className="flex justify-between items-end">
-                                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Total Misión</span>
-                                                <span className="text-5xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal)}</span>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <div className="flex justify-between items-center text-liquid-gold">
-                                                    <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Abono Inicial</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-2xl font-black italic">$</span>
-                                                        <input 
-                                                            type="number" 
-                                                            value={abono || ''} 
-                                                            onChange={e => setAbono(Number(e.target.value))}
-                                                            className="w-32 bg-transparent border-b border-liquid-gold text-right text-3xl font-black italic outline-none py-1"
-                                                            placeholder="0.00"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="flex justify-between items-center text-slate-500">
-                                                    <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Saldo Pendiente</span>
-                                                    <span className="text-2xl font-black italic">{formatCurrency(precioFinal - abono)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 flex gap-4">
-                                    <button onClick={() => setStep(2)} className="px-8 py-6 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest transition-all border border-white/10 text-[10px] flex items-center gap-3">
-                                        <ArrowLeftIcon className="w-4 h-4" /> VOLVER
-                                    </button>
-                                    <button 
-                                        onClick={() => handleConfirm()} 
-                                        disabled={isSubmitting}
-                                        className="flex-1 py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-gold-glow-strong italic text-xs flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-wait"
-                                    >
-                                        {isSubmitting ? 'INICIANDO PROTOCOLO...' : 'INICIAR PROTOCOLO'} 
-                                        {isSubmitting ? <Loader2Icon className="w-6 h-6 animate-spin" /> : <CheckCircleIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Tactical Telemetry HUD (4/12) - Filling the gap */}
-                            <div className="lg:col-span-4">
-                                <div className="bg-black/80 border border-white/5 rounded-[3rem] p-8 h-full flex flex-col gap-8 shadow-luxury relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                                    
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Status de Operación</span>
-                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-green-glow" />
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
-                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Misión Actual</p>
-                                                <p className="text-sm font-black text-white italic uppercase tracking-tighter">COMERCIAL_ORDER_{Math.floor(Math.random() * 999)}</p>
-                                            </div>
-                                            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
-                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Protocolo de Carga</p>
-                                                <p className="text-sm font-black text-liquid-gold italic uppercase tracking-tighter">v5.0_ELITE_TERMINAL</p>
-                                            </div>
-                                            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
-                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Fase de Despliegue</p>
-                                                <p className="text-sm font-black text-white italic uppercase tracking-tighter">FINAL_AUTHORIZATION</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-1 flex flex-col justify-end space-y-6">
-                                        <div className="h-px bg-white/5 w-full" />
-                                        <div className="space-y-4">
-                                            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em] italic">Live_Telemetry_Stream</p>
-                                            <div className="space-y-2 font-mono text-[9px]">
-                                                <p className="text-emerald-500/60">[OK] SYSTEM_READY_V5.0</p>
-                                                <p className="text-slate-600">[LOG] MISSION_INIT: COMERCIAL</p>
-                                                <p className="text-slate-600">[LOG] PHASE_STEP_3_ACTIVE</p>
-                                                <p className="text-liquid-gold animate-pulse">_WAITING_FOR_FINAL_AUTH...</p>
-                                            </div>
-                                        </div>
-                                        <button className="w-full py-3 bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white rounded-xl text-[8px] font-black uppercase tracking-[0.3em] transition-all border border-white/5 italic">
-                                            MINIMIZAR TELEMETRÍA
-                                        </button>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic ml-2">Canal WhatsApp</label>
+                                        <input type="text" value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} className="w-full bg-black/60 border border-white/10 p-5 rounded-2xl text-lg font-black text-white italic outline-none focus:border-liquid-gold/30 transition-all" placeholder="099-000-0000" />
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Liquidación de Pago */}
+                            <div className="bg-[#050505]/90 border border-liquid-gold/10 p-10 rounded-[3rem] space-y-8 shadow-luxury-gold relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold shadow-luxury">
+                                        <CreditCardIcon className="w-6 h-6" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Liquidación</h3>
+                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic">Capital Asegurado</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-8 bg-black/40 p-8 rounded-3xl border border-white/5 shadow-inner">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Inversión Final</span>
+                                        <span className="text-5xl font-black text-white italic tracking-tighter">{formatCurrency(precioFinal)}</span>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center text-liquid-gold">
+                                            <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Abono</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl font-black italic">$</span>
+                                                <input 
+                                                    type="number" 
+                                                    value={abono || ''} 
+                                                    onChange={e => setAbono(Number(e.target.value))}
+                                                    className="w-32 bg-transparent border-b border-liquid-gold text-right text-3xl font-black italic outline-none py-1"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center text-slate-500 pt-2 border-t border-white/5">
+                                            <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">Saldo Pendiente</span>
+                                            <span className="text-2xl font-black italic">{formatCurrency(precioFinal - abono)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={() => setStep(2)} className="px-8 py-6 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest transition-all border border-white/10 text-[10px] flex items-center gap-3 italic">
+                                <ArrowLeftIcon className="w-4 h-4" /> RECONFIGURAR
+                            </button>
+                            <button 
+                                onClick={() => handleConfirm()} 
+                                disabled={isSubmitting}
+                                className="flex-1 py-6 bg-liquid-gold text-black rounded-2xl font-black uppercase tracking-[0.4em] hover:scale-[1.01] transition-all shadow-gold-glow italic text-xs flex items-center justify-center gap-4 group disabled:opacity-50"
+                            >
+                                {isSubmitting ? 'SINCRONIZANDO...' : 'INICIAR PROTOCOLO DE PRODUCCIÓN'} 
+                                {isSubmitting ? <Loader2Icon className="w-5 h-5 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
+                            </button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Keyboard Shortcuts Legend (Tactical HUD) */}
-            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 px-8 py-3 bg-black/60 backdrop-blur-xl border border-white/5 rounded-full shadow-2xl z-50 pointer-events-none opacity-40 hover:opacity-100 transition-opacity">
-                <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-white/10 rounded text-[8px] font-black text-liquid-gold border border-white/10">S</kbd>
-                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">SEARCH_TERMINAL</span>
-                </div>
-                <div className="w-px h-3 bg-white/10" />
-                <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-white/10 rounded text-[8px] font-black text-liquid-gold border border-white/10">C</kbd>
-                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">CATEGORIES</span>
-                </div>
-                <div className="w-px h-3 bg-white/10" />
-                <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-white/10 rounded text-[8px] font-black text-liquid-gold border border-white/10">ESC</kbd>
-                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">CANCEL_MISSION</span>
-                </div>
-            </div>
-
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.01); border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.2); border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.1); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.3); }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
             `}</style>
-        </>
+        </div>
     );
 };

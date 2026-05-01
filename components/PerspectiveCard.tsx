@@ -65,3 +65,5 @@ export const PerspectiveCard: React.FC<PerspectiveCardProps> = ({ children, clas
         </motion.div>
     );
 };
+
+export default PerspectiveCard;

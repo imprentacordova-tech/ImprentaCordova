@@ -42,7 +42,7 @@ interface SriSolicitudStepProps {
 const ValidationTerminal = ({ active }: { active: boolean }) => {
     const [logs, setLogs] = useState<string[]>([]);
     const messages = [
-        "INITIATING SECURE SRI PROTOCOL [V2.0.26]...",
+        "INITIATING SECURE SRI PROTOCOL [V5.1.0]...",
         "RSA_KEY_EXCHANGE: AUTHENTICATED [0x7FF-EA]",
         "ESTABLISHING TRACEABLE TRADEMARK LINK...",
         "ENCRYPTING PAYLOAD [AES-256-GCM]...",
@@ -50,7 +50,7 @@ const ValidationTerminal = ({ active }: { active: boolean }) => {
         "TAXPAYER_REGIMEN_MATCH: OK",
         "SYNCING METADATA WITH SUPABASE PRODUCTION...",
         "SECURE_TOKEN_GRANTED: PR-992-DELTA",
-        "HANDSHAKE_COMPLETE: STANDBY FOR REDIRECT"
+        "HANDSHAKE_COMPLETE: STANDBY_DEPLOY"
     ];
 
     useEffect(() => {
@@ -63,30 +63,30 @@ const ValidationTerminal = ({ active }: { active: boolean }) => {
                 } else {
                     clearInterval(interval);
                 }
-            }, 400); // Faster logs for industrial feel
+            }, 300);
             return () => clearInterval(interval);
         }
         if (!active) setLogs([]);
     }, [active]);
 
     return (
-        <div className="bg-black/90 rounded-2xl border border-white/10 p-4 h-28 md:h-36 font-mono text-[9px] overflow-hidden relative group shadow-inner">
-            <div className="absolute top-0 left-0 w-full h-1 bg-liquid-gold/30 animate-scan-slow z-20" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent pointer-events-none" />
-            <div className="space-y-1 relative z-10">
-                <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-1">
-                    <span className="text-[7px] text-liquid-gold/40 tracking-[0.2em]">SRI_LIVE_DEBUGGER</span>
-                    <span className="text-[7px] text-emerald-500/60 animate-pulse">CONNECTION_STABLE</span>
+        <div className="bg-black/60 backdrop-blur-xl rounded-xl border border-white/5 p-3 h-24 font-mono text-[8px] overflow-hidden relative group shadow-inner">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/20 animate-scan-slow z-20" />
+            <div className="space-y-0.5 relative z-10">
+                <div className="flex justify-between items-center mb-1 border-b border-white/5 pb-0.5">
+                    <span className="text-[6px] text-liquid-gold/40 tracking-[0.2em]">SRI_LIVE_STREAM</span>
+                    <div className="flex items-center gap-1">
+                        <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-[6px] text-emerald-500/60 font-black uppercase">LINK_STABLE</span>
+                    </div>
                 </div>
                 {logs.map((log, i) => (
-                    <div key={i} className="flex gap-2 items-center">
-                        <span className="text-liquid-gold/30">[{new Date().toLocaleTimeString()}]</span>
-                        <span className={i === logs.length - 1 ? "text-liquid-gold animate-pulse font-bold" : "text-slate-500"}>{log}</span>
+                    <div key={i} className="flex gap-2 items-center opacity-80">
+                        <span className="text-liquid-gold/20">[{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span>
+                        <span className={i === logs.length - 1 ? "text-liquid-gold italic" : "text-slate-500"}>{log}</span>
                     </div>
                 ))}
             </div>
-            {/* CRT Flicker effect */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
         </div>
     );
 };
@@ -196,29 +196,29 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
             {/* Tactical Grid Background Overlay */}
             <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:40px_40px] z-0" />
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 relative pb-4 md:pb-6 border-b border-white/10 z-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 relative pb-4 md:pb-6 border-b border-white/5 z-10">
                 <div className="absolute top-0 left-0 w-24 md:w-32 h-1 bg-liquid-gold shadow-gold-glow" />
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="min-w-0">
-                        <h2 className="text-xl md:text-3xl font-black text-white italic tracking-tighter uppercase mb-0.5 leading-none truncate">
-                            Protocolo <span className="text-liquid-gold">Elite</span>
+                        <h2 className="text-xl md:text-2xl font-black text-white italic tracking-tighter uppercase mb-0.5 leading-none truncate">
+                            Protocolo <span className="text-gold-gradient">Elite SRI</span>
                         </h2>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[7px] md:text-[8px] flex items-center gap-2">
-                                <span className="w-1 h-1 md:w-1.5 bg-liquid-gold rounded-full animate-pulse" />
-                                Validación Tributaria
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-green-glow" />
+                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[7px] md:text-[8px]">
+                                Validación Tributaria en Tiempo Real
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="w-full md:w-auto bg-liquid-gold/5 border border-liquid-gold/20 px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-5 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
+                <div className="w-full md:w-auto bg-black/40 border border-white/5 px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-5 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
                     <div className="absolute inset-0 bg-liquid-gold/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <div className="w-7 h-7 md:w-10 md:h-10 bg-liquid-gold/20 rounded-lg md:rounded-xl flex items-center justify-center text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-soft flex-shrink-0">
+                    <div className="w-7 h-7 md:w-9 md:h-9 bg-liquid-gold/10 rounded-lg flex items-center justify-center text-liquid-gold border border-liquid-gold/10 shadow-gold-glow-soft flex-shrink-0">
                         <FingerPrintIcon className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[6px] md:text-[8px] text-liquid-gold/60 font-black uppercase tracking-widest mb-0.5">ID_CONTRIBUYENTE</p>
-                        <p className="text-white font-black italic tracking-tight uppercase text-[9px] md:text-sm leading-none truncate">{cliente.nombre}</p>
+                        <p className="text-[6px] md:text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">CONTRIBUYENTE_AUTH</p>
+                        <p className="text-white font-black italic tracking-tight uppercase text-[9px] md:text-xs leading-none truncate">{cliente.nombre}</p>
                     </div>
                 </div>
             </div>
@@ -301,10 +301,10 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                             <div className="group relative">
                                                 <button
                                                     onClick={() => setActividad(acc)}
-                                                    className={`w-full text-left p-4 md:p-6 rounded-xl md:rounded-[1.5rem] border-2 transition-all duration-500 flex items-center justify-between overflow-hidden relative ${
+                                                    className={`w-full text-left p-4 md:p-6 rounded-xl md:rounded-[1.5rem] border transition-all duration-500 flex items-center justify-between overflow-hidden relative ${
                                                         actividad === acc 
-                                                        ? 'bg-liquid-gold/10 border-liquid-gold text-white shadow-gold-glow-sm' 
-                                                        : 'bg-white/[0.03] border-white/5 text-slate-500 hover:border-white/20 hover:bg-white/[0.05]'
+                                                        ? 'bg-liquid-gold/10 border-liquid-gold/50 text-white shadow-gold-glow-sm' 
+                                                        : 'bg-white/[0.02] border-white/5 text-slate-500 hover:border-white/20 hover:bg-white/[0.05]'
                                                     }`}
                                                 >
                                                     {actividad === acc && (
@@ -406,16 +406,16 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                 <select 
                                     value={establecimiento}
                                     onChange={(e) => setEstablecimiento(e.target.value)}
-                                    className="relative w-full bg-black/60 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-6 text-white font-black text-center text-2xl md:text-4xl focus:bg-black/80 transition-all duration-500 shadow-inner font-mono appearance-none outline-none cursor-pointer tracking-tighter"
+                                    className="relative w-full bg-black/40 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-5 text-white font-black text-center text-xl md:text-3xl focus:bg-black/80 transition-all duration-500 shadow-inner font-mono appearance-none outline-none cursor-pointer tracking-tighter"
                                 >
                                     {availableEstablecimientos.map(e => (
-                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-base italic">
+                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-sm italic">
                                             {e.codigo}
                                         </option>
                                     ))}
-                                    <option value="custom" className="bg-slate-900 text-white text-[10px] md:text-base">+ OTRO</option>
+                                    <option value="custom" className="bg-slate-900 text-white text-[10px] md:text-sm">+ OTRO</option>
                                 </select>
-                                <MapPinIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
+                                <MapPinIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
                             </div>
                         </div>
 
@@ -432,10 +432,10 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                     value={puntoEmision}
                                     onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').substring(0,3))}
                                     maxLength={3}
-                                    className="relative w-full bg-black/60 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-6 text-white font-black text-center text-2xl md:text-4xl tracking-[0.2em] md:tracking-[0.3em] focus:bg-black/80 transition-all duration-500 shadow-inner font-mono outline-none placeholder:text-slate-900"
+                                    className="relative w-full bg-black/40 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-5 text-white font-black text-center text-xl md:text-3xl tracking-[0.2em] focus:bg-black/80 transition-all duration-500 shadow-inner font-mono outline-none placeholder:text-slate-900"
                                     placeholder="001"
                                 />
-                                <HashtagIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
+                                <HashtagIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
                             </div>
                         </div>
                     </div>
@@ -456,11 +456,11 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                                 type="password"
                                 value={clave}
                                 onChange={(e) => setClave(e.target.value)}
-                                className="relative w-full bg-black/80 border border-white/5 group-focus-within/pass:border-liquid-gold/50 rounded-2xl md:rounded-3xl p-5 md:p-8 text-white font-mono text-xl md:text-4xl tracking-[0.8em] md:tracking-[1.2em] focus:bg-black transition-all duration-500 shadow-2xl outline-none placeholder:text-slate-900"
+                                className="relative w-full bg-black/80 border border-white/5 group-focus-within/pass:border-liquid-gold/50 rounded-xl md:rounded-2xl p-4 md:p-6 text-white font-mono text-lg md:text-2xl tracking-[0.6em] md:tracking-[0.8em] focus:bg-black transition-all duration-500 shadow-2xl outline-none placeholder:text-slate-900"
                                 placeholder="••••••••"
                             />
-                            <div className="absolute top-1/2 right-4 md:right-8 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/[0.02] rounded-xl border border-white/5 flex items-center justify-center text-white/10 group-focus-within/pass:text-liquid-gold group-focus-within/pass:border-liquid-gold/30 transition-all duration-500">
-                                <ShieldCheckIcon className="w-5 h-5 md:w-7 md:h-7" />
+                            <div className="absolute top-1/2 right-4 md:right-6 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-white/[0.02] rounded-xl border border-white/5 flex items-center justify-center text-white/10 group-focus-within/pass:text-liquid-gold group-focus-within/pass:border-liquid-gold/30 transition-all duration-500">
+                                <ShieldCheckIcon className="w-4 h-4 md:w-6 md:h-6" />
                             </div>
                             
                             {/* Scanning line animation */}

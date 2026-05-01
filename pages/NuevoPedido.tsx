@@ -55,11 +55,11 @@ const NuevoPedidoPage: React.FC = () => {
     const [quickName, setQuickName] = useState('');
     const [isSidebarMinimized, setIsSidebarMinimized] = useState(true);
 
-    // Auto-scroll logic
+    // Initial state setup
     useEffect(() => {
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTo(0, 0);
-    }, [step, servicio, missionCategory]);
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = 'auto'; };
+    }, []);
 
     // Validation logic for current step
     const canAdvance = () => {
@@ -196,186 +196,92 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     // --- TELEMETRY SIDEBAR COMPONENT ---
-    const TelemetrySidebar = () => (
-        <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-4 sticky top-10 space-y-4"
-        >
-            {/* Mission Identity Card */}
-            <div className="bg-black/60 backdrop-blur-3xl p-6 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <CpuIcon className="w-6 h-6 text-liquid-gold animate-pulse" />
-                </div>
-                
-                <div className="space-y-4 relative z-10">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2 mb-1">
-                            <div className="flex gap-1">
-                                <div className="w-1 h-1 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                                <div className="w-1 h-1 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                                <div className="w-1 h-1 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
-                            </div>
-                            <p className="text-[8px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Status de Operación</p>
-                        </div>
-                        <h4 className="text-xl font-black text-white uppercase italic tracking-tighter leading-none">Misión: <span className="text-liquid-gold">{missionCategory || 'PENDIENTE'}</span></h4>
-                    </div>
+    const TelemetrySidebar = () => {
+        const [logs] = useState<string[]>([]); // Added dummy logs for now or connect to a log provider
 
-                    <div className="h-px w-full bg-gradient-to-r from-liquid-gold/20 via-transparent to-transparent" />
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest block">Fase Actual</span>
-                            <span className="text-[9px] font-black text-white uppercase italic bg-white/5 px-2 py-0.5 rounded border border-white/5 block text-center truncate">{getSteps().find(s => s.id === step)?.label || 'IDENTIDAD'}</span>
-                        </div>
-                        <div className="space-y-1">
-                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest block">Protocolo</span>
-                            <span className="text-[9px] font-black text-liquid-gold uppercase italic block text-center">v5.0_ELITE</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Financial Telemetry */}
-            <div className="bg-liquid-gold/[0.03] backdrop-blur-3xl p-6 rounded-3xl border border-liquid-gold/10 shadow-gold-glow-soft relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                <div className="space-y-5 relative z-10">
-                    <div className="flex justify-between items-end">
-                        <div className="space-y-1">
-                            <p className="text-[8px] font-black text-liquid-gold uppercase tracking-[0.3em] italic opacity-60">Valuación Real-Time</p>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-black text-white italic tracking-tighter tabular-nums">${precio.toFixed(2)}</span>
-                                <span className="text-[8px] font-black text-liquid-gold/60 uppercase italic">USD</span>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Ítems</p>
-                            <span className="text-lg font-black text-white italic">{items.length || (orderMode === 'EXPRESS' ? '1' : '0')}</span>
-                        </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
-                            <span>Abono</span>
-                            <span className="text-emerald-500 tabular-nums">${abono.toFixed(2)}</span>
-                        </div>
-                        <div className="h-1 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
-                            <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: precio > 0 ? `${Math.min(100, (abono/precio)*100)}%` : '0%' }}
-                                className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                            />
-                        </div>
-                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
-                            <span>Saldo Restante</span>
-                            <span className="text-white tabular-nums">${Math.max(0, precio - abono).toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Manifiesto de Ítems */}
-            {items.length > 0 && (
-                <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/[0.01] backdrop-blur-3xl p-6 rounded-3xl border border-white/5 shadow-2xl space-y-4"
-                >
-                    <div className="flex justify-between items-center">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Manifiesto de Ítems</p>
-                        <span className="text-[8px] font-mono text-liquid-gold/40">LOG_0x{items.length}</span>
-                    </div>
-
-                    <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                        {items.map((item, idx) => (
-                            <div key={idx} className="bg-black/30 p-3 rounded-xl border border-white/5 group hover:border-liquid-gold/20 transition-all">
-                                <div className="flex justify-between items-start mb-1">
-                                    <h5 className="text-[9px] font-black text-white uppercase italic tracking-tight truncate flex-1">{item.nombre}</h5>
-                                    <span className="text-[7px] font-black text-liquid-gold bg-liquid-gold/10 px-1.5 py-0.5 rounded ml-2">x{item.cantidad}</span>
-                                </div>
-                                <div className="flex gap-2 items-center">
-                                    <span className="text-[6px] text-slate-600 font-bold uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">SPEC: {item.especificaciones?.tamano || 'N/A'}</span>
-                                    <div className="h-px flex-1 bg-white/5" />
-                                    <span className="text-[9px] font-black text-white/80 italic tabular-nums">${item.precioFinal.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="pt-3 border-t border-white/5 flex justify-between items-center">
-                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Sincronizado</span>
-                        <span className="text-lg font-black text-liquid-gold italic tabular-nums">${precio.toFixed(2)}</span>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Entity Context */}
-            {cliente && (
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-black/60 backdrop-blur-3xl p-6 rounded-3xl border border-white/10 shadow-luxury space-y-4 relative overflow-hidden"
-                >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-liquid-gold/5 blur-3xl pointer-events-none" />
-                    <div className="flex items-center gap-3 relative z-10">
-                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
-                            <UserIcon className="w-5 h-5 text-slate-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest leading-none mb-1">Titular Protocolo</p>
-                            <p className="text-xs font-black text-white uppercase italic tracking-tighter truncate">{cliente.nombre}</p>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 relative z-10">
-                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
-                            <p className="text-[6px] text-slate-600 font-black uppercase tracking-widest mb-0.5">Identificación</p>
-                            <p className="text-[9px] font-mono font-black text-liquid-gold truncate">{cliente.cedula || cliente.ruc}</p>
-                        </div>
-                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
-                            <p className="text-[6px] text-slate-600 font-black uppercase tracking-widest mb-0.5">Régimen</p>
-                            <p className="text-[9px] font-black text-emerald-500 uppercase italic truncate">{cliente.regimen || 'GENERAL'}</p>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Mini Terminal Logs */}
-            <div className="bg-black/40 p-4 rounded-2xl border border-white/5 font-mono text-[7px] space-y-2 max-h-[120px] overflow-hidden opacity-40 hover:opacity-100 transition-opacity cursor-default group">
-                <div className="flex items-center gap-2 mb-2 text-liquid-gold/40 group-hover:text-liquid-gold transition-colors">
-                    <div className="w-1 h-1 rounded-full bg-liquid-gold animate-pulse" />
-                    <span className="font-black uppercase tracking-[0.2em]">Live_Telemetry</span>
-                </div>
-                <div className="space-y-1">
-                    <p className="text-emerald-500/80">[OK] SYSTEM_READY_V5.0</p>
-                    {missionCategory && <p className="text-white/40">[LOG] MISSION_INIT: {missionCategory}</p>}
-                    {step > 1 && <p className="text-white/40">[LOG] PHASE_STEP_{step}_ACTIVE</p>}
-                    {cliente && <p className="text-liquid-gold/40">[LOG] ENTITY_BIND: {cliente.id.substring(0,8)}</p>}
-                    {items.length > 0 && <p className="text-white/40">[LOG] ASSET_APPEND: {items.length} units</p>}
-                    <motion.p 
-                        animate={{ opacity: [0.2, 1, 0.2] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="text-white/10"
-                    >
-                        _WAITING_FOR_INPUT...
-                    </motion.p>
-                </div>
-            </div>
-
-            {/* Minimize Toggle */}
-            <button 
-                onClick={() => setIsSidebarMinimized(true)}
-                className="w-full py-2 text-[8px] font-black text-slate-700 uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2"
+        return (
+            <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="lg:col-span-4 sticky top-10 space-y-4"
             >
-                <div className="w-4 h-px bg-slate-800" />
-                MINIMIZAR TELEMETRÍA
-                <div className="w-4 h-px bg-slate-800" />
-            </button>
-        </motion.div>
-    );
+                <div className="bg-[#050505]/95 backdrop-blur-2xl p-6 rounded-[2rem] border border-liquid-gold/20 shadow-gold-glow-soft relative overflow-hidden group">
+                    {/* Scanner pulse overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-liquid-gold/5 via-transparent to-transparent opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none" />
+                    
+                    <div className="flex justify-between items-start relative z-10">
+                        <div className="space-y-4">
+                            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Status de Operación</h3>
+                            
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="text-[9px] font-black text-liquid-gold/50 uppercase tracking-[0.2em] mb-1">Misión</p>
+                                    <p className="text-xl font-black text-white italic uppercase tracking-tighter">{missionCategory || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-liquid-gold/50 uppercase tracking-[0.2em] mb-1">Fase Actual</p>
+                                    <p className="text-xl font-black text-gold-gradient italic uppercase tracking-tighter">
+                                        {getSteps().find(s => s.id === step)?.label || 'IDENTIDAD'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-liquid-gold/50 uppercase tracking-[0.2em] mb-1">Protocolo</p>
+                                    <p className="text-[11px] font-mono text-white/40 tracking-widest">v5.1.0_ELITE</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-5 text-right">
+                            <div>
+                                <p className="text-[9px] font-black text-liquid-gold/50 uppercase tracking-[0.2em] mb-1">Valuación Real-Time</p>
+                                <p className="text-4xl font-black text-white tracking-tighter leading-none">${precio.toFixed(2)}<span className="text-xs ml-1 text-slate-500">USD</span></p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                                <div className="bg-white/5 p-2 rounded-xl border border-white/5">
+                                    <p className="text-[8px] font-black text-slate-500 uppercase">Ítems</p>
+                                    <p className="text-xs font-black text-white">{items.length}</p>
+                                </div>
+                                <div className="bg-white/5 p-2 rounded-xl border border-white/5">
+                                    <p className="text-[8px] font-black text-slate-500 uppercase">Abono</p>
+                                    <p className="text-xs font-black text-white">${abono.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <div className="bg-liquid-gold/10 p-3 rounded-2xl border border-liquid-gold/20 flex justify-between items-center">
+                                <span className="text-[8px] font-black text-liquid-gold uppercase tracking-widest italic">Saldo Restante</span>
+                                <span className="text-sm font-black text-white">${(precio - abono).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-emerald-500/50" />
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Live_Telemetry</h4>
+                        </div>
+                        
+                        <div className="bg-black/40 rounded-2xl p-4 font-mono text-[9px] text-emerald-400/80 space-y-1 border border-white/5 h-40 overflow-y-auto custom-scrollbar">
+                            <p className="text-emerald-400">[OK] SYSTEM_READY_V5.1_ELITE</p>
+                            <p className="opacity-50">[LOG] MISSION_INIT: {missionCategory}</p>
+                            <p className="opacity-50">[LOG] PHASE_{step}_ACTIVE</p>
+                            <p className="animate-pulse">_WAITING_FOR_INPUT...</p>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={() => setIsSidebarMinimized(true)}
+                        className="w-full mt-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-black text-slate-500 uppercase tracking-widest transition-all"
+                    >
+                        Minimizar Telemetría
+                    </button>
+                </div>
+            </motion.div>
+        );
+    };
 
     return (
-        <div className="max-w-[1300px] mx-auto space-y-4 md:space-y-8 pb-20 px-3 sm:px-6 lg:px-10 pt-2 md:pt-6">
+        <div className="elite-terminal">
+            <div className="elite-viewport px-3 sm:px-6 lg:px-10 py-4">
+                <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-8 pb-20">
             {/* --- ELITE COMPACT STEPPER --- */}
             <div className="sticky top-0 z-[60] -mx-3 sm:mx-0 bg-black/80 backdrop-blur-3xl border-b border-white/5 py-3 md:py-4 px-4 md:px-10 flex items-center justify-between gap-6 overflow-x-auto no-scrollbar">
                 <div className="flex items-center gap-1 md:gap-3 flex-1">
@@ -415,7 +321,7 @@ const NuevoPedidoPage: React.FC = () => {
                 <div className="flex items-center gap-4 border-l border-white/10 pl-6 h-10">
                     <div className="hidden lg:flex flex-col text-right">
                         <span className="text-[7px] font-mono text-slate-500 tracking-[0.3em]">SYSTEM_VERSION</span>
-                        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">4.2.0_ELITE</span>
+                        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest text-glow-gold">v5.1.0_ELITE</span>
                     </div>
                     <button 
                         onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
@@ -950,11 +856,13 @@ const NuevoPedidoPage: React.FC = () => {
                 </div>
 
                 {/* --- SIDEBAR TELEMETRÍA ELITE --- */}
-                {!isSidebarMinimized && missionCategory && (missionCategory === 'COMERCIAL' ? (step !== 2 && step !== 1) : true) && step < 5 && (
+                {!isSidebarMinimized && missionCategory && step < 5 && (
                     <TelemetrySidebar />
                 )}
             </div>
         </div>
+    </div>
+</div>
     );
 };
 

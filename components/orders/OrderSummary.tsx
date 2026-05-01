@@ -104,7 +104,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         {/* Order Items */}
                         <div className="space-y-6 md:space-y-3">
                             {displayItems.map((item) => (
-                                <div key={item.id} className="group relative flex flex-col p-6 md:p-5 glass-card-luxury">
+                                <div key={item.id} className="group relative flex flex-col p-6 md:p-5 elite-hud-card">
                                     <div className="flex justify-between items-start mb-6 md:mb-3">
                                         <div className="min-w-0 flex-grow pr-4">
                                             <p className="text-[15px] md:text-[12px] font-black uppercase tracking-tight text-white mb-3 md:mb-1">{item.nombre}</p>
@@ -288,7 +288,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto">
                     {/* Data Visualization Header */}
                     <div className="flex justify-between items-center px-2 opacity-50">
-                        <span className="text-[7px] font-mono text-slate-500 tracking-[0.5em] uppercase italic">FINANCIAL_MODULE_ACTIVE</span>
+                        <span className="text-[7px] font-mono text-slate-500 tracking-[0.5em] uppercase italic">FINANCIAL_MODULE_ACTIVE v5.1.0_ELITE</span>
                         <div className="flex gap-2">
                             <div className="w-1 h-1 bg-liquid-gold rounded-full animate-pulse"></div>
                             <div className="w-1 h-1 bg-liquid-gold/20 rounded-full"></div>
