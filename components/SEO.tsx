@@ -136,8 +136,8 @@ export const SEO: React.FC<SEOProps> = ({
             <meta name="keywords"            content={keywords} />
             <meta name="author"              content={BRAND_NAME} />
             <meta name="robots"              content={robots ? 'index, follow, max-image-preview:large' : 'noindex, nofollow'} />
-            <meta name="theme-color"         content="#0A0A0F" />
-            <meta name="color-scheme"        content="dark" />
+            <meta name="theme-color"         content="#f8fafc" />
+            <meta name="color-scheme"        content="light" />
             <link rel="canonical"            href={url} />
 
             {/* ── Geo / Local SEO ── */}

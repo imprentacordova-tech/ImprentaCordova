@@ -6,12 +6,12 @@
 
 @layer base {
   :root {
-    --brand-red: #e11d48;
-    --brand-blue: #020617;
-    --obsidian: #050505;
-    --gold-glow: rgba(212, 175, 55, 0.3);
-    --liquid-gold: #d4af37;
-    --brand-dark: #020202;
+    --brand-blue: #0ea5e9;
+    --brand-blue-dark: #0369a1;
+    --brand-light: #f8fafc;
+    --brand-white: #ffffff;
+    --glass-white: rgba(255, 255, 255, 0.7);
+    --ice-glow: rgba(14, 165, 233, 0.15);
     
     /* Font Tokens */
     --font-sans: 'Inter', system-ui, sans-serif;
@@ -22,8 +22,8 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: var(--brand-dark);
-    color: white;
+    background-color: var(--brand-light);
+    color: #0f172a;
     @apply tracking-tight antialiased overflow-x-hidden;
   }
 
@@ -32,19 +32,19 @@
   .font-tech { font-family: var(--font-tech); }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tighter uppercase italic;
+    @apply font-display tracking-tighter uppercase font-black;
   }
 }
 
 @layer components {
-  /* --- ELITE DESIGN SYSTEM: OBSIDIAN & GOLD --- */
+  /* --- MODERN MINIMALIST SYSTEM: ICE & BLUE --- */
   
-  .glass-panel-obsidian {
-    @apply bg-[#050505]/80 backdrop-blur-3xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden;
+  .glass-panel-light {
+    @apply bg-white/70 backdrop-blur-3xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden;
   }
 
   .elite-hud-card {
-    @apply bg-[#080808]/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-luxury transition-all duration-700 relative overflow-hidden;
+    @apply bg-white border border-slate-100 rounded-[2.5rem] shadow-luxury transition-all duration-700 relative overflow-hidden;
   }
 
   .tactical-border {
@@ -52,43 +52,43 @@
   }
   .tactical-border::before {
     content: '';
-    @apply absolute -top-[1px] -left-[1px] w-4 h-4 border-t-2 border-l-2 border-liquid-gold/40 rounded-tl-xl pointer-events-none z-10;
+    @apply absolute -top-[1px] -left-[1px] w-4 h-4 border-t-2 border-l-2 border-brand-blue/40 rounded-tl-xl pointer-events-none z-10;
   }
   .tactical-border::after {
     content: '';
-    @apply absolute -bottom-[1px] -right-[1px] w-4 h-4 border-b-2 border-r-2 border-liquid-gold/40 rounded-br-xl pointer-events-none z-10;
+    @apply absolute -bottom-[1px] -right-[1px] w-4 h-4 border-b-2 border-r-2 border-brand-blue/40 rounded-br-xl pointer-events-none z-10;
   }
 
-  .text-gold-gradient {
-    background: linear-gradient(135deg, #f2ca50 0%, #FFF8DC 45%, #D4AF37 55%, #f2ca50 100%);
+  .text-blue-gradient {
+    background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 45%, #2563eb 55%, #0ea5e9 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    @apply font-black drop-shadow-[0_0_15px_rgba(212,175,55,0.3)];
-    animation: gold-shimmer-sweep 8s linear infinite;
+    @apply font-black drop-shadow-[0_0_15px_rgba(14,165,233,0.1)];
+    animation: blue-shimmer-sweep 8s linear infinite;
   }
 
-  .shadow-gold-glow {
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.2), inset 0 0 15px rgba(212, 175, 55, 0.05);
+  .shadow-blue-glow {
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.1), inset 0 0 15px rgba(14, 165, 233, 0.05);
   }
 
-  .shadow-gold-glow-strong {
-    box-shadow: 0 10px 60px -10px rgba(212, 175, 55, 0.4), 0 0 20px rgba(212, 175, 55, 0.2);
+  .shadow-blue-glow-strong {
+    box-shadow: 0 10px 60px -10px rgba(14, 165, 233, 0.3), 0 0 20px rgba(14, 165, 233, 0.1);
   }
 
   .elite-input {
-    @apply bg-black/60 border-2 border-white/5 rounded-2xl px-8 py-6 text-white font-black outline-none focus:border-liquid-gold/40 transition-all placeholder:text-slate-900 italic tracking-wide;
+    @apply bg-slate-50 border-2 border-slate-100 rounded-2xl px-8 py-6 text-slate-900 font-bold outline-none focus:border-brand-blue/40 transition-all placeholder:text-slate-300;
   }
 
   .bg-architect-grid {
     background-image:
-      linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+      linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   /* --- ANIMATIONS --- */
-  @keyframes gold-shimmer-sweep {
+  @keyframes blue-shimmer-sweep {
     0% { background-position: 0% center; }
     100% { background-position: 200% center; }
   }
@@ -132,7 +132,7 @@
 
 /* Base Terminal Layout */
 .elite-terminal {
-  @apply h-screen overflow-hidden flex flex-col bg-brand-dark relative;
+  @apply h-screen overflow-hidden flex flex-col bg-brand-light relative;
 }
 
 .elite-viewport {
@@ -141,7 +141,7 @@
 
 /* Sticky Header Backdrop */
 .sticky-header-blur {
-  @apply sticky top-0 z-[100] backdrop-blur-3xl bg-black/60 border-b border-white/5;
+  @apply sticky top-0 z-[100] backdrop-blur-3xl bg-white/60 border-b border-slate-200;
 }
 
 /* Industrial Grid */

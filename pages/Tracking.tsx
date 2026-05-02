@@ -261,17 +261,17 @@ const TrackingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-brand-dark font-sans selection:bg-liquid-gold selection:text-brand-dark overflow-x-hidden relative flex flex-col">
-            <SEO title="Elite Tracking | Imprenta Córdova" description="Rastreador holográfico de alta precisión para proyectos industriales." />
+        <div className="min-h-screen bg-brand-light font-sans selection:bg-brand-blue selection:text-white overflow-x-hidden relative flex flex-col">
+            <SEO title="Precision Tracking | Imprenta Córdova" description="Rastreador de alta fidelidad para proyectos industriales y comerciales." />
             
             <PublicNavbar />
             
-            {/* --- FONDO ELITE --- */}
-            <div className="fixed inset-0 bg-architect-grid opacity-[0.05] pointer-events-none z-0" />
-            <div className="fixed inset-0 bg-obsidian-liquid pointer-events-none z-0" />
-            <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] bg-noise mix-blend-overlay" />
+            {/* --- FONDO MINIMALISTA --- */}
+            <div className="fixed inset-0 bg-architect-grid opacity-[0.03] pointer-events-none z-0" />
+            <div className="fixed inset-0 bg-gradient-to-b from-white via-brand-light to-white pointer-events-none z-0" />
+            <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.02] bg-noise mix-blend-overlay" />
             
-            {/* --- PARTÍCULAS ORO --- */}
+            {/* --- PARTÍCULAS AZULES --- */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 {[...Array(15)].map((_, i) => (
                     <motion.div
@@ -279,7 +279,7 @@ const TrackingPage: React.FC = () => {
                         animate={{
                             y: [0, -100, 0],
                             x: [0, Math.random() * 40 - 20, 0],
-                            opacity: [0.05, 0.15, 0.05],
+                            opacity: [0.1, 0.3, 0.1],
                             scale: [1, 1.3, 1]
                         }}
                         transition={{
@@ -288,7 +288,7 @@ const TrackingPage: React.FC = () => {
                             ease: "easeInOut",
                             delay: Math.random() * 5
                         }}
-                        className="absolute w-1 h-1 bg-liquid-gold rounded-full blur-[1px]"
+                        className="absolute w-1 h-1 bg-brand-blue rounded-full blur-[1px]"
                         style={{
                             top: `${Math.random() * 100}%`,
                             left: `${Math.random() * 100}%`
@@ -297,213 +297,180 @@ const TrackingPage: React.FC = () => {
                 ))}
             </div>
 
-            {/* --- ESCÁNER DINÁMICO --- */}
+            {/* --- ESCÁNER DE PRECISIÓN --- */}
             <div 
-                className="fixed w-[300px] h-[300px] pointer-events-none z-[110] border-[0.5px] border-liquid-gold/10 rounded-full hidden lg:block transition-transform duration-700 ease-out"
+                className="fixed w-[300px] h-[300px] pointer-events-none z-[110] border-[0.5px] border-brand-blue/10 rounded-full hidden lg:block transition-transform duration-700 ease-out"
                 style={{ 
                     left: mousePosition.x - 150,
                     top: mousePosition.y - 150,
-                    background: 'radial-gradient(circle, rgba(212,175,55,0.02) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(14,165,233,0.03) 0%, transparent 70%)',
                 }}
             >
-                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-liquid-gold/20 animate-scan-slow" />
-                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-liquid-gold/20 animate-scan-slow" />
+                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-brand-blue/20 animate-scan-slow" />
+                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-brand-blue/20 animate-scan-slow" />
             </div>
 
-            {/* --- NAVEGACIÓN --- */}
-            <div className="fixed top-8 left-0 right-0 z-[150] px-6">
-                <motion.nav 
-                    initial={{ y: -100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="container mx-auto max-w-5xl bg-brand-dark/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] py-5 px-10 shadow-2xl flex justify-between items-center relative overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-liquid-gold/5 opacity-30" />
-                    
-                    <Link to="/" className="flex items-center gap-6 group relative z-10">
-                        <div className="relative">
-                            <CordovaLogo className="h-10 w-auto brightness-0 invert group-hover:scale-110 transition-all duration-1000" />
-                            <div className="absolute -inset-2 bg-liquid-gold/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                        <div className="flex flex-col leading-none">
-                            <span className="text-xl font-black text-white tracking-tighter italic">CÓRDOVA<span className="text-liquid-gold">.</span></span>
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.6em] italic">Tracking Node</span>
-                        </div>
-                    </Link>
-                    
-                    <div className="flex items-center gap-6 relative z-10">
-                        <Link to="/" className="p-4 bg-white/5 rounded-2xl border border-white/5 text-slate-400 hover:text-white transition-all">
-                            <HomeIcon className="w-6 h-6" />
-                        </Link>
-                        <Link to="/login" className="px-8 py-4 bg-liquid-gold text-brand-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-gold-glow italic">
-                            Elite Access
-                        </Link>
-                    </div>
-                </motion.nav>
-            </div>
-
-            <div className="relative z-10 flex-1 flex flex-col pt-48 p-4 lg:p-12 gap-12 max-w-[1600px] mx-auto w-full pb-32">
+            <div className="relative z-10 flex-1 flex flex-col pt-32 p-4 lg:p-12 gap-12 max-w-[1600px] mx-auto w-full pb-32">
                 
                 {/* Header */}
-                <div className="text-center space-y-8 max-w-4xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-5 px-8 py-3 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
-                        <div className="flex gap-2">
-                            <div className="w-1.5 h-1.5 bg-liquid-gold rounded-full animate-pulse shadow-gold-glow" />
-                            <div className="w-1.5 h-1.5 bg-liquid-gold/40 rounded-full animate-pulse delay-75" />
-                            <div className="w-1.5 h-1.5 bg-liquid-gold/20 rounded-full animate-pulse delay-150" />
+                <div className="text-center space-y-6 max-w-4xl mx-auto">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-4 px-6 py-2 bg-brand-blue/5 border border-brand-blue/10 rounded-full">
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 bg-brand-blue rounded-full animate-pulse shadow-blue-glow" />
+                            <div className="w-1.5 h-1.5 bg-brand-blue/40 rounded-full animate-pulse delay-75" />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.8em] text-slate-400 italic">CORDOVA_INDUSTRIAL_TRACKER</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.6em] text-brand-blue">CORDOVA_NODE_ACTIVE</span>
                     </motion.div>
-                    <h1 className="text-6xl lg:text-9xl font-black tracking-tighter text-white uppercase italic leading-none">
-                        VÍNCULO_DE_<span className="text-liquid-gold not-italic shadow-gold-glow-soft">PRODUCCIÓN</span>
+                    <h1 className="text-5xl lg:text-8xl font-black tracking-tighter text-brand-dark uppercase leading-none">
+                        TRACKING_<span className="text-brand-blue shadow-blue-glow-soft">SYSTEM</span>
                     </h1>
                 </div>
 
                 {/* Search Bar */}
-                <div className="flex flex-col items-center gap-8">
+                <div className="flex flex-col items-center gap-6">
                     <motion.form 
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         onSubmit={handleSearch} 
-                        className="flex items-center gap-8 bg-white/5 border border-white/10 px-10 py-7 rounded-[3rem] focus-within:border-liquid-gold/30 focus-within:ring-4 focus-within:ring-liquid-gold/5 transition-all group w-full max-w-4xl shadow-2xl backdrop-blur-3xl relative overflow-hidden"
+                        className="flex items-center gap-6 bg-white border border-slate-200 px-8 py-5 rounded-[2.5rem] focus-within:border-brand-blue/40 focus-within:ring-8 focus-within:ring-brand-blue/5 transition-all group w-full max-w-3xl shadow-xl relative overflow-hidden"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/[0.02] via-transparent to-transparent pointer-events-none" />
-                        <SearchIcon className={`w-8 h-8 ${searching ? 'text-liquid-gold animate-spin' : 'text-slate-500 group-focus-within:text-liquid-gold'} transition-colors`} />
+                        <SearchIcon className={`w-6 h-6 ${searching ? 'text-brand-blue animate-spin' : 'text-slate-400 group-focus-within:text-brand-blue'} transition-colors`} />
                         <input 
                             type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                             placeholder="ORDEN, CÉDULA O RUC..."
-                            className="bg-transparent border-none p-0 text-lg font-black text-white placeholder:text-slate-700 focus:ring-0 uppercase tracking-[0.4em] w-full italic"
+                            className="bg-transparent border-none p-0 text-base font-bold text-brand-dark placeholder:text-slate-300 focus:ring-0 uppercase tracking-widest w-full"
                         />
-                        <button type="submit" className="bg-white text-brand-dark px-12 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-liquid-gold transition-all duration-700 shadow-xl active:scale-95 italic">Vincular</button>
+                        <button type="submit" className="bg-brand-blue text-white px-10 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark transition-all duration-500 shadow-lg active:scale-95">Consultar</button>
                     </motion.form>
                     
                     {error && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-rose-500 text-[11px] font-black uppercase tracking-[0.5em] bg-rose-500/5 px-8 py-3 rounded-full border border-rose-500/20 backdrop-blur-md italic">
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-rose-500 text-[10px] font-bold uppercase tracking-[0.4em] bg-rose-50 px-6 py-2 rounded-full border border-rose-100">
                             {error}
                         </motion.div>
                     )}
                 </div>
 
-                <div className="flex-1 flex flex-col gap-14">
+                <div className="flex-1 flex flex-col gap-12">
                     <AnimatePresence mode="wait">
                         {currentJob ? (
                             <motion.div 
                                 key={currentJob.id}
-                                initial={{ opacity: 0, y: 40 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -40 }}
-                                className="grid grid-cols-12 gap-12"
+                                exit={{ opacity: 0, y: -30 }}
+                                className="grid grid-cols-12 gap-8 lg:gap-12"
                             >
                                 {/* Visual Asset Console */}
-                                <div className="col-span-12 lg:col-span-7 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[4rem] overflow-hidden flex flex-col group shadow-2xl relative">
-                                    <div className="absolute top-12 left-12 flex items-center gap-6 z-20">
-                                        <div className="bg-liquid-gold/10 border border-liquid-gold/30 px-6 py-3 rounded-2xl text-liquid-gold shadow-gold-glow-soft backdrop-blur-md">
-                                            <span className="text-[11px] font-black tracking-[0.4em] uppercase italic">ORDEN_{String(currentJob.orden).padStart(6, '0')}</span>
+                                <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200 rounded-[3rem] overflow-hidden flex flex-col group shadow-2xl relative">
+                                    <div className="absolute top-10 left-10 flex items-center gap-4 z-20">
+                                        <div className="bg-brand-blue/5 border border-brand-blue/10 px-5 py-2.5 rounded-2xl text-brand-blue shadow-sm backdrop-blur-md">
+                                            <span className="text-[10px] font-black tracking-widest uppercase">ORDEN_{String(currentJob.orden).padStart(6, '0')}</span>
                                         </div>
-                                        <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] backdrop-blur-md italic">
+                                        <div className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-500 text-[9px] font-black uppercase tracking-widest backdrop-blur-md">
                                             {currentJob.estado.replace('_', ' ')}
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 flex items-center justify-center p-20 bg-black/40 min-h-[550px] relative overflow-hidden group">
-                                        <div className="absolute inset-0 animate-scan-y bg-gradient-to-b from-transparent via-liquid-gold/10 to-transparent h-40 -top-40 z-20 pointer-events-none" />
+                                    <div className="flex-1 flex items-center justify-center p-12 lg:p-20 bg-slate-50 min-h-[500px] relative overflow-hidden group">
+                                        <div className="absolute inset-0 animate-scan-y bg-gradient-to-b from-transparent via-brand-blue/5 to-transparent h-40 -top-40 z-20 pointer-events-none" />
                                         
-                                        <div className="absolute bottom-12 left-12 z-20 opacity-40 group-hover:opacity-80 transition-opacity duration-1000">
-                                            <div className="space-y-3 font-mono text-[9px] uppercase tracking-[0.6em] text-slate-400 border-l-2 border-liquid-gold/30 pl-8">
-                                                <p>RESOLUTION_TAG: 1440DPI</p>
-                                                <p>CHROMATIC_PROFILE: CMYK_ELITE</p>
+                                        <div className="absolute bottom-10 left-10 z-20 opacity-30 group-hover:opacity-60 transition-opacity duration-1000">
+                                            <div className="space-y-2 font-mono text-[8px] uppercase tracking-widest text-slate-400 border-l border-brand-blue/30 pl-6">
+                                                <p>TECH_SPEC: HIGH_FIDELITY</p>
+                                                <p>COLOR_SPACE: PRO_CMYK</p>
                                             </div>
                                         </div>
 
                                         <AnimatePresence mode="wait">
                                             {currentJob.fotoOriginalUrl ? (
                                                 <motion.div key={currentJob.id} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="relative">
-                                                    <img src={currentJob.fotoOriginalUrl} className="max-h-[60vh] object-contain rounded-3xl shadow-3xl relative z-10 border border-white/5 grayscale group-hover:grayscale-0 transition-all duration-1000" alt="Blueprint" />
-                                                    <div className="absolute -inset-16 bg-liquid-gold/5 blur-[120px] -z-10 group-hover:bg-liquid-gold/10 transition-colors duration-1000" />
+                                                    <img src={currentJob.fotoOriginalUrl} className="max-h-[50vh] object-contain rounded-2xl shadow-2xl relative z-10 border border-white" alt="Job View" />
+                                                    <div className="absolute -inset-10 bg-brand-blue/5 blur-[80px] -z-10 group-hover:bg-brand-blue/10 transition-colors duration-1000" />
                                                 </motion.div>
                                             ) : (
-                                                <div className="text-center space-y-8 opacity-20 group-hover:opacity-50 transition-opacity duration-1000">
-                                                    <div className="w-40 h-40 border-2 border-dashed border-white/10 rounded-[4rem] mx-auto flex items-center justify-center">
-                                                        <MonitorIcon className="w-16 h-16 text-white" />
+                                                <div className="text-center space-y-6 opacity-30 group-hover:opacity-50 transition-opacity duration-1000">
+                                                    <div className="w-32 h-32 border border-dashed border-slate-300 rounded-[2.5rem] mx-auto flex items-center justify-center">
+                                                        <MonitorIcon className="w-12 h-12 text-slate-400" />
                                                     </div>
-                                                    <p className="text-[11px] font-black uppercase tracking-[1em] text-white italic">ESPERANDO_RECURSO_VISUAL</p>
+                                                    <p className="text-[10px] font-bold uppercase tracking-[0.8em] text-slate-400">WAITING_FOR_ASSETS</p>
                                                 </div>
                                             )}
                                         </AnimatePresence>
                                     </div>
 
-                                    {/* Action Deck */}
-                                    <div className="p-12 bg-white/5 border-t border-white/10 flex flex-col xl:flex-row items-center justify-between gap-12">
-                                        <div className="flex items-center gap-10 overflow-x-auto no-scrollbar w-full xl:w-auto pb-6 xl:pb-0">
+                                    {/* Status Stepper */}
+                                    <div className="p-10 bg-white border-t border-slate-100 flex flex-col xl:flex-row items-center justify-between gap-10">
+                                        <div className="flex items-center gap-8 overflow-x-auto no-scrollbar w-full xl:w-auto pb-4 xl:pb-0">
                                             {statusSteps.map((step, idx) => {
                                                 const stepIdx = statusSteps.findIndex(s => s.value === currentJob?.estado);
                                                 const isCompleted = idx <= stepIdx;
                                                 const isCurrent = currentJob?.estado === step.value;
                                                 return (
-                                                    <div key={step.value} className="flex flex-col items-center gap-4 shrink-0">
-                                                        <div className={`w-16 h-16 rounded-[1.8rem] flex items-center justify-center border transition-all duration-1000 ${isCurrent ? 'bg-liquid-gold border-liquid-gold text-brand-dark shadow-gold-glow scale-115' : isCompleted ? 'bg-liquid-gold/10 border-liquid-gold/30 text-liquid-gold' : 'bg-transparent border-white/5 text-slate-700'}`}>
-                                                            <step.icon className="w-8 h-8" />
+                                                    <div key={step.value} className="flex flex-col items-center gap-3 shrink-0">
+                                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-700 ${isCurrent ? 'bg-brand-blue border-brand-blue text-white shadow-blue-glow scale-110' : isCompleted ? 'bg-brand-blue/5 border-brand-blue/20 text-brand-blue' : 'bg-transparent border-slate-100 text-slate-300'}`}>
+                                                            <step.icon className="w-6 h-6" />
                                                         </div>
-                                                        <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isCurrent ? 'text-liquid-gold' : 'text-slate-600'} italic`}>{step.label}</span>
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest ${isCurrent ? 'text-brand-blue' : 'text-slate-400'}`}>{step.label}</span>
                                                     </div>
                                                 );
                                             })}
                                         </div>
 
-                                        <div className="flex gap-6 w-full xl:w-auto">
+                                        <div className="flex gap-4 w-full xl:w-auto">
                                             {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arteAprobado && (
                                                 <motion.button 
-                                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                     onClick={() => handleAprobarArte(currentJob.id)}
-                                                    className="flex-1 xl:flex-none bg-emerald-500 text-brand-dark px-12 py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-lg shadow-emerald-500/20 italic"
+                                                    className="flex-1 xl:flex-none bg-emerald-500 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10"
                                                 >
                                                     Aprobar Arte
                                                 </motion.button>
                                             )}
                                             <motion.button 
-                                                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                 onClick={() => handleGeneratePaymentLink(currentJob)}
-                                                className="flex-1 xl:flex-none bg-white text-brand-dark px-12 py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-luxury italic hover:bg-liquid-gold transition-all"
+                                                className="flex-1 xl:flex-none bg-brand-dark text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue transition-all shadow-xl"
                                             >
-                                                Contactar HUB
+                                                Soporte Directo
                                             </motion.button>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Manifest & Console */}
-                                <div className="col-span-12 lg:col-span-5 flex flex-col gap-12">
+                                <div className="col-span-12 lg:col-span-5 flex flex-col gap-8 lg:gap-12">
                                     {/* Product Manifest */}
-                                    <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[4rem] p-12 shadow-2xl flex flex-col gap-10 relative overflow-hidden group/manifest">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.05] via-transparent to-transparent opacity-0 group-hover/manifest:opacity-100 transition-opacity duration-1000" />
+                                    <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-xl flex flex-col gap-8 relative overflow-hidden group/manifest">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/[0.03] via-transparent to-transparent opacity-0 group-hover/manifest:opacity-100 transition-opacity duration-1000" />
                                         
                                         <div className="flex justify-between items-start relative z-10">
-                                            <div className="space-y-3">
-                                                <div className="flex items-center gap-4">
-                                                    <span className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">MANIFEST_V4_ELITE</span>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">MANIFEST_SPEC</span>
                                                     {currentJob.esSRI && (
-                                                        <span className="bg-liquid-gold/10 text-liquid-gold text-[9px] font-black px-4 py-1.5 rounded-xl border border-liquid-gold/30 animate-pulse">SRI_VERIFIED</span>
+                                                        <span className="bg-brand-blue/10 text-brand-blue text-[8px] font-black px-3 py-1 rounded-lg border border-brand-blue/20">VALID_SRI</span>
                                                     )}
                                                 </div>
-                                                <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">{currentJob.subtipo}</h3>
+                                                <h3 className="text-3xl font-black text-brand-dark tracking-tighter uppercase leading-none">{currentJob.subtipo}</h3>
                                             </div>
-                                            <div className="bg-white/5 px-5 py-2.5 rounded-2xl text-[10px] font-mono text-slate-500 font-bold uppercase tracking-widest border border-white/5">HUB_LINK_SECURE</div>
+                                            <div className="bg-slate-50 px-4 py-2 rounded-xl text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest">SECURE_LINK</div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-6 relative z-10">
-                                            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 group/stat hover:border-liquid-gold/20 transition-all duration-700">
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] block mb-3 italic">Total Inversión</span>
-                                                <div className="text-4xl font-black text-white italic tracking-tighter">{formatCurrency(currentJob.total)}</div>
+                                        <div className="grid grid-cols-2 gap-4 relative z-10">
+                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 group/stat hover:border-brand-blue/20 transition-all duration-500">
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Presupuesto</span>
+                                                <div className="text-2xl font-black text-brand-dark tracking-tighter">{formatCurrency(currentJob.total)}</div>
                                             </div>
-                                            <div className="p-8 bg-liquid-gold/5 rounded-[2.5rem] border border-liquid-gold/10 group/stat hover:border-liquid-gold/40 transition-all duration-700">
-                                                <span className="text-[10px] font-black text-liquid-gold/60 uppercase tracking-[0.4em] block mb-3 italic">Balance Activo</span>
-                                                <div className="text-4xl font-black text-liquid-gold italic tracking-tighter shadow-gold-glow-soft">{formatCurrency(currentJob.saldo)}</div>
+                                            <div className="p-6 bg-brand-blue/5 rounded-3xl border border-brand-blue/10 group/stat hover:border-brand-blue/30 transition-all duration-500">
+                                                <span className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest block mb-2">Saldo Pendiente</span>
+                                                <div className="text-2xl font-black text-brand-blue tracking-tighter">{formatCurrency(currentJob.saldo)}</div>
                                             </div>
                                         </div>
 
                                         {parsedSpecs && (
-                                            <div className="space-y-6 relative z-10">
-                                                <span className="text-[11px] font-black text-slate-700 uppercase tracking-[0.8em] block mb-2 px-4 italic">TECHNICAL_MATRIX</span>
-                                                <div className="grid grid-cols-1 gap-4">
+                                            <div className="space-y-4 relative z-10">
+                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] block mb-1 px-2">TECHNICAL_MATRIX</span>
+                                                <div className="grid grid-cols-1 gap-3">
                                                     {[
                                                         { label: 'Sustrato', value: parsedSpecs.tipoPapel, icon: LayersIcon },
                                                         { label: 'Formato', value: parsedSpecs.tamano, icon: MapPinIcon },
@@ -513,47 +480,46 @@ const TrackingPage: React.FC = () => {
                                                             { label: 'Trámite', value: currentJob.actividadSeleccionada, icon: ShieldCheckIcon }
                                                         ] : [])
                                                     ].filter(s => s.value).map(spec => (
-                                                        <div key={spec.label} className="flex items-center justify-between px-8 py-5 bg-white/5 rounded-2xl group hover:bg-white/10 hover:border-liquid-gold/30 border border-white/5 transition-all duration-700">
-                                                            <div className="flex items-center gap-5">
-                                                                <spec.icon className="w-5 h-5 text-slate-600 group-hover:text-liquid-gold transition-colors" />
-                                                                <span className="text-[11px] font-black text-slate-600 uppercase group-hover:text-slate-300 italic">{spec.label}</span>
+                                                        <div key={spec.label} className="flex items-center justify-between px-6 py-4 bg-slate-50/50 rounded-2xl group hover:bg-white hover:border-brand-blue/20 border border-slate-100 transition-all duration-500">
+                                                            <div className="flex items-center gap-4">
+                                                                <spec.icon className="w-4 h-4 text-slate-400 group-hover:text-brand-blue transition-colors" />
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase group-hover:text-slate-600">{spec.label}</span>
                                                             </div>
-                                                            <span className="text-[11px] font-black text-white uppercase italic tracking-widest">{spec.value}</span>
+                                                            <span className="text-[10px] font-black text-brand-dark uppercase tracking-wider">{spec.value}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
                                         
-                                        <div className="p-10 bg-liquid-gold/5 border border-liquid-gold/10 rounded-[2.5rem] relative z-10 group-hover/manifest:bg-liquid-gold/10 transition-all duration-1000">
-                                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] block mb-4 italic">ENGINEERING_NOTES</span>
-                                            <p className="text-base font-medium text-slate-500 italic leading-relaxed uppercase tracking-wider">{cleanDetalle || "ANÁLISIS DE VECTORIZACIÓN EN CURSO..."}</p>
+                                        <div className="p-8 bg-slate-50 border border-slate-100 rounded-3xl relative z-10 group-hover/manifest:bg-white group-hover/manifest:border-brand-blue/10 transition-all duration-700">
+                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">PRODUCTION_NOTES</span>
+                                            <p className="text-sm font-medium text-slate-500 leading-relaxed uppercase tracking-wide">{cleanDetalle || "ANALYZING_JOB_PARAMETERS..."}</p>
                                         </div>
                                     </div>
 
                                     {/* Telemetry Console */}
-                                    <div className="flex-1 bg-black/50 backdrop-blur-3xl border border-white/10 rounded-[4rem] p-12 flex flex-col min-h-[400px] shadow-2xl relative overflow-hidden group/console">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/10 blur-[100px] rounded-full opacity-0 group-hover/console:opacity-100 transition-opacity duration-[2s]" />
+                                    <div className="flex-1 bg-brand-dark rounded-[3rem] p-10 flex flex-col min-h-[350px] shadow-2xl relative overflow-hidden group/console">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 blur-[80px] rounded-full opacity-0 group-hover/console:opacity-100 transition-opacity duration-[2s]" />
                                         
-                                        <div className="flex items-center justify-between mb-10 relative z-10">
-                                            <div className="flex items-center gap-5">
-                                                <ActivityIcon className="w-6 h-6 text-liquid-gold animate-pulse shadow-gold-glow-soft" />
-                                                <span className="text-[12px] font-black text-slate-600 uppercase tracking-[0.8em] italic">TELEMETRY_ENGINE_V4</span>
+                                        <div className="flex items-center justify-between mb-8 relative z-10">
+                                            <div className="flex items-center gap-4">
+                                                <ActivityIcon className="w-5 h-5 text-brand-blue animate-pulse shadow-blue-glow" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TELEMETRY_ENGINE_V4</span>
                                             </div>
-                                            <div className="flex gap-3">
-                                                <div className="w-2.5 h-2.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
-                                                <div className="w-2.5 h-2.5 rounded-full bg-liquid-gold/40 animate-pulse delay-75" />
-                                                <div className="w-2.5 h-2.5 rounded-full bg-liquid-gold/10 animate-pulse delay-150" />
+                                            <div className="flex gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse shadow-blue-glow" />
+                                                <div className="w-2 h-2 rounded-full bg-brand-blue/30 animate-pulse delay-75" />
                                             </div>
                                         </div>
-                                        <div className="flex-1 overflow-y-auto no-scrollbar font-mono text-[12px] space-y-6 pr-6 relative z-10">
+                                        <div className="flex-1 overflow-y-auto no-scrollbar font-mono text-[11px] space-y-4 pr-4 relative z-10">
                                             {terminalLogs.map((log, i) => (
-                                                <div key={i} className="flex gap-6 group/log hover:translate-x-3 transition-transform duration-700">
-                                                    <span className="text-slate-800 font-black shrink-0">[{log.time}]</span>
-                                                    <span className="text-slate-500 group-hover/log:text-white transition-colors uppercase tracking-[0.3em]">{log.msg}</span>
+                                                <div key={i} className="flex gap-4 group/log hover:translate-x-2 transition-transform duration-500">
+                                                    <span className="text-slate-700 font-bold shrink-0">[{log.time}]</span>
+                                                    <span className="text-slate-400 group-hover/log:text-white transition-colors uppercase tracking-widest">{log.msg}</span>
                                                 </div>
                                             ))}
-                                            <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 3 }} className="text-liquid-gold font-black uppercase tracking-[0.6em] pt-8 border-t border-white/5 italic">
+                                            <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 3 }} className="text-brand-blue font-black uppercase tracking-widest pt-6 border-t border-white/5">
                                                 {`> STATUS_NODE: ${currentJob.estado.toUpperCase()}`}
                                             </motion.div>
                                         </div>
@@ -564,26 +530,26 @@ const TrackingPage: React.FC = () => {
                             <motion.div 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex-1 flex flex-col items-center justify-center py-40"
+                                className="flex-1 flex flex-col items-center justify-center py-32"
                             >
-                                <div className="relative mb-20 group">
+                                <div className="relative mb-16 group">
                                     <motion.div 
                                         animate={{ rotate: 360 }} 
                                         transition={{ repeat: Infinity, duration: 60, ease: "linear" }} 
-                                        className="w-96 h-96 border border-dashed border-white/10 rounded-full" 
+                                        className="w-80 h-80 border border-dashed border-slate-200 rounded-full" 
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-64 h-64 bg-liquid-gold/5 rounded-full blur-[120px] animate-pulse" />
-                                        <GlobeAltIcon className="w-24 h-24 text-liquid-gold/20 group-hover:text-liquid-gold/40 transition-colors duration-1000" />
+                                        <div className="w-48 h-48 bg-brand-blue/5 rounded-full blur-[100px] animate-pulse" />
+                                        <GlobeAltIcon className="w-20 h-20 text-brand-blue/20 group-hover:text-brand-blue/40 transition-colors duration-1000" />
                                     </div>
                                     
                                     <motion.div animate={{ rotate: -360 }} transition={{ repeat: Infinity, duration: 30, ease: "linear" }} className="absolute inset-0">
-                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-liquid-gold rounded-full shadow-gold-glow" />
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-brand-blue rounded-full shadow-blue-glow" />
                                     </motion.div>
                                 </div>
-                                <div className="text-center space-y-8">
-                                    <h2 className="text-7xl font-black text-white italic tracking-tighter uppercase leading-none">ESPERANDO_VÍNCULO</h2>
-                                    <p className="text-[12px] text-slate-700 uppercase tracking-[1.5em] italic pl-10">Inicie_sincronización_de_orden</p>
+                                <div className="text-center space-y-6">
+                                    <h2 className="text-5xl font-black text-brand-dark tracking-tighter uppercase leading-none">A_LA_ESPERA</h2>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-[1em] pl-6 font-bold">Ingrese_parámetros_de_búsqueda</p>
                                 </div>
                             </motion.div>
                         )}
@@ -592,37 +558,37 @@ const TrackingPage: React.FC = () => {
             </div>
 
             {/* Voice Command Console */}
-            <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[200]">
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200]">
                 <motion.div 
                     layout 
-                    className={`rounded-[3.5rem] shadow-[0_50px_150px_rgba(0,0,0,0.8)] border transition-all duration-1000 ease-in-out ${isVoiceActive ? 'bg-brand-dark/95 backdrop-blur-3xl border-liquid-gold/30 p-12 w-[95vw] md:w-[600px]' : 'bg-liquid-gold border-transparent p-7'}`}
+                    className={`rounded-[3rem] shadow-2xl border transition-all duration-700 ease-in-out ${isVoiceActive ? 'bg-brand-dark border-brand-blue/30 p-10 w-[95vw] md:w-[500px]' : 'bg-brand-blue border-transparent p-6'}`}
                 >
                     <AnimatePresence mode="wait">
                         {isVoiceActive ? (
-                            <motion.div key="active" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-10">
+                            <motion.div key="active" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-8">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-3 h-3 bg-liquid-gold rounded-full shadow-gold-glow animate-ping" />
-                                        <span className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">NÚCLEO_GÉMINIS_ACTIVE</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-2.5 h-2.5 bg-brand-blue rounded-full shadow-blue-glow animate-ping" />
+                                        <span className="text-[11px] font-black text-brand-blue uppercase tracking-widest">GEMINI_VOICE_ACTIVE</span>
                                     </div>
-                                    <button onClick={stopVoiceTracking} className="p-4 bg-white/5 hover:bg-rose-500/20 rounded-2xl transition-all group">
-                                        <XIcon className="w-6 h-6 text-white group-hover:text-rose-500 transition-colors" />
+                                    <button onClick={stopVoiceTracking} className="p-3 bg-white/5 hover:bg-rose-500/20 rounded-xl transition-all group">
+                                        <XIcon className="w-5 h-5 text-white group-hover:text-rose-500 transition-colors" />
                                     </button>
                                 </div>
-                                <div className="h-24 flex items-end justify-center gap-4 px-12">
-                                    {[0.5, 0.9, 0.6, 1.2, 0.7, 1.0, 0.5, 0.8, 0.6, 0.9].map((d, i) => (
-                                        <motion.div key={i} animate={{ height: [15, 80 * d, 15] }} transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.05 }} className="w-3 bg-liquid-gold rounded-full shadow-gold-glow-soft" />
+                                <div className="h-20 flex items-end justify-center gap-3 px-10">
+                                    {[0.4, 0.8, 0.5, 1.1, 0.6, 0.9, 0.4, 0.7].map((d, i) => (
+                                        <motion.div key={i} animate={{ height: [12, 70 * d, 12] }} transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.05 }} className="w-2.5 bg-brand-blue rounded-full shadow-blue-glow-soft" />
                                     ))}
                                 </div>
-                                <div className="text-sm font-black text-slate-500 italic text-center px-10 leading-relaxed uppercase tracking-[0.3em]">{voiceStatus}</div>
+                                <div className="text-[11px] font-bold text-slate-500 text-center px-8 leading-relaxed uppercase tracking-widest">{voiceStatus}</div>
                             </motion.div>
                         ) : (
                             <motion.button 
-                                key="inactive" whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9 }} onClick={startVoiceTracking} 
-                                className="text-brand-dark flex items-center gap-6 px-8 py-3"
+                                key="inactive" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startVoiceTracking} 
+                                className="text-white flex items-center gap-4 px-6"
                             >
-                                <HeadphonesIcon className="w-8 h-8" />
-                                {foundJobs.length > 0 && <span className="text-[12px] font-black uppercase tracking-[0.8em] italic">IA_LINK</span>}
+                                <HeadphonesIcon className="w-6 h-6" />
+                                {foundJobs.length > 0 && <span className="text-[11px] font-black uppercase tracking-widest">ASISTENTE IA</span>}
                             </motion.button>
                         )}
                     </AnimatePresence>
@@ -634,10 +600,8 @@ const TrackingPage: React.FC = () => {
                 .animate-scan-y { animation: scan-y 8s linear infinite; }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                .text-glow { text-shadow: 0 0 40px rgba(212,175,55,0.4); }
-                .shadow-gold-glow { box-shadow: 0 0 50px rgba(212,175,55,0.4); }
-                .shadow-gold-glow-soft { box-shadow: 0 0 25px rgba(212,175,55,0.15); }
-                .shadow-3xl { box-shadow: 0 60px 120px -30px rgba(0,0,0,0.6); }
+                .shadow-blue-glow { box-shadow: 0 0 30px rgba(14,165,233,0.3); }
+                .shadow-blue-glow-soft { box-shadow: 0 0 15px rgba(14,165,233,0.1); }
                 * { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
                 .bg-noise { background-image: url('https://grainy-gradients.vercel.app/noise.svg'); }
             `}</style>

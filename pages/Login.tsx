@@ -92,7 +92,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#050811] relative overflow-hidden font-sans selection:bg-gold-bright selection:text-brand-dark">
+    <div className="min-h-screen flex bg-brand-light relative overflow-hidden font-sans selection:bg-brand-blue/20 selection:text-brand-blue">
+        
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-white skew-x-[-15deg] translate-x-1/4 z-0 border-l border-slate-100 hidden lg:block" />
         
         {/* LEFT COLUMN: FORM */}
         <div className="w-full lg:w-[45%] flex flex-col justify-center relative z-10 px-6 md:px-16 lg:px-24">
@@ -100,27 +103,27 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <motion.div 
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, ease: "easeOut" as any }}
+                transition={{ duration: 1, ease: "easeOut" }}
                 className="w-full max-w-[480px] mx-auto"
             >
                 {/* Header Content */}
                 <div className="mb-12 space-y-6">
                     <motion.div 
                         whileHover={{ scale: 1.05 }}
-                        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 mb-2 shadow-2xl relative group"
+                        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-2 shadow-sm relative group"
                     >
-                        <div className="absolute inset-0 bg-gold-bright/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <CordovaLogo className="h-8 w-8 object-contain relative z-10" />
+                        <div className="absolute inset-0 bg-brand-blue/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <CordovaLogo className="h-8 w-8 text-brand-blue relative z-10" />
                     </motion.div>
                     
                     <div className="space-y-3">
-                        <h1 className="text-4xl md:text-5xl font-display font-black text-white tracking-[-0.04em] uppercase italic leading-none">
+                        <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase italic leading-none">
                             IMPRENTA <br/>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright not-italic font-editorial font-normal">CÓRDOVA</span>
+                            <span className="text-brand-blue not-italic font-editorial font-normal">CÓRDOVA</span>
                         </h1>
                         <div className="flex items-center gap-3">
-                            <div className="h-[1px] w-8 bg-gold-bright/30"></div>
-                            <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">
+                            <div className="h-[1px] w-8 bg-brand-blue/20"></div>
+                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic">
                                 Terminal Operativa Segura
                             </p>
                         </div>
@@ -132,9 +135,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     <div className="space-y-6">
                         {/* Operator Input */}
                         <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">ID de Operador</label>
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-brand-blue">ID de Operador</label>
                             <div className="relative">
-                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-gold-bright transition-colors">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-blue transition-colors">
                                     <UsersIcon className="h-5 w-5" />
                                 </div>
                                 <input
@@ -143,7 +146,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                     autoFocus
                                     value={key}
                                     onChange={(e) => setKey(e.target.value)}
-                                    className="w-full bg-white/[0.02] border border-white/10 focus:border-gold-bright/40 rounded-2xl pl-16 pr-6 py-6 text-white font-medium focus:ring-4 focus:ring-gold-bright/5 transition-all placeholder:text-slate-700 outline-none shadow-inner"
+                                    className="w-full bg-white border border-slate-200 focus:border-brand-blue/40 rounded-2xl pl-16 pr-6 py-6 text-slate-900 font-medium focus:ring-4 focus:ring-brand-blue/5 transition-all placeholder:text-slate-300 outline-none shadow-sm"
                                     placeholder="Ingrese identificador..."
                                 />
                             </div>
@@ -151,22 +154,22 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
                         {/* Signature Input */}
                         <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-gold-bright/80">Firma de Seguridad</label>
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-brand-blue">Firma de Seguridad</label>
                             <div className="relative">
-                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-gold-bright transition-colors">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-blue transition-colors">
                                     <LockIcon className="h-5 w-5" />
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-white/[0.02] border border-white/10 focus:border-gold-bright/40 rounded-2xl pl-16 pr-20 py-6 text-white font-medium focus:ring-4 focus:ring-gold-bright/5 transition-all placeholder:text-slate-700 outline-none shadow-inner"
-                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                    className="w-full bg-white border border-slate-200 focus:border-brand-blue/40 rounded-2xl pl-16 pr-20 py-6 text-slate-900 font-medium focus:ring-4 focus:ring-brand-blue/5 transition-all placeholder:text-slate-300 outline-none shadow-sm"
+                                    placeholder="••••••••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 hover:text-gold-bright transition-colors tap-none p-2"
+                                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-blue transition-colors tap-none p-2"
                                 >
                                     {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                                 </button>
@@ -183,11 +186,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="overflow-hidden"
                             >
-                                <div className="bg-red-500/5 border border-red-500/20 p-4 rounded-2xl flex items-center gap-4 animate-shake mt-4">
-                                    <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-4 animate-shake mt-4">
+                                    <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                                         <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
                                     </div>
-                                    <p className="text-[10px] text-red-200 font-black uppercase tracking-widest">{error}</p>
+                                    <p className="text-[10px] text-red-600 font-black uppercase tracking-widest">{error}</p>
                                 </div>
                             </motion.div>
                         )}
@@ -198,7 +201,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                         <button
                             type="submit"
                             disabled={loading || !key}
-                            className="group relative w-full flex items-center justify-center gap-4 py-6 bg-gold-bright text-brand-dark rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] overflow-hidden transition-all duration-500 hover:bg-white hover:shadow-gold-glow-strong disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-luxury tap-none"
+                            className="group relative w-full flex items-center justify-center gap-4 py-6 bg-brand-blue text-white rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] overflow-hidden transition-all duration-500 hover:bg-slate-900 hover:shadow-xl hover:shadow-brand-blue/10 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed tap-none"
                         >
                             {loading ? (
                                 <div className="flex items-center gap-3 italic">
@@ -213,7 +216,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                             )}
                             
                             {/* Reflection effect */}
-                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
                         </button>
                     </div>
                 </form>
@@ -222,7 +225,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <div className="mt-10 relative z-10">
                     <Link 
                         to="/" 
-                        className="inline-flex items-center gap-3 text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-[0.2em] transition-all group italic"
+                        className="inline-flex items-center gap-3 text-[9px] font-black text-slate-400 hover:text-brand-blue uppercase tracking-[0.2em] transition-all group italic"
                     >
                         <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
                         <span>Regresar a la Galería Pública</span>
@@ -230,18 +233,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 </div>
                 
                 {/* System Logs Footer */}
-                <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-40">
+                <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-60">
                     <div className="flex items-center gap-3">
                         <div className="flex gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200 animate-pulse" style={{ animationDelay: '0.4s' }} />
                         </div>
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Núcleo Activo • IMPRENTA CÓRDOVA</span>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.4em]">Núcleo Activo • IMPRENTA CÓRDOVA</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">v2.6 Hyperion Engine</span>
-                        <ShieldCheckIcon className="w-3.5 h-3.5 text-gold-bright" />
+                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.4em]">v3.0 Precision Engine</span>
+                        <ShieldCheckIcon className="w-3.5 h-3.5 text-brand-blue" />
                     </div>
                 </div>
 
@@ -249,63 +252,43 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         </div>
 
         {/* RIGHT COLUMN: VISUAL/CINEMATIC AMBIENCE */}
-        <div className="hidden lg:block lg:w-[55%] relative overflow-hidden bg-brand-dark border-l border-white/5">
-            {/* Background Texture */}
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center mix-blend-overlay opacity-30 grayscale"></div>
+        <div className="hidden lg:block lg:w-[55%] relative overflow-hidden bg-white">
+            {/* Background Image - Luxury Print Texture */}
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1586075010633-247fe3462947?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10 grayscale"></div>
             
             {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050811] via-transparent to-[#050811]/50"></div>
-
-            {/* Scanning Line */}
-            <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
-                <div className="w-full h-[2px] bg-gold-bright animate-scan absolute shadow-[0_0_15px_rgba(242,202,80,0.5)]"></div>
-            </div>
-
-            {/* Glowing Orbs */}
-            <motion.div 
-                animate={{ 
-                    scale: [1, 1.1, 1],
-                    opacity: [0.2, 0.4, 0.2],
-                    x: [0, 30, 0],
-                    y: [0, -20, 0]
-                }}
-                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gold-bright/10 rounded-full blur-[100px]"
-            />
-            <motion.div 
-                animate={{ 
-                    scale: [1, 1.2, 1],
-                    opacity: [0.1, 0.2, 0.1],
-                    x: [0, -40, 0],
-                    y: [0, 40, 0]
-                }}
-                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-white/5 rounded-full blur-[120px]"
-            />
+            <div className="absolute inset-0 bg-gradient-to-l from-white via-white/50 to-transparent"></div>
 
             {/* Premium Centerpiece */}
             <div className="absolute inset-0 flex items-center justify-center flex-col text-center p-20 z-10">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1.5, ease: "easeOut" as any, delay: 0.2 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                    className="relative"
                 >
-                    <CordovaLogo className="w-32 h-32 md:w-48 md:h-48 text-gold-bright drop-shadow-[0_0_30px_rgba(242,202,80,0.3)] opacity-80" />
+                    <div className="absolute inset-0 bg-brand-blue/10 blur-[60px] rounded-full scale-150"></div>
+                    <CordovaLogo className="w-32 h-32 md:w-48 md:h-48 text-brand-blue relative z-10" />
                 </motion.div>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1.5, ease: "easeOut" as any, delay: 0.5 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
                     className="mt-12 max-w-lg"
                 >
-                    <h2 className="text-3xl font-display font-black text-white tracking-[-0.04em] uppercase italic mb-6">
-                        IMPRENTA <span className="text-gold-bright">CÓRDOVA</span>
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase italic mb-6">
+                        GESTIÓN <span className="text-brand-blue">PREFERENCIAL</span>
                     </h2>
-                    <p className="text-slate-400 font-medium leading-relaxed text-sm">
-                        Plataforma de gestión operativa avanzada. Optimización de procesos, seguimiento de producción y control financiero centralizado en tiempo real.
+                    <p className="text-slate-500 font-medium leading-relaxed text-sm">
+                        Plataforma de alta fidelidad para la gestión de artes gráficas. 
+                        Eficiencia operativa bajo estándares de lujo y precisión técnica.
                     </p>
                 </motion.div>
             </div>
+
+            {/* Subtle floating labels/dots to reinforce the tech-minimalist look */}
+            <div className="absolute top-1/4 right-1/4 w-2 h-2 rounded-full bg-brand-blue/20 animate-ping"></div>
+            <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 rounded-full bg-slate-200 animate-pulse"></div>
         </div>
     </div>
   );
