@@ -32,6 +32,7 @@ import TrabajoDetallePage from './pages/TrabajoDetalle';
 import TrabajosPage from './pages/Trabajos';
 import RegistroActividadPage from './pages/RegistroActividad';
 import CuentasPage from './pages/Cuentas';
+import VitrinaPage from './pages/Vitrina';
 
 /**
  * ProtectedRoute component to handle authenticated access.
@@ -78,6 +79,7 @@ const App: React.FC = () => {
         <Routes>
           {/* Public Routes - NOW USING PREMIUM VISUAL LANDING */}
           <Route path="/" element={<VisualLanding />} />
+          <Route path="/vitrina" element={<VitrinaPage />} />
           <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <LoginPage onLoginSuccess={handleLogin} />} />
           <Route path="/tracking" element={<TrackingPage />} />
           

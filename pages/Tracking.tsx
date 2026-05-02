@@ -15,6 +15,7 @@ import {
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 import { supabase } from '../services/supabase';
 import { SEO } from '../components/SEO';
+import PublicNavbar from '../components/PublicNavbar';
 
 // --- UTILS PARA LIVE API ---
 function encode(bytes: Uint8Array) {
@@ -262,6 +263,8 @@ const TrackingPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-brand-dark font-sans selection:bg-liquid-gold selection:text-brand-dark overflow-x-hidden relative flex flex-col">
             <SEO title="Elite Tracking | Imprenta Córdova" description="Rastreador holográfico de alta precisión para proyectos industriales." />
+            
+            <PublicNavbar />
             
             {/* --- FONDO ELITE --- */}
             <div className="fixed inset-0 bg-architect-grid opacity-[0.05] pointer-events-none z-0" />

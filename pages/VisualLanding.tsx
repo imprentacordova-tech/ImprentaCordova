@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
     ChevronRightIcon, WhatsAppIcon, PaletteIcon, 
     ShieldCheckIcon, ClockIcon, CheckCircleIcon,
@@ -10,7 +11,7 @@ import {
 } from '../components/Icons';
 import { generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
-import Navbar from '../components/Navbar';
+import PublicNavbar from '../components/PublicNavbar';
 
 const VisualLanding: React.FC = () => {
     const { scrollYProgress } = useScroll();
@@ -48,6 +49,8 @@ const VisualLanding: React.FC = () => {
                 title="IMPRENTA CÓRDOVA | Ingeniería Gráfica & Branding Industrial"
                 description="Liderando la manufactura gráfica en Ecuador. Autorizados por el SRI. Tecnología de punta para marcas que exigen perfección absoluta."
             />
+            
+            <PublicNavbar />
             
             {/* --- CINEMATIC OVERLAY (GRAIN & NOISE) --- */}
             <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] bg-noise mix-blend-overlay" />
@@ -250,25 +253,23 @@ const VisualLanding: React.FC = () => {
                                 transition={{ duration: 1, delay: 0.9 }}
                                 className="flex flex-col sm:flex-row items-center justify-center gap-10"
                             >
-                                <motion.a
-                                    href={generateWhatsAppLink("593993083943", "Solicitud de protocolo industrial IMPRENTA CORDOVA.")}
-                                    whileHover={{ scale: 1.05, y: -4 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full sm:w-auto relative group overflow-hidden bg-liquid-gold text-brand-dark px-8 sm:px-16 py-5 sm:py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[10px] sm:text-[11px] shadow-gold-glow flex items-center justify-center gap-6 italic transition-all duration-700"
-                                >
-                                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out" />
-                                    <span className="relative z-10">INICIAR PROYECTO</span> 
-                                    <ChevronRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-3 transition-transform duration-700" />
-                                </motion.a>
+                                    <Link
+                                        to="/vitrina"
+                                        className="w-full sm:w-auto relative group overflow-hidden bg-liquid-gold text-brand-dark px-8 sm:px-16 py-5 sm:py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[10px] sm:text-[11px] shadow-gold-glow flex items-center justify-center gap-6 italic transition-all duration-700 hover:scale-105 active:scale-95"
+                                    >
+                                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out" />
+                                        <span className="relative z-10">EXPLORAR VITRINA</span> 
+                                        <ChevronRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-3 transition-transform duration-700" />
+                                    </Link>
 
-                                <motion.button
-                                    onClick={() => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' })}
-                                    whileHover={{ scale: 1.05, y: -4 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full sm:w-auto bg-white/5 backdrop-blur-3xl text-white px-8 sm:px-16 py-5 sm:py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[10px] sm:text-[11px] flex items-center justify-center gap-6 group border border-white/10 hover:border-liquid-gold/40 hover:bg-white/10 transition-all duration-700 italic"
-                                >
-                                    EXPLORAR CAPACIDADES <LayoutIcon className="w-5 h-5 opacity-40 group-hover:rotate-45 transition-transform duration-700" />
-                                </motion.button>
+                                    <a 
+                                        href={generateWhatsAppLink("593993083943", "Solicitud de protocolo industrial IMPRENTA CORDOVA.")}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full sm:w-auto bg-white/5 backdrop-blur-3xl text-white px-8 sm:px-16 py-5 sm:py-7 rounded-2xl font-black uppercase tracking-[0.5em] text-[10px] sm:text-[11px] flex items-center justify-center gap-6 group border border-white/10 hover:border-liquid-gold/40 hover:bg-white/10 transition-all duration-700 italic"
+                                    >
+                                        CONTACTO DIRECTO <WhatsAppIcon className="w-5 h-5 opacity-40 group-hover:scale-125 group-hover:opacity-100 transition-all duration-700" />
+                                    </a>
                             </motion.div>
                         </div>
                         
