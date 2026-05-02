@@ -321,7 +321,7 @@ const TrackingPage: React.FC = () => {
                         </div>
                         <span className="text-[9px] font-bold uppercase tracking-[0.6em] text-brand-blue">CORDOVA_NODE_ACTIVE</span>
                     </motion.div>
-                    <h1 className="text-5xl lg:text-8xl font-black tracking-tighter text-brand-dark uppercase leading-none">
+                    <h1 className="text-5xl lg:text-8xl font-black tracking-tighter text-slate-900 uppercase leading-none">
                         TRACKING_<span className="text-brand-blue shadow-blue-glow-soft">SYSTEM</span>
                     </h1>
                 </div>
@@ -338,9 +338,9 @@ const TrackingPage: React.FC = () => {
                         <input 
                             type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                             placeholder="ORDEN, CÉDULA O RUC..."
-                            className="bg-transparent border-none p-0 text-base font-bold text-brand-dark placeholder:text-slate-300 focus:ring-0 uppercase tracking-widest w-full"
+                            className="bg-transparent border-none p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 focus:ring-0 uppercase tracking-widest w-full"
                         />
-                        <button type="submit" className="bg-brand-blue text-white px-10 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark transition-all duration-500 shadow-lg active:scale-95">Consultar</button>
+                        <button type="submit" className="bg-brand-blue text-white px-10 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all duration-500 shadow-lg active:scale-95">Consultar</button>
                     </motion.form>
                     
                     {error && (
@@ -429,7 +429,7 @@ const TrackingPage: React.FC = () => {
                                             <motion.button 
                                                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                 onClick={() => handleGeneratePaymentLink(currentJob)}
-                                                className="flex-1 xl:flex-none bg-brand-dark text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue transition-all shadow-xl"
+                                                className="flex-1 xl:flex-none bg-slate-900 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue transition-all shadow-xl"
                                             >
                                                 Soporte Directo
                                             </motion.button>
@@ -451,7 +451,7 @@ const TrackingPage: React.FC = () => {
                                                         <span className="bg-brand-blue/10 text-brand-blue text-[8px] font-black px-3 py-1 rounded-lg border border-brand-blue/20">VALID_SRI</span>
                                                     )}
                                                 </div>
-                                                <h3 className="text-3xl font-black text-brand-dark tracking-tighter uppercase leading-none">{currentJob.subtipo}</h3>
+                                                <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">{currentJob.subtipo}</h3>
                                             </div>
                                             <div className="bg-slate-50 px-4 py-2 rounded-xl text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest">SECURE_LINK</div>
                                         </div>
@@ -459,7 +459,7 @@ const TrackingPage: React.FC = () => {
                                         <div className="grid grid-cols-2 gap-4 relative z-10">
                                             <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 group/stat hover:border-brand-blue/20 transition-all duration-500">
                                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Presupuesto</span>
-                                                <div className="text-2xl font-black text-brand-dark tracking-tighter">{formatCurrency(currentJob.total)}</div>
+                                                <div className="text-2xl font-black text-slate-900 tracking-tighter">{formatCurrency(currentJob.total)}</div>
                                             </div>
                                             <div className="p-6 bg-brand-blue/5 rounded-3xl border border-brand-blue/10 group/stat hover:border-brand-blue/30 transition-all duration-500">
                                                 <span className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest block mb-2">Saldo Pendiente</span>
@@ -485,7 +485,7 @@ const TrackingPage: React.FC = () => {
                                                                 <spec.icon className="w-4 h-4 text-slate-400 group-hover:text-brand-blue transition-colors" />
                                                                 <span className="text-[10px] font-bold text-slate-400 uppercase group-hover:text-slate-600">{spec.label}</span>
                                                             </div>
-                                                            <span className="text-[10px] font-black text-brand-dark uppercase tracking-wider">{spec.value}</span>
+                                                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">{spec.value}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -499,7 +499,7 @@ const TrackingPage: React.FC = () => {
                                     </div>
 
                                     {/* Telemetry Console */}
-                                    <div className="flex-1 bg-brand-dark rounded-[3rem] p-10 flex flex-col min-h-[350px] shadow-2xl relative overflow-hidden group/console">
+                                    <div className="flex-1 bg-slate-900 rounded-[3rem] p-10 flex flex-col min-h-[350px] shadow-2xl relative overflow-hidden group/console">
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 blur-[80px] rounded-full opacity-0 group-hover/console:opacity-100 transition-opacity duration-[2s]" />
                                         
                                         <div className="flex items-center justify-between mb-8 relative z-10">
@@ -548,7 +548,7 @@ const TrackingPage: React.FC = () => {
                                     </motion.div>
                                 </div>
                                 <div className="text-center space-y-6">
-                                    <h2 className="text-5xl font-black text-brand-dark tracking-tighter uppercase leading-none">A_LA_ESPERA</h2>
+                                    <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">A_LA_ESPERA</h2>
                                     <p className="text-[11px] text-slate-400 uppercase tracking-[1em] pl-6 font-bold">Ingrese_parámetros_de_búsqueda</p>
                                 </div>
                             </motion.div>
@@ -561,7 +561,7 @@ const TrackingPage: React.FC = () => {
             <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200]">
                 <motion.div 
                     layout 
-                    className={`rounded-[3rem] shadow-2xl border transition-all duration-700 ease-in-out ${isVoiceActive ? 'bg-brand-dark border-brand-blue/30 p-10 w-[95vw] md:w-[500px]' : 'bg-brand-blue border-transparent p-6'}`}
+                    className={`rounded-[3rem] shadow-2xl border transition-all duration-700 ease-in-out ${isVoiceActive ? 'bg-slate-900 border-brand-blue/30 p-10 w-[95vw] md:w-[500px]' : 'bg-brand-blue border-transparent p-6'}`}
                 >
                     <AnimatePresence mode="wait">
                         {isVoiceActive ? (

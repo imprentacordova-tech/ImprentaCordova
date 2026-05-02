@@ -188,32 +188,32 @@ const NotaDeVentaPage: React.FC = () => {
     };
 
     if (dataLoading || (isRetrying && !trabajo)) return (
-        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-20 h-20 border-4 border-liquid-gold/20 border-t-liquid-gold rounded-full animate-spin mb-8 shadow-gold-glow"></div>
-            <h2 className="text-2xl font-black text-white uppercase tracking-[0.3em] mb-4">Sincronizando Archivos</h2>
-            <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Buscando registro en el núcleo de datos...</p>
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-20 h-20 border-4 border-slate-100 border-t-brand-blue rounded-full animate-spin mb-8 shadow-sm"></div>
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-[0.3em] mb-4">Sincronizando Archivos</h2>
+            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Buscando registro en el núcleo de datos...</p>
         </div>
     );
 
     if (!trabajo || !cliente) return (
-        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
             <div className="p-8 rounded-[3rem] bg-red-500/10 border border-red-500/20 mb-10 shadow-luxury animate-pulse">
-                <AlertTriangleIcon className="w-16 h-16 text-brand-red mx-auto mb-6" />
-                <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 italic">Documento No Encontrado</h2>
-                <p className="text-slate-400 font-bold text-sm max-w-md mx-auto leading-relaxed">
+                <AlertTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-6" />
+                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-4">Documento No Encontrado</h2>
+                <p className="text-slate-500 font-bold text-sm max-w-md mx-auto leading-relaxed">
                     {error || "La orden solicitada no existe, el cliente está desvinculado o ha sido eliminada del sistema."}
                 </p>
             </div>
             <div className="flex gap-4">
                 <button 
                     onClick={() => navigate(-1)}
-                    className="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all"
+                    className="px-10 py-5 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all"
                 >
                     Regresar
                 </button>
                 <button 
                     onClick={() => refreshData()}
-                    className="px-10 py-5 bg-liquid-gold rounded-2xl text-[10px] font-black text-black uppercase tracking-widest hover:scale-105 transition-all shadow-gold-glow-sm"
+                    className="px-10 py-5 bg-brand-blue rounded-2xl text-[10px] font-black text-white uppercase tracking-widest hover:scale-105 transition-all shadow-blue-glow-sm"
                 >
                     Reintentar Sincronización
                 </button>
@@ -226,34 +226,34 @@ const NotaDeVentaPage: React.FC = () => {
     const totalEnLetras = numeroALetras(trabajo.total);
 
     return (
-        <div className="bg-slate-800 min-h-screen py-8 flex flex-col items-center justify-start overflow-y-auto font-sans">
+        <div className="bg-slate-500 min-h-screen py-8 flex flex-col items-center justify-start overflow-y-auto font-sans">
             <AnimatePresence>
                 {isCelebrationVisible && (
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-2xl"
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/95 backdrop-blur-2xl"
                     >
-                        <Confetti width={width} height={height} recycle={false} numberOfPieces={500} colors={['#F59E0B', '#FFFFFF', '#10B981']} />
+                        <Confetti width={width} height={height} recycle={false} numberOfPieces={500} colors={['#3B82F6', '#1E293B', '#10B981']} />
                         
                         <motion.div 
                             initial={{ scale: 0.8, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="max-w-2xl w-full bg-black/60 border border-white/10 p-12 rounded-[3.5rem] shadow-2xl text-center relative overflow-hidden"
+                            className="max-w-2xl w-full bg-white border border-slate-200 p-12 rounded-[3.5rem] shadow-2xl text-center relative overflow-hidden"
                         >
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-yellow-500/20 rounded-full blur-[100px] -z-10" />
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-blue/10 rounded-full blur-[100px] -z-10" />
                             
                             <motion.div 
                                 initial={{ rotate: -20, scale: 0 }}
                                 animate={{ rotate: 0, scale: 1 }}
                                 transition={{ type: "spring", damping: 12, delay: 0.2 }}
-                                className="w-32 h-32 bg-yellow-500 rounded-full mx-auto flex items-center justify-center mb-8"
+                                className="w-32 h-32 bg-brand-blue rounded-full mx-auto flex items-center justify-center mb-8 shadow-blue-glow"
                             >
-                                <TrophyIcon className="w-16 h-16 text-black" />
+                                <TrophyIcon className="w-16 h-16 text-white" />
                             </motion.div>
 
-                            <h2 className="text-5xl font-black text-white uppercase tracking-tighter italic mb-4 leading-none">
+                            <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter mb-4 leading-none">
                                 ¡CIRCUITO CERRADO!
                             </h2>
                             <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-10 max-w-md mx-auto">
@@ -261,26 +261,26 @@ const NotaDeVentaPage: React.FC = () => {
                             </p>
 
                             <div className="grid grid-cols-2 gap-4 mb-10">
-                                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Orden Finalizada</p>
-                                    <p className="text-2xl font-black text-white italic">#{trabajo.orden}</p>
+                                <div className="bg-slate-50 border border-slate-200 p-6 rounded-3xl">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Orden Finalizada</p>
+                                    <p className="text-2xl font-black text-slate-900">#{trabajo.orden}</p>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-3xl">
-                                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Efectivo Recibido</p>
-                                    <p className="text-2xl font-black text-emerald-400 italic">{formatCurrency(trabajo.total)}</p>
+                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Efectivo Recibido</p>
+                                    <p className="text-2xl font-black text-emerald-600">{formatCurrency(trabajo.total)}</p>
                                 </div>
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <button 
                                     onClick={() => setIsCelebrationVisible(false)}
-                                    className="px-10 py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-white transition-all flex items-center justify-center gap-3"
+                                    className="px-10 py-5 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-900 transition-all flex items-center justify-center gap-3"
                                 >
                                     Ver Comprobante
                                 </button>
                                 <button 
                                     onClick={() => navigate('/dashboard')}
-                                    className="px-10 py-5 bg-yellow-500 text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                    className="px-10 py-5 bg-brand-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3 shadow-blue-glow"
                                 >
                                     Ir al Dashboard <ArrowRightIcon className="w-4 h-4" />
                                 </button>
@@ -290,16 +290,16 @@ const NotaDeVentaPage: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-10 no-print px-8 py-4 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl relative z-50">
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-10 no-print px-8 py-4 bg-white/90 backdrop-blur-xl rounded-[2.5rem] border border-slate-200 shadow-2xl relative z-50">
                 <div className="flex gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-3 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-all">
+                        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-brand-blue transition-all">
                             <HomeIcon className="w-4 h-4" />
                         </div>
                         Dashboard
                     </button>
-                    <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
+                    <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-all">
+                        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-brand-blue transition-all">
                             <ArrowLeftIcon className="w-4 h-4" />
                         </div>
                         Atrás
@@ -309,7 +309,7 @@ const NotaDeVentaPage: React.FC = () => {
                     <button 
                         onClick={generatePDF} 
                         disabled={isGenerating}
-                        className="bg-white text-brand-blue px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-slate-100 transition-all flex items-center gap-2 disabled:opacity-70"
+                        className="bg-white text-brand-blue px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-2 disabled:opacity-70"
                     >
                         {isGenerating ? <Loader2Icon className="w-4 h-4 animate-spin"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
                         {isGenerating ? 'Generando...' : 'Descargar PDF'}
@@ -322,7 +322,7 @@ const NotaDeVentaPage: React.FC = () => {
                     </button>
                     <button 
                         onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
-                        className={`px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-liquid-gold text-brand-dark border-liquid-gold' : 'bg-transparent text-white/70 border-white/20 hover:bg-white/10'}`}
+                        className={`px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue' : 'bg-transparent text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                     >
                         {isConsumidorFinal ? 'Restaurar Datos Cliente' : 'Emitir como Consumidor Final'}
                     </button>
@@ -416,7 +416,7 @@ const NotaDeVentaPage: React.FC = () => {
                                     <td className="py-2 text-center font-bold align-top">{trabajo.cantidad}</td>
                                     <td className="py-2 px-2 uppercase font-medium leading-tight align-top">
                                         <div className="font-bold text-slate-900">{trabajo.tipo}</div>
-                                        <div className="text-[7px] text-slate-500 normal-case italic mt-0.5">{trabajo.subtipo}</div>
+                                        <div className="text-[7px] text-slate-500 normal-case mt-0.5">{trabajo.subtipo}</div>
                                     </td>
                                     <td className="py-2 px-2 text-right align-top tabular-nums">{formatCurrency(trabajo.total / trabajo.cantidad)}</td>
                                     <td className="py-2 px-2 text-right font-bold align-top tabular-nums text-slate-900">{formatCurrency(trabajo.total)}</td>
@@ -437,7 +437,7 @@ const NotaDeVentaPage: React.FC = () => {
                             <div className="w-[60%] pr-4">
                                 <div className="border-t border-slate-300 pt-1 mb-2">
                                     <p className="text-[7px] text-slate-500 uppercase font-bold">Son:</p>
-                                    <p className="text-[8px] text-slate-900 font-medium italic leading-tight">{totalEnLetras}</p>
+                                    <p className="text-[8px] text-slate-900 font-medium leading-tight">{totalEnLetras}</p>
                                 </div>
                                 <div className="flex gap-2 items-center text-[6px] text-slate-400 uppercase font-bold bg-slate-50 p-1.5 rounded border border-slate-100">
                                     <CheckBadgeIcon className="w-3 h-3 text-emerald-500"/>
@@ -465,7 +465,7 @@ const NotaDeVentaPage: React.FC = () => {
                         <div className="grid grid-cols-2 gap-8 mb-4">
                             <div className="text-center">
                                 <div className="border-t border-slate-400 w-3/4 mx-auto mb-1"></div>
-                                <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase italic">Imprenta Córdova</p>
+                                <p className="text-[6px] font-black text-slate-400 tracking-[0.4em] uppercase">Imprenta Córdova</p>
                                 <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">Firma Autorizada</p>
                             </div>
                             <div className="text-center">

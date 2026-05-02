@@ -103,22 +103,20 @@
   }
 
   /* --- UTILITIES --- */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-liquid-gold/10 rounded-full hover:bg-liquid-gold/30 transition-colors;
+    @apply bg-brand-blue/10 rounded-full hover:bg-brand-blue/30 transition-colors;
   }
 
   .shadow-luxury {
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8), 0 20px 40px -20px rgba(0, 0, 0, 0.5);
+    @apply shadow-[0_20px_50px_rgba(0,0,0,0.05)];
   }
 
-  .drop-shadow-gold {
-    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+  .shadow-blue-glow-sm {
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.1);
+  }
+
+  .drop-shadow-blue-glow-sm {
+    filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.3));
   }
 
   .no-scrollbar::-webkit-scrollbar {

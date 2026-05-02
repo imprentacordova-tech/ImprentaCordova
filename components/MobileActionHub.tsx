@@ -29,8 +29,8 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
             title: 'Nuevo Pedido',
             subtitle: 'Crear nuevo trabajo',
             icon: PlusIcon,
-            color: 'bg-liquid-gold',
-            textColor: 'text-black',
+            color: 'bg-brand-blue',
+            textColor: 'text-white',
             onClick: () => handleAction('/nuevo')
         },
         {
@@ -38,7 +38,7 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
             title: 'Registrar Cliente',
             subtitle: 'Listo para el SRI',
             icon: UserPlusIcon,
-            color: 'bg-blue-500',
+            color: 'bg-slate-900',
             textColor: 'text-white',
             onClick: () => {
                 onOpenCreateClient();
@@ -81,12 +81,12 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
                             key={action.id}
                             whileTap={{ scale: 0.95 }}
                             onClick={action.onClick}
-                            className="flex flex-col items-start p-6 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-[2rem] text-left group hover:border-liquid-gold/30 transition-all"
+                            className="flex flex-col items-start p-6 bg-slate-50 border border-slate-200 rounded-[2rem] text-left group hover:border-brand-blue/30 transition-all"
                         >
                             <div className={`w-12 h-12 ${action.color} ${action.textColor} rounded-2xl flex items-center justify-center mb-4 shadow-lg`}>
                                 <action.icon className="w-6 h-6" />
                             </div>
-                            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight italic">
+                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">
                                 {action.title}
                             </h4>
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
@@ -101,18 +101,18 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
                     <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2 mb-4">
                         Gestión del Sistema
                     </h5>
-                    <div className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-[2.5rem] overflow-hidden divide-y divide-slate-200 dark:divide-white/5">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] overflow-hidden divide-y divide-slate-200">
                         {secondaryActions.map((action) => (
                             <button
                                 key={action.id}
                                 onClick={() => handleAction(action.path)}
-                                className="w-full flex items-center justify-between p-5 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group"
+                                className="w-full flex items-center justify-between p-5 hover:bg-slate-100 transition-colors group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-white/5 flex items-center justify-center text-slate-500 group-hover:text-liquid-gold transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 group-hover:text-brand-blue transition-colors">
                                         <action.icon className="w-5 h-5" />
                                     </div>
-                                    <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">
+                                    <span className="text-xs font-black text-slate-700 uppercase tracking-widest">
                                         {action.label}
                                     </span>
                                 </div>
@@ -123,13 +123,13 @@ export const MobileActionHub: React.FC<ActionHubProps> = ({ isOpen, onClose, onO
                 </div>
 
                 {/* Quick Info / Tip */}
-                <div className="p-6 bg-liquid-gold/5 border border-liquid-gold/10 rounded-[2rem] flex items-center gap-4">
-                    <div className="w-10 h-10 bg-liquid-gold rounded-full flex items-center justify-center text-black shadow-gold-glow-sm">
+                <div className="p-6 bg-brand-blue/5 border border-brand-blue/10 rounded-[2rem] flex items-center gap-4">
+                    <div className="w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center text-white shadow-blue-glow-sm">
                         <SparklesIcon className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-[9px] text-liquid-gold font-black uppercase tracking-widest mb-1">Tip de Productividad</p>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">Usa el Buscador Rápido (arriba) para encontrar pedidos por # de orden.</p>
+                        <p className="text-[9px] text-brand-blue font-black uppercase tracking-widest mb-1">Tip de Productividad</p>
+                        <p className="text-[11px] text-slate-600 font-medium">Usa el Buscador Rápido (arriba) para encontrar pedidos por # de orden.</p>
                     </div>
                 </div>
             </div>

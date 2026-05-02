@@ -30,23 +30,23 @@ const InputField: React.FC<{
             name={name}
             value={value}
             onChange={onChange}
-            className={`peer w-full bg-white/[0.03] border p-6 pt-10 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-4 transition-all uppercase italic placeholder-transparent tactical-border
+            className={`peer w-full bg-slate-50 border p-6 pt-10 pb-4 rounded-[1.5rem] text-slate-900 font-bold text-lg focus:ring-4 transition-all uppercase placeholder-transparent
                 ${error
                     ? 'border-rose-500/40 focus:ring-rose-500/10 focus:border-rose-500/60'
                     : isHighlighted
-                        ? 'border-liquid-gold/50 focus:ring-liquid-gold/10 focus:border-liquid-gold/70 shadow-gold-glow-soft'
-                        : 'border-white/5 focus:ring-liquid-gold/10 focus:border-liquid-gold/40'
+                        ? 'border-brand-blue/50 focus:ring-brand-blue/10 focus:border-brand-blue/70 shadow-sm'
+                        : 'border-slate-200 focus:ring-brand-blue/10 focus:border-brand-blue/40'
                 }`}
             placeholder={label}
             {...props}
         />
-        <label htmlFor={name} className={`absolute left-8 top-3.5 text-[10px] font-black uppercase tracking-[0.5em] italic transition-all peer-placeholder-shown:top-7 peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-600 peer-focus:top-3.5 peer-focus:text-[10px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold shadow-gold-glow-sm' : 'text-slate-500 peer-focus:text-liquid-gold'}`}>
+        <label htmlFor={name} className={`absolute left-8 top-3.5 text-[10px] font-black uppercase tracking-[0.5em] transition-all peer-placeholder-shown:top-7 peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-400 peer-focus:top-3.5 peer-focus:text-[10px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-brand-blue' : 'text-slate-500 peer-focus:text-brand-blue'}`}>
             {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "⚡"}
         </label>
         <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
-             <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
+             <div className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
         </div>
-        {error && <p className="text-[10px] text-rose-500 font-black mt-2 uppercase tracking-widest bg-rose-500/10 px-4 py-1.5 rounded-xl inline-block absolute -bottom-7 left-6 z-20 shadow-2xl border border-rose-500/20">{error}</p>}
+        {error && <p className="text-[10px] text-rose-500 font-black mt-2 uppercase tracking-widest bg-rose-50 px-4 py-1.5 rounded-xl inline-block absolute -bottom-7 left-6 z-20 shadow-lg border border-rose-100">{error}</p>}
     </div>
 );
 
@@ -107,14 +107,13 @@ export const CreateClientModal: React.FC<{
         }
     }, [isOpen, initialName, initialCedulaRuc, initialMode]);
 
-    // Validación RUC solo en modo SRI
     useEffect(() => {
         const performLookup = async () => {
             if (mode === 'SRI' && newClienteData.cedulaRuc.length === 13) {
                 const isValid = validarIdentificacionEC(newClienteData.cedulaRuc);
                 if (isValid) {
                     setRucError('');
-                    setIsScanning(true); // Reutilizamos el estado de scanning para el lookup
+                    setIsScanning(true);
                     try {
                         const result = await sriLookupService.lookupByRuc(newClienteData.cedulaRuc);
                         if (result) {
@@ -142,14 +141,8 @@ export const CreateClientModal: React.FC<{
                     setRucError('Identificación inválida (Ecuador)');
                 }
             } else if (mode === 'SRI' && newClienteData.cedulaRuc.length >= 10 && newClienteData.cedulaRuc.length < 13) {
-                // Posible Cédula
                 const isValid = validarIdentificacionEC(newClienteData.cedulaRuc);
                 setRucError(isValid ? '' : 'Cédula inválida');
-
-                // Si es válida (10 dígitos), también intentamos buscar en el padrón por si acaso está registrado como RUC pero escribió la cédula
-                if (isValid && newClienteData.cedulaRuc.length === 10) {
-                    // Opcional: buscar ruc + '001'
-                }
             } else {
                 setRucError('');
             }
@@ -176,7 +169,7 @@ export const CreateClientModal: React.FC<{
                     establecimientoPrincipal: '001',
                     actividades: result.actividad_economica
                 });
-                setMode('SRI'); // Auto-switch to SRI mode if scanning
+                setMode('SRI');
             }
         } catch (error) {
             console.error("Error extracted SRI PDF:", error);
@@ -190,7 +183,7 @@ export const CreateClientModal: React.FC<{
             );
         } finally {
             setIsScanning(false);
-            if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -250,371 +243,303 @@ export const CreateClientModal: React.FC<{
         setTimeout(() => setHighlightFields([]), 3000);
     }
 
+    const addActividad = (text: string) => {
+        const val = text.toUpperCase().trim();
+        if (val && !actividades.includes(val)) {
+            setActividades([...actividades, val]);
+            setCurrentActividad('');
+        }
+    };
 
-const addActividad = (text: string) => {
-    const val = text.toUpperCase().trim();
-    if (val && !actividades.includes(val)) {
-        setActividades([...actividades, val]);
-        setCurrentActividad('');
-    }
-};
+    const addTelefono = (text: string) => {
+        const val = text.replace(/\D/g, '');
+        if (val.length >= 7 && !telefonos.includes(val)) {
+            setTelefonos([...telefonos, val]);
+            setCurrentTelefono('');
+        }
+    };
 
-const addTelefono = (text: string) => {
-    const val = text.replace(/\D/g, '');
-    if (val.length >= 7 && !telefonos.includes(val)) {
-        setTelefonos([...telefonos, val]);
-        setCurrentTelefono('');
-    }
-};
-
-const { addCliente } = useData();
-const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validaciones según modo
-    if (mode === 'SRI' && rucError) return;
-    if (mode === 'SRI' && (!newClienteData.cedulaRuc || newClienteData.cedulaRuc === '9999999999' || newClienteData.cedulaRuc === '9999999999999')) {
-        setRucError('El RUC o Cédula real es obligatorio para clientes SRI.');
-        return;
-    }
-
-    // Valor por defecto para CI en modo Express si no se llena
-    const finalId = newClienteData.cedulaRuc || '9999999999';
-
-    setIsSaving(true);
-    try {
-        if (!newClienteData.cedulaRuc || newClienteData.cedulaRuc === '9999999999' || newClienteData.cedulaRuc === '9999999999999') {
-            // No guardar en DB si no hay cédula real (Requerimiento 3)
-            const tempClient: Cliente = {
-                id: 'temporal_' + Date.now(),
-                nombre: newClienteData.nombre.toUpperCase(),
-                cedula: '9999999999',
-                ruc: undefined,
-                telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : []),
-                direccion: newClienteData.direccion,
-                email: newClienteData.email,
-                regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
-                creadoEn: new Date().toISOString(),
-            };
-            setSaveSuccess(true);
-            setTimeout(() => onClientCreated(tempClient), 800);
+    const { addCliente } = useData();
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (mode === 'SRI' && rucError) return;
+        if (mode === 'SRI' && (!newClienteData.cedulaRuc || newClienteData.cedulaRuc === '9999999999' || newClienteData.cedulaRuc === '9999999999999')) {
+            setRucError('El RUC o Cédula real es obligatorio para clientes SRI.');
             return;
         }
 
-        const newCliente = await addCliente({
-            ...newClienteData,
-            cedula: finalId, // Asegurar que siempre viaje algo
-            ruc: mode === 'SRI' ? newClienteData.cedulaRuc : undefined,
-            actividades: actividades.join(' • '),
-            telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : ['0990000000']),
-            // Limpiar datos SRI si es modo express
-            regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
-            fiscal_data: mode === 'SRI' ? {
-                ...newClienteData.fiscal_data,
-                razon_social: newClienteData.nombre,
-                nombre_comercial: newClienteData.nombreComercial || newClienteData.nombre,
-                actividades: actividades.map(a => ({ codigo: '', descripcion: a })),
-                ultima_sincronizacion: new Date().toISOString()
-            } : undefined
-        });
-        setSaveSuccess(true);
-        setTimeout(() => onClientCreated(newCliente), 800);
-    } catch (err: any) {
-        console.error("Error al registrar cliente:", err);
-        setIsSaving(false);
-        setRucError(err.message || 'Error en la conexión con la base de datos');
-    }
-};
+        const finalId = newClienteData.cedulaRuc || '9999999999';
 
-if (!isOpen) return null;
+        setIsSaving(true);
+        try {
+            if (!newClienteData.cedulaRuc || newClienteData.cedulaRuc === '9999999999' || newClienteData.cedulaRuc === '9999999999999') {
+                const tempClient: Cliente = {
+                    id: 'temporal_' + Date.now(),
+                    nombre: newClienteData.nombre.toUpperCase(),
+                    cedula: '9999999999',
+                    ruc: undefined,
+                    telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : []),
+                    direccion: newClienteData.direccion,
+                    email: newClienteData.email,
+                    regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
+                    creadoEn: new Date().toISOString(),
+                };
+                setSaveSuccess(true);
+                setTimeout(() => onClientCreated(tempClient), 800);
+                return;
+            }
 
-return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8">
-        <div className="absolute inset-0 bg-brand-dark/95 backdrop-blur-3xl animate-in fade-in duration-700" onClick={onClose}>
-            <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
-        </div>
+            const newCliente = await addCliente({
+                ...newClienteData,
+                cedula: finalId,
+                ruc: mode === 'SRI' ? newClienteData.cedulaRuc : undefined,
+                actividades: actividades.join(' • '),
+                telefono: telefonos.length > 0 ? telefonos : (currentTelefono ? [currentTelefono] : ['0990000000']),
+                regimen: mode === 'EXPRESS' ? Regimen.GENERAL : newClienteData.regimen,
+                fiscal_data: mode === 'SRI' ? {
+                    ...newClienteData.fiscal_data,
+                    razon_social: newClienteData.nombre,
+                    nombre_comercial: newClienteData.nombreComercial || newClienteData.nombre,
+                    actividades: actividades.map(a => ({ codigo: '', descripcion: a })),
+                    ultima_sincronizacion: new Date().toISOString()
+                } : undefined
+            });
+            setSaveSuccess(true);
+            setTimeout(() => onClientCreated(newCliente), 800);
+        } catch (err: any) {
+            console.error("Error al registrar cliente:", err);
+            setIsSaving(false);
+            setRucError(err.message || 'Error en la conexión con la base de datos');
+        }
+    };
 
-        <div className="glass-panel-obsidian w-full max-w-6xl h-full max-h-[92vh] rounded-[4rem] border-white/10 shadow-2xl relative overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-10 duration-700 tactical-border">
-            <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-liquid-gold/30 to-transparent animate-shimmer" />
+    if (!isOpen) return null;
 
-            {/* HEADER FIJO TÁCTICO */}
-            <div className="flex-shrink-0 flex flex-col p-10 md:p-14 pb-6 md:pb-8 gap-8 relative z-30 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
-                <div className="flex justify-between items-center gap-8">
-                    <div className="flex-1 space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
-                            <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">IDENT_VERIFICATION_v5</p>
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-500" onClick={onClose} />
+
+            <div className="bg-white w-full max-w-6xl h-full max-h-[92vh] rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-200">
+                <div className="absolute top-0 left-0 w-full h-1 bg-brand-blue/20" />
+
+                <div className="flex-shrink-0 flex flex-col p-10 md:p-14 pb-6 md:pb-8 gap-8 relative z-30 border-b border-slate-100 bg-white/80 backdrop-blur-xl">
+                    <div className="flex justify-between items-center gap-8">
+                        <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-4">
+                                <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
+                                <p className="text-[11px] font-black text-brand-blue uppercase tracking-[0.8em]">IDENT_VERIFICATION_v5</p>
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-black text-slate-900 uppercase tracking-[-0.05em] leading-none">
+                                {mode === 'EXPRESS' ? 'IDENTIDAD ' : 'PROTOCOLOS '}<span className="text-brand-blue">{mode === 'EXPRESS' ? 'EXPRESS' : 'SRI_OFICIAL'}</span>
+                            </h2>
+                            <p className="text-[10px] md:text-[12px] text-slate-500 font-bold uppercase tracking-[0.4em] opacity-80">
+                                {mode === 'EXPRESS' ? 'Carga simplificada de activos de facturación' : 'Sincronización de expediente industrial con validación gubernamental'}
+                            </p>
                         </div>
-                        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-[-0.05em] leading-none italic">
-                            {mode === 'EXPRESS' ? 'IDENTIDAD ' : 'PROTOCOLOS '}<span className="text-gold-gradient">{mode === 'EXPRESS' ? 'EXPRESS' : 'SRI_OFICIAL'}</span>
-                        </h2>
-                        <p className="text-[10px] md:text-[12px] text-slate-500 font-black uppercase tracking-[0.4em] italic opacity-60">
-                            {mode === 'EXPRESS' ? 'Carga simplificada de activos de facturación' : 'Sincronización de expediente industrial con validación gubernamental'}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                        <button
-                            onClick={onClose}
-                            className="p-6 md:p-8 bg-white/5 hover:bg-white/10 rounded-[2.5rem] transition-all border border-white/5 group hover:border-rose-500/40"
-                        >
-                            <CloseIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-500 group-hover:text-rose-500 transition-colors" />
-                        </button>
-                    </div>
-                </div>
-
-                {!isLocked && (
-                    <div className="bg-white/5 p-2 rounded-[2.5rem] flex font-black text-[11px] uppercase tracking-[0.3em] border border-white/5 max-w-2xl">
-                        <button
-                            type="button"
-                            onClick={() => setMode('EXPRESS')}
-                            className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all duration-500 ${mode === 'EXPRESS' ? 'bg-white text-black shadow-luxury' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
-                        >
-                            <div className={`w-2 h-2 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-slate-700'}`} />
-                            MODO_EXPRESS
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setMode('SRI')}
-                            className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all duration-500 ${mode === 'SRI' ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
-                        >
-                            <div className={`w-2 h-2 rounded-full ${mode === 'SRI' ? 'bg-black animate-pulse' : 'bg-slate-700'}`} />
-                            PERFIL_SRI_ALPHA
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* CONTENIDO SCROLLABLE */}
-            <div className="flex-grow p-6 md:p-10 pt-4 md:pt-6 space-y-8 md:space-y-10 overflow-y-auto custom-scrollbar relative z-10">
-
-                {/* Botón Scanner solo visible en modo SRI */}
-                {mode === 'SRI' && (
-                    <div className="space-y-4">
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isScanning}
-                            className={`w-full group relative flex flex-col items-center justify-center gap-2 md:gap-3 py-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-liquid-gold bg-liquid-gold/5' : 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'}`}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            {isScanning ? <Loader2Icon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold animate-spin" /> : <UploadIcon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold opacity-50 group-hover:opacity-100 transition-all" />}
-                            <div className="text-center relative z-10">
-                                <span className="block text-[11px] font-black uppercase tracking-[0.4em]">
-                                    {isScanning ? "IA Analizando estructura tributaria..." : "Sincronizar con Documento RUC (PDF)"}
-                                </span>
-                                <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest mt-1">Extrae automáticamente actividades y dirección</span>
-                            </div>
-                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
-                        </button>
-                    </div>
-                )}
-
-                <form id="create-client-form" onSubmit={handleSubmit} className="space-y-8">
-                    {/* Campos Comunes */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <InputField
-                            label="Nombre / Razón Social"
-                            name="nombre"
-                            value={newClienteData.nombre}
-                            onChange={e => setNewClienteData({ ...newClienteData, nombre: e.target.value.toUpperCase() })}
-                            required
-                            isHighlighted={highlightFields.includes('nombre')}
-                            placeholder={mode === 'EXPRESS' ? "Ej: JUAN PÉREZ" : "Especifique Razón Social completa"}
-                        />
-
-                        <div className="group space-y-2 relative md:col-span-1">
-                            <div className={`flex flex-wrap gap-2 p-4 pt-7 pb-3 bg-white/[0.02] rounded-2xl border transition-all ${highlightFields.includes('telefono') ? 'border-liquid-gold/50 bg-liquid-gold/5 shadow-gold-glow-soft' : 'border-white/5 group-focus-within:border-brand-red/50 group-focus-within:ring-2 group-focus-within:ring-brand-red/30'}`}>
-                                <PhoneIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 z-10 transition-colors ${highlightFields.includes('telefono') ? 'text-liquid-gold' : 'text-slate-600 group-focus-within:text-brand-red'}`} />
-                                <div className="pl-8 flex flex-wrap gap-2 items-center w-full">
-                                    {telefonos.map((t, idx) => (
-                                        <span key={idx} className="bg-liquid-gold text-brand-dark px-2.5 py-1 rounded-xl text-[9px] font-black flex items-center gap-1.5 shadow-luxury animate-scale-in">
-                                            <PhoneIcon className="w-2.5 h-2.5" /> {t}
-                                            <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
-                                        </span>
-                                    ))}
-                                    <input
-                                        id="telefono-input"
-                                        type="tel"
-                                        placeholder="Añadir teléfono..."
-                                        value={currentTelefono}
-                                        onChange={e => setCurrentTelefono(e.target.value)}
-                                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
-                                        onBlur={() => currentTelefono && addTelefono(currentTelefono)}
-                                        className="bg-transparent border-none outline-none text-base font-black text-white flex-grow min-w-[120px] placeholder:text-slate-700 italic uppercase"
-                                    />
-                                </div>
-                            </div>
-                            <label htmlFor="telefono-input" className="absolute left-14 top-2.5 text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] italic pointer-events-none transition-colors group-focus-within:text-brand-red">
-                                Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-rose-500 opacity-50">*</span>}
-                            </label>
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                            <button onClick={onClose} className="p-6 md:p-8 bg-slate-100 hover:bg-slate-200 rounded-[2rem] transition-all group">
+                                <CloseIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-500 group-hover:text-rose-500 transition-colors" />
+                            </button>
                         </div>
                     </div>
 
-                    {/* Campos Específicos SRI */}
-                    {mode === 'SRI' ? (
-                        <div className="space-y-8 animate-fade-in">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-black/20 p-6 md:p-8 rounded-[3rem] border border-white/5 space-y-6 relative overflow-hidden md:col-span-2">
-                                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-liquid-gold/10 rounded-full blur-3xl pointer-events-none" />
-                                    {isScanning && (
-                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-liquid-gold/50 animate-scan-y z-40 overflow-hidden">
-                                            <div className="w-1/3 h-full bg-liquid-gold shadow-[0_0_15px_#D4AF37] animate-pulse" />
-                                        </div>
-                                    )}
-                                    <div className="relative group">
-                                        <ShieldCheckIcon className={`absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-500 ${newClienteData.cedulaRuc.length >= 10 && !rucError ? 'text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] scale-110' : 'text-slate-600 group-focus-within:text-liquid-gold'}`} />
-                                        <input 
-                                            id="cedulaRuc"
-                                            name="cedulaRuc"
-                                            value={newClienteData.cedulaRuc} 
-                                            onChange={e => setNewClienteData({ ...newClienteData, cedulaRuc: e.target.value.replace(/\D/g, '').slice(0, 13) })} 
-                                            required 
-                                            className="peer w-full bg-white/[0.02] border border-white/10 p-8 pt-10 pb-4 pl-20 rounded-[2rem] text-white font-black text-2xl focus:ring-2 focus:ring-liquid-gold/30 focus:border-liquid-gold/50 transition-all tracking-[0.2em] italic placeholder-transparent" 
-                                            placeholder="RUC Oficial" 
-                                        />
-                                        <label htmlFor="cedulaRuc" className="absolute left-20 top-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-8 peer-placeholder-shown:text-lg peer-placeholder-shown:text-slate-600 peer-focus:top-4 peer-focus:text-[10px] peer-focus:text-liquid-gold pointer-events-none">
-                                            ID_Tributario (RUC Oficial)
-                                        </label>
-                                        <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                                            {isScanning ? (
-                                                <>
-                                                    <p className="text-[9px] text-liquid-gold font-black uppercase tracking-[0.3em] animate-pulse hidden sm:block">EXTRAYENDO_DATA...</p>
-                                                    <Loader2Icon className="w-5 h-5 text-liquid-gold animate-spin" />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <p className="text-[9px] text-emerald-500 font-black uppercase tracking-[0.3em] hidden sm:block">{newClienteData.cedulaRuc.length === 13 && !rucError ? 'RUC_VÁLIDO' : ''}</p>
-                                                    <div className={`w-2 h-2 rounded-full ${newClienteData.cedulaRuc.length >= 10 && !rucError ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-slate-700'} transition-all duration-500`} />
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {rucError && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-lg inline-block">{rucError}</p>}
-                                </div>
-                                <div className="md:col-span-2">
-                                    <InputField
-                                        label="Email de Facturación"
-                                        name="email"
-                                        type="email"
-                                        value={newClienteData.email}
-                                        onChange={e => setNewClienteData({ ...newClienteData, email: e.target.value })}
-                                        isHighlighted={highlightFields.includes('email')}
-                                        placeholder="correo@ejemplo.com"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="p-8 bg-white/2 rounded-[2.5rem] border border-white/5 space-y-8 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-[80px] rounded-full pointer-events-none"></div>
-                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] border-b border-white/5 pb-4 flex items-center gap-3">
-                                    <DocumentTextIcon className="w-4 h-4 text-liquid-gold opacity-50" /> Configuración Tributaria Imprenta
-                                </h3>
-
-                                <div className="flex flex-wrap gap-3">
-                                    {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
-                                        <button
-                                            key={reg}
-                                            type="button"
-                                            onClick={() => setNewClienteData(prev => ({ ...prev, regimen: reg }))}
-                                            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${newClienteData.regimen === reg ? 'border-liquid-gold bg-liquid-gold text-brand-dark shadow-gold-glow' : 'border-white/5 bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'}`}
-                                        >
-                                            {reg}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="md:col-span-1">
-                                        <InputField label="Estab. Matriz" name="establecimientoPredeterminado" value={newClienteData.establecimientoPredeterminado} onChange={e => setNewClienteData({ ...newClienteData, establecimientoPredeterminado: e.target.value })} maxLength={3} placeholder="001" />
-                                    </div>
-                                    <div className="md:col-span-1">
-                                        <InputField label="Punto Emisión" name="puntoEmisionPredeterminado" value={newClienteData.puntoEmisionPredeterminado} onChange={e => setNewClienteData({ ...newClienteData, puntoEmisionPredeterminado: e.target.value })} maxLength={3} placeholder="001" />
-                                    </div>
-                                    <div className="md:col-span-1">
-                                        <InputField label="Total Estab." name="numEstablecimientosOpen" type="number" value={newClienteData.numEstablecimientosOpen} onChange={e => setNewClienteData({ ...newClienteData, numEstablecimientosOpen: parseInt(e.target.value) })} />
-                                    </div>
-                                </div>
-
-                                <InputField label="Dirección Matriz (SRI)" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({ ...newClienteData, direccion: e.target.value.toUpperCase() })} isHighlighted={highlightFields.includes('direccion')} placeholder="CALLE, CIUDAD, PROVINCIA" />
-
-                                <div className="group space-y-2">
-                                    <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 group-focus-within:text-liquid-gold transition-colors italic">Actividades Económicas (Separadas por puntos)</label>
-                                    <div className="flex flex-col gap-3 p-6 bg-white/5 rounded-2xl border border-white/5 group-focus-within:border-white/10 transition-all">
-                                        <div className="flex flex-wrap gap-2">
-                                            {actividades.map((a, i) => (
-                                                <span key={i} className="bg-brand-dark/80 text-white text-[9px] font-bold px-4 py-2 rounded-xl flex items-center gap-3 border border-white/10 shadow-luxury animate-scale-in">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold"></div>
-                                                    <span className="max-w-[300px] truncate">{a}</span>
-                                                    <button type="button" className="text-rose-500 opacity-60 hover:opacity-100 font-black text-xs" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))}>&times;</button>
-                                                </span>
-                                            ))}
-                                        </div>
-                                        <div className="flex gap-3 pt-2">
-                                            <input
-                                                type="text"
-                                                value={currentActividad}
-                                                onChange={e => setCurrentActividad(e.target.value)}
-                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addActividad(currentActividad))}
-                                                placeholder="Ej: CULTIVO DE CACAO (A01270201)..."
-                                                className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs font-bold text-white flex-grow placeholder:text-slate-700 outline-none focus:border-liquid-gold/30 transition-all"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => addActividad(currentActividad)}
-                                                className="px-6 py-3 bg-liquid-gold text-brand-dark font-black text-[10px] uppercase rounded-xl hover:scale-105 active:scale-95 transition-all"
-                                            >
-                                                Añadir
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
-                            <InputField
-                                label="DNI / Cédula (Opcional)"
-                                name="cedulaRuc"
-                                value={newClienteData.cedulaRuc}
-                                onChange={e => setNewClienteData({ ...newClienteData, cedulaRuc: e.target.value })}
-                                maxLength={10}
-                                placeholder="Requerido para comprobante simple"
-                            />
-                            <InputField
-                                label="Nota / Referencia de Entrega"
-                                name="direccion"
-                                value={newClienteData.direccion}
-                                onChange={e => setNewClienteData({ ...newClienteData, direccion: e.target.value })}
-                                placeholder="Indicaciones especiales..."
-                            />
+                    {!isLocked && (
+                        <div className="bg-slate-100 p-2 rounded-[2rem] flex font-black text-[11px] uppercase tracking-[0.3em] border border-slate-200 max-w-2xl">
+                            <button
+                                type="button"
+                                onClick={() => setMode('EXPRESS')}
+                                className={`flex-1 py-5 rounded-[1.5rem] flex items-center justify-center gap-4 transition-all duration-300 ${mode === 'EXPRESS' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}`}
+                            >
+                                <div className={`w-2 h-2 rounded-full ${mode === 'EXPRESS' ? 'bg-brand-blue' : 'bg-slate-300'}`} />
+                                MODO_EXPRESS
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMode('SRI')}
+                                className={`flex-1 py-5 rounded-[1.5rem] flex items-center justify-center gap-4 transition-all duration-300 ${mode === 'SRI' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}`}
+                            >
+                                <div className={`w-2 h-2 rounded-full ${mode === 'SRI' ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
+                                PERFIL_SRI_ALPHA
+                            </button>
                         </div>
                     )}
-                </form>
-            </div>
+                </div>
 
-            {/* FOOTER ACCIONES TÁCTICO */}
-            <div className="flex-shrink-0 p-10 md:p-14 bg-black/80 backdrop-blur-3xl border-t border-white/5 flex flex-col md:flex-row gap-6 relative z-40">
-                <button
-                    onClick={onClose}
-                    className="flex-1 py-6 px-10 rounded-[2rem] bg-white/5 text-white/40 font-black text-[11px] uppercase tracking-[0.4em] hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-95 italic"
-                >
-                    ABORT_LINK_00
-                </button>
-                <button
-                    type="submit"
-                    form="create-client-form"
-                    disabled={isSaving || saveSuccess || (mode === 'SRI' && !!rucError)}
-                    className="flex-[2] py-6 px-10 rounded-[2rem] bg-liquid-gold text-black font-black text-[12px] uppercase tracking-[0.3em] hover:scale-[1.02] shadow-gold-glow transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:grayscale active:scale-[0.98] italic"
-                >
-                    {isSaving ? <Loader2Icon className="animate-spin w-6 h-6 md:w-8 md:h-8" /> : saveSuccess ? <CheckCircleIcon className="w-6 h-6 md:w-8 md:h-8" /> : mode === 'SRI' ? "AUTORIZAR_EXPEDIENTE_SRI" : "SYNC_PERFIL_EXPRESS"}
-                </button>
+                <div className="flex-grow p-6 md:p-10 pt-4 md:pt-6 space-y-8 md:space-y-10 overflow-y-auto custom-scrollbar relative z-10 bg-slate-50/30">
+                    {mode === 'SRI' && (
+                        <div className="space-y-4">
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isScanning}
+                                className={`w-full group relative flex flex-col items-center justify-center gap-2 md:gap-3 py-6 md:py-8 rounded-[1.5rem] md:rounded-[2rem] border-2 border-dashed transition-all overflow-hidden ${isScanning ? 'border-brand-blue bg-brand-blue/5' : 'border-slate-200 bg-white hover:border-brand-blue/30 hover:bg-slate-50'}`}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-brand-blue/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                {isScanning ? <Loader2Icon className="w-6 h-6 md:w-8 md:h-8 text-brand-blue animate-spin" /> : <UploadIcon className="w-6 h-6 md:w-8 md:h-8 text-brand-blue opacity-50 group-hover:opacity-100 transition-all" />}
+                                <div className="text-center relative z-10">
+                                    <span className="block text-[11px] font-black uppercase tracking-[0.4em] text-slate-900">
+                                        {isScanning ? "IA Analizando estructura tributaria..." : "Sincronizar con Documento RUC (PDF)"}
+                                    </span>
+                                    <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest mt-1">Extrae automáticamente actividades y dirección</span>
+                                </div>
+                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
+                            </button>
+                        </div>
+                    )}
+
+                    <form id="create-client-form" onSubmit={handleSubmit} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <InputField
+                                label="Nombre / Razón Social"
+                                name="nombre"
+                                value={newClienteData.nombre}
+                                onChange={e => setNewClienteData({ ...newClienteData, nombre: e.target.value.toUpperCase() })}
+                                required
+                                isHighlighted={highlightFields.includes('nombre')}
+                                placeholder={mode === 'EXPRESS' ? "Ej: JUAN PÉREZ" : "Especifique Razón Social completa"}
+                            />
+
+                            <div className="group space-y-2 relative md:col-span-1">
+                                <div className={`flex flex-wrap gap-2 p-4 pt-7 pb-3 bg-white rounded-2xl border transition-all ${highlightFields.includes('telefono') ? 'border-brand-blue/50 bg-brand-blue/5 shadow-sm' : 'border-slate-200 group-focus-within:border-brand-blue/50 group-focus-within:ring-2 group-focus-within:ring-brand-blue/10'}`}>
+                                    <PhoneIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 z-10 transition-colors ${highlightFields.includes('telefono') ? 'text-brand-blue' : 'text-slate-400 group-focus-within:text-brand-blue'}`} />
+                                    <div className="pl-8 flex flex-wrap gap-2 items-center w-full">
+                                        {telefonos.map((t, idx) => (
+                                            <span key={idx} className="bg-brand-blue text-white px-2.5 py-1 rounded-xl text-[9px] font-black flex items-center gap-1.5 shadow-sm animate-scale-in">
+                                                <PhoneIcon className="w-2.5 h-2.5" /> {t}
+                                                <button type="button" className="opacity-60 hover:opacity-100" onClick={() => setTelefonos(telefonos.filter((_, i) => i !== idx))}>&times;</button>
+                                            </span>
+                                        ))}
+                                        <input
+                                            id="telefono-input"
+                                            type="tel"
+                                            placeholder="Añadir teléfono..."
+                                            value={currentTelefono}
+                                            onChange={e => setCurrentTelefono(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTelefono(currentTelefono))}
+                                            onBlur={() => currentTelefono && addTelefono(currentTelefono)}
+                                            className="bg-transparent border-none outline-none text-base font-bold text-slate-900 flex-grow min-w-[120px] placeholder:text-slate-300 uppercase"
+                                        />
+                                    </div>
+                                </div>
+                                <label htmlFor="telefono-input" className="absolute left-14 top-2.5 text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] pointer-events-none transition-colors group-focus-within:text-brand-blue">
+                                    Teléfono / Whatsapp {mode === 'EXPRESS' && <span className="text-rose-500 opacity-50">*</span>}
+                                </label>
+                            </div>
+                        </div>
+
+                        {mode === 'SRI' ? (
+                            <div className="space-y-8 animate-fade-in">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 space-y-6 relative overflow-hidden md:col-span-2 shadow-sm">
+                                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-blue/5 rounded-full blur-3xl pointer-events-none" />
+                                        <div className="relative group">
+                                            <ShieldCheckIcon className={`absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-500 ${newClienteData.cedulaRuc.length >= 10 && !rucError ? 'text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] scale-110' : 'text-slate-300 group-focus-within:text-brand-blue'}`} />
+                                            <input 
+                                                id="cedulaRuc"
+                                                name="cedulaRuc"
+                                                value={newClienteData.cedulaRuc} 
+                                                onChange={e => setNewClienteData({ ...newClienteData, cedulaRuc: e.target.value.replace(/\D/g, '').slice(0, 13) })} 
+                                                required 
+                                                className="peer w-full bg-slate-50 border border-slate-200 p-8 pt-10 pb-4 pl-20 rounded-[1.5rem] text-slate-900 font-bold text-2xl focus:ring-2 focus:ring-brand-blue/10 focus:border-brand-blue/50 transition-all tracking-[0.2em] placeholder-transparent" 
+                                                placeholder="RUC Oficial" 
+                                            />
+                                            <label htmlFor="cedulaRuc" className="absolute left-20 top-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] transition-all peer-placeholder-shown:top-8 peer-placeholder-shown:text-lg peer-placeholder-shown:text-slate-400 peer-focus:top-4 peer-focus:text-[10px] peer-focus:text-brand-blue pointer-events-none">
+                                                ID_Tributario (RUC Oficial)
+                                            </label>
+                                            <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                                                {isScanning ? (
+                                                    <Loader2Icon className="w-5 h-5 text-brand-blue animate-spin" />
+                                                ) : (
+                                                    <div className={`w-2 h-2 rounded-full ${newClienteData.cedulaRuc.length >= 10 && !rucError ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-200'} transition-all duration-500`} />
+                                                )}
+                                            </div>
+                                        </div>
+                                        {rucError && <p className="text-[9px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-lg inline-block border border-rose-100">{rucError}</p>}
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <InputField
+                                            label="Email de Facturación"
+                                            name="email"
+                                            type="email"
+                                            value={newClienteData.email}
+                                            onChange={e => setNewClienteData({ ...newClienteData, email: e.target.value })}
+                                            isHighlighted={highlightFields.includes('email')}
+                                            placeholder="correo@ejemplo.com"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="p-8 bg-white rounded-[2rem] border border-slate-200 space-y-8 relative overflow-hidden shadow-sm">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-slate-100 pb-4 flex items-center gap-3">
+                                        <DocumentTextIcon className="w-4 h-4 text-brand-blue opacity-50" /> Configuración Tributaria Imprenta
+                                    </h3>
+
+                                    <div className="flex flex-wrap gap-3">
+                                        {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
+                                            <button
+                                                key={reg}
+                                                type="button"
+                                                onClick={() => setNewClienteData(prev => ({ ...prev, regimen: reg }))}
+                                                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${newClienteData.regimen === reg ? 'border-brand-blue bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+                                            >
+                                                {reg}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <InputField label="Estab. Matriz" name="establecimientoPredeterminado" value={newClienteData.establecimientoPredeterminado} onChange={e => setNewClienteData({ ...newClienteData, establecimientoPredeterminado: e.target.value })} maxLength={3} placeholder="001" />
+                                        <InputField label="Punto Emisión" name="puntoEmisionPredeterminado" value={newClienteData.puntoEmisionPredeterminado} onChange={e => setNewClienteData({ ...newClienteData, puntoEmisionPredeterminado: e.target.value })} maxLength={3} placeholder="001" />
+                                        <InputField label="Total Estab." name="numEstablecimientosOpen" type="number" value={newClienteData.numEstablecimientosOpen} onChange={e => setNewClienteData({ ...newClienteData, numEstablecimientosOpen: parseInt(e.target.value) })} />
+                                    </div>
+
+                                    <InputField label="Dirección Matriz (SRI)" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({ ...newClienteData, direccion: e.target.value.toUpperCase() })} isHighlighted={highlightFields.includes('direccion')} placeholder="CALLE, CIUDAD, PROVINCIA" />
+
+                                    <div className="group space-y-2">
+                                        <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-focus-within:text-brand-blue transition-colors">Actividades Económicas</label>
+                                        <div className="flex flex-col gap-3 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                                            <div className="flex flex-wrap gap-2">
+                                                {actividades.map((a, i) => (
+                                                    <span key={i} className="bg-white text-slate-700 text-[9px] font-bold px-4 py-2 rounded-xl flex items-center gap-3 border border-slate-200 shadow-sm animate-scale-in">
+                                                        <span className="max-w-[300px] truncate">{a}</span>
+                                                        <button type="button" className="text-rose-500 opacity-60 hover:opacity-100 font-black text-xs" onClick={() => setActividades(actividades.filter((_, idx) => idx !== i))}>&times;</button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-3 pt-2">
+                                                <input
+                                                    type="text"
+                                                    value={currentActividad}
+                                                    onChange={e => setCurrentActividad(e.target.value)}
+                                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addActividad(currentActividad))}
+                                                    placeholder="Añadir actividad..."
+                                                    className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-900 flex-grow outline-none"
+                                                />
+                                                <button type="button" onClick={() => addActividad(currentActividad)} className="px-6 py-3 bg-brand-blue text-white font-black text-[10px] uppercase rounded-xl">Añadir</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+                                <InputField label="DNI / Cédula (Opcional)" name="cedulaRuc" value={newClienteData.cedulaRuc} onChange={e => setNewClienteData({ ...newClienteData, cedulaRuc: e.target.value })} maxLength={10} placeholder="9999999999" />
+                                <InputField label="Nota / Referencia" name="direccion" value={newClienteData.direccion} onChange={e => setNewClienteData({ ...newClienteData, direccion: e.target.value })} placeholder="Especifique dirección o notas..." />
+                            </div>
+                        )}
+                    </form>
+                </div>
+
+                <div className="flex-shrink-0 p-10 md:p-14 bg-white border-t border-slate-100 flex flex-col md:flex-row gap-6 relative z-40">
+                    <button onClick={onClose} className="flex-1 py-6 px-10 rounded-[1.5rem] bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-[0.4em] hover:bg-slate-100 border border-slate-200">CANCELAR</button>
+                    <button type="submit" form="create-client-form" disabled={isSaving || saveSuccess || (mode === 'SRI' && !!rucError)} className="flex-[2] py-6 px-10 rounded-[1.5rem] bg-brand-blue text-white font-black text-[12px] uppercase tracking-[0.3em] hover:bg-brand-blue-dark shadow-lg shadow-brand-blue/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50">
+                        {isSaving ? <Loader2Icon className="animate-spin w-6 h-6" /> : saveSuccess ? <CheckCircleIcon className="w-6 h-6" /> : "GUARDAR CLIENTE"}
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
 };
-
 
 const ClientItem: React.FC<{ 
     client: Cliente; 
@@ -622,47 +547,32 @@ const ClientItem: React.FC<{
     selectedId?: string; 
     onSelect: (c: Cliente) => void 
 }> = ({ client, isSri, selectedId, onSelect }) => {
-    const { sriCredentials } = useData();
-    const hasKey = isSri && sriCredentials.some(s => s.ruc === client.ruc);
-    
     return (
         <motion.div 
             whileHover={{ x: 10 }}
             onClick={() => onSelect(client)} 
-            className={`p-6 md:p-8 cursor-pointer hover:bg-white/[0.05] flex justify-between items-center transition-all group relative overflow-hidden rounded-[2.5rem] border border-transparent hover:border-liquid-gold/20 ${selectedId === client.id ? 'bg-liquid-gold/10 border-liquid-gold/40' : ''}`}
+            className={`p-6 md:p-8 cursor-pointer hover:bg-slate-50 flex justify-between items-center transition-all group relative overflow-hidden rounded-[2rem] border border-transparent hover:border-brand-blue/10 ${selectedId === client.id ? 'bg-brand-blue/5 border-brand-blue/20' : ''}`}
         >
-            <div className={`absolute inset-y-0 left-0 w-1.5 ${isSri ? 'bg-liquid-gold' : 'bg-liquid-gold/40'} transition-opacity ${selectedId === client.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+            <div className={`absolute inset-y-0 left-0 w-1.5 ${isSri ? 'bg-brand-blue' : 'bg-brand-blue/40'} transition-opacity ${selectedId === client.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
             <div className="flex items-center gap-6 md:gap-8 relative z-10">
-                <div className={`h-16 w-16 rounded-[1.5rem] flex items-center justify-center font-black text-2xl shadow-2xl relative overflow-hidden transition-all duration-700 group-hover:rotate-6 ${isSri ? 'bg-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 text-liquid-gold border border-white/10'}`}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className={`h-16 w-16 rounded-[1.2rem] flex items-center justify-center font-black text-2xl shadow-sm ${isSri ? 'bg-brand-blue text-white' : 'bg-slate-100 text-brand-blue border border-slate-200'}`}>
                     {(client.nombre || '?').charAt(0)}
                 </div>
                 <div className="min-w-0 space-y-2">
-                    <p className="font-black text-white text-xl md:text-2xl tracking-tighter uppercase leading-none italic group-hover:text-liquid-gold transition-colors truncate">{client.nombre || 'SIN NOMBRE'}</p>
+                    <p className="font-black text-slate-900 text-xl md:text-2xl tracking-tighter uppercase leading-none group-hover:text-brand-blue transition-colors truncate">{client.nombre || 'SIN NOMBRE'}</p>
                     <div className="flex items-center gap-4 flex-wrap">
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2 italic">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-2">
                             <IdentificationIcon className="w-3.5 h-3.5 opacity-40"/> {client.cedula || client.ruc} 
                         </p>
-                        {isSri && (
-                            <div className="flex gap-2 items-center">
-                                <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20 tracking-widest uppercase italic">SRI_VERIFIED</span>
-                                {hasKey && (
-                                    <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 tracking-widest uppercase flex items-center gap-1.5 italic">
-                                        <ShieldCheckIcon className="w-2.5 h-2.5"/> KEY_LINKED
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                        {!isSri && (
-                            <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-white/5 text-slate-500 border border-white/5 tracking-widest uppercase italic">V_NATURAL</span>
+                        {isSri ? (
+                            <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-brand-blue/10 text-brand-blue border border-brand-blue/20 tracking-widest uppercase">SRI_VERIFIED</span>
+                        ) : (
+                            <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 tracking-widest uppercase">V_NATURAL</span>
                         )}
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-4">
-                 <div className="h-px w-8 bg-white/10 group-hover:w-12 transition-all group-hover:bg-liquid-gold/40" />
-                 <ArrowRightIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-700 group-hover:text-liquid-gold transition-all" />
-            </div>
+            <ArrowRightIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-300 group-hover:text-brand-blue transition-all" />
         </motion.div>
     );
 };
@@ -697,7 +607,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                 setIsSearchingPadron(true);
                 try {
                     let results: any[] = [];
-                    // Si parece un RUC, buscar directo
                     if (searchTerm.length === 13 && /^\d+$/.test(searchTerm)) {
                         const direct = await sriLookupService.lookupByRuc(searchTerm);
                         if (direct) results = [direct];
@@ -714,7 +623,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
                 setPadronResults([]);
             }
         };
-
         const timer = setTimeout(searchPadron, 500);
         return () => clearTimeout(timer);
     }, [searchTerm, filteredClients.length]);
@@ -727,216 +635,123 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, selectedId, o
     return (
         <div className="animate-fade-in w-full space-y-8">
             <div className="flex flex-col gap-6">
-                {/* Botón de Acción Principal Directo SRI */}
                 <button
                     onClick={() => handleOpenCreate('SRI')}
-                    className="w-full bg-liquid-gold/5 border-2 border-liquid-gold/20 p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] flex items-center justify-between gap-4 md:gap-6 group hover:bg-liquid-gold/10 hover:border-liquid-gold/40 transition-all shadow-gold-glow-soft relative overflow-hidden"
+                    className="w-full bg-white border-2 border-slate-200 p-8 rounded-[2rem] flex items-center justify-between group hover:border-brand-blue/30 hover:bg-slate-50 transition-all shadow-sm"
                 >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/10 blur-[50px] -mr-16 -mt-16 group-hover:bg-liquid-gold/20 transition-all"></div>
-                    <div className="flex items-center gap-4 md:gap-6 relative z-10">
-                        <div className="p-3 md:p-4 bg-liquid-gold text-black rounded-xl md:rounded-2xl shadow-gold-glow group-hover:scale-110 transition-transform">
-                            <UserPlusIcon className="w-6 h-6 md:w-8 md:h-8" />
+                    <div className="flex items-center gap-6">
+                        <div className="p-4 bg-brand-blue text-white rounded-2xl shadow-lg shadow-brand-blue/20 group-hover:scale-110 transition-transform">
+                            <UserPlusIcon className="w-8 h-8" />
                         </div>
                         <div className="text-left">
-                            <p className="text-[9px] md:text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] md:tracking-[0.5em] mb-1 italic">Protocolo de Alta Oficial</p>
-                            <h4 className="text-lg md:text-xl font-black text-white uppercase italic tracking-tighter">Inscribir como SRI</h4>
-                            <p className="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 md:mt-1">Padrón El Oro y PDF</p>
+                            <p className="text-[11px] font-black text-brand-blue uppercase tracking-[0.5em] mb-1">Protocolo de Alta Oficial</p>
+                            <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Inscribir como SRI</h4>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Padrón El Oro y PDF</p>
                         </div>
                     </div>
-                    <ArrowRightIcon className="w-6 h-6 md:w-8 md:h-8 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:translate-x-2 transition-all relative z-10" />
+                    <ArrowRightIcon className="w-8 h-8 text-slate-300 group-hover:text-brand-blue group-hover:translate-x-2 transition-all" />
                 </button>
 
                 <div className="relative group">
-                    <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
-                    
-                    {/* Tactical Scanning Beam for Search Bar */}
-                    <div className="absolute inset-y-0 left-0 w-16 flex items-center justify-center z-20">
-                         <motion.div 
-                            animate={{ opacity: [0.3, 1, 0.3] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="w-px h-10 bg-liquid-gold shadow-gold-glow"
-                         />
-                    </div>
-
-                    <SearchIcon className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all z-20" />
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-blue transition-all z-20" />
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="BUSCAR CLIENTE O RUC..."
-                        className="w-full pl-14 md:pl-16 pr-12 md:pr-14 py-4 md:py-6 bg-black/40 border border-white/5 rounded-[1.2rem] md:rounded-[1.5rem] text-sm md:text-lg font-black text-white focus:bg-black/60 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10"
+                        className="w-full pl-16 pr-14 py-6 bg-white border border-slate-200 rounded-[1.2rem] text-lg font-black text-slate-900 focus:bg-slate-50 focus:ring-1 focus:ring-brand-blue/40 transition-all placeholder:text-slate-300 uppercase tracking-widest relative z-10"
                     />
-
-                    {/* Biometric Data Streams (Visual Only) */}
-                    <div className="absolute right-20 top-1/2 -translate-y-1/2 flex gap-1 items-end h-4 pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity z-20">
-                        {[0.4, 0.7, 0.5, 0.9, 0.3].map((h, i) => (
-                            <motion.div 
-                                key={i}
-                                animate={{ height: [h*100 + '%', (1-h)*100 + '%', h*100 + '%'] }}
-                                transition={{ duration: 1 + i*0.2, repeat: Infinity }}
-                                className="w-1 bg-liquid-gold/40 rounded-full"
-                            />
-                        ))}
-                    </div>
-
                     {searchTerm && (
-                        <button onClick={() => setSearchTerm('')} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors z-20">
+                        <button onClick={() => setSearchTerm('')} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors z-20">
                             <CloseIcon className="w-6 h-6" />
                         </button>
-                    )}
-                    {isSearchingPadron && (
-                        <div className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden rounded-full z-20">
-                            <motion.div 
-                                animate={{ x: ['-100%', '100%'] }}
-                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                className="w-full h-full bg-gradient-to-r from-transparent via-liquid-gold to-transparent"
-                            />
-                        </div>
                     )}
                 </div>
 
                 {!hideQuickButtons && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button
-                            onClick={() => handleOpenCreate('EXPRESS')}
-                            className="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 p-5 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
-                        >
-                            <div className="p-3 bg-liquid-gold text-brand-dark rounded-xl shadow-gold-glow">
-                                <BoltIcon className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                                <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Acceso Rápido</span>
-                                <span className="block text-[11px] font-black uppercase text-white group-hover:text-liquid-gold transition-colors">Perfil Consumidor Final</span>
-                            </div>
+                        <button onClick={() => handleOpenCreate('EXPRESS')} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-brand-blue transition-all group">
+                            <AddIcon className="w-5 h-5 text-slate-300 group-hover:text-brand-blue" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">NUEVO_CLIENTE_EXPRESS</span>
                         </button>
-
-                        <button
-                            onClick={onSkip}
-                            className="flex-1 bg-white/2 hover:bg-white/5 border border-white/5 p-5 rounded-2xl flex items-center gap-4 transition-all group active:scale-95"
-                        >
-                            <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all shadow-glow">
-                                <SparklesIcon className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                                <span className="block text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Omitir Identidad</span>
-                                <span className="block text-[11px] font-black uppercase text-white group-hover:text-blue-400 transition-colors">Trabajo Anónimo</span>
-                            </div>
-                        </button>
+                        {onSkip && (
+                            <button onClick={onSkip} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 hover:bg-slate-100 transition-all group">
+                                <SparklesIcon className="w-5 h-5 text-slate-300 group-hover:text-slate-400" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">CONTINUAR_SIN_IDENTIDAD</span>
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
 
-            {
-        searchTerm.length > 1 && (
-            <div className="bg-brand-dark/40 backdrop-blur-3xl rounded-[2.5rem] shadow-luxury border border-white/5 overflow-hidden animate-slide-in-up divide-y divide-white/5">
-                {filteredClients.map((c) => (
-                    <div key={c.id} onClick={() => onSelect(c)} className={`p-6 cursor-pointer hover:bg-white/[0.03] flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === c.id ? 'bg-liquid-gold/10' : ''}`}>
-                        <div className={`absolute inset-y-4 left-0 w-1 rounded-full ${c.ruc ? 'bg-liquid-gold' : 'bg-liquid-gold/40'} transition-all ${selectedId === c.id ? 'h-12 opacity-100' : 'h-4 opacity-0 group-hover:opacity-100 group-hover:h-8'}`}></div>
-                        <div className="flex items-center gap-6 relative z-10">
-                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl transition-transform group-hover:scale-105 ${c.ruc ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20'}`}>
-                                {(c.nombre || '?').charAt(0)}
-                            </div>
-                            <div className="min-w-0">
-                                <p className="font-black text-white text-lg tracking-tight uppercase leading-none mb-2 truncate group-hover:text-liquid-gold transition-colors">{c.nombre || 'SIN NOMBRE'}</p>
-                                <div className="flex items-center gap-4">
-                                    <span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <IdentificationIcon className="w-3.5 h-3.5 opacity-50" /> {c.cedula || c.ruc}
-                                    </span>
-                                    {c.ruc ? (
-                                        <span className="text-[8px] font-black px-2 py-0.5 rounded bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20 uppercase tracking-widest italic">Contribuyente SRI</span>
-                                    ) : (
-                                        <span className="text-[8px] font-black px-2 py-0.5 rounded bg-white/5 text-slate-600 border border-white/10 uppercase tracking-widest italic">Cliente Final</span>
-                                    )}
-                                </div>
-                            </div>
+            <AnimatePresence mode="wait">
+                {(filteredClients.length > 0 || padronResults.length > 0) ? (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-3">
+                                <LayersIcon className="w-4 h-4 text-brand-blue opacity-50" /> Expedientes_Locales
+                             </h3>
+                             <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">{filteredClients.length} ENCONTRADOS</span>
                         </div>
-                        <div className="flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                            <span className="text-[8px] font-black text-liquid-gold uppercase tracking-widest">Seleccionar</span>
-                            <ArrowRightIcon className="w-5 h-5 text-liquid-gold" />
+                        <div className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm">
+                            {filteredClients.map(client => (
+                                <ClientItem key={client.id} client={client} isSri={!!client.ruc} selectedId={selectedId} onSelect={onSelect} />
+                            ))}
                         </div>
-                    </div>
-                ))}
-                {filteredClients.length === 0 && padronResults.length > 0 && (
-                    <div className="bg-liquid-gold/5">
-                        <div className="px-6 py-3 border-b border-white/5 flex items-center gap-2">
-                            <SparklesIcon className="w-3 h-3 text-liquid-gold" />
-                            <span className="text-[9px] font-black text-liquid-gold uppercase tracking-[0.2em]">Padrón Inteligente (El Oro) - ¿Es este el cliente?</span>
+
+                        {padronResults.length > 0 && (
+                             <div className="space-y-4 pt-4">
+                                <div className="flex items-center justify-between px-2">
+                                    <h3 className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] flex items-center gap-3">
+                                        <SparklesIcon className="w-4 h-4 text-brand-blue animate-pulse" /> Padrón_Oficial_Alpha
+                                    </h3>
+                                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">NUBE_PROVINCIAL</span>
+                                </div>
+                                <div className="bg-slate-50/50 border border-slate-200 border-dashed rounded-[2rem] p-4 space-y-2">
+                                    {padronResults.filter(p => !filteredClients.some(fc => fc.ruc === p.ruc)).map((p, i) => (
+                                        <motion.div 
+                                            key={i} 
+                                            whileHover={{ scale: 1.01 }} 
+                                            onClick={() => { setCreateMode('SRI'); setIsCreateModalOpen(true); setSearchTerm(p.ruc); }}
+                                            className="p-6 bg-white border border-slate-200 rounded-[1.5rem] flex justify-between items-center group cursor-pointer hover:border-brand-blue/40 transition-all"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue font-black">{p.razon_social.charAt(0)}</div>
+                                                <div>
+                                                    <p className="text-sm font-black text-slate-900 uppercase tracking-tighter group-hover:text-brand-blue transition-colors">{p.razon_social}</p>
+                                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{p.ruc} • {p.canton}</p>
+                                                </div>
+                                            </div>
+                                            <ArrowRightIcon className="w-5 h-5 text-slate-300 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
+                                        </motion.div>
+                                    ))}
+                                </div>
+                             </div>
+                        )}
+                    </motion.div>
+                ) : searchTerm.length > 2 && !isSearchingPadron ? (
+                    <div className="p-14 text-center space-y-6 bg-slate-50 border border-slate-200 border-dashed rounded-[3rem]">
+                        <ExclamationTriangleIcon className="w-16 h-16 text-slate-200 mx-auto" />
+                        <div className="space-y-2">
+                            <p className="text-xl font-black text-slate-900 uppercase tracking-tighter">Sin Coincidencias Críticas</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">No se detectaron expedientes locales para "{searchTerm}"</p>
                         </div>
-                        {padronResults.map((p) => (
-                            <div
-                                key={p.ruc}
-                                onClick={() => {
-                                    setCreateMode('SRI');
-                                    setIsCreateModalOpen(true);
-                                    setSearchTerm(p.ruc); // Esto disparará el lookup en el modal
-                                }}
-                                className="p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group"
-                            >
-                                <div className="flex items-center gap-5">
-                                    <div className="h-12 w-12 rounded-2xl bg-liquid-gold/10 text-liquid-gold flex items-center justify-center font-black text-lg border border-liquid-gold/20">
-                                        {p.razon_social.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <p className="font-black text-white text-base uppercase truncate max-w-[350px] italic">{p.razon_social}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{p.ruc}</p>
-                                            <span className="text-[7px] font-black px-1.5 py-0.5 rounded bg-white/5 text-slate-500 border border-white/5">{p.canton}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="text-right hidden sm:block">
-                                        <p className="text-[8px] font-black text-liquid-gold uppercase tracking-widest">Inscripción Auto</p>
-                                        <p className="text-[10px] font-black text-white uppercase italic">Sincronizar</p>
-                                    </div>
-                                    <div className="p-3 bg-liquid-gold text-brand-dark rounded-xl group-hover:scale-110 transition-transform">
-                                        <SparklesIcon className="w-4 h-4" />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                        <button onClick={() => handleOpenCreate('SRI')} className="px-8 py-4 bg-brand-blue text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-blue/20 hover:scale-105 transition-all">Iniciar Protocolo SRI</button>
                     </div>
-                )}
+                ) : null}
+            </AnimatePresence>
 
-                {filteredClients.length === 0 && padronResults.length === 0 && !isSearchingPadron && (
-                    <div className="p-10 text-center space-y-4">
-                        <ExclamationTriangleIcon className="w-10 h-10 mx-auto text-slate-700 opacity-50" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sin coincidencias en base de datos</p>
-                        <button
-                            onClick={() => handleOpenCreate(hideQuickButtons ? 'SRI' : 'EXPRESS')}
-                            className={`${hideQuickButtons ? 'bg-liquid-gold text-black px-8 py-3 rounded-xl shadow-gold-glow' : 'text-liquid-gold border-b border-liquid-gold/30 pb-1'} text-[9px] font-black uppercase tracking-widest transition-all`}
-                        >
-                            {hideQuickButtons ? 'Inscribir como Nuevo Contribuyente SRI' : 'Dar de alta como nuevo cliente'}
-                        </button>
-                    </div>
-                )}
-
-                {isSearchingPadron && (
-                    <div className="p-10 text-center">
-                        <Loader2Icon className="w-6 h-6 text-liquid-gold animate-spin mx-auto mb-3" />
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Consultando Padrón Inteligente...</p>
-                    </div>
-                )}
-            </div>
-        )
-    }
-
-            {onCancel && (
-                <button onClick={onCancel} className="mt-8 text-slate-500 hover:text-white text-[10px] md:text-xs font-black uppercase tracking-widest transition-colors w-full text-center py-4 active:scale-95 border-t border-white/5 pt-8">
-                    Abandonar Proceso
-                </button>
+            {isCreateModalOpen && (
+                <CreateClientModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onClientCreated={(client) => { setIsCreateModalOpen(false); onSelect(client); }}
+                    initialCedulaRuc={searchTerm.length >= 10 && /^\d+$/.test(searchTerm) ? searchTerm : undefined}
+                    initialName={searchTerm.length > 2 && !/^\d+$/.test(searchTerm) ? searchTerm : undefined}
+                    initialMode={createMode}
+                />
             )}
-
-            <CreateClientModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                onClientCreated={(c) => { setIsCreateModalOpen(false); onSelect(c); }}
-                initialName={!/^\d+$/.test(searchTerm) ? searchTerm.toUpperCase() : ''}
-                initialCedulaRuc={/^\d+$/.test(searchTerm) ? searchTerm : ''}
-                initialMode={hideQuickButtons ? 'SRI' : createMode}
-                isLocked={hideQuickButtons}
-            />
-        </div >
+        </div>
     );
 };
 

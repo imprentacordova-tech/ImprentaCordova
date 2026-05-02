@@ -89,7 +89,7 @@ const ReciboEpson: React.FC = () => {
         else alert("Cliente sin contacto.");
     };
 
-    if (dataLoading) return <div className="h-screen bg-slate-900 flex items-center justify-center"><Loader2Icon className="animate-spin text-gold-500" /></div>;
+    if (dataLoading) return <div className="h-screen bg-slate-900 flex items-center justify-center"><Loader2Icon className="animate-spin text-brand-blue" /></div>;
     if (!trabajo || !cliente) return <div className="h-screen bg-slate-900 flex items-center justify-center text-white">404_DATA_NOT_FOUND</div>;
 
     const fecha = new Date(trabajo.fechaEntrada);
@@ -107,7 +107,7 @@ const ReciboEpson: React.FC = () => {
                     #recibo-epson-canvas { box-shadow: none !important; transform: none !important; }
                 }
                 .recibo-font { font-family: 'Inter', 'Segoe UI', sans-serif; }
-                .gold-border { border: 1px solid #D4AF37; }
+                .blue-border { border: 1px solid #0EA5E9; }
                 .perforation { border-top: 2px dashed #e2e8f0; position: relative; }
                 .perforation::after {
                     content: '✂️ CORTE PARA SEPARAR COPIAS';
@@ -129,10 +129,10 @@ const ReciboEpson: React.FC = () => {
                 <button onClick={() => navigate(-1)} className="p-3 hover:bg-slate-100 rounded-2xl transition-all"><ArrowLeftIcon className="w-5 h-5 text-slate-600"/></button>
                 <button onClick={handleWhatsApp} className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-green-600 transition-all"><WhatsAppIcon className="w-4 h-4"/> WhatsApp</button>
                 <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-black transition-all"><ArrowDownTrayIcon className="w-4 h-4"/> PDF</button>
-                <button onClick={handlePrint} className="flex items-center gap-2 bg-amber-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-amber-600 transition-all shadow-gold-glow"><PrinterIcon className="w-4 h-4"/> Imprimir</button>
+                <button onClick={handlePrint} className="flex items-center gap-2 bg-brand-blue text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-blue-600 transition-all shadow-blue-glow-sm"><PrinterIcon className="w-4 h-4"/> Imprimir</button>
                 <button 
                     onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
-                    className={`ml-auto px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-liquid-gold text-brand-dark border-liquid-gold' : 'bg-transparent text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                    className={`ml-auto px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue shadow-blue-glow-sm' : 'bg-transparent text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                 >
                     {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
                 </button>
@@ -193,7 +193,7 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc, 
                         <span className="text-[6px] font-black uppercase tracking-[0.3em] opacity-50">ORDEN_CONTROL</span>
                         <span className="text-[18px] font-black tracking-tighter leading-none">#{ordenStr}</span>
                     </div>
-                    <p className="text-[6px] font-black text-slate-400 mt-1 uppercase tracking-widest italic">{isOperator ? 'COPIA OPERADOR' : 'ORIGINAL CLIENTE'}</p>
+                    <p className="text-[6px] font-black text-slate-400 mt-1 uppercase tracking-widest">{isOperator ? 'COPIA OPERADOR' : 'ORIGINAL CLIENTE'}</p>
                 </div>
             </div>
 
@@ -261,7 +261,7 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc, 
                             </span>
                         )}
                     </div>
-                    <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1 italic">
+                    <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1">
                         {cleanDetail || 'TRABAJO SEGÚN ARTE FINAL APROBADO POR EL CLIENTE.'}
                     </p>
                     
@@ -284,23 +284,23 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc, 
                 <div className={`col-span-4 rounded-2xl p-4 text-white flex flex-col justify-between shadow-lg ${isOperator ? 'bg-slate-800' : 'bg-slate-950'}`}>
                     <div className="space-y-1.5">
                         <div className="flex justify-between items-center opacity-70">
-                            <span className="text-[6px] font-black uppercase tracking-widest italic">VALOR TOTAL</span>
+                            <span className="text-[6px] font-black uppercase tracking-widest">VALOR TOTAL</span>
                             <span className="text-[9px] font-black">{formatCurrency(trabajo.precio)}</span>
                         </div>
                         <div className="flex justify-between items-center text-emerald-400">
-                            <span className="text-[6px] font-black uppercase tracking-widest italic">ABONO</span>
+                            <span className="text-[6px] font-black uppercase tracking-widest">ABONO</span>
                             <span className="text-[9px] font-black">-{formatCurrency(trabajo.abono)}</span>
                         </div>
                         <div className="h-[0.5px] bg-white/10 my-1"></div>
                         <div className="flex flex-col items-end">
-                            <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest mb-0.5 italic">SALDO PENDIENTE</span>
-                            <span className="text-[20px] font-black text-amber-400 tracking-tighter leading-none">${trabajo.saldo.toFixed(2)}</span>
+                            <span className="text-[7px] font-black text-brand-blue uppercase tracking-widest mb-0.5">SALDO PENDIENTE</span>
+                            <span className="text-[20px] font-black text-white tracking-tighter leading-none">${trabajo.saldo.toFixed(2)}</span>
                         </div>
                     </div>
 
                     <div className="mt-2 flex items-center justify-between gap-2 bg-white/5 p-1.5 rounded-xl border border-white/5">
                         <img src={qrSrc} alt="QR" className="w-8 h-8 bg-white p-0.5 rounded-lg" />
-                        <div className="text-[5px] font-black text-white/40 uppercase tracking-tighter leading-none text-right italic">
+                        <div className="text-[5px] font-black text-white/40 uppercase tracking-tighter leading-none text-right">
                             RASTREO_VIRTUAL<br/>ELITE_CORE_v4.0
                         </div>
                     </div>
@@ -311,15 +311,15 @@ const ReceiptBlock = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc, 
             <div className="flex justify-between items-end mt-2 px-2">
                 <div className="text-center w-28">
                     <div className="h-[0.5px] bg-slate-300 w-full mb-1"></div>
-                    <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest italic">Responsable: {trabajo.responsable}</p>
+                    <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest">Responsable: {trabajo.responsable}</p>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                    <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase italic">Imprenta Córdova</p>
+                    <p className="text-[6px] font-black text-slate-300 tracking-[0.4em] uppercase">Imprenta Córdova</p>
                     <div className="text-[5px] font-black bg-slate-100 text-slate-500 px-3 py-0.5 rounded-full uppercase tracking-widest">{fecha.toLocaleDateString()}</div>
                 </div>
                 <div className="text-center w-28">
                     <div className="h-[0.5px] bg-slate-300 w-full mb-1"></div>
-                    <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest italic">Recibí Conforme</p>
+                    <p className="text-[5px] font-black text-slate-400 uppercase tracking-widest">Recibí Conforme</p>
                 </div>
             </div>
         </div>

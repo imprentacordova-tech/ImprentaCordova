@@ -128,41 +128,41 @@ const Catalog: React.FC = () => {
   });
 
   return (
-    <section id="catalog" className="py-32 bg-brand-dark relative overflow-hidden">
+    <section id="catalog" className="py-32 bg-white relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-liquid-gold/5 blur-[160px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-red/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-blue/5 blur-[160px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-slate-200/20 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
         
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 mb-20">
             <div className="space-y-6">
-                <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-liquid-gold shadow-gold-glow-soft">
+                <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-brand-blue shadow-sm">
                     <SparklesIcon className="w-3.5 h-3.5" />
                     <span className="text-[9px] font-black uppercase tracking-[0.4em]">Archivo de Activos Gráficos</span>
                 </div>
-                <h2 className="text-5xl md:text-7xl font-display font-black text-white tracking-[-0.04em] uppercase italic leading-none">
-                    CATÁLOGO <br /> <span className="text-white/20 not-italic font-editorial font-normal">ELITE</span>
+                <h2 className="text-5xl md:text-7xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
+                    CATÁLOGO <br /> <span className="text-slate-200 not-italic font-editorial font-normal">ELITE</span>
                 </h2>
             </div>
-            <p className="text-slate-500 max-w-sm text-base font-light italic leading-relaxed border-l border-white/10 pl-6">
+            <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed border-l border-slate-200 pl-6">
                 Explora nuestra selección de servicios industriales y soluciones fiscales autorizadas. Precisión técnica en cada pieza.
             </p>
         </div>
 
         {/* Filter Bar */}
-        <div className="flex flex-col xl:flex-row justify-between items-center mb-16 gap-8 bg-white/[0.02] border border-white/5 p-4 rounded-[2.5rem] backdrop-blur-xl">
+        <div className="flex flex-col xl:flex-row justify-between items-center mb-16 gap-8 bg-slate-50 border border-slate-200 p-4 rounded-[2.5rem]">
           
           <div className="flex flex-wrap justify-center gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-500 italic ${
+                className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${
                   selectedCategory === cat 
-                    ? 'bg-liquid-gold text-brand-dark shadow-gold-glow scale-105' 
-                    : 'bg-white/5 text-slate-400 hover:bg-white/10 border border-white/5'
+                    ? 'bg-brand-blue text-white shadow-blue-glow-sm scale-105' 
+                    : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'
                 }`}
               >
                 {cat === 'Favoritos' ? <span className="flex items-center gap-2"><HeartIcon className="w-3 h-3"/> Favoritos</span> : cat}
@@ -172,14 +172,14 @@ const Catalog: React.FC = () => {
 
           <div className="relative w-full xl:w-96">
             <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-slate-500" />
+              <Search className="h-4 w-4 text-slate-400" />
             </div>
             <input
               type="text"
               placeholder="BUSCAR EN LA BÓVEDA..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-14 pr-6 py-4 border-white/10 rounded-full leading-5 bg-black/40 text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-liquid-gold focus:border-transparent transition-all shadow-inner text-[10px] font-black uppercase tracking-widest"
+              className="block w-full pl-14 pr-6 py-4 border-slate-200 rounded-full leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-transparent transition-all shadow-sm text-[10px] font-black uppercase tracking-widest"
             />
           </div>
         </div>
@@ -198,27 +198,27 @@ const Catalog: React.FC = () => {
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.5, delay: i * 0.05 }}
                     key={product.id} 
-                    className="group relative bg-white/[0.01] border border-white/5 rounded-[2.5rem] hover:border-liquid-gold/20 transition-all duration-700 flex flex-col h-full overflow-hidden shadow-luxury"
+                    className="group relative bg-white border border-slate-100 rounded-[2.5rem] hover:border-brand-blue/30 transition-all duration-700 flex flex-col h-full overflow-hidden shadow-sm hover:shadow-xl"
                   >
                     {/* Header Image */}
-                    <div className="h-64 bg-black/40 overflow-hidden relative">
+                    <div className="h-64 bg-slate-100 overflow-hidden relative">
                       <img 
                         src={product.imagenUrl} 
                         alt={product.nombre} 
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-[2s] ease-out"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-all duration-[2s] ease-out"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent" />
                       
                       {/* Floating Actions */}
                       <div className="absolute top-6 right-6 z-10 flex flex-col gap-3">
                         <button 
                             onClick={(e) => toggleFavorite(e, product.id)}
-                            className="bg-black/60 backdrop-blur-md p-2.5 rounded-full border border-white/10 shadow-xl hover:scale-110 transition-transform group/heart"
+                            className="bg-white/80 backdrop-blur-md p-2.5 rounded-full border border-slate-200 shadow-lg hover:scale-110 transition-transform group/heart"
                         >
                             <HeartIcon className={`w-4 h-4 transition-colors ${isFavorite ? 'text-red-500 fill-red-500' : 'text-slate-400 group-hover/heart:text-red-400'}`} />
                         </button>
                         {product.isPopular && (
-                          <div className="bg-liquid-gold text-brand-dark text-[8px] font-black px-4 py-1.5 rounded-full shadow-gold-glow flex items-center gap-1.5 uppercase tracking-widest italic">
+                          <div className="bg-brand-blue text-white text-[8px] font-black px-4 py-1.5 rounded-full shadow-blue-glow-sm flex items-center gap-1.5 uppercase tracking-widest">
                               <Star className="w-3 h-3 fill-current" />
                               Destacado
                           </div>
@@ -226,7 +226,7 @@ const Catalog: React.FC = () => {
                       </div>
 
                       <div className="absolute bottom-6 left-6">
-                        <span className="text-[9px] font-black text-liquid-gold/80 bg-white/5 border border-white/10 px-3 py-1 rounded-full backdrop-blur-md uppercase tracking-[0.2em] italic">
+                        <span className="text-[9px] font-black text-brand-blue bg-white/90 border border-brand-blue/20 px-3 py-1 rounded-full backdrop-blur-md uppercase tracking-[0.2em]">
                           {product.categoria}
                         </span>
                       </div>
@@ -234,17 +234,17 @@ const Catalog: React.FC = () => {
 
                     {/* Content */}
                     <div className="p-8 flex-1 flex flex-col gap-4">
-                      <h3 className="text-2xl font-display font-black text-white tracking-[-0.04em] leading-tight uppercase italic group-hover:text-liquid-gold transition-colors">
+                      <h3 className="text-2xl font-display font-black text-slate-900 tracking-[-0.04em] leading-tight uppercase group-hover:text-brand-blue transition-colors">
                         {product.nombre}
                       </h3>
-                      <p className="text-slate-500 text-sm font-light italic leading-relaxed flex-grow">
+                      <p className="text-slate-500 text-sm font-light leading-relaxed flex-grow">
                         {product.descripcion}
                       </p>
                       
-                      <div className="space-y-2 py-4 border-y border-white/5">
+                      <div className="space-y-2 py-4 border-y border-slate-50">
                         {product.specs?.slice(0, 3).map((spec, idx) => (
-                          <div key={idx} className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wide">
-                            <CheckCircle className="w-3 h-3 text-liquid-gold mr-3 flex-shrink-0" />
+                          <div key={idx} className="flex items-center text-[10px] text-slate-600 font-bold uppercase tracking-wide">
+                            <CheckCircle className="w-3 h-3 text-brand-blue mr-3 flex-shrink-0" />
                             <span>{spec}</span>
                           </div>
                         ))}
@@ -252,17 +252,17 @@ const Catalog: React.FC = () => {
 
                       <div className="flex items-center justify-between pt-2">
                         <div className="space-y-1">
-                          <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Inversión Referencial</p>
-                          <p className="text-2xl font-black text-white italic tracking-tighter">
+                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Inversión Referencial</p>
+                          <p className="text-2xl font-black text-slate-900 tracking-tighter">
                             ${product.precio.toFixed(2)} 
-                            <span className="text-[10px] font-bold text-slate-600 ml-2 not-italic">/ {product.unit}</span>
+                            <span className="text-[10px] font-bold text-slate-400 ml-2">/ {product.unit}</span>
                           </p>
                         </div>
                         <a 
                           href={`https://wa.me/593993083943?text=Hola,%20me%20interesa%20cotizar%20${encodeURIComponent(product.nombre)}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-liquid-gold hover:text-brand-dark hover:border-liquid-gold transition-all duration-500 group/btn"
+                          className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center text-slate-900 hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all duration-500 group/btn"
                         >
                           <ArrowRightIcon className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                         </a>
@@ -275,20 +275,20 @@ const Catalog: React.FC = () => {
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="col-span-full flex flex-col items-center justify-center py-24 bg-white/[0.01] rounded-[3rem] border border-dashed border-white/10"
+                className="col-span-full flex flex-col items-center justify-center py-24 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200"
               >
-                <div className="p-6 bg-white/5 rounded-full mb-6">
-                  <Filter className="h-10 w-10 text-slate-600" />
+                <div className="p-6 bg-white rounded-full mb-6 shadow-sm">
+                  <Filter className="h-10 w-10 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-black text-white uppercase tracking-widest italic">
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">
                     {selectedCategory === 'Favoritos' ? 'Bóveda Vacía' : 'Sin Coincidencias'}
                 </h3>
-                <p className="text-slate-500 mt-2 mb-8 font-light italic">
+                <p className="text-slate-500 mt-2 mb-8 font-light">
                     {selectedCategory === 'Favoritos' ? 'Marca activos con el corazón para guardarlos.' : 'Ajusta los filtros de búsqueda.'}
                 </p>
                 <button 
                   onClick={() => {setSearchTerm(''); setSelectedCategory('Todos');}}
-                  className="px-8 py-3 bg-white/5 border border-white/10 text-liquid-gold font-black text-[10px] uppercase tracking-[0.3em] rounded-full hover:bg-white/10 transition-all"
+                  className="px-8 py-3 bg-white border border-slate-200 text-brand-blue font-black text-[10px] uppercase tracking-[0.3em] rounded-full hover:bg-slate-50 transition-all shadow-sm"
                 >
                   Restablecer Protocolos
                 </button>

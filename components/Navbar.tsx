@@ -31,13 +31,13 @@ const Navbar: React.FC = () => {
     return (
         <>
             {/* ── Ticker de Telemetría (Cinta de Seguridad Industrial) ── */}
-            <div className="fixed top-0 inset-x-0 z-[160] h-10 bg-brand-dark flex items-center justify-center overflow-hidden px-6 border-b border-white/5">
+            <div className="fixed top-0 inset-x-0 z-[160] h-10 bg-slate-900 flex items-center justify-center overflow-hidden px-6 border-b border-white/5">
                 <div className="absolute inset-0 bg-architect-grid opacity-[0.05] pointer-events-none" />
                 <div className="flex items-center gap-10 text-white/40 relative z-10 whitespace-nowrap animate-marquee md:animate-none">
                     <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.5em] italic">
-                            IMPRENTA CÓRDOVA <span className="mx-2 opacity-20">//</span> <span className="text-liquid-gold">ESTÁNDAR_ELITE_V4.2</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse shadow-blue-glow" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.5em]">
+                            IMPRENTA CÓRDOVA <span className="mx-2 opacity-20">//</span> <span className="text-brand-blue">ESTÁNDAR_PRECISION_V5.0</span>
                         </span>
                     </div>
                     <div className="hidden lg:flex items-center gap-6 text-[8px] font-mono uppercase tracking-[0.4em]">
@@ -52,7 +52,7 @@ const Navbar: React.FC = () => {
             <nav
                 className={`fixed top-10 inset-x-0 z-[150] transition-all duration-700 ${
                     scrolled
-                        ? 'bg-brand-dark/95 backdrop-blur-3xl border-b border-white/10 shadow-2xl py-3'
+                        ? 'bg-white/80 backdrop-blur-3xl border-b border-slate-200 shadow-sm py-3'
                         : 'bg-transparent py-6'
                 }`}
             >
@@ -65,12 +65,12 @@ const Navbar: React.FC = () => {
                             className="group flex items-center gap-5 shrink-0 transition-transform hover:scale-105"
                         >
                             <div className="relative">
-                                <CordovaLogo className="h-10 w-auto brightness-0 invert group-hover:scale-110 transition-all duration-1000" />
-                                <div className="absolute -inset-3 bg-liquid-gold/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <CordovaLogo className="h-10 w-auto brightness-0 group-hover:scale-110 transition-all duration-1000" />
+                                <div className="absolute -inset-3 bg-brand-blue/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <div className="flex flex-col leading-none">
-                                <span className="font-black text-2xl italic text-white tracking-tighter">CÓRDOVA<span className="text-liquid-gold opacity-50">.</span></span>
-                                <span className="font-black text-[9px] text-slate-500 tracking-[0.5em] uppercase italic">Industrial Hub</span>
+                                <span className="font-black text-2xl text-slate-900 tracking-tighter">CÓRDOVA<span className="text-brand-blue opacity-50">.</span></span>
+                                <span className="font-black text-[9px] text-slate-400 tracking-[0.5em] uppercase">Industrial Hub</span>
                             </div>
                         </Link>
 
@@ -82,18 +82,18 @@ const Navbar: React.FC = () => {
                                     <Link
                                         key={link.name}
                                         to={link.href}
-                                        className={`group relative px-8 py-3 text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 italic ${
-                                            isActive ? 'text-liquid-gold' : 'text-slate-400 hover:text-white'
+                                        className={`group relative px-8 py-3 text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 ${
+                                            isActive ? 'text-brand-blue' : 'text-slate-400 hover:text-slate-900'
                                         }`}
                                     >
                                         <span className="relative z-10">{link.name}</span>
                                         {isActive && (
                                             <motion.div 
                                                 layoutId="navGlow"
-                                                className="absolute inset-0 bg-liquid-gold/5 rounded-xl border border-liquid-gold/20 shadow-gold-glow-soft"
+                                                className="absolute inset-0 bg-brand-blue/5 rounded-xl border border-brand-blue/10 shadow-blue-glow-soft"
                                             />
                                         )}
-                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-liquid-gold transition-all duration-500 group-hover:w-1/2 opacity-0 group-hover:opacity-100" />
+                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-brand-blue transition-all duration-500 group-hover:w-1/2 opacity-0 group-hover:opacity-100" />
                                     </Link>
                                 );
                             })}
@@ -103,14 +103,14 @@ const Navbar: React.FC = () => {
                         <div className="flex items-center gap-5">
                             <Link 
                                 to="/nuevo-pedido" 
-                                className="hidden md:flex items-center gap-4 px-10 py-5 bg-liquid-gold text-brand-dark rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.05] active:scale-95 transition-all shadow-gold-glow italic"
+                                className="hidden md:flex items-center gap-4 px-10 py-5 bg-brand-blue text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.05] active:scale-95 transition-all shadow-blue-glow"
                             >
                                 <SparklesIcon className="w-5 h-5" /> NUEVA_MISIÓN
                             </Link>
 
                             <button
                                 onClick={() => setIsOpen(true)}
-                                className="p-5 bg-white/5 border border-white/10 rounded-2xl text-slate-500 hover:text-white hover:border-liquid-gold/30 transition-all active:scale-90 lg:hidden group"
+                                className="p-5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 hover:border-brand-blue/30 transition-all active:scale-90 lg:hidden group"
                             >
                                 <MenuIcon className="w-6 h-6 group-hover:rotate-180 transition-transform duration-700" />
                             </button>
@@ -127,18 +127,18 @@ const Navbar: React.FC = () => {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[200] bg-brand-dark/98 backdrop-blur-3xl p-10 flex flex-col justify-between overflow-hidden"
+                        className="fixed inset-0 z-[200] bg-white backdrop-blur-3xl p-10 flex flex-col justify-between overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-architect-grid opacity-[0.05] pointer-events-none" />
                         
                         <div className="flex justify-between items-center relative z-10">
                             <div className="flex items-center gap-4">
-                                <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
-                                <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">ADMIN_TERMINAL_V4</span>
+                                <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse shadow-blue-glow" />
+                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.6em]">ADMIN_TERMINAL_V5</span>
                             </div>
                             <button 
                                 onClick={() => setIsOpen(false)}
-                                className="p-6 bg-white/5 border border-white/10 rounded-2xl text-slate-500 hover:text-rose-500 transition-colors"
+                                className="p-6 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-rose-500 transition-colors"
                             >
                                 <CloseIcon className="w-8 h-8" />
                             </button>
@@ -155,30 +155,30 @@ const Navbar: React.FC = () => {
                                     <Link
                                         to={link.href}
                                         onClick={() => setIsOpen(false)}
-                                        className="group flex items-center justify-between text-5xl md:text-7xl font-black text-white uppercase tracking-tighter italic hover:text-liquid-gold transition-all"
+                                        className="group flex items-center justify-between text-5xl md:text-7xl font-black text-slate-900 uppercase tracking-tighter hover:text-brand-blue transition-all"
                                     >
                                         <span>{link.name}</span>
-                                        <ArrowRightIcon className="w-10 h-10 opacity-0 -translate-x-10 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 text-liquid-gold" />
+                                        <ArrowRightIcon className="w-10 h-10 opacity-0 -translate-x-10 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 text-brand-blue" />
                                     </Link>
                                 </motion.div>
                             ))}
                         </div>
 
-                        <div className="pt-10 border-t border-white/10 relative z-10 space-y-10">
+                        <div className="pt-10 border-t border-slate-100 relative z-10 space-y-10">
                             <Link
                                 to="/nuevo-pedido"
                                 onClick={() => setIsOpen(false)}
-                                className="w-full flex items-center justify-center gap-8 py-9 bg-liquid-gold text-brand-dark rounded-[2.5rem] text-[13px] font-black uppercase tracking-[0.5em] italic shadow-gold-glow active:scale-95"
+                                className="w-full flex items-center justify-center gap-8 py-9 bg-brand-blue text-white rounded-[2.5rem] text-[13px] font-black uppercase tracking-[0.5em] shadow-blue-glow active:scale-95"
                             >
                                 <SparklesIcon className="w-8 h-8" /> NUEVA_MISIÓN_DIRECTA
                             </Link>
                             
                             <div className="flex justify-between items-center px-4">
                                 <div className="flex items-center gap-3">
-                                    <FingerPrintIcon className="w-5 h-5 text-slate-700" />
-                                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest italic">AUTH_CONFIRMED</span>
+                                    <FingerPrintIcon className="w-5 h-5 text-slate-300" />
+                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">AUTH_CONFIRMED</span>
                                 </div>
-                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-[0.4em] italic">V4.2.0_ELITE</span>
+                                <span className="text-[9px] font-black text-slate-200 uppercase tracking-[0.4em]">V5.0.0_PRECISION</span>
                             </div>
                         </div>
                     </motion.div>

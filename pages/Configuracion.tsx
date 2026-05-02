@@ -8,14 +8,14 @@ import {
     ArrowDownTrayIcon, SearchIcon, Loader2Icon,
     EyeIcon, EyeSlashIcon, LockClosedIcon, 
     SparklesIcon, CloudIcon, PrinterIcon,
-    KeyIcon, ServerIcon, CpuIcon, FingerPrintIcon
+    KeyIcon, ServerIcon, CpuIcon, FingerPrintIcon,
+    ActivityIcon, SettingsIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Papa from 'papaparse';
-import { supabase } from '../services/supabase';
 import { createClient } from '@supabase/supabase-js';
 
-// --- LUXURY CORE COMPONENTS ---
+// --- PRECISION LIGHT COMPONENTS ---
 
 const ControlInput: React.FC<{
     label: string, 
@@ -26,7 +26,7 @@ const ControlInput: React.FC<{
     type?: string
 }> = ({ label, name, value, onChange, maxLength, type = "text" }) => (
     <div className="group/field relative">
-        <label htmlFor={name} className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-3 ml-1 group-focus-within/field:text-liquid-gold transition-colors">
+        <label htmlFor={name} className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3 ml-1 group-focus-within/field:text-brand-blue transition-colors">
             {label}
         </label>
         <div className="relative">
@@ -37,10 +37,10 @@ const ControlInput: React.FC<{
                 value={value}
                 onChange={onChange}
                 maxLength={maxLength}
-                className="input-atelier w-full pr-12 bg-black/40 border-white/5 focus:border-liquid-gold/50 transition-all duration-500 font-bold tracking-tight text-white/90"
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all duration-300 font-bold tracking-tight text-slate-900 placeholder:text-slate-300"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within/field:opacity-100 transition-all duration-500">
-                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse"></div>
             </div>
         </div>
     </div>
@@ -51,16 +51,15 @@ const ControlHeader: React.FC<{
     title: string, 
     subtitle: string, 
     colorClass?: string 
-}> = ({ icon, title, subtitle, colorClass = "from-liquid-gold/20 to-transparent" }) => (
+}> = ({ icon, title, subtitle, colorClass = "bg-brand-blue/10" }) => (
     <div className="flex items-center gap-6 mb-12 relative">
-        <div className={`p-4 rounded-2xl bg-gradient-to-br ${colorClass} border border-white/10 shadow-2xl flex items-center justify-center text-liquid-gold backdrop-blur-xl`}>
+        <div className={`p-4 rounded-2xl ${colorClass} border border-slate-100 shadow-sm flex items-center justify-center text-brand-blue`}>
             {icon}
         </div>
         <div>
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight italic">{title}</h2>
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] mt-1">{subtitle}</p>
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{title}</h2>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">{subtitle}</p>
         </div>
-        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-liquid-gold rounded-full blur-[2px] opacity-50"></div>
     </div>
 );
 
@@ -138,32 +137,23 @@ const ConfiguracionPage: React.FC = () => {
             const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
             if (lines.length < 2) return;
 
-            // Detectar delimitador
             const firstLine = lines[0];
             const delimiter = firstLine.includes(';') ? ';' : ',';
-            
             const headers = firstLine.toLowerCase().split(delimiter).map(h => h.trim().replace(/"/g, ''));
             
-            // Chrome Headers: name, url, username, password
             let idxUser = headers.indexOf('username');
             let idxPass = headers.indexOf('password');
             let idxName = headers.indexOf('name');
 
-            // Fallback si no hay cabeceras exactas (asumir formato Chrome: name,url,username,password)
             if (idxUser === -1 && headers.length >= 4) {
-                // Si la tercera columna parece un RUC o username
-                idxName = 0;
-                idxUser = 2;
-                idxPass = 3;
+                idxName = 0; idxUser = 2; idxPass = 3;
             }
 
             const creds: SriCredential[] = [];
             lines.slice(1).forEach(line => {
-                // Regex robusto para CSV que maneja comillas y campos vacíos
                 const parts: string[] = [];
                 let current = "";
                 let inQuotes = false;
-                
                 for (let i = 0; i < line.length; i++) {
                     const char = line[i];
                     if (char === '"') inQuotes = !inQuotes;
@@ -178,11 +168,10 @@ const ConfiguracionPage: React.FC = () => {
 
                 if (parts.length > Math.max(idxUser, idxPass)) {
                     const rucRaw = parts[idxUser]?.trim() || '';
-                    const ruc = rucRaw.replace(/\D/g, ''); // Solo números
+                    const ruc = rucRaw.replace(/\D/g, '');
                     const pass = parts[idxPass]?.trim() || '';
                     const name = parts[idxName]?.trim() || '';
 
-                    // Validar RUC (10 o 13 dígitos)
                     if ((ruc.length === 10 || ruc.length === 13) && pass) {
                         creds.push({ 
                             ruc, 
@@ -215,11 +204,7 @@ const ConfiguracionPage: React.FC = () => {
         setIsImportingSri(true);
         setSriImportProgress(0);
         
-        // El usuario proporcionó el service_role key, lo usaremos para hacer el bulk insert saltando RLS
-        // ya que insertupsert de 1.5M de registros requiere poder fuerte
         const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
-        
-        // Creamos un cliente temporal con service_role para esta importación pesada
         const supaAdmin = createClient(import.meta.env.VITE_SUPABASE_URL, SERVICE_ROLE_KEY);
 
         let batch: any[] = [];
@@ -230,13 +215,10 @@ const ConfiguracionPage: React.FC = () => {
             skipEmptyLines: true,
             step: async function(row, parser) {
                 parser.pause();
-                
                 const data: any = row.data;
                 const ruc = data['NUMERO_RUC']?.trim();
                 const razon = data['RAZON_SOCIAL']?.trim();
-                
                 if (ruc && razon) {
-                    // Evitar duplicados en el mismo batch (el CSV del SRI tiene múltiples establecimientos por RUC)
                     if (!batch.some(item => item.ruc === ruc)) {
                         batch.push({
                             ruc: ruc,
@@ -250,16 +232,13 @@ const ConfiguracionPage: React.FC = () => {
                         });
                     }
                 }
-                
                 totalProcessed++;
-                
                 if (batch.length >= 1000) {
                     const { error } = await supaAdmin.from('sri_padron_el_oro').upsert(batch, { onConflict: 'ruc' });
                     if(error) console.error("Error upserting SRI chunk:", error);
                     batch = [];
                     setSriImportProgress(totalProcessed);
                 }
-                
                 parser.resume();
             },
             complete: async function() {
@@ -301,38 +280,31 @@ const ConfiguracionPage: React.FC = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="max-w-[1600px] mx-auto space-y-16 pb-40 px-6 sm:px-12 relative"
+            className="max-w-[1600px] mx-auto space-y-16 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in"
         >
-            {/* --- CINEMATIC AMBIANCE --- */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-liquid-gold/5 blur-[150px] animate-pulse"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-liquid-gold/5 blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-            </div>
-
             {/* --- COMMAND HEADER --- */}
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-white/5 pb-10">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-slate-200 pb-10">
                 <div>
                     <div className="flex items-center gap-4 mb-4">
                         <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                         </div>
-                        <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Arquitectura del Sistema</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Centro de Mando</span>
                     </div>
-                    <h1 className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
-                        Centro <span className="text-gold-gradient">de Mando</span>
+                    <h1 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
+                        Configuración <span className="text-brand-blue">Estructural</span>
                     </h1>
                 </div>
                 
-                <div className="flex items-center gap-6 bg-black/40 p-5 rounded-3xl border border-white/5 backdrop-blur-xl shadow-2xl">
+                <div className="flex items-center gap-6 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
                     <div className="flex flex-col items-end">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Estado de Servidor</span>
-                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tighter italic">Operacional • Nodo Global</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status del Servidor</span>
+                        <span className="text-[11px] font-black text-emerald-500 uppercase tracking-tighter">OPERACIONAL • CLOUD READY</span>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center relative">
-                        <div className="absolute inset-0 bg-emerald-500 blur-md opacity-20 animate-pulse"></div>
-                        <ServerIcon className="w-6 h-6 text-emerald-500" />
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 border border-emerald-100 flex items-center justify-center relative">
+                        <ServerIcon className="w-6 h-6" />
                     </div>
                 </div>
             </motion.div>
@@ -344,18 +316,15 @@ const ConfiguracionPage: React.FC = () => {
                 <div className="xl:col-span-8 space-y-12">
                     
                     {/* SYSTEM INITIALIZATION CARD */}
-                    <motion.div variants={itemVariants} className="glass-card-luxury p-10 overflow-hidden relative group">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/5 blur-[80px] -mr-40 -mt-40 group-hover:scale-125 transition-transform duration-[2000ms]"></div>
-                        
+                    <motion.div variants={itemVariants} className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
                         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 relative z-10">
                             <div className="flex items-center gap-8">
-                                <div className="p-6 rounded-3xl bg-liquid-gold text-black shadow-gold-glow-strong overflow-hidden relative group/icon">
-                                    <SparklesIcon className="w-10 h-10 relative z-10" />
-                                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/icon:translate-y-0 transition-transform duration-500"></div>
+                                <div className="p-6 rounded-3xl bg-slate-50 text-brand-blue border border-slate-100 flex items-center justify-center shadow-sm">
+                                    <SparklesIcon className="w-10 h-10" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-white uppercase tracking-tight italic">Catálogo Base en la Nube</h3>
-                                    <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[9px] mt-2">Restaurar el catálogo maestro de productos predeterminados</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Catálogo Maestro</h3>
+                                    <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[9px] mt-2">Sincronización de productos predeterminados</p>
                                 </div>
                             </div>
                             
@@ -363,27 +332,24 @@ const ConfiguracionPage: React.FC = () => {
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={async () => {
-                                    if (window.confirm("¿Ejecutar sincronización del catálogo maestro? Esta acción reconstruirá el inventario base.")) {
+                                    if (window.confirm("¿Ejecutar sincronización del catálogo maestro?")) {
                                         try {
                                             await seedCatalog();
-                                            logActivity(currentUser.nombre, currentUser.rol, 'CATALOG_SYNC', 'Sincronizó catálogo institucional en la nube', 'Sistema');
-                                        } catch (e) {
-                                            console.error(e);
-                                        }
+                                            logActivity(currentUser.nombre, currentUser.rol, 'CATALOG_SYNC', 'Sincronizó catálogo institucional', 'Sistema');
+                                        } catch (e) { console.error(e); }
                                     }
                                 }} 
                                 disabled={syncing}
-                                className="btn-luxury px-12 py-5 min-w-[260px] flex items-center justify-center gap-4 relative overflow-hidden group/btn"
+                                className="px-12 py-5 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-4 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                             >
-                                <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 skew-x-12"></div>
-                                {syncing ? <Loader2Icon className="animate-spin w-5 h-5"/> : <CloudIcon className="w-5 h-5"/>}
-                                <span className="relative z-10 font-black uppercase tracking-widest text-xs">Restaurar Catálogo</span>
+                                {syncing ? <Loader2Icon className="animate-spin w-4 h-4 text-brand-blue"/> : <CloudIcon className="w-4 h-4 text-brand-blue"/>}
+                                Restaurar Catálogo
                             </motion.button>
                         </div>
                     </motion.div>
 
                     {/* SETTINGS FORM */}
-                    <motion.div variants={itemVariants} className="glass-card-luxury p-12 relative overflow-hidden">
+                    <motion.div variants={itemVariants} className="bg-white p-12 rounded-[3rem] border border-slate-200 shadow-sm">
                         <form onSubmit={handleSaveGeneral} className="space-y-16">
                             
                             <div className="grid lg:grid-cols-2 gap-20">
@@ -391,18 +357,18 @@ const ConfiguracionPage: React.FC = () => {
                                 <div className="space-y-10">
                                     <ControlHeader 
                                         icon={<ShieldCheckIcon className="w-6 h-6" />} 
-                                        title="Jurisdicción Fiscal" 
-                                        subtitle="Configuración Legal y SRI"
-                                        colorClass="from-red-900/40 to-transparent"
+                                        title="Identidad Fiscal" 
+                                        subtitle="DATOS LEGALES DEL EMISOR"
+                                        colorClass="bg-brand-blue/5"
                                     />
                                     <div className="space-y-8">
-                                        <ControlInput label="Razón Social (Emisor)" name="emisorRazonSocial" value={localConfig.emisorRazonSocial} onChange={e => setLocalConfig({...localConfig, emisorRazonSocial: e.target.value})} />
-                                        <ControlInput label="RUC del Emisor" name="emisorRuc" value={localConfig.emisorRuc} onChange={e => setLocalConfig({...localConfig, emisorRuc: e.target.value})} maxLength={13} />
+                                        <ControlInput label="Razón Social" name="emisorRazonSocial" value={localConfig.emisorRazonSocial} onChange={e => setLocalConfig({...localConfig, emisorRazonSocial: e.target.value})} />
+                                        <ControlInput label="RUC Emisor" name="emisorRuc" value={localConfig.emisorRuc} onChange={e => setLocalConfig({...localConfig, emisorRuc: e.target.value})} maxLength={13} />
                                         <div className="grid grid-cols-2 gap-8">
-                                            <ControlInput label="Cód. Establecimiento" name="emisorEstablecimiento" value={localConfig.emisorEstablecimiento} onChange={e => setLocalConfig({...localConfig, emisorEstablecimiento: e.target.value})} maxLength={3} />
-                                            <ControlInput label="Punto de Emisión" name="emisorPuntoEmision" value={localConfig.emisorPuntoEmision} onChange={e => setLocalConfig({...localConfig, emisorPuntoEmision: e.target.value})} maxLength={3} />
+                                            <ControlInput label="Establecimiento" name="emisorEstablecimiento" value={localConfig.emisorEstablecimiento} onChange={e => setLocalConfig({...localConfig, emisorEstablecimiento: e.target.value})} maxLength={3} />
+                                            <ControlInput label="Punto Emisión" name="emisorPuntoEmision" value={localConfig.emisorPuntoEmision} onChange={e => setLocalConfig({...localConfig, emisorPuntoEmision: e.target.value})} maxLength={3} />
                                         </div>
-                                        <ControlInput label="Secuencial Inicial Facturas" type="number" name="secuencialInicio" value={localConfig.secuencialInicio} onChange={e => setLocalConfig({...localConfig, secuencialInicio: parseInt(e.target.value) || 1})} />
+                                        <ControlInput label="Secuencial Inicio" type="number" name="secuencialInicio" value={localConfig.secuencialInicio} onChange={e => setLocalConfig({...localConfig, secuencialInicio: parseInt(e.target.value) || 1})} />
                                     </div>
                                 </div>
 
@@ -410,50 +376,46 @@ const ConfiguracionPage: React.FC = () => {
                                 <div className="space-y-10">
                                     <ControlHeader 
                                         icon={<PrinterIcon className="w-6 h-6" />} 
-                                        title="Terminal del Taller" 
-                                        subtitle="Identificación para Órdenes Físicas"
-                                        colorClass="from-liquid-gold/20 to-transparent"
+                                        title="Perfil de Imprenta" 
+                                        subtitle="IDENTIFICACIÓN DE TALLER"
+                                        colorClass="bg-emerald-50 text-emerald-500"
                                     />
-                                    <div className="space-y-8 bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/5 relative">
-                                        <div className="absolute top-4 right-4 opacity-10">
-                                            <FingerPrintIcon className="w-12 h-12 text-liquid-gold" />
-                                        </div>
-                                        <ControlInput label="Nombre Comercial (Imprenta)" name="imprentaNombre" value={localConfig.imprentaNombre} onChange={e => setLocalConfig({...localConfig, imprentaNombre: e.target.value})} />
+                                    <div className="space-y-8 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100">
+                                        <ControlInput label="Nombre Comercial" name="imprentaNombre" value={localConfig.imprentaNombre} onChange={e => setLocalConfig({...localConfig, imprentaNombre: e.target.value})} />
                                         <div className="grid grid-cols-2 gap-8">
-                                            <ControlInput label="RUC del Taller" name="imprentaRuc" value={localConfig.imprentaRuc} onChange={e => setLocalConfig({...localConfig, imprentaRuc: e.target.value})} maxLength={13} />
-                                            <ControlInput label="Autorización SRI" name="imprentaAutorizacion" value={localConfig.imprentaAutorizacion} onChange={e => setLocalConfig({...localConfig, imprentaAutorizacion: e.target.value})} maxLength={4} />
+                                            <ControlInput label="RUC Taller" name="imprentaRuc" value={localConfig.imprentaRuc} onChange={e => setLocalConfig({...localConfig, imprentaRuc: e.target.value})} maxLength={13} />
+                                            <ControlInput label="Autorización" name="imprentaAutorizacion" value={localConfig.imprentaAutorizacion} onChange={e => setLocalConfig({...localConfig, imprentaAutorizacion: e.target.value})} maxLength={4} />
                                         </div>
-                                        <ControlInput label="Teléfono / Contacto" name="imprentaTelefono" value={localConfig.imprentaTelefono} onChange={e => setLocalConfig({...localConfig, imprentaTelefono: e.target.value})} />
+                                        <ControlInput label="Teléfono de Contacto" name="imprentaTelefono" value={localConfig.imprentaTelefono} onChange={e => setLocalConfig({...localConfig, imprentaTelefono: e.target.value})} />
                                     </div>
                                 </div>
                             </div>
 
                             {/* SUBMIT SECTION */}
-                            <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-8">
+                            <div className="pt-12 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-8">
                                 <div className="flex items-center gap-4">
                                     <AnimatePresence>
                                         {showSuccess && (
                                             <motion.div 
-                                                initial={{ opacity: 0, x: -20 }} 
-                                                animate={{ opacity: 1, x: 0 }} 
-                                                exit={{ opacity: 0, transition: { duration: 0.2 } }}
-                                                className="flex items-center gap-3 px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full"
+                                                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} 
+                                                exit={{ opacity: 0 }}
+                                                className="flex items-center gap-3 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100"
                                             >
-                                                <CheckCircleIcon className="w-4 h-4 text-emerald-500"/> 
-                                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Ajustes Guardados con Éxito</span>
+                                                <CheckCircleIcon className="w-4 h-4"/> 
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Sincronizado</span>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
-                                    <p className="text-[10px] font-bold text-slate-500 italic">Los ajustes se sincronizan automáticamente en todas las terminales.</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Consola de Administración de Parámetros Globales</p>
                                 </div>
                                 
                                 <motion.button 
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     type="submit" 
-                                    className="btn-luxury px-16 py-6 min-w-[280px]"
+                                    className="px-16 py-6 bg-brand-blue text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all"
                                 >
-                                    Guardar Configuraciones
+                                    Guardar Cambios
                                 </motion.button>
                             </div>
                         </form>
@@ -464,51 +426,49 @@ const ConfiguracionPage: React.FC = () => {
                 <div className="xl:col-span-4 space-y-12">
                     
                     {/* SRI CREDENTIALS VAULT */}
-                    <motion.div variants={itemVariants} className="glass-card-luxury overflow-hidden flex flex-col h-full bg-black/60 relative">
-                        {/* VAULT GLOW */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-liquid-gold/[0.03] to-transparent pointer-events-none"></div>
-
+                    <motion.div variants={itemVariants} className="bg-white rounded-[3rem] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+                        
                         {/* VAULT HEADER */}
-                        <div className="p-8 border-b border-white/5 bg-white/[0.01] relative z-10">
+                        <div className="p-8 border-b border-slate-100 bg-slate-50/50">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 shadow-xl shadow-emerald-500/5">
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200 text-brand-blue shadow-sm">
                                         <LockClosedIcon className="w-6 h-6" />
                                     </div>
-                                    <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Bóveda de Contraseñas SRI</h3>
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Bóveda SRI</h3>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span className="text-[8px] font-black text-emerald-500/60 uppercase tracking-widest">Cifrado Activo</span>
+                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">CIFRADO ACTIVO</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 mb-4">
+                            <div className="flex flex-col gap-3 mb-4">
                                 <input type="file" ref={fileInputRef} onChange={handleImportCSV} className="hidden" accept=".csv" />
                                 <button 
                                     onClick={() => fileInputRef.current?.click()} 
                                     disabled={isImporting} 
-                                    className="btn-atelier flex-1 py-3 border-white/10 hover:bg-white/5 text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3"
+                                    className="w-full py-4 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-600 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"
                                 >
-                                    {isImporting ? <Loader2Icon className="animate-spin w-3 h-3"/> : <ArrowDownTrayIcon className="w-3 h-3"/>}
-                                    IMPORTAR CLAVES SRI (CHROME)
+                                    {isImporting ? <Loader2Icon className="animate-spin w-4 h-4 text-brand-blue"/> : <ArrowDownTrayIcon className="w-4 h-4 text-brand-blue"/>}
+                                    Importar Claves (Chrome)
                                 </button>
                                 
                                 <input type="file" ref={sriFileInputRef} onChange={handleImportSriPadron} className="hidden" accept=".csv" />
                                 <button 
                                     onClick={() => sriFileInputRef.current?.click()} 
                                     disabled={isImportingSri} 
-                                    className="btn-luxury flex-1 py-3 border-liquid-gold/30 hover:bg-liquid-gold/10 text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3 relative overflow-hidden"
+                                    className="w-full py-4 bg-brand-blue text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-brand-blue/10 active:scale-95 transition-all"
                                 >
                                     {isImportingSri ? (
                                         <>
-                                            <Loader2Icon className="animate-spin w-3 h-3 text-liquid-gold"/>
-                                            SINCRONIZANDO ({sriImportProgress})
+                                            <Loader2Icon className="animate-spin w-4 h-4"/>
+                                            Procesando ({sriImportProgress})
                                         </>
                                     ) : (
                                         <>
-                                            <ServerIcon className="w-3 h-3 text-liquid-gold"/>
-                                            ACTUALIZAR PADRÓN SRI (108MB)
+                                            <ServerIcon className="w-4 h-4"/>
+                                            Actualizar Padrón (108MB)
                                         </>
                                     )}
                                 </button>
@@ -516,98 +476,87 @@ const ConfiguracionPage: React.FC = () => {
                         </div>
 
                         {/* VAULT SEARCH */}
-                        <div className="px-8 pt-2 relative z-10">
+                        <div className="px-8 pt-6">
                             <div className="relative group">
-                                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                                <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-blue transition-colors" />
                                 <input 
                                     type="text" 
-                                    placeholder="BUSCAR CLIENTE O RUC EN BÓVEDA..." 
+                                    placeholder="BUSCAR RUC O CLIENTE..." 
                                     value={searchTerm} 
                                     onChange={e => setSearchTerm(e.target.value)} 
-                                    className="input-atelier w-full pl-14 pr-6 py-4 bg-black/60 border-white/5 text-[11px] font-black uppercase tracking-widest"
+                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
                                 />
                             </div>
                         </div>
 
                         {/* VAULT STREAM */}
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4 relative z-10 min-h-[500px]">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4 min-h-[400px]">
                             {filteredCredentials.map(c => (
                                 <motion.div 
-                                    key={c.ruc}
-                                    layout
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-liquid-gold/30 hover:bg-white/[0.05] transition-all duration-500 group/item"
+                                    key={c.ruc} layout
+                                    className="p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-brand-blue/30 hover:bg-white hover:shadow-lg transition-all duration-300 group/item"
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-start gap-4">
-                                            <div className="p-2 rounded-lg bg-white/5 text-slate-500 group-hover/item:text-liquid-gold transition-colors">
+                                            <div className="p-2 rounded-lg bg-white border border-slate-100 text-slate-400 group-hover/item:text-brand-blue">
                                                 <FingerPrintIcon className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-tight mb-1 group-hover/item:text-liquid-gold transition-colors">
+                                                <p className="text-[12px] font-black text-slate-900 uppercase tracking-tight leading-tight mb-1">
                                                     {c.origen || 'Cliente Anónimo'}
                                                 </p>
-                                                <p className="text-[9px] font-mono font-bold text-slate-600 tracking-[0.2em] uppercase">
-                                                    RUC: {c.ruc}
+                                                <p className="text-[9px] font-mono font-bold text-slate-400 tracking-widest">
+                                                    {c.ruc}
                                                 </p>
                                             </div>
                                         </div>
                                         <button 
-                                            onClick={() => {
-                                                if(window.confirm(`Permanently wipe access node ${c.ruc}?`)) {
-                                                    deleteSriCredential(c.ruc);
-                                                }
-                                            }} 
-                                            className="p-2 text-red-500/20 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                            onClick={() => { if(window.confirm(`¿Eliminar nodo ${c.ruc}?`)) deleteSriCredential(c.ruc); }} 
+                                            className="p-2 text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all rounded-lg"
                                         >
                                             <TrashIcon className="w-4 h-4"/>
                                         </button>
                                     </div>
                                     
-                                    <div className="flex items-center gap-3">
-                                        <button 
-                                            onClick={() => togglePasswordVisibility(c.ruc)} 
-                                            className="flex-1 py-3 px-4 bg-black/60 border border-white/5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-between group/pass overflow-hidden"
-                                        >
-                                            <div className="flex items-center gap-3 overflow-hidden">
-                                                <KeyIcon className="w-3 h-3 text-slate-600 group-hover/pass:text-liquid-gold" />
-                                                {visiblePasswords.has(c.ruc) ? 
-                                                    <span className="text-[11px] font-mono font-black text-liquid-gold tracking-widest truncate">{c.password}</span> : 
-                                                    <div className="flex gap-1">
-                                                        {[1,2,3,4,5,6].map(i => <div key={i} className="w-1 h-1 rounded-full bg-slate-800"></div>)}
-                                                    </div>
-                                                }
-                                            </div>
-                                            {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-3.5 h-3.5"/> : <EyeIcon className="w-3.5 h-3.5"/>}
-                                        </button>
-                                    </div>
+                                    <button 
+                                        onClick={() => togglePasswordVisibility(c.ruc)} 
+                                        className="w-full py-3 px-4 bg-white border border-slate-100 rounded-xl text-slate-600 flex items-center justify-between group/pass"
+                                    >
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <KeyIcon className="w-3 h-3 text-slate-300 group-hover/pass:text-brand-blue" />
+                                            {visiblePasswords.has(c.ruc) ? 
+                                                <span className="text-[11px] font-mono font-black text-brand-blue tracking-widest truncate">{c.password}</span> : 
+                                                <div className="flex gap-1">
+                                                    {[1,2,3,4,5,6].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>)}
+                                                </div>
+                                            }
+                                        </div>
+                                        {visiblePasswords.has(c.ruc) ? <EyeSlashIcon className="w-4 h-4 text-slate-300"/> : <EyeIcon className="w-4 h-4 text-slate-300"/>}
+                                    </button>
                                 </motion.div>
                             ))}
-
-                            {filteredCredentials.length === 0 && (
-                                <div className="flex flex-col items-center justify-center h-[300px] opacity-20 grayscale">
-                                    <CpuIcon className="w-12 h-12 text-slate-500 mb-6" />
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.6em]">SIN CONTRASEÑAS REGISTRADAS</p>
-                                </div>
-                            )}
                         </div>
 
                         {/* VAULT FOOTER */}
-                        <div className="p-8 border-t border-white/5 bg-white/[0.01] relative z-10">
-                            <div className="p-4 rounded-xl border border-liquid-gold/10 bg-liquid-gold/5 flex gap-4">
-                                <ShieldCheckIcon className="w-5 h-5 text-liquid-gold flex-shrink-0" />
-                                <p className="text-[9px] font-bold text-slate-400 leading-relaxed italic">
-                                    Cifrado Extremo a Extremo. Tus contraseñas están resguardadas en un bóveda segura usando protocolos empresariales.
+                        <div className="p-8 border-t border-slate-100 bg-slate-50/50">
+                            <div className="p-5 rounded-2xl border border-brand-blue/10 bg-brand-blue/5 flex gap-4 items-center">
+                                <ShieldCheckIcon className="w-5 h-5 text-brand-blue flex-shrink-0" />
+                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+                                    AES-256 ENCRYPTION ENABLED
                                 </p>
                             </div>
                         </div>
                     </motion.div>
                 </div>
             </div>
+
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+            `}</style>
         </motion.div>
     );
 };
 
 export default ConfiguracionPage;
-

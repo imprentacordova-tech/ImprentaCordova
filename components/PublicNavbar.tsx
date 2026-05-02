@@ -46,7 +46,7 @@ const PublicNavbar: React.FC = () => {
                                 <div className="absolute -inset-3 bg-brand-blue/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <div className="flex flex-col leading-none">
-                                <span className="font-black text-xl italic text-slate-900 tracking-tighter uppercase">CÓRDOVA<span className="text-brand-blue">.</span></span>
+                                <span className="font-black text-xl text-slate-900 tracking-tighter uppercase">CÓRDOVA<span className="text-brand-blue">.</span></span>
                                 <span className="font-black text-[8px] text-slate-400 tracking-[0.4em] uppercase">Visual Excellence</span>
                             </div>
                         </Link>

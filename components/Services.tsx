@@ -31,8 +31,8 @@ const services = [
             'Facturas, Notas de Venta, Retenciones, Liquidaciones de compra y Guías de remisión. Autorizados y con numeración SRI.',
         icon: ShieldCheckIcon,
         imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-brand-red',
-        glow: 'shadow-[0_0_20px_rgba(225,29,72,0.3)]',
+        accent: 'text-brand-blue',
+        glow: 'shadow-[0_0_20px_rgba(59,130,246,0.2)]',
         featured: false,
         cmyk: 'M'
     },
@@ -45,8 +45,8 @@ const services = [
             'Declaraciones de IVA Mensual y Semestral, Impuesto a la Renta, Anexos Transaccionales, RUC y RISE. Tus cifras en orden.',
         icon: CalculatorIcon,
         imageUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-yellow-400',
-        glow: 'shadow-[0_0_20px_rgba(250,204,21,0.2)]',
+        accent: 'text-brand-blue',
+        glow: 'shadow-[0_0_20px_rgba(59,130,246,0.15)]',
         featured: false,
         cmyk: 'Y'
     },
@@ -73,8 +73,8 @@ const services = [
             'Terminaciones que elevan cualquier pieza al nivel de obra de arte. Lacados mate, brillos selectivos y relieves táctiles.',
         icon: SparklesIcon,
         imageUrl: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&q=80&w=800',
-        accent: 'text-liquid-gold',
-        glow: 'shadow-gold-glow',
+        accent: 'text-brand-blue',
+        glow: 'shadow-blue-glow-soft',
         featured: false,
     },
     {
@@ -107,12 +107,12 @@ const itemVariants = {
 const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, description, icon: Icon, imageUrl, accent, glow, cmyk }) => (
     <motion.div
         variants={itemVariants}
-        className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 hover:border-liquid-gold/20 transition-all duration-1000 shadow-luxury hover:-translate-y-2 min-h-[520px] flex flex-col justify-end cursor-default"
+        className="group relative overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white hover:border-brand-blue/20 transition-all duration-1000 shadow-sm hover:shadow-xl hover:-translate-y-2 min-h-[520px] flex flex-col justify-end cursor-default"
     >
         {/* CMYK Ribbon */}
         {cmyk && (
             <div className="absolute top-0 right-10 flex gap-1 z-30">
-                <div className={`w-1 h-12 ${cmyk === 'C' ? 'bg-cyan-500' : cmyk === 'M' ? 'bg-brand-red' : cmyk === 'Y' ? 'bg-yellow-400' : 'bg-white/20'} opacity-50 group-hover:opacity-100 transition-opacity`} />
+                <div className={`w-1 h-12 ${cmyk === 'C' ? 'bg-cyan-500' : cmyk === 'M' ? 'bg-brand-blue' : cmyk === 'Y' ? 'bg-yellow-400' : 'bg-slate-200'} opacity-30 group-hover:opacity-100 transition-opacity`} />
             </div>
         )}
 
@@ -121,34 +121,34 @@ const FeaturedCard: React.FC<typeof services[0]> = ({ title, subtitle, descripti
             <img
                 src={imageUrl}
                 alt={title}
-                className="w-full h-full object-cover opacity-25 mix-blend-luminosity group-hover:opacity-40 group-hover:scale-105 transition-all duration-[2s] ease-out"
+                className="w-full h-full object-cover opacity-[0.08] mix-blend-multiply group-hover:opacity-[0.12] group-hover:scale-105 transition-all duration-[2s] ease-out"
             />
         </div>
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/70 to-transparent z-10 pointer-events-none" />
-        {/* Gold glow on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/0 to-liquid-gold/0 group-hover:from-liquid-gold/5 group-hover:to-transparent transition-all duration-1000 z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent z-10 pointer-events-none" />
+        {/* Blue glow on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/0 to-brand-blue/0 group-hover:from-brand-blue/5 group-hover:to-transparent transition-all duration-1000 z-10 pointer-events-none" />
 
         <div className="relative z-20 p-10 lg:p-14 space-y-6">
             {/* Icon + badge */}
             <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:${glow} transition-all duration-500`}>
+                <div className={`w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:shadow-blue-glow-soft transition-all duration-500`}>
                     <Icon className={`w-7 h-7 ${accent}`} />
                 </div>
-                <span className={`text-[9px] font-black uppercase tracking-[0.5em] ${accent} opacity-70 italic`}>{subtitle}</span>
+                <span className={`text-[9px] font-black uppercase tracking-[0.5em] ${accent} opacity-70`}>{subtitle}</span>
             </div>
 
             <div>
-                <h3 className="text-4xl lg:text-5xl font-display font-black text-white tracking-[-0.04em] leading-none mb-4 italic">
+                <h3 className="text-4xl lg:text-5xl font-display font-black text-slate-900 tracking-[-0.04em] leading-none mb-4">
                     {title}
                 </h3>
-                <p className="text-slate-400 text-base font-light leading-relaxed max-w-md uppercase tracking-tight opacity-80">
+                <p className="text-slate-500 text-base font-light leading-relaxed max-w-md uppercase tracking-tight">
                     {description}
                 </p>
             </div>
 
             {/* CTA */}
-            <div className="pt-2 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 group-hover:text-liquid-gold transition-colors duration-500 italic">
+            <div className="pt-2 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 group-hover:text-brand-blue transition-colors duration-500">
                 <span>Solicitar Cotización</span>
                 <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -162,41 +162,41 @@ const CompactCard: React.FC<typeof services[0] & { delay?: number }> = ({
 }) => (
     <motion.div
         variants={itemVariants}
-        className="group relative overflow-hidden rounded-[2rem] border border-white/5 hover:border-white/15 transition-all duration-700 shadow-luxury hover:-translate-y-2 flex flex-col"
+        className="group relative overflow-hidden rounded-[2rem] border border-slate-100 bg-white hover:border-brand-blue/10 transition-all duration-700 shadow-sm hover:shadow-md hover:-translate-y-2 flex flex-col"
     >
         {/* CMYK Accent line */}
         {cmyk && (
-            <div className={`absolute top-0 left-0 w-full h-[2px] ${cmyk === 'C' ? 'bg-cyan-500' : cmyk === 'M' ? 'bg-brand-red' : cmyk === 'Y' ? 'bg-yellow-400' : 'bg-white/20'} z-30 opacity-30 group-hover:opacity-100 transition-opacity`} />
+            <div className={`absolute top-0 left-0 w-full h-[2px] ${cmyk === 'C' ? 'bg-cyan-500' : cmyk === 'M' ? 'bg-brand-blue' : cmyk === 'Y' ? 'bg-yellow-400' : 'bg-slate-200'} z-30 opacity-30 group-hover:opacity-100 transition-opacity`} />
         )}
 
         {/* Image */}
-        <div className="relative h-44 overflow-hidden shrink-0">
+        <div className="relative h-44 overflow-hidden shrink-0 bg-slate-50">
             <img
                 src={imageUrl}
                 alt={title}
-                className="w-full h-full object-cover opacity-20 mix-blend-luminosity group-hover:opacity-35 group-hover:scale-110 transition-all duration-[2s] ease-out"
+                className="w-full h-full object-cover opacity-[0.05] mix-blend-multiply group-hover:opacity-[0.1] group-hover:scale-110 transition-all duration-[2s] ease-out"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-brand-dark/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/90 pointer-events-none" />
             {/* Index number */}
-            <span className="absolute top-5 left-6 text-5xl font-display font-black text-white/5 group-hover:text-liquid-gold/10 transition-colors duration-700 leading-none italic">
+            <span className="absolute top-5 left-6 text-5xl font-display font-black text-slate-100 group-hover:text-brand-blue/5 transition-colors duration-700 leading-none">
                 {index}
             </span>
             {/* Icon */}
-            <div className={`absolute bottom-5 right-5 w-11 h-11 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md flex items-center justify-center group-hover:${glow} group-hover:border-white/20 transition-all duration-500`}>
+            <div className={`absolute bottom-5 right-5 w-11 h-11 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center group-hover:shadow-blue-glow-soft transition-all duration-500`}>
                 <Icon className={`w-5 h-5 ${accent}`} />
             </div>
         </div>
 
         {/* Body */}
-        <div className="p-8 flex-grow flex flex-col gap-3 bg-brand-dark border-t border-white/5">
-            <p className={`text-[9px] font-black uppercase tracking-[0.4em] ${accent} opacity-60 italic`}>{subtitle}</p>
-            <h3 className="text-2xl font-display font-black text-white tracking-[-0.04em] leading-tight group-hover:text-liquid-gold transition-colors duration-500 italic">
+        <div className="p-8 flex-grow flex flex-col gap-3 bg-white border-t border-slate-50">
+            <p className={`text-[9px] font-black uppercase tracking-[0.4em] ${accent} opacity-60`}>{subtitle}</p>
+            <h3 className="text-2xl font-display font-black text-slate-900 tracking-[-0.04em] leading-tight group-hover:text-brand-blue transition-colors duration-500">
                 {title}
             </h3>
-            <p className="text-slate-500 text-sm font-light leading-relaxed flex-grow uppercase tracking-tight opacity-70">
+            <p className="text-slate-500 text-sm font-light leading-relaxed flex-grow uppercase tracking-tight">
                 {description}
             </p>
-            <div className="pt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-700 group-hover:text-liquid-gold transition-colors duration-500 border-t border-white/5 mt-2 italic">
+            <div className="pt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand-blue transition-colors duration-500 border-t border-slate-50 mt-2">
                 <span>Ver detalle</span>
                 <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -209,10 +209,10 @@ const Services: React.FC = () => {
     const [featured, ...rest] = services;
 
     return (
-        <section id="services" className="py-32 lg:py-40 bg-brand-dark relative overflow-hidden">
+        <section id="services" className="py-32 lg:py-40 bg-white relative overflow-hidden">
             {/* Ambient background orbs */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-liquid-gold/3 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-brand-red/3 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-brand-blue/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-slate-100 blur-[120px] rounded-full pointer-events-none" />
 
             <div className="container mx-auto px-6 lg:px-10 relative z-10">
 
@@ -222,19 +222,19 @@ const Services: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-80px' }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className="mb-20 lg:mb-28 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 border-l-2 border-liquid-gold pl-10"
+                    className="mb-20 lg:mb-28 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 border-l-2 border-brand-blue pl-10"
                 >
                     <div className="space-y-5">
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">
+                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.6em]">
                             PRECISIÓN INDUSTRIAL_V5.0
                         </p>
-                        <h2 className="text-5xl md:text-7xl lg:text-[8rem] font-display font-black text-white leading-[0.8] tracking-[-0.04em] uppercase italic">
+                        <h2 className="text-5xl md:text-7xl lg:text-[8rem] font-display font-black text-slate-900 leading-[0.8] tracking-[-0.04em] uppercase">
                             CÓRDOVA{' '}
                             <br />
-                            <span className="text-gold-gradient drop-shadow-gold">IMPRESIÓN</span>
+                            <span className="text-brand-blue">IMPRESIÓN</span>
                         </h2>
                     </div>
-                    <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed italic pb-2 lg:text-right uppercase tracking-wider opacity-60">
+                    <p className="text-slate-500 max-w-sm text-base font-light leading-relaxed pb-2 lg:text-right uppercase tracking-wider opacity-60">
                         Soberanía visual a través de ingeniería gráfica de vanguardia.
                     </p>
                 </motion.div>
@@ -264,11 +264,11 @@ const Services: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-                    className="mt-20 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8"
+                    className="mt-20 pt-16 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8"
                 >
                     <div className="text-center md:text-left space-y-2">
-                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">¿Tienes un proyecto en mente?</p>
-                        <p className="text-2xl font-display font-black text-white tracking-tight">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">¿Tienes un proyecto en mente?</p>
+                        <p className="text-2xl font-display font-black text-slate-900 tracking-tight">
                             Cuéntanos y lo hacemos realidad.
                         </p>
                     </div>
@@ -277,7 +277,7 @@ const Services: React.FC = () => {
                             href="https://wa.me/593993083943"
                             target="_blank"
                             rel="noreferrer"
-                            className="group px-10 py-4 bg-liquid-gold text-brand-dark rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white hover:shadow-gold-glow hover:scale-105 transition-all duration-300 flex items-center gap-3 active:scale-95"
+                            className="group px-10 py-4 bg-brand-blue text-white rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-slate-900 hover:shadow-blue-glow-soft hover:scale-105 transition-all duration-300 flex items-center gap-3 active:scale-95"
                         >
                             <ReceiptIcon className="w-4 h-4" />
                             Solicitar Cotización
@@ -285,9 +285,9 @@ const Services: React.FC = () => {
                         </a>
                         <a
                             href="#sri"
-                            className="px-10 py-4 bg-white/5 border border-white/10 text-white rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center gap-3"
+                            className="px-10 py-4 bg-slate-50 border border-slate-100 text-slate-900 rounded-full font-black text-[10px] uppercase tracking-[0.25em] hover:bg-slate-100 transition-all duration-300 flex items-center gap-3"
                         >
-                            <ShieldCheckIcon className="w-4 h-4 text-brand-red" />
+                            <ShieldCheckIcon className="w-4 h-4 text-brand-blue" />
                             Trámites SRI
                         </a>
                     </div>

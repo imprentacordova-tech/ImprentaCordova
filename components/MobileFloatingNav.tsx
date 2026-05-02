@@ -31,11 +31,11 @@ export const MobileFloatingNav: React.FC = () => {
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-                    className="bg-black/80 backdrop-blur-3xl border border-white/10 rounded-[2.2rem] p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex items-center justify-between w-full max-w-sm relative overflow-hidden pointer-events-auto"
+                    className="bg-white/80 backdrop-blur-3xl border border-slate-200 rounded-[2.2rem] p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] flex items-center justify-between w-full max-w-sm relative overflow-hidden pointer-events-auto"
                 >
                     {/* Elite Industrial Accents */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/20 animate-scan pointer-events-none" />
-                    <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/10 via-transparent to-liquid-gold/10 rounded-[2.3rem] blur-xl opacity-50 pointer-events-none"></div>
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-blue/20 animate-scan pointer-events-none" />
+                    <div className="absolute -inset-1 bg-gradient-to-r from-brand-blue/10 via-transparent to-brand-blue/10 rounded-[2.3rem] blur-xl opacity-50 pointer-events-none"></div>
                     
                     {navItems.map((item) => {
                         const isCurrentActive = location.pathname === item.path;
@@ -49,8 +49,8 @@ export const MobileFloatingNav: React.FC = () => {
                                         className={`
                                             relative -top-6 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 outline-none overflow-hidden
                                             ${isHubOpen 
-                                                ? 'bg-liquid-gold text-black shadow-gold-glow scale-110 rotate-45' 
-                                                : 'bg-[#1a2333] text-liquid-gold border border-liquid-gold/30 shadow-lg scale-100'
+                                                ? 'bg-slate-900 text-white shadow-xl scale-110 rotate-45' 
+                                                : 'bg-brand-blue text-white shadow-blue-glow-strong scale-100'
                                             }
                                         `}
                                     >
@@ -64,8 +64,8 @@ export const MobileFloatingNav: React.FC = () => {
                                             <item.icon className="w-7 h-7" />
                                             {!isHubOpen && (
                                                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-liquid-gold opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-liquid-gold"></span>
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
                                                 </span>
                                             )}
                                         </motion.div>
@@ -80,21 +80,21 @@ export const MobileFloatingNav: React.FC = () => {
                                 to={item.path}
                                 className={(props) => `
                                     flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-500 relative group
-                                    ${props.isActive ? 'text-liquid-gold bg-white/5 shadow-[inset_0_0_20px_rgba(212,175,55,0.1)]' : 'text-slate-500 hover:text-slate-300'}
+                                    ${props.isActive ? 'text-brand-blue bg-brand-blue/5 border border-brand-blue/10' : 'text-slate-400 hover:text-slate-600'}
                                 `}
                             >
                                 {(props) => (
                                     <>
-                                        <item.icon className={`w-5 h-5 transition-all duration-500 ${props.isActive ? 'scale-110 drop-shadow-gold' : 'group-hover:scale-110'}`} />
+                                        <item.icon className={`w-5 h-5 transition-all duration-500 ${props.isActive ? 'scale-110 drop-shadow-blue-glow-sm' : 'group-hover:scale-110'}`} />
                                         {props.isActive && (
                                             <motion.div 
                                                 layoutId="nav-pill-mobile"
-                                                className="absolute bottom-1.5 w-1 h-1 bg-liquid-gold rounded-full shadow-gold-glow"
+                                                className="absolute bottom-1.5 w-1 h-1 bg-brand-blue rounded-full shadow-blue-glow"
                                             />
                                         )}
                                         {/* Subtle Hover Indicator */}
                                         {!props.isActive && (
-                                            <div className="absolute bottom-1 w-0 h-[1px] bg-liquid-gold/50 group-hover:w-2 transition-all duration-300"></div>
+                                            <div className="absolute bottom-1 w-0 h-[1px] bg-brand-blue/50 group-hover:w-2 transition-all duration-300"></div>
                                         )}
                                     </>
                                 )}

@@ -10,34 +10,26 @@ import {
 import { formatDate } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- ATELIER COMPONENTS ---
+// --- PRECISION LIGHT COMPONENTS ---
 
-const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<any>; colorClass?: string }> = ({ title, value, icon: Icon, colorClass = "bg-liquid-gold" }) => (
+const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<any>; colorClass?: string }> = ({ title, value, icon: Icon, colorClass = "bg-brand-blue/10 text-brand-blue" }) => (
     <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -10, borderColor: 'rgba(212, 175, 55, 0.3)' }}
-        className="glass-card-luxury p-8 relative group"
+        whileHover={{ y: -5 }}
+        className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group transition-all"
     >
         <div className="flex justify-between items-start">
             <div className="space-y-2">
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">{title}</p>
-                <p className="text-4xl font-black text-white group-hover:text-gold-gradient transition-all italic tracking-tighter">{value}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{title}</p>
+                <p className="text-4xl font-black text-slate-900 tracking-tighter">{value}</p>
             </div>
-            <div className={`${colorClass} p-4 rounded-2xl text-black shadow-gold-glow`}>
+            <div className={`${colorClass} p-4 rounded-2xl border border-slate-100 shadow-sm`}>
                 <Icon className="h-6 w-6" />
             </div>
         </div>
     </motion.div>
 );
-
-const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, scale: 0.95 }
-};
-
-// --- MODALS ---
 
 const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void; onSave: (user: Partial<User>) => void; }> = ({ user, onClose, onSave }) => {
     const [formData, setFormData] = useState<Partial<User>>({});
@@ -55,47 +47,47 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={onClose} />
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
                 <motion.div 
                     initial={{ scale: 0.95, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="glass-boutique w-full max-w-lg overflow-hidden flex flex-col relative z-10 border border-white/10 shadow-gold-glow-strong" 
+                    className="bg-white w-full max-w-lg overflow-hidden flex flex-col relative z-10 border border-slate-200 shadow-2xl rounded-[3rem]" 
                     onClick={e => e.stopPropagation()}
                 >
-                    <div className="p-10 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
+                    <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <div>
-                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-liquid-gold">Perfil</span></h2>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-1">Protocolo de Acceso Atelier</p>
+                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-brand-blue">Perfil</span></h2>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Gstión de Accesos de Personal</p>
                         </div>
-                        <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition-all"><CloseIcon className="w-6 h-6"/></button>
+                        <button onClick={onClose} className="p-3 bg-white hover:bg-slate-50 text-slate-400 border border-slate-200 rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
                         <div className="space-y-6">
                             <div className="group/field">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1 group-focus-within/field:text-liquid-gold transition-colors">Identidad Nomimal</label>
-                                <input type="text" value={formData.nombre || ''} onChange={e => setFormData({...formData, nombre: e.target.value})} required className="input-atelier w-full" placeholder="NOMBRE COMPLETO" />
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Nombre Completo</label>
+                                <input type="text" value={formData.nombre || ''} onChange={e => setFormData({...formData, nombre: e.target.value})} required className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900" placeholder="Ej. Juan Pérez" />
                             </div>
                             <div className="group/field">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1 group-focus-within/field:text-liquid-gold transition-colors">Enlace Digital</label>
-                                <input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} required className="input-atelier w-full" placeholder="CORREO ELECTRÓNICO" />
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Correo Electrónico</label>
+                                <input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} required className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900" placeholder="correo@ejemplo.com" />
                             </div>
                             <div className="group/field">
-                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1 group-focus-within/field:text-liquid-gold transition-colors">Rango Operativo</label>
-                                <select value={formData.rol || 'Operador'} onChange={e => setFormData({...formData, rol: e.target.value as any})} className="input-atelier w-full appearance-none cursor-pointer">
-                                    <option value="Admin" className="bg-brand-dark">ADMINISTRADOR</option>
-                                    <option value="Operador" className="bg-brand-dark">OPERADOR</option>
-                                    <option value="Diseñador" className="bg-brand-dark">DISEÑADOR</option>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Rol en el Sistema</label>
+                                <select value={formData.rol || 'Operador'} onChange={e => setFormData({...formData, rol: e.target.value as any})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
+                                    <option value="Admin">ADMINISTRADOR</option>
+                                    <option value="Operador">OPERADOR</option>
+                                    <option value="Diseñador">DISEÑADOR</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div className="pt-8 border-t border-white/5 space-y-6">
+                        <div className="pt-8 border-t border-slate-100 space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <KeyIcon className="w-5 h-5 text-liquid-gold shadow-gold-glow" />
-                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Protección de Cuenta</span>
+                                    <KeyIcon className="w-5 h-5 text-brand-blue" />
+                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Protección de Cuenta</span>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input 
@@ -104,35 +96,33 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
                                         onChange={e => setFormData({...formData, requirePassword: e.target.checked})} 
                                         className="sr-only peer" 
                                     />
-                                    <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-brand-dark after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-500 peer-checked:after:bg-black after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-liquid-gold shadow-inner border border-white/5"></div>
+                                    <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
                                 </label>
                             </div>
 
                             {formData.requirePassword && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-liquid-gold/5 p-6 rounded-2xl border border-liquid-gold/20">
-                                    <label className="block text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] mb-3">Establecer Credencial</label>
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-brand-blue/5 p-6 rounded-2xl border border-brand-blue/10">
+                                    <label className="block text-[9px] font-black text-brand-blue uppercase tracking-[0.3em] mb-3">Establecer Contraseña</label>
                                     <input 
                                         type="text" value={formData.password || ''} 
                                         onChange={e => setFormData({...formData, password: e.target.value})} 
                                         placeholder="CONTRASEÑA MAESTRA"
-                                        className="w-full p-4 bg-black/60 border border-liquid-gold/30 rounded-xl text-sm font-black text-white focus:border-liquid-gold outline-none transition-all" 
+                                        className="w-full p-4 bg-white border border-brand-blue/20 rounded-xl text-sm font-black text-slate-900 focus:border-brand-blue outline-none transition-all" 
                                     />
                                 </motion.div>
                             )}
                         </div>
                     </form>
 
-                    <div className="p-10 border-t border-white/5 bg-white/[0.02] flex justify-between items-center">
-                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
-                        <button onClick={handleSubmit} className="btn-luxury px-12 py-5">Sincronizar Perfil</button>
+                    <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Cancelar</button>
+                        <button onClick={handleSubmit} className="px-12 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-brand-blue/20 active:scale-95 transition-all">Sincronizar Perfil</button>
                     </div>
                 </motion.div>
             </div>
         </AnimatePresence>
     );
 };
-
-// --- MAIN PAGE ---
 
 const GestionUsuariosPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
@@ -142,7 +132,6 @@ const GestionUsuariosPage: React.FC = () => {
     const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' }>({ key: 'nombre', direction: 'asc' });
     
     const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
-    const [userToToggle, setUserToToggle] = useState<User | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -165,18 +154,6 @@ const GestionUsuariosPage: React.FC = () => {
 
     useEffect(() => { fetchUsers(); }, []);
     
-    const requestSort = (key: keyof User) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
-        setSortConfig({ key, direction });
-    };
-
-    const kpis = useMemo(() => ({
-        total: users.length,
-        activos: users.filter(u => u.estado === 'Activo').length,
-        inactivos: users.filter(u => u.estado === 'Inactivo').length,
-    }), [users]);
-
     const filteredAndSortedUsers = useMemo(() => {
         return [...users]
             .filter(u => u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -211,85 +188,82 @@ const GestionUsuariosPage: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-16 pb-40 px-6 sm:px-12 relative overflow-hidden">
-            <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
-
+        <div className="max-w-[1600px] mx-auto space-y-12 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in">
             {/* --- HEADER --- */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 relative z-10">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-slate-200 pb-10">
                 <div>
-                    <motion.h1 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="text-6xl sm:text-7xl font-black text-white tracking-[-0.04em] uppercase italic leading-none">
-                        Access <span className="text-gold-gradient">Portal</span>
-                    </motion.h1>
-                    <div className="flex items-center gap-4 mt-6">
+                    <div className="flex items-center gap-4 mb-4">
                         <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                         </div>
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.6em]">Protocolo de Identidad Atelier</p>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Control de Acceso</span>
                     </div>
+                    <h1 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
+                        Gestión de <span className="text-brand-blue">Usuarios</span>
+                    </h1>
                 </div>
                 <button 
                     onClick={() => setEditingUser({})} 
-                    className="btn-luxury px-12 py-6 flex items-center gap-4 group"
+                    className="px-10 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all flex items-center gap-4"
                 >
-                    <UserPlusIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>Vincular Usuario</span>
+                    <UserPlusIcon className="w-5 h-5" />
+                    Nuevo Usuario
                 </button>
             </div>
 
             {/* --- KPI SECTION --- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-                <KpiCard title="Censo Total" value={kpis.total} icon={UsersIcon} />
-                <KpiCard title="Portales Activos" value={kpis.activos} icon={ShieldCheckIcon} colorClass="bg-emerald-500" />
-                <KpiCard title="Protocolos en Pausa" value={kpis.inactivos} icon={ExclamationTriangleIcon} colorClass="bg-red-500" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <KpiCard title="Censo Total" value={users.length} icon={UsersIcon} />
+                <KpiCard title="Portales Activos" value={users.filter(u => u.estado === 'Activo').length} icon={ShieldCheckIcon} colorClass="bg-emerald-50 text-emerald-500" />
+                <KpiCard title="Protocolos en Pausa" value={users.filter(u => u.estado === 'Inactivo').length} icon={ExclamationTriangleIcon} colorClass="bg-rose-50 text-rose-500" />
             </div>
 
             {/* --- TABLE SECTION --- */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="glass-card-luxury overflow-hidden relative z-10"
+                className="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden"
             >
-                <div className="p-10 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-white/[0.01]">
+                <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/50">
                     <div className="relative group w-full md:max-w-md">
-                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-liquid-gold transition-colors" />
+                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
                         <input 
-                            type="text" placeholder="RASTREAR USUARIO..." value={searchTerm} 
+                            type="text" placeholder="RASTREAR USUARIO O EMAIL..." value={searchTerm} 
                             onChange={e => setSearchTerm(e.target.value)} 
-                            className="input-atelier w-full pl-16 text-[10px] font-black uppercase tracking-widest"
+                            className="w-full pl-16 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
                         />
                     </div>
                     <div className="flex items-center gap-4">
-                        <SparklesIcon className="w-5 h-5 text-liquid-gold animate-pulse" />
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Base de Datos Sincronizada</span>
+                        <SparklesIcon className="w-5 h-5 text-brand-blue animate-pulse" />
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Base Sincronizada</span>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white/[0.03] text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] border-b border-white/5">
+                            <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-slate-100">
                                 <th className="px-10 py-6">Usuario Atelier</th>
-                                <th className="px-10 py-6">Rango</th>
+                                <th className="px-10 py-6">Rango Operativo</th>
                                 <th className="px-10 py-6">Seguridad</th>
                                 <th className="px-10 py-6">Último Vínculo</th>
                                 <th className="px-10 py-6">Estado</th>
                                 <th className="px-10 py-6 text-right">Acción</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-100">
                             {loading ? (
-                                <tr><td colSpan={6} className="py-40 text-center"><div className="w-12 h-12 border-4 border-liquid-gold/20 border-t-liquid-gold rounded-full animate-spin mx-auto"></div></td></tr>
+                                <tr><td colSpan={6} className="py-40 text-center"><Loader2Icon className="w-10 h-10 text-brand-blue animate-spin mx-auto"/></td></tr>
                             ) : filteredAndSortedUsers.length === 0 ? (
-                                <tr><td colSpan={6} className="py-40 text-center opacity-20 grayscale"><UsersIcon className="w-12 h-12 mx-auto mb-4"/><p className="text-[10px] font-black uppercase tracking-widest">Sin Coincidencias</p></td></tr>
+                                <tr><td colSpan={6} className="py-40 text-center"><UsersIcon className="w-12 h-12 mx-auto mb-4 text-slate-100"/><p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin Coincidencias</p></td></tr>
                             ) : filteredAndSortedUsers.map((user) => (
-                                <tr key={user.id} className="group hover:bg-white/[0.02] transition-colors">
+                                <tr key={user.id} className="group hover:bg-slate-50 transition-all duration-300">
                                     <td className="px-10 py-8">
-                                        <p className="text-white font-black uppercase tracking-tight italic text-lg group-hover:text-liquid-gold transition-colors">{user.nombre}</p>
-                                        <p className="text-[10px] font-black text-slate-600 mt-1 uppercase tracking-widest">{user.email}</p>
+                                        <p className="text-slate-900 font-black uppercase tracking-tight text-lg group-hover:text-brand-blue transition-colors">{user.nombre}</p>
+                                        <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest">{user.email}</p>
                                     </td>
                                     <td className="px-10 py-8">
-                                        <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${user.rol === 'Admin' ? 'bg-liquid-gold/10 text-liquid-gold border-liquid-gold/20' : 'bg-white/5 text-slate-400 border-white/10'}`}>{user.rol}</span>
+                                        <span className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${user.rol === 'Admin' ? 'bg-brand-blue/5 text-brand-blue border-brand-blue/20' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>{user.rol}</span>
                                     </td>
                                     <td className="px-10 py-8">
                                         {user.requirePassword ? (
@@ -298,11 +272,11 @@ const GestionUsuariosPage: React.FC = () => {
                                                 <span className="text-[9px] font-black uppercase tracking-widest">ENCRIPTADO</span>
                                             </div>
                                         ) : (
-                                            <span className="text-[9px] font-bold text-slate-700 uppercase">ACCESO ABIERTO</span>
+                                            <span className="text-[9px] font-black text-slate-200 uppercase tracking-widest">ABIERTO</span>
                                         )}
                                     </td>
                                     <td className="px-10 py-8">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{formatDate(user.ultimoAcceso)}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{formatDate(user.ultimoAcceso)}</p>
                                     </td>
                                     <td className="px-10 py-8">
                                         <label className="relative inline-flex items-center cursor-pointer">
@@ -312,11 +286,11 @@ const GestionUsuariosPage: React.FC = () => {
                                                 logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `${newStatus === 'Activo' ? 'Activó' : 'Desactivó'} a ${user.nombre}`, 'Seguridad');
                                                 fetchUsers();
                                             }} className="sr-only peer" />
-                                            <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-brand-dark after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-500 peer-checked:after:bg-black after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-liquid-gold shadow-inner border border-white/5"></div>
+                                            <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
                                         </label>
                                     </td>
                                     <td className="px-10 py-8 text-right">
-                                        <button onClick={() => setEditingUser(user)} className="p-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10">
+                                        <button onClick={() => setEditingUser(user)} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 rounded-xl transition-all shadow-sm">
                                             <PencilIcon className="h-5 w-5" />
                                         </button>
                                     </td>
@@ -327,7 +301,11 @@ const GestionUsuariosPage: React.FC = () => {
                 </div>
             </motion.div>
 
-            {editingUser && <UserFormModal user={editingUser} onClose={() => setEditingUser(null)} onSave={handleSaveUser} />}
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+            `}</style>
         </div>
     );
 };

@@ -183,7 +183,8 @@ const SolicitudImpresionPage: React.FC = () => {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0b] p-6 text-center">
             <div className="p-8 rounded-[3rem] bg-red-500/10 border border-red-500/20 mb-10 shadow-luxury">
                 <AlertTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-4 italic">Documento No Encontrado</h2>
+                <h2 className="text-center font-black text-sm uppercase tracking-widest mb-1">IMPRENTA CÓRDOVA</h2>
+                <p className="text-center text-[10px] font-bold uppercase mb-4 tracking-tighter">SOLICITUD DE PRODUCCIÓN</p>
                 <p className="text-slate-400 font-bold text-sm max-w-md mx-auto leading-relaxed uppercase">
                     {error || "El registro solicitado no está disponible en la base de datos local ni remota."}
                 </p>
@@ -231,7 +232,6 @@ const SolicitudImpresionPage: React.FC = () => {
     ];
 
     const hasSriKey = sriCredentials.some(c => c.ruc === cliente.ruc);
-    const isContingencyLimit = (cliente.regimen === 'General' || cliente.regimen === 'Rimpe Emprendedor') && trabajo.esSRI;
 
     const mappedItems = standardTypes.map(st => {
         const match = parsedJobItems.find(pj => pj.descripcion.includes(st.key));
@@ -254,70 +254,50 @@ const SolicitudImpresionPage: React.FC = () => {
     const renderFormulario = (variant: 'cliente' | 'imprenta' | 'full') => {
         const isClient = variant === 'cliente';
         const isA5 = format === 'a5';
+        const isOperator = variant === 'imprenta';
         
-        const headerBg = isClient ? 'bg-slate-50' : 'bg-[#0f1113]';
-        const headerBorder = isClient ? 'border-slate-300' : 'border-black';
-        const headerText = isClient ? 'text-slate-900' : 'text-white';
-        const tableHeaderBg = isClient ? 'bg-slate-800' : 'bg-black';
-        const checkboxActive = isClient ? 'bg-slate-100 text-slate-900' : 'bg-amber-50 text-black';
+        const headerBg = isClient ? 'bg-slate-50' : 'bg-slate-50';
+        const headerBorder = isClient ? 'border-slate-300' : 'border-slate-300';
+        const headerText = isClient ? 'text-slate-900' : 'text-slate-900';
+        const tableHeaderBg = isClient ? 'bg-slate-800' : 'bg-slate-900';
+        const checkboxActive = isClient ? 'bg-slate-100 text-slate-900' : 'bg-slate-100 text-slate-900';
         
         const paddingClass = isA5 ? 'p-5' : 'p-10';
-        const mainTextSize = isA5 ? 'text-[10px]' : 'text-xs';
         const titleSize = isA5 ? 'text-2xl' : 'text-4xl';
         const tableTextSize = isA5 ? 'text-[9px]' : 'text-[11px]';
 
         return (
-            <div className={`relative flex flex-col box-border text-black ${paddingClass} h-full ${variant === 'imprenta' ? 'mt-0 pt-10' : ''} bg-white overflow-hidden`}>
+            <div className={`relative flex flex-col box-border text-black ${paddingClass} h-full bg-white overflow-hidden`}>
                 
                 <div className="absolute inset-0 opacity-[0.02] pointer-events-none select-none z-0" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
                 <SecurityWatermark />
                 <DigitalSeal />
 
                 <div className={`${headerBg} ${headerText} rounded-3xl overflow-hidden border-2 ${headerBorder} flex flex-col shadow-2xl relative z-10 mb-6`}>
-                    <div className={`flex justify-between items-center px-8 py-3 ${isClient ? 'bg-slate-100 border-b border-slate-200' : 'bg-black'}`}>
+                    <div className={`flex justify-between items-center px-8 py-3 ${isClient ? 'bg-slate-50 border-b border-slate-200' : 'bg-slate-50'}`}>
                         <div className="flex items-center gap-6">
-                            <div className="relative">
-                                <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-                                    <FingerPrintIcon className="w-8 h-8" />
-                                </div>
-                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-slate-200">
-                                    <div className="flex gap-0.5">
-                                        <div className="w-1 h-1 bg-printing-cyan rounded-full animate-pulse" />
-                                        <div className="w-1 h-1 bg-printing-yellow rounded-full animate-pulse delay-75" />
-                                        <div className="w-1 h-1 bg-printing-red rounded-full animate-pulse delay-150" />
-                                    </div>
-                                </div>
-                            </div>
                             <div className="flex flex-col">
                                 <h1 className={`${titleSize} font-black tracking-[-0.04em] leading-none flex items-center gap-2`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                                    IMPRENTA CÓRDOVA <span className="text-amber-500 italic">ELITE</span>
+                                    IMPRENTA CÓRDOVA <span className="text-brand-blue">ELITE</span>
                                 </h1>
-                                <span className="text-[10px] font-mono font-black uppercase tracking-[0.6em] opacity-40">Industrial_Printing_Engine_v2.6</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                            <div className="bg-amber-500/10 border border-amber-500/20 px-4 py-1 rounded-lg">
-                                <span className="text-[12px] font-black text-amber-500 uppercase tracking-widest">ORDEN #{trabajo.orden}</span>
+                            <div className="bg-slate-900/10 border border-slate-900/20 px-4 py-1 rounded-lg">
+                                <span className="text-[12px] font-black text-slate-900 uppercase tracking-widest">ORDEN #{trabajo.orden}</span>
                             </div>
-                            <span className="text-[8px] font-mono opacity-50 uppercase tracking-[0.2em]">SEQ_ID: {trabajo.id.substring(0,8).toUpperCase()}</span>
                         </div>
                     </div>
                     
-                    <div className={`px-8 ${isA5?'py-2':'py-4'} flex justify-between items-center border-t ${isClient ? 'border-slate-200' : 'border-white/5'}`}>
+                    <div className={`px-8 ${isA5?'py-2':'py-4'} flex justify-between items-center border-t ${isClient ? 'border-slate-200' : 'border-slate-200'}`}>
                         <div className={`flex gap-8 ${isA5?'text-[10px]':'text-[12px]'} font-bold`}>
                             <div className="flex flex-col">
                                 <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Matriz_Location</span>
-                                <span className="flex items-center gap-2"><MapPinIcon className="w-3.5 h-3.5 text-amber-500"/> {config.emisorDireccionMatriz}</span>
+                                <span className="flex items-center gap-2"><MapPinIcon className="w-3.5 h-3.5 text-brand-blue"/> {config.emisorDireccionMatriz}</span>
                             </div>
                             <div className="flex flex-col border-l border-slate-200 pl-8">
                                 <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Comm_Link</span>
-                                <span className="flex items-center gap-2"><PrinterIcon className="w-3.5 h-3.5 text-amber-500"/> {config.emisorTelefono}</span>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="bg-slate-100 px-4 py-1.5 rounded-xl border border-slate-200 flex flex-col items-center">
-                                <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">SRI_AUTH_TOKEN</span>
-                                <span className="text-[10px] font-mono font-black text-slate-800">{config.imprentaAutorizacion}</span>
+                                <span className="flex items-center gap-2"><PrinterIcon className="w-3.5 h-3.5 text-brand-blue"/> {config.emisorTelefono}</span>
                             </div>
                         </div>
                     </div>
@@ -326,11 +306,9 @@ const SolicitudImpresionPage: React.FC = () => {
                 <div className="flex items-center gap-4 mb-6 relative z-10">
                     <div className="flex-grow h-px bg-slate-200" />
                     <div className="flex items-center gap-3 bg-white border-2 border-slate-800 px-8 py-2 rounded-2xl shadow-xl transform rotate-[-0.5deg]">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
                         <h2 className={`${isA5?'text-xs':'text-sm'} font-black text-slate-800 uppercase tracking-[0.3em]`}>
                             Solicitud de Autorización de Impresión
                         </h2>
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
                     </div>
                     <div className="flex-grow h-px bg-slate-200" />
                 </div>
@@ -338,15 +316,12 @@ const SolicitudImpresionPage: React.FC = () => {
                 <div className={`grid grid-cols-12 gap-8 ${isA5?'mb-6':'mb-10'} relative z-10`}>
                     <div className="col-span-7 space-y-4">
                         <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                <ActivityIcon className="w-20 h-20" />
-                            </div>
                             <div className="flex flex-col gap-4">
                                 <div className="flex flex-col">
                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] mb-1">Subject_Identification</span>
                                     <span className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight">{cliente.nombre}</span>
                                     <div className="flex justify-between items-end mt-1">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase opacity-70 italic">{cliente.nombreComercial || 'No_Brand_Name'}</span>
+                                        <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1">{cliente.nombreComercial || 'No_Brand_Name'}</p>
                                         <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter max-w-[200px] truncate">{getEstablecimientoAddress()}</span>
                                     </div>
                                 </div>
@@ -354,14 +329,8 @@ const SolicitudImpresionPage: React.FC = () => {
                                 <div className="flex gap-10">
                                     <div className="flex flex-col">
                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Regimen_Mode</span>
-                                        <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm ${isRimpe ? 'bg-slate-900 text-white' : 'bg-amber-100 text-amber-800 border border-amber-200'}`}>
+                                        <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm ${isRimpe ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-800'}`}>
                                             {cliente.regimen || 'GENERAL_STANDARD'}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Object_Scope</span>
-                                        <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight line-clamp-1">
-                                            {trabajo.actividadSeleccionada || 'ACTIVIDAD_TRIBUTARIA_DEFAULT'}
                                         </span>
                                     </div>
                                 </div>
@@ -381,30 +350,29 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
 
                     <div className="col-span-5 flex flex-col gap-4">
-                        <div className="bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-2 border-white/10 flex flex-col justify-between h-full">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full translate-x-16 -translate-y-16 blur-2xl" />
+                        <div className="bg-slate-50 text-slate-900 p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-2 border-slate-200 flex flex-col justify-between h-full">
                             <div className="flex justify-between items-start relative z-10">
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.3em] mb-1">Auth_Status</span>
+                                    <span className="text-[7px] font-black text-brand-blue uppercase tracking-widest mb-0.5">SALDO PENDIENTE</span>
                                     {hasSriKey || trabajo.estadoClave === 'LISTA' ? (
-                                        <span className="text-xl font-black text-white flex items-center gap-3">
-                                            <ShieldCheckIcon className="w-7 h-7 text-emerald-400" /> SECURE_OK
+                                        <span className="text-xl font-black text-slate-900 flex items-center gap-3">
+                                            <ShieldCheckIcon className="w-7 h-7 text-emerald-600" /> SECURE_OK
                                         </span>
                                     ) : (
-                                        <span className="text-xl font-black text-white/40 italic">UNVERIFIED_PENDING</span>
+                                        <span className="text-xl font-black text-slate-400">UNVERIFIED_PENDING</span>
                                     )}
                                 </div>
-                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
-                                    <LockIcon className="w-6 h-6 text-amber-500" />
+                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-200">
+                                    <LockIcon className="w-6 h-6 text-brand-blue" />
                                 </div>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4 mt-6 relative z-10">
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center">
-                                    <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Timestamp</span>
+                                <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
+                                    <span className="text-[6px] font-black uppercase tracking-widest">VALOR TOTAL</span>
                                     <span className="font-mono text-sm font-black tracking-widest">{hora}</span>
                                 </div>
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center">
+                                <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
                                     <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Cycle_Date</span>
                                     <span className="font-mono text-sm font-black tracking-widest">{dia}.{mes}.{anio}</span>
                                 </div>
@@ -415,11 +383,9 @@ const SolicitudImpresionPage: React.FC = () => {
 
                 <div className="flex-grow border-2 border-slate-900 rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] relative z-10 bg-white mb-6">
                     <div className={`${tableHeaderBg} text-white flex justify-between items-center px-10 py-3.5 font-black uppercase tracking-[0.4em] relative overflow-hidden`}>
-                        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff, #fff 1px, transparent 1px, transparent 10px)' }} />
                         <span className="text-[10px] relative z-10 flex items-center gap-3">
-                            <ActivityIcon className="w-4 h-4 text-amber-500" /> Industrial_Production_Matrix_v2
+                            <ActivityIcon className="w-4 h-4 text-brand-blue" /> Industrial_Production_Matrix_v2
                         </span>
-                        <span className="text-[9px] opacity-40 font-mono relative z-10">LOG_STREAM: {Math.random().toString(36).substring(7).toUpperCase()}</span>
                     </div>
                     
                     <div className="flex-grow overflow-hidden">
@@ -439,7 +405,7 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <tr key={idx} className={`border-b border-slate-100 last:border-0 ${item.isChecked ? checkboxActive : 'opacity-[0.15]'}`}>
                                         <td className="py-1 font-mono text-[9px] border-r border-slate-100">{item.isChecked ? (trabajo.tamano || 'A5') : ''}</td>
                                         <td className={`text-left pl-8 uppercase ${isA5?'text-[10px]':'text-[12px]'} ${isA5?'h-7':'h-9'} border-r border-slate-100 font-black tracking-tighter relative`}>
-                                            {item.isChecked && <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
+                                            {item.isChecked && <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 bg-brand-blue rounded-full" />}
                                             {item.tipo}
                                         </td>
                                         <td className="py-1 font-mono border-r border-slate-100">{item.isChecked?item.estab:''}</td>
@@ -455,13 +421,12 @@ const SolicitudImpresionPage: React.FC = () => {
 
                 <div className="grid grid-cols-12 gap-8 items-stretch relative z-10 mb-6">
                     <div className="col-span-8 flex flex-col gap-6">
-                        <div className="bg-slate-900 text-white rounded-3xl p-6 border-2 border-white/5 shadow-2xl flex items-center gap-8 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-2 opacity-5 rotate-12"><ExclamationTriangleIcon className="w-16 h-16" /></div>
-                            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-amber-500 border border-white/10 shrink-0">
+                        <div className="bg-slate-50 text-slate-900 rounded-3xl p-6 border-2 border-slate-200 shadow-sm flex items-center gap-8 relative overflow-hidden group">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-brand-blue border border-slate-200 shrink-0">
                                 <LockIcon className="w-7 h-7" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em] mb-1">Safety_Notice_Protocol</span>
+                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] mb-1">Safety_Notice_Protocol</span>
                                 <p className="text-[9px] font-bold uppercase tracking-wider leading-relaxed opacity-80">
                                     Este documento constituye una orden de producción vinculante. La custodia de los comprobantes autorizados es responsabilidad exclusiva del sujeto pasivo según normativa vigente del SRI.
                                 </p>
@@ -470,7 +435,6 @@ const SolicitudImpresionPage: React.FC = () => {
                         
                         <div className="flex gap-6">
                             <div className="flex-grow bg-slate-50 border-2 border-slate-200 rounded-[2rem] p-8 h-36 flex flex-col justify-end items-center relative group">
-                                <div className="absolute top-4 left-1/2 -translate-x-1/2 opacity-10"><FingerPrintIcon className="w-16 h-16" /></div>
                                 <div className="w-[80%] h-px bg-slate-400 mb-3" />
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Auth_Contributor_Signature</span>
                             </div>
@@ -478,14 +442,12 @@ const SolicitudImpresionPage: React.FC = () => {
                                 <div className="w-14 h-14 bg-white rounded-xl border border-slate-300 flex flex-center items-center justify-center mb-2 shadow-inner">
                                     <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest text-center">Digit_Stamp</span>
                                 </div>
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">D-STAMP</span>
+                                <p className="text-[6px] font-black text-slate-400 mt-1 uppercase tracking-widest">{isOperator ? 'COPIA OPERADOR' : 'ORIGINAL CLIENTE'}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="col-span-4 flex flex-col gap-3">
-                        <div className="flex-grow bg-slate-900 rounded-[2.5rem] p-8 border-2 border-amber-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col justify-between text-white relative overflow-hidden group">
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl group-hover:bg-amber-500/10 transition-colors" />
                             
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center border-b border-white/5 pb-3">
@@ -503,7 +465,7 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
                                     <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.5em]">Net_Balance</span>
                                 </div>
-                                <span className="text-5xl font-black italic tracking-tighter leading-none shadow-gold-glow-text">{formatCurrency(trabajo.saldo)}</span>
+                                <span className="text-5xl font-black tracking-tighter leading-none shadow-sm">{formatCurrency(trabajo.saldo)}</span>
                             </div>
                         </div>
                         <div className="bg-slate-100 rounded-2xl p-2.5 text-center border border-slate-200">

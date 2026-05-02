@@ -21,79 +21,94 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
     fechaEntrega, setFechaEntrega
 }) => {
     const prioridades = [
-        { id: 'baja', label: 'Baja', color: 'text-slate-400', bg: 'bg-slate-400/10', border: 'border-white/5' },
-        { id: 'media', label: 'Media', color: 'text-liquid-gold', bg: 'bg-liquid-gold/10', border: 'border-liquid-gold/20' },
-        { id: 'alta', label: 'Alta', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' }
+        { id: 'baja', label: 'Baja', color: 'text-slate-500', bg: 'bg-slate-100', border: 'border-slate-200' },
+        { id: 'media', label: 'Media', color: 'text-brand-blue', bg: 'bg-brand-blue/10', border: 'border-brand-blue/20' },
+        { id: 'alta', label: 'Alta', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' }
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            <div className="space-y-4 md:space-y-6">
-                <div className="flex items-center gap-3 mb-1">
-                    <div className="w-8 h-8 rounded-lg bg-liquid-gold/20 flex items-center justify-center">
-                        <PencilSquareIcon className="w-4 h-4 text-liquid-gold" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 animate-fade-in">
+            <div className="space-y-6 md:space-y-8">
+                <div className="flex items-center gap-4 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shadow-sm">
+                        <PencilSquareIcon className="w-5 h-5 text-brand-blue" />
                     </div>
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Especificaciones Técnicas</h3>
+                    <div className="flex flex-col">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">FASE_ESPECIFICACIÓN</h3>
+                        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Detalles de Producción</p>
+                    </div>
                 </div>
-                <textarea
-                    value={detalle}
-                    onChange={e => setDetalle(e.target.value)}
-                    placeholder="Describe los detalles del pedido (medidas, tipo de papel, acabados...)"
-                    className="w-full h-32 md:h-48 bg-black/40 border border-white/5 rounded-2xl md:rounded-3xl p-4 md:p-6 text-base md:text-lg placeholder:text-slate-700 focus:border-liquid-gold/30 focus:ring-1 focus:ring-liquid-gold/30 outline-none transition-all resize-none font-medium custom-scrollbar"
-                />
+                <div className="relative group">
+                    <textarea
+                        value={detalle}
+                        onChange={e => setDetalle(e.target.value)}
+                        placeholder="DESCRIBE LOS PARÁMETROS TÉCNICOS (MEDIDAS, MATERIAL, ACABADOS)..."
+                        className="w-full h-40 md:h-64 bg-slate-50 border-2 border-slate-100 rounded-[2rem] p-6 md:p-8 text-lg font-bold text-slate-900 placeholder:text-slate-300 focus:border-brand-blue/30 focus:bg-white transition-all resize-none outline-none shadow-sm uppercase tracking-tight"
+                    />
+                    <div className="absolute bottom-6 right-6 opacity-20 group-focus-within:opacity-100 transition-opacity">
+                        <SparklesIcon className="w-6 h-6 text-brand-blue" />
+                    </div>
+                </div>
             </div>
 
-            <div className="space-y-6 md:space-y-8">
+            <div className="space-y-8 md:space-y-12">
                 <div>
-                    <div className="flex items-center gap-3 mb-4 md:mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-liquid-gold/20 flex items-center justify-center">
-                            <FlagIcon className="w-4 h-4 text-liquid-gold" />
+                    <div className="flex items-center gap-4 mb-6 md:mb-8">
+                        <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shadow-sm">
+                            <FlagIcon className="w-5 h-5 text-brand-blue" />
                         </div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Prioridad del Trabajo</h3>
+                        <div className="flex flex-col">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">NIVEL_CRITICIDAD</h3>
+                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Prioridad del Vector</p>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                    <div className="grid grid-cols-3 gap-3 md:gap-4">
                         {prioridades.map(p => (
                             <motion.button
                                 key={p.id}
-                                whileHover={{ scale: 1.02 }}
+                                whileHover={{ y: -4 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => setPrioridad(p.id)}
-                                className={`py-3 md:py-4 rounded-xl md:rounded-2xl border transition-all flex flex-col items-center gap-1 md:gap-2 ${
+                                className={`py-4 md:py-6 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${
                                     prioridad === p.id 
-                                    ? `${p.bg} ${p.border} shadow-lg ring-1 ring-white/10` 
-                                    : 'bg-white/5 border-white/5 opacity-40 grayscale hover:opacity-100 hover:grayscale-0'
+                                    ? `${p.bg} ${p.border} shadow-md` 
+                                    : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
                                 }`}
                             >
-                                <span className={`text-[8px] md:text-[9px] font-black uppercase tracking-widest ${p.color}`}>{p.label}</span>
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${prioridad === p.id ? p.color : 'text-slate-400'}`}>{p.label}</span>
+                                {prioridad === p.id && <div className="w-1.5 h-1.5 rounded-full bg-current" />}
                             </motion.button>
                         ))}
                     </div>
                 </div>
 
                 <div>
-                    <div className="flex items-center gap-3 mb-4 md:mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-liquid-gold/20 flex items-center justify-center">
-                            <CalendarIcon className="w-4 h-4 text-liquid-gold" />
+                    <div className="flex items-center gap-4 mb-6 md:mb-8">
+                        <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shadow-sm">
+                            <CalendarIcon className="w-5 h-5 text-brand-blue" />
                         </div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Fecha Estimada de Entrega</h3>
+                        <div className="flex flex-col">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">CRONOGRAMA_ENTREGA</h3>
+                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Fecha de Finalización</p>
+                        </div>
                     </div>
                     <div className="relative group">
                         <input
                             type="date"
                             value={fechaEntrega}
                             onChange={e => setFechaEntrega(e.target.value)}
-                            className="w-full bg-black/40 border border-white/5 rounded-xl md:rounded-2xl p-4 md:p-5 text-sm md:text-base text-white font-bold focus:border-liquid-gold/30 outline-none transition-all [color-scheme:dark]"
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl md:rounded-[1.5rem] p-5 md:p-6 text-base md:text-lg text-slate-900 font-black focus:border-brand-blue/30 focus:bg-white outline-none transition-all uppercase tracking-widest shadow-sm"
                         />
-                        <div className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20 group-hover:opacity-100 transition-opacity">
-                            <ClockIcon className="w-4 h-4 md:w-5 md:h-5 text-liquid-gold" />
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 group-hover:text-brand-blue transition-colors">
+                            <ClockIcon className="w-6 h-6" />
                         </div>
                     </div>
                 </div>
 
-                <div className="p-5 md:p-6 bg-gradient-to-br from-liquid-gold/10 to-transparent rounded-2xl md:rounded-3xl border border-liquid-gold/10 relative overflow-hidden group">
-                    <SparklesIcon className="absolute -right-2 -top-2 w-10 h-10 md:w-12 md:h-12 text-liquid-gold/5 rotate-12 transition-transform group-hover:rotate-45 duration-700" />
-                    <p className="text-[8px] md:text-[9px] text-slate-400 uppercase font-black tracking-widest leading-relaxed">
-                        Completa toda la información para asegurar que el equipo de producción tenga claros los requerimientos.
+                <div className="p-6 md:p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-brand-blue/10 transition-colors" />
+                    <p className="text-[9px] md:text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] leading-relaxed relative z-10">
+                        VALIDE TODA LA INFORMACIÓN TÉCNICA PARA GARANTIZAR LA INTEGRIDAD DEL PROCESO PRODUCTIVO.
                     </p>
                 </div>
             </div>

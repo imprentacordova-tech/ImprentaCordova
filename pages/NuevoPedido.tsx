@@ -180,69 +180,69 @@ const NuevoPedidoPage: React.FC = () => {
 
     const TelemetrySidebar = () => (
         <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-4 sticky top-10 space-y-6">
-            <div className="glass-panel-obsidian p-10 rounded-[3.5rem] border-liquid-gold/20 shadow-gold-glow-soft relative overflow-hidden group tactical-border">
-                <div className="absolute inset-0 bg-architect-grid opacity-10 pointer-events-none" />
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/50 to-transparent animate-scan" />
+            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-200 shadow-xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-slate-50/50 pointer-events-none" />
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-blue/20" />
                 
                 <div className="space-y-8 relative z-10">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
-                            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">TELEMETRÍA_ELITE_v9.4</h3>
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse shadow-lg shadow-brand-blue/20" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">TELEMETRÍA_ELITE_v9.4</h3>
                         </div>
-                        <span className="text-[8px] font-mono text-liquid-gold/40 tracking-[0.2em]">NODE_SYNC: 100%</span>
+                        <span className="text-[8px] font-mono text-brand-blue/40 tracking-[0.2em]">NODE_SYNC: 100%</span>
                     </div>
                     
                     <div className="space-y-12">
                         <div className="relative">
-                            <p className="text-[9px] font-black text-liquid-gold/40 uppercase tracking-[0.4em] mb-3 italic">Protocolo_Activo</p>
-                            <p className="text-5xl font-black text-white italic uppercase tracking-tighter leading-none flex items-center gap-4">
-                                <span className="w-2 h-10 bg-liquid-gold shadow-gold-glow" />
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3">Protocolo_Activo</p>
+                            <p className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none flex items-center gap-4">
+                                <span className="w-2 h-10 bg-brand-blue" />
                                 {missionCategory || 'IDLE_MODE'}
                             </p>
                         </div>
                         
-                        <div className="pt-8 border-t border-white/5">
-                            <p className="text-[9px] font-black text-liquid-gold/40 uppercase tracking-[0.4em] mb-4 italic">Valuación_en_Tiempo_Real</p>
+                        <div className="pt-8 border-t border-slate-100">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Valuación_en_Tiempo_Real</p>
                             <div className="flex items-baseline gap-4">
-                                <span className="text-7xl font-black text-white tracking-[-0.05em] leading-none italic drop-shadow-gold tabular-nums">${precio.toFixed(2)}</span>
-                                <span className="text-xl font-black text-slate-800 uppercase italic">USD</span>
+                                <span className="text-7xl font-black text-slate-900 tracking-[-0.05em] leading-none tabular-nums">${precio.toFixed(2)}</span>
+                                <span className="text-xl font-black text-slate-300 uppercase">USD</span>
                             </div>
-                            <div className="flex items-center gap-4 mt-6 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
-                                <ZapIcon className="w-4 h-4 text-emerald-500" />
-                                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] italic">Diferencial_Saldo: ${(precio - abono).toFixed(2)}</p>
+                            <div className="flex items-center gap-4 mt-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                                <ZapIcon className="w-4 h-4 text-emerald-600" />
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Diferencial_Saldo: ${(precio - abono).toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 pt-10 border-t border-white/5">
-                        <div className="bg-white/[0.03] p-8 rounded-[2rem] border border-white/5 group-hover:border-white/10 transition-all">
-                            <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-3">Unidades</p>
+                    <div className="grid grid-cols-2 gap-6 pt-10 border-t border-slate-100">
+                        <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 transition-all">
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3">Unidades</p>
                             <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black text-white italic leading-none">{items.length}</p>
-                                <span className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-1">SKU</span>
+                                <p className="text-4xl font-black text-slate-900 leading-none">{items.length}</p>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">SKU</span>
                             </div>
                         </div>
-                        <div className="bg-white/[0.03] p-8 rounded-[2rem] border border-white/5 group-hover:border-white/10 transition-all">
-                            <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-3">Capital_IN</p>
+                        <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 transition-all">
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3">Capital_IN</p>
                             <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black text-emerald-500 italic leading-none">${abono.toFixed(0)}</p>
-                                <span className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-1">PRE</span>
+                                <p className="text-4xl font-black text-emerald-600 leading-none">${abono.toFixed(0)}</p>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">PRE</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="mt-10 space-y-5">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-[0.5em] italic">DIAGNÓSTICO_NÚCLEO</h4>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">DIAGNÓSTICO_NÚCLEO</h4>
                             <div className="flex gap-1">
-                                {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-emerald-glow" />)}
+                                {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-500" />)}
                             </div>
                         </div>
-                        <div className="bg-[#030303] rounded-[2.5rem] p-8 font-mono text-[10px] text-emerald-500/60 space-y-3 border border-white/5 h-48 overflow-y-auto custom-scrollbar italic shadow-inner">
+                        <div className="bg-slate-900 rounded-[2.5rem] p-8 font-mono text-[10px] text-emerald-400/80 space-y-3 border border-slate-800 h-48 overflow-y-auto custom-scrollbar shadow-inner">
                             <p className="text-emerald-400">[SYSTEM] KERNEL_INIT: OK</p>
                             <p className="opacity-50">[THREAD] LOADING_MISSION_PARAMS...</p>
-                            <p className="text-liquid-gold/80">[EVENT] SECTOR: {missionCategory || 'STANDBY'}</p>
+                            <p className="text-brand-blue/80">[EVENT] SECTOR: {missionCategory || 'STANDBY'}</p>
                             <p className="text-emerald-400/80">[EVENT] PHASE: 0{step} OF 0{getSteps().length}</p>
                             <p className="opacity-40">[DATA] SYNCING_WITH_NODE_ALPHA...</p>
                             <p className="animate-pulse text-emerald-400/100 mt-4">_LISTO_PARA_DESPLIEGUE...</p>
@@ -251,7 +251,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                     <button 
                         onClick={() => setIsSidebarMinimized(true)} 
-                        className="w-full mt-8 py-6 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-black text-slate-500 uppercase tracking-[0.6em] transition-all italic hover:text-liquid-gold active:scale-90"
+                        className="w-full mt-8 py-6 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] transition-all hover:text-brand-blue active:scale-90"
                     >
                         MINIMIZAR_HUD
                     </button>
@@ -263,13 +263,13 @@ const NuevoPedidoPage: React.FC = () => {
     const showSidebar = !isSidebarMinimized && missionCategory && step < 5;
 
     return (
-        <div className="elite-terminal min-h-screen bg-black">
-            <div className="elite-viewport px-4 sm:px-8 lg:px-12 py-6">
+        <div className="min-h-screen bg-slate-50">
+            <div className="px-4 sm:px-8 lg:px-12 py-10">
                 <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
                     <div className={`space-y-10 transition-all duration-700 ${showSidebar ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
                         {/* --- STEPPER ELITE --- */}
-                        <div className="sticky top-4 z-[100] bg-black/90 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] py-5 px-10 flex items-center justify-between gap-10 shadow-2xl overflow-hidden">
-                            <div className="absolute inset-0 bg-liquid-gold/5 opacity-10 pointer-events-none" />
+                        <div className="sticky top-4 z-[100] bg-white/90 backdrop-blur-3xl border border-slate-200 rounded-[2.5rem] py-5 px-10 flex items-center justify-between gap-10 shadow-xl overflow-hidden">
+                            <div className="absolute inset-0 bg-brand-blue/5 opacity-10 pointer-events-none" />
                             <div className="flex items-center gap-4 flex-1">
                                 {getSteps().map((s, idx) => {
                                     const isActive = step === s.id;
@@ -278,23 +278,23 @@ const NuevoPedidoPage: React.FC = () => {
                                         <React.Fragment key={s.id}>
                                             <div onClick={() => isPast && setStep(s.id)} className={`flex items-center gap-4 cursor-pointer transition-all ${isActive ? 'opacity-100' : 'opacity-30 hover:opacity-100'}`}>
                                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-700 border-2 relative ${
-                                                    isActive ? 'bg-liquid-gold border-liquid-gold shadow-gold-glow scale-110' : isPast ? 'bg-white/10 border-liquid-gold/30 text-liquid-gold' : 'bg-white/5 border-white/10 text-slate-700'
+                                                    isActive ? 'bg-brand-blue border-brand-blue shadow-lg shadow-brand-blue/20 scale-110' : isPast ? 'bg-brand-blue/5 border-brand-blue/20 text-brand-blue' : 'bg-slate-50 border-slate-200 text-slate-300'
                                                 }`}>
-                                                    <s.icon className={`w-6 h-6 ${isActive ? 'text-black' : isPast ? 'text-liquid-gold' : 'text-slate-800'}`} />
+                                                    <s.icon className={`w-6 h-6 ${isActive ? 'text-white' : isPast ? 'text-brand-blue' : 'text-slate-400'}`} />
                                                     {isActive && <motion.div animate={{ x: [-60, 60] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute inset-0 bg-white/30 w-1/3 -skew-x-12" />}
                                                 </div>
                                                 <div className="hidden xl:flex flex-col">
-                                                    <span className={`text-[8px] font-black tracking-[0.3em] uppercase italic ${isActive ? 'text-liquid-gold' : 'text-slate-800'}`}>PHASE_0{s.id}</span>
-                                                    <span className={`text-[11px] font-black uppercase tracking-tighter italic ${isActive ? 'text-white' : 'text-slate-600'}`}>{s.label}</span>
+                                                    <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${isActive ? 'text-brand-blue' : 'text-slate-400'}`}>PHASE_0{s.id}</span>
+                                                    <span className={`text-[11px] font-black uppercase tracking-tighter ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>{s.label}</span>
                                                 </div>
                                             </div>
-                                            {idx < getSteps().length - 1 && <div className={`h-[2px] flex-1 min-w-[10px] max-w-[40px] rounded-full transition-all duration-1000 ${isPast ? 'bg-liquid-gold/40 shadow-gold-glow-sm' : 'bg-white/5'}`} />}
+                                            {idx < getSteps().length - 1 && <div className={`h-[2px] flex-1 min-w-[10px] max-w-[40px] rounded-full transition-all duration-1000 ${isPast ? 'bg-brand-blue/30' : 'bg-slate-100'}`} />}
                                         </React.Fragment>
                                     );
                                 })}
                             </div>
-                            <div className="flex items-center gap-8 border-l border-white/10 pl-10">
-                                <button onClick={() => setIsSidebarMinimized(!isSidebarMinimized)} className="w-14 h-14 bg-white/5 hover:bg-liquid-gold hover:text-black rounded-2xl transition-all border border-white/10 flex items-center justify-center group active:scale-90">
+                            <div className="flex items-center gap-8 border-l border-slate-100 pl-10">
+                                <button onClick={() => setIsSidebarMinimized(!isSidebarMinimized)} className="w-14 h-14 bg-slate-50 hover:bg-brand-blue hover:text-white rounded-2xl transition-all border border-slate-200 flex items-center justify-center group active:scale-90">
                                     <SparklesIcon className={`w-7 h-7 transition-transform duration-700 ${isSidebarMinimized ? '' : 'rotate-180'}`} />
                                 </button>
                             </div>
@@ -302,56 +302,51 @@ const NuevoPedidoPage: React.FC = () => {
 
                         <AnimatePresence mode="wait">
                             {step === 1 && (
-                                <motion.div key="s1" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="glass-panel-obsidian p-12 md:p-32 rounded-[5rem] tactical-border text-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-liquid-gold/5 opacity-5 pointer-events-none" />
+                                <motion.div key="s1" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white p-12 md:p-32 rounded-[5rem] border border-slate-200 shadow-luxury text-center relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-brand-blue/5 opacity-5 pointer-events-none" />
                                     <div className="space-y-8 mb-24 relative z-10">
                                         <div className="flex items-center justify-center gap-8">
-                                            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent to-liquid-gold" />
-                                            <p className="text-[12px] font-black text-liquid-gold uppercase tracking-[1.2em] italic">MODALIDAD_DE_OPERACIÓN</p>
-                                            <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-liquid-gold" />
+                                            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent to-brand-blue" />
+                                            <p className="text-[12px] font-black text-brand-blue uppercase tracking-[1.2em]">MODALIDAD_DE_OPERACIÓN</p>
+                                            <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-brand-blue" />
                                         </div>
-                                        <h2 className="text-6xl md:text-9xl font-black text-white uppercase italic tracking-tighter leading-none">SECTOR_DE <span className="text-gold-gradient">MISIÓN</span></h2>
-                                        <p className="text-slate-600 font-bold uppercase tracking-[0.5em] italic">Seleccione el vector de despliegue industrial</p>
+                                        <h2 className="text-6xl md:text-9xl font-black text-slate-900 uppercase tracking-tighter leading-none">SECTOR_DE <span className="text-brand-blue">MISIÓN</span></h2>
+                                        <p className="text-slate-400 font-bold uppercase tracking-[0.5em]">Seleccione el vector de despliegue industrial</p>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-7xl mx-auto relative z-10">
                                         {[
-                                            { id: 'SRI', label: 'Sector SRI', icon: ShieldCheckIcon, desc: 'Manufactura fiscal con validación gubernamental síncrona.', color: 'text-liquid-gold', glow: 'shadow-gold-glow' },
-                                            { id: 'COMERCIAL', label: 'Artes Craft', icon: BookOpenIcon, desc: 'Branding comercial y despliegue de artes gráficas alta velocidad.', color: 'text-sky-400', glow: 'shadow-sky-glow' }
-                                        ].map(v => (
-                                            <motion.button 
-                                                key={v.id} 
-                                                whileHover={{ scale: 1.02, y: -10 }} 
-                                                whileTap={{ scale: 0.98 }} 
-                                                onClick={() => handleSelectCategory(v.id as any)} 
-                                                className="group relative p-16 rounded-[4rem] bg-black/40 border-2 border-white/5 flex flex-col items-center gap-10 hover:border-liquid-gold/40 transition-all duration-700 shadow-luxury overflow-hidden"
+                                            { id: 'SRI', label: 'Sector SRI', desc: 'Manufactura fiscal con validación gubernamental', icon: ShieldCheckIcon, color: 'bg-blue-600' },
+                                            { id: 'COMERCIAL', label: 'Artes Craft', desc: 'Branding comercial y diseño gráfico', icon: BookOpenIcon, color: 'bg-indigo-600' }
+                                        ].map((cat) => (
+                                            <div 
+                                                key={cat.id}
+                                                onClick={() => handleSelectCategory(cat.id as any)}
+                                                className="group relative bg-white p-12 rounded-[3.5rem] border border-slate-200 hover:border-brand-blue transition-all duration-700 cursor-pointer overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10"
                                             >
-                                                <div className="absolute inset-0 bg-architect-grid opacity-5 pointer-events-none" />
-                                                <div className="absolute -inset-10 bg-gradient-to-tr from-liquid-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                                                
-                                                <div className={`w-36 h-36 bg-white/5 rounded-[2.5rem] flex items-center justify-center text-slate-500 group-hover:bg-liquid-gold group-hover:text-black transition-all duration-700 shadow-2xl relative z-10 ${v.glow}-soft`}>
-                                                    <v.icon className="w-20 h-20 relative z-10 group-hover:scale-110 transition-transform duration-700" />
+                                                <div className={`absolute top-0 right-0 w-40 h-40 ${cat.color} opacity-[0.03] blur-[80px] group-hover:opacity-[0.15] transition-opacity`} />
+                                                <div className="relative z-10 space-y-10">
+                                                    <div className={`w-24 h-24 rounded-3xl ${cat.color} flex items-center justify-center text-white shadow-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-6`}>
+                                                        <cat.icon className="w-12 h-12" />
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{cat.label}</h3>
+                                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">{cat.desc}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all translate-x-[-20px] group-hover:translate-x-0">
+                                                        INICIALIZAR_SISTEMA <ArrowRightIcon className="w-4 h-4" />
+                                                    </div>
                                                 </div>
-                                                
-                                                <div className="text-center space-y-6 relative z-10">
-                                                    <h3 className="text-5xl md:text-6xl font-black text-white uppercase italic tracking-tighter group-hover:text-liquid-gold transition-colors leading-none">{v.label}</h3>
-                                                    <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] italic max-w-sm mx-auto leading-relaxed group-hover:text-white transition-colors">{v.desc}</p>
-                                                </div>
-
-                                                <div className="absolute bottom-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-5 group-hover:translate-y-0">
-                                                    <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">INICIAR_PROTOCOLO_X_0{v.id === 'SRI' ? '1' : '2'}</span>
-                                                    <ArrowRightIcon className="w-4 h-4 text-liquid-gold" />
-                                                </div>
-                                            </motion.button>
+                                            </div>
                                         ))}
                                     </div>
                                 </motion.div>
                             )}
 
                             {step === 2 && missionCategory === 'SRI' && (
-                                <motion.div key="s2sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="glass-panel-obsidian p-12 rounded-[4rem] tactical-border space-y-12">
+                                <motion.div key="s2sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-12 rounded-[3rem] border border-slate-200 shadow-xl space-y-12">
                                     <div className="space-y-4">
-                                        <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">IDENTIDAD_DE_ENLACE</p>
-                                        <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Perfil del <span className="text-gold-gradient">Contribuyente</span></h2>
+                                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em]">IDENTIDAD_DE_ENLACE</p>
+                                        <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">Perfil del Contribuyente</h2>
                                     </div>
                                     <ClientSelector onSelect={c => { setCliente(c); if(c){setSriEstablecimiento(c.establecimientoPredeterminado || '001'); setSriPuntoEmision(c.puntoEmisionPredeterminado || '001'); setSriActividad(c.actividades || ''); setStep(3);} }} onCancel={() => setStep(1)} hideQuickButtons />
                                 </motion.div>
@@ -373,13 +368,13 @@ const NuevoPedidoPage: React.FC = () => {
                             )}
 
                             {step === 3 && missionCategory === 'SRI' && cliente && (
-                                <motion.div key="s3sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="glass-panel-obsidian p-12 rounded-[4rem] tactical-border">
+                                <motion.div key="s3sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-xl">
                                     <SriSolicitudStep cliente={cliente} initialData={{ actividad: sriActividad, modo: sriMode, clave: sriClave, establecimiento: sriEstablecimiento, puntoEmision: sriPuntoEmision }} onBack={() => setStep(2)} onComplete={d => { setSriActividad(d.actividad); setSriMode(d.modo); setSriClave(d.clave); setSriEstablecimiento(d.establecimiento); setSriPuntoEmision(d.puntoEmision); setStep(4); }} />
                                 </motion.div>
                             )}
 
                             {step === 4 && missionCategory === 'SRI' && (
-                                <motion.div key="s4sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="glass-panel-obsidian p-12 rounded-[4rem] tactical-border space-y-12">
+                                <motion.div key="s4sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-xl space-y-12">
                                     {(isAddingItem || items.length === 0) ? (
                                         !servicio ? <ServiceSelector onSelect={setServicio} regimen={cliente?.regimen} forcedCategory="SRI" /> : 
                                         <ProductConfigurator product={servicio} regimen={cliente?.regimen} onCancel={() => setServicio(null)} onComplete={c => { setItems(p => [...p, c]); setPrecio(p => p + c.precioFinal); setServicio(null); setIsAddingItem(false); }} />
@@ -387,25 +382,25 @@ const NuevoPedidoPage: React.FC = () => {
                                         <div className="space-y-10">
                                             <div className="space-y-4">
                                                 {items.map((item, idx) => (
-                                                    <div key={idx} className="elite-hud-card p-8 flex items-center justify-between group hover:border-liquid-gold/30 transition-all">
+                                                    <div key={idx} className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200 flex items-center justify-between group hover:border-brand-blue/30 transition-all">
                                                         <div className="flex items-center gap-8">
-                                                            <div className="w-16 h-16 bg-liquid-gold/10 rounded-2xl flex items-center justify-center text-liquid-gold font-black italic border border-liquid-gold/20">{idx + 1}</div>
+                                                            <div className="w-16 h-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center text-brand-blue font-black border border-brand-blue/20">{idx + 1}</div>
                                                             <div className="space-y-1">
-                                                                <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{item.nombre}</h4>
-                                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{item.cantidad} UNID | {item.especificaciones.tamano}</p>
+                                                                <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{item.nombre}</h4>
+                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.cantidad} UNID | {item.especificaciones.tamano}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-12">
                                                             <div className="text-right">
-                                                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mb-1">Valuación</p>
-                                                                <span className="text-3xl font-black text-white italic tabular-nums">${item.precioFinal.toFixed(2)}</span>
+                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Valuación</p>
+                                                                <span className="text-3xl font-black text-slate-900 tabular-nums">${item.precioFinal.toFixed(2)}</span>
                                                             </div>
-                                                            <button onClick={() => { setItems(p => p.filter((_, i) => i !== idx)); setPrecio(p => p - item.precioFinal); }} className="p-4 bg-white/5 rounded-xl text-slate-700 hover:text-brand-red transition-all"><SolidBoxIcon className="w-5 h-5" /></button>
+                                                            <button onClick={() => { setItems(p => p.filter((_, i) => i !== idx)); setPrecio(p => p - item.precioFinal); }} className="p-4 bg-slate-200/50 rounded-xl text-slate-400 hover:text-rose-500 transition-all"><SolidBoxIcon className="w-5 h-5" /></button>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
-                                            <button onClick={() => setIsAddingItem(true)} className="w-full py-10 border-2 border-dashed border-liquid-gold/20 rounded-[2.5rem] text-slate-600 font-black uppercase tracking-[0.5em] hover:text-liquid-gold hover:border-liquid-gold transition-all italic flex items-center justify-center gap-6 group">
+                                            <button onClick={() => setIsAddingItem(true)} className="w-full py-10 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-slate-400 font-black uppercase tracking-[0.5em] hover:text-brand-blue hover:border-brand-blue transition-all flex items-center justify-center gap-6 group">
                                                 <SparklesIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" /> AGREGAR_NUEVO_ACTIVO_FISCAL
                                             </button>
                                         </div>
@@ -420,27 +415,27 @@ const NuevoPedidoPage: React.FC = () => {
                             )}
 
                             {step === 6 && (
-                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-panel-obsidian p-16 md:p-32 rounded-[5rem] tactical-border text-center space-y-16 relative overflow-hidden bg-emerald-950/10">
-                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-500/20 animate-scan" />
+                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white p-16 md:p-32 rounded-[5rem] border border-slate-200 shadow-2xl text-center space-y-16 relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-500/20" />
                                     <div className="space-y-10 relative z-10">
-                                        <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-emerald-500 shadow-emerald-glow mb-8"><CheckCircleIcon className="w-16 h-16 text-white" /></div>
+                                        <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20 mb-8"><CheckCircleIcon className="w-16 h-16 text-white" /></div>
                                         <div className="space-y-4">
-                                            <p className="text-emerald-500 font-black uppercase tracking-[1em] text-[12px] italic">MISIÓN_COMPLETADA</p>
-                                            <h2 className="text-7xl md:text-9xl font-black text-white uppercase italic tracking-tighter leading-none">DESPLIEGUE <span className="text-emerald-500">EXITOSO</span></h2>
-                                            <p className="text-slate-500 font-mono tracking-widest text-lg uppercase">PROTOCOLO_ID: {createdTrabajoId?.substring(0, 8)}</p>
+                                            <p className="text-emerald-600 font-black uppercase tracking-[1em] text-[12px]">MISIÓN_COMPLETADA</p>
+                                            <h2 className="text-7xl md:text-9xl font-black text-slate-900 uppercase tracking-tighter leading-none">DESPLIEGUE <span className="text-emerald-600">EXITOSO</span></h2>
+                                            <p className="text-slate-400 font-mono tracking-widest text-lg uppercase">PROTOCOLO_ID: {createdTrabajoId?.substring(0, 8)}</p>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-10 border-t border-white/5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-10 border-t border-slate-100">
                                         {missionCategory === 'SRI' ? (
                                             <>
-                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a5`, '_blank')} className="py-8 bg-liquid-gold text-black rounded-[2.5rem] font-black uppercase tracking-[0.4em] shadow-gold-glow flex items-center justify-center gap-6 italic"><PrinterIcon className="w-6 h-6" /> SRI (A5_DUO)</button>
-                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a4`, '_blank')} className="py-8 bg-white/5 text-white border-2 border-liquid-gold/30 rounded-[2.5rem] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-6 italic"><PrinterIcon className="w-6 h-6" /> SRI (A4_FULL)</button>
+                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a5`, '_blank')} className="py-8 bg-brand-blue text-white rounded-[2.5rem] font-black uppercase tracking-[0.4em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-6"><PrinterIcon className="w-6 h-6" /> SRI (A5_DUO)</button>
+                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a4`, '_blank')} className="py-8 bg-white text-brand-blue border-2 border-brand-blue/30 rounded-[2.5rem] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-6"><PrinterIcon className="w-6 h-6" /> SRI (A4_FULL)</button>
                                             </>
-                                        ) : <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="col-span-2 py-8 bg-white text-black rounded-[2.5rem] font-black uppercase tracking-[0.4em] shadow-luxury flex items-center justify-center gap-6 italic"><PrinterIcon className="w-6 h-6" /> IMPRIMIR_RECIBO_TÉRMICO</button>}
+                                        ) : <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="col-span-2 py-8 bg-slate-900 text-white rounded-[2.5rem] font-black uppercase tracking-[0.4em] shadow-xl flex items-center justify-center gap-6"><PrinterIcon className="w-6 h-6" /> IMPRIMIR_RECIBO_TÉRMICO</button>}
                                     </div>
                                     <div className="flex gap-6 justify-center pt-10">
-                                        <button onClick={() => navigate('/dashboard')} className="px-12 py-6 bg-white/5 hover:bg-white/10 text-slate-500 font-black uppercase tracking-widest rounded-3xl border border-white/10 transition-all italic">CENTRO_DE_MANDO</button>
-                                        <button onClick={() => window.location.reload()} className="px-12 py-6 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-3xl shadow-emerald-glow hover:scale-105 transition-all italic">NUEVA_MISIÓN</button>
+                                        <button onClick={() => navigate('/dashboard')} className="px-12 py-6 bg-slate-50 hover:bg-slate-100 text-slate-400 font-black uppercase tracking-widest rounded-3xl border border-slate-200 transition-all">CENTRO_DE_MANDO</button>
+                                        <button onClick={() => window.location.reload()} className="px-12 py-6 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-3xl shadow-lg shadow-emerald-600/20 hover:scale-105 transition-all">NUEVA_MISIÓN</button>
                                     </div>
                                 </motion.div>
                             )}
@@ -448,10 +443,10 @@ const NuevoPedidoPage: React.FC = () => {
 
                         {/* NAVEGACIÓN GLOBAL */}
                         {step < 5 && step > 1 && (
-                            <div className="flex justify-between items-center px-10 pt-10 border-t border-white/5">
-                                <button onClick={() => setStep(p => p - 1)} className="flex items-center gap-4 text-[10px] font-black text-slate-700 uppercase tracking-[0.5em] hover:text-white transition-all italic"><ChevronLeftIcon className="w-5 h-5" /> REGRESAR_FASE</button>
+                            <div className="flex justify-between items-center px-10 pt-10 border-t border-slate-100">
+                                <button onClick={() => setStep(p => p - 1)} className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] hover:text-brand-blue transition-all"><ChevronLeftIcon className="w-5 h-5" /> REGRESAR_FASE</button>
                                 {canAdvance() && (
-                                    <button onClick={() => setStep(p => p + 1)} className="px-16 py-7 bg-white text-black rounded-[2rem] font-black uppercase tracking-[0.4em] text-[11px] hover:bg-liquid-gold transition-all shadow-luxury flex items-center gap-6 italic group">
+                                    <button onClick={() => setStep(p => p + 1)} className="px-16 py-7 bg-brand-blue text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-[11px] hover:bg-slate-900 transition-all shadow-xl shadow-brand-blue/20 flex items-center gap-6 group">
                                         CONTINUAR_MISIÓN <ChevronRightIcon className="w-6 h-6 group-hover:translate-x-3 transition-transform" />
                                     </button>
                                 )}

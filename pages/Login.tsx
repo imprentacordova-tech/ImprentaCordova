@@ -117,14 +117,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     </motion.div>
                     
                     <div className="space-y-3">
-                        <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase italic leading-none">
-                            IMPRENTA <br/>
-                            <span className="text-brand-blue not-italic font-editorial font-normal">CÓRDOVA</span>
+                        <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
+                            IMPRENTA<br/>
+                            <span className="text-brand-blue font-editorial font-normal">CÓRDOVA</span>
                         </h1>
-                        <div className="flex items-center gap-3">
-                            <div className="h-[1px] w-8 bg-brand-blue/20"></div>
-                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic">
-                                Terminal Operativa Segura
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-[2px] bg-brand-blue"></div>
+                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">
+                                Precision Management Center
                             </p>
                         </div>
                     </div>
@@ -135,7 +135,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     <div className="space-y-6">
                         {/* Operator Input */}
                         <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-brand-blue">ID de Operador</label>
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 transition-colors group-focus-within:text-brand-blue">ID de Operador</label>
                             <div className="relative">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-blue transition-colors">
                                     <UsersIcon className="h-5 w-5" />
@@ -154,7 +154,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
                         {/* Signature Input */}
                         <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 italic transition-colors group-focus-within:text-brand-blue">Firma de Seguridad</label>
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 transition-colors group-focus-within:text-brand-blue">Firma de Seguridad</label>
                             <div className="relative">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-blue transition-colors">
                                     <LockIcon className="h-5 w-5" />
@@ -204,13 +204,16 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                             className="group relative w-full flex items-center justify-center gap-4 py-6 bg-brand-blue text-white rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] overflow-hidden transition-all duration-500 hover:bg-slate-900 hover:shadow-xl hover:shadow-brand-blue/10 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed tap-none"
                         >
                             {loading ? (
-                                <div className="flex items-center gap-3 italic">
-                                    <Loader2Icon className="animate-spin h-5 w-5" />
-                                    <span>Verificando...</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-white opacity-40"></div>
+                                    </div>
+                                    <span className="relative z-10">Verificando...</span>
                                 </div>
                             ) : (
                                 <>
-                                    <span className="relative z-10 italic">Iniciar Sesión</span>
+                                    <span className="relative z-10">Iniciar Sesión</span>
                                     <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                 </>
                             )}
@@ -225,7 +228,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <div className="mt-10 relative z-10">
                     <Link 
                         to="/" 
-                        className="inline-flex items-center gap-3 text-[9px] font-black text-slate-400 hover:text-brand-blue uppercase tracking-[0.2em] transition-all group italic"
+                        className="inline-flex items-center gap-3 text-[9px] font-black text-slate-400 hover:text-brand-blue uppercase tracking-[0.2em] transition-all group"
                     >
                         <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
                         <span>Regresar a la Galería Pública</span>
@@ -276,7 +279,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
                     className="mt-12 max-w-lg"
                 >
-                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase italic mb-6">
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-[-0.04em] uppercase mb-6">
                         GESTIÓN <span className="text-brand-blue">PREFERENCIAL</span>
                     </h2>
                     <p className="text-slate-500 font-medium leading-relaxed text-sm">

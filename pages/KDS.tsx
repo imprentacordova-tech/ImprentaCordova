@@ -7,23 +7,24 @@ import {
     CloseIcon, ClockIcon, SearchIcon, LayersIcon, 
     CheckBadgeIcon, ActivityIcon, CpuIcon,
     BoltIcon, HistoryIcon, BoxIcon, CameraIcon, InfoIcon, ArrowRightIcon,
-    ShieldCheckIcon, PrinterIcon
+    ShieldCheckIcon, PrinterIcon, HomeIcon
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BottomSheet } from '../components/BottomSheet';
+import { SEO } from '../components/SEO';
 
-const TacticalClock: React.FC = () => {
+const PrecisionClock: React.FC = () => {
     const [time, setTime] = useState(new Date());
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
     return (
-        <div className="flex flex-col items-end font-mono">
-            <span className="text-[10px] text-liquid-gold/60 tracking-[0.3em] font-black italic">SYSTEM_TIME_UTC</span>
-            <span className="text-sm text-white font-black italic tracking-tighter">
+        <div className="flex flex-col items-end">
+            <span className="text-[10px] text-brand-blue/60 tracking-[0.3em] font-black uppercase">SYSTEM_TIME</span>
+            <span className="text-sm text-slate-900 font-black tracking-tighter">
                 {time.toLocaleTimeString('es-EC', { hour12: false })}
             </span>
         </div>
@@ -46,26 +47,26 @@ const getUrgencyLevel = (dateStr?: string): UrgencyLevel => {
 
 const urgencyConfig = {
     critical: { 
-        border: 'border-l-liquid-gold', 
-        bg: 'bg-liquid-gold/20', 
-        text: 'text-liquid-gold', 
-        label: 'PROTOCOLO CRÍTICO: URGENTE', 
-        glow: 'shadow-[0_0_25px_rgba(212,175,55,0.4)]',
-        animate: 'animate-pulse-slow'
+        border: 'border-l-rose-500', 
+        bg: 'bg-rose-500/10', 
+        text: 'text-rose-500', 
+        label: 'CRITICAL_URGENCY', 
+        glow: 'shadow-[0_0_25px_rgba(244,63,94,0.15)]',
+        animate: 'animate-pulse'
     },
     warning: { 
-        border: 'border-l-liquid-gold', 
-        bg: 'bg-liquid-gold/10', 
-        text: 'text-liquid-gold', 
-        label: 'PRIORIDAD ALTA', 
-        glow: 'shadow-[0_0_15px_rgba(212,175,55,0.2)]',
+        border: 'border-l-amber-500', 
+        bg: 'bg-amber-500/10', 
+        text: 'text-amber-500', 
+        label: 'HIGH_PRIORITY', 
+        glow: 'shadow-[0_0_15px_rgba(245,158,11,0.1)]',
         animate: ''
     },
     safe: { 
-        border: 'border-l-slate-800', 
-        bg: 'bg-white/5', 
-        text: 'text-slate-500', 
-        label: 'ESTADO: ESTABLE', 
+        border: 'border-l-slate-200', 
+        bg: 'bg-slate-50', 
+        text: 'text-slate-400', 
+        label: 'STATUS_STABLE', 
         glow: '',
         animate: ''
     },
@@ -120,7 +121,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            whileHover={{ y: -4, scale: 1.01 }}
+            whileHover={{ y: -4 }}
             draggable
             onDragStart={(e: any) => {
                 if (e.dataTransfer) e.dataTransfer.setData("trabajoId", trabajo.id);
@@ -132,126 +133,89 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
             onClick={() => onCardClick(trabajo)}
             className={`
                 relative group kds-card mb-5 cursor-pointer
-                border-l-[3px] ${style.border} border-t border-r border-b border-slate-200/50 dark:border-white/5
-                transition-all duration-500 rounded-[2.2rem] overflow-hidden p-6 md:p-8
+                border-l-4 ${style.border} border-t border-r border-b border-slate-200/50
+                transition-all duration-500 rounded-[2.5rem] overflow-hidden p-8
                 ${style.glow} ${style.animate}
-                hover:border-liquid-gold/20 bg-white/40 dark:bg-[#0a0a0a]/90 backdrop-blur-xl
+                bg-white/60 backdrop-blur-xl hover:shadow-xl hover:border-brand-blue/20
             `}
         >
-            {/* --- ELITE EFFECTS LAYER --- */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {/* Diagonal Holographic Sheen */}
-                <motion.div 
-                    initial={{ x: '-100%', opacity: 0 }}
-                    whileHover={{ x: '100%', opacity: 0.25 }}
-                    transition={{ duration: 0.8, ease: "circOut" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-liquid-gold/10 to-transparent skew-x-[-25deg] z-20"
-                />
-                
-                {/* Tactical Corners */}
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-liquid-gold/20 rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-liquid-gold/20 rounded-br-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                {/* Technical Grid Overlay (Corner) */}
-                <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.05] rotate-45 translate-x-12 -translate-y-12">
-                    <div className="grid grid-cols-4 gap-2">
-                        {Array.from({ length: 16 }).map((_, i) => (
-                            <div key={i} className="w-1 h-1 bg-white rounded-full" />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Horizontal Scanner Beam */}
-                <motion.div 
-                    animate={{ y: ['0%', '400%', '0%'] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent z-20 opacity-0 group-hover:opacity-100"
-                />
-            </div>
-
-            {/* Industrial Telemetry Strings */}
-            <div className="absolute top-8 right-8 flex gap-4 pointer-events-none opacity-[0.15] group-hover:opacity-40 transition-opacity">
-                <span className="text-[6px] font-black tracking-[0.4em] text-white italic">SYS_ACTIVE</span>
-                <span className="text-[6px] font-black tracking-[0.4em] text-liquid-gold italic">0x{trabajo.id.substring(0,4).toUpperCase()}</span>
-            </div>
+            {/* Grid Overlay */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
 
             {/* Header info */}
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                            trabajo.estado === TrabajoEstado.PENDIENTE ? 'bg-slate-600' :
+                    <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${
+                            trabajo.estado === TrabajoEstado.PENDIENTE ? 'bg-slate-400' :
                             trabajo.estado === TrabajoEstado.EN_DISENO ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]' :
-                            trabajo.estado === TrabajoEstado.PROCESO ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                            trabajo.estado === TrabajoEstado.PROCESO ? 'bg-brand-blue shadow-[0_0_10px_rgba(14,165,233,0.4)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
                         }`} />
-                        <span className="text-[9px] font-black text-slate-500 dark:text-slate-500 tracking-[0.3em] uppercase italic">
-                            PROTOCOLO-{String(trabajo.orden).padStart(5, '0')}
+                        <span className="text-[10px] font-black text-slate-400 tracking-[0.4em] uppercase">
+                            ORD-{String(trabajo.orden).padStart(5, '0')}
                         </span>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/20 dark:bg-white/5 border border-white/5 text-[8px] font-mono text-slate-500 italic">
-                        <ActivityIcon className="w-3 h-3 text-liquid-gold/40" />
-                        T_{getTimeInStage()}
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-[9px] font-bold text-slate-500 uppercase tracking-widest italic">
+                        <ActivityIcon className="w-3 h-3 text-brand-blue/40" />
+                        {getTimeInStage()}
                     </div>
-                    <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic ${style.bg} ${style.text} border border-white/5 backdrop-blur-md transition-all group-hover:scale-105`}>
+                    <div className={`px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.2em] italic ${style.bg} ${style.text} border border-slate-100 backdrop-blur-md transition-all group-hover:scale-105`}>
                         {style.label}
                     </div>
                 </div>
             </div>
 
             {/* Content */}
-            <div className="flex gap-6 relative z-10">
-                <div className="flex-grow min-w-0 space-y-4">
+            <div className="flex gap-8 relative z-10">
+                <div className="flex-grow min-w-0 space-y-5">
                     <div>
-                        <h4 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none mb-2 group-hover:text-liquid-gold transition-all duration-500 truncate uppercase">
+                        <h4 className="text-2xl font-black text-slate-900 italic tracking-tighter leading-none mb-2 group-hover:text-brand-blue transition-all duration-500 truncate uppercase">
                             {cliente?.nombre || 'Consumidor Final'}
                         </h4>
-                        <div className="flex items-center gap-2 flex-wrap">
-                             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase tracking-widest opacity-80 italic truncate max-w-[200px]">{trabajo.tipo} — {trabajo.subtipo.split('|')[0]}</p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em] italic truncate max-w-[250px]">{trabajo.tipo} — {trabajo.subtipo.split('|')[0]}</p>
                              {trabajo.esSRI && (
-                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20 animate-pulse">SRI TERMINAL</span>
-                             )}
-                             {cliente?.regimen === Regimen.NEGOCIO_POPULAR && (
-                                 <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest bg-white/10 text-white/60 border border-white/20">RIMPE N.P.</span>
+                                 <span className="px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] bg-brand-blue/10 text-brand-blue border border-brand-blue/20">SRI_VERIFIED</span>
                              )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.03] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 uppercase tracking-widest italic transition-colors group-hover:border-liquid-gold/30">
-                            <LayersIcon className="w-3.5 h-3.5 text-liquid-gold/60" />
-                            <span>{trabajo.cantidad} <span className="text-slate-500 dark:text-slate-600">UNID.</span></span>
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-3 text-[11px] font-black text-slate-900 bg-slate-100/50 px-4 py-2 rounded-2xl border border-slate-200/50 uppercase tracking-widest italic transition-colors group-hover:border-brand-blue/30">
+                            <LayersIcon className="w-4 h-4 text-brand-blue/60" />
+                            <span>{trabajo.cantidad} <span className="text-slate-400">UNID</span></span>
                         </div>
                         {trabajo.tamano && (
-                            <div className="text-[9px] font-black text-slate-400 bg-white/[0.03] px-2.5 py-1.5 rounded-lg border border-white/5 uppercase tracking-widest italic group-hover:text-white transition-colors">
+                            <div className="text-[10px] font-black text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/50 uppercase tracking-widest italic">
                                 {trabajo.tamano}
                             </div>
                         )}
                         {targetDate && (
-                            <div className={`flex items-center gap-2.5 text-[10px] font-black ${style.text} uppercase tracking-widest italic`}>
-                                <ClockIcon className="w-3.5 h-3.5 opacity-50" />
+                            <div className={`flex items-center gap-3 text-[11px] font-black ${style.text} uppercase tracking-widest italic`}>
+                                <ClockIcon className="w-4 h-4 opacity-50" />
                                 <span>{formatDate(targetDate)}</span>
                             </div>
                         )}
                     </div>
 
                     {/* Industrial Progress Bar */}
-                    <div className="pt-2 space-y-1.5">
-                        <div className="flex justify-between items-center text-[7px] font-black tracking-[0.2em] text-slate-600 dark:text-slate-500 uppercase italic">
-                            <span>Velocidad de Despliegue</span>
-                            <span className="text-liquid-gold">{Math.round(getProgress())}%</span>
+                    <div className="pt-2 space-y-2">
+                        <div className="flex justify-between items-center text-[8px] font-black tracking-[0.3em] text-slate-400 uppercase italic">
+                            <span>TIMELINE_DEPLOYMENT</span>
+                            <span className="text-brand-blue">{Math.round(getProgress())}%</span>
                         </div>
-                        <div className="h-[3.5px] bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 relative">
                             <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${getProgress()}%` }}
                                 transition={{ duration: 1, ease: "circOut" }}
-                                className="h-full bg-liquid-gold shadow-gold-glow relative"
+                                className="h-full bg-brand-blue relative"
                             >
                                 <motion.div 
                                     animate={{ opacity: [0, 1, 0], x: ['0%', '100%'] }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-0 bg-white"
+                                    className="absolute inset-0 bg-white/40"
                                 />
                             </motion.div>
                         </div>
@@ -260,44 +224,42 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                 
                 <div className="flex-shrink-0">
                     {trabajo.fotoOriginalUrl ? (
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/5 relative group/img bg-black transition-all group-hover:border-liquid-gold/40 shadow-2xl">
+                        <div className="w-24 h-24 rounded-[2rem] overflow-hidden border border-slate-200 relative group/img bg-slate-50 transition-all group-hover:border-brand-blue/40 shadow-lg">
                             <img 
                                 src={trabajo.fotoOriginalUrl} 
                                 alt="Referencia" 
-                                className="w-full h-full object-cover grayscale opacity-30 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700 scale-125 group-hover:scale-100" 
+                                className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100" 
                             />
-                            {/* Scanning beam specifically for the image */}
                             <motion.div 
                                 animate={{ y: ['-100%', '200%'] }}
                                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent pointer-events-none"
+                                className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-transparent via-brand-blue/10 to-transparent pointer-events-none"
                             />
                         </div>
                     ) : (
                         <button 
                             onClick={(e) => { e.stopPropagation(); onTakePhotoClick(trabajo); }}
-                            className="w-20 h-20 rounded-2xl border border-dashed border-white/5 flex items-center justify-center hover:border-liquid-gold/40 hover:bg-liquid-gold/5 transition-all text-slate-800 hover:text-liquid-gold group/cam relative overflow-hidden"
+                            className="w-24 h-24 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center hover:border-brand-blue/40 hover:bg-brand-blue/5 transition-all text-slate-400 hover:text-brand-blue group/cam relative overflow-hidden"
                         >
-                            <CameraIcon className="w-7 h-7 group-hover/cam:scale-110 transition-transform relative z-10" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 to-transparent opacity-0 group-hover/cam:opacity-100 transition-opacity" />
+                            <CameraIcon className="w-8 h-8 group-hover/cam:scale-110 transition-transform relative z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-transparent opacity-0 group-hover/cam:opacity-100 transition-opacity" />
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Footer info & Quick Action */}
-            <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5 relative z-10">
-                <div className="flex items-center gap-3">
+            <div className="flex justify-between items-center mt-8 pt-8 border-t border-slate-100 relative z-10">
+                <div className="flex items-center gap-4">
                     {trabajo.saldo > 0 ? (
-                        <div className="flex items-center gap-2 text-liquid-gold text-[8px] font-black uppercase tracking-widest italic bg-liquid-gold/10 px-3 py-1 rounded-lg border border-liquid-gold/20 group-hover:border-liquid-gold/40 transition-all">
-                           <BoltIcon className="w-3 h-3 animate-pulse" /> {formatCurrency(trabajo.saldo)}
+                        <div className="flex items-center gap-2 text-brand-blue text-[10px] font-black uppercase tracking-[0.2em] italic bg-brand-blue/5 px-4 py-2 rounded-xl border border-brand-blue/10">
+                           <BoltIcon className="w-4 h-4 animate-pulse" /> {formatCurrency(trabajo.saldo)}
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 text-emerald-500 text-[8px] font-black uppercase tracking-widest italic bg-emerald-500/5 px-3 py-1 rounded-lg border border-emerald-500/10 group-hover:border-emerald-500/30 transition-all">
-                            <CheckBadgeIcon className="w-3 h-3" /> Liquidado
+                        <div className="flex items-center gap-2 text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em] italic bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">
+                            <CheckBadgeIcon className="w-4 h-4" /> COMPLETED
                         </div>
                     )}
-                    <span className="text-[6px] font-black text-slate-700 tracking-[0.5em] uppercase hidden md:inline">SPEC_LAYER_V3.1</span>
                 </div>
 
                 {/* Mobile Quick Status Switcher */}
@@ -309,30 +271,15 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                                 if (window.navigator.vibrate) window.navigator.vibrate([20, 40, 20]);
                                 onStatusChange(trabajo.id, nextStatus);
                             }}
-                            className="flex items-center gap-3 bg-liquid-gold text-brand-dark px-5 py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest italic shadow-gold-glow active:scale-95 transition-all"
+                            className="flex items-center gap-4 bg-brand-blue text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] italic shadow-lg shadow-brand-blue/20 active:scale-95 transition-all"
                         >
-                            <span className="opacity-60 text-[8px]">NEXT:</span>
+                            <span className="opacity-60 text-[9px]">NEXT_STAGE:</span>
                             {nextStatus}
-                            <ArrowRightIcon className="w-3.5 h-3.5" />
+                            <ArrowRightIcon className="w-4 h-4" />
                         </button>
                     )}
                 </div>
             </div>
-
-            {/* Progress line */}
-            {targetDate && (
-                <div className="absolute bottom-0 left-0 h-1 bg-white/[0.01] w-full overflow-hidden">
-                    <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${getProgress()}%` }}
-                        transition={{ duration: 2, ease: "circOut" }}
-                        className={`h-full ${
-                            urgency === 'critical' ? 'bg-liquid-gold shadow-gold-glow-strong' : 
-                            urgency === 'warning' ? 'bg-liquid-gold/60 shadow-gold-glow' : 'bg-slate-800'
-                        }`} 
-                    />
-                </div>
-            )}
         </motion.div>
     );
 };
@@ -364,13 +311,13 @@ const KDSPage: React.FC = () => {
         }
 
         switch (activeTag) {
-            case 'Órdenes Urgentes':
-                filtered = filtered.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) !== 'safe');
+            case 'Prioridad Crítica':
+                filtered = filtered.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical');
                 break;
             case 'En Diseño':
                 filtered = filtered.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado));
                 break;
-            case 'En Producción':
+            case 'Producción Activa':
                 filtered = filtered.filter(t => [TrabajoEstado.PROCESO, TrabajoEstado.VITRINA].includes(t.estado));
                 break;
         }
@@ -415,222 +362,176 @@ const KDSPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#050505] relative select-none overflow-hidden font-display">
+        <div className="flex flex-col h-full bg-brand-light relative select-none overflow-hidden font-display">
+            <SEO title="KDS | Núcleo de Control" description="Terminal de operaciones industriales y control de producción en tiempo real." />
             
-            {/* --- ELITE HUD OVERLAY --- */}
-            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:32px_32px] opacity-20" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,#f2ca5008,transparent_50%)]" />
-                
-                {/* Vertical Telemetry */}
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-[0.05] vertical-text items-center">
-                    <span className="text-[7px] font-black tracking-[1em] text-white uppercase italic">CORE_PROCESSOR_V3</span>
-                    <div className="h-20 w-[1px] bg-white/20" />
-                    <span className="text-[7px] font-black tracking-[1em] text-liquid-gold uppercase italic">SECTOR_B_ACTIVE</span>
-                </div>
-                
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-8 opacity-[0.05] vertical-text items-center">
-                    <span className="text-[7px] font-black tracking-[1em] text-white uppercase italic">NUCLEUS_SYNC_STABLE</span>
-                    <div className="h-20 w-[1px] bg-white/20" />
-                    <span className="text-[7px] font-black tracking-[1em] text-liquid-gold uppercase italic">LATENCY_02MS</span>
-                </div>
-            </div>
-
             {/* --- CABECERA --- */}
-            <div className="flex-shrink-0 p-8 lg:p-14 relative z-10 border-b border-slate-200 dark:border-white/5 bg-white/40 dark:bg-black/60 backdrop-blur-3xl overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 relative z-10">
+            <div className="flex-shrink-0 p-10 lg:p-16 relative z-10 border-b border-slate-200 bg-white/60 backdrop-blur-3xl overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-blue to-cyan-500 opacity-20" />
+                
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 relative z-10">
                     
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse"></div>
-                            <span className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.5em] italic">Terminal de Operaciones Industriales</span>
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-5">
+                            <button 
+                                onClick={() => navigate('/dashboard')}
+                                className="p-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all group shadow-sm"
+                            >
+                                <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue transition-colors" />
+                            </button>
+                            <div className="w-[1px] h-10 bg-slate-200" />
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-brand-blue shadow-[0_0_10px_rgba(14,165,233,0.4)] animate-pulse" />
+                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.5em]">PRODUCTION_CONTROL_HUB</span>
+                            </div>
                         </div>
-                        <h1 className="text-6xl lg:text-9xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-[0.8] group">
+                        <h1 className="text-6xl lg:text-8xl font-black text-slate-900 tracking-tighter uppercase leading-[0.85]">
                             Núcleo de <br/>
-                            <span className="text-gold-gradient relative">
-                                Control
-                                <motion.div 
-                                    className="absolute -right-12 top-0 text-[10px] font-black text-white/20 not-italic tracking-normal"
-                                    animate={{ opacity: [0.2, 0.5, 0.2] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                >
-                                    [SYS_ON]
-                                </motion.div>
-                            </span>
+                            <span className="bg-gradient-to-r from-brand-blue to-cyan-600 bg-clip-text text-transparent">Control</span>
                         </h1>
                     </div>
 
-                    <div className="flex items-center gap-10">
-                        <div className="flex items-center gap-8 bg-white/5 px-6 py-4 rounded-[1.5rem] border border-white/5 backdrop-blur-xl">
-                            <div className="flex flex-col items-end border-r border-white/5 pr-8">
-                                <span className="text-[9px] text-slate-500 font-black tracking-[0.4em] uppercase italic">OPERADOR</span>
-                                <span className="text-xs font-black text-white uppercase italic">{currentUser?.nombre || 'GUEST_01'}</span>
+                    <div className="flex flex-col md:flex-row gap-8 w-full xl:w-auto items-center">
+                        <div className="flex items-center gap-8 bg-white/80 p-6 rounded-[2rem] border border-slate-200 shadow-sm backdrop-blur-xl">
+                            <div className="flex flex-col items-end border-r border-slate-100 pr-8">
+                                <span className="text-[9px] text-slate-400 font-black tracking-[0.4em] uppercase">OPERADOR</span>
+                                <span className="text-sm font-black text-slate-900 uppercase">{currentUser?.nombre || 'GUEST_01'}</span>
                             </div>
-                            <div className="flex flex-col items-center">
-                                <span className="text-[9px] text-liquid-gold/60 font-black tracking-[0.4em] uppercase italic">LOAD</span>
-                                <span className="text-xs font-black text-liquid-gold italic">{Math.round((trabajos.filter(t => t.estado !== TrabajoEstado.ENTREGADO).length / 50) * 100)}%</span>
-                            </div>
-                            <TacticalClock />
+                            <PrecisionClock />
                         </div>
-                    </div>
 
-                    <div className="flex flex-col md:flex-row gap-5 w-full xl:w-auto items-center">
-                        <div className="relative group w-full md:w-[400px]">
-                            <div className="absolute left-6 top-1/2 -translate-y-1/2">
-                                <SearchIcon className="h-4 w-4 text-slate-600 group-focus-within:text-liquid-gold transition-colors" />
-                            </div>
+                        <div className="relative group w-full md:w-[450px]">
+                            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
                             <input 
                                 type="text" 
                                 value={filterTerm}
                                 onChange={e => setFilterTerm(e.target.value)}
-                                placeholder="RASTREAR PROTOCOLO O IDENTIDAD..." 
-                                className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl py-5 pl-14 pr-6 text-[11px] font-bold uppercase tracking-widest text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-700 focus:border-liquid-gold/20 outline-none transition-all italic backdrop-blur-md"
+                                placeholder="RASTREAR ORDEN O CLIENTE..." 
+                                className="w-full bg-white border border-slate-200 rounded-2xl py-6 pl-16 pr-8 text-[12px] font-bold uppercase tracking-widest text-slate-900 placeholder:text-slate-300 focus:border-brand-blue/30 outline-none transition-all shadow-sm focus:ring-4 focus:ring-brand-blue/5"
                             />
-                        </div>
-
-                        <div className="flex gap-1 bg-black/40 p-1.5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar backdrop-blur-md">
-                            {['Vista General', 'Prioridad Alta', 'Protocolo de Arte', 'Fase de Ejecución'].map(tag => (
-                                <button
-                                    key={tag}
-                                    onClick={() => {
-                                        if (tag === 'Protocolo de Arte') setActiveTag('En Diseño');
-                                        else if (tag === 'Fase de Ejecución') setActiveTag('En Proceso');
-                                        else if (tag === 'Prioridad Alta') setActiveTag('Órdenes Urgentes');
-                                        else setActiveTag(tag);
-                                    }}
-                                    className={`
-                                        px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap italic
-                                        ${(tag === 'Protocolo de Arte' && activeTag === 'En Diseño') || 
-                                          (tag === 'Fase de Ejecución' && activeTag === 'En Proceso') ||
-                                          (tag === 'Prioridad Alta' && activeTag === 'Órdenes Urgentes') ||
-                                          activeTag === tag
-                                            ? 'bg-liquid-gold text-brand-dark shadow-gold-glow' 
-                                            : 'text-slate-500 hover:text-white hover:bg-white/5'}
-                                    `}
-                                >
-                                    {tag}
-                                </button>
-                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Global Tactical Overview - New Section */}
-                <div className="flex gap-4 lg:gap-8 mt-10 px-4 lg:px-0 overflow-x-auto no-scrollbar">
+                {/* Tactical Stats Section */}
+                <div className="flex gap-6 lg:gap-10 mt-12 px-2 overflow-x-auto no-scrollbar">
                     {[
-                        { label: 'Órdenes Activas', value: filteredTrabajos.length, icon: BoxIcon, color: 'text-white' },
-                        { label: 'Prioridad Crítica', value: filteredTrabajos.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical').length, icon: BoltIcon, color: 'text-liquid-gold' },
-                        { label: 'Valor en Taller', value: formatCurrency(filteredTrabajos.reduce((acc, t) => acc + t.total, 0)), icon: ActivityIcon, color: 'text-liquid-gold' },
+                        { label: 'Órdenes Activas', value: filteredTrabajos.length, icon: BoxIcon, color: 'text-slate-900' },
+                        { label: 'Prioridad Crítica', value: filteredTrabajos.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical').length, icon: BoltIcon, color: 'text-rose-500' },
+                        { label: 'Valor en Taller', value: formatCurrency(filteredTrabajos.reduce((acc, t) => acc + t.total, 0)), icon: ActivityIcon, color: 'text-brand-blue' },
                     ].map((stat, i) => (
-                        <div key={i} className="flex items-center gap-4 bg-white/5 dark:bg-black/40 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl min-w-[200px]">
-                            <div className={`p-2 rounded-lg bg-white/5 ${stat.color}`}>
-                                <stat.icon className="w-4 h-4" />
+                        <div key={i} className="flex items-center gap-5 bg-white/80 backdrop-blur-xl border border-slate-200 px-8 py-5 rounded-[2rem] min-w-[260px] shadow-sm">
+                            <div className={`p-3 rounded-2xl bg-slate-50 ${stat.color}`}>
+                                <stat.icon className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest italic">{stat.label}</span>
-                                <span className={`text-sm font-black italic ${stat.color}`}>{stat.value}</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</span>
+                                <span className={`text-lg font-black ${stat.color}`}>{stat.value}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Mobile Tab Selector - Industrial Style */}
-                <div className="lg:hidden mt-10 px-4">
-                    <div className="flex gap-2 bg-black/40 p-2 rounded-[2rem] overflow-x-auto no-scrollbar border border-white/5 backdrop-blur-xl">
-                        {KANBAN_COLUMNS.map((status, index) => {
-                            const isActive = activeMobileTab === status;
-                            return (
-                                <button
-                                    key={status}
-                                    onClick={() => {
-                                        if (window.navigator.vibrate) window.navigator.vibrate(10);
-                                        setActiveMobileTab(status as TrabajoEstado);
-                                    }}
-                                    className={`
-                                        relative px-6 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap italic flex items-center gap-3 overflow-hidden
-                                        ${isActive 
-                                            ? 'text-black z-10' 
-                                            : 'text-slate-500 hover:text-white'}
-                                    `}
-                                >
-                                    {isActive && (
-                                        <motion.div 
-                                            layoutId="activeKdsTab"
-                                            className="absolute inset-0 bg-liquid-gold shadow-gold-glow -z-10"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                        />
-                                    )}
-                                    <span className="relative z-10">{status}</span>
-                                    <span className={`
-                                        relative z-10 px-2.5 py-1 rounded-lg text-[9px] font-mono
-                                        ${isActive ? 'bg-black/20 text-black' : 'bg-white/5 text-slate-600'}
-                                    `}>
-                                        {columns[status]?.length || 0}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                {/* Filter Tags */}
+                <div className="flex gap-2 mt-10 overflow-x-auto no-scrollbar pb-2">
+                    {['Vista General', 'Prioridad Crítica', 'En Diseño', 'Producción Activa'].map(tag => (
+                        <button
+                            key={tag}
+                            onClick={() => setActiveTag(tag)}
+                            className={`
+                                px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border
+                                ${activeTag === tag
+                                    ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20 border-brand-blue' 
+                                    : 'bg-white text-slate-400 border-slate-200 hover:border-brand-blue/30 hover:text-brand-blue'}
+                            `}
+                        >
+                            {tag}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Mobile Column Selector */}
+            <div className="lg:hidden p-6 bg-white/40 border-b border-slate-200">
+                <div className="flex gap-2 bg-slate-100/50 p-2 rounded-[2rem] overflow-x-auto no-scrollbar border border-slate-200">
+                    {KANBAN_COLUMNS.filter(s => s !== TrabajoEstado.ENTREGADO).map((status) => {
+                        const isActive = activeMobileTab === status;
+                        return (
+                            <button
+                                key={status}
+                                onClick={() => setActiveMobileTab(status as TrabajoEstado)}
+                                className={`
+                                    relative px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap flex items-center gap-3
+                                    ${isActive ? 'text-white' : 'text-slate-400'}
+                                `}
+                            >
+                                {isActive && (
+                                    <motion.div 
+                                        layoutId="activeKdsTab"
+                                        className="absolute inset-0 bg-brand-blue rounded-[1.5rem] -z-10"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                    />
+                                )}
+                                <span className="relative z-10">{status}</span>
+                                <span className={`
+                                    relative z-10 px-2.5 py-1 rounded-lg text-[9px] font-mono
+                                    ${isActive ? 'bg-white/20 text-white' : 'bg-white text-slate-400 border border-slate-200'}
+                                `}>
+                                    {columns[status]?.length || 0}
+                                </span>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
             {/* --- TABLERO KANBAN --- */}
-            <div className="flex-grow overflow-x-auto lg:overflow-x-auto overflow-y-hidden p-4 lg:p-10 custom-scrollbar-h relative z-10">
-                <div className="flex h-full gap-6 lg:min-w-[1400px] w-full">
+            <div className="flex-grow overflow-x-auto p-6 lg:p-12 custom-scrollbar-h relative z-10">
+                <div className="flex h-full gap-8 lg:min-w-[1500px] w-full">
                     <AnimatePresence mode="popLayout">
                         {KANBAN_COLUMNS.filter(s => s !== TrabajoEstado.ENTREGADO).map((status, index) => {
                             const colStatus = status as TrabajoEstado;
-                            
-                            // On mobile, only show the active tab
                             const isVisibleOnMobile = activeMobileTab === colStatus;
                             
                             return (
                                 <motion.div 
                                     key={status}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
                                     className={`
-                                        flex-1 min-w-full lg:min-w-[360px] flex flex-col bg-white/[0.01] backdrop-blur-md transition-all duration-500 border border-white/5 rounded-[2.5rem] overflow-hidden
-                                        ${draggedOverColumn === colStatus ? 'bg-liquid-gold/[0.02] border-liquid-gold/10' : ''}
+                                        flex-1 min-w-full lg:min-w-[400px] flex flex-col bg-white/30 backdrop-blur-xl transition-all duration-500 border border-slate-200 rounded-[3rem] overflow-hidden
+                                        ${draggedOverColumn === colStatus ? 'bg-brand-blue/[0.03] border-brand-blue/30 ring-4 ring-brand-blue/5' : ''}
                                         ${!isVisibleOnMobile ? 'hidden lg:flex' : 'flex'}
                                     `}
                                     onDragOver={(e) => e.preventDefault()}
                                     onDragEnter={() => setDraggedOverColumn(colStatus)}
                                     onDrop={(e) => handleDrop(e, colStatus)}
                                 >
-                                    {/* Column Heatmap / Glow Effect */}
-                                    {columns[status].some(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical') && (
-                                        <div className="absolute inset-0 bg-liquid-gold/[0.03] animate-pulse pointer-events-none" />
-                                    )}
-                                    {columns[status].some(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'warning') && (
-                                        <div className="absolute inset-0 bg-liquid-gold/[0.02] pointer-events-none" />
-                                    )}
                                     {/* Cabecera de Columna */}
-                                    <div className="p-8 flex justify-between items-center border-b border-white/5 bg-white/[0.01]">
-                                        <div className="flex flex-col gap-1">
+                                    <div className="p-10 flex justify-between items-center border-b border-slate-100 bg-white/40">
+                                        <div className="flex flex-col gap-2">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${
-                                                    status === 'Pendiente' ? 'bg-slate-700' :
-                                                    status === 'En Diseño' ? 'bg-blue-500' :
-                                                    status === 'En Proceso' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-emerald-500'
+                                                <div className={`w-2.5 h-2.5 rounded-full ${
+                                                    status === TrabajoEstado.PENDIENTE ? 'bg-slate-300' :
+                                                    status === TrabajoEstado.EN_DISENO ? 'bg-cyan-500' :
+                                                    status === TrabajoEstado.PROCESO ? 'bg-brand-blue shadow-[0_0_10px_rgba(14,165,233,0.3)]' : 'bg-emerald-500'
                                                 }`} />
-                                                <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] text-[12px] italic">
+                                                <h3 className="font-black text-slate-900 uppercase tracking-[0.3em] text-[13px]">
                                                     {status}
                                                 </h3>
                                             </div>
-                                            <span className="text-[7px] font-mono text-slate-600 dark:text-slate-700 tracking-widest pl-5 uppercase">
-                                                VALOR: {formatCurrency(columns[status].reduce((acc, curr) => acc + curr.total, 0))}
+                                            <span className="text-[8px] font-black text-slate-400 tracking-widest pl-6 uppercase">
+                                                VOLUME: {formatCurrency(columns[status].reduce((acc, curr) => acc + curr.total, 0))}
                                             </span>
                                         </div>
-                                        <div className="bg-white/5 px-3 py-1 rounded-xl text-[10px] font-black text-slate-500 border border-white/5 italic">
+                                        <div className="bg-white px-4 py-2 rounded-2xl text-[11px] font-black text-brand-blue border border-slate-100 shadow-sm">
                                             {columns[status].length}
                                         </div>
                                     </div>
 
                                     {/* Contenedor de Tarjetas */}
-                                    <div className="flex-grow overflow-y-auto p-6 space-y-2 custom-scrollbar">
+                                    <div className="flex-grow overflow-y-auto p-8 space-y-6 custom-scrollbar">
                                         <AnimatePresence>
                                             {columns[status].map(trabajo => (
                                                 <KanbanCard 
@@ -645,11 +546,11 @@ const KDSPage: React.FC = () => {
                                         </AnimatePresence>
                                         
                                         {columns[status].length === 0 && (
-                                            <div className="h-full flex flex-col items-center justify-center opacity-10 py-24 gap-5">
-                                                <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center animate-pulse">
-                                                    <BoxIcon className="w-6 h-6 text-white/40" />
+                                            <div className="h-full flex flex-col items-center justify-center opacity-30 py-32 gap-6">
+                                                <div className="w-20 h-20 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center">
+                                                    <BoxIcon className="w-8 h-8 text-slate-300" />
                                                 </div>
-                                                <p className="text-[10px] font-black tracking-[0.3em] uppercase italic text-white/40">Sin actividad detectada en el sector</p>
+                                                <p className="text-[10px] font-black tracking-[0.4em] uppercase text-slate-400">NO_ACTIVE_LOAD_DETECTED</p>
                                             </div>
                                         )}
                                     </div>
@@ -660,113 +561,99 @@ const KDSPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- MODAL DE DETALLE (BOTTOM SHEET EN MÓVIL) --- */}
+            {/* --- MODAL DE DETALLE --- */}
             <BottomSheet 
                 isOpen={!!selectedTrabajo} 
                 onClose={() => setSelectedTrabajo(null)} 
-                title={`PROTOCOLO-${selectedTrabajo?.orden || ''}`}
+                title={`ORD-${selectedTrabajo?.orden || ''}`}
             >
                 {selectedTrabajo && (() => {
                     const selCliente = clientes.find(c => c.id === selectedTrabajo.clienteId);
                     return (
-                    <div className="space-y-8 pb-10">
-                        <div className="flex items-center gap-6">
-                            <div className="w-16 h-16 rounded-2xl bg-liquid-gold text-brand-dark flex items-center justify-center font-black text-2xl italic shadow-gold-glow">
-                                {selCliente?.nombre.charAt(0).toUpperCase()}
+                    <div className="space-y-10 pb-12 pt-4">
+                        <div className="flex items-center gap-8">
+                            <div className="w-20 h-20 rounded-[2rem] bg-brand-blue text-white flex items-center justify-center font-black text-3xl shadow-lg shadow-brand-blue/20">
+                                {selCliente?.nombre.charAt(0).toUpperCase() || 'C'}
                             </div>
-                            <div>
-                                <h3 className="font-black text-slate-900 dark:text-white text-2xl uppercase tracking-tighter italic leading-none">
-                                    {selCliente?.nombre}
+                            <div className="space-y-2">
+                                <h3 className="font-black text-slate-900 text-3xl uppercase tracking-tighter leading-none">
+                                    {selCliente?.nombre || 'Consumidor Final'}
                                 </h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-liquid-gold text-[9px] font-black tracking-[0.3em] uppercase italic">Identidad Industrial Vinculada</p>
+                                <div className="flex items-center gap-3">
+                                    <p className="text-brand-blue text-[10px] font-black tracking-[0.4em] uppercase">IDENTIDAD_VERIFICADA</p>
                                     {selectedTrabajo.esSRI && (
-                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20">SRI</span>
-                                    )}
-                                    {selCliente?.regimen === Regimen.NEGOCIO_POPULAR && (
-                                        <span className="px-2 py-0.5 rounded-md text-[7px] font-black uppercase bg-white/10 text-white/60 border border-white/20">RIMPE N.P.</span>
+                                        <span className="px-3 py-1 rounded-lg text-[8px] font-black uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">REG_SRI</span>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl">
-                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1 italic">Servicio</p>
-                                <p className="font-black text-slate-900 dark:text-white text-sm uppercase italic truncate">{selectedTrabajo.subtipo}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="p-8 bg-slate-50 border border-slate-200 rounded-[2.5rem]">
+                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.3em] mb-2">Especificación de Servicio</p>
+                                <p className="font-black text-slate-900 text-lg uppercase leading-tight">{selectedTrabajo.subtipo}</p>
                             </div>
-                            <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl">
-                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1 italic">Cantidad</p>
-                                <p className="font-black text-slate-900 dark:text-white text-sm italic">{selectedTrabajo.cantidad} UNID.</p>
+                            <div className="p-8 bg-slate-50 border border-slate-200 rounded-[2.5rem]">
+                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.3em] mb-2">Carga de Producción</p>
+                                <p className="font-black text-slate-900 text-lg">{selectedTrabajo.cantidad} UNIDADES</p>
                             </div>
                         </div>
 
                         {selectedTrabajo.tamano && (
-                            <div className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
-                                <CpuIcon className="w-4 h-4 text-liquid-gold/60" />
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Formato:</span>
-                                <span className="text-sm font-black text-white uppercase italic">{selectedTrabajo.tamano}</span>
+                            <div className="p-6 bg-brand-blue/5 border border-brand-blue/10 rounded-[2rem] flex items-center gap-4">
+                                <CpuIcon className="w-5 h-5 text-brand-blue" />
+                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em]">Formato Industrial:</span>
+                                <span className="text-sm font-black text-slate-900 uppercase">{selectedTrabajo.tamano}</span>
                             </div>
                         )}
 
-                        <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Inversión Total</span>
-                                <span className="text-xl font-black text-slate-900 dark:text-white italic">{formatCurrency(selectedTrabajo.total)}</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-white/5">
-                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest italic">Saldo Pendiente</span>
-                                <span className={`text-xl font-black italic ${selectedTrabajo.saldo > 0 ? 'text-liquid-gold shadow-gold-glow-sm' : 'text-emerald-500'}`}>
+                        <div className="p-10 bg-white border border-slate-100 rounded-[3rem] space-y-6 shadow-xl relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.2] pointer-events-none" />
+                            <div className="flex justify-between items-center relative z-10">
+                                <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.4em]">Deuda Pendiente</span>
+                                <span className={`text-3xl font-black tracking-tighter ${selectedTrabajo.saldo > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
                                     {formatCurrency(selectedTrabajo.saldo)}
                                 </span>
                             </div>
                         </div>
 
-                        {selectedTrabajo.actividadSeleccionada && (
-                            <div className="p-4 bg-liquid-gold/5 border border-liquid-gold/10 rounded-2xl flex items-center gap-3">
-                                <ShieldCheckIcon className="w-4 h-4 text-liquid-gold" />
-                                <span className="text-[9px] font-black text-liquid-gold uppercase tracking-widest italic">Actividad SRI:</span>
-                                <span className="text-xs font-black text-white uppercase italic truncate">{selectedTrabajo.actividadSeleccionada}</span>
-                            </div>
-                        )}
-
-                        <div className="space-y-3">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] ml-1 italic flex items-center gap-2">
-                                <InfoIcon className="w-3 h-3 text-liquid-gold"/> Especificaciones de Taller
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] ml-2 flex items-center gap-3">
+                                <InfoIcon className="w-4 h-4 text-brand-blue"/> LOG_ESPECIFICACIONES
                             </label>
-                            <div className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-3xl p-6 text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic min-h-[80px]">
-                                {selectedTrabajo.observaciones || selectedTrabajo.subtipo || "Sin especificaciones técnicas adicionales."}
+                            <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 text-base font-bold text-slate-600 leading-relaxed min-h-[120px]">
+                                {selectedTrabajo.observaciones || "Sin especificaciones técnicas adicionales detectadas."}
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {selectedTrabajo.esSRI && (
                                 <button 
                                     onClick={() => {
                                         setSelectedTrabajo(null);
                                         navigate(`/solicitud-impresion/${selectedTrabajo.id}`);
                                     }} 
-                                    className="bg-white/5 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic border border-white/10 hover:border-liquid-gold/30 transition-all flex items-center justify-center gap-2 col-span-2"
+                                    className="bg-white text-slate-900 py-6 rounded-2xl font-black uppercase text-[11px] tracking-widest border border-slate-200 hover:border-brand-blue/40 transition-all flex items-center justify-center gap-3 shadow-sm"
                                 >
-                                    <PrinterIcon className="w-4 h-4" /> Imprimir Solicitud A4
+                                    <PrinterIcon className="w-5 h-5 text-brand-blue" /> PRINT_SOLICITUD_A4
                                 </button>
                             )}
                             {selCliente?.telefono?.[0] && (
                                 <button 
                                     onClick={() => {
                                         const msg = `Protocolo Industrial ORD-${String(selectedTrabajo.orden).padStart(5, '0')}\nEstado: Fase de Diseño/Aprobación.\n\nHola ${selCliente.nombre}, adjuntamos el arte para su validación final.`;
-                                        window.open(`https://wa.me/${selCliente.telefono[0]}?text=${encodeURIComponent(msg)}`, '_blank');
+                                        window.open(`https://wa.me/593${selCliente.telefono[0].substring(selCliente.telefono[0].length - 9)}?text=${encodeURIComponent(msg)}`, '_blank');
                                     }}
-                                    className="bg-green-600 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-green-500 transition-all flex items-center justify-center gap-2"
+                                    className="bg-emerald-500 text-white py-6 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/20"
                                 >
-                                    WhatsApp Arte
+                                    WHATSAPP_UPLINK
                                 </button>
                             )}
                              <button 
                                 onClick={() => setSelectedTrabajo(null)} 
-                                className="bg-slate-100 dark:bg-white/5 text-slate-500 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest italic"
+                                className="bg-slate-100 text-slate-400 py-6 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-slate-200 transition-all"
                             >
-                                Regresar
+                                CLOSE_PORTAL
                             </button>
                         </div>
                     </div>
@@ -777,30 +664,13 @@ const KDSPage: React.FC = () => {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.1); border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.3); }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(14,165,233,0.1); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(14,165,233,0.3); }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 
                 .custom-scrollbar-h::-webkit-scrollbar { height: 6px; }
-                .custom-scrollbar-h::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-                .custom-scrollbar-h::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.1); border-radius: 10px; }
-                
-                @keyframes pulse-slow {
-                    0%, 100% { opacity: 1; transform: scale(1); filter: brightness(1); }
-                    50% { opacity: 0.9; transform: scale(0.99); filter: brightness(1.2); }
-                }
-                .animate-pulse-slow {
-                    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-                }
-
-                .vertical-text {
-                    writing-mode: vertical-rl;
-                    text-orientation: mixed;
-                }
-                
-                .shadow-gold-glow {
-                    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-                }
+                .custom-scrollbar-h::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); }
+                .custom-scrollbar-h::-webkit-scrollbar-thumb { background: rgba(14,165,233,0.1); border-radius: 10px; }
             `}</style>
         </div>
     );

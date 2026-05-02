@@ -23,7 +23,8 @@ import {
     LockIcon,
     FingerPrintIcon,
     ArchiveIcon,
-    UserIcon
+    UserIcon,
+    SettingsIcon
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { useOutletContext } from 'react-router-dom';
@@ -31,44 +32,31 @@ import { logActivity } from '../services/activityLogService';
 import { User } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- LUXURY COMPONENTS ---
+// --- PRECISION LIGHT COMPONENTS ---
 
 const MetricCard: React.FC<{ 
     label: string, 
     value: string, 
     icon: any, 
     colorClass?: string 
-}> = ({ label, value, icon: Icon, colorClass = "text-liquid-gold" }) => (
+}> = ({ label, value, icon: Icon, colorClass = "text-brand-blue" }) => (
     <motion.div 
-        whileHover={{ y: -10, scale: 1.02 }}
-        className="glass-card-luxury p-12 relative group overflow-hidden border-white/5 shadow-2xl"
+        whileHover={{ y: -5 }}
+        className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden"
     >
-        <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-10 transition-all duration-1000 rotate-12 group-hover:rotate-0">
-            <Icon className="w-32 h-32 text-white" />
+        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-all duration-700">
+            <Icon className="w-24 h-24 text-slate-900" />
         </div>
-        <div className="relative z-10 space-y-8">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 ${colorClass.replace('text', 'shadow')}-glow-sm`}>
-                        <Icon className={`w-6 h-6 ${colorClass}`} />
-                    </div>
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] italic">{label}</span>
+        <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl bg-slate-50 border border-slate-100 ${colorClass}`}>
+                    <Icon className="w-5 h-5" />
                 </div>
-                <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse opacity-20" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{label}</span>
             </div>
-            <div className="space-y-1">
-                <p className={`text-6xl font-black italic tracking-tighter drop-shadow-2xl ${colorClass} leading-none`}>
-                    {value}
-                </p>
-                <div className="h-[2px] w-full bg-white/5 relative overflow-hidden mt-4">
-                    <motion.div 
-                        initial={{ x: '-100%' }}
-                        animate={{ x: '100%' }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        className={`absolute inset-0 bg-gradient-to-r from-transparent via-${colorClass.split('-')[1]}-500/20 to-transparent`}
-                    />
-                </div>
-            </div>
+            <p className={`text-5xl font-black tracking-tighter ${colorClass} leading-none`}>
+                {value}
+            </p>
         </div>
     </motion.div>
 );
@@ -82,11 +70,11 @@ const containerVariants = {
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: { 
         opacity: 1, 
         y: 0,
-        transition: { duration: 0.8, ease: "easeOut" as any }
+        transition: { duration: 0.6, ease: "easeOut" as any }
     }
 };
 
@@ -109,62 +97,57 @@ const TransactionFormModal: React.FC<{
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/95 backdrop-blur-3xl" onClick={onClose} />
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
                 <motion.div 
-                    initial={{ scale: 0.95, opacity: 0, y: 30 }}
+                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 30 }}
-                    className="glass-boutique w-full max-w-xl overflow-hidden relative z-10 border border-white/10 shadow-gold-glow-strong rounded-[3rem]" 
+                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                    className="bg-white w-full max-w-xl overflow-hidden relative z-10 border border-slate-200 shadow-2xl rounded-[3rem]" 
                 >
-                    <div className="p-12 border-b border-white/5 bg-white/[0.02] flex justify-between items-center relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-1/2 -translate-y-1/2">
-                            <BanknotesIcon className="w-64 h-64 text-liquid-gold" />
+                    <div className="p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Nueva <span className="text-brand-blue">Operación</span></h2>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">LOG DE TRANSACCIÓN MANUAL</p>
                         </div>
-                        <div className="relative z-10">
-                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic">Secure <span className="text-liquid-gold">Entry</span></h2>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.5em] mt-2">Financial Protocol Alpha • v6.0</p>
-                        </div>
-                        <button onClick={onClose} className="p-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition-all relative z-10 close-button-glow"><CloseIcon className="w-6 h-6"/></button>
+                        <button onClick={onClose} className="p-3 bg-white hover:bg-slate-50 text-slate-400 border border-slate-200 rounded-xl transition-all"><CloseIcon className="w-5 h-5"/></button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-12 space-y-12">
-                        <div className="grid grid-cols-2 gap-8">
-                            <button type="button" onClick={() => setTipo('INGRESO')} className={`group relative py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] border-2 transition-all overflow-hidden ${tipo === 'INGRESO' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 shadow-[0_0_40px_rgba(16,185,129,0.1)]' : 'bg-white/5 border-white/5 text-slate-600 hover:border-white/10'}`}>
-                                <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                Inbound Flow
+                    <form onSubmit={handleSubmit} className="p-10 space-y-10">
+                        <div className="grid grid-cols-2 gap-6">
+                            <button type="button" onClick={() => setTipo('INGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'INGRESO' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-sm' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}>
+                                Ingreso
                             </button>
-                            <button type="button" onClick={() => setTipo('EGRESO')} className={`group relative py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] border-2 transition-all overflow-hidden ${tipo === 'EGRESO' ? 'bg-rose-500/10 border-rose-500/50 text-rose-400 shadow-[0_0_40px_rgba(244,63,94,0.1)]' : 'bg-white/5 border-white/5 text-slate-600 hover:border-white/10'}`}>
-                                <div className="absolute inset-0 bg-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                Outbound Burn
+                            <button type="button" onClick={() => setTipo('EGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'EGRESO' ? 'bg-rose-50 border-rose-200 text-rose-600 shadow-sm' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}>
+                                Egreso
                             </button>
                         </div>
 
                         <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2">Operation Magnitude</label>
-                            <div className="relative group/magnidude">
-                                <span className="absolute left-8 top-1/2 -translate-y-1/2 text-liquid-gold text-2xl font-black opacity-30 group-focus-within/magnidude:opacity-100 transition-opacity">$</span>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Monto de la Operación</label>
+                            <div className="relative">
+                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-black">$</span>
                                 <input 
                                     type="number" step="0.01" value={monto} 
                                     onChange={e => setMonto(e.target.value)} 
-                                    className="w-full bg-black/40 border-2 border-white/5 rounded-[2rem] py-8 pl-18 pr-8 text-3xl font-black text-white italic tracking-tighter focus:border-liquid-gold/50 focus:bg-black/60 outline-none transition-all" 
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-6 pl-12 pr-6 text-3xl font-black text-slate-900 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all" 
                                     placeholder="0.00" autoFocus required 
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] ml-2">Audit Description</label>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Detalle Auditivo</label>
                             <textarea 
                                 value={detalle} onChange={e => setDetalle(e.target.value)} 
-                                className="w-full bg-black/40 border-2 border-white/5 rounded-[2.5rem] p-8 text-sm font-medium text-white placeholder:text-slate-700 focus:border-liquid-gold/50 focus:bg-black/60 outline-none transition-all h-40 resize-none" 
-                                placeholder="TYPE TRANSACTION PURPOSE..." required 
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-900 placeholder:text-slate-300 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all h-32 resize-none" 
+                                placeholder="Especifique el motivo de la transacción..." required 
                             />
                         </div>
 
-                        <div className="flex gap-8 pt-6">
-                            <button type="button" onClick={onClose} className="flex-1 text-[11px] font-black text-slate-600 uppercase tracking-[0.5em] hover:text-white transition-colors">Terminate</button>
-                            <button type="submit" className="flex-[2] bg-white text-black py-7 rounded-[2rem] font-black uppercase text-[11px] tracking-[0.4em] shadow-luxury hover:bg-liquid-gold transition-all duration-500 active:scale-95">
-                                Validate Lifecycle
+                        <div className="flex gap-6 pt-4">
+                            <button type="button" onClick={onClose} className="flex-1 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-slate-900 transition-colors">Cancelar</button>
+                            <button type="submit" className="flex-[2] bg-brand-blue text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all active:scale-95">
+                                Registrar Operación
                             </button>
                         </div>
                     </form>
@@ -228,7 +211,7 @@ const CuentasPage: React.FC = () => {
         const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `archive_ledger_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `ledger_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
     };
 
@@ -237,146 +220,132 @@ const CuentasPage: React.FC = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="max-w-[1600px] mx-auto space-y-16 pb-40 px-6 sm:px-12 relative"
+            className="max-w-[1600px] mx-auto space-y-16 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in"
         >
-            {/* --- CINEMATIC AMBIANCE --- */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-liquid-gold/[0.02] blur-[150px] animate-pulse"></div>
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-slate-500/[0.02] blur-[150px] animate-pulse" style={{ animationDelay: '3s' }}></div>
-            </div>
-
             {/* --- LEDGER HEADER --- */}
-            <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-white/5 pb-16">
-                <div className="space-y-8">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-[2px] bg-liquid-gold/40"></div>
-                        <span className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.8em]">Secure Ledger v6</span>
+            <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-slate-200 pb-16">
+                <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Control de Activos</span>
                     </div>
-                    <h1 className="text-7xl sm:text-8xl font-black text-white tracking-tighter uppercase italic leading-none">
-                        Atelier <span className="text-gold-gradient">Vault</span>
+                    <h1 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
+                        Bóveda <span className="text-brand-blue">Financiera</span>
                     </h1>
                 </div>
                 
-                <div className="flex flex-wrap gap-6">
+                <div className="flex flex-wrap gap-4">
                     <motion.button 
-                        whileHover={{ y: -4 }}
+                        whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleExportCSV} 
-                        className="px-12 py-7 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] rounded-[2rem] text-slate-500 hover:text-white transition-all font-black uppercase text-[11px] tracking-[0.4em] flex items-center gap-6 group"
+                        className="px-10 py-5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all font-black uppercase text-[10px] tracking-widest flex items-center gap-4 shadow-sm"
                     >
-                        <ArchiveIcon className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
-                        Archive Output
+                        <ArchiveIcon className="w-4 h-4 text-slate-400" /> 
+                        Exportar Historial
                     </motion.button>
                     
                     <motion.button 
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => setShowForm(true)} 
-                        className="flex items-center gap-6 px-14 py-7 bg-white text-black font-black rounded-[2rem] shadow-gold-glow uppercase text-[11px] tracking-[0.4em] group overflow-hidden relative"
+                        className="flex items-center gap-4 px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl shadow-brand-blue/20 uppercase text-[10px] tracking-widest hover:bg-brand-blue/90 transition-all"
                     >
-                        <div className="absolute inset-0 bg-liquid-gold/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
-                        <PlusIcon className="w-6 h-6 relative z-10" />
-                        <span className="relative z-10">Log Pulse</span>
+                        <PlusIcon className="w-5 h-5" />
+                        Registrar Movimiento
                     </motion.button>
                 </div>
             </motion.div>
 
             {/* --- CORE KPIS --- */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <MetricCard label="Liquidity Signal" value={formatCurrency(balance.ingresos).split(',')[0]} icon={ArrowTrendingUpIcon} colorClass="text-emerald-500" />
-                <MetricCard label="Operational Burn" value={formatCurrency(balance.egresos).split(',')[0]} icon={ArrowTrendingDownIcon} colorClass="text-rose-500" />
-                <MetricCard label="Global Integrity" value={formatCurrency(balance.total).split(',')[0]} icon={ScaleIcon} colorClass={balance.total >= 0 ? "text-white" : "text-rose-500"} />
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <MetricCard label="Flujo de Ingresos" value={formatCurrency(balance.ingresos).split(',')[0]} icon={ArrowTrendingUpIcon} colorClass="text-emerald-500" />
+                <MetricCard label="Egresos Totales" value={formatCurrency(balance.egresos).split(',')[0]} icon={ArrowTrendingDownIcon} colorClass="text-rose-500" />
+                <MetricCard label="Balance Neto" value={formatCurrency(balance.total).split(',')[0]} icon={ScaleIcon} colorClass={balance.total >= 0 ? "text-brand-blue" : "text-rose-500"} />
             </motion.div>
 
             {/* --- MONITORING CONTROLS --- */}
-            <motion.div variants={itemVariants} className="flex flex-col lg:flex-row gap-8">
+            <motion.div variants={itemVariants} className="flex flex-col lg:flex-row gap-6">
                 <div className="relative flex-grow group">
-                    <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none">
-                        <SearchIcon className="w-6 h-6 text-slate-600 group-focus-within:text-liquid-gold transition-colors" />
+                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                        <SearchIcon className="w-5 h-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
                     </div>
                     <input 
                         type="text" 
-                        placeholder="TRACE HASH OR OPERATION SIGNATURE..." 
+                        placeholder="BUSCAR TRANSACCIÓN O USUARIO..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full bg-white/[0.02] border-2 border-white/5 rounded-[2.5rem] py-8 pl-20 pr-8 text-[12px] font-black uppercase tracking-[0.4em] text-white placeholder:text-slate-700 focus:border-liquid-gold/30 outline-none transition-all shadow-inner"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-5 pl-16 pr-6 text-[11px] font-black uppercase tracking-widest text-slate-900 placeholder:text-slate-300 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
                     />
                 </div>
                 
-                <div className="relative lg:w-80 group">
+                <div className="relative lg:w-72">
                     <select 
                         value={filterType} 
                         onChange={e => { setFilterType(e.target.value); setPage(0); }}
-                        className="w-full bg-white/[0.02] border-2 border-white/5 rounded-[2.5rem] py-8 px-10 text-[11px] font-black uppercase tracking-[0.3em] text-white appearance-none cursor-pointer focus:border-liquid-gold/30 outline-none transition-all italic"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-5 px-8 text-[10px] font-black uppercase tracking-widest text-slate-600 appearance-none cursor-pointer focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
                     >
-                        <option value="" className="bg-brand-dark">Protocol: All</option>
-                        <option value="INGRESO" className="bg-brand-dark text-emerald-500 italic">Signal: Inbound</option>
-                        <option value="EGRESO" className="bg-brand-dark text-rose-500 italic">Signal: Outbound</option>
+                        <option value="">Protocolo: Todos</option>
+                        <option value="INGRESO">Tipo: Ingresos</option>
+                        <option value="EGRESO">Tipo: Egresos</option>
                     </select>
-                    <div className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">▼</div>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 text-xs">▼</div>
                 </div>
             </motion.div>
 
             {/* --- LEDGER STREAM --- */}
-            <motion.div variants={itemVariants} className="space-y-6">
+            <motion.div variants={itemVariants} className="space-y-4">
                 <AnimatePresence mode="popLayout">
                     {loading ? (
-                        <div className="py-60 flex flex-col items-center justify-center gap-8">
-                            <Loader2Icon className="w-20 h-20 text-liquid-gold/20 animate-spin" />
-                            <p className="text-[11px] font-black text-slate-700 uppercase tracking-[1em] animate-pulse italic">Scanning Ledger Integrity...</p>
+                        <div className="py-40 flex flex-col items-center justify-center gap-6">
+                            <Loader2Icon className="w-12 h-12 text-brand-blue animate-spin" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Analizando integridad de la bóveda...</p>
                         </div>
                     ) : paginated.length > 0 ? (
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {paginated.map((entry, idx) => {
                                 const isIngreso = entry.tipo === 'INGRESO';
                                 return (
                                     <motion.div 
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
+                                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.05 }}
                                         key={entry.id} 
-                                        className="group glass-card-luxury p-10 flex flex-col lg:flex-row items-center gap-10 border-white/5 hover:border-liquid-gold/20 transition-all duration-700 hover:shadow-gold-glow-sm relative overflow-hidden"
+                                        className="group bg-white p-8 flex flex-col lg:flex-row items-center gap-8 border border-slate-200 rounded-[2.5rem] hover:border-brand-blue/30 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 relative overflow-hidden"
                                     >
-                                        <div className="absolute inset-0 bg-architect-grid opacity-5 pointer-events-none" />
-                                        <div className="absolute left-0 top-0 w-[2px] h-full bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                        
-                                        <div className="flex items-center gap-10 min-w-[220px] relative z-10">
-                                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-700 ${isIngreso ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'} border shadow-inner group-hover:scale-110`}>
-                                                {isIngreso ? <ArrowTrendingUpIcon className="w-8 h-8" /> : <ArrowTrendingDownIcon className="w-8 h-8" />}
+                                        <div className="flex items-center gap-8 min-w-[200px]">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${isIngreso ? 'bg-emerald-50 text-emerald-500 border-emerald-100' : 'bg-rose-50 text-rose-500 border-rose-100'} group-hover:scale-110`}>
+                                                {isIngreso ? <ArrowTrendingUpIcon className="w-7 h-7" /> : <ArrowTrendingDownIcon className="w-7 h-7" />}
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <p className="text-[14px] font-black text-white italic tracking-tighter leading-none">{formatDate(entry.timestamp)}</p>
-                                                <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            <div className="space-y-1">
+                                                <p className="text-[13px] font-black text-slate-900 tracking-tighter">{formatDate(entry.timestamp)}</p>
+                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
 
-                                        <div className="flex-grow min-w-0 space-y-5 relative z-10">
-                                            <div className="flex items-center gap-5">
-                                                <div className={`text-[9px] font-black uppercase tracking-[0.5em] px-5 py-2 rounded-xl border-2 italic ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'} shadow-lg shadow-black/50`}>
-                                                    {isIngreso ? 'ASSET_INJECTION' : 'CAPITAL_BURN'}
+                                        <div className="flex-grow min-w-0 space-y-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${isIngreso ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                                    {isIngreso ? 'INGRESO_ACTIVO' : 'EGRESO_CAPITAL'}
                                                 </div>
-                                                <div className="flex items-center gap-3 px-4 py-2 bg-black/40 rounded-xl border border-white/5">
-                                                    <FingerPrintIcon className="w-3.5 h-3.5 text-liquid-gold opacity-40" />
-                                                    <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">#{entry.id.substring(0, 10).toUpperCase()}</span>
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
+                                                    <FingerPrintIcon className="w-3 h-3 text-slate-300" />
+                                                    <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">#{entry.id.substring(0, 8)}</span>
                                                 </div>
                                             </div>
-                                            <h4 className="text-3xl font-black text-white uppercase tracking-tight italic group-hover:text-liquid-gold transition-colors duration-500 truncate leading-none">{entry.detalle}</h4>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold/20 animate-pulse" />
-                                                <p className="text-[9px] font-bold text-slate-800 uppercase tracking-[0.4em] leading-none truncate max-w-sm group-hover:text-slate-600 transition-colors">SIG: {entry.hash}</p>
-                                            </div>
+                                            <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight truncate leading-none">{entry.detalle}</h4>
+                                            <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest truncate max-w-md">SIG: {entry.hash}</p>
                                         </div>
 
-                                        <div className="text-right min-w-[280px] space-y-3 relative z-10">
-                                            <div className="flex flex-col items-end">
-                                                <p className={`text-6xl font-black italic tracking-tighter ${isIngreso ? 'text-emerald-500' : 'text-rose-500'} drop-shadow-2xl leading-none`}>
-                                                    {isIngreso ? '+$' : '-$'}{formatCurrency(entry.monto).replace('$', '').split(',')[0]}
-                                                    <span className="text-2xl opacity-20 ml-1">.00</span>
-                                                </p>
-                                                <div className="h-[2px] w-24 bg-gradient-to-l from-white/10 to-transparent mt-2" />
-                                            </div>
-                                            <div className="flex items-center justify-end gap-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] italic group-hover:text-white transition-colors duration-500">
-                                                <UserIcon className="w-4 h-4 opacity-40 group-hover:text-liquid-gold transition-colors" />
+                                        <div className="text-right min-w-[220px] space-y-2">
+                                            <p className={`text-4xl font-black tracking-tighter ${isIngreso ? 'text-emerald-500' : 'text-rose-500'} leading-none`}>
+                                                {isIngreso ? '+$' : '-$'}{formatCurrency(entry.monto).replace('$', '').split(',')[0]}
+                                                <span className="text-lg opacity-30 ml-1">.00</span>
+                                            </p>
+                                            <div className="flex items-center justify-end gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                <UserIcon className="w-3.5 h-3.5 text-slate-300" />
                                                 AUTH BY_{entry.usuario.split(' ')[0]}
                                             </div>
                                         </div>
@@ -386,52 +355,53 @@ const CuentasPage: React.FC = () => {
                         </div>
                     ) : (
                         <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="py-60 glass-card-luxury text-center flex flex-col items-center justify-center border-dashed border-white/5 relative overflow-hidden"
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                            className="py-40 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200 text-center flex flex-col items-center justify-center"
                         >
-                            <div className="absolute inset-0 bg-liquid-gold opacity-[0.01]"></div>
-                            <ShieldCheckIcon className="w-32 h-32 text-slate-900 mb-10" />
-                            <h3 className="text-4xl font-black text-slate-700 uppercase tracking-widest italic">Static Ledger</h3>
-                            <p className="text-slate-800 text-[11px] font-black uppercase mt-6 tracking-[0.8em] max-w-lg mx-auto leading-relaxed">No financial signals detected in current temporal window • Status Normal</p>
+                            <ShieldCheckIcon className="w-20 h-20 text-slate-100 mb-6" />
+                            <h3 className="text-2xl font-black text-slate-300 uppercase tracking-widest italic">Historial Vacío</h3>
+                            <p className="text-slate-400 text-[9px] font-black uppercase mt-4 tracking-widest">No se detectan señales financieras en la ventana actual.</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </motion.div>
 
-            {/* --- PAGINATION PROTOCOL --- */}
+            {/* --- PAGINATION --- */}
             {totalPages > 1 && (
-                <motion.div variants={itemVariants} className="flex justify-center items-center gap-16 pt-12">
-                    <motion.button 
-                        whileHover={{ x: -10 }}
+                <motion.div variants={itemVariants} className="flex justify-center items-center gap-12 pt-8">
+                    <button 
                         disabled={page === 0} 
                         onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }} 
-                        className="px-12 py-5 bg-white/5 border border-white/5 rounded-[2rem] text-[11px] font-black text-white uppercase tracking-[0.5em] disabled:opacity-20 hover:bg-white/10 transition-all font-black"
+                        className="px-10 py-4 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm"
                     >
-                        Previous Signal
-                    </motion.button>
+                        Anterior
+                    </button>
                     
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="text-[14px] font-black text-white italic tracking-tighter bg-liquid-gold/20 px-6 py-2 rounded-xl flex items-center gap-3">
-                            <span className="text-liquid-gold">{page + 1}</span>
-                            <span className="text-white/20">/</span>
-                            <span className="text-slate-500">{totalPages}</span>
+                    <div className="flex flex-col items-center gap-1">
+                        <span className="text-[12px] font-black text-slate-900 bg-slate-100 px-5 py-2 rounded-xl flex items-center gap-2">
+                            <span className="text-brand-blue">{page + 1}</span>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-slate-400">{totalPages}</span>
                         </span>
-                        <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.4em]">Index Position</p>
                     </div>
 
-                    <motion.button 
-                        whileHover={{ x: 10 }}
+                    <button 
                         disabled={page >= totalPages - 1} 
                         onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }} 
-                        className="px-12 py-5 bg-white/5 border border-white/5 rounded-[2rem] text-[11px] font-black text-white uppercase tracking-[0.5em] disabled:opacity-20 hover:bg-white/10 transition-all font-black"
+                        className="px-10 py-4 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm"
                     >
-                        Next Signal
-                    </motion.button>
+                        Siguiente
+                    </button>
                 </motion.div>
             )}
 
             {showForm && <TransactionFormModal onClose={() => setShowForm(false)} onSave={handleAddTransaction} />}
+
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+            `}</style>
         </motion.div>
     );
 };
