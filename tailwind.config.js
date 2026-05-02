@@ -11,11 +11,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-blue': '#0A1E40', 
+        'brand-blue': '#0ea5e9', // New Electric Blue
+        'brand-blue-dark': '#0369a1',
+        'brand-light': '#f8fafc',
+        'brand-white': '#ffffff',
         'brand-red': '#E11D48',  
-        'brand-dark': '#0c1324', // Unified Obsidian from Stitch
+        'brand-dark': '#0c1324', 
         'liquid-gold': '#D4AF37', 
-        'gold-bright': '#f2ca50', // Stitch primary
+        'gold-bright': '#f2ca50', 
         'surface-light': '#F8FAFC',
         'surface-dark': '#0c1324',
         'luxury-slate': '#191f31',
