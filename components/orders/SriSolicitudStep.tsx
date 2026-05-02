@@ -15,7 +15,12 @@ import {
     ExclamationTriangleIcon,
     ShieldCheckIcon,
     LayersIcon,
-    ShieldIcon
+    ShieldIcon,
+    CpuIcon,
+    Building2Icon,
+    BoltIcon,
+    RocketLaunchIcon,
+    ArrowPathIcon
 } from '../Icons';
 import { Cliente } from '../../types';
 import { useData } from '../../contexts/DataContext';
@@ -42,13 +47,13 @@ interface SriSolicitudStepProps {
 const ValidationTerminal = ({ active }: { active: boolean }) => {
     const [logs, setLogs] = useState<string[]>([]);
     const messages = [
-        "INITIATING SECURE SRI PROTOCOL [V5.1.0]...",
+        "INITIATING_SECURE_SRI_PROTOCOL [V5.1.0]...",
         "RSA_KEY_EXCHANGE: AUTHENTICATED [0x7FF-EA]",
-        "ESTABLISHING TRACEABLE TRADEMARK LINK...",
-        "ENCRYPTING PAYLOAD [AES-256-GCM]...",
-        "VALIDATING POINT EMISSION DATA...",
+        "ESTABLISHING_TRACEABLE_TRADEMARK_LINK...",
+        "ENCRYPTING_PAYLOAD [AES-256-GCM]...",
+        "VALIDATING_POINT_EMISSION_DATA...",
         "TAXPAYER_REGIMEN_MATCH: OK",
-        "SYNCING METADATA WITH SUPABASE PRODUCTION...",
+        "SYNCING_METADATA_WITH_SUPABASE_PRODUCTION...",
         "SECURE_TOKEN_GRANTED: PR-992-DELTA",
         "HANDSHAKE_COMPLETE: STANDBY_DEPLOY"
     ];
@@ -70,22 +75,26 @@ const ValidationTerminal = ({ active }: { active: boolean }) => {
     }, [active]);
 
     return (
-        <div className="bg-black/60 backdrop-blur-xl rounded-xl border border-white/5 p-3 h-24 font-mono text-[8px] overflow-hidden relative group shadow-inner">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/20 animate-scan-slow z-20" />
-            <div className="space-y-0.5 relative z-10">
-                <div className="flex justify-between items-center mb-1 border-b border-white/5 pb-0.5">
-                    <span className="text-[6px] text-liquid-gold/40 tracking-[0.2em]">SRI_LIVE_STREAM</span>
-                    <div className="flex items-center gap-1">
-                        <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-[6px] text-emerald-500/60 font-black uppercase">LINK_STABLE</span>
+        <div className="bg-black/80 backdrop-blur-3xl rounded-[2rem] border border-white/10 p-8 h-48 font-mono text-[10px] overflow-hidden relative group shadow-2xl tactical-border">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-liquid-gold/40 animate-shimmer z-20" />
+            <div className="absolute inset-0 bg-scanlines opacity-10 pointer-events-none" />
+            
+            <div className="space-y-2 relative z-10">
+                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                    <span className="text-[10px] text-liquid-gold font-black tracking-[0.5em] italic">SRI_LIVE_TELEMETRY</span>
+                    <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-gold-glow" />
+                        <span className="text-[9px] text-emerald-500 font-black uppercase tracking-widest">LINK_STABLE</span>
                     </div>
                 </div>
-                {logs.map((log, i) => (
-                    <div key={i} className="flex gap-2 items-center opacity-80">
-                        <span className="text-liquid-gold/20">[{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span>
-                        <span className={i === logs.length - 1 ? "text-liquid-gold italic" : "text-slate-500"}>{log}</span>
-                    </div>
-                ))}
+                <div className="space-y-1.5 overflow-y-auto max-h-24 custom-scrollbar">
+                    {logs.map((log, i) => (
+                        <div key={i} className="flex gap-4 items-center animate-in slide-in-from-left-4 duration-300">
+                            <span className="text-liquid-gold/30 font-black">[{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span>
+                            <span className={i === logs.length - 1 ? "text-liquid-gold italic font-black" : "text-slate-500 font-bold"}>{log}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -103,17 +112,16 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
     const [puntoEmision, setPuntoEmision] = useState(initialData.puntoEmision || '001');
     const [clave, setClave] = useState(initialData.clave || '');
     const [modo, setModo] = useState<'NUEVO' | 'RENOVACION'>(initialData.modo || 'NUEVO');
-    const [isProcessing, setIsProcessing] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [localActividades, setLocalActividades] = useState<string[]>(() => {
-        // Priorizar actividades de fiscal_data (JSONB) si existen, sino usar el string anterior
         if (cliente.fiscal_data?.actividades && cliente.fiscal_data.actividades.length > 0) {
             return cliente.fiscal_data.actividades.map(a => a.descripcion);
         }
         return cliente.actividades ? cliente.actividades.split('|').map(a => a.trim()).filter(a => a.length > 0) : [];
     });
 
-    const [availableEstablecimientos, setAvailableEstablecimientos] = useState<{codigo: string, nombre: string, direccion: string}[]>(() => {
+    const [availableEstablecimientos] = useState<{codigo: string, nombre: string, direccion: string}[]>(() => {
         if (cliente.fiscal_data?.establecimientos && cliente.fiscal_data.establecimientos.length > 0) {
             return cliente.fiscal_data.establecimientos.map(e => ({
                 codigo: e.codigo,
@@ -178,355 +186,325 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
         await persistActividades(updated);
     };
 
-    const handleContinue = () => {
-        setIsProcessing(true);
+    const handleSubmit = () => {
+        setIsSubmitting(true);
         setTimeout(() => {
             onComplete({
                 actividad,
-                establecimiento: establecimiento || '001',
-                puntoEmision: puntoEmision || '001',
+                establecimiento,
+                puntoEmision,
                 clave,
                 modo
             });
-        }, 3800); // Sync with faster terminal
+        }, 3200);
     };
 
+    const isFormValid = actividad && establecimiento.length === 3 && puntoEmision.length === 3 && clave;
+
     return (
-        <div className="space-y-4 md:space-y-6 relative overflow-hidden px-1 md:px-0">
+        <div className="space-y-10 md:space-y-14 relative overflow-hidden px-1 md:px-0">
             {/* Tactical Grid Background Overlay */}
             <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:40px_40px] z-0" />
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 relative pb-4 md:pb-6 border-b border-white/5 z-10">
-                <div className="absolute top-0 left-0 w-24 md:w-32 h-1 bg-liquid-gold shadow-gold-glow" />
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                    <div className="min-w-0">
-                        <h2 className="text-xl md:text-2xl font-black text-white italic tracking-tighter uppercase mb-0.5 leading-none truncate">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-10 relative pb-10 md:pb-14 border-b border-white/10 z-10">
+                <div className="absolute top-0 left-0 w-32 md:w-48 h-[2px] bg-liquid-gold shadow-gold-glow animate-pulse" />
+                <div className="flex items-center gap-6 w-full md:w-auto">
+                    <div className="min-w-0 space-y-2">
+                        <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-none truncate">
                             Protocolo <span className="text-gold-gradient">Elite SRI</span>
                         </h2>
-                        <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-green-glow" />
-                            <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[7px] md:text-[8px]">
-                                Validación Tributaria en Tiempo Real
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-gold-glow" />
+                            <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-[9px] md:text-[11px] italic">
+                                VALIDACIÓN_TRIBUTARIA_SÍNCRONA
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="w-full md:w-auto bg-black/40 border border-white/5 px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl flex items-center gap-4 md:gap-5 backdrop-blur-2xl relative group overflow-hidden shadow-luxury">
-                    <div className="absolute inset-0 bg-liquid-gold/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <div className="w-7 h-7 md:w-9 md:h-9 bg-liquid-gold/10 rounded-lg flex items-center justify-center text-liquid-gold border border-liquid-gold/10 shadow-gold-glow-soft flex-shrink-0">
-                        <FingerPrintIcon className="w-4 h-4 md:w-5 md:h-5" />
+                <div className="w-full md:w-auto glass-panel-obsidian border border-white/10 px-8 md:px-12 py-6 md:py-8 rounded-[2.5rem] flex items-center gap-6 md:gap-10 relative group overflow-hidden shadow-2xl tactical-border">
+                    <div className="absolute inset-0 bg-gradient-to-r from-liquid-gold/10 via-transparent to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-liquid-gold text-black rounded-2xl flex items-center justify-center shadow-gold-glow flex-shrink-0 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                        <FingerPrintIcon className="w-6 h-6 md:w-8 md:h-8 relative z-10" />
                     </div>
-                    <div className="min-w-0">
-                        <p className="text-[6px] md:text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">CONTRIBUYENTE_AUTH</p>
-                        <p className="text-white font-black italic tracking-tight uppercase text-[9px] md:text-xs leading-none truncate">{cliente.nombre}</p>
+                    <div className="min-w-0 space-y-1">
+                        <p className="text-[10px] md:text-[12px] text-liquid-gold font-black uppercase tracking-[0.4em] italic mb-1">OPERADOR_VERIFIED</p>
+                        <p className="text-white font-black italic tracking-tighter uppercase text-xl md:text-3xl leading-none truncate">{cliente.nombre}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 md:gap-10 relative z-10">
-                <div className="space-y-6 md:space-y-8">
-                    <div className="space-y-4 md:space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4 ml-1">
-                            <label className="flex items-center gap-2 md:gap-3 text-[9px] md:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">
-                                <SparklesIcon className="w-4 h-4 text-liquid-gold animate-pulse" />
-                                Actividad Económica
-                            </label>
-                            <button 
-                                onClick={() => setIsAdding(true)}
-                                className="w-full sm:w-auto text-[8px] md:text-[10px] bg-white/5 hover:bg-liquid-gold px-4 py-2 md:py-3 rounded-lg md:rounded-xl text-white hover:text-black font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/10 hover:border-liquid-gold shadow-lg active:scale-95"
-                            >
-                                <PlusIcon className="w-3 h-3" /> Inyectar Registro
-                            </button>
-                        </div>
-                        
-                        <div className="space-y-3 md:space-y-4 max-h-[250px] md:max-h-[400px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar">
-                            <AnimatePresence mode="popLayout">
-                                {isAdding && (
-                                    <motion.div 
-                                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        className="p-5 md:p-8 bg-liquid-gold/10 border-2 border-liquid-gold rounded-2xl md:rounded-[2rem] space-y-5 shadow-gold-glow"
-                                    >
-                                        <textarea 
-                                            autoFocus
-                                            value={newActInput}
-                                            onChange={(e) => setNewActInput(e.target.value)}
-                                            placeholder="DESCRIBA LA ACTIVIDAD TRIBUTARIA SEGÚN RUC..."
-                                            className="w-full bg-black/60 border border-liquid-gold/20 rounded-xl md:rounded-2xl p-4 md:p-6 text-white text-xs md:text-base font-bold uppercase min-h-[100px] md:min-h-[140px] focus:ring-0 focus:border-liquid-gold placeholder:text-liquid-gold/30"
-                                        />
-                                        <div className="flex gap-3 md:gap-4">
-                                            <button 
-                                                onClick={handleAddManual}
-                                                className="flex-1 bg-white text-black py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-[10px] md:text-[13px] uppercase tracking-widest hover:bg-liquid-gold transition-all active:scale-95 shadow-xl"
-                                            >
-                                                Sincronizar Datos
-                                            </button>
-                                            <button 
-                                                onClick={() => setIsAdding(false)}
-                                                className="px-5 md:px-6 bg-black/40 text-white rounded-xl md:rounded-2xl hover:bg-white/10 transition-colors"
-                                            >
-                                                <XMarkIcon className="w-5 h-5 md:w-6 md:h-6" />
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {localActividades.map((acc, idx) => (
-                                    <motion.div key={idx} layout initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
-                                        {editingIdx === idx ? (
-                                            <div className="p-5 md:p-8 bg-white/5 border-2 border-white/20 rounded-2xl md:rounded-[2rem] space-y-5 backdrop-blur-3xl">
-                                                <textarea 
-                                                    autoFocus
-                                                    value={editInput}
-                                                    onChange={(e) => setEditInput(e.target.value)}
-                                                    className="w-full bg-black/60 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 text-white text-xs md:text-base font-bold uppercase min-h-[100px] md:min-h-[140px] focus:ring-0 focus:border-liquid-gold"
-                                                />
-                                                <div className="flex gap-3 md:gap-4">
-                                                    <button 
-                                                        onClick={handleSaveEdit}
-                                                        className="flex-1 bg-liquid-gold text-black py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-[10px] md:text-[13px] uppercase tracking-widest shadow-gold-glow active:scale-95"
-                                                    >
-                                                        Guardar Cambios
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => setEditingIdx(null)}
-                                                        className="px-5 md:px-6 bg-black/40 text-white rounded-xl md:rounded-2xl hover:bg-white/10"
-                                                    >
-                                                        <XMarkIcon className="w-5 h-5 md:w-6 md:h-6" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="group relative">
-                                                <button
-                                                    onClick={() => setActividad(acc)}
-                                                    className={`w-full text-left p-4 md:p-6 rounded-xl md:rounded-[1.5rem] border transition-all duration-500 flex items-center justify-between overflow-hidden relative ${
-                                                        actividad === acc 
-                                                        ? 'bg-liquid-gold/10 border-liquid-gold/50 text-white shadow-gold-glow-sm' 
-                                                        : 'bg-white/[0.02] border-white/5 text-slate-500 hover:border-white/20 hover:bg-white/[0.05]'
-                                                    }`}
-                                                >
-                                                    {actividad === acc && (
-                                                        <motion.div 
-                                                            layoutId="glow" 
-                                                            className="absolute inset-0 bg-gradient-to-r from-liquid-gold/5 via-transparent to-liquid-gold/5 pointer-events-none" 
-                                                        />
-                                                    )}
-                                                    <div className="flex flex-col gap-1.5 relative z-10 min-w-0 w-full">
-                                                        <div className="flex items-center gap-2">
-                                                            <LayersIcon className={`w-3 h-3 ${actividad === acc ? 'text-liquid-gold' : 'text-slate-600'}`} />
-                                                            <span className="text-[7px] font-black uppercase tracking-[0.2em] opacity-40 font-mono">NODE_REG_{idx + 1}</span>
-                                                        </div>
-                                                        <span className={`text-[10px] md:text-[13px] font-black uppercase italic tracking-tight leading-tight pr-14 transition-colors ${actividad === acc ? 'text-white' : 'group-hover:text-white'}`}>
-                                                            {acc}
-                                                        </span>
-                                                    </div>
-                                                    {actividad === acc && (
-                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-liquid-gold rounded-lg flex items-center justify-center text-black shadow-lg flex-shrink-0 z-10">
-                                                            <CheckBadgeIcon className="w-5 h-5 md:w-6 md:h-6" />
-                                                        </div>
-                                                    )}
-                                                </button>
-                                                
-                                                <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 md:gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 z-20">
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEditingIdx(idx);
-                                                            setEditInput(acc);
-                                                        }}
-                                                        className="w-9 h-9 md:w-12 md:h-12 bg-black/80 backdrop-blur-md text-white rounded-xl border border-white/10 hover:bg-liquid-gold hover:text-black hover:border-liquid-gold transition-all shadow-xl flex items-center justify-center"
-                                                    >
-                                                        <PencilIcon className="w-4 h-4 md:w-5 md:h-5" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => handleDeleteAct(idx, e)}
-                                                        className="w-9 h-9 md:w-12 md:h-12 bg-black/80 backdrop-blur-md text-white rounded-xl border border-white/10 hover:bg-orange-950 transition-all shadow-xl flex items-center justify-center"
-                                                    >
-                                                        <TrashIcon className="w-4 h-4 md:w-5 md:h-5" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-
-                            {localActividades.length === 0 && !isAdding && (
-                                <div className="p-10 md:p-16 bg-liquid-gold/5 border-2 border-dashed border-liquid-gold/20 rounded-2xl md:rounded-[3rem] text-center flex flex-col items-center gap-4 md:gap-6">
-                                    <div className="w-16 h-16 md:w-24 md:h-24 bg-liquid-gold/10 rounded-full flex items-center justify-center text-liquid-gold/40 animate-pulse">
-                                        <ExclamationTriangleIcon className="w-8 h-8 md:w-12 md:h-12" />
-                                    </div>
-                                    <p className="text-[10px] md:text-[13px] text-liquid-gold font-black uppercase tracking-[0.2em] max-w-[250px] italic">
-                                        Sistema en espera: Inyecte registro de actividad para habilitar protocolo.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16 relative z-10">
+                {/* Left Column: Activity Management */}
+                <div className="space-y-10 md:space-y-12">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 md:gap-10">
+                        <label className="flex items-center gap-4 text-[12px] md:text-[14px] text-slate-400 font-black uppercase tracking-[0.4em] italic">
+                            <SparklesIcon className="w-6 h-6 text-liquid-gold animate-pulse" />
+                            Vector de Actividad
+                        </label>
+                        <button 
+                            onClick={() => setIsAdding(true)}
+                            className="w-full sm:w-auto text-[11px] md:text-[13px] bg-white/5 hover:bg-liquid-gold px-8 py-4 md:py-5 rounded-[2rem] text-white hover:text-black font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-4 border border-white/10 hover:border-liquid-gold shadow-2xl active:scale-95 italic"
+                        >
+                            <PlusIcon className="w-5 h-5" /> INYECTAR_REGISTRO
+                        </button>
                     </div>
+                    
+                    <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[600px] overflow-y-auto pr-4 md:pr-8 custom-scrollbar">
+                        <AnimatePresence mode="popLayout">
+                            {isAdding && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: -40, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="p-10 md:p-14 bg-liquid-gold/10 border-2 border-liquid-gold rounded-[3rem] md:rounded-[4rem] space-y-8 shadow-gold-glow tactical-border"
+                                >
+                                    <textarea 
+                                        autoFocus
+                                        value={newActInput}
+                                        onChange={(e) => setNewActInput(e.target.value)}
+                                        placeholder="DESCRIBA LA ACTIVIDAD TRIBUTARIA SEGÚN RUC..."
+                                        className="w-full bg-black/60 border border-liquid-gold/40 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 text-white text-base md:text-xl font-black uppercase min-h-[150px] md:min-h-[200px] focus:ring-0 focus:border-liquid-gold placeholder:text-liquid-gold/20 italic"
+                                    />
+                                    <div className="flex gap-4 md:gap-6">
+                                        <button 
+                                            onClick={handleAddManual}
+                                            className="flex-1 bg-white text-black py-6 md:py-8 rounded-[2rem] font-black text-[12px] md:text-[15px] uppercase tracking-[0.3em] hover:bg-liquid-gold transition-all active:scale-95 shadow-2xl italic"
+                                        >
+                                            AUTORIZAR_SINCRONIZACIÓN
+                                        </button>
+                                        <button 
+                                            onClick={() => setIsAdding(false)}
+                                            className="px-8 md:px-10 bg-black/60 text-white rounded-[2rem] hover:bg-white/10 transition-all border border-white/10"
+                                        >
+                                            <XMarkIcon className="w-8 h-8" />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
 
-                    <div className="space-y-4 md:space-y-6">
-                        <label className="text-[9px] md:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] ml-1 font-mono">Execution_Mode_Select</label>
-                        <div className="flex bg-black/60 p-1.5 md:p-2 rounded-xl md:rounded-[2rem] border border-white/10 gap-2 md:gap-3 shadow-inner">
-                            {(['NUEVO', 'RENOVACION'] as const).map(m => (
+                            {localActividades.map((acc, idx) => (
+                                <motion.div key={idx} layout initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
+                                    {editingIdx === idx ? (
+                                        <div className="p-10 md:p-14 glass-panel-obsidian border-2 border-white/20 rounded-[3rem] md:rounded-[4rem] space-y-8 backdrop-blur-3xl tactical-border shadow-2xl">
+                                            <textarea 
+                                                autoFocus
+                                                value={editInput}
+                                                onChange={(e) => setEditInput(e.target.value)}
+                                                className="w-full bg-black/80 border border-white/20 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 text-white text-base md:text-xl font-black uppercase min-h-[150px] md:min-h-[200px] focus:ring-0 focus:border-liquid-gold italic"
+                                            />
+                                            <div className="flex gap-4 md:gap-6">
+                                                <button 
+                                                    onClick={handleSaveEdit}
+                                                    className="flex-1 bg-liquid-gold text-black py-6 md:py-8 rounded-[2rem] font-black text-[12px] md:text-[15px] uppercase tracking-[0.3em] shadow-gold-glow active:scale-95 italic"
+                                                >
+                                                    SOBRESCRIBIR_REGISTRO
+                                                </button>
+                                                <button 
+                                                    onClick={() => setEditingIdx(null)}
+                                                    className="px-8 md:px-10 bg-black/60 text-white rounded-[2rem] hover:bg-white/10 border border-white/10 transition-all"
+                                                >
+                                                    <XMarkIcon className="w-8 h-8" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="group relative">
+                                            <button
+                                                onClick={() => setActividad(acc)}
+                                                className={`w-full text-left p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border transition-all duration-700 flex items-center justify-between overflow-hidden relative ${
+                                                    actividad === acc 
+                                                    ? 'bg-liquid-gold/10 border-liquid-gold/60 text-white shadow-gold-glow' 
+                                                    : 'bg-white/[0.03] border-white/5 text-slate-500 hover:border-white/20 hover:bg-white/[0.06]'
+                                                }`}
+                                            >
+                                                {actividad === acc && (
+                                                    <motion.div 
+                                                        layoutId="glow" 
+                                                        className="absolute inset-0 bg-gradient-to-r from-liquid-gold/10 via-transparent to-liquid-gold/10 pointer-events-none" 
+                                                    />
+                                                )}
+                                                <div className="flex flex-col gap-3 relative z-10 min-w-0 w-full">
+                                                    <div className="flex items-center gap-3">
+                                                        <LayersIcon className={`w-4 h-4 ${actividad === acc ? 'text-liquid-gold shadow-gold-glow' : 'text-slate-700'}`} />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40 font-mono italic">NODE_REG_{idx + 1}</span>
+                                                    </div>
+                                                    <span className={`text-base md:text-xl font-black uppercase italic tracking-tight leading-tight pr-20 transition-all duration-500 ${actividad === acc ? 'text-white' : 'group-hover:text-white'}`}>
+                                                        {acc}
+                                                    </span>
+                                                </div>
+                                                {actividad === acc && (
+                                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 md:w-20 md:h-20 bg-liquid-gold rounded-[1.5rem] flex items-center justify-center text-black shadow-gold-glow flex-shrink-0 z-10 animate-scale-in">
+                                                        <CheckBadgeIcon className="w-8 h-8 md:w-12 md:h-12" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                            
+                                            <div className="absolute right-8 md:right-12 top-1/2 -translate-y-1/2 flex items-center gap-4 md:gap-6 opacity-0 group-hover:opacity-100 transition-all translate-x-10 group-hover:translate-x-0 z-20">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingIdx(idx);
+                                                        setEditInput(acc);
+                                                    }}
+                                                    className="w-12 h-12 md:w-16 md:h-16 glass-panel-obsidian text-white rounded-2xl border border-white/10 hover:bg-liquid-gold hover:text-black hover:border-liquid-gold transition-all shadow-2xl flex items-center justify-center"
+                                                >
+                                                    <PencilIcon className="w-6 h-6 md:w-8 md:h-8" />
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => handleDeleteAct(idx, e)}
+                                                    className="w-12 h-12 md:w-16 md:h-16 glass-panel-obsidian text-rose-500 rounded-2xl border border-rose-500/10 hover:bg-rose-600 hover:text-white transition-all shadow-2xl flex items-center justify-center"
+                                                >
+                                                    <TrashIcon className="w-6 h-6 md:w-8 md:h-8" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+
+                        {localActividades.length === 0 && !isAdding && (
+                            <div className="p-16 md:p-24 bg-liquid-gold/5 border-2 border-dashed border-liquid-gold/20 rounded-[3rem] md:rounded-[4rem] text-center flex flex-col items-center gap-8">
+                                <div className="w-24 h-24 md:w-32 md:h-32 bg-liquid-gold/10 rounded-full flex items-center justify-center text-liquid-gold/40 animate-pulse border border-liquid-gold/20 shadow-gold-glow-soft">
+                                    <ExclamationTriangleIcon className="w-12 h-12 md:w-16 md:h-16" />
+                                </div>
+                                <p className="text-[12px] md:text-[16px] text-liquid-gold font-black uppercase tracking-[0.4em] max-w-sm italic leading-relaxed">
+                                    PROTOCOL_PENDING: Inyecte registro de actividad para habilitar despliegue.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Column: Execution Parameters */}
+                <div className="space-y-10 md:space-y-14">
+                    {/* Execution Mode */}
+                    <div className="space-y-8">
+                        <label className="flex items-center gap-4 text-[12px] md:text-[14px] text-slate-400 font-black uppercase tracking-[0.4em] italic">
+                            <CpuIcon className="w-6 h-6 text-liquid-gold animate-pulse" />
+                            Modo de Ejecución
+                        </label>
+                        <div className="grid grid-cols-2 p-3 bg-black/60 rounded-[2.5rem] border border-white/10 relative overflow-hidden group shadow-2xl tactical-border">
+                            <div className="absolute inset-0 bg-scanlines opacity-5 pointer-events-none" />
+                            {['NUEVO', 'RENOVACION'].map((m) => (
                                 <button
                                     key={m}
-                                    onClick={() => setModo(m)}
-                                    className={`flex-1 py-3 md:py-4 rounded-lg md:rounded-[1.5rem] text-[7px] md:text-[10px] font-black uppercase tracking-widest md:tracking-[0.2em] transition-all duration-500 relative overflow-hidden ${
-                                        modo === m ? 'text-black' : 'text-slate-600 hover:text-white hover:bg-white/5'
+                                    onClick={() => setModo(m as 'NUEVO' | 'RENOVACION')}
+                                    className={`relative z-10 py-6 md:py-8 rounded-[2rem] text-[12px] md:text-[15px] font-black uppercase tracking-[0.4em] transition-all duration-700 italic ${
+                                        modo === m 
+                                        ? 'text-black shadow-gold-glow' 
+                                        : 'text-slate-500 hover:text-white'
                                     }`}
                                 >
                                     {modo === m && (
                                         <motion.div 
-                                            layoutId="modeGlow" 
-                                            className="absolute inset-0 bg-liquid-gold shadow-gold-glow-strong" 
+                                            layoutId="mode-bg"
+                                            className="absolute inset-0 bg-liquid-gold rounded-[2rem] -z-10"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                         />
                                     )}
-                                    <span className="relative z-10">{m === 'NUEVO' ? 'Primer Talonario' : 'Renovación SRI'}</span>
+                                    {m === 'NUEVO' ? 'Primer Talonario' : 'Renovación SRI'}
                                 </button>
                             ))}
                         </div>
                     </div>
-                </div>
 
-                <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 space-y-6 md:space-y-8 relative overflow-hidden shadow-2xl self-start">
-                    {/* Industrial Scanners Background */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/[0.03] blur-[120px] pointer-events-none" />
-                    <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/[0.02] blur-[100px] pointer-events-none" />
-                    
-                    <div className="grid grid-cols-2 gap-4 md:gap-6 relative z-10">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 px-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold/40 animate-pulse" />
-                                <span className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">Establecimiento</span>
+                    {/* SRI Credentials */}
+                    <div className="glass-panel-obsidian border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 space-y-10 md:space-y-12 relative overflow-hidden shadow-2xl tactical-border">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-liquid-gold/[0.03] blur-[120px] pointer-events-none" />
+                        
+                        <div className="grid grid-cols-2 gap-8 md:gap-12 relative z-10">
+                            <div className="space-y-4">
+                                <label className="text-[11px] md:text-[13px] text-liquid-gold font-black uppercase tracking-[0.4em] ml-2 italic">Establecimiento</label>
+                                <div className="relative group/input">
+                                    <MapPinIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-liquid-gold/40 group-focus-within/input:text-liquid-gold transition-colors" />
+                                    <select 
+                                        value={establecimiento}
+                                        onChange={(e) => setEstablecimiento(e.target.value)}
+                                        className="w-full bg-black/60 border border-white/10 rounded-[2rem] py-6 md:py-8 pl-16 pr-8 text-white font-black text-xl md:text-3xl focus:border-liquid-gold focus:ring-0 transition-all uppercase tracking-widest italic appearance-none outline-none cursor-pointer text-center"
+                                    >
+                                        {availableEstablecimientos.map(e => (
+                                            <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white italic">{e.codigo}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="relative group/input">
-                                <div className="absolute inset-0 bg-liquid-gold/5 blur-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity rounded-2xl" />
-                                <select 
-                                    value={establecimiento}
-                                    onChange={(e) => setEstablecimiento(e.target.value)}
-                                    className="relative w-full bg-black/40 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-5 text-white font-black text-center text-xl md:text-3xl focus:bg-black/80 transition-all duration-500 shadow-inner font-mono appearance-none outline-none cursor-pointer tracking-tighter"
-                                >
-                                    {availableEstablecimientos.map(e => (
-                                        <option key={e.codigo} value={e.codigo} className="bg-slate-900 text-white text-[10px] md:text-sm italic">
-                                            {e.codigo}
-                                        </option>
-                                    ))}
-                                    <option value="custom" className="bg-slate-900 text-white text-[10px] md:text-sm">+ OTRO</option>
-                                </select>
-                                <MapPinIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
+
+                            <div className="space-y-4">
+                                <label className="text-[11px] md:text-[13px] text-liquid-gold font-black uppercase tracking-[0.4em] ml-2 italic">Punto de Emisión</label>
+                                <div className="relative group/input">
+                                    <BoltIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-liquid-gold/40 group-focus-within/input:text-liquid-gold transition-colors" />
+                                    <input 
+                                        type="text"
+                                        value={puntoEmision}
+                                        onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                        placeholder="001"
+                                        className="w-full bg-black/60 border border-white/10 rounded-[2rem] py-6 md:py-8 pl-16 pr-8 text-white font-black text-xl md:text-3xl placeholder:text-white/10 focus:border-liquid-gold focus:ring-0 transition-all uppercase tracking-widest italic text-center"
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 px-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold/40 animate-pulse" />
-                                <span className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">Punto Emisión</span>
-                            </div>
-                            <div className="relative group/input">
-                                <div className="absolute inset-0 bg-liquid-gold/5 blur-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity rounded-2xl" />
+                        <div className="space-y-4 relative z-10">
+                            <label className="text-[11px] md:text-[13px] text-liquid-gold font-black uppercase tracking-[0.4em] ml-2 italic">Clave de Acceso SRI</label>
+                            <div className="relative group/pass">
+                                <KeyIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-liquid-gold/40 group-focus-within/pass:text-liquid-gold transition-colors" />
                                 <input 
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={puntoEmision}
-                                    onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').substring(0,3))}
-                                    maxLength={3}
-                                    className="relative w-full bg-black/40 border border-white/5 group-focus-within/input:border-liquid-gold/40 rounded-xl md:rounded-2xl p-4 md:p-5 text-white font-black text-center text-xl md:text-3xl tracking-[0.2em] focus:bg-black/80 transition-all duration-500 shadow-inner font-mono outline-none placeholder:text-slate-900"
-                                    placeholder="001"
+                                    type="password"
+                                    value={clave}
+                                    onChange={(e) => setClave(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full bg-black/80 border border-white/10 rounded-[2rem] py-6 md:py-8 pl-16 pr-8 text-white font-black text-xl md:text-3xl placeholder:text-white/10 focus:border-liquid-gold focus:ring-0 transition-all tracking-[0.6em] md:tracking-[0.8em] italic"
                                 />
-                                <HashtagIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-liquid-gold/20 pointer-events-none group-focus-within/input:text-liquid-gold/60 transition-colors" />
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/[0.02] rounded-xl border border-white/5 flex items-center justify-center text-white/10 group-focus-within/pass:text-liquid-gold group-focus-within/pass:border-liquid-gold/30 transition-all">
+                                    <ShieldCheckIcon className="w-6 h-6" />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-5 relative z-10 pt-2">
-                        <div className="flex items-center justify-between px-2">
-                            <label className="flex items-center gap-3 text-[9px] md:text-[11px] text-slate-400 font-black uppercase tracking-widest italic">
-                                <KeyIcon className="w-4 h-4 md:w-5 md:h-5 text-liquid-gold" /> Credencial SRI
-                            </label>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-liquid-gold/5 border border-liquid-gold/20 rounded-full">
-                                <span className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
-                                <span className="text-[7px] md:text-[9px] text-liquid-gold font-black uppercase tracking-tighter">Encrypted_Link</span>
-                            </div>
-                        </div>
-                        <div className="relative group/pass">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-liquid-gold/20 via-transparent to-liquid-gold/20 blur-2xl opacity-0 group-focus-within/pass:opacity-100 transition-opacity duration-1000" />
-                            <input 
-                                type="password"
-                                value={clave}
-                                onChange={(e) => setClave(e.target.value)}
-                                className="relative w-full bg-black/80 border border-white/5 group-focus-within/pass:border-liquid-gold/50 rounded-xl md:rounded-2xl p-4 md:p-6 text-white font-mono text-lg md:text-2xl tracking-[0.6em] md:tracking-[0.8em] focus:bg-black transition-all duration-500 shadow-2xl outline-none placeholder:text-slate-900"
-                                placeholder="••••••••"
-                            />
-                            <div className="absolute top-1/2 right-4 md:right-6 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-white/[0.02] rounded-xl border border-white/5 flex items-center justify-center text-white/10 group-focus-within/pass:text-liquid-gold group-focus-within/pass:border-liquid-gold/30 transition-all duration-500">
-                                <ShieldCheckIcon className="w-4 h-4 md:w-6 md:h-6" />
-                            </div>
-                            
-                            {/* Scanning line animation */}
-                            <motion.div 
-                                animate={{ top: ['0%', '100%', '0%'] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                                className="absolute left-0 right-0 h-[1px] bg-liquid-gold/30 blur-sm opacity-0 group-focus-within/pass:opacity-100 pointer-events-none"
-                            />
+                        <ValidationTerminal active={isSubmitting || !!(actividad && establecimiento && puntoEmision && clave)} />
+
+                        <div className="pt-6">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!isFormValid || isSubmitting}
+                                className={`w-full group relative overflow-hidden rounded-[2.5rem] py-10 md:py-12 flex items-center justify-center gap-6 transition-all duration-700 shadow-2xl active:scale-[0.98] ${
+                                    !isFormValid 
+                                    ? 'bg-white/5 text-slate-700 cursor-not-allowed border border-white/5' 
+                                    : 'bg-liquid-gold text-black shadow-gold-glow hover:scale-[1.01]'
+                                }`}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                                
+                                {isSubmitting ? (
+                                    <>
+                                        <ArrowPathIcon className="w-8 h-8 md:w-10 md:h-10 animate-spin" />
+                                        <span className="text-xl md:text-3xl font-black uppercase tracking-[0.5em] italic">DEPLOYING_PROTOCOL...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <RocketLaunchIcon className={`w-8 h-8 md:w-10 md:h-10 transition-transform duration-500 ${isFormValid ? 'group-hover:-translate-y-2 group-hover:translate-x-2' : ''}`} />
+                                        <span className="text-xl md:text-3xl font-black uppercase tracking-[0.5em] italic">Desplegar Protocolo</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
-
-                    <div className="space-y-5 md:space-y-8 relative z-10">
-                        <label className="text-[10px] md:text-[13px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] ml-1 font-mono">Live_Data_Stream</label>
-                        <ValidationTerminal active={isProcessing} />
-                    </div>
-
-                    <div className="pt-6 md:pt-10 relative z-10">
-                        <button 
-                            onClick={handleContinue}
-                            disabled={!actividad || isProcessing}
-                            className={`w-full py-5 md:py-7 rounded-xl md:rounded-[2rem] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-[13px] flex items-center justify-center gap-4 md:gap-6 transition-all duration-700 shadow-2xl group active:scale-95 italic relative overflow-hidden ${
-                                actividad && !isProcessing
-                                ? 'bg-liquid-gold text-black hover:bg-white hover:shadow-gold-glow-sm' 
-                                : 'bg-white/5 text-slate-700 cursor-not-allowed border border-white/5'
-                            }`}
-                        >
-                            {isProcessing && (
-                                <motion.div 
-                                    initial={{ x: "-100%" }}
-                                    animate={{ x: "100%" }}
-                                    transition={{ duration: 3.5, ease: "linear" }}
-                                    className="absolute inset-0 bg-white/20"
-                                />
-                            )}
-                            <span className="relative z-10">{isProcessing ? 'SINCRONIZANDO...' : 'Siguiente Módulo'}</span>
-                            {!isProcessing && <ArrowRightIcon className="w-5 h-5 md:w-7 md:h-7 group-hover:translate-x-4 transition-transform relative z-10" />}
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 md:gap-6 pt-8 border-t border-white/5 relative z-10">
-                        {[
-                            { label: 'Uptime', val: '99.99%', color: 'text-emerald-500' },
-                            { label: 'Latency', val: '08ms', color: 'text-liquid-gold' },
-                            { label: 'Hash', val: '0x' + Math.random().toString(16).substring(2,6).toUpperCase(), color: 'text-slate-500' }
-                        ].map((stat, i) => (
-                            <div key={i} className="text-center space-y-1.5">
-                                <p className="text-[7px] md:text-[8px] text-slate-600 font-black uppercase tracking-widest font-mono">{stat.label}</p>
-                                <p className={`text-[9px] md:text-[12px] font-mono font-black ${stat.color}`}>{stat.val}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="absolute bottom-0 right-0 w-64 h-64 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '15px 15px' }} />
                 </div>
             </div>
 
-            <div className="flex justify-center pt-6 md:pt-10 relative z-10 pb-4">
+            {/* Back Navigation */}
+            <div className="flex justify-center pt-10 md:pt-16 pb-10 border-t border-white/10">
                 <button 
                     onClick={onBack}
-                    className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[13px] text-slate-600 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] hover:text-liquid-gold transition-all duration-500 group active:scale-95"
+                    className="flex items-center gap-4 text-[12px] md:text-[15px] text-slate-600 font-black uppercase tracking-[0.4em] hover:text-liquid-gold transition-all duration-500 group active:scale-95 italic"
                 >
-                    <span className="group-hover:-translate-x-3 transition-transform text-lg">←</span> Retornar a Selección de Identidad
+                    <span className="group-hover:-translate-x-4 transition-transform">←</span> RETORNAR_A_IDENTIDAD
                 </button>
             </div>
         </div>
-
     );
 };
 

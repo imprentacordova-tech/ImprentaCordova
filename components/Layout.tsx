@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_NAME } from '../constants';
 import {
-    KdsIcon, FinanceIcon, ClientsIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon,
-    InventoryIcon, BoxIcon, DocumentIcon, UsersIcon, ReceiptIcon, Cog8ToothIcon,
-    BuildingStorefrontIcon, SolidBoxIcon, DashboardIcon, CalculatorIcon,
-    GlobeAltIcon, PaletteIcon, CordovaLogo, CheckCircleIcon,
-    ArrowPathIcon, SparklesIcon, BoltIcon, ChevronRightIcon, PrinterIcon,
-    RocketLaunchIcon,
+    HomeIcon, AddIcon, LogoutIcon, MenuIcon, CloseIcon,
+    BoxIcon, DocumentIcon, UsersIcon, Cog8ToothIcon,
+    DashboardIcon, CalculatorIcon, PaletteIcon, CordovaLogo, 
+    SparklesIcon, BoltIcon, PrinterIcon, RocketLaunchIcon,
+    ActivityIcon, WalletIcon, CircleStackIcon, ShieldCheckIcon,
+    ArrowRightIcon, SearchIcon, MonitorIcon, FingerPrintIcon,
+    LayersIcon, CpuIcon, GlobeIcon
 } from './Icons';
 import { User, TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
@@ -22,471 +23,222 @@ interface LayoutProps {
     user: User;
 }
 
-type NavOrientation = 'vertical' | 'horizontal';
-
-// ── Navegación ────────────────────────────────────────────────────────────────
+// ── Grupos de Navegación Elite ────────────────────────────────────────────────
 const navGroups = [
     {
-        title: 'Principal',
+        title: 'ESTRATEGIA',
         items: [
-            { path: '/dashboard', label: 'Inicio', icon: DashboardIcon },
+            { path: '/dashboard', label: 'Command Center', icon: DashboardIcon },
+            { path: '/trabajos',  label: 'Misiones Activas', icon: ActivityIcon },
         ],
     },
     {
-        title: 'Taller de Gráfica',
+        title: 'PRODUCCIÓN',
         items: [
-            { path: '/nuevo',      label: 'Nueva Orden',   icon: AddIcon    },
-            { path: '/diseno',     label: 'Diseño',        icon: PaletteIcon },
-            { path: '/produccion', label: 'Impresión',     icon: PrinterIcon },
-            { path: '/kds',        label: 'Producción',    icon: KdsIcon     },
-            { path: '/retiros',    label: 'Despacho',      icon: ReceiptIcon },
+            { path: '/nuevo-pedido', label: 'Nueva Orden', icon: SparklesIcon },
+            { path: '/retiros',      label: 'Despacho_Vitrina', icon: RocketLaunchIcon },
+            { path: '/inventario',   label: 'Bóveda de Insumos', icon: CircleStackIcon },
         ],
     },
     {
-        title: 'Ingeniería & Costos',
+        title: 'FINANZAS',
         items: [
-            { path: '/calculadora',       label: 'Menú Principal', icon: CalculatorIcon },
-            { path: '/calculadora?mode=OFFSET',  label: 'Offset Industrial', icon: PrinterIcon },
-            { path: '/calculadora?mode=DIGITAL', label: 'Digital Boutique', icon: RocketLaunchIcon },
+            { path: '/cuentas', label: 'Libro Contable', icon: WalletIcon },
+            { path: '/caja',    label: 'Control de Flujo', icon: CalculatorIcon },
         ],
     },
     {
-        title: 'Gestión Comercial',
+        title: 'ENTIDADES',
         items: [
-            { path: '/clientes',    label: 'Clientes',      icon: ClientsIcon   },
-            { path: '/trabajos',    label: 'Trabajos',      icon: DocumentIcon  },
-            { path: '/cuentas',     label: 'Cobros',        icon: FinanceIcon   },
-            { path: '/proveedores', label: 'Proveedores',   icon: UsersIcon     },
-            { path: '/productos',   label: 'Servicios',     icon: BoxIcon       },
-            { path: '/inventario',  label: 'Materiales',    icon: SolidBoxIcon  },
+            { path: '/clientes',    label: 'Bóveda Clientes', icon: UsersIcon },
+            { path: '/proveedores', label: 'Aliados Supply', icon: GlobeIcon },
         ],
     },
     {
-        title: 'Administración',
+        title: 'SISTEMA',
         adminOnly: true,
         items: [
-            { path: '/finanzas',       label: 'Contabilidad',  icon: FinanceIcon   },
-            { path: '/usuarios',       label: 'Usuarios',      icon: UsersIcon     },
-            { path: '/registro',       label: 'Bitácora',      icon: DocumentIcon  },
-            { path: '/configuracion',  label: 'Configuración', icon: Cog8ToothIcon },
+            { path: '/registro-actividad', label: 'Telemetría Log', icon: MonitorIcon },
+            { path: '/configuracion',      label: 'Core Config', icon: Cog8ToothIcon },
         ],
     },
 ];
 
-// Map de rutas → título legible para el breadcrumb del header
 const PAGE_TITLES: Record<string, string> = {
-    '/dashboard':     'Panel Principal',
-    '/':              'Vista Pública',
-    '/nuevo':         'Nueva Orden',
-    '/diseno':        'Departamento de Diseño',
-    '/produccion':    'Taller de Imprenta',
-    '/kds':           'Centro de Producción',
-    '/retiros':       'Entrega y Vitrina',
-    '/clientes':      'Directorio de Clientes',
-    '/trabajos':      'Gestión de Trabajos',
-    '/cuentas':       'Gestión de Cartera',
-    '/proveedores':   'Gestión de Proveedores',
-    '/productos':     'Catálogo de Servicios',
-    '/inventario':    'Gestión de Insumos',
-    '/finanzas':      'Análisis Financiero',
-    '/usuarios':      'Control de Accesos',
-    '/registro':      'Registro de Actividad',
-    '/calculadora':   'Ingeniería de Costos',
-    '/configuracion': 'Configuración del Sistema',
-    '/caja':          'Control de Caja',
-    '/nota-de-venta': 'Expediente de Orden',
-    '/not-found':     'Recurso No Encontrado'
+    '/dashboard':          'COMMAND_CENTER',
+    '/trabajos':           'MISSION_TRACKER',
+    '/nuevo-pedido':       'MISSION_INITIALIZATION',
+    '/retiros':            'DISPATCH_PROTOCOL',
+    '/inventario':         'ASSET_VAULT',
+    '/cuentas':            'FINANCIAL_LEDGER',
+    '/clientes':           'IDENTITY_VAULT',
+    '/proveedores':        'SUPPLY_CHAIN_MONITOR',
+    '/registro-actividad': 'FORENSIC_TELEMETRY',
+    '/configuracion':      'SYSTEM_CORE_V4',
+    '/caja':               'CASH_FLUX_CONTROL',
+    '/nota-de-venta':      'ASSET_MANIFEST'
 };
 
-// ── Hook: reloj en tiempo real ────────────────────────────────────────────────
-function useLiveClock() {
-    const [now, setNow] = useState(new Date());
-    useEffect(() => {
-        const id = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(id);
-    }, []);
-    return now;
-}
-
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-// ── Floating Dock (Desktop Elite) ─────────────────────────────────────────────
-const FloatingDock: React.FC<{
-    user: User;
-    onLogout: () => void;
-    onMoreClick: () => void;
-    orientation: NavOrientation;
-    onToggleOrientation: () => void;
-}> = ({ user, onLogout, onMoreClick, orientation, onToggleOrientation }) => {
+const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { trabajos } = useData();
+    const { syncing } = useData();
 
-    const counts = {
-        design: trabajos.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado)).length,
-        produccion: trabajos.filter(t => t.estado === TrabajoEstado.PROCESO).length,
-        retail: trabajos.filter(t => t.estado === TrabajoEstado.VITRINA).length,
-    };
+    const pageTitle = useMemo(() => {
+        const path = location.pathname;
+        return PAGE_TITLES[path] || 'OPERATIONAL_NODE';
+    }, [location.pathname]);
 
-    const dockItems = [
-        { path: '/dashboard', label: 'Inicio', icon: DashboardIcon },
-        { path: '/nuevo', label: 'Nuevo', icon: AddIcon, primary: true },
-        { path: '/diseno', label: 'Diseño', icon: PaletteIcon, badge: counts.design },
-        { path: '/produccion', label: 'Taller', icon: PrinterIcon, badge: counts.produccion },
-        { path: '/kds', label: 'Flujo', icon: KdsIcon },
-        { path: '/retiros', label: 'Entregas', icon: ReceiptIcon, badge: counts.retail },
-    ];
+    const isAdmin = user.rol === 'Admin' || (user.rol as string) === 'root';
 
     return (
-        <div className={orientation === 'vertical' ? "floating-dock" : "fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-brand-dark/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 z-50 flex items-center px-6 gap-6"}>
-            <div 
-                className={`${orientation === 'vertical' ? 'w-10 h-10 mb-4' : 'w-8 h-8'} bg-white dark:bg-liquid-gold text-black rounded-xl flex items-center justify-center cursor-pointer hover:rotate-12 transition-transform shadow-xl`}
-                onClick={() => navigate('/dashboard')}
-            >
-                <CordovaLogo className={orientation === 'vertical' ? "w-6 h-6" : "w-5 h-5"} />
-            </div>
-
-            <div className={orientation === 'vertical' ? "flex flex-col gap-1" : "flex items-center gap-2"}>
-                {dockItems.map(item => {
-                    const isItemActive = location.pathname === item.path;
-                    return (
-                        <button 
-                            key={item.path} 
-                            onClick={() => navigate(item.path)}
-                            className={`dock-item group ${isItemActive ? 'dock-item-active' : 'dock-item-inactive'} ${orientation === 'horizontal' ? 'w-auto px-4 h-10' : ''}`}
-                        >
-                            <item.icon className="w-5 h-5 transition-transform duration-500 group-hover:scale-110" />
-                            <span className="dock-tooltip">{item.label}</span>
-                            {isItemActive && (
-                                <motion.div 
-                                    layoutId="dock-active"
-                                    className={`absolute bg-liquid-gold rounded-full ${orientation === 'vertical' ? 'w-1 h-8 -left-1' : 'h-1 w-8 -bottom-1'}`}
-                                />
-                            )}
-                            {item.badge ? (
-                                <span className={`absolute ${orientation === 'vertical' ? '-top-1 -right-1' : 'top-1 right-1'} w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white dark:border-brand-dark animate-pulse`}>
-                                    {item.badge}
-                                </span>
-                            ) : null}
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className={orientation === 'vertical' ? "w-8 h-[1px] bg-slate-200 dark:bg-white/10 my-2" : "w-[1px] h-6 bg-slate-200 dark:bg-white/10 mx-2"} />
-
-            <button onClick={onMoreClick} className={`dock-item group dock-item-inactive ${orientation === 'horizontal' ? 'w-10 h-10' : ''}`}>
-                <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-                <span className="dock-tooltip">Más Módulos</span>
-            </button>
-
-            {/* Discreet Orientation Toggle */}
-            <button 
-                onClick={onToggleOrientation}
-                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-liquid-gold transition-colors opacity-30 hover:opacity-100 ml-auto"
-                title="Cambiar Orientación del Menú"
-            >
-                <BoltIcon className={`w-4 h-4 ${orientation === 'horizontal' ? 'rotate-90' : ''}`} />
-            </button>
-
-            <div className={`${orientation === 'vertical' ? 'mt-auto flex flex-col gap-4' : 'flex items-center gap-4'}`}>
-                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center text-[10px] font-black text-slate-500 dark:text-slate-400 group relative">
-                    {user.nombre.charAt(0).toUpperCase()}
-                    <span className="dock-tooltip">{user.nombre}</span>
-                </div>
-                <button onClick={onLogout} className="dock-item group dock-item-inactive hover:text-red-500">
-                    <LogoutIcon className="w-5 h-5" />
-                    <span className="dock-tooltip">Salir</span>
-                </button>
-            </div>
-        </div>
-    );
-};
-
-// ── Header ────────────────────────────────────────────────────────────────────
-const Header: React.FC<{
-    onMenuClick: () => void;
-    onLogout: () => void;
-    user: User;
-}> = ({ onMenuClick, onLogout, user }) => {
-    const { syncing: isSyncing } = useData();
-    const location = useLocation();
-    const now = useLiveClock();
-
-    const pageTitle = PAGE_TITLES[location.pathname] ?? 'Atelier';
-
-    const [theme, setTheme] = useState<'dark' | 'light' | 'cordova'>(() => {
-        return (localStorage.getItem('theme') as 'dark' | 'light' | 'cordova') || 'dark';
-    });
-
-    useEffect(() => {
-        document.documentElement.classList.remove('dark', 'light', 'cordova');
-        document.documentElement.classList.add(theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const nextTheme = () => {
-        if (theme === 'dark') setTheme('light');
-        else if (theme === 'light') setTheme('cordova');
-        else setTheme('dark');
-    };
-
-    const timeStr = now.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    const dateStr = now.toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' });
-
-    return (
-        <header className="h-20 bg-white/80 dark:bg-brand-dark/60 cordova:bg-brand-dark/95 backdrop-blur-3xl flex items-center justify-between px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 shrink-0 overflow-hidden">
-            {/* Background Laser Divider */}
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-liquid-gold/20 to-transparent" />
+        <div className="min-h-screen bg-brand-dark text-white selection:bg-liquid-gold selection:text-brand-dark flex flex-col lg:flex-row overflow-hidden font-sans">
+            <SEO title={`${pageTitle} - Imprenta Córdova`} />
             
-            {/* Corner Industrial Accents */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-white/5 rounded-tl-xl pointer-events-none" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-white/5 rounded-tr-xl pointer-events-none" />
-
-            {/* LEFT: hamburger + page title */}
-            <div className="flex items-center gap-5">
-                <button
-                    onClick={onMenuClick}
-                    className="lg:hidden p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors border border-white/5"
-                    aria-label="Abrir menú"
-                >
-                    <MenuIcon className="h-5 w-5" />
-                </button>
-
-                <div className="flex flex-col">
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
-                        </div>
-                        <p className="text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Centro de Control</p>
-                    </div>
-                    <h2 className="text-xl font-black text-white uppercase tracking-[-0.04em] italic leading-none">IMPRENTA CÓRDOVA</h2>
-                </div>
-
-                <div className="hidden xl:flex h-8 w-px bg-white/5 mx-2" />
-                <div className="hidden xl:flex flex-col opacity-20">
-                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">SYS_READY: TRUE</span>
-                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">ENCRYPT: AES-256</span>
-                </div>
-            </div>
-
-            {/* CENTER: sync status */}
-            <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex">
-                <div className={`flex items-center gap-3 px-5 py-2 rounded-full border transition-all duration-700 backdrop-blur-md ${
-                    isSyncing
-                        ? 'bg-blue-500/10 border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
-                        : 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                }`}>
-                    <div className="relative flex items-center justify-center w-2 h-2">
-                        {isSyncing
-                            ? <div className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
-                            : <>
-                                <div className="absolute w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                              </>
-                        }
-                    </div>
-                    <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isSyncing ? 'text-blue-400' : 'text-emerald-400'}`}>
-                        {isSyncing ? 'Sincronizando…' : 'Protocolo Seguro'}
-                    </span>
-                    {isSyncing && <ArrowPathIcon className="w-3 h-3 text-blue-400 animate-spin" />}
-                </div>
-            </div>
-
-            {/* RIGHT: clock + logout */}
-            <div className="flex items-center gap-5 relative">
-                <div className="hidden xl:flex flex-col items-end opacity-20 mr-4">
-                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">LATENCY: 12ms</span>
-                    <span className="text-[7px] font-black text-white uppercase tracking-[0.3em]">NODE: VERCEL_EAST</span>
-                </div>
-                <div className="hidden xl:flex h-8 w-px bg-white/5 mr-2" />
-
-                {/* Live clock */}
-                <div className="hidden md:flex flex-col items-end gap-0.5">
-                    <span className="text-base font-black text-slate-900 dark:text-white tracking-wider tabular-nums leading-none">{timeStr}</span>
-                    <span className="text-[9px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.3em]">{dateStr}</span>
-                </div>
-
-                {/* Quick Search Trigger */}
-                <SearchOmni />
-
-                <div className="h-8 w-px bg-slate-200 dark:bg-white/5 hidden md:block" />
-
-                {/* Theme Toggle (3 Steps) */}
-                <button
-                    onClick={nextTheme}
-                    className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-300 ${
-                        theme === 'dark' ? 'bg-white/5 border-white/10 text-liquid-gold' :
-                        theme === 'light' ? 'bg-slate-100 border-slate-200 text-slate-600' :
-                        'bg-blue-900 border-yellow-500/50 text-yellow-400'
-                    }`}
-                    title={`Tema Actual: ${theme}`}
-                >
-                    {theme === 'dark' && <SparklesIcon className="w-5 h-5" />}
-                    {theme === 'light' && <SolidBoxIcon className="w-5 h-5" />}
-                    {theme === 'cordova' && <CordovaLogo className="w-5 h-5" />}
-                </button>
-
-                <div className="h-8 w-px bg-slate-200 dark:bg-white/5 hidden md:block" />
-
-                {/* Logout (visible en header solo en mobile) */}
-                <button
-                    onClick={onLogout}
-                    className="lg:hidden group p-2.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all border border-transparent hover:border-red-400/20"
-                    title="Cerrar Sesión"
-                >
-                    <LogoutIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
-                </button>
-            </div>
-        </header>
-    );
-};
-
-// ── Layout principal ──────────────────────────────────────────────────────────
-export const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [orientation, setOrientation] = useState<NavOrientation>(() => {
-        return (localStorage.getItem('nav-orientation') as NavOrientation) || 'vertical';
-    });
-
-    const toggleOrientation = () => {
-        const next = orientation === 'vertical' ? 'horizontal' : 'vertical';
-        setOrientation(next);
-        localStorage.setItem('nav-orientation', next);
-    };
-
-    // Cerrar sidebar con tecla Esc
-    const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        if (e.key === 'Escape') setSidebarOpen(false);
-    }, []);
-
-    useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [handleKeyDown]);
-
-    // Bloquear scroll del body cuando el sidebar móvil está abierto
-    useEffect(() => {
-        document.body.style.overflow = sidebarOpen ? 'hidden' : '';
-        return () => { document.body.style.overflow = ''; };
-    }, [sidebarOpen]);
-
-    return (
-        <div className="flex h-screen bg-slate-50 dark:bg-brand-dark overflow-hidden font-sans selection:bg-liquid-gold selection:text-brand-dark transition-colors duration-500 relative">
-            {/* Global Industrial Scanline Effect */}
-            <div className="animate-scan opacity-[0.03] z-[100]" />
-            <div className="absolute inset-0 pointer-events-none z-[99] opacity-[0.02] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
+            {/* --- FONDO GLOBAL ELITE --- */}
+            <div className="fixed inset-0 bg-architect-grid opacity-[0.03] pointer-events-none z-0" />
+            <div className="fixed inset-0 bg-obsidian-liquid pointer-events-none z-0" />
             
-            <SEO title="IMPRENTA CÓRDOVA · Archivo de Excelencia · Pasaje, Ecuador" includeLocalBusiness={false} robots={false} />
-
-            {/* ── Desktop/Mobile Sidebar Drawer Overlay ── */}
-            <div
-                className={`fixed inset-0 z-[100] transition-all duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                aria-hidden={!sidebarOpen}
-            >
-                <div
-                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                    onClick={() => setSidebarOpen(false)}
-                />
-                <div className={`absolute left-0 top-0 w-80 h-full transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                    <aside className="w-80 bg-white dark:bg-slate-950 flex flex-col h-full border-r border-slate-200 dark:border-white/5 shadow-2xl relative">
-                        {/* ── Drawer Header ── */}
-                        <div className="p-8 border-b border-slate-100 dark:border-white/5 flex flex-col items-center gap-4 bg-slate-50/50 dark:bg-white/[0.01] shrink-0">
-                            <div className="w-14 h-14 bg-white dark:bg-liquid-gold text-black rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
-                                <CordovaLogo className="w-8 h-8" />
-                            </div>
-                            <div className="text-center">
-                                <h1 className="font-display font-black text-xl leading-none tracking-[-0.04em] text-slate-900 dark:text-white uppercase italic">IMPRENTA CÓRDOVA</h1>
-                                <p className="text-[8px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-[0.4em] mt-2">Gestión Administrativa</p>
-                            </div>
+            {/* --- SIDEBAR ELITE --- */}
+            <aside className={`fixed lg:relative inset-y-0 left-0 z-[150] w-80 bg-brand-dark/40 backdrop-blur-3xl border-r border-white/5 transition-transform duration-700 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="h-full flex flex-col p-8 space-y-12">
+                    {/* Brand Header */}
+                    <Link to="/" className="flex items-center gap-5 group py-4">
+                        <div className="relative">
+                            <CordovaLogo className="h-10 w-auto brightness-0 invert group-hover:scale-110 transition-transform duration-1000" />
+                            <div className="absolute -inset-2 bg-liquid-gold/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
+                        <div className="flex flex-col leading-none">
+                            <span className="text-xl font-black italic tracking-tighter">CÓRDOVA<span className="text-liquid-gold opacity-50">.</span></span>
+                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.6em] italic mt-1">Industrial Hub</span>
+                        </div>
+                    </Link>
 
-                        {/* ── Nav Items ── */}
-                        <nav className="flex-grow px-4 py-8 space-y-8 overflow-y-auto custom-scrollbar scroll-smooth">
-                            {navGroups.map(group => (
-                                <div key={group.title} className="space-y-2">
-                                    <h3 className="px-4 pb-2 text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 bg-liquid-gold rounded-full" />
-                                        {group.title}
-                                    </h3>
-                                    <div className="grid gap-1">
-                                         {group.items.map(item => (
-                                            <NavLink 
-                                                key={item.path}
-                                                to={item.path}
-                                                onClick={() => setSidebarOpen(false)}
-                                                className={(props) => `
-                                                    flex items-center gap-4 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group
-                                                    ${props.isActive 
-                                                        ? 'bg-liquid-gold text-brand-dark shadow-[0_10px_20px_-5px_rgba(212,175,55,0.3)] translate-x-1' 
-                                                        : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                                                    }
-                                                `}
-                                            >
-                                                {(props) => (
-                                                    <>
-                                                        <item.icon className={`w-5 h-5 transition-transform duration-500 group-hover:scale-110 ${props.isActive ? 'text-brand-dark' : ''}`} />
-                                                        <span>{item.label}</span>
-                                                        {props.isActive && <motion.div layoutId="active-pill" className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-dark" />}
-                                                    </>
-                                                )}
-                                            </NavLink>
-                                        ))}
+                    {/* Navigation Groups */}
+                    <nav className="flex-1 overflow-y-auto space-y-12 custom-scrollbar pr-2">
+                        {navGroups.map((group, idx) => (
+                            (!group.adminOnly || isAdmin) && (
+                                <div key={idx} className="space-y-4">
+                                    <h4 className="text-[9px] font-black text-slate-700 uppercase tracking-[0.5em] italic px-4">{group.title}</h4>
+                                    <div className="space-y-1">
+                                        {group.items.map((item) => {
+                                            const isActive = location.pathname === item.path;
+                                            return (
+                                                <NavLink
+                                                    key={item.path}
+                                                    to={item.path}
+                                                    onClick={() => setSidebarOpen(false)}
+                                                    className={({ isActive }) => `
+                                                        group flex items-center gap-5 px-6 py-4 rounded-2xl transition-all duration-500 relative overflow-hidden
+                                                        ${isActive 
+                                                            ? 'bg-liquid-gold/5 text-liquid-gold border border-liquid-gold/10' 
+                                                            : 'text-slate-500 hover:text-white hover:bg-white/[0.03] border border-transparent'}
+                                                    `}
+                                                >
+                                                    <item.icon className={`w-5 h-5 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] italic">{item.label}</span>
+                                                    {isActive && (
+                                                        <motion.div 
+                                                            layoutId="sidebarActive"
+                                                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-liquid-gold rounded-r-full shadow-gold-glow"
+                                                        />
+                                                    )}
+                                                </NavLink>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                            ))}
-                        </nav>
+                            )
+                        ))}
+                    </nav>
 
-                        {/* Close button inside for desktop feel */}
-                        <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    {/* Footer / User Profile */}
+                    <div className="pt-8 border-t border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 px-4 group">
+                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-liquid-gold/30 transition-all">
+                                <FingerPrintIcon className="w-6 h-6 text-slate-500 group-hover:text-liquid-gold" />
+                            </div>
+                            <div className="flex flex-col leading-tight">
+                                <span className="text-[10px] font-black text-white uppercase italic">{user.nombre}</span>
+                                <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{user.rol}</span>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={onLogout}
+                            className="w-full flex items-center justify-center gap-4 py-5 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 rounded-2xl border border-rose-500/10 transition-all text-[10px] font-black uppercase tracking-widest italic"
                         >
-                            <CloseIcon className="w-5 h-5" />
+                            <LogoutIcon className="w-4 h-4" /> TERMINAR_SESIÓN
                         </button>
-                    </aside>
-                </div>
-            </div>
-
-            {/* ── Desktop Floating Dock ── */}
-            {orientation === 'vertical' && (
-                <div className="hidden lg:flex lg:flex-shrink-0 w-24 relative">
-                    <FloatingDock 
-                        user={user} 
-                        onLogout={onLogout} 
-                        onMoreClick={() => setSidebarOpen(true)} 
-                        orientation={orientation}
-                        onToggleOrientation={toggleOrientation}
-                    />
-                </div>
-            )}
-
-            {/* ── Main content ── */}
-            <div className={`flex flex-col flex-1 w-0 overflow-hidden relative ${orientation === 'vertical' ? 'lg:pl-4' : 'pt-16'} transition-all duration-500`}>
-                {/* Ambient glow */}
-                <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-liquid-gold/5 rounded-full blur-[100px] -ml-48 -mt-48 pointer-events-none" />
-
-                {orientation === 'horizontal' && (
-                    <FloatingDock 
-                        user={user} 
-                        onLogout={onLogout} 
-                        onMoreClick={() => setSidebarOpen(true)} 
-                        orientation={orientation}
-                        onToggleOrientation={toggleOrientation}
-                    />
-                )}
-
-                <Header onMenuClick={() => setSidebarOpen(true)} onLogout={onLogout} user={user} />
-
-                <main className="flex-1 relative overflow-y-auto focus:outline-none p-6 lg:p-10 pb-40 lg:pb-12 scroll-smooth custom-scrollbar z-10">
-                    <div className="max-w-[1600px] mx-auto w-full animate-slide-up">
-                        {children}
                     </div>
-                </main>
+                </div>
+            </aside>
 
-                <MobileFloatingNav />
-            </div>
+            {/* --- MAIN CONTENT ELITE --- */}
+            <main className="flex-1 flex flex-col relative z-10 overflow-hidden">
+                {/* Global Header HUD */}
+                <header className="h-28 lg:h-32 bg-brand-dark/30 backdrop-blur-2xl border-b border-white/5 px-6 lg:px-14 flex items-center justify-between relative">
+                    <div className="flex items-center gap-8">
+                        <button 
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-5 bg-white/5 border border-white/10 rounded-2xl text-slate-500 hover:text-white lg:hidden transition-all"
+                        >
+                            <MenuIcon className="w-6 h-6" />
+                        </button>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.6em] italic">ACTIVE_NODE_PROTOCOL</span>
+                            </div>
+                            <h2 className="text-3xl lg:text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
+                                {pageTitle}
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 md:gap-8">
+                        <div className="hidden md:flex flex-col items-end gap-1 opacity-40">
+                             <span className="text-[8px] font-mono uppercase tracking-[0.4em]">SYNC_NOMINAL: 100%</span>
+                             <div className="w-32 h-[2px] bg-white/10 rounded-full overflow-hidden">
+                                <motion.div 
+                                    animate={{ x: ["-100%", "100%"] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                    className="w-full h-full bg-liquid-gold/40"
+                                />
+                             </div>
+                        </div>
+                        <SearchOmni />
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center relative group cursor-pointer hover:border-liquid-gold/30 transition-all">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full absolute top-2 right-2 shadow-[0_0_8px_#10b981] animate-pulse" />
+                            <BoltIcon className="w-5 h-5 text-slate-500 group-hover:text-liquid-gold transition-colors" />
+                        </div>
+                    </div>
+                </header>
+
+                {/* Content Container */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar relative p-4 lg:p-0">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={location.pathname}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                            className="h-full"
+                        >
+                            {children}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </main>
+
+            {/* Mobile Navigation HUD */}
+            <MobileFloatingNav />
+            
+            {/* Global Visual Overlays */}
+            <div className="fixed inset-0 z-[500] pointer-events-none border-[20px] border-white/[0.01] opacity-50" />
         </div>
     );
 };
+
+export default Layout;

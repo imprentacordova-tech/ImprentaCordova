@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useLocation, useOutletContext } from 'react-router-dom';
+import { Link, useLocation, useOutletContext, useNavigate } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
@@ -11,7 +11,8 @@ import {
     SparklesIcon, MessageCircleIcon, WhatsAppIcon, UserPlusIcon, 
     SearchIcon, ChevronRightIcon, ShieldCheckIcon, ActivityIcon,
     GlobeAltIcon, MapPinIcon, FilterIcon, InfoIcon, FileTextIcon,
-    MonitorIcon
+    MonitorIcon, HomeIcon, ArrowRightIcon, TrophyIcon, UserIcon,
+    FingerPrintIcon
 } from '../components/Icons';
 import { generateMarketingPromotion } from '../services/geminiService';
 import { sriLookupService } from '../services/sriLookupService';
@@ -19,7 +20,7 @@ import { validarIdentificacionEC } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 
-// --- MODAL DE MARKETING IA ---
+// --- MODAL DE MARKETING IA ELITE ---
 const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClose: () => void }> = ({ cliente, trabajos, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
@@ -43,50 +44,68 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
     };
 
     return (
-        <div className="fixed inset-0 bg-brand-blue/90 backdrop-blur-2xl z-[150] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[200] flex justify-center items-center p-6 animate-fade-in" onClick={onClose}>
             <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-brand-blue/60 border border-white/10 rounded-[3.5rem] shadow-3xl w-full max-w-xl overflow-hidden relative group" 
+                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="bg-brand-dark border border-white/10 rounded-[3.5rem] shadow-luxury w-full max-w-2xl overflow-hidden relative group" 
                 onClick={e => e.stopPropagation()}
             >
-                <div className="absolute top-0 right-0 w-80 h-80 bg-brand-red/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none opacity-50" />
+                <div className="absolute inset-0 bg-architect-grid opacity-[0.03] pointer-events-none" />
+                <div className="absolute top-0 right-0 w-96 h-96 bg-liquid-gold/5 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none group-hover:bg-liquid-gold/10 transition-all duration-1000" />
                 
-                <div className="p-10 border-b border-white/5 relative z-10 flex justify-between items-center bg-black/20 backdrop-blur-md">
-                    <div className="space-y-2">
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-red italic">NÚCLEO_GÉMINIS_PROMO</span>
-                        <h2 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-white">RE-CAPTAR_CLIENTE</h2>
+                <div className="p-12 border-b border-white/5 relative z-10 flex justify-between items-center bg-white/[0.01]">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.6em] text-liquid-gold italic">GÉMINIS_INTELLIGENCE_PROTOCOL</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">RE-ENGAGE_<span className="text-gold-gradient">ASSET</span></h2>
                     </div>
-                    <button onClick={onClose} className="p-4 bg-white/5 hover:bg-brand-red/20 rounded-2xl transition-all group/close">
-                        <CloseIcon className="w-6 h-6 text-slate-500 group-hover/close:text-white" />
+                    <button onClick={onClose} className="p-5 bg-white/5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-500 rounded-2xl transition-all border border-white/5 group/close">
+                        <CloseIcon className="w-6 h-6 group-hover/close:rotate-90 transition-transform duration-500" />
                     </button>
                 </div>
                 
-                <div className="p-10 space-y-8 relative z-10">
+                <div className="p-12 space-y-10 relative z-10">
                     {loading ? (
-                        <div className="py-20 text-center space-y-8">
+                        <div className="py-24 text-center space-y-10">
                             <div className="relative inline-block">
-                                <div className="absolute inset-0 bg-brand-red/20 blur-2xl animate-pulse rounded-full" />
-                                <Loader2Icon className="animate-spin h-16 w-16 text-brand-red mx-auto relative z-10" />
+                                <div className="absolute inset-0 bg-liquid-gold/20 blur-3xl animate-pulse rounded-full" />
+                                <Loader2Icon className="animate-spin h-20 w-20 text-liquid-gold mx-auto relative z-10" />
                             </div>
-                            <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] animate-pulse italic">REDACTANDO_OFERTA_PERSONALIZADA...</p>
+                            <div className="space-y-3">
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.8em] animate-pulse italic">SYNTHESIZING_STRATEGIC_PROMOTION...</p>
+                                <div className="h-[1px] w-48 bg-gradient-to-r from-transparent via-liquid-gold/30 to-transparent mx-auto" />
+                            </div>
                         </div>
                     ) : (
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                            <div className="bg-black/40 p-10 rounded-[2.5rem] border border-white/10 relative group/msg shadow-inner overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-red/20 animate-scan-y" />
-                                <SparklesIcon className="absolute top-8 right-8 w-6 h-6 text-brand-red animate-pulse" />
-                                <p className="text-xl text-slate-300 leading-relaxed font-bold italic pr-12 font-serif">
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-10">
+                            <div className="bg-black/60 p-12 rounded-[3rem] border border-white/10 relative group/msg shadow-inner overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-[2px] bg-liquid-gold/20 animate-scan-y" />
+                                <SparklesIcon className="absolute top-10 right-10 w-8 h-8 text-liquid-gold/20 group-hover:text-liquid-gold animate-pulse transition-colors" />
+                                <p className="text-2xl text-slate-300 leading-relaxed font-black italic pr-14 font-serif group-hover:text-white transition-colors">
                                     "{message}"
                                 </p>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <button onClick={handleWhatsApp} className="group flex items-center justify-center gap-4 bg-emerald-500 text-brand-blue px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all italic">
-                                    <WhatsAppIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" /> ENVIAR_WHATSAPP
+                            
+                            <div className="flex flex-col sm:flex-row gap-6">
+                                <button 
+                                    onClick={handleWhatsApp} 
+                                    className="flex-1 flex items-center justify-center gap-5 bg-emerald-500 text-brand-dark px-10 py-7 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.4em] shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all italic"
+                                >
+                                    <WhatsAppIcon className="w-6 h-6" /> UPLINK_WHATSAPP
                                 </button>
-                                <button onClick={() => { navigator.clipboard.writeText(message); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} className="bg-white text-brand-blue px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-red transition-all duration-500 italic">
-                                    {copied ? "¡COPIADO!" : "COPIAR_TEXTO"}
+                                <button 
+                                    onClick={() => { navigator.clipboard.writeText(message); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} 
+                                    className={`flex-1 px-10 py-7 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.4em] border-2 transition-all duration-700 italic ${copied ? 'bg-liquid-gold border-liquid-gold text-brand-dark' : 'bg-white/5 border-white/10 text-white hover:border-liquid-gold hover:text-liquid-gold'}`}
+                                >
+                                    {copied ? "ENCRYPTED_TO_CLIPBOARD" : "COPY_ARTIFACT"}
                                 </button>
+                            </div>
+                            
+                            <div className="text-center">
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.5em] italic">Propulsado por el Núcleo Géminis de Google DeepMind</p>
                             </div>
                         </motion.div>
                     )}
@@ -98,170 +117,137 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
 
 // --- FORMULARIO DE CLIENTE ELITE ---
 const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (c: Partial<Cliente>) => void; clientToEdit: Partial<Cliente> }> = ({ isOpen, onClose, onSave, clientToEdit }) => {
-    const [formData, setFormData] = useState<Partial<Cliente>>(clientToEdit);
-    const [rucCedula, setRucCedula] = useState(clientToEdit.ruc || clientToEdit.cedula || '');
-    const [isScanning, setIsScanning] = useState(false);
-    
+    const [formData, setFormData] = useState<Partial<Cliente>>({});
+    const [isLookingUp, setIsLookingUp] = useState(false);
+    const [idError, setIdError] = useState('');
+
     useEffect(() => {
-        const performLookup = async () => {
-            if (!clientToEdit.id && rucCedula.length === 13 && !formData.nombre) {
-                const isValid = validarIdentificacionEC(rucCedula);
-                if (isValid) {
-                    setIsScanning(true);
-                    try {
-                        const result = await sriLookupService.lookupByRuc(rucCedula);
-                        if (result) {
-                            let regimenFinal = formData.regimen || Regimen.GENERAL;
-                            if (typeof result.regimen === 'string') {
-                                const raw = result.regimen.toUpperCase();
-                                if (raw.includes('POPULAR')) regimenFinal = Regimen.NEGOCIO_POPULAR;
-                                else if (raw.includes('EMPRENDEDOR')) regimenFinal = Regimen.EMPRENDEDOR;
-                                else regimenFinal = Regimen.GENERAL;
-                            }
+        if (clientToEdit) {
+            setFormData(clientToEdit);
+            setIdError('');
+        }
+    }, [clientToEdit]);
 
-                            setFormData(prev => ({
-                                ...prev,
-                                nombre: result.razon_social || prev.nombre,
-                                direccion: result.direccion || `${result.parroquia}, ${result.canton}, ${result.provincia || 'EL ORO'}`,
-                                regimen: regimenFinal,
-                                actividades: result.actividad_economica || prev.actividades
-                            }));
-                        }
-                    } catch (err) {
-                        console.error("Error doing padron lookup:", err);
-                    } finally {
-                        setIsScanning(false);
-                    }
-                }
+    const handleIdLookup = async (id: string) => {
+        if (id.length < 10) return;
+        
+        if (!validarIdentificacionEC(id)) {
+            setIdError('IDENTIFICACIÓN INVÁLIDA');
+            return;
+        }
+        
+        setIdError('');
+        setIsLookingUp(true);
+        try {
+            const data = await sriLookupService.lookupByRuc(id);
+            if (data) {
+                setFormData(prev => ({
+                    ...prev,
+                    nombre: data.razon_social,
+                    email: prev.email,
+                    direccion: data.direccion || prev.direccion,
+                    regimen: (data.regimen as Regimen) || prev.regimen
+                }));
             }
-        };
-        performLookup();
-    }, [rucCedula, clientToEdit.id, formData.nombre]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        if (name === 'telefono') setFormData({ ...formData, telefono: [value] });
-        else setFormData({ ...formData, [name]: value });
+        } catch (e) {
+            console.error("Lookup error", e);
+        } finally {
+            setIsLookingUp(false);
+        }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const isRuc = rucCedula.length === 13;
-        onSave({ 
-            ...formData, 
-            ruc: isRuc ? rucCedula : undefined,
-            cedula: isRuc ? rucCedula.substring(0, 10) : rucCedula
-        });
-    };
+    if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-brand-blue/95 backdrop-blur-3xl z-[200] flex justify-center items-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] flex justify-center items-center p-6" onClick={onClose}>
             <motion.div 
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="bg-brand-blue/50 border border-white/10 rounded-[4rem] shadow-4xl w-full max-w-4xl overflow-hidden relative max-h-[90vh] overflow-y-auto no-scrollbar" 
+                initial={{ scale: 0.9, opacity: 0, y: 50 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="bg-brand-dark border border-white/10 w-full max-w-2xl overflow-hidden relative z-10 shadow-luxury rounded-[4rem]" 
                 onClick={e => e.stopPropagation()}
             >
-                {/* Header */}
-                <div className="p-12 border-b border-white/5 flex justify-between items-center sticky top-0 bg-black/40 backdrop-blur-3xl z-30">
-                    <div className="space-y-2">
-                        <span className="text-[10px] font-black text-brand-red uppercase tracking-[0.5em] italic">PROTOCOLO_IDENTIDAD</span>
-                        <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none">{formData.id ? 'EDITAR' : 'NUEVO'} <span className="text-brand-red text-glow">CLIENTE</span></h2>
+                <div className="absolute inset-0 bg-architect-grid opacity-[0.03] pointer-events-none" />
+                
+                <div className="p-14 border-b border-white/5 bg-white/[0.01] flex justify-between items-center relative">
+                    <div className="space-y-4">
+                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Identity <span className="text-gold-gradient">Protocol</span></h2>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">Registro Centralizado de Entidades</p>
                     </div>
-                    <button onClick={onClose} className="p-4 bg-white/5 hover:bg-brand-red/20 rounded-2xl transition-all group/close">
-                        <CloseIcon className="w-6 h-6 text-slate-500 group-hover/close:text-white" />
+                    <button onClick={onClose} className="p-5 bg-white/5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-500 rounded-2xl transition-all border border-white/5 group">
+                        <CloseIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500"/>
                     </button>
                 </div>
 
-                {isScanning && (
-                    <div className="absolute top-0 left-0 w-full h-[2px] bg-brand-red/50 animate-scan-y z-40 overflow-hidden">
-                        <div className="w-1/3 h-full bg-brand-red shadow-[0_0_15px_#ff0033] animate-pulse" />
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="p-12 space-y-10 relative z-10">
-                    
-                    {/* Sección Principal: ID (Idea 1) */}
-                    <div className="bg-black/20 p-8 rounded-[3rem] border border-white/5 space-y-6 relative overflow-hidden">
-                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-red/10 rounded-full blur-3xl pointer-events-none" />
-                        
+                <form onSubmit={e => { e.preventDefault(); onSave(formData); }} className="p-14 space-y-10 max-h-[75vh] overflow-y-auto custom-scrollbar relative">
+                    <div className="space-y-10">
                         <div className="relative group">
-                            <ShieldCheckIcon className={`absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-500 ${rucCedula.length >= 10 ? 'text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] scale-110' : 'text-slate-600 group-focus-within:text-brand-red'}`} />
                             <input 
-                                id="rucCedula"
-                                value={rucCedula} 
-                                onChange={e => setRucCedula(e.target.value.replace(/\D/g, '').slice(0, 13))} 
-                                required 
-                                className="peer w-full bg-white/[0.02] border border-white/10 p-8 pt-10 pb-4 pl-20 rounded-[2rem] text-white font-black text-2xl focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all tracking-[0.2em] italic placeholder-transparent" 
-                                placeholder="ID Tributario" 
+                                type="text"
+                                value={formData.id || ''}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setFormData({...formData, id: val});
+                                    if (val.length >= 10) handleIdLookup(val);
+                                }}
+                                placeholder="IDENTIFICACIÓN (RUC/CÉDULA)"
+                                className={`w-full bg-white/[0.02] border p-8 pt-10 pb-5 rounded-[2.5rem] text-white font-black text-xl focus:ring-4 transition-all uppercase italic outline-none ${idError ? 'border-rose-500/40 focus:ring-rose-500/10' : 'border-white/5 focus:ring-liquid-gold/10 focus:border-liquid-gold/30'}`}
                             />
-                            <label htmlFor="rucCedula" className="absolute left-20 top-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-8 peer-placeholder-shown:text-lg peer-placeholder-shown:text-slate-600 peer-focus:top-4 peer-focus:text-[10px] peer-focus:text-brand-red pointer-events-none">
-                                ID_Tributario (RUC/Cédula)
-                            </label>
+                            <label className={`absolute left-8 top-5 text-[10px] font-black uppercase tracking-[0.5em] italic transition-all ${idError ? 'text-rose-500' : 'text-slate-500'}`}>IDENTIFICACIÓN_ID</label>
+                            {isLookingUp && <div className="absolute right-8 top-1/2 -translate-y-1/2"><Loader2Icon className="animate-spin w-6 h-6 text-liquid-gold" /></div>}
+                            {idError && <p className="text-[9px] font-black text-rose-500 mt-3 ml-4 uppercase tracking-widest">{idError}</p>}
+                        </div>
 
-                            <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                                {isScanning ? (
-                                    <>
-                                        <p className="text-[9px] text-brand-red font-black uppercase tracking-[0.3em] animate-pulse hidden sm:block">EXTRAYENDO_DATA...</p>
-                                        <Loader2Icon className="w-5 h-5 text-brand-red animate-spin" />
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="text-[9px] text-emerald-500 font-black uppercase tracking-[0.3em] hidden sm:block">
-                                            {rucCedula.length === 13 && validarIdentificacionEC(rucCedula) ? 'RUC_VÁLIDO' : rucCedula.length === 10 && validarIdentificacionEC(rucCedula) ? 'CÉDULA_VÁLIDA' : ''}
-                                        </p>
-                                        <div className={`w-2 h-2 rounded-full ${rucCedula.length >= 10 && validarIdentificacionEC(rucCedula) ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-slate-700'} transition-all duration-500`} />
-                                    </>
-                                )}
+                        <div className="relative group">
+                            <input 
+                                type="text"
+                                value={formData.nombre || ''}
+                                onChange={e => setFormData({...formData, nombre: e.target.value})}
+                                placeholder="RAZÓN SOCIAL / NOMBRE"
+                                className="w-full bg-white/[0.02] border border-white/5 p-8 pt-10 pb-5 rounded-[2.5rem] text-white font-black text-xl focus:ring-4 focus:ring-liquid-gold/10 focus:border-liquid-gold/30 transition-all uppercase italic outline-none"
+                            />
+                            <label className="absolute left-8 top-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic transition-all">ASSET_IDENTITY</label>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="relative group">
+                                <input 
+                                    type="text"
+                                    value={formData.telefono?.[0] || ''}
+                                    onChange={e => setFormData({...formData, telefono: [e.target.value]})}
+                                    placeholder="TELÉFONO"
+                                    className="w-full bg-white/[0.02] border border-white/5 p-8 pt-10 pb-5 rounded-[2.5rem] text-white font-black text-lg focus:ring-4 focus:ring-liquid-gold/10 focus:border-liquid-gold/30 transition-all uppercase italic outline-none"
+                                />
+                                <label className="absolute left-8 top-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic transition-all">COMM_UPLINK</label>
+                            </div>
+                            <div className="relative group">
+                                <input 
+                                    type="email"
+                                    value={formData.email || ''}
+                                    onChange={e => setFormData({...formData, email: e.target.value})}
+                                    placeholder="EMAIL"
+                                    className="w-full bg-white/[0.02] border border-white/5 p-8 pt-10 pb-5 rounded-[2.5rem] text-white font-black text-lg focus:ring-4 focus:ring-liquid-gold/10 focus:border-liquid-gold/30 transition-all uppercase italic outline-none"
+                                />
+                                <label className="absolute left-8 top-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic transition-all">VIRTUAL_ADDRESS</label>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Resto de campos con Idea 3 (Floating Labels & Glassmorphism) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="relative group md:col-span-2">
-                            <input name="nombre" id="nombre" value={formData.nombre || ''} onChange={handleChange} required className="peer w-full bg-white/[0.02] border border-white/5 p-6 pt-8 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all uppercase italic placeholder-transparent" placeholder="NOMBRE COMPLETO" />
-                            <label htmlFor="nombre" className="absolute left-6 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px] peer-focus:text-brand-red pointer-events-none">Identificación_Maestra</label>
-                        </div>
 
                         <div className="relative group">
-                            <MonitorIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-brand-red transition-colors z-10" />
-                            <input name="nombreComercial" id="nombreComercial" value={formData.nombreComercial || ''} onChange={handleChange} className="peer w-full bg-white/[0.02] border border-white/5 p-6 pt-8 pb-4 pl-16 rounded-[2rem] text-white font-black focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all uppercase italic placeholder-transparent" placeholder="Marca Comercial" />
-                            <label htmlFor="nombreComercial" className="absolute left-16 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px] peer-focus:text-brand-red pointer-events-none">Marca_Comercial (Opcional)</label>
-                        </div>
-
-                        <div className="relative group">
-                            <FilterIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none z-10" />
-                            <select name="regimen" id="regimen" value={formData.regimen} onChange={handleChange} className="peer w-full bg-white/[0.02] border border-white/5 p-6 pt-8 pb-4 pl-16 rounded-[2rem] text-white font-black focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all appearance-none uppercase italic cursor-pointer">
-                                <option value={Regimen.GENERAL} className="bg-brand-blue">Régimen General</option>
-                                <option value={Regimen.NEGOCIO_POPULAR} className="bg-brand-blue">Negocio Popular (RIMPE)</option>
-                                <option value={Regimen.EMPRENDEDOR} className="bg-brand-blue">Emprendedor (RIMPE)</option>
+                            <select 
+                                value={formData.regimen || Regimen.NEGOCIO_POPULAR}
+                                onChange={e => setFormData({...formData, regimen: e.target.value as Regimen})}
+                                className="w-full bg-white/[0.02] border border-white/5 p-8 pt-10 pb-5 rounded-[2.5rem] text-white font-black text-lg focus:ring-4 focus:ring-liquid-gold/10 focus:border-liquid-gold/30 transition-all uppercase italic outline-none appearance-none"
+                            >
+                                {Object.values(Regimen).map(r => <option key={r} value={r} className="bg-slate-900">{r.replace(/_/g, ' ')}</option>)}
                             </select>
-                            <label htmlFor="regimen" className="absolute left-16 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-focus:text-brand-red pointer-events-none">Régimen_Fiscal</label>
-                        </div>
-
-                        <div className="relative group">
-                            <WhatsAppIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-emerald-500 transition-colors z-10" />
-                            <input name="telefono" id="telefono" value={formData.telefono?.[0] || ''} onChange={handleChange} required className="peer w-full bg-white/[0.02] border border-white/5 p-6 pt-8 pb-4 pl-16 rounded-[2rem] text-white font-black focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all italic placeholder-transparent" placeholder="+593" />
-                            <label htmlFor="telefono" className="absolute left-16 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px] peer-focus:text-emerald-500 pointer-events-none">Enlace_Voz/Chat</label>
-                        </div>
-
-                        <div className="relative group">
-                            <MapPinIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-brand-red transition-colors z-10" />
-                            <input name="direccion" id="direccion" value={formData.direccion || ''} onChange={handleChange} className="peer w-full bg-white/[0.02] border border-white/5 p-6 pt-8 pb-4 pl-16 rounded-[2rem] text-white font-black focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all uppercase italic placeholder-transparent" placeholder="Dirección" />
-                            <label htmlFor="direccion" className="absolute left-16 top-3 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-3 peer-focus:text-[9px] peer-focus:text-brand-red pointer-events-none">Geolocalización_Base</label>
-                        </div>
-
-                        <div className="relative group md:col-span-2">
-                            <textarea name="actividades" id="actividades" value={formData.actividades || ''} onChange={handleChange} rows={3} className="peer w-full bg-white/[0.02] border border-white/5 p-6 pt-10 pb-4 rounded-[2rem] text-white font-bold focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red/50 transition-all text-sm uppercase italic leading-relaxed placeholder-transparent" placeholder="Actividades" />
-                            <label htmlFor="actividades" className="absolute left-6 top-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-8 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-4 peer-focus:text-[9px] peer-focus:text-brand-red pointer-events-none">Manifiesto_Económico (SRI)</label>
+                            <label className="absolute left-8 top-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic transition-all">FISCAL_REGIME</label>
+                            <ArrowRightIcon className="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700 rotate-90 pointer-events-none" />
                         </div>
                     </div>
 
-                    <div className="pt-10 flex flex-col sm:flex-row justify-end gap-6 border-t border-white/5">
-                        <button type="button" onClick={onClose} className="px-10 py-5 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all italic">Descartar_Cambios</button>
-                        <button type="submit" disabled={isScanning} className="px-12 py-5 bg-white text-brand-blue font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl shadow-luxury hover:bg-brand-red hover:scale-105 disabled:opacity-50 disabled:pointer-events-none transition-all duration-700 italic">
-                            {isScanning ? 'PROCESANDO...' : 'CONSOLIDAR_IDENTIDAD'}
+                    <div className="flex gap-6 pt-12">
+                        <button type="button" onClick={onClose} className="flex-1 py-7 text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] hover:text-white transition-all italic">Abortar</button>
+                        <button type="submit" className="flex-[2.5] bg-liquid-gold text-brand-dark py-7 rounded-[2rem] font-black uppercase text-[12px] tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-gold-glow italic">
+                            {formData.id ? 'ACTUALIZAR_IDENTIDAD' : 'REGISTRAR_NUEVA_ENTIDAD'}
                         </button>
                     </div>
                 </form>
@@ -271,179 +257,195 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
 };
 
 const ClientesPage: React.FC = () => {
+    const navigate = useNavigate();
     const { currentUser } = useOutletContext<{ currentUser: any }>();
-    const { clientes, trabajos, loading, addCliente, updateCliente, deleteCliente } = useData();
-    const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
-    const [marketingClient, setMarketingClient] = useState<Cliente | null>(null);
+    const { clientes, trabajos, loading, addCliente, updateCliente } = useData();
     const [searchTerm, setSearchTerm] = useState('');
-    const location = useLocation();
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [clientToEdit, setClientToEdit] = useState<Partial<Cliente>>({});
+    const [marketingClient, setMarketingClient] = useState<Cliente | null>(null);
 
-    const filteredClientes = useMemo(() => {
+    const filtered = useMemo(() => {
         const lower = searchTerm.toLowerCase();
         return clientes.filter(c => 
-            (c.nombre && c.nombre.toLowerCase().includes(lower)) ||
-            (c.ruc && c.ruc.toLowerCase().includes(lower)) ||
-            (c.cedula && c.cedula.toLowerCase().includes(lower))
-        );
+            c.nombre.toLowerCase().includes(lower) || 
+            c.id.includes(lower)
+        ).sort((a, b) => b.id.localeCompare(a.id));
     }, [clientes, searchTerm]);
 
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        if (params.get('action') === 'new' || params.get('reengage')) {
-            const reengageId = params.get('reengage');
-            if (reengageId) {
-                const client = clientes.find(cl => cl.id === reengageId);
-                if (client) setMarketingClient(client);
-            } else {
-                setSelectedClient({ id: '', nombre: '', email: '', telefono: [''], ruc: '', cedula: '', regimen: Regimen.GENERAL, creadoEn: new Date().toISOString() });
-            }
-        }
-    }, [location.search, clientes]);
-
-    const handleSaveClient = async (client: Partial<Cliente>) => {
-        if (client.id) {
-            await updateCliente(client.id, client);
-            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'EDITAR_CLIENTE', `Cliente editado: ${client.nombre}`, 'Clientes');
+    const handleSaveClient = async (c: Partial<Cliente>) => {
+        const existing = clientes.find(client => client.id === c.id);
+        if (existing) {
+            await updateCliente(c.id!, c);
+            logActivity(currentUser.nombre, currentUser.rol, 'EDITAR_CLIENTE', `Identidad actualizada: ${c.nombre}`, 'Entidades');
         } else {
-            await addCliente(client as any);
-            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CREAR_CLIENTE', `Nuevo cliente creado: ${client.nombre}`, 'Clientes');
+            await addCliente(c as Cliente);
+            logActivity(currentUser.nombre, currentUser.rol, 'CREAR_CLIENTE', `Nueva entidad registrada: ${c.nombre}`, 'Entidades');
         }
-        setSelectedClient(null);
-    };
-
-    const handleDeleteClient = async (id: string, nombre: string) => {
-        if (window.confirm(`¿ESTÁ SEGURO DE ELIMINAR AL CLIENTE ${nombre.toUpperCase()}?`)) {
-            await deleteCliente(id);
-            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'ELIMINAR_CLIENTE', `Cliente eliminado: ${nombre}`, 'Clientes');
-        }
+        setIsFormOpen(false);
     };
 
     return (
-        <div className="relative min-h-screen font-sans selection:bg-brand-red selection:text-white space-y-12 pb-20 animate-fade-in">
-            <SEO title="Elite Directory | Imprenta Córdova" description="Gestión industrial avanzada de activos humanos y corporativos." />
-
-            {/* --- ELITE HEADER HUD --- */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 sm:gap-10 p-6 sm:p-10 lg:p-14 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] sm:rounded-[3rem] lg:rounded-[4rem] shadow-2xl relative overflow-hidden group mx-4 lg:mx-0">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-brand-red/5 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
-                
-                <div className="flex gap-10 relative z-10">
-                    <div className="w-[1px] h-32 bg-gradient-to-b from-transparent via-brand-red/40 to-transparent hidden lg:block" />
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 mb-2">
-                            <div className="flex gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-brand-red shadow-red-glow animate-pulse" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-brand-red/40 animate-pulse delay-75" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-brand-red/20 animate-pulse delay-150" />
+        <div className="max-w-[1600px] mx-auto space-y-16 pb-40 pt-10 px-4 sm:px-14 animate-fade-in">
+            <SEO title="Bóveda de Identidades - Imprenta Córdova" description="Gestión centralizada de clientes y aliados estratégicos." />
+            
+            {/* --- CABECERA ELITE --- */}
+            <div className="flex flex-col gap-12">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+                    <div className="flex items-center gap-10">
+                        <button 
+                            onClick={() => navigate('/dashboard')}
+                            className="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[2rem] transition-all group shadow-2xl backdrop-blur-xl"
+                        >
+                            <HomeIcon className="w-6 h-6 text-slate-500 group-hover:text-liquid-gold transition-colors" />
+                        </button>
+                        <div className="w-[1px] h-28 bg-gradient-to-b from-transparent via-liquid-gold/40 to-transparent hidden md:block"></div>
+                        <div className="space-y-5">
+                            <div className="flex items-center gap-6">
+                                <div className="h-[2px] w-16 bg-liquid-gold rounded-full shadow-gold-glow"></div>
+                                <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">CONTROL CENTRALIZADO DE ENTIDADES</p>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 italic">VÍNCULO_CORPORATIVO_ACTIVO</span>
+                            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase italic leading-none">
+                                IDENTITY <span className="text-gold-gradient">VAULT</span>
+                            </h1>
                         </div>
-                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white uppercase italic tracking-tighter leading-none">
-                            GARANTÍA DE <span className="text-brand-red text-glow not-italic">CLIENTES</span>
-                        </h1>
-                        <p className="text-slate-500 text-xl font-medium tracking-tight italic opacity-60">Soberanía de datos para la elite comercial.</p>
                     </div>
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-5 w-full lg:w-auto relative z-10">
-                    <motion.button 
-                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedClient({ id: '', nombre: '', email: '', telefono: [''], ruc: '', cedula: '', regimen: Regimen.GENERAL, creadoEn: new Date().toISOString() })} 
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-4 bg-brand-red text-brand-blue font-black py-4 sm:py-5 px-6 sm:px-10 w-full rounded-xl sm:rounded-2xl shadow-red-glow-soft hover:bg-white hover:text-brand-blue transition-all duration-700 text-[10px] sm:text-[11px] uppercase tracking-widest italic"
+                    <button 
+                        onClick={() => { setClientToEdit({}); setIsFormOpen(true); }} 
+                        className="flex items-center justify-center gap-6 px-14 py-7 bg-liquid-gold text-brand-dark font-black rounded-[2rem] shadow-gold-glow uppercase text-[11px] tracking-[0.4em] group hover:scale-[1.05] transition-all duration-500 italic"
                     >
-                        <UserPlusIcon className="w-5 h-5" /> VINCULAR_NUEVO_ACTIVO
-                    </motion.button>
+                        <UserPlusIcon className="w-7 h-7 group-hover:rotate-12 transition-transform duration-500" />
+                        <span>REGISTRAR_CLIENTE</span>
+                    </button>
                 </div>
-            </div>
 
-            {/* --- INDUSTRIAL SEARCH CONSOLE --- */}
-            <div className="flex flex-col md:flex-row gap-8 relative z-10 px-4 lg:px-0">
-                <div className="relative group flex-grow">
-                    <div className="absolute inset-0 bg-brand-red/5 blur-3xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
-                    <SearchIcon className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600 group-focus-within:text-brand-red transition-all duration-500" />
+                <div className="relative group max-w-4xl">
+                    <div className="absolute inset-0 bg-liquid-gold/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <SearchIcon className="absolute left-8 top-1/2 -translate-y-1/2 w-7 h-7 text-liquid-gold/40 group-focus-within:text-liquid-gold transition-colors" />
                     <input 
-                        type="text" placeholder="BUSCAR POR NOMBRE, RUC O CÉDULA..." 
+                        type="text" 
+                        placeholder="IDENTIFICAR ENTIDAD: RAZÓN SOCIAL // CÉDULA // RUC..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full bg-white/[0.02] border border-white/10 p-5 pl-16 sm:p-7 sm:pl-20 rounded-[2rem] sm:rounded-[2.5rem] text-white font-black focus:ring-4 focus:ring-brand-red/5 focus:border-brand-red/20 transition-all shadow-2xl text-xs sm:text-base uppercase tracking-[0.2em] placeholder:text-slate-700 italic backdrop-blur-xl"
+                        className="w-full pl-20 pr-10 py-8 bg-white/[0.02] border border-white/10 focus:border-liquid-gold/40 rounded-[2.5rem] text-[14px] font-black text-white uppercase tracking-[0.3em] placeholder:text-slate-800 outline-none focus:bg-white/[0.05] transition-all duration-700 backdrop-blur-md shadow-inner italic"
                     />
                 </div>
             </div>
 
-            {/* --- ELITE DIRECTORY HUD --- */}
-            <div className="flex-grow bg-white/[0.01] backdrop-blur-3xl rounded-[2rem] sm:rounded-[4rem] shadow-4xl border border-white/10 overflow-hidden relative group/table mx-4 lg:mx-0">
-                <div className="absolute inset-0 bg-gradient-to-b from-brand-red/[0.01] to-transparent pointer-events-none" />
-                <div className="overflow-x-auto h-full no-scrollbar">
-                    <table className="min-w-full divide-y divide-white/5">
-                        <thead className="bg-black/40 sticky top-0 backdrop-blur-2xl z-20 border-b border-white/10">
-                            <tr>
-                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-left text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">ACTIVO_CORPORATIVO</th>
-                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-left text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">ID_TRIBUTARIO</th>
-                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-left text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">RÉGIMEN_FISCAL</th>
-                                <th className="px-4 sm:px-10 py-6 sm:py-8 text-right text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">OPERACIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 bg-transparent relative z-10">
-                            {loading ? (
-                                <tr><td colSpan={4} className="text-center py-40 text-xs font-black text-slate-500 uppercase tracking-[1em] animate-pulse italic">SINCRONIZANDO_NÚCLEO...</td></tr>
-                            ) : filteredClientes.length === 0 ? (
-                                <tr><td colSpan={4} className="text-center py-40 text-xs font-black text-slate-600 uppercase tracking-[1em] italic">SIN_REGISTROS_DETECTADOS</td></tr>
-                            ) : filteredClientes.map((c, idx) => (
-                                <motion.tr 
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    key={c.id} 
-                                    className="hover:bg-white/[0.03] transition-all duration-700 group/row relative"
-                                >
-                                    <td className="px-4 sm:px-10 py-6 sm:py-8">
-                                        <div className="flex items-center gap-4 sm:gap-6">
-                                            <div className="w-14 h-14 rounded-2xl bg-brand-red/10 border border-brand-red/20 flex items-center justify-center font-black text-brand-red shadow-red-glow-soft transition-all group-hover/row:scale-110 group-hover/row:bg-brand-red group-hover/row:text-brand-blue group-hover/row:shadow-red-glow flex-shrink-0 italic">
-                                                {(c.nombre || '?').charAt(0)}
+            {/* --- LISTADO DE ENTIDADES --- */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <AnimatePresence mode="popLayout">
+                    {loading ? (
+                        <div className="col-span-full py-60 flex flex-col items-center justify-center gap-10 bg-white/[0.01] rounded-[5rem] border-4 border-dashed border-white/5">
+                            <Loader2Icon className="w-20 h-20 text-liquid-gold animate-spin" />
+                            <p className="text-[12px] font-black text-slate-700 uppercase tracking-[1em] animate-pulse italic">DECRYPTING_IDENTITY_RECORDS...</p>
+                        </div>
+                    ) : filtered.length > 0 ? filtered.map((c, idx) => {
+                        const clientJobs = trabajos.filter(t => t.clienteId === c.id);
+                        const lastJob = clientJobs.sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime())[0];
+                        
+                        return (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.03 }}
+                                key={c.id}
+                                className="group relative bg-white/[0.02] backdrop-blur-3xl p-12 border border-white/5 hover:border-liquid-gold/30 transition-all duration-700 rounded-[3.5rem] overflow-hidden shadow-luxury"
+                            >
+                                <div className="absolute inset-0 bg-architect-grid opacity-[0.02] pointer-events-none" />
+                                
+                                <div className="flex justify-between items-start relative z-10">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="px-5 py-2 rounded-full border border-liquid-gold/20 bg-liquid-gold/5 text-liquid-gold text-[9px] font-black uppercase tracking-[0.4em] italic shadow-gold-glow-soft">IDENTITY_CONFIRMED</div>
+                                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl italic">#{c.id}</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter group-hover:text-liquid-gold transition-colors duration-500 leading-none">{c.nombre}</h3>
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic mt-4">{c.direccion || 'UBICACIÓN NO REGISTRADA'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button 
+                                            onClick={() => setMarketingClient(c)}
+                                            className="p-5 bg-white/5 hover:bg-liquid-gold text-slate-500 hover:text-brand-dark rounded-2xl transition-all border border-white/5 group-hover:border-liquid-gold/20 shadow-2xl"
+                                            title="Núcleo Géminis IA"
+                                        >
+                                            <SparklesIcon className="w-6 h-6 animate-pulse" />
+                                        </button>
+                                        <button 
+                                            onClick={() => { setClientToEdit(c); setIsFormOpen(true); }}
+                                            className="p-5 bg-white/5 hover:bg-white text-slate-500 hover:text-brand-dark rounded-2xl transition-all border border-white/5 shadow-2xl"
+                                        >
+                                            <PencilIcon className="w-6 h-6" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 relative z-10">
+                                    <div className="space-y-6">
+                                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] italic leading-none">COMMUNICATION_CHANNELS</p>
+                                        <div className="flex flex-col gap-4">
+                                            {c.telefono.map((tel, i) => (
+                                                <div key={i} className="flex items-center gap-5 text-white/90 group/tel">
+                                                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover/tel:bg-emerald-500 group-hover/tel:text-brand-dark transition-all">
+                                                        <PhoneIcon className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-lg font-black italic tracking-tighter">{tel}</span>
+                                                </div>
+                                            ))}
+                                            {c.email && (
+                                                <div className="flex items-center gap-5 text-white/90 group/email">
+                                                    <div className="w-10 h-10 rounded-2xl bg-liquid-gold/10 flex items-center justify-center border border-liquid-gold/20 group-hover/email:bg-liquid-gold group-hover/email:text-brand-dark transition-all">
+                                                        <EnvelopeIcon className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-lg font-black italic tracking-tighter lowercase truncate">{c.email}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-black/20 p-8 rounded-[2.5rem] border border-white/5 space-y-8 group-hover:border-liquid-gold/10 transition-all">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] italic">MISSION_HISTORY</p>
+                                            <div className="px-4 py-1.5 rounded-full bg-white/5 text-[9px] font-black text-white italic">{clientJobs.length} ORDENES</div>
+                                        </div>
+                                        {lastJob ? (
+                                            <div className="space-y-4">
+                                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">ÚLTIMA_ ACTIVIDAD: <span className="text-white italic">{lastJob.subtipo}</span></p>
+                                                <div className="flex justify-between items-end">
+                                                    <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest italic">{formatDate(lastJob.fechaEntrada)}</p>
+                                                    <p className="text-3xl font-black text-emerald-500 italic tracking-tighter">{formatCurrency(lastJob.total)}</p>
+                                                </div>
                                             </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-black text-white uppercase tracking-tight text-base group-hover/row:text-brand-red transition-colors italic leading-none">{c.nombre || 'SIN IDENTIFICAR'}</span>
-                                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{c.nombreComercial || 'ACTIVO_NOMINAL'}</span>
+                                        ) : (
+                                            <div className="h-full flex items-center justify-center py-4">
+                                                <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.5em] italic">NO_HISTORY_DETECTED</p>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 sm:px-10 py-6 sm:py-8">
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            <FileTextIcon className="w-4 h-4 text-slate-600 group-hover/row:text-brand-red transition-colors" />
-                                            <span className="font-mono text-sm font-black text-slate-400 group-hover/row:text-white transition-colors tracking-widest">{c.ruc || c.cedula}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 sm:px-10 py-6 sm:py-8">
-                                        <span className={`px-4 py-2 sm:px-5 sm:py-2 inline-flex text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all duration-700 ${
-                                            c.regimen === Regimen.NEGOCIO_POPULAR 
-                                            ? 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-orange-500/5 group-hover/row:bg-orange-500 group-hover/row:text-brand-blue' 
-                                            : c.regimen === Regimen.EMPRENDEDOR
-                                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-blue-500/5 group-hover/row:bg-blue-500 group-hover/row:text-brand-blue'
-                                            : 'bg-white/5 text-slate-400 border-white/10 group-hover/row:bg-white group-hover/row:text-brand-blue'
-                                        } italic`}>
-                                            {c.regimen.replace('_', ' ')}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 sm:px-10 py-6 sm:py-8 text-right">
-                                        <div className="flex justify-end gap-1 sm:gap-3 opacity-100 sm:opacity-40 group-hover/row:opacity-100 transition-opacity duration-700">
-                                            <button onClick={() => setMarketingClient(c)} className="p-4 text-brand-red hover:bg-brand-red/10 rounded-2xl transition-all border border-transparent hover:border-brand-red/20 shadow-sm hover:shadow-red-glow" title="Sincronizar IA">
-                                                <SparklesIcon className="w-5 h-5" />
-                                            </button>
-                                            <button onClick={() => setSelectedClient(c)} className="p-4 text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/10" title="Reprogramar">
-                                                <PencilIcon className="w-5 h-5" />
-                                            </button>
-                                            <button onClick={() => handleDeleteClient(c.id, c.nombre)} className="p-4 text-red-600 hover:bg-red-500/10 rounded-2xl transition-all border border-transparent hover:border-red-500/10" title="Eliminar Activo">
-                                                <TrashIcon className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </motion.tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    }) : (
+                        <div className="col-span-full py-60 bg-white/[0.01] border-4 border-dashed border-white/5 rounded-[5rem] text-center flex flex-col items-center justify-center">
+                            <FingerPrintIcon className="w-32 h-32 text-slate-900 mb-12" />
+                            <h3 className="text-4xl font-black text-slate-800 uppercase tracking-[0.6em] italic">VAULT_VACANT</h3>
+                            <p className="text-slate-900 text-xs font-black uppercase mt-6 tracking-[1em] italic opacity-30">NO_IDENTITY_ENTITIES_DETECTED_IN_DATABASE</p>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
 
-            {/* --- MODALES --- */}
+            <ClientFormModal 
+                isOpen={isFormOpen} 
+                onClose={() => setIsFormOpen(false)} 
+                onSave={handleSaveClient} 
+                clientToEdit={clientToEdit} 
+            />
+
             <AnimatePresence>
                 {marketingClient && (
                     <MarketingIAModal 
@@ -452,27 +454,7 @@ const ClientesPage: React.FC = () => {
                         onClose={() => setMarketingClient(null)} 
                     />
                 )}
-                {selectedClient && (
-                    <ClientFormModal 
-                        isOpen={!!selectedClient} 
-                        onClose={() => setSelectedClient(null)} 
-                        onSave={handleSaveClient} 
-                        clientToEdit={selectedClient} 
-                    />
-                )}
             </AnimatePresence>
-
-            <style>{`
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                .text-glow { text-shadow: 0 0 30px rgba(225,29,72,0.4); }
-                .shadow-red-glow { box-shadow: 0 0 40px rgba(225,29,72,0.5); }
-                .shadow-red-glow-soft { box-shadow: 0 0 20px rgba(225,29,72,0.2); }
-                .shadow-4xl { box-shadow: 0 60px 120px -30px rgba(0,0,0,0.6); }
-                .shadow-3xl { box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5); }
-                @keyframes scan-y { 0% { transform: translateY(-100%); } 100% { transform: translateY(800%); } }
-                .animate-scan-y { animation: scan-y 10s linear infinite; }
-            `}</style>
         </div>
     );
 };

@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ArrowRightIcon, BoxIcon, 
     LayersIcon, FileTextIcon,
     SparklesIcon, MonitorIcon, CpuIcon,
-    CloseIcon
+    CloseIcon, ShieldCheckIcon, BoltIcon,
+    ChevronRightIcon
 } from '../Icons';
 
 interface ProductConfiguratorProps {
@@ -16,49 +17,89 @@ interface ProductConfiguratorProps {
     regimen?: string;
 }
 
+// --- SUB-COMPONENT: PRICE HUD ---
+const PriceHUD: React.FC<{ label: string; value: number; highlight?: boolean }> = ({ label, value, highlight }) => (
+    <div className={`p-8 rounded-[2.5rem] border transition-all duration-700 ${highlight ? 'glass-panel-gold border-liquid-gold/40 shadow-gold-glow-soft' : 'bg-white/[0.02] border-white/5'}`}>
+        <p className={`text-[10px] font-black uppercase tracking-[0.5em] mb-3 ${highlight ? 'text-liquid-gold' : 'text-slate-600'}`}>{label}</p>
+        <div className="flex items-baseline gap-2">
+            <span className={`text-sm font-black ${highlight ? 'text-liquid-gold' : 'text-slate-500'}`}>$</span>
+            <motion.span 
+                key={value}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`text-4xl font-black tracking-tighter italic ${highlight ? 'text-white' : 'text-slate-200'}`}
+            >
+                {value.toFixed(2)}
+            </motion.span>
+        </div>
+    </div>
+);
+
+// --- SUB-COMPONENT: TACTICAL SELECTOR ---
+const TacticalSelector: React.FC<{ 
+    options: string[]; 
+    selected: string; 
+    onChange: (val: string) => void; 
+    label: string;
+    icon: any;
+}> = ({ options, selected, onChange, label, icon: Icon }) => (
+    <div className="space-y-6">
+        <div className="flex items-center gap-3 border-b border-white/5 pb-4 px-2">
+            <Icon className="w-4 h-4 text-liquid-gold" />
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">{label}</label>
+        </div>
+        <div className="flex flex-wrap gap-3 px-2">
+            {options.map(opt => (
+                <motion.button
+                    key={opt}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => onChange(opt)}
+                    className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${
+                        selected === opt 
+                        ? 'bg-liquid-gold text-brand-blue border-liquid-gold shadow-gold-glow-sm italic' 
+                        : 'bg-black/40 text-slate-600 border-white/5 hover:border-white/20 hover:text-white'
+                    }`}
+                >
+                    {opt}
+                </motion.button>
+            ))}
+        </div>
+    </div>
+);
+
 const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onComplete, onCancel, regimen }) => {
-    // Basic Specs
     const [cantidad, setCantidad] = useState(1);
-    
-    // SRI Contingency Check
-    const isContingencyLimit = (regimen === 'General' || regimen === 'Rimpe Emprendedor') && product.esSRI;
+    const isContingencyLimit = (regimen?.toLowerCase().includes('general') || regimen?.toLowerCase().includes('emprendedor')) && product.esSRI;
     
     useEffect(() => {
-        if (isContingencyLimit && cantidad > 25) {
-            setCantidad(25);
-        }
+        if (isContingencyLimit && cantidad > 25) setCantidad(25);
     }, [cantidad, isContingencyLimit]);
 
     const [tamano, setTamano] = useState('1/4 Oficio');
     const [tipoPapel, setTipoPapel] = useState('Bond 75g');
-    const [copias, setCopias] = useState('Original y 1 Copia');
+    const [copias, setCopias] = useState('Original Solo');
     const [hojasPorTalonario, setHojasPorTalonario] = useState(50);
-    
-    // Industrial Features
     const [numerado, setNumerado] = useState(false);
     const [desde, setDesde] = useState('0001');
     const [hasta, setHasta] = useState('0050');
     const [perforado, setPerforado] = useState(false);
-    
-    // SRI specific (if applicable)
     const [sriAutorizacion, setSriAutorizacion] = useState('');
     const [sriVence, setSriVence] = useState(() => {
         const d = new Date();
         d.setFullYear(d.getFullYear() + 1);
         return d.toISOString().split('T')[0];
     });
-
-    // Additional Industrial Specs
     const [acabado, setAcabado] = useState('Ninguno');
     const [tintas, setTintas] = useState('Full Color');
     const [orientacion, setOrientacion] = useState('Vertical');
 
+    const tamanos = ['1/8 Oficio', '1/4 Oficio', '1/2 Oficio', 'Oficio', 'A4', 'A3', 'Tarjeta', 'Personalizado'];
+    const papeles = ['Bond 75g', 'Couché 150g', 'Couché 300g', 'Químico', 'Adhesivo', 'Lino', 'Cartulina'];
+    const copiasOpciones = ['Original Solo', 'Original y 1 Copia', 'Original y 2 Copias', 'Original y 3 Copias'];
     const acabados = ['Ninguno', 'Laminado Mate', 'Laminado Brillo', 'Barniz UV', 'Troquelado', 'Engomado'];
     const tintasOpciones = ['1 Color', '2 Colores', 'Full Color', 'Pantone / Especial'];
-    const unitPrice = product.precio || 0;
-    const [total, setTotal] = useState(unitPrice);
 
-    // Auto-calculate 'Hasta' for SRI/Numbered products
     useEffect(() => {
         if (numerado || product.esSRI) {
             const startNum = parseInt(desde) || 1;
@@ -68,358 +109,235 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
         }
     }, [desde, cantidad, hojasPorTalonario, numerado, product.esSRI]);
 
-    // Dynamic Price Engine
-    useEffect(() => {
+    const totalCalculated = useMemo(() => {
+        const unitPrice = product.precio || 0;
         let base = unitPrice * cantidad;
         if (cantidad < 1) base = unitPrice;
-
         if (numerado) base += (2.50 * Math.ceil(cantidad / 5));
         if (perforado) base += (1.00 * Math.ceil(cantidad / 5));
         if (acabado !== 'Ninguno') base += (5.00 * Math.ceil(cantidad / 10));
         
         const tintaMult = tintas.includes('1 Color') ? 0.9 : tintas.includes('Full Color') ? 1.2 : 1.5;
         base *= tintaMult;
-
         const copyMultiplier = copias.includes('3 Copias') ? 1.5 : copias.includes('2 Copias') ? 1.3 : copias.includes('1 Copia') ? 1.15 : 1;
         base *= copyMultiplier;
-
-        setTotal(base);
-    }, [cantidad, unitPrice, numerado, perforado, copias, acabado, tintas]);
-
-    const tamanos = ['1/8 Oficio', '1/4 Oficio', '1/2 Oficio', 'Oficio', 'A4', 'A3', 'Tarjeta', 'Personalizado'];
-    const papeles = ['Bond 75g', 'Couché 150g', 'Couché 300g', 'Químico', 'Adhesivo', 'Lino', 'Cartulina'];
-    const copiasOpciones = ['Original Solo', 'Original y 1 Copia', 'Original y 2 Copias', 'Original y 3 Copias'];
+        return base;
+    }, [cantidad, product.precio, numerado, perforado, copias, acabado, tintas]);
 
     const handleConfirm = () => {
         onComplete({
             ...product,
             cantidad,
             especificaciones: {
-                tamano,
-                tipoPapel,
-                copias,
-                hojasPorTalonario,
+                tamano, tipoPapel, copias, hojasPorTalonario,
                 numerado: numerado ? `Del ${desde} al ${hasta}` : 'No',
                 perforado: perforado ? 'Sí' : 'No',
-                acabado,
-                tintas,
-                orientacion,
+                acabado, tintas, orientacion,
                 sri: product.esSRI ? { autorizacion: sriAutorizacion, vencimiento: sriVence } : null
             },
-            precioFinal: total
+            precioFinal: totalCalculated
         });
     };
 
-    // Usar Portal para escapar el stacking context del Stepper (transform/backdrop-blur)
     const modalContent = (
         <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-black flex flex-col md:flex-row overflow-hidden font-sans"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[100] bg-brand-dark flex flex-col md:flex-row overflow-hidden font-sans"
         >
-            {/* LEFT: Configuration Hub (70% width on desktop, full on mobile) */}
-            <div className="w-full md:w-[70%] h-full flex flex-col relative md:border-r border-white/5 overflow-hidden">
-                {/* Header inside left side - STICKY ON MOBILE */}
-                <header className="px-6 md:px-16 py-8 md:py-12 flex justify-between items-center md:items-start shrink-0 bg-black/80 backdrop-blur-md sticky top-0 z-30 md:relative md:bg-transparent">
-                    <div>
-                        <p className="text-[10px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] md:tracking-[0.4em] mb-1.5 md:mb-2">Especificación 02</p>
-                        <h2 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tighter italic leading-none">
-                            Configurar <span className="text-liquid-gold">Elite</span>
+            <div className="absolute inset-0 bg-architect-grid opacity-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-20 pointer-events-none" />
+            
+            {/* --- CONFIGURATION PANEL --- */}
+            <div className="w-full md:w-[65%] h-full flex flex-col relative md:border-r border-white/5 overflow-hidden z-10">
+                <header className="p-10 md:p-16 flex justify-between items-start">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="flex gap-1.5">
+                                <div className="w-2 h-2 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse" />
+                                <div className="w-2 h-2 rounded-full bg-liquid-gold/20" />
+                                <div className="w-2 h-2 rounded-full bg-liquid-gold/10" />
+                            </div>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em] italic">INDUSTRIAL_CONFIG_NODE_v4</span>
+                        </div>
+                        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter italic leading-none">
+                            CENTRO DE <span className="text-gold-gradient">MANDO</span>
                         </h2>
-                        <h3 className="text-[11px] md:text-xl font-bold text-slate-400 mt-1 md:mt-2 uppercase tracking-tight line-clamp-1 opacity-80">
-                            {product.nombre}
-                        </h3>
+                        <div className="flex items-center gap-4 px-6 py-3 bg-black/60 border border-liquid-gold/20 rounded-2xl w-fit shadow-gold-glow-soft">
+                            <BoxIcon className="w-5 h-5 text-liquid-gold" />
+                            <span className="text-sm font-black text-white uppercase tracking-[0.2em] italic">{product?.nombre}</span>
+                        </div>
                     </div>
-                    
-                    <button 
-                        onClick={onCancel}
-                        className="flex items-center gap-2 p-3 md:px-6 md:py-3 rounded-full bg-white/5 hover:bg-white/10 transition-all text-slate-500 hover:text-white group border border-white/10"
-                    >
-                        <CloseIcon className="w-4 h-4 md:hidden" />
-                        <span className="hidden md:inline text-[10px] font-black uppercase tracking-[0.2em]">Abortar</span>
+                    <button onClick={onCancel} className="p-5 bg-white/5 hover:bg-brand-red/20 rounded-[2rem] transition-all group/close border border-white/10 hover:border-brand-red/40">
+                        <CloseIcon className="w-8 h-8 text-slate-600 group-hover/close:text-white" />
                     </button>
                 </header>
 
-                <main className="flex-grow overflow-y-auto px-6 md:px-16 pb-32 md:pb-24 custom-scrollbar scroll-smooth">
-                    <div className="space-y-12 md:space-y-24 max-w-4xl pt-6 md:pt-0">
-                        
-                        {/* DIMENSIONES */}
-                        {(!product.configuracionHabilitada || product.configuracionHabilitada.dimensiones !== false) && (
-                            <section className="space-y-10">
-                                <div className="border-b border-white/10 pb-4">
-                                    <h4 className="text-[11px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] flex items-center gap-3">
-                                        <LayersIcon className="w-4 h-4" /> Dimensiones & Volumen
-                                    </h4>
+                <main className="flex-grow overflow-y-auto px-10 md:px-16 pb-40 no-scrollbar space-y-20">
+                    {/* VOLUMEN & FORMATO */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                        <div className="space-y-8 p-10 bg-black/40 border border-white/5 rounded-[3.5rem] relative overflow-hidden group tactical-border">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <BoltIcon className="w-16 h-16 text-liquid-gold" />
+                            </div>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] mb-6 block italic">Cuantificación_Carga</label>
+                            <div className="flex items-center gap-10">
+                                <div className="flex items-center bg-black/60 rounded-[2.5rem] p-3 border border-white/10 shadow-luxury group-focus-within:border-liquid-gold/40 transition-all">
+                                    <button onClick={() => setCantidad(Math.max(1, cantidad - 1))} className="w-16 h-16 flex items-center justify-center text-4xl font-light text-slate-600 hover:text-liquid-gold transition-all">−</button>
+                                    <input type="number" value={cantidad} onChange={(e) => setCantidad(Number(e.target.value))} className="w-24 bg-transparent text-center text-5xl font-black text-white outline-none [appearance:textfield] italic tracking-tighter" />
+                                    <button onClick={() => setCantidad(cantidad + 1)} className="w-16 h-16 flex items-center justify-center text-4xl font-light text-slate-600 hover:text-liquid-gold transition-all">+</button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
-                                    <div className="space-y-6">
-                                        <label className="text-[11px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Volumen de Producción</label>
-                                        <div className="flex items-center gap-6">
-                                            <div className="flex items-center bg-white/5 rounded-3xl p-1 border border-white/5 shadow-inner">
-                                                <button 
-                                                    onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                                                    className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-3xl font-light text-slate-400 hover:text-white active:scale-90 transition-all"
-                                                >
-                                                    −
-                                                </button>
-                                                <input 
-                                                    type="number" 
-                                                    value={cantidad}
-                                                    onChange={(e) => setCantidad(Number(e.target.value))}
-                                                    className="w-20 md:w-24 bg-transparent text-center text-4xl font-black text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                />
-                                                <button 
-                                                    onClick={() => setCantidad(cantidad + 1)}
-                                                    className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-3xl font-light text-slate-400 hover:text-white active:scale-90 transition-all"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-                                            <div className="hidden sm:block">
-                                                <p className="text-[10px] font-black text-liquid-gold uppercase tracking-widest">Unidades</p>
-                                                <p className="text-xs text-slate-500 font-bold uppercase tracking-tight">Escalabilidad Industrial</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-6">
-                                        <label className="text-[11px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Orientación</label>
-                                        <div className="flex gap-3 md:gap-4">
-                                            {['Vertical', 'Horizontal'].map(o => (
-                                                <button 
-                                                    key={o} onClick={() => setOrientacion(o)}
-                                                    className={`flex-1 py-5 md:py-4 px-8 rounded-2xl text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition-all border ${orientacion === o ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border-white/5'}`}
-                                                >
-                                                    {o}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                <div className="space-y-1">
+                                    <p className="text-xs font-black text-liquid-gold uppercase tracking-widest italic">UNIDADES</p>
+                                    <p className="text-[9px] text-slate-700 font-bold uppercase tracking-widest">Protocolo de Volumen</p>
                                 </div>
-                                <div className="space-y-6">
-                                    <label className="text-[11px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Formato Final</label>
-                                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
-                                        {tamanos.map(t => (
-                                            <button 
-                                                key={t} onClick={() => setTamano(t)}
-                                                className={`py-4 md:py-3 px-6 md:px-6 rounded-2xl md:rounded-full text-[11px] md:text-xs font-bold transition-all border ${tamano === t ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'border-white/10 text-slate-400 hover:border-white/30 hover:text-white bg-white/2'}`}
-                                            >
-                                                {t}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
-                        )}
+                            </div>
+                        </div>
 
-                        {/* MATERIAL */}
-                        {(!product.configuracionHabilitada || product.configuracionHabilitada.material !== false) && (
-                            <section className="space-y-10">
-                                <div className="border-b border-white/10 pb-4">
-                                    <h4 className="text-[11px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] flex items-center gap-3">
-                                        <FileTextIcon className="w-4 h-4" /> Material & Copias
-                                    </h4>
-                                </div>
-                                <div className="space-y-6">
-                                    <label className="text-[11px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Sustrato Principal</label>
-                                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
-                                        {papeles.map(p => (
-                                            <button
-                                                key={p} onClick={() => setTipoPapel(p)}
-                                                className={`py-4 md:py-3 px-6 md:px-6 rounded-2xl md:rounded-full text-[11px] md:text-xs font-bold transition-all border ${tipoPapel === p ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'border-white/10 text-slate-400 hover:border-white/30 hover:text-white bg-white/2'}`}
-                                            >
-                                                {p}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="space-y-6">
-                                    <label className="text-[11px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Multiplicador de Capas</label>
-                                    <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-3">
-                                        {copiasOpciones.map(c => (
-                                            <button
-                                                key={c} onClick={() => setCopias(c)}
-                                                className={`py-4 md:py-3 px-6 md:px-6 rounded-2xl md:rounded-full text-[11px] md:text-xs font-bold transition-all border ${copias === c ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'border-white/10 text-slate-400 hover:border-white/30 hover:text-white bg-white/2'}`}
-                                            >
-                                                {c}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* ACABADO */}
-                        {(!product.configuracionHabilitada || product.configuracionHabilitada.acabados !== false) && (
-                            <section className="space-y-10">
-                                <div className="border-b border-white/10 pb-4">
-                                    <h4 className="text-[11px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] flex items-center gap-3">
-                                        <SparklesIcon className="w-4 h-4" /> Acabado Elite
-                                    </h4>
-                                </div>
-                                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
-                                    {acabados.map(a => (
-                                        <button 
-                                            key={a} onClick={() => setAcabado(a)}
-                                            className={`py-4 md:py-3 px-6 md:px-6 rounded-2xl md:rounded-full text-[11px] md:text-xs font-bold transition-all border ${acabado === a ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'border-white/10 text-slate-400 hover:border-white/30 hover:text-white bg-white/2'}`}
-                                        >
-                                            {a}
-                                        </button>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* CROMATISMO */}
-                        {(!product.configuracionHabilitada || product.configuracionHabilitada.cromatismo !== false) && (
-                            <section className="space-y-10">
-                                <div className="border-b border-white/10 pb-4">
-                                    <h4 className="text-[11px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] flex items-center gap-3">
-                                        <MonitorIcon className="w-4 h-4" /> Cromatismo
-                                    </h4>
-                                </div>
-                                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
-                                    {tintasOpciones.map(t => (
-                                        <button 
-                                            key={t} onClick={() => setTintas(t)}
-                                            className={`py-4 md:py-3 px-6 md:px-6 rounded-2xl md:rounded-full text-[11px] md:text-xs font-bold transition-all border ${tintas === t ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'border-white/10 text-slate-400 hover:border-white/30 hover:text-white bg-white/2'}`}
-                                        >
-                                            {t}
-                                        </button>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* PROCESOS MECANICOS */}
-                        {(!product.configuracionHabilitada || product.configuracionHabilitada.procesosMecanicos !== false) && (
-                            <section className="space-y-10">
-                                <div className="border-b border-white/10 pb-4">
-                                    <h4 className="text-[11px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.4em] flex items-center gap-3">
-                                        <CpuIcon className="w-4 h-4" /> Procesos Mecánicos
-                                    </h4>
-                                </div>
-                                <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
-                                    <button 
-                                        onClick={() => setNumerado(!numerado)}
-                                        className={`flex-1 py-6 md:py-6 rounded-2xl text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition-all border ${numerado ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
-                                    >
-                                        Numeración {numerado && '• Activo'}
-                                    </button>
-                                    <button 
-                                        onClick={() => setPerforado(!perforado)}
-                                        className={`flex-1 py-6 md:py-6 rounded-2xl text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition-all border ${perforado ? 'bg-liquid-gold text-black border-liquid-gold shadow-gold-glow-sm' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
-                                    >
-                                        Perforado {perforado && '• Activo'}
-                                    </button>
-                                </div>
-                                <AnimatePresence>
-                                    {(numerado || product.esSRI) && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="grid grid-cols-2 gap-6 md:gap-8 pt-6">
-                                                {numerado && (
-                                                    <>
-                                                        <div className="space-y-3">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Inicio</label>
-                                                            <input type="text" value={desde} onChange={e => setDesde(e.target.value)} className="w-full bg-transparent border-b border-white/20 pb-2 text-white font-black text-xl md:text-xl outline-none focus:border-liquid-gold transition-all placeholder:text-slate-800" placeholder="0001" />
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Fin</label>
-                                                            <input type="text" value={hasta} onChange={e => setHasta(e.target.value)} className="w-full bg-transparent border-b border-white/20 pb-2 text-white font-black text-xl md:text-xl outline-none focus:border-liquid-gold transition-all placeholder:text-slate-800" placeholder="1000" />
-                                                        </div>
-                                                    </>
-                                                )}
-                                                {product.esSRI && (
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 col-span-2 pt-4">
-                                                        <div className="space-y-3">
-                                                            <label className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">Autorización SRI</label>
-                                                            <input type="text" value={sriAutorizacion} onChange={e => setSriAutorizacion(e.target.value)} className="w-full bg-transparent border-b border-liquid-gold/50 pb-2 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all placeholder:text-slate-800 font-mono" placeholder="10/37 DÍGITOS" />
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <label className="text-[10px] font-bold text-liquid-gold uppercase tracking-[0.2em]">Fecha de Vencimiento</label>
-                                                            <input type="date" value={sriVence} onChange={e => setSriVence(e.target.value)} className="w-full bg-transparent border-b border-liquid-gold/50 pb-2 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all [color-scheme:dark]" />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </section>
-                        )}
+                        <TacticalSelector label="Arquitectura_Formato" options={tamanos} selected={tamano} onChange={setTamano} icon={LayersIcon} />
                     </div>
+
+                    {/* MATERIAL & CROMATISMO */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                        <TacticalSelector label="Sustrato_Industrial" options={papeles} selected={tipoPapel} onChange={setTipoPapel} icon={FileTextIcon} />
+                        <TacticalSelector label="Capas_de_Réplica" options={copiasOpciones} selected={copias} onChange={setCopias} icon={LayersIcon} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                        <TacticalSelector label="Espectro_Cromático" options={tintasOpciones} selected={tintas} onChange={setTintas} icon={MonitorIcon} />
+                        <TacticalSelector label="Tratamiento_Final" options={acabados} selected={acabado} onChange={setAcabado} icon={SparklesIcon} />
+                    </div>
+
+                    {/* PROCESOS MECÁNICOS */}
+                    <section className="space-y-12">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6 px-2">
+                            <CpuIcon className="w-5 h-5 text-liquid-gold" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] italic">Sistemas_Mecánicos_de_Precisión</label>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {[
+                                { id: 'num', label: 'Secuenciación_Numérica', active: numerado, toggle: () => setNumerado(!numerado) },
+                                { id: 'perf', label: 'Perforación_Tactical', active: perforado, toggle: () => setPerforado(!perforado) }
+                            ].map(proc => (
+                                <motion.button 
+                                    key={proc.id}
+                                    whileHover={{ scale: 1.02, y: -5 }}
+                                    onClick={proc.toggle}
+                                    className={`p-10 rounded-[3rem] border-2 transition-all duration-700 text-left relative overflow-hidden group ${proc.active ? 'bg-liquid-gold/5 border-liquid-gold/40 shadow-gold-glow' : 'bg-black/20 border-white/5 hover:border-white/20'}`}
+                                >
+                                    <div className={`absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity ${proc.active ? 'text-liquid-gold opacity-20' : ''}`}>
+                                        <CpuIcon className="w-16 h-16" />
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase tracking-[0.4em] mb-3 block ${proc.active ? 'text-liquid-gold' : 'text-slate-700'}`}>{proc.label}</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-3 h-3 rounded-full ${proc.active ? 'bg-liquid-gold animate-pulse shadow-gold-glow' : 'bg-slate-800'}`} />
+                                        <span className={`text-2xl font-black italic tracking-tighter ${proc.active ? 'text-white' : 'text-slate-500'}`}>{proc.active ? 'MÓDULO_OPERATIVO' : 'STANDBY'}</span>
+                                    </div>
+                                </motion.button>
+                            ))}
+                        </div>
+
+                        <AnimatePresence>
+                            {(numerado || product.esSRI) && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+                                    className="p-12 rounded-[4rem] bg-black/60 border border-liquid-gold/20 space-y-10 relative overflow-hidden shadow-luxury"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-liquid-gold/40 to-transparent animate-shimmer" />
+                                    
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <ShieldCheckIcon className="w-6 h-6 text-liquid-gold" />
+                                        <span className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Protocolos_SRI_y_Control</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        {numerado && (
+                                            <>
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic ml-2">Vector_Inicial</label>
+                                                    <input value={desde} onChange={e => setDesde(e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-2xl px-6 py-4 text-white font-black text-3xl outline-none focus:border-liquid-gold/40 transition-all font-mono tracking-tighter" placeholder="0001" />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic ml-2">Vector_Final (Calculado)</label>
+                                                    <input value={hasta} readOnly className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-slate-600 font-black text-3xl outline-none font-mono tracking-tighter" />
+                                                </div>
+                                            </>
+                                        )}
+                                        {product.esSRI && (
+                                            <>
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-black text-liquid-gold/60 uppercase tracking-widest italic ml-2">Token_Autorización</label>
+                                                    <input value={sriAutorizacion} onChange={e => setSriAutorizacion(e.target.value)} className="w-full bg-black/40 border border-liquid-gold/10 rounded-2xl px-6 py-4 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all font-mono" placeholder="NÚCLEO_AUTORIZA" />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-black text-liquid-gold/60 uppercase tracking-widest italic ml-2">Expiración_Ciclo</label>
+                                                    <input type="date" value={sriVence} onChange={e => setSriVence(e.target.value)} className="w-full bg-black/40 border border-liquid-gold/10 rounded-2xl px-6 py-4 text-white font-black text-xl outline-none focus:border-liquid-gold transition-all [color-scheme:dark]" />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </section>
                 </main>
             </div>
 
-            {/* RIGHT: Financial Summary (30% width on desktop, sticky footer on mobile) */}
-            <div className="w-full md:w-[30%] h-auto md:h-full bg-brand-dark/95 backdrop-blur-3xl flex flex-col relative shrink-0 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] md:shadow-none border-t md:border-t-0 md:border-l border-white/10 z-40">
-                <div className="absolute top-0 right-0 w-full h-full pointer-events-none overflow-hidden hidden md:block">
-                    <div className="absolute top-[-20%] right-[-20%] w-[150%] h-[50%] bg-liquid-gold/5 rounded-full blur-[150px]" />
-                </div>
+            {/* --- FINANCIAL HUD (SIDEBAR) --- */}
+            <div className="w-full md:w-[35%] h-full bg-[#020202] border-l border-white/5 p-12 md:p-20 flex flex-col justify-between relative overflow-hidden z-20">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.08),transparent_70%)]" />
                 
-                {/* Desktop Summary View */}
-                <div className="hidden md:flex flex-grow p-16 flex-col justify-center space-y-12 relative z-10">
+                <div className="space-y-20 relative z-10">
                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Resumen Financiero</p>
-                        <h3 className="text-3xl font-black text-white italic uppercase">Proyección</h3>
+                        <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.6em] italic">TELEMETRÍA_VALUACIÓN_ALFA</p>
+                        <h3 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">ESTADO <br/><span className="text-slate-600">FINANCIERO</span></h3>
                     </div>
 
                     <div className="space-y-8">
-                        <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Valor Base</span>
-                            <span className="text-xl font-medium text-white">${(unitPrice * cantidad).toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Factor Industrial</span>
-                            <span className="text-xl font-medium text-liquid-gold">+${(total - (unitPrice * cantidad)).toFixed(2)}</span>
-                        </div>
-                    </div>
-
-                    <div className="pt-8">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4">Inversión Final</p>
-                        <div className="flex items-start gap-2">
-                            <span className="text-2xl font-black text-liquid-gold pt-2">$</span>
-                            <span className="text-8xl font-black text-white tracking-tighter leading-none">{total.toFixed(2)}</span>
-                        </div>
+                        <PriceHUD label="Inversión_Base_Bruta" value={product.precio * cantidad} />
+                        <PriceHUD label="Incrementos_Operativos" value={totalCalculated - (product.precio * cantidad)} />
                     </div>
                 </div>
 
-                {/* Mobile App-Style Footer */}
-                <div className="md:hidden p-6 pb-10 space-y-6 relative z-10 bg-black/40 border-t border-white/10 backdrop-blur-xl">
-                    <div className="flex justify-between items-center">
-                        <div className="space-y-0.5">
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Inversión Estimada</p>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-lg font-black text-liquid-gold">$</span>
-                                <span className="text-4xl font-black text-white tracking-tighter tabular-nums">{total.toFixed(2)}</span>
+                <div className="space-y-16 relative z-10">
+                    <div className="p-12 rounded-[4rem] bg-black/60 border-2 border-liquid-gold/20 shadow-gold-glow relative group overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/10 via-transparent to-transparent opacity-50" />
+                        <div className="absolute -top-full -left-full w-[300%] h-[300%] bg-white/[0.03] rotate-45 group-hover:translate-y-1/2 transition-transform duration-[2.5s] pointer-events-none" />
+                        
+                        <p className="text-[12px] font-black text-liquid-gold uppercase tracking-[0.8em] mb-8 italic text-center">TOTAL_CONSOLIDADO</p>
+                        <div className="flex items-center justify-center gap-3">
+                            <span className="text-5xl font-black text-liquid-gold/40">$</span>
+                            <motion.span 
+                                key={totalCalculated}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="text-9xl font-black text-white tracking-tighter tabular-nums leading-none italic"
+                            >
+                                {totalCalculated.toFixed(2)}
+                            </motion.span>
+                        </div>
+                        
+                        <div className="mt-10 pt-8 border-t border-white/5 flex justify-between items-center px-4">
+                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest italic">VALOR_IVA_INCLUIDO_15%</span>
+                            <div className="flex gap-1">
+                                {[1,2,3,4,5].map(i => <div key={i} className="w-1 h-1 bg-liquid-gold/30 rounded-full" />)}
                             </div>
                         </div>
-                        <div className="text-right flex flex-col items-end">
-                             <div className="px-3 py-1 rounded-full bg-liquid-gold/10 border border-liquid-gold/20 mb-1">
-                                <span className="text-[8px] font-black text-liquid-gold uppercase tracking-widest">Factor Activo</span>
-                             </div>
-                             <p className="text-[10px] font-bold text-slate-400 uppercase">Personalizado</p>
-                        </div>
                     </div>
 
-                    <button
-                        onClick={handleConfirm}
-                        className="w-full py-6 bg-liquid-gold text-black rounded-3xl font-black uppercase tracking-[0.2em] text-xs shadow-gold-glow active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group"
-                    >
-                        Fijar Especificación <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                    </button>
-                </div>
-
-                {/* Desktop Confirm Button Area */}
-                <div className="hidden md:block p-10 relative z-10">
-                    <button
-                        onClick={handleConfirm}
-                        className="w-full py-8 bg-liquid-gold text-black rounded-full font-black uppercase tracking-[0.3em] text-sm hover:scale-[1.02] shadow-gold-glow active:scale-95 transition-all duration-300 flex items-center justify-center gap-4 group"
-                    >
-                        Fijar Especificación <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                    </button>
+                    <div className="flex flex-col gap-6">
+                        <motion.button
+                            whileHover={{ scale: 1.02, y: -8 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleConfirm}
+                            className="w-full py-10 bg-liquid-gold text-brand-blue rounded-[2.5rem] font-black uppercase tracking-[0.4em] text-sm shadow-gold-glow-strong flex items-center justify-center gap-8 group italic"
+                        >
+                            ENVIAR_AL_DESPLIEGUE 
+                            <ArrowRightIcon className="w-8 h-8 group-hover:translate-x-4 transition-transform duration-500" />
+                        </motion.button>
+                        <p className="text-[10px] text-slate-700 font-bold uppercase tracking-[0.2em] text-center italic leading-relaxed">
+                            ESTA ACCIÓN BLOQUEARÁ LOS VECTORES DE DISEÑO <br/>Y RESERVARÁ CAPACIDAD DE PRENSA.
+                        </p>
+                    </div>
                 </div>
             </div>
         </motion.div>

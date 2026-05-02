@@ -5,8 +5,10 @@ import { formatCurrency } from '../../utils';
 import { 
     TrashIcon, CheckCircleIcon, Loader2Icon, WalletIcon, 
     ShieldCheckIcon, KeyIcon, ArrowRightIcon, 
-    ClockIcon, SparklesIcon, UserPlusIcon, CheckBadgeIcon
+    ClockIcon, SparklesIcon, UserPlusIcon, CheckBadgeIcon,
+    ChevronRightIcon, InfoIcon
 } from '../Icons';
+import { motion, AnimatePresence } from 'framer-motion';
 import { type CartItem } from '../../hooks/useOrder';
 
 export interface OrderItem {
@@ -21,9 +23,9 @@ interface OrderSummaryProps {
     isOpen: boolean;
     onClose: () => void;
     cartItems?: [string, CartItem][];
-    items?: OrderItem[]; // For compatibility with NuevoPedido
+    items?: OrderItem[];
     orderTotal?: number;
-    total?: number; // Alias for orderTotal
+    total?: number;
     client: Cliente | null;
     tempClient?: { nombre: string, telefono: string, cedula?: string, regimen?: Regimen };
     setTempClient?: (data: { nombre: string, telefono: string, cedula?: string, regimen?: Regimen }) => void;
@@ -39,7 +41,7 @@ interface OrderSummaryProps {
     onRemoveItem?: (id: string) => void;
     onSaveItem?: (id: string) => void;
     onFinalize?: () => void;
-    onDeploy?: () => void; // Alias for onFinalize
+    onDeploy?: () => void;
     isLoading: boolean;
     sriData: any;
     setSriData: (data: any) => void;
@@ -59,223 +61,212 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     const finalTotal = total ?? orderTotal ?? 0;
     const saldo = Math.max(0, finalTotal - abono);
 
-    // Normalize display items
     const displayItems = items.length > 0 
-        ? items.map((it, idx) => ({ id: idx.toString(), nombre: it.nombre, cantidad: it.cantidad, precio: it.precioFinal }))
-        : cartItems.map(([id, it]) => ({ id, nombre: it.producto.nombre, cantidad: it.cantidad, precio: it.producto.precio + (it.surcharge || 0) }));
+        ? items.map((it, idx) => ({ id: idx.toString(), nombre: it.nombre, cantidad: it.cantidad, precio: it.precioFinal, specs: it.especificaciones }))
+        : cartItems.map(([id, it]) => ({ id, nombre: it.producto.nombre, cantidad: it.cantidad, precio: it.producto.precio + (it.surcharge || 0), specs: undefined }));
 
     const handleFinalize = onDeploy || onFinalize || (() => {});
 
     const suggestAbono = (percent: number) => {
         const val = percent === 1 ? finalTotal : Math.ceil(finalTotal * percent);
         setAbono(val);
-        if ('vibrate' in navigator) navigator.vibrate(10);
+        if ('vibrate' in navigator) navigator.vibrate(15);
     };
 
     return (
-        <div className="flex flex-col h-full bg-black md:bg-transparent overflow-hidden font-sans">
-            {/* Main Content Area */}
-            <div className="flex-grow overflow-y-auto p-6 md:p-6 space-y-10 md:space-y-8 custom-scrollbar scroll-smooth pb-48 md:pb-6">
+        <div className="flex flex-col h-full bg-black relative overflow-hidden font-sans">
+            <div className="absolute inset-0 bg-architect-grid opacity-5 pointer-events-none" />
+            
+            {/* --- HEADER TÁCTICO --- */}
+            <header className="p-8 md:p-12 border-b border-white/5 relative z-10 flex justify-between items-end">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse" />
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em] italic">MANIFIESTO_RESUMEN_v5.2</span>
+                    </div>
+                    <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none">
+                        BRIEFING DE <span className="text-gold-gradient">MISIÓN</span>
+                    </h2>
+                </div>
+                {setPrioridad && (
+                    <button 
+                        onClick={() => setPrioridad(prioridad === 'Normal' ? 'Urgente' : 'Normal')}
+                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border-2 ${
+                            prioridad === 'Urgente' 
+                            ? 'bg-brand-red/10 border-brand-red text-brand-red shadow-red-glow animate-pulse' 
+                            : 'bg-white/5 border-white/10 text-slate-600'
+                        }`}
+                    >
+                        <div className={`w-2 h-2 rounded-full ${prioridad === 'Urgente' ? 'bg-brand-red shadow-red-glow' : 'bg-slate-700'}`} />
+                        {prioridad === 'Urgente' ? 'ESTADO_URGENTE' : 'ESTADO_NORMAL'}
+                    </button>
+                )}
+            </header>
+
+            {/* --- CUERPO DE DATOS --- */}
+            <div className="flex-grow overflow-y-auto p-10 md:p-12 space-y-12 custom-scrollbar pb-64">
                 {displayItems.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center opacity-30 py-32 md:py-20">
-                        <div className="p-12 md:p-8 bg-white/5 rounded-full mb-10 md:mb-6 border border-white/5">
-                            <WalletIcon className="w-24 h-24 md:w-16 md:h-16 text-slate-400" />
+                    <div className="h-full flex flex-col items-center justify-center opacity-20 py-20">
+                        <div className="p-12 bg-white/5 rounded-full mb-8 border border-white/5">
+                            <WalletIcon className="w-24 h-24 text-slate-600" />
                         </div>
-                        <p className="text-[12px] md:text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Bolsa de pedido vacía</p>
+                        <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-700 italic">CARGA_VACÍA_STANDBY</p>
                     </div>
                 ) : (
-                    <div className="space-y-10 md:space-y-6">
-                        {/* Section Header */}
-                        <div className="flex justify-between items-center sticky top-0 z-20 bg-black/80 backdrop-blur-md py-4 md:relative md:bg-transparent md:py-0">
-                             <span className="text-[10px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Resumen de Producción</span>
-                             <div className="flex gap-3 md:gap-2">
-                                {setPrioridad && (
-                                    <button 
-                                        onClick={() => setPrioridad(prioridad === 'Normal' ? 'Urgente' : 'Normal')}
-                                        className={`px-6 py-2.5 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-[8px] font-black uppercase transition-all flex items-center gap-2 border ${prioridad === 'Urgente' ? 'bg-liquid-gold/20 border-liquid-gold text-liquid-gold animate-pulse shadow-gold-glow-sm' : 'bg-white/5 border-white/10 text-slate-400'}`}
-                                    >
-                                        <div className={`w-2.5 h-2.5 md:w-1.5 md:h-1.5 rounded-full ${prioridad === 'Urgente' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-slate-600'}`}></div>
-                                        {prioridad === 'Urgente' ? 'Prioridad Alta' : 'Urgencia'}
-                                    </button>
-                                )}
-                             </div>
-                        </div>
-
-                        {/* Order Items */}
-                        <div className="space-y-6 md:space-y-3">
+                    <div className="space-y-10">
+                        {/* LISTA DE ITEMS */}
+                        <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4 italic ml-2">Vectores de Producción</p>
                             {displayItems.map((item) => (
-                                <div key={item.id} className="group relative flex flex-col p-6 md:p-5 elite-hud-card">
-                                    <div className="flex justify-between items-start mb-6 md:mb-3">
-                                        <div className="min-w-0 flex-grow pr-4">
-                                            <p className="text-[15px] md:text-[12px] font-black uppercase tracking-tight text-slate-900 dark:text-white mb-3 md:mb-1">{item.nombre}</p>
-                                            <div className="flex items-center gap-4 md:gap-3">
-                                                <span className="text-[11px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest">{item.cantidad} UNID.</span>
-                                                <div className="w-1.5 h-1.5 md:w-1 md:h-1 rounded-full bg-slate-700"></div>
-                                                <span className="text-[11px] md:text-[9px] font-bold text-liquid-gold/80 uppercase tracking-widest">{formatCurrency(item.precio)}</span>
+                                <motion.div 
+                                    key={item.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                                    className="elite-hud-card p-8 group hover:border-liquid-gold/20 transition-all duration-500 tactical-border"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-4 flex-grow pr-8">
+                                            <h4 className="text-xl font-black text-white uppercase italic tracking-tighter leading-none">{item.nombre}</h4>
+                                            <div className="flex flex-wrap gap-4">
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg">
+                                                    <span className="text-[10px] font-black text-liquid-gold italic">{item.cantidad}</span>
+                                                    <span className="text-[9px] font-bold text-slate-600 uppercase">UNID</span>
+                                                </div>
+                                                {item.specs && (
+                                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">
+                                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{item.specs.tamano || 'Estándar'}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                        <div className="text-right flex flex-col items-end">
-                                            {onUpdatePrice ? (
-                                                <div className="relative group">
-                                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[12px] md:text-[10px] text-liquid-gold/50 font-black">$</span>
-                                                    <input 
-                                                        type="number" 
-                                                        value={item.precio}
-                                                        onChange={(e) => onUpdatePrice(item.id, parseFloat(e.target.value) || 0)}
-                                                        className="w-24 md:w-20 bg-white/5 border border-white/10 rounded-xl py-2 pl-6 pr-2 text-right text-[14px] md:text-xs font-black text-white focus:border-liquid-gold/50 outline-none transition-all"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <span className="text-xl md:text-sm font-black text-slate-900 dark:text-white italic tracking-tighter">{formatCurrency(item.precio)}</span>
-                                            )}
+                                        <div className="text-right space-y-2">
+                                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest italic">VALUACIÓN_NETA</p>
+                                            <p className="text-2xl font-black text-white italic tracking-tighter tabular-nums">{formatCurrency(item.precio)}</p>
                                         </div>
                                     </div>
-
+                                    
                                     {onRemoveItem && (
-                                        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
-                                            <button 
-                                                onClick={() => onRemoveItem(item.id)}
-                                                className="p-3 md:p-2 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                                            >
-                                                <TrashIcon className="w-5 h-5 md:w-3.5 md:h-3.5"/>
+                                        <div className="mt-6 pt-6 border-t border-white/5 flex justify-end opacity-0 group-hover:opacity-100 transition-all">
+                                            <button onClick={() => onRemoveItem(item.id)} className="flex items-center gap-2 text-[10px] font-black text-brand-red/60 hover:text-brand-red uppercase tracking-widest transition-colors italic">
+                                                <TrashIcon className="w-4 h-4" /> Eliminar_Vector
                                             </button>
                                         </div>
                                     )}
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
 
-                        {/* Identity Section (Express) - ELITE THEME */}
-                        {!client && (
-                            <div className="bg-white/[0.02] p-8 md:p-6 rounded-[3rem] md:rounded-[2.5rem] border border-white/10 space-y-6 md:space-y-5 shadow-2xl relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-4 opacity-[0.03] scale-150 rotate-12 group-hover:scale-[1.7] transition-transform duration-1000"><UserPlusIcon className="w-32 h-32 text-liquid-gold" /></div>
-                                <div className="flex items-center justify-between relative z-10">
-                                    <p className="text-[11px] md:text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] flex items-center gap-4 italic">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow"></div> Identidad de Enlace
-                                    </p>
-                                    <span className="text-[7px] font-mono text-slate-800 tracking-widest">NODE_ID_V4</span>
+                        {/* SECCIÓN CLIENTE */}
+                        <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4 italic ml-2">Protocolo de Identidad</p>
+                            <div className="elite-hud-card p-10 bg-gradient-to-br from-liquid-gold/[0.03] to-transparent tactical-border relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 transition-transform duration-1000 group-hover:scale-125">
+                                    <UserPlusIcon className="w-24 h-24 text-liquid-gold" />
                                 </div>
-                                <div className="space-y-5 md:space-y-3 relative z-10">
-                                    <div className="relative group">
-                                        <input 
-                                            type="text" 
-                                            placeholder="NOMBRE DEL TITULAR / RAZÓN SOCIAL..."
-                                            value={tempClient?.nombre || ''}
-                                            onChange={(e) => setTempClient?.({ 
-                                                telefono: '', cedula: '', regimen: Regimen.GENERAL, 
-                                                ...tempClient, 
-                                                nombre: e.target.value.toUpperCase() 
-                                            })}
-                                            className="w-full bg-black/40 border-2 border-white/5 rounded-2xl px-7 py-6 md:px-5 md:py-4 text-[14px] md:text-xs text-white placeholder-slate-800 font-black tracking-wider focus:border-liquid-gold/30 outline-none transition-all shadow-inner italic"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-3">
-                                        <div className="relative">
-                                            <input 
-                                                type="tel" 
-                                                placeholder="WHATSAPP..."
-                                                value={tempClient?.telefono || ''}
-                                                onChange={(e) => setTempClient?.({ 
-                                                    nombre: '', cedula: '', regimen: Regimen.GENERAL,
-                                                    ...tempClient, 
-                                                    telefono: e.target.value 
-                                                })}
-                                                className="w-full bg-black/40 border-2 border-white/5 rounded-2xl px-7 py-6 md:px-5 md:py-4 text-[14px] md:text-xs text-white placeholder-slate-800 font-black tracking-wider focus:border-liquid-gold/30 outline-none transition-all font-mono shadow-inner italic"
-                                            />
+                                
+                                {client ? (
+                                    <div className="flex items-center gap-8 relative z-10">
+                                        <div className="w-20 h-20 rounded-[2rem] bg-liquid-gold/10 flex items-center justify-center border-2 border-liquid-gold/20 shadow-gold-glow-sm">
+                                            <CheckBadgeIcon className="w-10 h-10 text-liquid-gold" />
                                         </div>
-                                        <div className="relative">
-                                            <input 
-                                                type="text" 
-                                                placeholder="CÉDULA / RUC..."
-                                                value={tempClient?.cedula || ''}
-                                                onChange={(e) => setTempClient?.({ 
-                                                    nombre: '', telefono: '', regimen: Regimen.GENERAL,
-                                                    ...tempClient, 
-                                                    cedula: e.target.value 
-                                                })}
-                                                className="w-full bg-black/40 border-2 border-white/5 rounded-2xl px-7 py-6 md:px-5 md:py-4 text-[14px] md:text-xs text-white placeholder-slate-800 font-black tracking-wider focus:border-liquid-gold/30 outline-none transition-all font-mono shadow-inner italic"
-                                            />
+                                        <div className="space-y-2">
+                                            <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter">{client.nombre}</h4>
+                                            <div className="flex items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">
+                                                <span>ID: {client.cedula}</span>
+                                                <div className="w-1 h-1 rounded-full bg-slate-800" />
+                                                <span>TEL: {client.telefono}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="pt-2 flex justify-center items-center gap-4 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <div className="h-[1px] flex-grow bg-gradient-to-r from-transparent to-white/10"></div>
-                                    <p className="text-[10px] md:text-[8px] font-bold text-slate-600 uppercase tracking-widest italic">Aviso Automático Activo</p>
-                                    <div className="h-[1px] flex-grow bg-gradient-to-l from-transparent to-white/10"></div>
-                                </div>
+                                ) : (
+                                    <div className="space-y-8 relative z-10">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic ml-2">Nombre_Titular</label>
+                                                <input 
+                                                    type="text" value={tempClient?.nombre || ''}
+                                                    onChange={e => setTempClient?.({ ...tempClient!, nombre: e.target.value.toUpperCase() })}
+                                                    placeholder="RAZÓN SOCIAL..."
+                                                    className="elite-input w-full py-5 bg-black/60"
+                                                />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic ml-2">Protocolo_WhatsApp</label>
+                                                <input 
+                                                    type="tel" value={tempClient?.telefono || ''}
+                                                    onChange={e => setTempClient?.({ ...tempClient!, telefono: e.target.value })}
+                                                    placeholder="09..."
+                                                    className="elite-input w-full py-5 bg-black/60 font-mono"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 p-4 bg-liquid-gold/5 rounded-2xl border border-liquid-gold/10">
+                                            <InfoIcon className="w-4 h-4 text-liquid-gold/40" />
+                                            <p className="text-[9px] font-bold text-liquid-gold/60 uppercase tracking-widest">Aviso: El cliente será registrado automáticamente al finalizar la misión.</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
-
-                        {/* Delivery Timeline - ELITE THEME */}
-                        <div className="bg-white/[0.01] p-8 md:p-6 rounded-[3rem] md:rounded-[2.5rem] border border-white/5 space-y-6 md:space-y-4 shadow-sm relative group overflow-hidden">
-                             <div className="absolute top-0 right-0 p-4 opacity-[0.02] rotate-12"><ClockIcon className="w-24 h-24" /></div>
-                             <p className="text-[11px] md:text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] flex items-center gap-4 italic relative z-10">
-                                <ClockIcon className="w-6 h-6 md:w-4 md:h-4 text-liquid-gold"/> Cronograma de Despliegue
-                             </p>
-                             <div className="grid grid-cols-2 gap-5 md:gap-3 relative z-10">
-                                <button 
-                                    onClick={() => setTiempoEntrega?.('24h')}
-                                    className={`relative group overflow-hidden py-6 md:py-4 rounded-2xl text-[11px] md:text-[9px] font-black uppercase transition-all border active:scale-95 italic ${tiempoEntrega === '24h' ? 'bg-liquid-gold border-liquid-gold text-brand-dark shadow-gold-glow' : 'bg-white/5 text-slate-500 border-white/10 hover:border-white/20'}`}
-                                >
-                                    <span className="relative z-10 flex items-center justify-center gap-2">
-                                        {tiempoEntrega === '24h' && <SparklesIcon className="w-5 h-5 md:w-4 md:h-4 animate-pulse" />}
-                                        Prioridad / 24h
-                                    </span>
-                                </button>
-                                <button 
-                                    onClick={() => setTiempoEntrega?.('48h')}
-                                    className={`py-6 md:py-4 rounded-2xl text-[11px] md:text-[9px] font-black uppercase transition-all border active:scale-95 italic ${tiempoEntrega === '48h' ? 'bg-liquid-gold border-liquid-gold text-brand-dark shadow-gold-glow' : 'bg-white/5 text-slate-500 border-white/10 hover:border-white/20'}`}
-                                >
-                                    Estándar / 48h
-                                </button>
-                             </div>
                         </div>
 
-                        {/* Security Fiscal (SRI) - ELITE THEME */}
-                        {client && (
-                             <div className="bg-black/40 backdrop-blur-3xl p-8 md:p-6 rounded-[3rem] md:rounded-[2.5rem] space-y-6 md:space-y-4 border border-white/5 shadow-2xl relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-4 opacity-[0.03] transition-transform duration-1000 group-hover:scale-110"><ShieldCheckIcon className="w-48 h-48 text-liquid-gold" /></div>
-                                <div className="flex justify-between items-center relative z-10">
-                                    <span className="text-[11px] md:text-[9px] font-black text-liquid-gold uppercase tracking-[0.3em] flex items-center gap-4 italic">
-                                        <KeyIcon className="w-6 h-6 md:w-4 md:h-4"/> Protocolo Fiscal
-                                    </span>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
-                                            <input 
-                                                type="checkbox" 
-                                                id="imprimirClave"
-                                                checked={imprimirClave}
-                                                onChange={(e) => setImprimirClave(e.target.checked)}
-                                                className="w-4 h-4 accent-liquid-gold rounded border-white/10 bg-transparent"
-                                            />
-                                            <label htmlFor="imprimirClave" className="text-[8px] font-black text-slate-500 uppercase tracking-widest cursor-pointer italic">Imprimir Clave</label>
+                        {/* CRONOGRAMA */}
+                        <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4 italic ml-2">Cronograma de Entrega</p>
+                            <div className="grid grid-cols-2 gap-6">
+                                {[
+                                    { id: '24h', label: 'PRIORIDAD_24H', sub: 'Protocolo de Emergencia', icon: SparklesIcon },
+                                    { id: '48h', label: 'ESTÁNDAR_48H', sub: 'Protocolo de Producción', icon: ClockIcon }
+                                ].map(opt => (
+                                    <button 
+                                        key={opt.id} onClick={() => setTiempoEntrega?.(opt.id as any)}
+                                        className={`p-8 rounded-[2.5rem] border-2 transition-all duration-700 text-left relative overflow-hidden group ${
+                                            tiempoEntrega === opt.id 
+                                            ? 'bg-liquid-gold/10 border-liquid-gold/40 shadow-gold-glow' 
+                                            : 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                                        }`}
+                                    >
+                                        <div className={`absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity ${tiempoEntrega === opt.id ? 'text-liquid-gold opacity-20' : ''}`}>
+                                            <opt.icon className="w-12 h-12" />
                                         </div>
-                                        <span className={`text-[10px] md:text-[8px] font-black px-5 py-2 md:px-3 md:py-1 rounded-full ${sriData?.estadoClave === 'LISTA' ? 'bg-liquid-gold/20 text-liquid-gold border border-liquid-gold/20 shadow-gold-glow-sm' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'} uppercase tracking-[0.2em] italic`}>{sriData?.estadoClave || 'PENDIENTE'}</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2 relative z-10">
-                                    <div className="relative flex-grow">
-                                        <input 
-                                            type={showClave ? 'text' : 'password'} 
-                                            value={sriData?.claveAcceso || ''} 
-                                            onChange={e => setSriData({...sriData, claveAcceso: e.target.value})} 
-                                            placeholder="CLAVE DE ACCESO FISCAL..." 
-                                            className="w-full bg-black/60 border-2 border-white/5 rounded-2xl px-6 py-5 md:px-4 md:py-3 text-base md:text-xs font-mono text-white placeholder-slate-900 focus:border-liquid-gold/30 outline-none transition-all shadow-inner pr-14 italic" 
-                                        />
+                                        <span className={`text-[10px] font-black uppercase tracking-[0.4em] mb-3 block ${tiempoEntrega === opt.id ? 'text-liquid-gold' : 'text-slate-600'}`}>{opt.label}</span>
+                                        <span className={`text-xl font-black italic tracking-tighter ${tiempoEntrega === opt.id ? 'text-white' : 'text-slate-500'}`}>{opt.sub}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* PROTOCOLO SRI */}
+                        {client && (
+                             <div className="space-y-4">
+                                <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4 italic ml-2">Protocolo Fiscal SRI</p>
+                                <div className="elite-hud-card p-10 tactical-border space-y-8 bg-black/40">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-4">
+                                            <ShieldCheckIcon className="w-6 h-6 text-liquid-gold" />
+                                            <span className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.4em] italic">Validación_de_Acceso</span>
+                                        </div>
                                         <button 
-                                            type="button"
-                                            onClick={() => setShowClave(!showClave)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-white/5 text-slate-600 hover:text-liquid-gold hover:bg-white/10 transition-all active:scale-90"
+                                            onClick={() => setImprimirClave(!imprimirClave)}
+                                            className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                                                imprimirClave ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-white/5 text-slate-600 border-white/10'
+                                            }`}
                                         >
-                                            <KeyIcon className="w-4 h-4" />
+                                            {imprimirClave ? 'IMPRIMIR_CLAVE_ACTIVO' : 'IMPRIMIR_CLAVE_OFF'}
                                         </button>
                                     </div>
-                                    <button 
-                                        onClick={() => { navigator.clipboard.writeText(sriData?.claveAcceso || ''); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} 
-                                        className={`p-5 md:p-3 rounded-2xl transition-all border-2 active:scale-95 ${copied ? 'bg-emerald-500 border-emerald-400 text-white shadow-emerald-glow-sm' : 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow'}`}
-                                    >
-                                        {copied ? <CheckCircleIcon className="w-7 h-7 md:w-5 md:h-5"/> : <ShieldCheckIcon className="w-7 h-7 md:w-5 md:h-5"/>}
-                                    </button>
+                                    <div className="relative group">
+                                        <input 
+                                            type={showClave ? 'text' : 'password'}
+                                            value={sriData?.claveAcceso || ''}
+                                            onChange={e => setSriData({ ...sriData, claveAcceso: e.target.value })}
+                                            placeholder="INTRODUCIR CLAVE DE ACCESO FISCAL..."
+                                            className="elite-input w-full py-6 pl-8 pr-20 bg-black/60 font-mono tracking-widest"
+                                        />
+                                        <button 
+                                            onClick={() => setShowClave(!showClave)}
+                                            className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-700 hover:text-liquid-gold transition-colors"
+                                        >
+                                            <KeyIcon className="w-6 h-6" />
+                                        </button>
+                                    </div>
                                 </div>
                              </div>
                         )}
@@ -283,103 +274,65 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 )}
             </div>
 
-            {/* Sticky Financial Footer - ELITE TACTICAL */}
-            <div className="fixed bottom-0 left-0 w-full p-4 md:p-8 bg-black/95 backdrop-blur-3xl border-t border-white/5 shadow-[0_-25px_60px_rgba(0,0,0,0.9)] z-50 pb-safe">
-                <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto">
-                    {/* Data Visualization Header */}
-                    <div className="flex justify-between items-center px-2 opacity-50">
-                        <span className="text-[7px] font-mono text-slate-500 tracking-[0.5em] uppercase italic">FINANCIAL_MODULE_ACTIVE v5.1.0_ELITE</span>
-                        <div className="flex gap-2">
-                            <div className="w-1 h-1 bg-liquid-gold rounded-full animate-pulse"></div>
-                            <div className="w-1 h-1 bg-liquid-gold/20 rounded-full"></div>
-                            <div className="w-1 h-1 bg-liquid-gold/20 rounded-full"></div>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-end border-b border-white/5 pb-4 md:pb-6">
-                        <div className="space-y-0.5">
-                            <span className="text-[10px] md:text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] block italic">Inversión Maestro</span>
-                            <div className="flex items-center gap-4">
-                                <span className="text-4xl md:text-6xl font-black tracking-tighter text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] italic">
-                                    {formatCurrency(finalTotal)}
+            {/* --- PANEL DE DESPLIEGUE (FOOTER) --- */}
+            <div className="absolute bottom-0 left-0 w-full p-10 md:p-14 bg-[#050505]/95 backdrop-blur-3xl border-t border-white/10 z-50 shadow-[0_-30px_100px_rgba(0,0,0,1)]">
+                <div className="max-w-7xl mx-auto space-y-10">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+                        {/* Telemetría Financiera */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse" />
+                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] italic">INVERSIÓN_FINAL_CONSOLIDADA</span>
+                            </div>
+                            <div className="flex items-baseline gap-4">
+                                <span className="text-7xl md:text-9xl font-black text-white italic tracking-tighter leading-none tabular-nums drop-shadow-gold">
+                                    <span className="text-4xl md:text-5xl text-liquid-gold/40 mr-4">$</span>
+                                    {finalTotal.toFixed(2)}
                                 </span>
-                                <div className="px-2 py-0.5 bg-white/5 rounded border border-white/10">
-                                    <span className="text-[7px] font-mono text-liquid-gold/40">LVL_04</span>
+                                <div className="space-y-1 pb-4">
+                                    <p className="text-[11px] font-black text-emerald-500 uppercase tracking-widest italic">SALDO: {formatCurrency(saldo)}</p>
+                                    <p className="text-[9px] text-slate-700 font-bold uppercase tracking-widest">IVA_15%_INCLUIDO</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right">
-                             <span className="text-[9px] font-black text-liquid-gold/50 uppercase tracking-[0.3em] block mb-1 italic">Saldo a Liquidar</span>
-                             <span className={`text-xl md:text-3xl font-black tabular-nums transition-all italic ${saldo === 0 ? 'text-emerald-400 shadow-emerald-glow-sm' : 'text-white/30'}`}>
-                                {formatCurrency(saldo)}
-                             </span>
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-                        <div className="space-y-4 md:space-y-5">
-                            <div className="flex gap-3">
-                                 <div className="relative flex-grow group">
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-sm text-liquid-gold font-black italic">$</span>
-                                    <input 
-                                        type="number" 
-                                        placeholder="ASIGNAR ABONO..."
-                                        value={abono || ''}
-                                        onChange={(e) => setAbono(parseFloat(e.target.value) || 0)}
-                                        className="w-full bg-black/40 border-2 border-white/5 rounded-2xl px-10 py-5 text-xl font-black text-white focus:border-liquid-gold/30 outline-none transition-all tabular-nums shadow-inner italic"
-                                    />
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse"></div>
-                                    </div>
-                                 </div>
-                                 <button onClick={() => setAbono(0)} className="px-6 rounded-2xl bg-white/5 border border-white/10 text-slate-700 font-black text-[9px] uppercase hover:text-liquid-gold transition-all active:scale-95 italic">Reset</button>
-                             </div>
+                        {/* Control de Abono */}
+                        <div className="w-full md:w-[450px] space-y-6">
+                            <div className="relative group">
+                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl text-liquid-gold font-black italic">$</span>
+                                <input 
+                                    type="number" value={abono || ''}
+                                    onChange={e => setAbono(parseFloat(e.target.value) || 0)}
+                                    placeholder="REGISTRAR ABONO..."
+                                    className="elite-input w-full py-8 pl-14 pr-8 text-3xl italic tracking-tighter tabular-nums bg-black/60 border-liquid-gold/20"
+                                />
+                                <div className="absolute right-4 top-[-10px] flex gap-2">
+                                    <button onClick={() => suggestAbono(0.5)} className="px-4 py-1.5 bg-black border border-white/5 rounded-full text-[9px] font-black text-slate-500 hover:text-liquid-gold transition-all uppercase tracking-widest italic">Reserva_50%</button>
+                                    <button onClick={() => suggestAbono(1)} className="px-4 py-1.5 bg-black border border-white/5 rounded-full text-[9px] font-black text-slate-500 hover:text-emerald-500 transition-all uppercase tracking-widest italic">Total_100%</button>
+                                </div>
+                            </div>
 
-                             <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                                {[0.5, 1].map(p => {
-                                    const val = p === 1 ? finalTotal : Math.ceil(finalTotal * p);
-                                    const isActive = abono === val;
-                                    return (
-                                        <button 
-                                            key={p} 
-                                            onClick={() => suggestAbono(p)}
-                                            className={`flex-1 whitespace-nowrap px-6 py-4 rounded-xl border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-90 italic ${
-                                                isActive
-                                                    ? 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow'
-                                                    : 'bg-white/[0.02] border-white/5 text-slate-600 hover:text-white hover:border-white/10'
-                                            }`}
-                                        >
-                                            {p === 1 ? 'LIQUIDACIÓN TOTAL' : 'RESERVA 50%'}
-                                        </button>
-                                    );
-                                })}
-                             </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                            <button 
-                                onClick={() => {
-                                    if ('vibrate' in navigator) navigator.vibrate([10, 50, 10]);
-                                    handleFinalize();
-                                }} 
-                                disabled={isLoading || displayItems.length === 0} 
-                                className={`relative w-full py-6 md:py-8 disabled:opacity-20 disabled:cursor-not-allowed group rounded-[2rem] overflow-hidden transition-all duration-700 border-2 ${
+                            <motion.button
+                                whileHover={{ scale: 1.02, y: -5 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleFinalize}
+                                disabled={isLoading || displayItems.length === 0}
+                                className={`w-full py-10 rounded-[3rem] font-black uppercase tracking-[0.5em] text-sm flex items-center justify-center gap-8 group transition-all duration-700 border-2 ${
                                     saldo === 0 && finalTotal > 0
-                                        ? 'bg-emerald-600 border-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.3)] hover:bg-emerald-500'
-                                        : 'bg-liquid-gold border-liquid-gold shadow-gold-glow-strong hover:bg-white'
+                                    ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_50px_rgba(16,185,129,0.4)]'
+                                    : 'bg-liquid-gold border-liquid-gold text-black shadow-gold-glow-strong'
                                 }`}
                             >
-                                <div className="absolute inset-0 bg-obsidian-mesh opacity-10 pointer-events-none"></div>
-                                <span className={`relative z-10 flex items-center justify-center gap-6 text-[13px] font-black uppercase tracking-[0.4em] italic ${saldo === 0 ? 'text-white' : 'text-black'}`}>
-                                    {isLoading ? <Loader2Icon className="animate-spin w-6 h-6"/> : (
-                                        <>
-                                            {saldo === 0 ? 'AUTORIZAR Y DESPLEGAR' : 'INICIAR PROTOCOLO'} 
-                                            <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-4 transition-transform duration-500"/>
-                                        </>
-                                    )}
-                                </span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                            </button>
+                                {isLoading ? (
+                                    <Loader2Icon className="w-8 h-8 animate-spin" />
+                                ) : (
+                                    <>
+                                        {saldo === 0 ? 'DESPLEGAR_SISTEMA_COMPLETO' : 'INICIAR_ORDEN_DE_MISIÓN'}
+                                        <ArrowRightIcon className="w-8 h-8 group-hover:translate-x-4 transition-transform duration-500" />
+                                    </>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1.5s]" />
+                            </motion.button>
                         </div>
                     </div>
                 </div>

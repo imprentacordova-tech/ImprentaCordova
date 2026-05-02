@@ -1,8 +1,9 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
-    SearchIcon, BoxIcon, ShieldCheckIcon, 
-    CheckCircleIcon, SparklesIcon, TagIcon
+    SearchIcon, ShieldCheckIcon, 
+    CheckCircleIcon, SparklesIcon,
+    BoxIcon, LayersIcon
 } from '../Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Regimen } from '../../types';
@@ -21,23 +22,19 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
     const [activeCategory, setActiveCategory] = useState<string>(forcedCategory || 'Todas');
     const [manualRegimen, setManualRegimen] = useState<string | null>(null);
 
-    // Si cambia el régimen por prop, reseteamos el manual
     useEffect(() => {
         if (regimen) setManualRegimen(null);
     }, [regimen]);
 
-    // Al cambiar de categoría, si no es SRI, reseteamos el régimen manual
     useEffect(() => {
         if (activeCategory !== 'SRI') setManualRegimen(null);
     }, [activeCategory]);
 
     const effectiveRegimen = regimen || manualRegimen;
 
-    // Extraer categorías únicas
     const categories = useMemo(() => {
         const cats = new Set(productos.map(p => p.categoria || 'General'));
         const list = Array.from(cats);
-        // Aseguramos que 'SRI' esté presente si hay productos SRI
         if (productos.some(p => p.esSRI) && !cats.has('SRI')) {
             list.push('SRI');
         }
@@ -46,62 +43,38 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
 
     const filtered = useMemo(() => {
         return productos.filter(p => {
-            // Filtrar solo productos activos
             if (p.esActivo === false) return false;
-
             const matchesSearch = (p.nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                                   (p.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
-            
-            // Lógica de categoría: si es 'SRI', filtramos por el flag esSRI, no por el nombre de categoría
             const matchesCategory = activeCategory === 'Todas' 
                 ? true 
                 : (activeCategory === 'SRI' ? p.esSRI : (p.categoria || 'General') === activeCategory);
             
-            // Inteligencia de Régimen Elite para categoría SRI:
             if (activeCategory === 'SRI' || p.esSRI) {
-                // Si el producto no es SRI y estamos en categoría SRI, fuera.
                 if (activeCategory === 'SRI' && !p.esSRI) return false;
-
                 if (effectiveRegimen) {
                     const name = (p.nombre || '').toUpperCase();
                     const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
                     const isEmprendedor = effectiveRegimen === Regimen.EMPRENDEDOR;
-
-                    // NORMALIZACIÓN PARA BÚSQUEDA ROBUSTA
                     const cleanName = name.replace(/\(.*\)/, '').trim(); 
                     
-                    const docsPopular = [
-                        'FACTURA', 'NOTA DE VENTA', 'LIQUIDACION DE COMPRA',
-                        'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 
-                        'BOLETOS', 'ENTRADAS', 'FACTURERO', 'COMPROBANTE', 'RETENCION'
-                    ];
-
-                    const docsGeneral = [
-                        'FACTURA', 'LIQUIDACION DE COMPRA', 'NOTAS DE CREDITO', 
-                        'NOTAS DE DEBITO', 'GUIAS DE REMISION', 'ACTA ENTREGA',
-                        'FACTURERO', 'COMPROBANTE', 'RETENCION'
-                    ];
+                    const docsPopular = ['FACTURA', 'NOTA DE VENTA', 'LIQUIDACION DE COMPRA', 'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 'BOLETOS', 'ENTRADAS', 'FACTURERO', 'COMPROBANTE', 'RETENCION'];
+                    const docsGeneral = ['FACTURA', 'LIQUIDACION DE COMPRA', 'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 'ACTA ENTREGA', 'FACTURERO', 'COMPROBANTE', 'RETENCION'];
 
                     const allowedDocs = isPopular ? docsPopular : docsGeneral;
-                    const isBaseTypeAllowed = allowedDocs.some(doc => cleanName.includes(doc) || name.includes(doc));
-                    if (!isBaseTypeAllowed) return false;
+                    if (!allowedDocs.some(doc => cleanName.includes(doc) || name.includes(doc))) return false;
 
                     if (isPopular) {
                         if (name.includes('(GENERAL)') || name.includes('(EMPRENDEDOR)')) return false;
-                    } else if (isEmprendedor) {
-                        if (name.includes('(RIMPE NEGOCIO POPULAR)')) return false;
-                        if (name.includes('NOTA DE VENTA')) return false;
                     } else {
-                        if (name.includes('(RIMPE NEGOCIO POPULAR)')) return false;
-                        if (name.includes('NOTA DE VENTA')) return false;
+                        if (name.includes('(RIMPE NEGOCIO POPULAR)') || name.includes('NOTA DE VENTA')) return false;
                     }
                 }
             }
-            return true;
+            return matchesSearch && matchesCategory;
         });
     }, [productos, searchTerm, activeCategory, effectiveRegimen]);
 
-    // Fallback Elite: Si el filtro de régimen es muy estricto y no deja nada, mostrar todo lo SRI
     const finalFiltered = useMemo(() => {
         if (activeCategory === 'SRI' && filtered.length === 0 && !searchTerm) {
             return productos.filter(p => p.esSRI && p.esActivo !== false);
@@ -109,241 +82,168 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
         return filtered;
     }, [filtered, activeCategory, productos, searchTerm]);
 
-    // Conteo por categoría
-    const categoryCounts = useMemo(() => {
-        const counts: Record<string, number> = { 'Todas': productos.length };
-        productos.forEach(p => {
-            const cat = p.categoria || 'General';
-            counts[cat] = (counts[cat] || 0) + 1;
-        });
-        return counts;
-    }, [productos]);
-
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    // Scroll to top when category or search changes, and on mount
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }, [activeCategory, searchTerm]);
 
-    // Force scroll top on mount to fix user reported issue
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (scrollRef.current) {
-                scrollRef.current.scrollTop = 0;
-            }
-        }, 100);
-        return () => clearTimeout(timer);
-    }, []);
-
     return (
-        <div className="space-y-10 animate-fade-in">
-            {/* --- CABECERA DE FILTROS --- */}
-            <div className="space-y-4 md:space-y-8 bg-white/[0.02] p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-10 opacity-[0.03] scale-100 md:scale-150 rotate-12 transition-transform group-hover:scale-[1.7] hidden md:block"><SearchIcon className="w-64 h-64 text-liquid-gold" /></div>
+        <div className="space-y-12 animate-fade-in pb-20">
+            {/* --- CABECERA TÁCTICA --- */}
+            <div className="glass-panel-obsidian p-8 md:p-12 rounded-[3.5rem] border-white/5 relative overflow-hidden group tactical-border">
+                <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/5 via-transparent to-transparent opacity-30" />
                 
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-10 relative z-10">
-                    <div className="space-y-3 md:space-y-4 flex-grow max-w-2xl">
-                        <p className="text-[8px] md:text-[10px] font-black text-liquid-gold uppercase tracking-[0.3em] md:tracking-[0.6em] italic animate-pulse">Inteligencia de Productos</p>
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
+                    <div className="flex-1 max-w-2xl space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-liquid-gold shadow-gold-glow animate-pulse" />
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em] italic">CATÁLOGO_INDUSTRIAL_ALFA</p>
+                        </div>
                         <div className="relative group">
-                            <div className="absolute inset-0 bg-liquid-gold/5 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
-                            <SearchIcon className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-500 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all" />
+                            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-700 group-focus-within:text-liquid-gold group-focus-within:scale-110 transition-all" />
                             <input 
                                 type="text" 
                                 value={searchTerm} 
                                 onChange={e => setSearchTerm(e.target.value)} 
-                                placeholder="BUSCAR PROTOCOLO..." 
-                                className="w-full pl-12 md:pl-16 pr-6 md:pr-8 py-4.5 md:py-7 bg-black/60 border border-white/5 rounded-xl md:rounded-3xl text-sm md:text-xl font-black text-white focus:bg-black/80 focus:ring-1 focus:ring-liquid-gold/40 transition-all placeholder:text-slate-800 uppercase tracking-widest relative z-10" 
+                                placeholder="IDENTIFICAR VECTOR DE PRODUCCIÓN..." 
+                                className="w-full pl-16 pr-8 py-7 bg-black/60 border border-white/10 rounded-3xl text-xl font-black text-white focus:border-liquid-gold/40 transition-all placeholder:text-slate-900 uppercase tracking-widest italic" 
                             />
                         </div>
                     </div>
 
                     {!forcedCategory && (
-                    <div className="space-y-3 md:space-y-4 flex-shrink-0">
-                        <label className="text-[8px] md:text-[10px] text-slate-700 font-black uppercase tracking-widest ml-2 md:ml-4 italic">Segmentación</label>
-                        <div className="relative flex gap-1.5 p-1 bg-black/40 rounded-xl md:rounded-[1.5rem] border border-white/5 overflow-x-auto no-scrollbar max-w-full">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setActiveCategory(cat)}
-                                    className={`relative px-4 md:px-6 py-3 md:py-3.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap z-10 ${
-                                        activeCategory === cat 
-                                            ? 'text-black' 
-                                            : 'text-slate-500 hover:text-white'
-                                    }`}
-                                >
-                                    {activeCategory === cat && (
-                                        <motion.div 
-                                            layoutId="activeCat"
-                                            className="absolute inset-0 bg-liquid-gold rounded-lg md:rounded-xl -z-10 shadow-gold-glow-sm"
-                                        />
-                                    )}
-                                    <span className="flex items-center gap-2 md:gap-2">
-                                        <span className="text-xs md:text-base">{(CATEGORY_EMOJIS as any)[cat] || '📦'}</span> {cat}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    )}
-                </div>
-
-                {/* --- SELECTOR DE RÉGIMEN PARA SRI --- */}
-                {(activeCategory === 'SRI' || forcedCategory === 'SRI') && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                        className="pt-5 md:pt-6 border-t border-white/5 space-y-4 md:space-y-6"
-                    >
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 md:gap-6">
-                            <div className="space-y-1 md:space-y-2">
-                                <p className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest italic flex items-center gap-2">
-                                    <ShieldCheckIcon className="w-3 h-3 md:w-3 md:h-3 text-liquid-gold"/> Protocolo de Régimen
-                                </p>
-                                <p className="text-[7px] md:text-[9px] text-slate-700 font-bold uppercase tracking-widest max-w-md">
-                                    {effectiveRegimen 
-                                        ? `Aplicando filtros para ${effectiveRegimen.toUpperCase()}`
-                                        : 'Seleccione un régimen para optimizar el catálogo.'}
-                                </p>
-                            </div>
-
-                            <div className="flex gap-2 md:gap-3 bg-black/40 p-1 md:p-1.5 rounded-xl md:rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
-                                {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
+                        <div className="flex-shrink-0 space-y-4">
+                            <p className="text-[10px] text-slate-700 font-black uppercase tracking-widest ml-4 italic">Segmentación_Filtro</p>
+                            <div className="flex gap-2 p-1.5 bg-black/40 rounded-[2rem] border border-white/5 overflow-x-auto no-scrollbar max-w-full">
+                                {categories.map(cat => (
                                     <button
-                                        key={reg}
-                                        onClick={() => setManualRegimen(reg)}
-                                        className={`px-4 md:px-5 py-3 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                                            effectiveRegimen === reg 
-                                                ? 'bg-liquid-gold text-black shadow-gold-glow-sm' 
-                                                : 'text-slate-600 hover:text-slate-400'
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        className={`relative px-6 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap z-10 ${
+                                            activeCategory === cat ? 'text-black' : 'text-slate-500 hover:text-white'
                                         }`}
                                     >
-                                        {reg}
+                                        {activeCategory === cat && (
+                                            <motion.div layoutId="activeCat" className="absolute inset-0 bg-liquid-gold rounded-2xl -z-10 shadow-gold-glow-sm" />
+                                        )}
+                                        <span className="flex items-center gap-3">
+                                            <span className="text-lg">{(CATEGORY_EMOJIS as any)[cat] || '📦'}</span> {cat}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* RÉGIMEN SELECTOR */}
+                {(activeCategory === 'SRI' || forcedCategory === 'SRI') && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-10 pt-10 border-t border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-2">
+                            <p className="text-[10px] text-liquid-gold font-black uppercase tracking-widest italic flex items-center gap-3">
+                                <ShieldCheckIcon className="w-4 h-4"/> Sincronización de Régimen Fiscal
+                            </p>
+                            <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+                                {effectiveRegimen ? `VECTOR ACTIVO: ${effectiveRegimen.toUpperCase()}` : 'SELECCIONE PROTOCOLO PARA VALIDACIÓN DINÁMICA'}
+                            </p>
+                        </div>
+                        <div className="flex gap-3 bg-black/40 p-2 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
+                            {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
+                                <button
+                                    key={reg}
+                                    onClick={() => setManualRegimen(reg)}
+                                    className={`px-5 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                        effectiveRegimen === reg ? 'bg-liquid-gold text-black shadow-gold-glow-sm italic' : 'text-slate-600 hover:text-slate-400'
+                                    }`}
+                                >
+                                    {reg}
+                                </button>
+                            ))}
                         </div>
                     </motion.div>
                 )}
             </div>
 
-            {/* --- GRID DE PRODUCTOS --- */}
-            <div 
-                ref={scrollRef}
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 max-h-[1000px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar pb-20"
-            >
+            {/* --- GRID DE RESULTADOS --- */}
+            <div ref={scrollRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10">
                 <AnimatePresence mode="popLayout">
-                    {finalFiltered.map((p) => {
-                        const isSelected = selectedId === p.id;
-                        return (
-                            <motion.button
-                                layout
-                                key={p.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                whileHover={{ y: -8, transition: { duration: 0.4 } }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => onSelect(p)}
-                                className={`group relative flex flex-col h-[240px] md:h-[320px] rounded-2xl md:rounded-[2rem] overflow-hidden border transition-all duration-700 bg-black/40 backdrop-blur-xl ${
-                                    isSelected ? 'border-liquid-gold shadow-gold-glow-strong' : 'border-white/5 hover:border-white/20'
-                                }`}
-                            >
-                                {/* Glass Reflection Effect */}
-                                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/[0.03] to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                                {/* Miniatura / Icono */}
-                                <div className="relative h-44 overflow-hidden bg-slate-950">
-                                    {p.imagenUrl ? (
-                                        <img 
-                                            src={p.imagenUrl} 
-                                            alt={p.nombre}
-                                            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
-                                            loading="lazy"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <span className="text-4xl opacity-20 group-hover:opacity-40 transition-opacity">
-                                                {CATEGORY_EMOJIS[p.categoria] || '📦'}
-                                            </span>
-                                        </div>
-                                    )}
-                                    
-                                    {/* Badge SRI */}
-                                    {p.esSRI && (
-                                        <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-liquid-gold text-black text-[7px] md:text-[9px] font-black px-2 md:px-3 py-1 rounded-lg md:rounded-xl uppercase tracking-[0.15em] md:tracking-[0.2em] flex items-center gap-1.5 md:gap-2 shadow-gold-glow-sm z-20">
-                                            <ShieldCheckIcon className="w-2.5 h-2.5 md:w-3 md:h-3" /> SRI
-                                        </div>
-                                    )}
-
-                                    {/* Precio Flotante */}
-                                    <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-black/60 backdrop-blur-md px-2 md:px-3 py-1 md:py-1.5 rounded-lg md:rounded-xl border border-white/10 z-20 transition-all group-hover:scale-110 group-hover:border-liquid-gold/40">
-                                        <span className="text-[10px] md:text-xs font-black text-white italic tracking-tighter">${(p.precio || 0).toFixed(2)}</span>
+                    {finalFiltered.map((p, idx) => (
+                        <motion.button
+                            layout key={p.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.05 } }}
+                            whileHover={{ y: -10, transition: { duration: 0.4 } }}
+                            onClick={() => onSelect(p)}
+                            className={`group relative flex flex-col h-[320px] md:h-[380px] rounded-[3rem] overflow-hidden border-2 transition-all duration-700 bg-black/60 backdrop-blur-3xl ${
+                                selectedId === p.id ? 'border-liquid-gold shadow-gold-glow-strong' : 'border-white/5 hover:border-white/20'
+                            }`}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            
+                            {/* Visual Asset Container */}
+                            <div className="relative h-1/2 overflow-hidden bg-slate-950">
+                                {p.imagenUrl ? (
+                                    <img src={p.imagenUrl} alt={p.nombre} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                                        <LayersIcon className="w-24 h-24 text-white" />
                                     </div>
+                                )}
+                                
+                                {p.esSRI && (
+                                    <div className="absolute top-6 left-6 bg-liquid-gold text-black text-[10px] font-black px-4 py-1.5 rounded-xl uppercase tracking-widest flex items-center gap-2 shadow-gold-glow-sm z-20 italic">
+                                        <ShieldCheckIcon className="w-3.5 h-3.5" /> SRI_ACTIVE
+                                    </div>
+                                )}
 
-                                    {/* Check de selección */}
-                                    {isSelected && (
-                                        <motion.div 
-                                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                            className="absolute bottom-4 right-4 bg-liquid-gold rounded-full p-1.5 shadow-gold-glow z-30"
-                                        >
+                                <div className="absolute top-6 right-6 bg-black/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 z-20 group-hover:border-liquid-gold/50 transition-all">
+                                    <span className="text-base font-black text-white italic tracking-tighter tabular-nums">${(p.precio || 0).toFixed(2)}</span>
+                                </div>
+
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                            </div>
+
+                            {/* Data Panel */}
+                            <div className="p-8 md:p-10 flex flex-col flex-1 relative z-10 justify-between">
+                                <div className="space-y-3">
+                                    <h4 className={`text-lg md:text-xl font-black uppercase tracking-tighter leading-none italic transition-colors ${
+                                        selectedId === p.id ? 'text-liquid-gold' : 'text-slate-100 group-hover:text-white'
+                                    }`}>{p.nombre}</h4>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-sm">
+                                            {(CATEGORY_EMOJIS as any)[p.categoria] || '📦'}
+                                        </div>
+                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">{p.categoria || 'GENERAL'}</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex justify-between items-center mt-6">
+                                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest italic group-hover:text-liquid-gold/40 transition-colors">ESTADO: OPERACIONAL</span>
+                                    {selectedId === p.id ? (
+                                        <div className="w-8 h-8 rounded-full bg-liquid-gold flex items-center justify-center shadow-gold-glow animate-pulse">
                                             <CheckCircleIcon className="w-5 h-5 text-black" />
-                                        </motion.div>
-                                    )}
-
-                                    {/* Overlay gradiente */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
-                                </div>
-
-                                {/* Info del producto */}
-                                <div className={`p-4 md:p-6 flex flex-col flex-1 relative z-10 ${isSelected ? 'bg-liquid-gold/[0.03]' : ''}`}>
-                                    <h4 className={`text-xs md:text-[13px] font-black uppercase tracking-tight leading-[1.1] mb-2 md:mb-3 line-clamp-2 transition-colors ${
-                                        isSelected ? 'text-liquid-gold' : 'text-slate-200 group-hover:text-white'
-                                    }`}>{p.nombre || 'SERVICIO SIN NOMBRE'}</h4>
-                                    
-                                    <div className="mt-auto flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-[10px]">
-                                                {(CATEGORY_EMOJIS as any)[p.categoria] || '📦'}
-                                            </div>
-                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                                                {p.categoria || 'General'}
-                                            </span>
                                         </div>
-                                        {isSelected && (
-                                            <motion.div 
-                                                initial={{ scale: 0, x: 20 }} animate={{ scale: 1, x: 0 }}
-                                                className="bg-liquid-gold text-black px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-gold-glow"
-                                            >
-                                                Activo
-                                            </motion.div>
-                                        )}
-                                    </div>
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-slate-800 group-hover:border-liquid-gold/40 group-hover:text-liquid-gold transition-all">
+                                            <SparklesIcon className="w-4 h-4" />
+                                        </div>
+                                    )}
                                 </div>
-                            </motion.button>
-                        );
-                    })}
+                            </div>
+                        </motion.button>
+                    ))}
                 </AnimatePresence>
                 
-                {/* Fallback para servicio personalizado */}
+                {/* FALLBACK TÁCTICO */}
                 {searchTerm && finalFiltered.length === 0 && (
                     <motion.button 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => onSelect({ id: 'custom', nombre: searchTerm, categoria: 'Personalizado', precio: 0 })}
-                        className="col-span-full p-8 md:p-16 rounded-2xl md:rounded-[3rem] border-2 border-dashed border-liquid-gold/20 bg-liquid-gold/5 text-center group flex flex-col items-center justify-center min-h-[240px] md:min-h-[300px] hover:border-liquid-gold/50 transition-all relative overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                        onClick={() => onSelect({ id: 'custom', nombre: searchTerm, categoria: 'Manual', precio: 0 })}
+                        className="col-span-full h-[300px] rounded-[3.5rem] border-2 border-dashed border-liquid-gold/20 bg-liquid-gold/5 flex flex-col items-center justify-center gap-6 group hover:border-liquid-gold/50 transition-all relative overflow-hidden"
                     >
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <SparklesIcon className="w-12 h-12 md:w-16 md:h-16 mb-4 md:mb-6 text-liquid-gold/30 group-hover:text-liquid-gold group-hover:rotate-12 transition-all duration-500" />
-                        <p className="text-lg md:text-xl font-black text-white uppercase tracking-[0.2em] md:tracking-[0.4em] leading-relaxed mb-2">
-                            Protocolo No Encontrado
-                        </p>
-                        <p className="text-xs text-liquid-gold/60 font-bold uppercase tracking-widest">
-                            Toca para iniciar diseño de "{searchTerm}" desde cero
-                        </p>
-                        <div className="mt-8 px-8 py-3 bg-white/5 rounded-full border border-white/10 group-hover:bg-liquid-gold group-hover:text-black transition-all">
-                            <span className="text-[10px] font-black uppercase tracking-widest">Generar Especificación Única</span>
+                        <SparklesIcon className="w-16 h-16 text-liquid-gold/20 group-hover:text-liquid-gold group-hover:rotate-12 transition-all duration-700" />
+                        <div className="text-center space-y-2">
+                            <p className="text-2xl font-black text-white uppercase italic tracking-tighter">Vector Desconocido</p>
+                            <p className="text-[10px] text-liquid-gold/60 font-black uppercase tracking-[0.4em] italic">INICIAR PROCESO DE DISEÑO PERSONALIZADO PARA "{searchTerm}"</p>
                         </div>
                     </motion.button>
                 )}

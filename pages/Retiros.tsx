@@ -51,14 +51,10 @@ const RetirosPage: React.FC = () => {
                 photoUrl = await uploadFile(retiroPhoto, 'trabajos', `${selectedTrabajo.id}/retiro_${Date.now()}`);
             }
 
-            const updated = await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre, photoUrl);
+            await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre, photoUrl);
             
-            // Trigger success celebration
             setIsSuccess(true);
             setIsProcessing(false);
-            
-            // We removed the auto-navigation to let the user see the success screen
-            // and choose their next action.
         } catch (error) {
             console.error("Error al registrar retiro:", error);
             alert("Error al procesar el retiro. Intente de nuevo.");
@@ -140,14 +136,18 @@ const RetirosPage: React.FC = () => {
 
                 <div className="relative group max-w-2xl">
                     <div className="absolute inset-0 bg-liquid-gold/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-liquid-gold/60" />
+                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-liquid-gold/60 group-focus-within:text-liquid-gold transition-colors" />
                     <input 
                         type="text" 
                         placeholder="IDENTIFICAR MANIFIESTO O CLIENTE..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full pl-16 pr-8 py-6 bg-white/[0.02] border border-white/10 focus:border-liquid-gold/40 rounded-[2rem] text-sm font-black text-white uppercase tracking-widest placeholder:text-slate-700 outline-none focus:bg-white/[0.05] transition-all duration-500 backdrop-blur-md shadow-inner"
+                        className="w-full pl-16 pr-8 py-7 bg-white/[0.02] border border-white/10 focus:border-liquid-gold/40 rounded-[2.5rem] text-[13px] font-black text-white uppercase tracking-[0.2em] placeholder:text-slate-800 outline-none focus:bg-white/[0.05] transition-all duration-700 backdrop-blur-md shadow-inner group-hover:border-white/20 italic"
                     />
+                    <div className="absolute right-8 top-1/2 -translate-y-1/2 flex gap-2 opacity-20 group-focus-within:opacity-100 transition-opacity">
+                        <div className="w-1 h-4 bg-liquid-gold/40 animate-pulse" />
+                        <div className="w-1 h-4 bg-liquid-gold/20 animate-pulse delay-75" />
+                    </div>
                 </div>
             </div>
 
@@ -160,35 +160,71 @@ const RetirosPage: React.FC = () => {
                     const isOld = days > 15;
 
                     return (
-                        <div key={t.id} className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-luxury border border-white/5 hover:-translate-y-2 hover:border-liquid-gold/20 transition-all duration-500 flex flex-col justify-between group relative">
+                        <motion.div 
+                            layout
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            key={t.id} 
+                            className="bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] p-10 shadow-2xl border border-white/5 hover:border-liquid-gold/30 transition-all duration-700 flex flex-col justify-between group relative overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-architect-grid opacity-[0.03] pointer-events-none" />
+                            <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-5 transition-opacity duration-1000 rotate-12">
+                                <BoxIcon className="w-32 h-32 text-white" />
+                            </div>
+
                             {isOld && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500/80 text-white text-[8px] font-black px-4 py-1 rounded-full uppercase tracking-widest shadow-lg animate-pulse z-20">
-                                    ¡Abandonado ({days} días)!
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-rose-600 text-white text-[9px] font-black px-6 py-1.5 rounded-full uppercase tracking-[0.3em] shadow-2xl animate-pulse z-20 italic">
+                                    ESTADO: CRÍTICO ({days}d)
                                 </div>
                             )}
-                            <button onClick={(e) => { e.stopPropagation(); notifyClient(t); }} className="absolute top-6 right-6 p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20 hover:border-emerald-500 shadow-sm z-10" title="Avisar por WhatsApp">
-                                <WhatsAppIcon className="w-5 h-5" />
-                            </button>
-                            <div>
-                                <div className="flex justify-between mb-6">
-                                    <span className="text-[10px] font-black text-slate-500 bg-white/5 px-3 py-1 rounded-lg border border-white/5">ORDEN #{t.orden}</span>
-                                    <div className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-white/5 px-2 py-1 rounded-lg border border-white/5">
-                                        <ClockIcon className="w-3 h-3"/> {days}d
+
+                            <div className="relative z-10">
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Manifest_#{t.orden}</span>
+                                        <div className="h-[2px] w-8 bg-liquid-gold/40" />
+                                    </div>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); notifyClient(t); }} 
+                                        className="p-4 bg-emerald-500/10 text-emerald-400 rounded-[1.5rem] hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20 hover:border-emerald-500 shadow-lg"
+                                    >
+                                        <WhatsAppIcon className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none group-hover:text-liquid-gold transition-colors duration-500">{c?.nombre}</h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse" />
+                                        <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest line-clamp-1 italic">{t.subtipo}</p>
                                     </div>
                                 </div>
-                                <h3 className="text-xl font-black text-white uppercase truncate pr-8 tracking-tight leading-tight">{c?.nombre}</h3>
-                                <p className="text-xs text-slate-500 font-bold uppercase mt-1 leading-relaxed line-clamp-2">{t.subtipo}</p>
-                                <div className="mt-8 p-6 bg-black/30 rounded-2xl flex flex-col gap-2 border border-white/5">
-                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase"><span>Total:</span> <span className="text-white">{formatCurrency(t.total)}</span></div>
-                                    <div className="flex justify-between items-center text-[10px] font-bold text-emerald-400 uppercase"><span>Abono:</span> <span>{formatCurrency(t.abono)}</span></div>
-                                    <div className="h-px bg-white/5 my-1"></div>
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-black text-slate-500 uppercase">Saldo:</span><span className="text-2xl font-black text-red-400">{formatCurrency(t.saldo)}</span></div>
+
+                                <div className="mt-10 p-8 bg-black/40 rounded-[2rem] space-y-4 border border-white/5 relative overflow-hidden group-hover:border-liquid-gold/10 transition-colors">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+                                    <div className="flex justify-between items-center relative z-10">
+                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Total_Asset</span>
+                                        <span className="text-sm font-black text-white italic">{formatCurrency(t.total)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center relative z-10">
+                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Abono_In</span>
+                                        <span className="text-sm font-black text-emerald-500 italic">{formatCurrency(t.abono)}</span>
+                                    </div>
+                                    <div className="h-px bg-white/5" />
+                                    <div className="flex justify-between items-end relative z-10">
+                                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] italic">Saldo_Pending</span>
+                                        <span className="text-4xl font-black text-rose-500 italic tracking-tighter leading-none drop-shadow-2xl">{formatCurrency(t.saldo)}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <button onClick={() => setSelectedTrabajo(t)} className="mt-8 w-full py-5 bg-liquid-gold text-brand-dark font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl shadow-gold-glow hover:bg-white transition-all duration-500 flex items-center justify-center gap-3 group-hover:scale-[1.02]">
-                                Procesar Entrega <ArrowRightIcon className="w-4 h-4"/>
+
+                            <button 
+                                onClick={() => setSelectedTrabajo(t)} 
+                                className="mt-10 w-full py-6 bg-white/5 hover:bg-liquid-gold text-white hover:text-brand-dark font-black text-[11px] uppercase tracking-[0.3em] rounded-[1.5rem] border border-white/10 hover:border-liquid-gold transition-all duration-700 flex items-center justify-center gap-4 group-hover:shadow-gold-glow italic"
+                            >
+                                EJECUTAR DESPACHO <ArrowRightIcon className="w-5 h-5"/>
                             </button>
-                        </div>
+                        </motion.div>
                     );
                 }) : (
                     <div className="col-span-full py-32 bg-white/5 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-white/5 text-center flex flex-col items-center">
@@ -206,9 +242,9 @@ const RetirosPage: React.FC = () => {
             >
                 {selectedTrabajo && (
                     <div className="space-y-6">
-                        <div className="p-8 bg-red-500/10 rounded-3xl text-center border border-red-500/20 shadow-inner">
+                        <div className="p-8 bg-rose-500/10 rounded-3xl text-center border border-rose-500/20 shadow-inner">
                             <span className="text-[10px] font-black text-slate-500 uppercase block mb-2 tracking-[0.2em]">SALDO A CANCELAR HOY</span>
-                            <span className="text-6xl font-black text-red-500 tracking-tighter drop-shadow-sm">{formatCurrency(selectedTrabajo.saldo)}</span>
+                            <span className="text-6xl font-black text-rose-500 tracking-tighter drop-shadow-sm">{formatCurrency(selectedTrabajo.saldo)}</span>
                         </div>
                         
                         <div className="bg-liquid-gold/10 p-6 rounded-2xl flex items-center gap-4 border border-liquid-gold/20">
@@ -226,7 +262,7 @@ const RetirosPage: React.FC = () => {
                                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Respaldo Visual (Opcional)</h4>
                                 <button 
                                     onClick={() => setShowCamera(!showCamera)}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${showCamera ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-white/5 border-white/10 text-slate-400'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${showCamera ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-white/5 border-white/10 text-slate-400'}`}
                                 >
                                     <CameraIcon className="w-3 h-3" />
                                     <span className="text-[9px] font-black uppercase tracking-wider">{showCamera ? 'CERRAR' : 'TOMAR FOTO'}</span>
@@ -270,134 +306,169 @@ const RetirosPage: React.FC = () => {
                 )}
             </BottomSheet>
 
-            {selectedTrabajo && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] hidden lg:flex justify-center items-center p-4 animate-fade-in" onClick={() => setSelectedTrabajo(null)}>
-                    <div className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury w-full max-w-lg overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
-                         <div className="bg-red-500/10 p-8 flex justify-between items-center border-b border-red-500/20">
-                            <div><h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">Confirmar Cobro</h2><p className="text-red-400 text-[10px] font-black mt-1 uppercase tracking-[0.2em]">Orden #{selectedTrabajo.orden}</p></div>
-                            <button onClick={() => setSelectedTrabajo(null)} className="p-2 hover:bg-white/10 rounded-xl transition-colors"><CloseIcon className="w-5 h-5 text-slate-400"/></button>
-                        </div>
-                        <div className="p-8 space-y-6">
-                            <div className="p-6 bg-red-500/10 rounded-2xl text-center border border-red-500/20">
-                                <span className="text-[10px] font-black text-slate-500 uppercase block mb-2 tracking-[0.2em]">SALDO A CANCELAR HOY</span>
-                                <span className="text-5xl font-black text-red-400 tracking-tighter">{formatCurrency(selectedTrabajo.saldo)}</span>
+            {/* Desktop Modal Optimization */}
+            <AnimatePresence>
+                {selectedTrabajo && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] hidden lg:flex justify-center items-center p-4" 
+                        onClick={() => setSelectedTrabajo(null)}
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="bg-brand-dark/95 backdrop-blur-xl rounded-[3rem] shadow-luxury w-full max-w-xl overflow-hidden border border-white/10" 
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="bg-rose-500/10 p-10 flex justify-between items-center border-b border-rose-500/20">
+                                <div>
+                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">Confirmar Despacho</h2>
+                                    <p className="text-rose-400 text-[11px] font-black mt-2 uppercase tracking-[0.3em]">Manifest_#{selectedTrabajo.orden}</p>
+                                </div>
+                                <button onClick={() => setSelectedTrabajo(null)} className="p-3 hover:bg-white/10 rounded-2xl transition-colors">
+                                    <XMarkIcon className="w-6 h-6 text-slate-400"/>
+                                </button>
                             </div>
-                            <div className="bg-liquid-gold/10 p-4 rounded-2xl flex items-center gap-3 border border-liquid-gold/20">
-                                <ExclamationTriangleIcon className="w-5 h-5 text-liquid-gold shrink-0"/><p className="text-[10px] font-bold text-liquid-gold/80 uppercase leading-tight">Al confirmar, el sistema generará automáticamente la Nota de Venta PDF.</p>
-                            </div>
-
-                            {/* Sección de Respaldo Visual Desktop */}
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Respaldo Visual (Opcional)</h4>
-                                    <button 
-                                        onClick={() => setShowCamera(!showCamera)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${showCamera ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-white/5 border-white/10 text-slate-400'}`}
-                                    >
-                                        <CameraIcon className="w-3 h-3" />
-                                        <span className="text-[9px] font-black uppercase tracking-wider">{showCamera ? 'CERRAR' : 'TOMAR FOTO'}</span>
-                                    </button>
+                            <div className="p-10 space-y-8">
+                                <div className="p-10 bg-rose-500/5 rounded-[2.5rem] text-center border border-rose-500/10 shadow-inner">
+                                    <span className="text-[11px] font-black text-slate-500 uppercase block mb-4 tracking-[0.4em]">SALDO_LIQUIDATION_VALUE</span>
+                                    <span className="text-7xl font-black text-rose-500 tracking-tighter italic leading-none drop-shadow-2xl">{formatCurrency(selectedTrabajo.saldo)}</span>
                                 </div>
                                 
-                                <AnimatePresence>
-                                    {showCamera && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: 'auto' }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="aspect-video w-full bg-black/40 rounded-3xl border border-white/5 overflow-hidden">
-                                                <PhotoCapture onImageCaptured={(file) => setRetiroPhoto(file)} />
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                                <div className="bg-liquid-gold/5 p-6 rounded-2xl flex items-center gap-5 border border-liquid-gold/10">
+                                    <ExclamationTriangleIcon className="w-6 h-6 text-liquid-gold shrink-0"/>
+                                    <p className="text-[11px] font-bold text-liquid-gold/70 uppercase leading-relaxed tracking-wider">
+                                        PROTOCOL: La confirmación generará un registro inmutable en el libro contable y emitirá el comprobante fiscal maestro.
+                                    </p>
+                                </div>
 
-                            <button 
-                                onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
-                                disabled={isProcessing}
-                                className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-gold-glow flex items-center justify-center gap-3 transition-all duration-500 ${isProcessing ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-liquid-gold text-brand-dark hover:bg-white'}`}
-                            >
-                                {isProcessing ? (
-                                    <><Loader2Icon className="animate-spin w-5 h-5" /> PROCESANDO...</>
-                                ) : (
-                                    <><CheckCircleIcon className="w-5 h-5"/> CONFIRMAR PAGO</>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Visual_Backup_Capture</h4>
+                                        <button 
+                                            onClick={() => setShowCamera(!showCamera)}
+                                            className={`flex items-center gap-3 px-5 py-2 rounded-xl border transition-all ${showCamera ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-white/5 border-white/10 text-slate-500'}`}
+                                        >
+                                            <CameraIcon className="w-4 h-4" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">{showCamera ? 'TERMINATE_CAPTURE' : 'ACTIVATE_CAMERA'}</span>
+                                        </button>
+                                    </div>
+                                    
+                                    <AnimatePresence>
+                                        {showCamera && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="aspect-video w-full bg-black/40 rounded-3xl border border-white/5 overflow-hidden shadow-inner">
+                                                    <PhotoCapture onImageCaptured={(file) => setRetiroPhoto(file)} />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                <button 
+                                    onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
+                                    disabled={isProcessing}
+                                    className={`w-full py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-gold-glow flex items-center justify-center gap-4 transition-all duration-700 italic ${isProcessing ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-liquid-gold text-brand-dark hover:scale-[1.02]'}`}
+                                >
+                                    {isProcessing ? (
+                                        <><Loader2Icon className="animate-spin w-6 h-6" /> EXECUTING_PROTOCOL...</>
+                                    ) : (
+                                        <><CheckCircleIcon className="w-6 h-6"/> CONFIRMAR LIQUIDACIÓN</>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* --- OVERLAY DE ÉXITO ELITE --- */}
             <AnimatePresence>
                 {isSuccess && (
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center bg-brand-dark/95 backdrop-blur-3xl"
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-brand-dark/98 backdrop-blur-3xl"
                     >
-                        <Confetti width={width} height={height} recycle={false} numberOfPieces={600} colors={['#F59E0B', '#FFFFFF', '#10B981']} />
+                        <Confetti width={width} height={height} recycle={false} numberOfPieces={800} colors={['#F59E0B', '#FFFFFF', '#10B981', '#3B82F6']} />
                         
                         <motion.div 
-                            initial={{ scale: 0.5, opacity: 0, y: 50 }}
+                            initial={{ scale: 0.8, opacity: 0, y: 100 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            transition={{ type: "spring", damping: 15 }}
-                            className="text-center space-y-8"
+                            transition={{ type: "spring", damping: 20 }}
+                            className="text-center space-y-12 max-w-2xl px-6"
                         >
                             <div className="relative">
                                 <motion.div 
-                                    animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                    className="w-40 h-40 bg-liquid-gold rounded-full mx-auto flex items-center justify-center shadow-[0_0_100px_rgba(245,158,11,0.5)]"
+                                    animate={{ 
+                                        scale: [1, 1.1, 1],
+                                        boxShadow: [
+                                            "0 0 40px rgba(245,158,11,0.2)",
+                                            "0 0 100px rgba(245,158,11,0.5)",
+                                            "0 0 40px rgba(245,158,11,0.2)"
+                                        ]
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                    className="w-48 h-48 bg-liquid-gold rounded-[3rem] mx-auto flex items-center justify-center shadow-gold-glow relative z-10"
                                 >
-                                    <TrophyIcon className="w-20 h-20 text-brand-dark" />
+                                    <TrophyIcon className="w-24 h-24 text-brand-dark" />
                                 </motion.div>
-                                <div className="absolute inset-0 bg-liquid-gold/20 blur-[60px] -z-10 rounded-full" />
+                                <div className="absolute inset-0 bg-liquid-gold/20 blur-[80px] -z-10 rounded-full" />
                             </div>
 
-                            <div className="space-y-4">
-                                <h2 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
-                                    VENTA <span className="text-gold-gradient">CULMINADA</span>
+                            <div className="space-y-6">
+                                <h2 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-none">
+                                    MISSION <span className="text-gold-gradient">COMPLETED</span>
                                 </h2>
-                                <p className="text-slate-400 font-bold uppercase tracking-[0.4em] text-sm">
-                                    Circuito de Producción Cerrado con Éxito
-                                </p>
+                                <div className="flex flex-col items-center gap-4">
+                                    <p className="text-slate-500 font-black uppercase tracking-[0.6em] text-xs">
+                                        Operational Flow Successfully Synchronized
+                                    </p>
+                                    <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-liquid-gold/50 to-transparent" />
+                                </div>
                             </div>
 
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-8 py-3 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-                                    <CheckCircleIcon className="w-5 h-5 text-emerald-400" />
-                                    <span className="text-emerald-400 font-black text-sm uppercase tracking-widest">Flujo de Caja Actualizado</span>
+                            <div className="flex flex-col items-center gap-8">
+                                <div className="flex items-center gap-4 bg-emerald-500/10 border border-emerald-500/20 px-10 py-4 rounded-2xl shadow-emerald-500/5">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                                    <span className="text-emerald-400 font-black text-[11px] uppercase tracking-[0.3em] italic">Vault Records Updated_</span>
                                 </div>
                                 
-                                <div className="flex flex-wrap justify-center gap-4 mt-4">
+                                <div className="flex flex-wrap justify-center gap-6">
                                     <button 
                                         onClick={() => {
                                             setIsSuccess(false);
                                             setSelectedTrabajo(null);
                                         }}
-                                        className="px-10 py-5 bg-white/5 border border-white/10 hover:border-liquid-gold/40 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] transition-all hover:scale-105 backdrop-blur-xl"
+                                        className="px-12 py-6 bg-white/5 border border-white/10 hover:border-liquid-gold/40 rounded-[2rem] text-[11px] font-black text-white uppercase tracking-[0.4em] transition-all hover:scale-105 backdrop-blur-xl italic"
                                     >
-                                        Nueva Entrega
+                                        NEXT_DISPATCH
                                     </button>
                                     <button 
                                         onClick={() => navigate('/dashboard')}
-                                        className="px-10 py-5 bg-liquid-gold text-brand-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-gold-glow hover:scale-105 transition-all"
+                                        className="px-12 py-6 bg-liquid-gold text-brand-dark rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-gold-glow hover:scale-105 transition-all italic"
                                     >
-                                        Volver al Centro de Control
+                                        COMMAND_CENTER
                                     </button>
                                 </div>
 
                                 <motion.button 
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    transition={{ delay: 1 }}
+                                    transition={{ delay: 1.5 }}
                                     onClick={() => navigate(`/nota-de-venta/${selectedTrabajo?.id}`)}
-                                    className="flex items-center gap-2 text-slate-500 hover:text-white font-mono text-[10px] uppercase tracking-widest transition-colors mt-4"
+                                    className="flex items-center gap-3 text-slate-600 hover:text-white font-mono text-[10px] uppercase tracking-[0.5em] transition-all duration-500 group"
                                 >
-                                    <PrinterIcon className="w-3 h-3" /> Ver Comprobante Maestro
+                                    <PrinterIcon className="w-4 h-4 group-hover:text-liquid-gold transition-colors" /> 
+                                    [GENERATE_MASTER_RECORD]
                                 </motion.button>
                             </div>
                         </motion.div>

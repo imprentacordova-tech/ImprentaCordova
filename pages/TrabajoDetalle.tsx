@@ -39,7 +39,7 @@ const TrabajoDetallePage: React.FC = () => {
     const handleStatusChange = async (newStatus: TrabajoEstado) => {
         if (!trabajo) return;
         await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
-        await logActivity(currentUser.id, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Estado cambiado manualmente a: ${newStatus}`, 'TrabajoDetalle');
+        await logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Estado cambiado manualmente a: ${newStatus}`, 'TrabajoDetalle');
     };
 
     if (loading) return <div className="flex h-screen items-center justify-center"><Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" /></div>;

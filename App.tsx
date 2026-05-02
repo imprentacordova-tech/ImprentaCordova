@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { User } from './types';
-import { Layout } from './components/Layout';
+import Layout from './components/Layout';
 import { logActivity, purgeOldEntries } from './services/activityLogService';
 
 // Pages

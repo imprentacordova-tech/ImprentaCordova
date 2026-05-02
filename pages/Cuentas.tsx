@@ -40,24 +40,36 @@ const MetricCard: React.FC<{
     colorClass?: string 
 }> = ({ label, value, icon: Icon, colorClass = "text-liquid-gold" }) => (
     <motion.div 
-        whileHover={{ y: -8, transition: { duration: 0.3 } }}
-        className="glass-card-luxury p-10 relative group overflow-hidden border-white/5"
+        whileHover={{ y: -10, scale: 1.02 }}
+        className="glass-card-luxury p-12 relative group overflow-hidden border-white/5 shadow-2xl"
     >
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-all duration-700">
-            <Icon className="w-24 h-24 text-white" />
+        <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-10 transition-all duration-1000 rotate-12 group-hover:rotate-0">
+            <Icon className="w-32 h-32 text-white" />
         </div>
-        <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                    <Icon className={`w-5 h-5 ${colorClass}`} />
+        <div className="relative z-10 space-y-8">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 ${colorClass.replace('text', 'shadow')}-glow-sm`}>
+                        <Icon className={`w-6 h-6 ${colorClass}`} />
+                    </div>
+                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] italic">{label}</span>
                 </div>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">{label}</span>
+                <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse opacity-20" />
             </div>
-            <p className={`text-5xl font-black italic tracking-tighter drop-shadow-sm ${colorClass}`}>
-                {value}
-            </p>
+            <div className="space-y-1">
+                <p className={`text-6xl font-black italic tracking-tighter drop-shadow-2xl ${colorClass} leading-none`}>
+                    {value}
+                </p>
+                <div className="h-[2px] w-full bg-white/5 relative overflow-hidden mt-4">
+                    <motion.div 
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '100%' }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className={`absolute inset-0 bg-gradient-to-r from-transparent via-${colorClass.split('-')[1]}-500/20 to-transparent`}
+                    />
+                </div>
+            </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/10 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-1000"></div>
     </motion.div>
 );
 
@@ -323,42 +335,49 @@ const CuentasPage: React.FC = () => {
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.05 }}
                                         key={entry.id} 
-                                        className="group glass-card-luxury p-10 flex flex-col lg:flex-row items-center gap-10 border-white/5 hover:border-liquid-gold/20 transition-all duration-700 hover:shadow-gold-glow-sm"
+                                        className="group glass-card-luxury p-10 flex flex-col lg:flex-row items-center gap-10 border-white/5 hover:border-liquid-gold/20 transition-all duration-700 hover:shadow-gold-glow-sm relative overflow-hidden"
                                     >
-                                        <div className="flex items-center gap-10 min-w-[200px]">
-                                            <div className={`p-5 rounded-2xl ${isIngreso ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'} border border-white/5 shadow-inner`}>
-                                                {isIngreso ? <ArrowTrendingUpIcon className="w-7 h-7" /> : <ArrowTrendingDownIcon className="w-7 h-7" />}
+                                        <div className="absolute inset-0 bg-architect-grid opacity-5 pointer-events-none" />
+                                        <div className="absolute left-0 top-0 w-[2px] h-full bg-gradient-to-b from-transparent via-liquid-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                        
+                                        <div className="flex items-center gap-10 min-w-[220px] relative z-10">
+                                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-700 ${isIngreso ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'} border shadow-inner group-hover:scale-110`}>
+                                                {isIngreso ? <ArrowTrendingUpIcon className="w-8 h-8" /> : <ArrowTrendingDownIcon className="w-8 h-8" />}
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[12px] font-black text-white italic tracking-tighter">{formatDate(entry.timestamp)}</p>
-                                                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            <div className="space-y-1.5">
+                                                <p className="text-[14px] font-black text-white italic tracking-tighter leading-none">{formatDate(entry.timestamp)}</p>
+                                                <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
 
-                                        <div className="flex-grow min-w-0 space-y-4">
+                                        <div className="flex-grow min-w-0 space-y-5 relative z-10">
+                                            <div className="flex items-center gap-5">
+                                                <div className={`text-[9px] font-black uppercase tracking-[0.5em] px-5 py-2 rounded-xl border-2 italic ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'} shadow-lg shadow-black/50`}>
+                                                    {isIngreso ? 'ASSET_INJECTION' : 'CAPITAL_BURN'}
+                                                </div>
+                                                <div className="flex items-center gap-3 px-4 py-2 bg-black/40 rounded-xl border border-white/5">
+                                                    <FingerPrintIcon className="w-3.5 h-3.5 text-liquid-gold opacity-40" />
+                                                    <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">#{entry.id.substring(0, 10).toUpperCase()}</span>
+                                                </div>
+                                            </div>
+                                            <h4 className="text-3xl font-black text-white uppercase tracking-tight italic group-hover:text-liquid-gold transition-colors duration-500 truncate leading-none">{entry.detalle}</h4>
                                             <div className="flex items-center gap-4">
-                                                <div className={`text-[8px] font-black uppercase tracking-[0.4em] px-4 py-1.5 rounded-full border-2 ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10' : 'bg-rose-500/10 text-rose-500 border-rose-500/20 shadow-rose-500/10'} shadow-lg`}>
-                                                    {isIngreso ? 'Asset Injection' : 'Capital Burn'}
-                                                </div>
-                                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">
-                                                    <FingerPrintIcon className="w-3 h-3 text-white/20" />
-                                                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">ID-{entry.id.substring(0, 8)}</span>
-                                                </div>
-                                            </div>
-                                            <h4 className="text-2xl font-black text-white uppercase tracking-tight italic group-hover:text-liquid-gold transition-colors duration-500 truncate drop-shadow-sm">{entry.detalle}</h4>
-                                            <div className="flex items-center gap-3">
-                                                <LockIcon className="w-3 h-3 text-liquid-gold/30" />
-                                                <p className="text-[9px] font-bold text-slate-700 uppercase tracking-widest leading-none truncate max-w-sm">{entry.hash}</p>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold/20 animate-pulse" />
+                                                <p className="text-[9px] font-bold text-slate-800 uppercase tracking-[0.4em] leading-none truncate max-w-sm group-hover:text-slate-600 transition-colors">SIG: {entry.hash}</p>
                                             </div>
                                         </div>
 
-                                        <div className="text-right min-w-[250px] space-y-2">
-                                            <p className={`text-5xl font-black italic tracking-tighter ${isIngreso ? 'text-emerald-500' : 'text-rose-500'} drop-shadow-md`}>
-                                                {isIngreso ? '+$' : '-$'}{formatCurrency(entry.monto).replace('$', '').split(',')[0]}<span className="text-xl opacity-30">.00</span>
-                                            </p>
-                                            <div className="flex items-center justify-end gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">
-                                                <UserIcon className="w-3 h-3 opacity-50" />
-                                                Authenticated by {entry.usuario}
+                                        <div className="text-right min-w-[280px] space-y-3 relative z-10">
+                                            <div className="flex flex-col items-end">
+                                                <p className={`text-6xl font-black italic tracking-tighter ${isIngreso ? 'text-emerald-500' : 'text-rose-500'} drop-shadow-2xl leading-none`}>
+                                                    {isIngreso ? '+$' : '-$'}{formatCurrency(entry.monto).replace('$', '').split(',')[0]}
+                                                    <span className="text-2xl opacity-20 ml-1">.00</span>
+                                                </p>
+                                                <div className="h-[2px] w-24 bg-gradient-to-l from-white/10 to-transparent mt-2" />
+                                            </div>
+                                            <div className="flex items-center justify-end gap-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] italic group-hover:text-white transition-colors duration-500">
+                                                <UserIcon className="w-4 h-4 opacity-40 group-hover:text-liquid-gold transition-colors" />
+                                                AUTH BY_{entry.usuario.split(' ')[0]}
                                             </div>
                                         </div>
                                     </motion.div>

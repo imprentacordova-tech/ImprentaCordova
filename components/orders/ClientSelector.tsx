@@ -30,20 +30,23 @@ const InputField: React.FC<{
             name={name}
             value={value}
             onChange={onChange}
-            className={`peer w-full bg-white/[0.02] border p-4 pt-7 pb-3 rounded-2xl text-white font-black text-base focus:ring-2 transition-all uppercase italic placeholder-transparent
+            className={`peer w-full bg-white/[0.03] border p-6 pt-10 pb-4 rounded-[2rem] text-white font-black text-lg focus:ring-4 transition-all uppercase italic placeholder-transparent tactical-border
                 ${error
-                    ? 'border-rose-500/50 focus:ring-rose-500/30 focus:border-rose-500/50'
+                    ? 'border-rose-500/40 focus:ring-rose-500/10 focus:border-rose-500/60'
                     : isHighlighted
-                        ? 'border-liquid-gold/50 focus:ring-liquid-gold/30 focus:border-liquid-gold/50'
-                        : 'border-white/5 focus:ring-brand-red/30 focus:border-brand-red/50'
+                        ? 'border-liquid-gold/50 focus:ring-liquid-gold/10 focus:border-liquid-gold/70 shadow-gold-glow-soft'
+                        : 'border-white/5 focus:ring-liquid-gold/10 focus:border-liquid-gold/40'
                 }`}
             placeholder={label}
             {...props}
         />
-        <label htmlFor={name} className={`absolute left-5 top-2.5 text-[8px] font-black uppercase tracking-[0.4em] italic transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-600 peer-focus:top-2.5 peer-focus:text-[8px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold' : 'text-slate-500 peer-focus:text-brand-red'}`}>
-            {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "✨"}
+        <label htmlFor={name} className={`absolute left-8 top-3.5 text-[10px] font-black uppercase tracking-[0.5em] italic transition-all peer-placeholder-shown:top-7 peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-600 peer-focus:top-3.5 peer-focus:text-[10px] pointer-events-none ${error ? 'text-rose-500' : isHighlighted ? 'text-liquid-gold shadow-gold-glow-sm' : 'text-slate-500 peer-focus:text-liquid-gold'}`}>
+            {label} {required && <span className="text-rose-500/50">*</span>} {isHighlighted && "⚡"}
         </label>
-        {error && <p className="text-[8px] text-rose-500 font-black mt-1 uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-lg inline-block absolute -bottom-5 left-4 z-20">{error}</p>}
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
+             <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
+        </div>
+        {error && <p className="text-[10px] text-rose-500 font-black mt-2 uppercase tracking-widest bg-rose-500/10 px-4 py-1.5 rounded-xl inline-block absolute -bottom-7 left-6 z-20 shadow-2xl border border-rose-500/20">{error}</p>}
     </div>
 );
 
@@ -327,49 +330,56 @@ if (!isOpen) return null;
 
 return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8">
-        <div className="absolute inset-0 bg-brand-dark/90 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose} />
+        <div className="absolute inset-0 bg-brand-dark/95 backdrop-blur-3xl animate-in fade-in duration-700" onClick={onClose}>
+            <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
+        </div>
 
-        <div className="bg-brand-dark w-full max-w-5xl h-full max-h-[90vh] rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+        <div className="glass-panel-obsidian w-full max-w-6xl h-full max-h-[92vh] rounded-[4rem] border-white/10 shadow-2xl relative overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-10 duration-700 tactical-border">
+            <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-liquid-gold/30 to-transparent animate-shimmer" />
 
-            {/* HEADER FIJO */}
-            <div className="flex-shrink-0 flex flex-col p-5 md:p-8 pb-3 md:pb-4 gap-4 md:gap-6 relative z-30 border-b border-white/5 bg-brand-dark/95 backdrop-blur-xl">
-                <div className="flex justify-between items-center gap-4">
-                    <div className="flex-1">
-                        <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tighter leading-none italic">
-                            {mode === 'EXPRESS' ? 'IDENTIDAD EXPRESS' : 'PROTOCOLOS SRI (OFICIAL)'}
-                        </h2>
-                        <div className="text-[8px] md:text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                            <div className={`w-1.5 h-1.5 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold' : 'bg-liquid-gold'} animate-pulse shadow-gold-glow-sm`}></div>
-                            {mode === 'EXPRESS' ? 'Resumen para facturación simplificada' : 'Expediente industrial para tributación oficial'}
+            {/* HEADER FIJO TÁCTICO */}
+            <div className="flex-shrink-0 flex flex-col p-10 md:p-14 pb-6 md:pb-8 gap-8 relative z-30 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
+                <div className="flex justify-between items-center gap-8">
+                    <div className="flex-1 space-y-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
+                            <p className="text-[11px] font-black text-liquid-gold uppercase tracking-[0.8em] italic">IDENT_VERIFICATION_v5</p>
                         </div>
+                        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-[-0.05em] leading-none italic">
+                            {mode === 'EXPRESS' ? 'IDENTIDAD ' : 'PROTOCOLOS '}<span className="text-gold-gradient">{mode === 'EXPRESS' ? 'EXPRESS' : 'SRI_OFICIAL'}</span>
+                        </h2>
+                        <p className="text-[10px] md:text-[12px] text-slate-500 font-black uppercase tracking-[0.4em] italic opacity-60">
+                            {mode === 'EXPRESS' ? 'Carga simplificada de activos de facturación' : 'Sincronización de expediente industrial con validación gubernamental'}
+                        </p>
                     </div>
-                    <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
+                    <div className="flex items-center gap-4 flex-shrink-0">
                         <button
                             onClick={onClose}
-                            className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-2xl md:rounded-3xl transition-all border border-white/5 group"
+                            className="p-6 md:p-8 bg-white/5 hover:bg-white/10 rounded-[2.5rem] transition-all border border-white/5 group hover:border-rose-500/40"
                         >
-                            <CloseIcon className="w-5 h-5 md:w-6 md:h-6 text-slate-500 group-hover:text-white transition-colors" />
+                            <CloseIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-500 group-hover:text-rose-500 transition-colors" />
                         </button>
                     </div>
                 </div>
 
                 {!isLocked && (
-                    <div className="bg-white/5 p-1 rounded-[1.5rem] md:rounded-[1.8rem] flex font-black text-[9px] md:text-[10px] uppercase tracking-widest border border-white/5">
+                    <div className="bg-white/5 p-2 rounded-[2.5rem] flex font-black text-[11px] uppercase tracking-[0.3em] border border-white/5 max-w-2xl">
                         <button
                             type="button"
                             onClick={() => setMode('EXPRESS')}
-                            className={`flex-1 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all ${mode === 'EXPRESS' ? 'bg-white text-brand-dark shadow-luxury' : 'text-slate-500 hover:text-white'}`}
+                            className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all duration-500 ${mode === 'EXPRESS' ? 'bg-white text-black shadow-luxury' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
                         >
-                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-liquid-gold animate-pulse"></div>
-                            Express
+                            <div className={`w-2 h-2 rounded-full ${mode === 'EXPRESS' ? 'bg-liquid-gold shadow-gold-glow' : 'bg-slate-700'}`} />
+                            MODO_EXPRESS
                         </button>
                         <button
                             type="button"
                             onClick={() => setMode('SRI')}
-                            className={`flex-1 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all ${mode === 'SRI' ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-500 hover:text-white'}`}
+                            className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all duration-500 ${mode === 'SRI' ? 'bg-liquid-gold text-black shadow-gold-glow' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
                         >
-                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-black animate-pulse"></div>
-                            Perfil SRI
+                            <div className={`w-2 h-2 rounded-full ${mode === 'SRI' ? 'bg-black animate-pulse' : 'bg-slate-700'}`} />
+                            PERFIL_SRI_ALPHA
                         </button>
                     </div>
                 )}
@@ -583,21 +593,21 @@ return (
                 </form>
             </div>
 
-            {/* FOOTER ACCIONES - Aumentar z-index y padding para evitar solapamientos */}
-            <div className="flex-shrink-0 p-6 md:p-8 bg-black/60 backdrop-blur-xl border-t border-white/5 flex flex-col md:flex-row gap-4 relative z-40">
+            {/* FOOTER ACCIONES TÁCTICO */}
+            <div className="flex-shrink-0 p-10 md:p-14 bg-black/80 backdrop-blur-3xl border-t border-white/5 flex flex-col md:flex-row gap-6 relative z-40">
                 <button
                     onClick={onClose}
-                    className="flex-1 py-4 px-8 rounded-2xl bg-white/5 text-white/40 font-black text-[10px] uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-95"
+                    className="flex-1 py-6 px-10 rounded-[2rem] bg-white/5 text-white/40 font-black text-[11px] uppercase tracking-[0.4em] hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-95 italic"
                 >
-                    Abortar Protocolo
+                    ABORT_LINK_00
                 </button>
                 <button
                     type="submit"
                     form="create-client-form"
                     disabled={isSaving || saveSuccess || (mode === 'SRI' && !!rucError)}
-                    className="flex-[2] py-4 px-8 rounded-2xl bg-liquid-gold text-black font-black text-[10px] uppercase tracking-[0.2em] hover:scale-[1.02] shadow-gold-glow transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale active:scale-[0.98]"
+                    className="flex-[2] py-6 px-10 rounded-[2rem] bg-liquid-gold text-black font-black text-[12px] uppercase tracking-[0.3em] hover:scale-[1.02] shadow-gold-glow transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:grayscale active:scale-[0.98] italic"
                 >
-                    {isSaving ? <Loader2Icon className="animate-spin w-5 h-5 md:w-6 md:h-6" /> : saveSuccess ? <CheckCircleIcon className="w-5 h-5 md:w-6 md:h-6" /> : mode === 'SRI' ? "Sincronizar Protocolo SRI" : "Autorizar Perfil Express"}
+                    {isSaving ? <Loader2Icon className="animate-spin w-6 h-6 md:w-8 md:h-8" /> : saveSuccess ? <CheckCircleIcon className="w-6 h-6 md:w-8 md:h-8" /> : mode === 'SRI' ? "AUTORIZAR_EXPEDIENTE_SRI" : "SYNC_PERFIL_EXPRESS"}
                 </button>
             </div>
         </div>
@@ -616,39 +626,44 @@ const ClientItem: React.FC<{
     const hasKey = isSri && sriCredentials.some(s => s.ruc === client.ruc);
     
     return (
-        <div 
+        <motion.div 
+            whileHover={{ x: 10 }}
             onClick={() => onSelect(client)} 
-            className={`p-5 cursor-pointer hover:bg-white/5 flex justify-between items-center transition-all group relative overflow-hidden ${selectedId === client.id ? 'bg-liquid-gold/10' : ''}`}
+            className={`p-6 md:p-8 cursor-pointer hover:bg-white/[0.05] flex justify-between items-center transition-all group relative overflow-hidden rounded-[2.5rem] border border-transparent hover:border-liquid-gold/20 ${selectedId === client.id ? 'bg-liquid-gold/10 border-liquid-gold/40' : ''}`}
         >
-            <div className={`absolute inset-y-0 left-0 w-1 ${isSri ? 'bg-liquid-gold' : 'bg-liquid-gold/40'} transition-opacity ${selectedId === client.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
-            <div className="flex items-center gap-5 relative z-10">
-                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${isSri ? 'bg-liquid-gold text-black shadow-gold-glow-sm' : 'bg-liquid-gold/20 text-liquid-gold'}`}>
+            <div className={`absolute inset-y-0 left-0 w-1.5 ${isSri ? 'bg-liquid-gold' : 'bg-liquid-gold/40'} transition-opacity ${selectedId === client.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+            <div className="flex items-center gap-6 md:gap-8 relative z-10">
+                <div className={`h-16 w-16 rounded-[1.5rem] flex items-center justify-center font-black text-2xl shadow-2xl relative overflow-hidden transition-all duration-700 group-hover:rotate-6 ${isSri ? 'bg-liquid-gold text-black shadow-gold-glow' : 'bg-white/5 text-liquid-gold border border-white/10'}`}>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     {(client.nombre || '?').charAt(0)}
                 </div>
-                <div className="min-w-0">
-                    <p className="font-black text-white text-base tracking-tight uppercase leading-tight mb-1.5 truncate">{client.nombre || 'SIN NOMBRE'}</p>
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-                            <IdentificationIcon className="w-3 h-3 opacity-40"/> {client.cedula || client.ruc} 
+                <div className="min-w-0 space-y-2">
+                    <p className="font-black text-white text-xl md:text-2xl tracking-tighter uppercase leading-none italic group-hover:text-liquid-gold transition-colors truncate">{client.nombre || 'SIN NOMBRE'}</p>
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2 italic">
+                            <IdentificationIcon className="w-3.5 h-3.5 opacity-40"/> {client.cedula || client.ruc} 
                         </p>
                         {isSri && (
-                            <div className="flex gap-1.5 items-center">
-                                <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5 tracking-tighter uppercase">RUC OFICIAL</span>
+                            <div className="flex gap-2 items-center">
+                                <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-liquid-gold/10 text-liquid-gold border border-liquid-gold/20 tracking-widest uppercase italic">SRI_VERIFIED</span>
                                 {hasKey && (
-                                    <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-green-500/20 text-green-400 border border-green-500/20 tracking-tighter uppercase flex items-center gap-1">
-                                        <ShieldCheckIcon className="w-2 h-2"/> CLAVE ENCONTRADA ✅
+                                    <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 tracking-widest uppercase flex items-center gap-1.5 italic">
+                                        <ShieldCheckIcon className="w-2.5 h-2.5"/> KEY_LINKED
                                     </span>
                                 )}
                             </div>
                         )}
                         {!isSri && (
-                            <span className="text-[7px] font-black px-1.5 py-0.5 rounded-md bg-liquid-gold/10 text-liquid-gold/60 border border-liquid-gold/10 tracking-tighter uppercase">IDENTIDAD NATURAL</span>
+                            <span className="text-[8px] font-black px-3 py-1 rounded-lg bg-white/5 text-slate-500 border border-white/5 tracking-widest uppercase italic">V_NATURAL</span>
                         )}
                     </div>
                 </div>
             </div>
-            <ArrowRightIcon className="w-5 h-5 text-slate-600 group-hover:text-liquid-gold transition-all group-hover:translate-x-1" />
-        </div>
+            <div className="flex items-center gap-4">
+                 <div className="h-px w-8 bg-white/10 group-hover:w-12 transition-all group-hover:bg-liquid-gold/40" />
+                 <ArrowRightIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-700 group-hover:text-liquid-gold transition-all" />
+            </div>
+        </motion.div>
     );
 };
 
