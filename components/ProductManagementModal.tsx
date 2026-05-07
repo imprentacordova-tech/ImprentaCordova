@@ -383,6 +383,7 @@ export const ProductManagementModal: React.FC<{
                                         ))}
                                     </div>
                                 </div>
+                                </div>
                                               {mode === 'MATRIX' && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-10 pt-10 border-t border-slate-100">
                                     <div className="space-y-4">

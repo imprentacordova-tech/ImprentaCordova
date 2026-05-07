@@ -9,7 +9,7 @@ import {
     ClockIcon, PaletteIcon, PrinterIcon, MonitorIcon,
     TerminalIcon, ShieldCheckIcon as ShieldIcon, ChevronRightIcon,
     ArrowPathIcon, AdjustmentsHorizontalIcon, CubeTransparentIcon,
-    HomeIcon, BoxIcon, RocketLaunchIcon
+    HomeIcon, BoxIcon, RocketLaunchIcon, Loader2Icon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';

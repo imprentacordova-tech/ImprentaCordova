@@ -470,9 +470,6 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                             <button
                                 onClick={handleSubmit}
                                 disabled={!isFormValid || isSubmitting}
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!isFormValid || isSubmitting}
                                 className={`w-full group relative overflow-hidden rounded-[2.5rem] py-10 md:py-12 flex items-center justify-center gap-6 transition-all duration-700 shadow-luxury active:scale-[0.98] ${
                                     !isFormValid 
                                     ? 'bg-slate-100 text-slate-300 cursor-not-allowed border border-slate-200' 

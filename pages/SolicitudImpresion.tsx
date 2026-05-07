@@ -472,8 +472,6 @@ const SolicitudImpresionPage: React.FC = () => {
                             <span className="text-[8px] font-mono text-slate-500 font-black uppercase tracking-[0.5em]">SRI_VERIFIED_PROTOCOL_v2.0.26</span>
                         </div>
                     </div>
-                </div>
-
                 <TacticalStatusBar id={trabajo.id} />
             </div>
         );

@@ -218,8 +218,8 @@ const RetirosPage: React.FC = () => {
                             >
                                 EJECUTAR DESPACHO <ArrowRightIcon className="w-5 h-5"/>
                             </button>
-                        </motion.div>
-                    );
+                            </div>
+                        );
                 }) : (
                     <div className="col-span-full py-32 bg-white/5 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-white/5 text-center flex flex-col items-center">
                         <BoxIcon className="w-20 h-20 text-slate-700 mb-6" />
