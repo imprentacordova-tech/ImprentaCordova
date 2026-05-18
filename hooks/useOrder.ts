@@ -182,7 +182,7 @@ export const useOrder = (user: string) => {
                 let finalName = item.producto.nombre;
                 // Si es un item libre, intentar usar la primera línea de las notas como nombre
                 if (finalName === 'Ítem Personalizado' && item.notas) {
-                    const firstLine = item.notas.split('\n')[0].trim();
+                    const firstLine = (item.notas || '').split('\n')[0].trim();
                     if (firstLine) finalName = firstLine.substring(0, 40);
                 }
                 

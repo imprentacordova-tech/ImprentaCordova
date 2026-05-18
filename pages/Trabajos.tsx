@@ -215,7 +215,7 @@ const TrabajosPage: React.FC = () => {
                                                         <div className="flex items-center gap-3 mt-4">
                                                             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none bg-slate-50 px-2 py-1 rounded">GEN: {formatDate(trabajo.fechaEntrada).split(' ')[0]}</span>
                                                             <span className="w-1 h-1 rounded-full bg-slate-200" />
-                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none bg-slate-50 px-2 py-1 rounded">AGENT: {trabajo.creadoPor.split(' ')[0]}</span>
+                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none bg-slate-50 px-2 py-1 rounded">AGENT: {(trabajo.creadoPor || 'Sistema').split(' ')[0]}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-12 py-12">

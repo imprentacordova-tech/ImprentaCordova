@@ -175,7 +175,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
                             {cliente?.nombre || 'Consumidor Final'}
                         </h4>
                         <div className="flex items-center gap-3 flex-wrap">
-                             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em] italic truncate max-w-[250px]">{trabajo.tipo} — {trabajo.subtipo.split('|')[0]}</p>
+                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em] italic truncate max-w-[250px]">{trabajo.tipo} — {(trabajo.subtipo || '').split('|')[0]}</p>
                              {trabajo.esSRI && (
                                  <span className="px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] bg-brand-blue/10 text-brand-blue border border-brand-blue/20">SRI_VERIFIED</span>
                              )}

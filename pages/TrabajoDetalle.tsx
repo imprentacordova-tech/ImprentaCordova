@@ -106,7 +106,7 @@ const TrabajoDetallePage: React.FC = () => {
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3"><BoxIcon className="w-5 h-5 text-brand-blue"/> Detalle Técnico del Encargo</h3>
                             <div className="space-y-1">
                                 <p className="text-2xl font-black text-slate-900 uppercase tracking-tight">{trabajo.tipo}</p>
-                                <p className="text-sm font-bold text-slate-500 leading-relaxed uppercase tracking-tight">{trabajo.subtipo.split('|')[0]}</p>
+                                <p className="text-sm font-bold text-slate-500 leading-relaxed uppercase tracking-tight">{(trabajo.subtipo || '').split('|')[0]}</p>
                             </div>
                         </div>
                     </div>

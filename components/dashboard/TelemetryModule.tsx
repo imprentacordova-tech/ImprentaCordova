@@ -134,7 +134,7 @@ export const LiveLogs: React.FC<{ logs: ActivityEntry[] }> = ({ logs }) => {
                         <span className="text-slate-600 shrink-0">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
                         <div className="space-y-0.5">
                              <div className="flex items-center gap-2">
-                                <span className="text-brand-blue font-bold uppercase">{log.usuario.split(' ')[0]}</span>
+                                <span className="text-brand-blue font-bold uppercase">{(log.usuario || 'Sistema').split(' ')[0]}</span>
                                 <span className="text-[7px] bg-slate-50 px-1.5 py-0.5 rounded text-slate-400">{log.accion}</span>
                             </div>
                              <p className="text-slate-500 group-hover:text-slate-900 transition-colors">{log.detalle}</p>
