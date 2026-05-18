@@ -188,72 +188,82 @@ const NuevoPedidoPage: React.FC = () => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse shadow-lg shadow-brand-blue/20" />
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">TELEMETRÍA_ELITE_v9.4</h3>
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">RESUMEN DE ORDEN</h3>
                         </div>
-                        <span className="text-[8px] font-mono text-brand-blue/40 tracking-[0.2em]">NODE_SYNC: 100%</span>
+                        <span className="text-[8px] font-bold text-emerald-500 tracking-wider">SISTEMA EN LÍNEA</span>
                     </div>
                     
                     <div className="space-y-12">
                         <div className="relative">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3">Protocolo_Activo</p>
-                            <p className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none flex items-center gap-4">
-                                <span className="w-2 h-10 bg-brand-blue" />
-                                {missionCategory || 'IDLE_MODE'}
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">TIPO DE SOLICITUD</p>
+                            <p className="text-4xl font-black text-slate-900 uppercase tracking-tight leading-none flex items-center gap-4">
+                                <span className="w-1 h-8 bg-brand-blue rounded-full" />
+                                {missionCategory === 'COMERCIAL' ? 'COMERCIAL' : (missionCategory || 'EN ESPERA')}
                             </p>
                         </div>
                         
                         <div className="pt-8 border-t border-slate-100">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Valuación_en_Tiempo_Real</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">MONTO TOTAL</p>
                             <div className="flex items-baseline gap-4">
-                                <span className="text-7xl font-black text-slate-900 tracking-[-0.05em] leading-none tabular-nums">${precio.toFixed(2)}</span>
-                                <span className="text-xl font-black text-slate-300 uppercase">USD</span>
+                                <span className="text-6xl font-black text-brand-blue tracking-tight leading-none tabular-nums">${precio.toFixed(2)}</span>
+                                <span className="text-lg font-bold text-slate-400 uppercase">USD</span>
                             </div>
-                            <div className="flex items-center gap-4 mt-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                                <ZapIcon className="w-4 h-4 text-emerald-600" />
-                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Diferencial_Saldo: ${(precio - abono).toFixed(2)}</p>
+                            <div className="flex items-center gap-4 mt-6 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <CreditCardIcon className="w-4 h-4 text-slate-500" />
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Saldo Pendiente: ${(precio - abono).toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6 pt-10 border-t border-slate-100">
-                        <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 transition-all">
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3">Unidades</p>
-                            <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black text-slate-900 leading-none">{items.length}</p>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">SKU</span>
+                        <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 transition-all">
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">PRODUCTOS</p>
+                            <div className="flex items-end gap-2">
+                                <p className="text-3xl font-black text-slate-900 leading-none">{items.length}</p>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">ÍTEMS</span>
                             </div>
                         </div>
-                        <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 transition-all">
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] mb-3">Capital_IN</p>
-                            <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black text-emerald-600 leading-none">${abono.toFixed(0)}</p>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">PRE</span>
+                        <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 transition-all">
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">ABONO INICIAL</p>
+                            <div className="flex items-end gap-2">
+                                <p className="text-3xl font-black text-emerald-600 leading-none">${abono.toFixed(0)}</p>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">PAGADO</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="mt-10 space-y-5">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">DIAGNÓSTICO_NÚCLEO</h4>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ESTADO DEL PROCESO</h4>
                             <div className="flex gap-1">
-                                {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-500" />)}
+                                {[1,2,3].map(i => <div key={i} className={`w-1.5 h-1.5 rounded-full ${step >= i*2 ? 'bg-brand-blue' : 'bg-slate-200'}`} />)}
                             </div>
                         </div>
-                        <div className="bg-slate-900 rounded-[2.5rem] p-8 font-mono text-[10px] text-emerald-400/80 space-y-3 border border-slate-800 h-48 overflow-y-auto custom-scrollbar shadow-inner">
-                            <p className="text-emerald-400">[SYSTEM] KERNEL_INIT: OK</p>
-                            <p className="opacity-50">[THREAD] LOADING_MISSION_PARAMS...</p>
-                            <p className="text-brand-blue/80">[EVENT] SECTOR: {missionCategory || 'STANDBY'}</p>
-                            <p className="text-emerald-400/80">[EVENT] PHASE: 0{step} OF 0{getSteps().length}</p>
-                            <p className="opacity-40">[DATA] SYNCING_WITH_NODE_ALPHA...</p>
-                            <p className="animate-pulse text-emerald-400/100 mt-4">_LISTO_PARA_DESPLIEGUE...</p>
+                        <div className="bg-slate-50 rounded-[2rem] p-6 text-[11px] font-bold text-slate-500 space-y-3 border border-slate-100">
+                            <div className="flex items-center gap-3">
+                                <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                                <span>Orden Iniciada</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {missionCategory ? <CheckCircleIcon className="w-4 h-4 text-emerald-500" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded-full" />}
+                                <span>Categoría Seleccionada</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {items.length > 0 ? <CheckCircleIcon className="w-4 h-4 text-emerald-500" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded-full" />}
+                                <span>Productos Agregados</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {step >= 5 ? <CheckCircleIcon className="w-4 h-4 text-emerald-500" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded-full" />}
+                                <span>Confirmación Final</span>
+                            </div>
                         </div>
                     </div>
 
                     <button 
                         onClick={() => setIsSidebarMinimized(true)} 
-                        className="w-full mt-8 py-6 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] transition-all hover:text-brand-blue active:scale-90"
+                        className="w-full mt-6 py-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest transition-all hover:text-brand-blue"
                     >
-                        MINIMIZAR_HUD
+                        OCULTAR RESUMEN
                     </button>
                 </div>
             </div>
@@ -284,8 +294,8 @@ const NuevoPedidoPage: React.FC = () => {
                                                     {isActive && <motion.div animate={{ x: [-60, 60] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute inset-0 bg-white/30 w-1/3 -skew-x-12" />}
                                                 </div>
                                                 <div className="hidden xl:flex flex-col">
-                                                    <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${isActive ? 'text-brand-blue' : 'text-slate-400'}`}>PHASE_0{s.id}</span>
-                                                    <span className={`text-[11px] font-black uppercase tracking-tighter ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>{s.label}</span>
+                                                    <span className={`text-[8px] font-black tracking-widest uppercase ${isActive ? 'text-brand-blue' : 'text-slate-400'}`}>PASO 0{s.id}</span>
+                                                    <span className={`text-[11px] font-bold uppercase tracking-tight ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>{s.label}</span>
                                                 </div>
                                             </div>
                                             {idx < getSteps().length - 1 && <div className={`h-[2px] flex-1 min-w-[10px] max-w-[40px] rounded-full transition-all duration-1000 ${isPast ? 'bg-brand-blue/30' : 'bg-slate-100'}`} />}
@@ -305,18 +315,18 @@ const NuevoPedidoPage: React.FC = () => {
                                 <motion.div key="s1" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white p-12 md:p-32 rounded-[5rem] border border-slate-200 shadow-luxury text-center relative overflow-hidden">
                                     <div className="absolute inset-0 bg-brand-blue/5 opacity-5 pointer-events-none" />
                                     <div className="space-y-8 mb-24 relative z-10">
-                                        <div className="flex items-center justify-center gap-8">
-                                            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent to-brand-blue" />
-                                            <p className="text-[12px] font-black text-brand-blue uppercase tracking-[1.2em]">MODALIDAD_DE_OPERACIÓN</p>
-                                            <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-brand-blue" />
+                                        <div className="flex items-center justify-center gap-6">
+                                            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-brand-blue/30" />
+                                            <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest">NUEVO PEDIDO</p>
+                                            <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-brand-blue/30" />
                                         </div>
-                                        <h2 className="text-6xl md:text-9xl font-black text-slate-900 uppercase tracking-tighter leading-none">SECTOR_DE <span className="text-brand-blue">MISIÓN</span></h2>
-                                        <p className="text-slate-400 font-bold uppercase tracking-[0.5em]">Seleccione el vector de despliegue industrial</p>
+                                        <h2 className="text-5xl md:text-7xl font-black text-slate-900 uppercase tracking-tight leading-none">TIPO DE <span className="text-brand-blue">ORDEN</span></h2>
+                                        <p className="text-slate-500 font-medium text-sm uppercase tracking-widest">Seleccione el flujo de trabajo correspondiente</p>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-7xl mx-auto relative z-10">
                                         {[
-                                            { id: 'SRI', label: 'Sector SRI', desc: 'Manufactura fiscal con validación gubernamental', icon: ShieldCheckIcon, color: 'bg-blue-600' },
-                                            { id: 'COMERCIAL', label: 'Artes Craft', desc: 'Branding comercial y diseño gráfico', icon: BookOpenIcon, color: 'bg-indigo-600' }
+                                            { id: 'SRI', label: 'Facturación SRI', desc: 'Documentos fiscales autorizados por el SRI', icon: ShieldCheckIcon, color: 'bg-blue-600' },
+                                            { id: 'COMERCIAL', label: 'Trabajos Comerciales', desc: 'Diseño, gigantografías, sellos y afines', icon: BookOpenIcon, color: 'bg-indigo-600' }
                                         ].map((cat) => (
                                             <div 
                                                 key={cat.id}
@@ -329,11 +339,11 @@ const NuevoPedidoPage: React.FC = () => {
                                                         <cat.icon className="w-12 h-12" />
                                                     </div>
                                                     <div className="space-y-3">
-                                                        <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{cat.label}</h3>
-                                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">{cat.desc}</p>
+                                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">{cat.label}</h3>
+                                                        <p className="text-slate-500 font-medium text-sm">{cat.desc}</p>
                                                     </div>
-                                                    <div className="flex items-center gap-4 text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all translate-x-[-20px] group-hover:translate-x-0">
-                                                        INICIALIZAR_SISTEMA <ArrowRightIcon className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 text-[10px] font-bold text-brand-blue uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0">
+                                                        INICIAR PROCESO <ArrowRightIcon className="w-4 h-4" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -344,9 +354,9 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {step === 2 && missionCategory === 'SRI' && (
                                 <motion.div key="s2sri" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-12 rounded-[3rem] border border-slate-200 shadow-xl space-y-12">
-                                    <div className="space-y-4">
-                                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em]">IDENTIDAD_DE_ENLACE</p>
-                                        <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">Perfil del Contribuyente</h2>
+                                    <div className="space-y-3">
+                                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest">INFORMACIÓN DEL CLIENTE</p>
+                                        <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tight leading-none">Perfil del Contribuyente</h2>
                                     </div>
                                     <ClientSelector onSelect={c => { setCliente(c); if(c){setSriEstablecimiento(c.establecimientoPredeterminado || '001'); setSriPuntoEmision(c.puntoEmisionPredeterminado || '001'); setSriActividad(c.actividades || ''); setStep(3);} }} onCancel={() => setStep(1)} hideQuickButtons />
                                 </motion.div>
@@ -400,8 +410,8 @@ const NuevoPedidoPage: React.FC = () => {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <button onClick={() => setIsAddingItem(true)} className="w-full py-10 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-slate-400 font-black uppercase tracking-[0.5em] hover:text-brand-blue hover:border-brand-blue transition-all flex items-center justify-center gap-6 group">
-                                                <SparklesIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" /> AGREGAR_NUEVO_ACTIVO_FISCAL
+                                            <button onClick={() => setIsAddingItem(true)} className="w-full py-8 border-2 border-dashed border-slate-200 rounded-[2rem] text-slate-500 font-bold uppercase tracking-widest text-sm hover:text-brand-blue hover:border-brand-blue hover:bg-brand-blue/5 transition-all flex items-center justify-center gap-4 group">
+                                                <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" /> AGREGAR SERVICIO / PRODUCTO
                                             </button>
                                         </div>
                                     )}
@@ -418,24 +428,24 @@ const NuevoPedidoPage: React.FC = () => {
                                 <motion.div key="s6" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white p-16 md:p-32 rounded-[5rem] border border-slate-200 shadow-2xl text-center space-y-16 relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-500/20" />
                                     <div className="space-y-10 relative z-10">
-                                        <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20 mb-8"><CheckCircleIcon className="w-16 h-16 text-white" /></div>
-                                        <div className="space-y-4">
-                                            <p className="text-emerald-600 font-black uppercase tracking-[1em] text-[12px]">MISIÓN_COMPLETADA</p>
-                                            <h2 className="text-7xl md:text-9xl font-black text-slate-900 uppercase tracking-tighter leading-none">DESPLIEGUE <span className="text-emerald-600">EXITOSO</span></h2>
-                                            <p className="text-slate-400 font-mono tracking-widest text-lg uppercase">PROTOCOLO_ID: {createdTrabajoId?.substring(0, 8)}</p>
+                                        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20 mb-6"><CheckCircleIcon className="w-12 h-12 text-white" /></div>
+                                        <div className="space-y-3">
+                                            <p className="text-emerald-600 font-bold uppercase tracking-widest text-[11px]">PROCESO FINALIZADO</p>
+                                            <h2 className="text-5xl md:text-7xl font-black text-slate-900 uppercase tracking-tight leading-none">ORDEN <span className="text-emerald-600">CONFIRMADA</span></h2>
+                                            <p className="text-slate-500 font-medium text-sm uppercase tracking-widest mt-2">ID DE PEDIDO: {createdTrabajoId?.substring(0, 8)}</p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-10 border-t border-slate-100">
                                         {missionCategory === 'SRI' ? (
                                             <>
-                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a5`, '_blank')} className="py-8 bg-brand-blue text-white rounded-[2.5rem] font-black uppercase tracking-[0.4em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-6"><PrinterIcon className="w-6 h-6" /> SRI (A5_DUO)</button>
-                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a4`, '_blank')} className="py-8 bg-white text-brand-blue border-2 border-brand-blue/30 rounded-[2.5rem] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-6"><PrinterIcon className="w-6 h-6" /> SRI (A4_FULL)</button>
+                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a5`, '_blank')} className="py-6 bg-brand-blue hover:bg-brand-blue-dark transition-colors text-white rounded-[2rem] font-bold uppercase tracking-widest shadow-lg shadow-brand-blue/20 flex items-center justify-center gap-4 text-sm"><PrinterIcon className="w-5 h-5" /> IMPRIMIR A5 (DOBLE)</button>
+                                                <button onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a4`, '_blank')} className="py-6 bg-white hover:bg-slate-50 transition-colors text-brand-blue border border-brand-blue/30 rounded-[2rem] font-bold uppercase tracking-widest flex items-center justify-center gap-4 text-sm"><PrinterIcon className="w-5 h-5" /> IMPRIMIR A4 (FULL)</button>
                                             </>
-                                        ) : <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="col-span-2 py-8 bg-slate-900 text-white rounded-[2.5rem] font-black uppercase tracking-[0.4em] shadow-xl flex items-center justify-center gap-6"><PrinterIcon className="w-6 h-6" /> IMPRIMIR_RECIBO_TÉRMICO</button>}
+                                        ) : <button onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')} className="col-span-2 py-6 bg-slate-900 hover:bg-black transition-colors text-white rounded-[2rem] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-4 text-sm"><PrinterIcon className="w-5 h-5" /> IMPRIMIR RECIBO TÉRMICO</button>}
                                     </div>
                                     <div className="flex gap-6 justify-center pt-10">
-                                        <button onClick={() => navigate('/dashboard')} className="px-12 py-6 bg-slate-50 hover:bg-slate-100 text-slate-400 font-black uppercase tracking-widest rounded-3xl border border-slate-200 transition-all">CENTRO_DE_MANDO</button>
-                                        <button onClick={() => window.location.reload()} className="px-12 py-6 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-3xl shadow-lg shadow-emerald-600/20 hover:scale-105 transition-all">NUEVA_MISIÓN</button>
+                                        <button onClick={() => navigate('/dashboard')} className="px-10 py-5 bg-white hover:bg-slate-50 text-slate-500 font-bold uppercase tracking-widest text-sm rounded-2xl border border-slate-200 transition-all">VOLVER AL INICIO</button>
+                                        <button onClick={() => window.location.reload()} className="px-10 py-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-widest text-sm rounded-2xl shadow-lg shadow-emerald-600/20 transition-all">NUEVO PEDIDO</button>
                                     </div>
                                 </motion.div>
                             )}
@@ -444,10 +454,10 @@ const NuevoPedidoPage: React.FC = () => {
                         {/* NAVEGACIÓN GLOBAL */}
                         {step < 5 && step > 1 && (
                             <div className="flex justify-between items-center px-10 pt-10 border-t border-slate-100">
-                                <button onClick={() => setStep(p => p - 1)} className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] hover:text-brand-blue transition-all"><ChevronLeftIcon className="w-5 h-5" /> REGRESAR_FASE</button>
+                                <button onClick={() => setStep(p => p - 1)} className="flex items-center gap-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:text-brand-blue transition-all"><ChevronLeftIcon className="w-4 h-4" /> VOLVER</button>
                                 {canAdvance() && (
-                                    <button onClick={() => setStep(p => p + 1)} className="px-16 py-7 bg-brand-blue text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-[11px] hover:bg-slate-900 transition-all shadow-xl shadow-brand-blue/20 flex items-center gap-6 group">
-                                        CONTINUAR_MISIÓN <ChevronRightIcon className="w-6 h-6 group-hover:translate-x-3 transition-transform" />
+                                    <button onClick={() => setStep(p => p + 1)} className="px-12 py-5 bg-brand-blue text-white rounded-[1.5rem] font-bold uppercase tracking-widest text-[12px] hover:bg-brand-blue-dark transition-all shadow-lg shadow-brand-blue/20 flex items-center gap-4 group">
+                                        SIGUIENTE PASO <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
                                 )}
                             </div>
