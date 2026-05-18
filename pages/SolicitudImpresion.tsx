@@ -18,9 +18,9 @@ const DigitalSeal = () => (
         <div className="w-[600px] h-[600px] border-[12px] border-black rounded-full flex items-center justify-center rotate-12 relative">
             <div className="absolute inset-4 border-2 border-black rounded-full border-dashed animate-reverse-spin" style={{ animationDuration: '60s' }} />
             <div className="text-[50px] font-black text-center leading-tight uppercase tracking-tighter">
-                CORDOVA ELITE PROTOCOL<br/>
-                <span className="text-[70px]">SRI_AUTH_2026</span><br/>
-                SECURE_INDUSTRIAL_INTAKE
+                PROTOCOLO ELITE CÓRDOVA<br/>
+                <span className="text-[70px]">AUTORIZACIÓN_SRI</span><br/>
+                INGRESO_INDUSTRIAL_SEGURO
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@ const SecurityWatermark = () => (
         <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[120%] flex flex-wrap gap-20 rotate-[-25deg]">
             {Array.from({ length: 40 }).map((_, i) => (
                 <div key={i} className="text-[10px] font-mono font-black whitespace-nowrap tracking-[0.5em]">
-                    CORDOVA_ELITE_SYSTEM_INTEGRITY_VERIFIED_AUTHENTIC_DOCUMENT_NO_COPIES
+                    SISTEMA_ELITE_CORDOVA_DOCUMENTO_AUTENTICO_VERIFICADO_SIN_COPIAS
                 </div>
             ))}
         </div>
@@ -41,12 +41,12 @@ const SecurityWatermark = () => (
 const TacticalStatusBar = ({ id }: { id: string }) => (
     <div className="w-full flex justify-between items-center px-4 py-1.5 bg-slate-100 border-t border-slate-300 font-mono text-[7px] text-slate-500 font-black uppercase tracking-[0.2em] relative z-20">
         <div className="flex gap-4">
-            <span className="flex items-center gap-1"><CpuIcon className="w-2.5 h-2.5" /> SYSTEM_HASH: {id.substring(0, 12)}</span>
-            <span className="flex items-center gap-1"><ActivityIcon className="w-2.5 h-2.5" /> LATENCY: 12ms</span>
+            <span className="flex items-center gap-1"><CpuIcon className="w-2.5 h-2.5" /> FIRMA_SISTEMA: {id.substring(0, 12)}</span>
+            <span className="flex items-center gap-1"><ActivityIcon className="w-2.5 h-2.5" /> LATENCIA: 12ms</span>
         </div>
         <div className="flex gap-4">
-            <span className="flex items-center gap-1"><LockIcon className="w-2.5 h-2.5" /> ENCRYPTION: AES_256_GCM</span>
-            <span>BUILD_v2.0.26_STABLE</span>
+            <span className="flex items-center gap-1"><LockIcon className="w-2.5 h-2.5" /> CIFRADO: AES_256_GCM</span>
+            <span>VERSIÓN_v2.0.26_ESTABLE</span>
         </div>
     </div>
 );
@@ -174,7 +174,7 @@ const SolicitudImpresionPage: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b]">
             <div className="flex flex-col items-center gap-4">
                 <Loader2Icon className="w-12 h-12 text-amber-500 animate-spin" />
-                <span className="text-amber-500 font-mono text-xs uppercase tracking-[0.3em] animate-pulse">Initializing Elite Protocol...</span>
+                <span className="text-amber-500 font-mono text-xs uppercase tracking-[0.3em] animate-pulse">Inicializando Protocolo Elite...</span>
             </div>
         </div>
     );
@@ -292,11 +292,11 @@ const SolicitudImpresionPage: React.FC = () => {
                     <div className={`px-8 ${isA5?'py-2':'py-4'} flex justify-between items-center border-t ${isClient ? 'border-slate-200' : 'border-slate-200'}`}>
                         <div className={`flex gap-8 ${isA5?'text-[10px]':'text-[12px]'} font-bold`}>
                             <div className="flex flex-col">
-                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Matriz_Location</span>
+                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Matriz_Ubicación</span>
                                 <span className="flex items-center gap-2"><MapPinIcon className="w-3.5 h-3.5 text-brand-blue"/> {config.emisorDireccionMatriz}</span>
                             </div>
                             <div className="flex flex-col border-l border-slate-200 pl-8">
-                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Comm_Link</span>
+                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Enlace_Comercial</span>
                                 <span className="flex items-center gap-2"><PrinterIcon className="w-3.5 h-3.5 text-brand-blue"/> {config.emisorTelefono}</span>
                             </div>
                         </div>
@@ -318,19 +318,19 @@ const SolicitudImpresionPage: React.FC = () => {
                         <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
                             <div className="flex flex-col gap-4">
                                 <div className="flex flex-col">
-                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] mb-1">Subject_Identification</span>
+                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] mb-1">Identificación_Sujeto</span>
                                     <span className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight">{cliente.nombre}</span>
                                     <div className="flex justify-between items-end mt-1">
-                                        <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1">{cliente.nombreComercial || 'No_Brand_Name'}</p>
+                                        <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1">{cliente.nombreComercial || 'Sin_Nombre_Comercial'}</p>
                                         <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter max-w-[200px] truncate">{getEstablecimientoAddress()}</span>
                                     </div>
                                 </div>
                                 <div className="h-px bg-slate-200 w-full" />
                                 <div className="flex gap-10">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Regimen_Mode</span>
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Tipo_de_Régimen</span>
                                         <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm ${isRimpe ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-800'}`}>
-                                            {cliente.regimen || 'GENERAL_STANDARD'}
+                                            {cliente.regimen || 'GENERAL_ESTÁNDAR'}
                                         </span>
                                     </div>
                                 </div>
@@ -338,7 +338,7 @@ const SolicitudImpresionPage: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] px-4">RUC_National_Registry</span>
+                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] px-4">RUC_Registro_Nacional</span>
                             <div className="flex gap-1.5 p-1.5 bg-slate-100 border-2 border-slate-800 rounded-2xl shadow-xl">
                                 {RucArray.map((digit, i) => (
                                     <div key={i} className="flex-grow h-12 bg-white flex items-center justify-center font-mono font-black text-xl text-slate-900 border border-slate-200 rounded-xl shadow-inner">
@@ -356,10 +356,10 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <span className="text-[7px] font-black text-brand-blue uppercase tracking-widest mb-0.5">SALDO PENDIENTE</span>
                                     {hasSriKey || trabajo.estadoClave === 'LISTA' ? (
                                         <span className="text-xl font-black text-slate-900 flex items-center gap-3">
-                                            <ShieldCheckIcon className="w-7 h-7 text-emerald-600" /> SECURE_OK
+                                            <ShieldCheckIcon className="w-7 h-7 text-emerald-600" /> SEGURO_OK
                                         </span>
                                     ) : (
-                                        <span className="text-xl font-black text-slate-400">UNVERIFIED_PENDING</span>
+                                        <span className="text-xl font-black text-slate-400">NO_VERIFICADO_PENDIENTE</span>
                                     )}
                                 </div>
                                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-200">
@@ -373,7 +373,7 @@ const SolicitudImpresionPage: React.FC = () => {
                                     <span className="font-mono text-sm font-black tracking-widest">{hora}</span>
                                 </div>
                                 <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
-                                    <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Cycle_Date</span>
+                                    <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Fecha_de_Ciclo</span>
                                     <span className="font-mono text-sm font-black tracking-widest">{dia}.{mes}.{anio}</span>
                                 </div>
                             </div>
@@ -384,7 +384,7 @@ const SolicitudImpresionPage: React.FC = () => {
                 <div className="flex-grow border-2 border-slate-900 rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] relative z-10 bg-white mb-6">
                     <div className={`${tableHeaderBg} text-white flex justify-between items-center px-10 py-3.5 font-black uppercase tracking-[0.4em] relative overflow-hidden`}>
                         <span className="text-[10px] relative z-10 flex items-center gap-3">
-                            <ActivityIcon className="w-4 h-4 text-brand-blue" /> Industrial_Production_Matrix_v2
+                            <ActivityIcon className="w-4 h-4 text-brand-blue" /> Matriz_de_Producción_Industrial_v2
                         </span>
                     </div>
                     
@@ -392,12 +392,12 @@ const SolicitudImpresionPage: React.FC = () => {
                         <table className={`w-full text-center ${tableTextSize} font-bold text-slate-800 border-collapse h-full`}>
                             <thead>
                                 <tr className="border-b-2 border-slate-900 bg-slate-50">
-                                    <th className="py-2.5 border-r border-slate-200 w-[12%] uppercase tracking-widest text-[8px] text-slate-400">Spec_Size</th>
-                                    <th className="py-2.5 px-6 border-r border-slate-200 w-[40%] text-left uppercase tracking-widest text-[8px] text-slate-400">Category_Descriptor</th>
+                                    <th className="py-2.5 border-r border-slate-200 w-[12%] uppercase tracking-widest text-[8px] text-slate-400">Tamaño_Esp</th>
+                                    <th className="py-2.5 px-6 border-r border-slate-200 w-[40%] text-left uppercase tracking-widest text-[8px] text-slate-400">Categoría_Descriptor</th>
                                     <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Estab</th>
-                                    <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Pnt_Em</th>
-                                    <th className="py-2.5 border-r border-slate-200 w-[12%] text-[8px] text-slate-400 uppercase tracking-widest">Quantity</th>
-                                    <th className="py-2.5 w-[16%] text-[8px] text-slate-400 uppercase tracking-widest">Unit_Value</th>
+                                    <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Punto_Em</th>
+                                    <th className="py-2.5 border-r border-slate-200 w-[12%] text-[8px] text-slate-400 uppercase tracking-widest">Cantidad</th>
+                                    <th className="py-2.5 w-[16%] text-[8px] text-slate-400 uppercase tracking-widest">Valor_Unit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -426,7 +426,7 @@ const SolicitudImpresionPage: React.FC = () => {
                                 <LockIcon className="w-7 h-7" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] mb-1">Safety_Notice_Protocol</span>
+                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] mb-1">Protocolo_Aviso_Legal</span>
                                 <p className="text-[9px] font-bold uppercase tracking-wider leading-relaxed opacity-80">
                                     Este documento constituye una orden de producción vinculante. La custodia de los comprobantes autorizados es responsabilidad exclusiva del sujeto pasivo según normativa vigente del SRI.
                                 </p>
@@ -436,11 +436,11 @@ const SolicitudImpresionPage: React.FC = () => {
                         <div className="flex gap-6">
                             <div className="flex-grow bg-slate-50 border-2 border-slate-200 rounded-[2rem] p-8 h-36 flex flex-col justify-end items-center relative group">
                                 <div className="w-[80%] h-px bg-slate-400 mb-3" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Auth_Contributor_Signature</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Firma_Contribuyente_Autorizado</span>
                             </div>
                             <div className="w-32 bg-slate-100 rounded-[2rem] border-2 border-slate-200 flex flex-col items-center justify-center p-4">
                                 <div className="w-14 h-14 bg-white rounded-xl border border-slate-300 flex flex-center items-center justify-center mb-2 shadow-inner">
-                                    <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest text-center">Digit_Stamp</span>
+                                    <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest text-center">Sello_Físico</span>
                                 </div>
                                 <p className="text-[6px] font-black text-slate-400 mt-1 uppercase tracking-widest">{isOperator ? 'COPIA OPERADOR' : 'ORIGINAL CLIENTE'}</p>
                             </div>
@@ -451,11 +451,11 @@ const SolicitudImpresionPage: React.FC = () => {
                             
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Gross_Value</span>
+                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Subtotal</span>
                                     <span className="font-mono text-lg font-bold">{formatCurrency(trabajo.total)}</span>
                                 </div>
                                 <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Initial_Credit</span>
+                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Crédito_Abono</span>
                                     <span className="font-mono text-lg font-bold text-emerald-400">-{formatCurrency(trabajo.abono)}</span>
                                 </div>
                             </div>
@@ -463,13 +463,13 @@ const SolicitudImpresionPage: React.FC = () => {
                             <div className="pt-6 flex flex-col items-end relative z-10">
                                 <div className="flex items-center gap-3 mb-1">
                                     <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                                    <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.5em]">Net_Balance</span>
+                                    <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.5em]">Saldo_Pendiente</span>
                                 </div>
                                 <span className="text-5xl font-black tracking-tighter leading-none shadow-sm">{formatCurrency(trabajo.saldo)}</span>
                             </div>
                         </div>
                         <div className="bg-slate-100 rounded-2xl p-2.5 text-center border border-slate-200">
-                            <span className="text-[8px] font-mono text-slate-500 font-black uppercase tracking-[0.5em]">SRI_VERIFIED_PROTOCOL_v2.0.26</span>
+                            <span className="text-[8px] font-mono text-slate-500 font-black uppercase tracking-[0.5em]">PROTOCOLO_VERIFICADO_SRI_v2.0.26</span>
                         </div>
                     </div>
                 <TacticalStatusBar id={trabajo.id} />
@@ -531,9 +531,9 @@ const SolicitudImpresionPage: React.FC = () => {
                 
                 <div className="flex gap-5">
                     <div className="hidden md:flex flex-col items-end justify-center mr-6 border-r border-white/10 pr-10">
-                        <span className="text-[8px] font-black text-amber-500/50 uppercase tracking-[0.5em] mb-1">Target_Format</span>
+                        <span className="text-[8px] font-black text-amber-500/50 uppercase tracking-[0.5em] mb-1">Formato_Salida</span>
                         <span className="text-[12px] font-black text-white uppercase tracking-widest">
-                            {format === 'a5' ? 'Dual Industrial (A5)' : 'Master Protocol (A4)'}
+                            {format === 'a5' ? 'Doble Industrial (A5)' : 'Protocolo Maestro (A4)'}
                         </span>
                     </div>
                     

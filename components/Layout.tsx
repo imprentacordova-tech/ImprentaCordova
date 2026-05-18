@@ -30,54 +30,54 @@ const navGroups = [
     {
         title: 'ESTRATEGIA',
         items: [
-            { path: '/dashboard', label: 'Command Center', icon: DashboardIcon },
-            { path: '/trabajos',  label: 'Misiones Activas', icon: ActivityIcon },
+            { path: '/dashboard', label: 'Panel Principal', icon: DashboardIcon },
+            { path: '/trabajos',  label: 'Órdenes Activas', icon: ActivityIcon },
         ],
     },
     {
         title: 'PRODUCCIÓN',
         items: [
             { path: '/nuevo', label: 'Nueva Orden', icon: SparklesIcon }, // Fixed path
-            { path: '/retiros',      label: 'Despacho_Vitrina', icon: RocketLaunchIcon },
-            { path: '/inventario',   label: 'Bóveda de Insumos', icon: CircleStackIcon },
+            { path: '/retiros',      label: 'Despacho y Entregas', icon: RocketLaunchIcon },
+            { path: '/inventario',   label: 'Bodega de Insumos', icon: CircleStackIcon },
         ],
     },
     {
         title: 'FINANZAS',
         items: [
-            { path: '/cuentas', label: 'Libro Contable', icon: WalletIcon },
-            { path: '/finanzas',    label: 'Control de Flujo', icon: CalculatorIcon }, // Fixed path
+            { path: '/cuentas', label: 'Cuentas por Cobrar', icon: WalletIcon },
+            { path: '/finanzas',    label: 'Flujo de Caja', icon: CalculatorIcon }, // Fixed path
         ],
     },
     {
         title: 'ENTIDADES',
         items: [
-            { path: '/clientes',    label: 'Bóveda Clientes', icon: UsersIcon },
-            { path: '/proveedores', label: 'Aliados Supply', icon: GlobeIcon },
+            { path: '/clientes',    label: 'Directorio de Clientes', icon: UsersIcon },
+            { path: '/proveedores', label: 'Proveedores', icon: GlobeIcon },
         ],
     },
     {
         title: 'SISTEMA',
         adminOnly: true,
         items: [
-            { path: '/registro', label: 'Telemetría Log', icon: MonitorIcon }, // Fixed path
-            { path: '/configuracion',      label: 'Core Config', icon: Cog8ToothIcon },
+            { path: '/registro', label: 'Registro de Actividad', icon: MonitorIcon }, // Fixed path
+            { path: '/configuracion',      label: 'Configuración', icon: Cog8ToothIcon },
         ],
     },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
-    '/dashboard':          'COMMAND_CENTER',
-    '/trabajos':           'MISSION_TRACKER',
-    '/nuevo':              'MISSION_INITIALIZATION',
-    '/retiros':            'DISPATCH_PROTOCOL',
-    '/inventario':         'ASSET_VAULT',
-    '/cuentas':            'FINANCIAL_LEDGER',
-    '/clientes':           'IDENTITY_VAULT',
-    '/proveedores':        'SUPPLY_CHAIN_MONITOR',
-    '/registro':           'FORENSIC_TELEMETRY',
-    '/configuracion':      'SYSTEM_CORE_V5',
-    '/finanzas':           'CASH_FLUX_CONTROL',
+    '/dashboard':          'PANEL PRINCIPAL',
+    '/trabajos':           'ÓRDENES DE PRODUCCIÓN',
+    '/nuevo':              'RECEPCIÓN DE PEDIDOS',
+    '/retiros':            'ÁREA DE DESPACHO',
+    '/inventario':         'BODEGA CENTRAL',
+    '/cuentas':            'CONTROL DE CUENTAS',
+    '/clientes':           'DIRECTORIO DE CLIENTES',
+    '/proveedores':        'GESTIÓN DE PROVEEDORES',
+    '/registro':           'AUDITORÍA DEL SISTEMA',
+    '/configuracion':      'CONFIGURACIÓN GENERAL',
+    '/finanzas':           'FLUJO DE CAJA',
 };
 
 const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
@@ -89,7 +89,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
 
     const pageTitle = useMemo(() => {
         const path = location.pathname;
-        return PAGE_TITLES[path] || 'OPERATIONAL_NODE';
+        return PAGE_TITLES[path] || 'SISTEMA OPERATIVO';
     }, [location.pathname]);
 
     const isAdmin = user.rol === 'Admin' || (user.rol as string) === 'root';
@@ -112,7 +112,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                         </div>
                         <div className="flex flex-col leading-none">
                             <span className="text-xl font-black tracking-tighter text-slate-900">CÓRDOVA<span className="text-brand-blue opacity-50">.</span></span>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.6em] mt-1">Industrial Hub</span>
+                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.6em] mt-1">Centro de Producción</span>
                         </div>
                     </Link>
 
@@ -169,7 +169,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                             onClick={onLogout}
                             className="w-full flex items-center justify-center gap-4 py-5 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl border border-red-100 transition-all text-[10px] font-black uppercase tracking-widest"
                         >
-                            <LogoutIcon className="w-4 h-4" /> TERMINAR_SESIÓN
+                            <LogoutIcon className="w-4 h-4" /> CERRAR SESIÓN
                         </button>
                     </div>
                 </div>
@@ -189,7 +189,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                         <div className="space-y-2">
                             <div className="flex items-center gap-4">
                                 <div className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse shadow-blue-glow" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.6em]">PRECISION_NODE_ACTIVE</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.6em]">SISTEMA EN LÍNEA</span>
                             </div>
                             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">
                                 {pageTitle}
@@ -199,7 +199,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
 
                     <div className="flex items-center gap-4 md:gap-8">
                         <div className="hidden md:flex flex-col items-end gap-1 opacity-60">
-                             <span className="text-[8px] font-mono uppercase tracking-[0.4em] text-slate-400">SYNC_STATUS: 100%</span>
+                             <span className="text-[8px] font-mono uppercase tracking-[0.4em] text-slate-400">SINCRONIZACIÓN NUBE: OK</span>
                              <div className="w-32 h-[2px] bg-slate-100 rounded-full overflow-hidden">
                                 <motion.div 
                                     animate={{ x: ["-100%", "100%"] }}
