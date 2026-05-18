@@ -17,6 +17,7 @@ import { useData } from '../contexts/DataContext';
 import { SEO } from './SEO';
 import { MobileFloatingNav } from './MobileFloatingNav';
 import { SearchOmni } from './SearchOmni';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -84,6 +85,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { syncing } = useData();
+    useKeyboardShortcuts();
 
     const pageTitle = useMemo(() => {
         const path = location.pathname;
