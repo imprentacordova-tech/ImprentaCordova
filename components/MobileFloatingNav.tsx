@@ -1,102 +1,165 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { 
-    DashboardIcon, 
-    AddIcon, 
-    KdsIcon, 
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import {
+    DashboardIcon,
+    SparklesIcon,
+    MonitorIcon,
     ClientsIcon,
-    InventoryIcon,
+    WalletIcon,
+    ActivityIcon,
+    CloseIcon,
+    ArrowRightIcon,
+    RocketLaunchIcon,
+    CircleStackIcon,
+    CalculatorIcon,
 } from './Icons';
-import { motion } from 'framer-motion';
-import { MobileActionHub } from './MobileActionHub';
-import { CreateClientModal } from './orders/ClientSelector';
+import { motion, AnimatePresence } from 'framer-motion';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface NavItem {
+    path: string;
+    icon: React.ElementType;
+    label: string;
+    primary?: boolean;
+}
+
+// ─── Quick Action Hub ─────────────────────────────────────────────────────────
+const ActionHub: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const navigate = useNavigate();
+
+    const actions = [
+        { label: 'Nueva Orden',         icon: SparklesIcon,     path: '/nuevo',        accent: 'bg-brand-blue text-white' },
+        { label: 'Despacho',           icon: RocketLaunchIcon,  path: '/retiros',      accent: 'bg-slate-900 text-white' },
+        { label: 'Taller KDS',         icon: MonitorIcon,       path: '/kds',          accent: 'bg-purple-600 text-white' },
+        { label: 'Inventario',         icon: CircleStackIcon,   path: '/inventario',   accent: 'bg-emerald-600 text-white' },
+        { label: 'Calculadora',        icon: CalculatorIcon,    path: '/calculadora',  accent: 'bg-amber-500 text-white' },
+        { label: 'Cuentas',            icon: WalletIcon,        path: '/cuentas',      accent: 'bg-rose-500 text-white' },
+    ];
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[200] bg-slate-900/50 backdrop-blur-sm flex items-end"
+                onClick={onClose}
+            >
+                <motion.div
+                    initial={{ y: 80, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 80, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                    className="w-full bg-white rounded-t-3xl p-6 pb-safe"
+                    onClick={e => e.stopPropagation()}
+                >
+                    {/* Handle bar */}
+                    <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-6" />
+
+                    <div className="flex items-center justify-between mb-5">
+                        <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-wider">Acciones rápidas</h3>
+                        <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                            <CloseIcon className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                        {actions.map((action, idx) => (
+                            <motion.button
+                                key={action.path}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: idx * 0.04 }}
+                                onClick={() => { navigate(action.path); onClose(); }}
+                                className="flex flex-col items-center gap-2.5 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 active:scale-95 transition-all"
+                            >
+                                <div className={`w-10 h-10 rounded-xl ${action.accent} flex items-center justify-center`}>
+                                    <action.icon className="w-5 h-5" />
+                                </div>
+                                <span className="text-[10px] font-black text-slate-700 text-center leading-tight">
+                                    {action.label}
+                                </span>
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-slate-100">
+                        <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest justify-center">
+                            <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                            Sistema Imprenta Córdova — En línea
+                        </div>
+                    </div>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 export const MobileFloatingNav: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isHubOpen, setIsHubOpen] = useState(false);
-    const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
 
-    const navItems = [
-        { path: '/dashboard', icon: DashboardIcon, label: 'Inicio' },
-        { path: '/kds', icon: KdsIcon, label: 'Taller' },
-        { path: '/nuevo', icon: AddIcon, label: 'Hub', primary: true },
-        { path: '/vitrina', icon: InventoryIcon, label: 'Vitrina' },
-        { path: '/clientes', icon: ClientsIcon, label: 'Clientes' },
+    const navItems: NavItem[] = [
+        { path: '/dashboard',  icon: DashboardIcon, label: 'Inicio' },
+        { path: '/trabajos',   icon: ActivityIcon,  label: 'Órdenes' },
+        { path: '__hub__',     icon: SparklesIcon,  label: 'Acciones', primary: true },
+        { path: '/cuentas',    icon: WalletIcon,    label: 'Cobrar' },
+        { path: '/clientes',   icon: ClientsIcon,   label: 'Clientes' },
     ];
 
     return (
         <>
-            <div className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden flex justify-center px-6 pb-safe mb-8 pointer-events-none">
-                <motion.div 
+            {/* Floating Nav Bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden flex justify-center px-5 pb-5 pointer-events-none">
+                <motion.div
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-                    className="bg-white/80 backdrop-blur-3xl border border-slate-200 rounded-[2.2rem] p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] flex items-center justify-between w-full max-w-sm relative overflow-hidden pointer-events-auto"
+                    transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.2 }}
+                    className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-[22px] px-2 py-2 shadow-[0_20px_60px_-12px_rgba(0,0,0,0.15)] flex items-center justify-between w-full max-w-[360px] pointer-events-auto"
                 >
-                    {/* Elite Industrial Accents */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-blue/20 animate-scan pointer-events-none" />
-                    <div className="absolute -inset-1 bg-gradient-to-r from-brand-blue/10 via-transparent to-brand-blue/10 rounded-[2.3rem] blur-xl opacity-50 pointer-events-none"></div>
-                    
-                    {navItems.map((item) => {
-                        const isCurrentActive = location.pathname === item.path;
-                        
+                    {navItems.map(item => {
                         if (item.primary) {
                             return (
-                                <div key={item.path} className="relative px-2">
-                                    {/* Action Hub Button Refined */}
-                                    <button 
-                                        onClick={() => setIsHubOpen(true)}
-                                        className={`
-                                            relative -top-6 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 outline-none overflow-hidden
-                                            ${isHubOpen 
-                                                ? 'bg-slate-900 text-white shadow-xl scale-110 rotate-45' 
-                                                : 'bg-brand-blue text-white shadow-blue-glow-strong scale-100'
-                                            }
-                                        `}
+                                <button
+                                    key="hub"
+                                    onClick={() => setIsHubOpen(true)}
+                                    className="relative -mt-7 w-14 h-14 rounded-2xl bg-brand-blue text-white flex items-center justify-center shadow-blue-glow-sm active:scale-95 transition-all"
+                                >
+                                    <motion.div
+                                        animate={isHubOpen ? { rotate: 45 } : { rotate: 0 }}
+                                        transition={{ duration: 0.2 }}
                                     >
-                                        {/* Internal Sheen for Primary Button */}
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full hover:animate-sheen pointer-events-none" />
-                                        
-                                        <motion.div
-                                            whileTap={{ scale: 0.9 }}
-                                            className={`flex items-center justify-center relative ${isHubOpen ? '-rotate-45' : ''}`}
-                                        >
-                                            <item.icon className="w-7 h-7" />
-                                            {!isHubOpen && (
-                                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-                                                </span>
-                                            )}
-                                        </motion.div>
-                                    </button>
-                                </div>
+                                        <item.icon className="w-6 h-6" />
+                                    </motion.div>
+                                    {/* Pulse ring */}
+                                    <span className="absolute -top-0.5 -right-0.5 w-3 h-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-blue opacity-40" />
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-blue" />
+                                    </span>
+                                </button>
                             );
                         }
 
+                        const isActive = location.pathname === item.path;
                         return (
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                className={(props) => `
-                                    flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-500 relative group
-                                    ${props.isActive ? 'text-brand-blue bg-brand-blue/5 border border-brand-blue/10' : 'text-slate-400 hover:text-slate-600'}
-                                `}
+                                className={`flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-300 min-w-[52px] ${
+                                    isActive ? 'text-brand-blue' : 'text-slate-400 hover:text-slate-600'
+                                }`}
                             >
-                                {(props) => (
-                                    <>
-                                        <item.icon className={`w-5 h-5 transition-all duration-500 ${props.isActive ? 'scale-110 drop-shadow-blue-glow-sm' : 'group-hover:scale-110'}`} />
-                                        {props.isActive && (
-                                            <motion.div 
-                                                layoutId="nav-pill-mobile"
-                                                className="absolute bottom-1.5 w-1 h-1 bg-brand-blue rounded-full shadow-blue-glow"
-                                            />
-                                        )}
-                                        {/* Subtle Hover Indicator */}
-                                        {!props.isActive && (
-                                            <div className="absolute bottom-1 w-0 h-[1px] bg-brand-blue/50 group-hover:w-2 transition-all duration-300"></div>
-                                        )}
-                                    </>
+                                <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />
+                                <span className={`text-[8px] font-black uppercase tracking-wider mt-1 transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                                    {item.label}
+                                </span>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="mobile-nav-dot"
+                                        className="absolute bottom-2 w-1 h-1 bg-brand-blue rounded-full"
+                                    />
                                 )}
                             </NavLink>
                         );
@@ -105,20 +168,9 @@ export const MobileFloatingNav: React.FC = () => {
             </div>
 
             {/* Action Hub Sheet */}
-            <MobileActionHub 
-                isOpen={isHubOpen} 
-                onClose={() => setIsHubOpen(false)} 
-                onOpenCreateClient={() => setIsCreateClientOpen(true)}
-            />
-
-            {/* Global Create Client Modal */}
-            <CreateClientModal 
-                isOpen={isCreateClientOpen}
-                onClose={() => setIsCreateClientOpen(false)}
-                onClientCreated={(client) => {
-                    setIsCreateClientOpen(false);
-                }}
-            />
+            <AnimatePresence>
+                {isHubOpen && <ActionHub onClose={() => setIsHubOpen(false)} />}
+            </AnimatePresence>
         </>
     );
 };
