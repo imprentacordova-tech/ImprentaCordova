@@ -1033,11 +1033,10 @@ const CalculadoraPreciosPage: React.FC = () => {
                             key={mode}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="text-6xl lg:text-8xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none"
+                            className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase"
                         >
-                            {mode === 'HUB' ? 'ENGINEERING' : ''} 
-                            <span className="text-brand-blue">
-                                {mode === 'HUB' ? ' HUB' : mode === 'OFFSET' ? 'INDUSTRIAL OFFSET' : mode === 'DIGITAL' ? 'DIGITAL BOUTIQUE' : 'CALIBRACIÓN MAESTRO'}
+                            Calculadora de Precios <span className="text-brand-blue font-bold">
+                                {mode === 'HUB' ? '• Cotizador' : mode === 'OFFSET' ? '• Offset' : mode === 'DIGITAL' ? '• Digital' : '• Calibración'}
                             </span>
                         </motion.h1>
                     </div>

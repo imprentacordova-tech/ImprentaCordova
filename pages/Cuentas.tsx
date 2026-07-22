@@ -224,16 +224,13 @@ const CuentasPage: React.FC = () => {
         >
             {/* --- LEDGER HEADER --- */}
             <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-slate-200 pb-16">
-                <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                        </div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Control de Activos</span>
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
+                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Control de Cartera</span>
                     </div>
-                    <h1 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
-                        Bóveda <span className="text-brand-blue">Financiera</span>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                        Cuentas por Cobrar & Pagar <span className="text-brand-blue font-bold">• Cartera</span>
                     </h1>
                 </div>
                 

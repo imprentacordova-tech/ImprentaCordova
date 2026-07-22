@@ -385,9 +385,8 @@ const KDSPage: React.FC = () => {
                                 <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.5em]">PRODUCTION_CONTROL_HUB</span>
                             </div>
                         </div>
-                        <h1 className="text-6xl lg:text-8xl font-black text-slate-900 tracking-tighter uppercase leading-[0.85]">
-                            Núcleo de <br/>
-                            <span className="bg-gradient-to-r from-brand-blue to-cyan-600 bg-clip-text text-transparent">Control</span>
+                        <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                            Pantalla de Taller <span className="text-brand-blue font-bold">• KDS</span>
                         </h1>
                     </div>
 

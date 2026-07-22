@@ -314,13 +314,13 @@ const InventarioPage: React.FC = () => {
                         >
                             <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue transition-colors" />
                         </button>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-4">
-                                <div className="h-1 w-8 bg-brand-blue rounded-full"></div>
-                                <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em]">Gestión de Recursos</p>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-brand-blue" />
+                                <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Gestión de Recursos & Insumos</p>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight uppercase leading-none">
-                                Bóveda de <span className="bg-gradient-to-r from-brand-blue to-cyan-500 bg-clip-text text-transparent">Activos</span>
+                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                                Control de Inventario <span className="text-brand-blue font-bold">• Insumos</span>
                             </h1>
                         </div>
                     </div>
@@ -435,7 +435,7 @@ const InventarioPage: React.FC = () => {
                                             <div className="space-y-5">
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">EXISTENCIAS EN BÓVEDA</p>
                                                 <div className="flex items-end gap-3">
-                                                    <span className={`text-6xl font-black tracking-tight leading-none ${isLow ? 'text-rose-500' : 'text-slate-900 group-hover:text-brand-blue transition-colors duration-500'}`}>{item.cantidad.toFixed(2)}</span>
+                                                    <span className={`text-2xl font-black tracking-tight leading-none ${isLow ? 'text-rose-500' : 'text-slate-900 group-hover:text-brand-blue transition-colors duration-300'}`}>{item.cantidad.toFixed(2)}</span>
                                                     <span className="text-xs font-bold text-slate-400 uppercase pb-1 tracking-widest">{item.unidad}</span>
                                                 </div>
                                                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-50">

@@ -149,15 +149,12 @@ const ProductosPage: React.FC = () => {
             {/* --- HEADER --- */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-slate-200 pb-10">
                 <div>
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                        </div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Catálogo Maestro</span>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
+                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Catálogo Maestro</span>
                     </div>
-                    <h1 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
-                        Bóveda de <span className="text-brand-blue">Activos</span>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                        Catálogo de Productos <span className="text-brand-blue font-bold">• Servicios</span>
                     </h1>
                 </div>
                 <div className="flex items-center gap-4">
@@ -301,7 +298,7 @@ const ProductosPage: React.FC = () => {
                                 <div className="flex items-center justify-between pt-12 border-t border-slate-100">
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Valor Comercial</p>
-                                        <p className="text-6xl font-black text-slate-900 tracking-tighter">{formatCurrency(viewingProduct.precio || 0)}</p>
+                                        <p className="text-3xl font-black text-slate-900 tracking-tight">{formatCurrency(viewingProduct.precio || 0)}</p>
                                     </div>
                                     <div className="flex flex-col gap-3">
                                         <button 

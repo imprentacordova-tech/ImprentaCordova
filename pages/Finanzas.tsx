@@ -122,15 +122,12 @@ const FinanzasPage: React.FC = () => {
             <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-slate-200 pb-10">
                 <div className="space-y-3">
                     <div className="flex items-center gap-4">
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)] animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] animate-pulse" style={{ animationDelay: '0.4s' }} />
-                        </div>
-                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.5em]">Telemetría Financiera de Precisión</span>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
+                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Telemetría Financiera</span>
                     </div>
-                    <h1 className="text-5xl sm:text-6xl font-black text-slate-900 tracking-tight uppercase leading-none">
-                        Bóveda de <span className="bg-gradient-to-r from-brand-blue to-cyan-500 bg-clip-text text-transparent">Capital</span>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                        Finanzas & Caja <span className="text-brand-blue font-bold">• Métricas</span>
                     </h1>
                 </div>
                 

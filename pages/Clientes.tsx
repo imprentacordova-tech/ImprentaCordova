@@ -299,13 +299,13 @@ const ClientesPage: React.FC = () => {
                             <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue transition-colors" />
                         </button>
                         <div className="w-[1px] h-16 bg-slate-200 hidden md:block"></div>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-4">
-                                <div className="h-[2px] w-12 bg-brand-blue rounded-full shadow-[0_0_10px_rgba(14,165,233,0.3)]"></div>
-                                <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.5em]">CONTROL_CENTRAL_IDENTIDAD</p>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-brand-blue" />
+                                <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Base de Datos de Clientes</p>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight uppercase leading-none">
-                                IDENTITY <span className="bg-gradient-to-r from-brand-blue to-cyan-500 bg-clip-text text-transparent">VAULT</span>
+                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                                Directorio de Clientes <span className="text-brand-blue font-bold">• SRI</span>
                             </h1>
                         </div>
                     </div>

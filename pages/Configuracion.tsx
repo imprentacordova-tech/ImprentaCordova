@@ -168,7 +168,9 @@ const ConfiguracionPage: React.FC = () => {
 
                 if (parts.length > Math.max(idxUser, idxPass)) {
                     const rucRaw = parts[idxUser]?.trim() || '';
-                    const ruc = rucRaw.replace(/\D/g, '');
+                    const match13 = rucRaw.match(/\b\d{13}\b/);
+                    const match10 = rucRaw.match(/\b\d{10}\b/);
+                    const ruc = match13 ? match13[0] : (match10 ? match10[0] : rucRaw.replace(/\D/g, ''));
                     const pass = parts[idxPass]?.trim() || '';
                     const name = parts[idxName]?.trim() || '';
 
@@ -285,16 +287,12 @@ const ConfiguracionPage: React.FC = () => {
             {/* --- COMMAND HEADER --- */}
             <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-slate-200 pb-10">
                 <div>
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                        </div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Centro de Mando</span>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
+                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Centro de Mando & Parámetros</span>
                     </div>
-                    <h1 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none">
-                        Configuración <span className="text-brand-blue">Estructural</span>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                        Configuración del Sistema <span className="text-brand-blue font-bold">• Ajustes</span>
                     </h1>
                 </div>
                 

@@ -21,7 +21,8 @@ import OrderSummary from '../components/orders/OrderSummary';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const outletCtx = useOutletContext<{ currentUser?: User }>();
+    const currentUser = outletCtx?.currentUser || { nombre: 'Pedro Córdova', rol: 'Administrador' };
     const { refreshData, addTrabajo, addCliente, clientes } = useData();
     const navigate = useNavigate();
 
@@ -30,6 +31,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [orderMode, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
+    const [tempClient, setTempClient] = useState({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
     const [servicio, setServicio] = useState<any>(null);
     const [detalle, setDetalle] = useState('');
     const [precio, setPrecio] = useState(0);
@@ -80,18 +82,37 @@ const NuevoPedidoPage: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
+            const userName = currentUser?.nombre || 'Pedro Córdova';
+            const userRol = currentUser?.rol || 'Administrador';
+
             let finalCliente = cliente;
             if (!finalCliente) {
-                const existingCF = clientes.find(c => c.cedula === '9999999999');
-                if (existingCF) {
-                    finalCliente = existingCF;
+                if (tempClient?.cedula || tempClient?.nombre) {
+                    const cleanCed = (tempClient.cedula || '').replace(/\D/g, '');
+                    const existing = clientes.find(c => c.cedula === cleanCed || c.ruc === cleanCed);
+                    if (existing) {
+                        finalCliente = existing;
+                    } else {
+                        finalCliente = await addCliente({
+                            nombre: (tempClient.nombre || 'CONSUMIDOR FINAL').toUpperCase(),
+                            cedula: cleanCed || '9999999999',
+                            telefono: tempClient.telefono ? [tempClient.telefono] : [],
+                            regimen: tempClient.regimen || 'General',
+                            direccion: 'Local'
+                        });
+                    }
                 } else {
-                    finalCliente = await addCliente({
-                        nombre: 'CONSUMIDOR FINAL',
-                        cedula: '9999999999',
-                        regimen: 'General',
-                        direccion: 'Local'
-                    });
+                    const existingCF = clientes.find(c => c.cedula === '9999999999');
+                    if (existingCF) {
+                        finalCliente = existingCF;
+                    } else {
+                        finalCliente = await addCliente({
+                            nombre: 'CONSUMIDOR FINAL',
+                            cedula: '9999999999',
+                            regimen: 'General',
+                            direccion: 'Local'
+                        });
+                    }
                 }
             }
 
@@ -112,7 +133,7 @@ const NuevoPedidoPage: React.FC = () => {
                     prioridad,
                     estado: TrabajoEstado.PENDIENTE,
                     fechaEntrada: new Date().toISOString(),
-                    responsable: currentUser.nombre,
+                    responsable: userName,
                     origen: 'Local',
                     esSRI: isSriOrder,
                     establecimiento: isSriOrder ? sriEstablecimiento : undefined,
@@ -126,10 +147,10 @@ const NuevoPedidoPage: React.FC = () => {
                     numeracion: item.especificaciones?.numerado,
                     autorizacion_sri: item.especificaciones?.sri?.autorizacion,
                     fechaVencimiento: item.especificaciones?.sri?.vencimiento
-                }, currentUser.nombre, imageFile);
+                }, userName, imageFile);
             }));
 
-            logActivity(currentUser.nombre, currentUser.rol || 'Administrador', 'CREAR_ORDEN', `Pedido (${finalItems.length} ítems) creado para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
+            logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido (${finalItems.length} ítems) creado para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
             refreshData().catch(() => {});
             setCreatedTrabajoId(results[0].id);
             setStep(6); 
@@ -140,8 +161,8 @@ const NuevoPedidoPage: React.FC = () => {
                 setTimeout(() => window.open(`/#/recibo-epson/${results[0].id}`, '_blank'), 800);
             }
         } catch (err: any) {
-            console.error('[NuevoPedido] Error:', err);
-            setError(err.message || 'Error al procesar la orden.');
+            console.error('[NuevoPedido] Error al crear orden:', err);
+            setError(err.message || 'Error al procesar la orden de producción.');
         } finally {
             setLoading(false);
         }
@@ -437,8 +458,30 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 5: RESUMEN Y PAGO */}
                             {step === 5 && (
-                                <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
-                                    <OrderSummary isOpen items={items} total={precio} abono={abono} setAbono={setAbono} client={cliente} onDeploy={handleCreateOrder} isLoading={loading} sriData={{ claveAcceso: sriClave, estadoClave: sriClave ? 'LISTA' : 'PENDIENTE' }} setSriData={d => setSriClave(d.claveAcceso)} imprimirClave={imprimirClave} setImprimirClave={setImprimirClave} onClose={() => setStep(step - 1)} />
+                                <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full space-y-4">
+                                    {error && (
+                                        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold flex items-center gap-2">
+                                            <ExclamationTriangleIcon className="w-5 h-5 text-rose-500 shrink-0" />
+                                            <span>{error}</span>
+                                        </div>
+                                    )}
+                                    <OrderSummary 
+                                        isOpen 
+                                        items={items} 
+                                        total={precio} 
+                                        abono={abono} 
+                                        setAbono={setAbono} 
+                                        client={cliente} 
+                                        tempClient={tempClient}
+                                        setTempClient={setTempClient}
+                                        onDeploy={handleCreateOrder} 
+                                        isLoading={loading} 
+                                        sriData={{ claveAcceso: sriClave, estadoClave: sriClave ? 'LISTA' : 'PENDIENTE' }} 
+                                        setSriData={d => setSriClave(d.claveAcceso)} 
+                                        imprimirClave={imprimirClave} 
+                                        setImprimirClave={setImprimirClave} 
+                                        onClose={() => setStep(step - 1)} 
+                                    />
                                 </motion.div>
                             )}
 

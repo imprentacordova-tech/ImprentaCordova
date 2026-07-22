@@ -155,10 +155,10 @@ const ProduccionPage: React.FC = () => {
                                     </div>
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-5">
-                                            <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">
-                                                Misión <span className="text-brand-blue drop-shadow-blue-glow-sm">#{selectedJob.orden}</span>
+                                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                                                Orden de Producción <span className="text-brand-blue font-bold">#{selectedJob.orden}</span>
                                             </h1>
-                                            <div className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-brand-blue/5 text-brand-blue border border-brand-blue/20 shadow-blue-glow-sm">PROTOCOLO_ALTA_PRIORIDAD</div>
+                                            <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-brand-blue/10 text-brand-blue border border-brand-blue/20">PRIORIDAD {selectedJob.prioridad || 'NORMAL'}</div>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] leading-none">{getClientName(selectedJob.clienteId)}</p>
