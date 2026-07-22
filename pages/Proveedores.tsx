@@ -181,7 +181,6 @@ const ProveedoresPage: React.FC = () => {
             {/* --- HEADER --- */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-slate-200 pb-10">
                 <div>
-                    <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Red de Abastecimiento</span>
