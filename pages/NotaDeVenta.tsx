@@ -16,8 +16,7 @@ import { useWindowSize } from 'react-use';
 import { supabase } from '../services/supabase';
 import { AlertTriangleIcon } from '../components/Icons';
 
-// Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
-declare const html2pdf: any;
+import html2pdf from 'html2pdf.js';
 
 const mapDBTrabajo = (t: any): Trabajo => ({
     ...t,

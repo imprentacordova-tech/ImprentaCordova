@@ -7,8 +7,7 @@ import {
     WhatsAppIcon, Loader2Icon, FileTextIcon,
     ShieldCheckIcon, CheckCircleIcon, CordovaLogo
 } from '../components/Icons';
-// Declaración para TypeScript ya que html2pdf se carga vía CDN en index.html
-declare const html2pdf: any;
+import html2pdf from 'html2pdf.js';
 
 
 // --- UTILS & LOGOS ---

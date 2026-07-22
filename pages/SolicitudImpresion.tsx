@@ -10,8 +10,7 @@ import {
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { supabase } from '../services/supabase';
-
-declare const html2pdf: any;
+import html2pdf from 'html2pdf.js';
 
 const DigitalSeal = () => (
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none z-0">

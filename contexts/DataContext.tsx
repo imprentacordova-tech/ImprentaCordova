@@ -294,11 +294,72 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         refreshData();
         const channels = [
-            supabase.channel('db-trabajos').on('postgres_changes', { event: '*', schema: 'public', table: 'trabajos' }, () => refreshData()).subscribe(),
-            supabase.channel('db-inventario').on('postgres_changes', { event: '*', schema: 'public', table: 'inventario' }, () => refreshData()).subscribe(),
-            supabase.channel('db-clientes').on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => refreshData()).subscribe(),
-            supabase.channel('db-config').on('postgres_changes', { event: '*', schema: 'public', table: 'app_config' }, () => refreshData()).subscribe(),
-            supabase.channel('db-sri').on('postgres_changes', { event: '*', schema: 'public', table: 'sri_credentials' }, () => refreshData()).subscribe()
+            supabase.channel('db-trabajos').on('postgres_changes', { event: '*', schema: 'public', table: 'trabajos' }, (payload) => {
+                const { eventType, new: newRecord, old: oldRecord } = payload;
+                if (eventType === 'INSERT') {
+                    const mapped = mapDBTrabajo(newRecord);
+                    setTrabajos(prev => {
+                        if (prev.some(t => t.id === mapped.id)) return prev;
+                        return [mapped, ...prev];
+                    });
+                } else if (eventType === 'UPDATE') {
+                    const mapped = mapDBTrabajo(newRecord);
+                    setTrabajos(prev => prev.map(t => t.id === mapped.id ? mapped : t));
+                } else if (eventType === 'DELETE') {
+                    setTrabajos(prev => prev.filter(t => t.id !== oldRecord.id));
+                }
+            }).subscribe(),
+            
+            supabase.channel('db-inventario').on('postgres_changes', { event: '*', schema: 'public', table: 'inventario' }, (payload) => {
+                const { eventType, new: newRecord, old: oldRecord } = payload;
+                if (eventType === 'INSERT') {
+                    setInventario(prev => {
+                        if (prev.some(i => i.id === newRecord.id)) return prev;
+                        return [...prev, newRecord];
+                    });
+                } else if (eventType === 'UPDATE') {
+                    setInventario(prev => prev.map(i => i.id === newRecord.id ? newRecord : i));
+                } else if (eventType === 'DELETE') {
+                    setInventario(prev => prev.filter(i => i.id !== oldRecord.id));
+                }
+            }).subscribe(),
+            
+            supabase.channel('db-clientes').on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
+                const { eventType, new: newRecord, old: oldRecord } = payload;
+                if (eventType === 'INSERT') {
+                    const mapped = mapDBCliente(newRecord);
+                    setClientes(prev => {
+                        if (prev.some(c => c.id === mapped.id)) return prev;
+                        return [mapped, ...prev];
+                    });
+                } else if (eventType === 'UPDATE') {
+                    const mapped = mapDBCliente(newRecord);
+                    setClientes(prev => prev.map(c => c.id === mapped.id ? mapped : c));
+                } else if (eventType === 'DELETE') {
+                    setClientes(prev => prev.filter(c => c.id !== oldRecord.id));
+                }
+            }).subscribe(),
+            
+            supabase.channel('db-config').on('postgres_changes', { event: '*', schema: 'public', table: 'app_config' }, (payload) => {
+                const { eventType, new: newRecord } = payload;
+                if ((eventType === 'INSERT' || eventType === 'UPDATE') && newRecord?.id === 1) {
+                    setConfig(newRecord.data);
+                }
+            }).subscribe(),
+            
+            supabase.channel('db-sri').on('postgres_changes', { event: '*', schema: 'public', table: 'sri_credentials' }, (payload) => {
+                const { eventType, new: newRecord, old: oldRecord } = payload;
+                if (eventType === 'INSERT') {
+                    setSriCredentials(prev => {
+                        if (prev.some(s => s.ruc === newRecord.ruc)) return prev;
+                        return [...prev, newRecord];
+                    });
+                } else if (eventType === 'UPDATE') {
+                    setSriCredentials(prev => prev.map(s => s.ruc === newRecord.ruc ? newRecord : s));
+                } else if (eventType === 'DELETE') {
+                    setSriCredentials(prev => prev.filter(s => s.ruc !== oldRecord.ruc));
+                }
+            }).subscribe()
         ];
         return () => { channels.forEach(c => supabase.removeChannel(c)); };
     }, [refreshData]);
@@ -365,23 +426,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (trabajoData.numeracion) dbData.numeracion = trabajoData.numeracion;
         if (trabajoData.fechaVencimiento) dbData.fecha_vencimiento = trabajoData.fechaVencimiento;
         
-        let { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
+        const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
         
-        if (error && (error.message.includes('autorizacion_sri') || error.message.includes('fecha_vencimiento') || error.message.includes('numeracion') || error.message.includes('es_renovacion') || error.message.includes('actividad_seleccionada') || error.message.includes('estado_clave'))) {
-            console.warn("⚠️ New columns missing in 'trabajos'. Retrying without them...", error.message);
-            const fallbackData = { ...dbData };
-            delete fallbackData.autorizacion_sri;
-            delete fallbackData.fecha_vencimiento;
-            delete fallbackData.numeracion;
-            delete fallbackData.es_renovacion;
-            delete fallbackData.actividad_seleccionada;
-            delete fallbackData.estado_clave;
-            
-            const retry = await supabase.from('trabajos').insert([fallbackData]).select().single();
-            data = retry.data;
-            error = retry.error;
-        }
-
         if (error) throw error;
 
         // Si hay una imagen, subirla

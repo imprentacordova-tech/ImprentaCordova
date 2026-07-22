@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
@@ -51,13 +51,22 @@ const PRODUCTS = [
 
 const Vitrina: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState('Todo');
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     const filteredProducts = PRODUCTS.filter(p => 
         selectedCategory === 'Todo' || p.category === selectedCategory
     );
 
     return (
-        <div className="min-h-screen bg-brand-light text-slate-900 selection:bg-brand-blue/10 font-sans overflow-x-hidden">
+        <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-liquid-gold/20 overflow-x-hidden relative">
             <SEO 
                 title="Vitrina de Capacidades | Imprenta Córdova" 
                 description="Explore nuestra selección de servicios de impresión de alta gama bajo un flujo de trabajo minimalista y eficiente." 
@@ -65,11 +74,55 @@ const Vitrina: React.FC = () => {
             
             <PublicNavbar />
 
-            {/* Cinematic Hero - Light Theme */}
-            <section className="relative pt-40 pb-20 px-6 overflow-hidden">
-                <div className="absolute inset-0 bg-architect-grid opacity-30" />
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-blue/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/3" />
-                
+            {/* --- OBSIDIAN TECH BACKGROUND --- */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-liquid-gold/5 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[1000px] h-[1000px] bg-yellow-600/5 blur-[150px] rounded-full" />
+                <div className="absolute inset-0 bg-architect-grid opacity-10" />
+                <div className="absolute inset-0 bg-noise opacity-[0.02] mix-blend-overlay" />
+            </div>
+
+            {/* --- GOLD PARTICLES --- */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                {[...Array(15)].map((_, i) => (
+                    <motion.div
+                        key={i}
+                        animate={{
+                            y: [0, -100, 0],
+                            x: [0, Math.random() * 40 - 20, 0],
+                            opacity: [0.1, 0.3, 0.1],
+                            scale: [1, 1.2, 1]
+                        }}
+                        transition={{
+                            duration: 12 + Math.random() * 8,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: Math.random() * 5
+                        }}
+                        className="absolute w-1 h-1 bg-liquid-gold rounded-full blur-[1px]"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`
+                        }}
+                    />
+                ))}
+            </div>
+
+            {/* --- PRECISION SCANNER --- */}
+            <div 
+                className="fixed w-[300px] h-[300px] pointer-events-none z-[110] border-[0.5px] border-white/10 rounded-full hidden lg:block transition-transform duration-700 ease-out"
+                style={{ 
+                    left: mousePosition.x - 150,
+                    top: mousePosition.y - 150,
+                    background: 'radial-gradient(circle, rgba(212,175,55,0.02) 0%, transparent 70%)',
+                }}
+            >
+                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-liquid-gold/10" />
+                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-liquid-gold/10" />
+            </div>
+
+            {/* Cinematic Hero */}
+            <section className="relative pt-40 pb-20 px-6 overflow-hidden z-10">
                 <div className="container mx-auto relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -77,14 +130,14 @@ const Vitrina: React.FC = () => {
                         className="max-w-4xl"
                     >
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="h-[1.5px] w-12 bg-brand-blue" />
-                            <span className="text-[10px] font-black tracking-[0.5em] text-slate-400 uppercase">Portafolio Industrial</span>
+                            <div className="h-[1.5px] w-12 bg-liquid-gold shadow-gold-glow" />
+                            <span className="text-[10px] font-black tracking-[0.5em] text-liquid-gold uppercase">Portafolio Industrial</span>
                         </div>
                         <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase mb-8 leading-[0.9]">
                             VITRINA DE <br />
-                            <span className="text-blue-gradient">CAPACIDADES.</span>
+                            <span className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] bg-clip-text text-transparent font-black drop-shadow-[0_0_15px_rgba(212,175,55,0.1)]">CAPACIDADES.</span>
                         </h1>
-                        <p className="text-slate-500 text-lg md:text-xl max-w-2xl leading-relaxed font-medium">
+                        <p className="text-slate-400 text-lg md:text-xl max-w-2xl leading-relaxed font-medium">
                             Donde la precisión tecnológica se encuentra con la pureza del diseño. Cada solución está optimizada para la excelencia visual.
                         </p>
                     </motion.div>
@@ -92,8 +145,8 @@ const Vitrina: React.FC = () => {
             </section>
 
             {/* Categorization Hub - Minimalist Sticky */}
-            <section className="sticky top-[88px] z-[100] bg-white/80 backdrop-blur-3xl border-y border-slate-100 py-6">
-                <div className="container mx-auto px-6 overflow-x-auto no-scrollbar">
+            <section className="sticky top-[80px] z-[100] bg-[#020617]/80 backdrop-blur-3xl border-y border-white/5 py-6">
+                <div className="container mx-auto px-6 overflow-x-auto no-scrollbar relative z-10">
                     <div className="flex items-center gap-4 min-w-max">
                         {CATEGORIES.map(cat => (
                             <button
@@ -101,8 +154,8 @@ const Vitrina: React.FC = () => {
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${
                                     selectedCategory === cat 
-                                    ? 'bg-brand-blue text-white shadow-blue-glow-strong' 
-                                    : 'bg-slate-50 text-slate-400 hover:text-slate-900 border border-slate-100'
+                                    ? 'bg-liquid-gold text-slate-950 shadow-gold-glow' 
+                                    : 'bg-white/5 text-slate-400 hover:text-white border border-white/5 hover:bg-white/10'
                                 }`}
                             >
                                 {cat}
@@ -113,7 +166,7 @@ const Vitrina: React.FC = () => {
             </section>
 
             {/* Product Matrix */}
-            <section className="py-24 px-6">
+            <section className="py-24 px-6 relative z-10">
                 <div className="container mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                         <AnimatePresence mode='popLayout'>
@@ -127,40 +180,41 @@ const Vitrina: React.FC = () => {
                                     transition={{ duration: 0.6, delay: idx * 0.1 }}
                                     className="group relative"
                                 >
-                                    <div className="elite-hud-card h-full p-8 lg:p-12 border border-slate-100 hover:border-brand-blue/30 transition-all duration-700 bg-white">
+                                    <div className="glass-card-luxury h-full p-8 lg:p-12 bg-white/5 backdrop-blur-xl border border-white/5 hover:border-liquid-gold/20 hover:-translate-y-2 transition-all duration-700 rounded-[2.5rem] shadow-luxury relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-liquid-gold/5 blur-3xl -mr-16 -mt-16 group-hover:bg-liquid-gold/10 transition-colors duration-500" />
                                         
                                         <div className="flex justify-between items-start mb-12">
                                             <div className="flex flex-col gap-2">
-                                                <span className="text-[10px] font-black text-brand-blue/60 uppercase tracking-widest">{product.category}</span>
-                                                <h3 className="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter group-hover:text-brand-blue transition-all duration-700">{product.title}</h3>
+                                                <span className="text-[10px] font-black text-liquid-gold/60 uppercase tracking-widest">{product.category}</span>
+                                                <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter group-hover:text-liquid-gold transition-all duration-700">{product.title}</h3>
                                             </div>
                                             {product.premium && (
-                                                <div className="px-4 py-2 bg-brand-blue/5 border border-brand-blue/10 rounded-xl flex items-center gap-3">
-                                                    <SparklesIcon className="w-4 h-4 text-brand-blue" />
-                                                    <span className="text-[10px] font-black text-brand-blue tracking-widest">PREMIUM</span>
+                                                <div className="px-4 py-2 bg-liquid-gold/10 border border-liquid-gold/20 rounded-xl flex items-center gap-3 shadow-gold-glow-soft">
+                                                    <SparklesIcon className="w-4 h-4 text-liquid-gold animate-pulse" />
+                                                    <span className="text-[10px] font-black text-liquid-gold tracking-widest">PREMIUM</span>
                                                 </div>
                                             )}
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                                            <div className="relative aspect-square rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm">
+                                            <div className="relative aspect-square rounded-[2rem] overflow-hidden border border-white/10 shadow-luxury">
                                                 <img 
                                                     src={product.image} 
                                                     alt={product.title}
                                                     className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/10 to-transparent" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
                                             </div>
 
                                             <div className="space-y-8">
-                                                <p className="text-slate-500 text-base leading-relaxed font-medium">
+                                                <p className="text-slate-400 text-base leading-relaxed font-medium">
                                                     {product.description}
                                                 </p>
                                                 
                                                 <div className="space-y-4">
                                                     {product.specs.map(spec => (
-                                                        <div key={spec} className="flex items-center gap-4 text-slate-700 group/spec">
-                                                            <div className="w-2 h-2 rounded-full bg-brand-blue/40 group-hover/spec:bg-brand-blue transition-colors duration-500" />
+                                                        <div key={spec} className="flex items-center gap-4 text-slate-300 group/spec">
+                                                            <div className="w-2 h-2 rounded-full bg-liquid-gold/40 group-hover/spec:bg-liquid-gold transition-colors duration-500 shadow-gold-glow-soft" />
                                                             <span className="text-[11px] font-black uppercase tracking-widest">{spec}</span>
                                                         </div>
                                                     ))}
@@ -170,7 +224,7 @@ const Vitrina: React.FC = () => {
                                                     href={`https://wa.me/593993083943?text=Hola,%20me%20interesa%20información%20sobre%20${encodeURIComponent(product.title)}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="w-full inline-flex items-center justify-center gap-4 px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black tracking-[0.3em] uppercase hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all duration-500 group/btn shadow-sm"
+                                                    className="w-full inline-flex items-center justify-center gap-4 px-8 py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black tracking-[0.3em] uppercase hover:bg-liquid-gold hover:text-slate-950 hover:border-liquid-gold transition-all duration-500 group/btn shadow-luxury"
                                                 >
                                                     <WhatsAppIcon className="w-5 h-5" />
                                                     COTIZAR AHORA
@@ -186,27 +240,28 @@ const Vitrina: React.FC = () => {
                 </div>
             </section>
 
-            {/* CTA Ecosystem - Minimalist Light */}
-            <section className="py-40 px-6 relative overflow-hidden bg-white border-t border-slate-100">
-                <div className="absolute inset-0 bg-brand-blue/5 opacity-50" />
+            {/* CTA Ecosystem - Minimalist Dark */}
+            <section className="py-40 px-6 relative overflow-hidden z-10 border-t border-white/5">
+                <div className="absolute inset-0 bg-liquid-gold/[0.02] opacity-50" />
                 <div className="container mx-auto text-center relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        className="max-w-4xl mx-auto p-16 md:p-24 rounded-[4rem] bg-white border border-slate-100 shadow-luxury"
+                        className="max-w-4xl mx-auto p-16 md:p-24 rounded-[4rem] bg-white/5 backdrop-blur-xl border border-white/5 shadow-luxury relative overflow-hidden"
                     >
+                        <div className="absolute -top-10 -right-10 w-64 h-64 bg-liquid-gold/5 blur-[80px] rounded-full" />
                         <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter mb-8 leading-none">
                             ¿TIENE UNA <br />
-                            <span className="text-blue-gradient">VISIÓN ÚNICA?</span>
+                            <span className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] bg-clip-text text-transparent font-black">VISIÓN ÚNICA?</span>
                         </h2>
-                        <p className="text-slate-500 text-lg md:text-xl mb-12 font-medium">
+                        <p className="text-slate-400 text-lg md:text-xl mb-12 font-medium">
                             Transformamos sus requerimientos técnicos en productos de alta fidelidad con acabados de lujo.
                         </p>
                         <div className="flex flex-wrap justify-center gap-6">
-                            <a href="tel:+593993083943" className="px-12 py-6 bg-brand-blue text-white rounded-2xl text-[12px] font-black tracking-widest hover:scale-105 transition-all shadow-blue-glow-strong">
+                            <a href="tel:+593993083943" className="px-12 py-6 bg-liquid-gold text-slate-950 rounded-2xl text-[12px] font-black tracking-widest hover:bg-white hover:scale-105 transition-all shadow-gold-glow">
                                 LLAMADA_DIRECTA
                             </a>
-                            <Link to="/tracking" className="px-12 py-6 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl text-[12px] font-black tracking-widest hover:bg-white transition-all shadow-sm">
+                            <Link to="/tracking" className="px-12 py-6 bg-white/5 border border-white/10 text-white rounded-2xl text-[12px] font-black tracking-widest hover:bg-white/10 hover:border-liquid-gold/30 hover:scale-105 active:scale-95 transition-all shadow-luxury">
                                 RASTREAR_ORDEN
                             </Link>
                         </div>
@@ -214,9 +269,9 @@ const Vitrina: React.FC = () => {
                 </div>
             </section>
 
-            <footer className="py-20 border-t border-slate-100 px-6 bg-brand-light">
+            <footer className="py-20 border-t border-white/5 px-6 bg-transparent relative z-10">
                 <div className="container mx-auto text-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.8em] text-slate-300">
+                    <p className="text-[10px] font-black uppercase tracking-[0.8em] text-slate-500">
                         IMPRENTA CÓRDOVA &copy; 2024 &mdash; MINIMALIST FLOW v2.0
                     </p>
                 </div>

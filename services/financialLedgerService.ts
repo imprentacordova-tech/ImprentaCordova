@@ -115,15 +115,23 @@ export const purgeOldTransactions = async (): Promise<number> => {
  * Obtiene el balance actual (Ingresos - Egresos) de Supabase.
  */
 export const getLedgerBalance = async () => {
-    const { data: ingresosData } = await supabase.from('financial_ledger').select('amount').eq('type', 'income');
-    const { data: egresosData } = await supabase.from('financial_ledger').select('amount').eq('type', 'expense');
-
-    const ingresos = (ingresosData || []).reduce((sum, e) => sum + Number(e.amount), 0);
-    const egresos = (egresosData || []).reduce((sum, e) => sum + Number(e.amount), 0);
+    try {
+        const { data, error } = await supabase.rpc('get_ledger_balance');
+        if (error) throw error;
+        if (data && data.length > 0) {
+            return {
+                ingresos: Number(data[0].ingresos),
+                egresos: Number(data[0].egresos),
+                total: Number(data[0].total)
+            };
+        }
+    } catch (err) {
+        console.error('[FinancialLedger] Error getting balance via RPC:', err);
+    }
     
     return {
-        ingresos,
-        egresos,
-        total: ingresos - egresos
+        ingresos: 0,
+        egresos: 0,
+        total: 0
     };
 };

@@ -10,7 +10,8 @@ import {
     MicIcon, XIcon, ArrowRightIcon, BoltIcon, ActivityIcon, CpuIcon, GlobeAltIcon,
     LayersIcon, CreditCardIcon, ShieldCheckIcon, TerminalIcon, ZapIcon, HashIcon,
     SparklesIcon, QrCodeIcon, HeadphonesIcon, WhatsAppIcon, ChevronRightIcon,
-    InfoIcon, FileTextIcon, MonitorIcon, HomeIcon, FingerPrintIcon
+    InfoIcon, FileTextIcon, MonitorIcon, HomeIcon, FingerPrintIcon,
+    ScissorsIcon, TruckIcon
 } from '../components/Icons';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 import { supabase } from '../services/supabase';
@@ -45,11 +46,41 @@ async function decodeAudioData(data: Uint8Array, ctx: AudioContext, sampleRate: 
 }
 
 const statusSteps = [
-    { label: 'Ingreso',   value: TrabajoEstado.PENDIENTE,  icon: ClockIcon         },
-    { label: 'Diseño',    value: TrabajoEstado.EN_DISENO,  icon: PaletteIcon       },
-    { label: 'Producción', value: TrabajoEstado.PROCESO,   icon: PrinterIcon       },
-    { label: 'Vitrina',   value: TrabajoEstado.VITRINA,   icon: CheckBadgeIcon    },
-    { label: 'Entrega',   value: TrabajoEstado.ENTREGADO,  icon: BoxIcon           },
+    { 
+        label: 'Recepción & Prevuelo', 
+        machine: 'CORDOVA NODE ENGINE',
+        desc: 'Validación digital de archivos y SRI.',
+        value: TrabajoEstado.PENDIENTE, 
+        icon: CpuIcon 
+    },
+    { 
+        label: 'Planchas & CTP', 
+        machine: 'CTP TÉRMICO CRON',
+        desc: 'Insolación láser de placas.',
+        value: TrabajoEstado.EN_DISENO, 
+        icon: LayersIcon 
+    },
+    { 
+        label: 'Offset Heidelberg', 
+        machine: 'SPEEDMASTER SX 74',
+        desc: 'Impresión offset a 4 colores.',
+        value: TrabajoEstado.PROCESO, 
+        icon: PrinterIcon 
+    },
+    { 
+        label: 'Corte & Guillotina', 
+        machine: 'POLAR 115 PRECISION',
+        desc: 'Guillotinado y acabados finales.',
+        value: TrabajoEstado.VITRINA, 
+        icon: ScissorsIcon 
+    },
+    { 
+        label: 'Logística & Despacho', 
+        machine: 'CONTROL DE CALIDAD',
+        desc: 'Entrega final y despacho.',
+        value: TrabajoEstado.ENTREGADO, 
+        icon: TruckIcon 
+    },
 ];
 
 const TrackingPage: React.FC = () => {
@@ -261,17 +292,20 @@ const TrackingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-brand-light font-sans selection:bg-brand-blue selection:text-white overflow-x-hidden relative flex flex-col">
+        <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-liquid-gold/20 overflow-x-hidden relative flex flex-col">
             <SEO title="Precision Tracking | Imprenta Córdova" description="Rastreador de alta fidelidad para proyectos industriales y comerciales." />
             
             <PublicNavbar />
             
-            {/* --- FONDO MINIMALISTA --- */}
-            <div className="fixed inset-0 bg-architect-grid opacity-[0.03] pointer-events-none z-0" />
-            <div className="fixed inset-0 bg-gradient-to-b from-white via-brand-light to-white pointer-events-none z-0" />
-            <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.02] bg-noise mix-blend-overlay" />
+            {/* --- OBSIDIAN TECH BACKGROUND --- */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-liquid-gold/5 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[1000px] h-[1000px] bg-yellow-600/5 blur-[150px] rounded-full" />
+                <div className="absolute inset-0 bg-architect-grid opacity-10" />
+                <div className="absolute inset-0 bg-noise opacity-[0.02] mix-blend-overlay" />
+            </div>
             
-            {/* --- PARTÍCULAS AZULES --- */}
+            {/* --- PARTÍCULAS DE ORO --- */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 {[...Array(15)].map((_, i) => (
                     <motion.div
@@ -288,7 +322,7 @@ const TrackingPage: React.FC = () => {
                             ease: "easeInOut",
                             delay: Math.random() * 5
                         }}
-                        className="absolute w-1 h-1 bg-brand-blue rounded-full blur-[1px]"
+                        className="absolute w-1 h-1 bg-liquid-gold rounded-full blur-[1px]"
                         style={{
                             top: `${Math.random() * 100}%`,
                             left: `${Math.random() * 100}%`
@@ -299,30 +333,30 @@ const TrackingPage: React.FC = () => {
 
             {/* --- ESCÁNER DE PRECISIÓN --- */}
             <div 
-                className="fixed w-[300px] h-[300px] pointer-events-none z-[110] border-[0.5px] border-brand-blue/10 rounded-full hidden lg:block transition-transform duration-700 ease-out"
+                className="fixed w-[300px] h-[300px] pointer-events-none z-[110] border-[0.5px] border-white/10 rounded-full hidden lg:block transition-transform duration-700 ease-out"
                 style={{ 
                     left: mousePosition.x - 150,
                     top: mousePosition.y - 150,
-                    background: 'radial-gradient(circle, rgba(14,165,233,0.03) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(212,175,55,0.02) 0%, transparent 70%)',
                 }}
             >
-                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-brand-blue/20 animate-scan-slow" />
-                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-brand-blue/20 animate-scan-slow" />
+                <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-liquid-gold/10" />
+                <div className="absolute top-0 left-1/2 w-[0.5px] h-full bg-liquid-gold/10" />
             </div>
 
             <div className="relative z-10 flex-1 flex flex-col pt-32 p-4 lg:p-12 gap-12 max-w-[1600px] mx-auto w-full pb-32">
                 
                 {/* Header */}
                 <div className="text-center space-y-6 max-w-4xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-4 px-6 py-2 bg-brand-blue/5 border border-brand-blue/10 rounded-full">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-4 px-6 py-2 bg-liquid-gold/5 border border-liquid-gold/10 rounded-full">
                         <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 bg-brand-blue rounded-full animate-pulse shadow-blue-glow" />
-                            <div className="w-1.5 h-1.5 bg-brand-blue/40 rounded-full animate-pulse delay-75" />
+                            <div className="w-1.5 h-1.5 bg-liquid-gold rounded-full animate-pulse shadow-gold-glow" />
+                            <div className="w-1.5 h-1.5 bg-liquid-gold/40 rounded-full animate-pulse delay-75" />
                         </div>
-                        <span className="text-[9px] font-bold uppercase tracking-[0.6em] text-brand-blue">CORDOVA_NODE_ACTIVE</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.6em] text-liquid-gold">CORDOVA_NODE_ACTIVE</span>
                     </motion.div>
-                    <h1 className="text-5xl lg:text-8xl font-black tracking-tighter text-slate-900 uppercase leading-none">
-                        TRACKING_<span className="text-brand-blue shadow-blue-glow-soft">SYSTEM</span>
+                    <h1 className="text-5xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-none">
+                        TRACKING_<span className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] bg-clip-text text-transparent shadow-gold-glow-soft">SYSTEM</span>
                     </h1>
                 </div>
 
@@ -332,19 +366,19 @@ const TrackingPage: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         onSubmit={handleSearch} 
-                        className="flex items-center gap-6 bg-white border border-slate-200 px-8 py-5 rounded-[2.5rem] focus-within:border-brand-blue/40 focus-within:ring-8 focus-within:ring-brand-blue/5 transition-all group w-full max-w-3xl shadow-xl relative overflow-hidden"
+                        className="flex items-center gap-6 bg-white/5 border border-white/10 px-8 py-5 rounded-[2.5rem] focus-within:border-liquid-gold/40 focus-within:ring-8 focus-within:ring-liquid-gold/5 transition-all group w-full max-w-3xl shadow-luxury relative overflow-hidden backdrop-blur-md"
                     >
-                        <SearchIcon className={`w-6 h-6 ${searching ? 'text-brand-blue animate-spin' : 'text-slate-400 group-focus-within:text-brand-blue'} transition-colors`} />
+                        <SearchIcon className={`w-6 h-6 ${searching ? 'text-liquid-gold animate-spin' : 'text-slate-400 group-focus-within:text-liquid-gold'} transition-colors`} />
                         <input 
                             type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                             placeholder="ORDEN, CÉDULA O RUC..."
-                            className="bg-transparent border-none p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 focus:ring-0 uppercase tracking-widest w-full"
+                            className="bg-transparent border-none p-0 text-base font-bold text-white placeholder:text-slate-500 focus:ring-0 uppercase tracking-widest w-full outline-none"
                         />
-                        <button type="submit" className="bg-brand-blue text-white px-10 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all duration-500 shadow-lg active:scale-95">Consultar</button>
+                        <button type="submit" className="bg-liquid-gold text-slate-950 px-10 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:shadow-gold-glow transition-all duration-500 shadow-lg active:scale-95">Consultar</button>
                     </motion.form>
                     
                     {error && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-rose-500 text-[10px] font-bold uppercase tracking-[0.4em] bg-rose-50 px-6 py-2 rounded-full border border-rose-100">
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-rose-400 text-[10px] font-bold uppercase tracking-[0.4em] bg-rose-950/20 px-6 py-2 rounded-full border border-rose-900/30">
                             {error}
                         </motion.div>
                     )}
@@ -361,21 +395,21 @@ const TrackingPage: React.FC = () => {
                                 className="grid grid-cols-12 gap-8 lg:gap-12"
                             >
                                 {/* Visual Asset Console */}
-                                <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200 rounded-[3rem] overflow-hidden flex flex-col group shadow-2xl relative">
+                                <div className="col-span-12 lg:col-span-7 bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden flex flex-col group shadow-luxury relative backdrop-blur-md">
                                     <div className="absolute top-10 left-10 flex items-center gap-4 z-20">
-                                        <div className="bg-brand-blue/5 border border-brand-blue/10 px-5 py-2.5 rounded-2xl text-brand-blue shadow-sm backdrop-blur-md">
+                                        <div className="bg-liquid-gold/5 border border-liquid-gold/10 px-5 py-2.5 rounded-2xl text-liquid-gold shadow-gold-glow-soft backdrop-blur-md">
                                             <span className="text-[10px] font-black tracking-widest uppercase">ORDEN_{String(currentJob.orden).padStart(6, '0')}</span>
                                         </div>
-                                        <div className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-500 text-[9px] font-black uppercase tracking-widest backdrop-blur-md">
+                                        <div className="px-5 py-2.5 bg-white/5 border border-white/5 rounded-2xl text-slate-300 text-[9px] font-black uppercase tracking-widest backdrop-blur-md">
                                             {currentJob.estado.replace('_', ' ')}
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 flex items-center justify-center p-12 lg:p-20 bg-slate-50 min-h-[500px] relative overflow-hidden group">
-                                        <div className="absolute inset-0 animate-scan-y bg-gradient-to-b from-transparent via-brand-blue/5 to-transparent h-40 -top-40 z-20 pointer-events-none" />
+                                    <div className="flex-1 flex items-center justify-center p-12 lg:p-20 bg-black/20 min-h-[500px] relative overflow-hidden group">
+                                        <div className="absolute inset-0 animate-scan-y bg-gradient-to-b from-transparent via-liquid-gold/5 to-transparent h-40 -top-40 z-20 pointer-events-none" />
                                         
                                         <div className="absolute bottom-10 left-10 z-20 opacity-30 group-hover:opacity-60 transition-opacity duration-1000">
-                                            <div className="space-y-2 font-mono text-[8px] uppercase tracking-widest text-slate-400 border-l border-brand-blue/30 pl-6">
+                                            <div className="space-y-2 font-mono text-[8px] uppercase tracking-widest text-slate-500 border-l border-liquid-gold/30 pl-6">
                                                 <p>TECH_SPEC: HIGH_FIDELITY</p>
                                                 <p>COLOR_SPACE: PRO_CMYK</p>
                                             </div>
@@ -384,44 +418,79 @@ const TrackingPage: React.FC = () => {
                                         <AnimatePresence mode="wait">
                                             {currentJob.fotoOriginalUrl ? (
                                                 <motion.div key={currentJob.id} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="relative">
-                                                    <img src={currentJob.fotoOriginalUrl} className="max-h-[50vh] object-contain rounded-2xl shadow-2xl relative z-10 border border-white" alt="Job View" />
-                                                    <div className="absolute -inset-10 bg-brand-blue/5 blur-[80px] -z-10 group-hover:bg-brand-blue/10 transition-colors duration-1000" />
+                                                    <img src={currentJob.fotoOriginalUrl} className="max-h-[50vh] object-contain rounded-2xl shadow-luxury relative z-10 border border-white/10" alt="Job View" />
+                                                    <div className="absolute -inset-10 bg-liquid-gold/5 blur-[80px] -z-10 group-hover:bg-liquid-gold/10 transition-colors duration-1000" />
                                                 </motion.div>
                                             ) : (
                                                 <div className="text-center space-y-6 opacity-30 group-hover:opacity-50 transition-opacity duration-1000">
-                                                    <div className="w-32 h-32 border border-dashed border-slate-300 rounded-[2.5rem] mx-auto flex items-center justify-center">
-                                                        <MonitorIcon className="w-12 h-12 text-slate-400" />
+                                                    <div className="w-32 h-32 border border-dashed border-white/10 rounded-[2.5rem] mx-auto flex items-center justify-center">
+                                                        <MonitorIcon className="w-12 h-12 text-slate-600" />
                                                     </div>
-                                                    <p className="text-[10px] font-bold uppercase tracking-[0.8em] text-slate-400">WAITING_FOR_ASSETS</p>
+                                                    <p className="text-[10px] font-bold uppercase tracking-[0.8em] text-slate-600">WAITING_FOR_ASSETS</p>
                                                 </div>
                                             )}
                                         </AnimatePresence>
                                     </div>
 
-                                    {/* Status Stepper */}
-                                    <div className="p-10 bg-white border-t border-slate-100 flex flex-col xl:flex-row items-center justify-between gap-10">
-                                        <div className="flex items-center gap-8 overflow-x-auto no-scrollbar w-full xl:w-auto pb-4 xl:pb-0">
+                                    {/* Status Stepper (Industrial Mechanical Conveyor Belt) */}
+                                    <div className="p-10 bg-[#0c1324]/60 border-t border-white/10 flex flex-col gap-10 backdrop-blur-md">
+                                        <div className="relative flex items-start justify-between w-full overflow-x-auto no-scrollbar pb-6 gap-8">
+                                            {/* Connecting Laser Line */}
+                                            <div className="absolute top-7 left-12 right-12 h-[2px] bg-white/5 z-0 hidden md:block">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-liquid-gold via-gold-bright to-liquid-gold transition-all duration-1000 shadow-gold-glow"
+                                                    style={{ 
+                                                        width: `${(statusSteps.findIndex(s => s.value === currentJob?.estado) / (statusSteps.length - 1)) * 100}%` 
+                                                    }}
+                                                />
+                                            </div>
+                                            
                                             {statusSteps.map((step, idx) => {
                                                 const stepIdx = statusSteps.findIndex(s => s.value === currentJob?.estado);
                                                 const isCompleted = idx <= stepIdx;
                                                 const isCurrent = currentJob?.estado === step.value;
                                                 return (
-                                                    <div key={step.value} className="flex flex-col items-center gap-3 shrink-0">
-                                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-700 ${isCurrent ? 'bg-brand-blue border-brand-blue text-white shadow-blue-glow scale-110' : isCompleted ? 'bg-brand-blue/5 border-brand-blue/20 text-brand-blue' : 'bg-transparent border-slate-100 text-slate-300'}`}>
-                                                            <step.icon className="w-6 h-6" />
+                                                    <div key={step.value} className="flex flex-col items-center gap-4 shrink-0 z-10 relative w-40 text-center">
+                                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-700 ${
+                                                            isCurrent 
+                                                                ? 'bg-liquid-gold border-liquid-gold text-slate-950 shadow-gold-glow scale-110' 
+                                                                : isCompleted 
+                                                                    ? 'bg-liquid-gold/10 border-liquid-gold/30 text-liquid-gold' 
+                                                                    : 'bg-white/5 border-white/10 text-slate-600'
+                                                        }`}>
+                                                            {isCurrent ? (
+                                                                <motion.div
+                                                                    animate={{ rotate: step.value === TrabajoEstado.PROCESO ? 360 : 0 }}
+                                                                    transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                                                                >
+                                                                    <step.icon className="w-6 h-6 animate-pulse" />
+                                                                </motion.div>
+                                                            ) : (
+                                                                <step.icon className="w-6 h-6" />
+                                                            )}
                                                         </div>
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest ${isCurrent ? 'text-brand-blue' : 'text-slate-400'}`}>{step.label}</span>
+                                                        <div className="space-y-1">
+                                                            <span className={`text-[10px] font-black uppercase tracking-wider block ${isCurrent ? 'text-liquid-gold' : 'text-slate-300'}`}>
+                                                                {step.label}
+                                                            </span>
+                                                            <span className="font-mono text-[8px] text-slate-500 block tracking-widest">
+                                                                {step.machine}
+                                                            </span>
+                                                            <p className="text-[9px] text-slate-400 max-w-[120px] mx-auto leading-normal">
+                                                                {step.desc}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
                                         </div>
 
-                                        <div className="flex gap-4 w-full xl:w-auto">
+                                        <div className="flex flex-wrap gap-4 justify-end w-full">
                                             {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arteAprobado && (
                                                 <motion.button 
                                                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                     onClick={() => handleAprobarArte(currentJob.id)}
-                                                    className="flex-1 xl:flex-none bg-emerald-500 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10"
+                                                    className="flex-1 sm:flex-none bg-emerald-500 text-slate-950 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all"
                                                 >
                                                     Aprobar Arte
                                                 </motion.button>
@@ -429,7 +498,7 @@ const TrackingPage: React.FC = () => {
                                             <motion.button 
                                                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                                 onClick={() => handleGeneratePaymentLink(currentJob)}
-                                                className="flex-1 xl:flex-none bg-slate-900 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue transition-all shadow-xl"
+                                                className="flex-1 sm:flex-none bg-white/5 border border-white/10 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-liquid-gold hover:text-slate-950 transition-all hover:scale-105 active:scale-95 shadow-luxury"
                                             >
                                                 Soporte Directo
                                             </motion.button>
@@ -440,36 +509,36 @@ const TrackingPage: React.FC = () => {
                                 {/* Manifest & Console */}
                                 <div className="col-span-12 lg:col-span-5 flex flex-col gap-8 lg:gap-12">
                                     {/* Product Manifest */}
-                                    <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-xl flex flex-col gap-8 relative overflow-hidden group/manifest">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/[0.03] via-transparent to-transparent opacity-0 group-hover/manifest:opacity-100 transition-opacity duration-1000" />
+                                    <div className="bg-white/5 border border-white/10 rounded-[3rem] p-10 shadow-luxury flex flex-col gap-8 relative overflow-hidden group/manifest backdrop-blur-md">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-liquid-gold/[0.03] via-transparent to-transparent opacity-0 group-hover/manifest:opacity-100 transition-opacity duration-1000" />
                                         
                                         <div className="flex justify-between items-start relative z-10">
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">MANIFEST_SPEC</span>
+                                                    <span className="text-[10px] font-black text-liquid-gold uppercase tracking-widest">MANIFEST_SPEC</span>
                                                     {currentJob.esSRI && (
-                                                        <span className="bg-brand-blue/10 text-brand-blue text-[8px] font-black px-3 py-1 rounded-lg border border-brand-blue/20">VALID_SRI</span>
+                                                        <span className="bg-liquid-gold/10 text-liquid-gold text-[8px] font-black px-3 py-1 rounded-lg border border-liquid-gold/20">VALID_SRI</span>
                                                     )}
                                                 </div>
-                                                <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">{currentJob.subtipo}</h3>
+                                                <h3 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">{currentJob.subtipo}</h3>
                                             </div>
-                                            <div className="bg-slate-50 px-4 py-2 rounded-xl text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest">SECURE_LINK</div>
+                                            <div className="bg-white/5 border border-white/5 px-4 py-2 rounded-xl text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest">SECURE_LINK</div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4 relative z-10">
-                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 group/stat hover:border-brand-blue/20 transition-all duration-500">
+                                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 group/stat hover:border-liquid-gold/20 transition-all duration-500">
                                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Presupuesto</span>
-                                                <div className="text-2xl font-black text-slate-900 tracking-tighter">{formatCurrency(currentJob.total)}</div>
+                                                <div className="text-2xl font-black text-white tracking-tighter">{formatCurrency(currentJob.total)}</div>
                                             </div>
-                                            <div className="p-6 bg-brand-blue/5 rounded-3xl border border-brand-blue/10 group/stat hover:border-brand-blue/30 transition-all duration-500">
-                                                <span className="text-[9px] font-bold text-brand-blue/60 uppercase tracking-widest block mb-2">Saldo Pendiente</span>
-                                                <div className="text-2xl font-black text-brand-blue tracking-tighter">{formatCurrency(currentJob.saldo)}</div>
+                                            <div className="p-6 bg-liquid-gold/5 rounded-3xl border border-liquid-gold/10 group/stat hover:border-liquid-gold/30 transition-all duration-500">
+                                                <span className="text-[9px] font-bold text-liquid-gold/60 uppercase tracking-widest block mb-2">Saldo Pendiente</span>
+                                                <div className="text-2xl font-black text-liquid-gold tracking-tighter">{formatCurrency(currentJob.saldo)}</div>
                                             </div>
                                         </div>
 
                                         {parsedSpecs && (
                                             <div className="space-y-4 relative z-10">
-                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] block mb-1 px-2">TECHNICAL_MATRIX</span>
+                                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.5em] block mb-1 px-2">TECHNICAL_MATRIX</span>
                                                 <div className="grid grid-cols-1 gap-3">
                                                     {[
                                                         { label: 'Sustrato', value: parsedSpecs.tipoPapel, icon: LayersIcon },
@@ -480,46 +549,46 @@ const TrackingPage: React.FC = () => {
                                                             { label: 'Trámite', value: currentJob.actividadSeleccionada, icon: ShieldCheckIcon }
                                                         ] : [])
                                                     ].filter(s => s.value).map(spec => (
-                                                        <div key={spec.label} className="flex items-center justify-between px-6 py-4 bg-slate-50/50 rounded-2xl group hover:bg-white hover:border-brand-blue/20 border border-slate-100 transition-all duration-500">
+                                                        <div key={spec.label} className="flex items-center justify-between px-6 py-4 bg-white/5 rounded-2xl group hover:bg-white/10 hover:border-liquid-gold/20 border border-white/5 transition-all duration-500">
                                                             <div className="flex items-center gap-4">
-                                                                <spec.icon className="w-4 h-4 text-slate-400 group-hover:text-brand-blue transition-colors" />
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase group-hover:text-slate-600">{spec.label}</span>
+                                                                <spec.icon className="w-4 h-4 text-slate-500 group-hover:text-liquid-gold transition-colors" />
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase group-hover:text-white transition-colors">{spec.label}</span>
                                                             </div>
-                                                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">{spec.value}</span>
+                                                            <span className="text-[10px] font-black text-white uppercase tracking-wider">{spec.value}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
                                         
-                                        <div className="p-8 bg-slate-50 border border-slate-100 rounded-3xl relative z-10 group-hover/manifest:bg-white group-hover/manifest:border-brand-blue/10 transition-all duration-700">
-                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">PRODUCTION_NOTES</span>
-                                            <p className="text-sm font-medium text-slate-500 leading-relaxed uppercase tracking-wide">{cleanDetalle || "ANALYZING_JOB_PARAMETERS..."}</p>
+                                        <div className="p-8 bg-white/5 border border-white/5 rounded-3xl relative z-10 group-hover/manifest:bg-white/10 group-hover/manifest:border-liquid-gold/10 transition-all duration-700">
+                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-3">PRODUCTION_NOTES</span>
+                                            <p className="text-sm font-medium text-slate-300 leading-relaxed uppercase tracking-wide">{cleanDetalle || "ANALYZING_JOB_PARAMETERS..."}</p>
                                         </div>
                                     </div>
 
                                     {/* Telemetry Console */}
-                                    <div className="flex-1 bg-slate-900 rounded-[3rem] p-10 flex flex-col min-h-[350px] shadow-2xl relative overflow-hidden group/console">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 blur-[80px] rounded-full opacity-0 group-hover/console:opacity-100 transition-opacity duration-[2s]" />
+                                    <div className="flex-1 bg-[#0c1324]/80 border border-white/5 rounded-[3rem] p-10 flex flex-col min-h-[350px] shadow-luxury relative overflow-hidden group/console backdrop-blur-md">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 blur-[80px] rounded-full opacity-0 group-hover/console:opacity-100 transition-opacity duration-[2s]" />
                                         
                                         <div className="flex items-center justify-between mb-8 relative z-10">
                                             <div className="flex items-center gap-4">
-                                                <ActivityIcon className="w-5 h-5 text-brand-blue animate-pulse shadow-blue-glow" />
+                                                <ActivityIcon className="w-5 h-5 text-liquid-gold animate-pulse shadow-gold-glow-soft" />
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TELEMETRY_ENGINE_V4</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse shadow-blue-glow" />
-                                                <div className="w-2 h-2 rounded-full bg-brand-blue/30 animate-pulse delay-75" />
+                                                <div className="w-2 h-2 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
+                                                <div className="w-2 h-2 rounded-full bg-liquid-gold/30 animate-pulse delay-75" />
                                             </div>
                                         </div>
                                         <div className="flex-1 overflow-y-auto no-scrollbar font-mono text-[11px] space-y-4 pr-4 relative z-10">
                                             {terminalLogs.map((log, i) => (
                                                 <div key={i} className="flex gap-4 group/log hover:translate-x-2 transition-transform duration-500">
-                                                    <span className="text-slate-700 font-bold shrink-0">[{log.time}]</span>
+                                                    <span className="text-slate-600 font-bold shrink-0">[{log.time}]</span>
                                                     <span className="text-slate-400 group-hover/log:text-white transition-colors uppercase tracking-widest">{log.msg}</span>
                                                 </div>
                                             ))}
-                                            <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 3 }} className="text-brand-blue font-black uppercase tracking-widest pt-6 border-t border-white/5">
+                                            <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 3 }} className="text-liquid-gold font-black uppercase tracking-widest pt-6 border-t border-white/5">
                                                 {`> STATUS_NODE: ${currentJob.estado.toUpperCase()}`}
                                             </motion.div>
                                         </div>
@@ -536,20 +605,20 @@ const TrackingPage: React.FC = () => {
                                     <motion.div 
                                         animate={{ rotate: 360 }} 
                                         transition={{ repeat: Infinity, duration: 60, ease: "linear" }} 
-                                        className="w-80 h-80 border border-dashed border-slate-200 rounded-full" 
+                                        className="w-80 h-80 border border-white/10 rounded-full" 
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-48 h-48 bg-brand-blue/5 rounded-full blur-[100px] animate-pulse" />
-                                        <GlobeAltIcon className="w-20 h-20 text-brand-blue/20 group-hover:text-brand-blue/40 transition-colors duration-1000" />
+                                        <div className="w-48 h-48 bg-liquid-gold/5 rounded-full blur-[100px] animate-pulse" />
+                                        <GlobeAltIcon className="w-20 h-20 text-liquid-gold/20 group-hover:text-liquid-gold/40 transition-colors duration-1000" />
                                     </div>
                                     
                                     <motion.div animate={{ rotate: -360 }} transition={{ repeat: Infinity, duration: 30, ease: "linear" }} className="absolute inset-0">
-                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-brand-blue rounded-full shadow-blue-glow" />
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-liquid-gold rounded-full shadow-gold-glow" />
                                     </motion.div>
                                 </div>
                                 <div className="text-center space-y-6">
-                                    <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">A_LA_ESPERA</h2>
-                                    <p className="text-[11px] text-slate-400 uppercase tracking-[1em] pl-6 font-bold">Ingrese_parámetros_de_búsqueda</p>
+                                    <h2 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">A_LA_ESPERA</h2>
+                                    <p className="text-[11px] text-slate-500 uppercase tracking-[1em] pl-6 font-bold">Ingrese_parámetros_de_búsqueda</p>
                                 </div>
                             </motion.div>
                         )}
@@ -561,15 +630,15 @@ const TrackingPage: React.FC = () => {
             <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200]">
                 <motion.div 
                     layout 
-                    className={`rounded-[3rem] shadow-2xl border transition-all duration-700 ease-in-out ${isVoiceActive ? 'bg-slate-900 border-brand-blue/30 p-10 w-[95vw] md:w-[500px]' : 'bg-brand-blue border-transparent p-6'}`}
+                    className={`rounded-[3rem] shadow-luxury border transition-all duration-700 ease-in-out ${isVoiceActive ? 'bg-[#0c1324] border-liquid-gold/30 p-10 w-[95vw] md:w-[500px]' : 'bg-liquid-gold text-slate-950 border-transparent p-6'}`}
                 >
                     <AnimatePresence mode="wait">
                         {isVoiceActive ? (
                             <motion.div key="active" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-8">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-2.5 h-2.5 bg-brand-blue rounded-full shadow-blue-glow animate-ping" />
-                                        <span className="text-[11px] font-black text-brand-blue uppercase tracking-widest">GEMINI_VOICE_ACTIVE</span>
+                                        <div className="w-2.5 h-2.5 bg-liquid-gold rounded-full shadow-gold-glow animate-ping" />
+                                        <span className="text-[11px] font-black text-liquid-gold uppercase tracking-widest">GEMINI_VOICE_ACTIVE</span>
                                     </div>
                                     <button onClick={stopVoiceTracking} className="p-3 bg-white/5 hover:bg-rose-500/20 rounded-xl transition-all group">
                                         <XIcon className="w-5 h-5 text-white group-hover:text-rose-500 transition-colors" />
@@ -577,18 +646,18 @@ const TrackingPage: React.FC = () => {
                                 </div>
                                 <div className="h-20 flex items-end justify-center gap-3 px-10">
                                     {[0.4, 0.8, 0.5, 1.1, 0.6, 0.9, 0.4, 0.7].map((d, i) => (
-                                        <motion.div key={i} animate={{ height: [12, 70 * d, 12] }} transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.05 }} className="w-2.5 bg-brand-blue rounded-full shadow-blue-glow-soft" />
+                                        <motion.div key={i} animate={{ height: [12, 70 * d, 12] }} transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.05 }} className="w-2.5 bg-liquid-gold rounded-full shadow-gold-glow-soft" />
                                     ))}
                                 </div>
-                                <div className="text-[11px] font-bold text-slate-500 text-center px-8 leading-relaxed uppercase tracking-widest">{voiceStatus}</div>
+                                <div className="text-[11px] font-bold text-slate-400 text-center px-8 leading-relaxed uppercase tracking-widest">{voiceStatus}</div>
                             </motion.div>
                         ) : (
                             <motion.button 
                                 key="inactive" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startVoiceTracking} 
-                                className="text-white flex items-center gap-4 px-6"
+                                className="text-slate-950 flex items-center gap-4 px-6 font-black"
                             >
-                                <HeadphonesIcon className="w-6 h-6" />
-                                {foundJobs.length > 0 && <span className="text-[11px] font-black uppercase tracking-widest">ASISTENTE IA</span>}
+                                <HeadphonesIcon className="w-6 h-6 text-slate-950" />
+                                {foundJobs.length > 0 && <span className="text-[11px] font-black uppercase tracking-widest text-slate-950">ASISTENTE IA</span>}
                             </motion.button>
                         )}
                     </AnimatePresence>
@@ -600,8 +669,8 @@ const TrackingPage: React.FC = () => {
                 .animate-scan-y { animation: scan-y 8s linear infinite; }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                .shadow-blue-glow { box-shadow: 0 0 30px rgba(14,165,233,0.3); }
-                .shadow-blue-glow-soft { box-shadow: 0 0 15px rgba(14,165,233,0.1); }
+                .shadow-gold-glow { box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); }
+                .shadow-gold-glow-soft { box-shadow: 0 0 15px rgba(212, 175, 55, 0.1); }
                 * { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
                 .bg-noise { background-image: url('https://grainy-gradients.vercel.app/noise.svg'); }
             `}</style>
