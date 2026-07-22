@@ -189,3 +189,48 @@ export interface CostConfig {
   MARGEN_GANANCIA: number;
   proveedoresPredeterminados: Record<string, string>;
 }
+
+export type EstadoFacturaSri = 'PENDIENTE' | 'PROCESANDO' | 'AUTORIZADO' | 'RECHAZADO' | 'ANULADO' | 'ERROR';
+
+export interface FacturaDetalleItem {
+  codigo: string;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento: number;
+  precioTotal: number;
+  iva: number;
+}
+
+export interface FacturaElectronica {
+  id: string;
+  trabajoId?: string;
+  clienteId: string;
+  claveAcceso: string;
+  numeroFactura: string; // e.g. 001-001-000000123
+  establecimiento: string; // 001
+  puntoEmision: string; // 001
+  secuencial: string; // 000000123
+  fechaEmision: string;
+  clienteNombre: string;
+  clienteIdentificacion: string;
+  clienteTipoId: 'RUC' | 'CEDULA' | 'PASAPORTE';
+  clienteEmail?: string;
+  clienteDireccion?: string;
+  subtotalSinImpuestos: number;
+  subtotal12: number;
+  subtotal0: number;
+  iva12: number;
+  total: number;
+  estado: EstadoFacturaSri;
+  ambiente: 'PRUEBAS' | 'PRODUCCION';
+  mensajesSri?: string[];
+  fechaAutorizacion?: string;
+  numeroAutorizacion?: string;
+  xmlSignedUrl?: string;
+  ridePdfUrl?: string;
+  emailEnviado?: boolean;
+  detalles: FacturaDetalleItem[];
+  created_at?: string;
+}
+

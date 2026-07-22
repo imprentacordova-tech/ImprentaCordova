@@ -12,6 +12,7 @@ import {
     RocketLaunchIcon,
     CircleStackIcon,
     CalculatorIcon,
+    ReceiptIcon
 } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,10 +30,10 @@ const ActionHub: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     const actions = [
         { label: 'Nueva Orden',         icon: SparklesIcon,     path: '/nuevo',        accent: 'bg-brand-blue text-white' },
+        { label: 'Facturar SRI',        icon: ReceiptIcon,      path: '/facturacion',  accent: 'bg-emerald-600 text-white' },
         { label: 'Despacho',           icon: RocketLaunchIcon,  path: '/retiros',      accent: 'bg-slate-900 text-white' },
         { label: 'Taller KDS',         icon: MonitorIcon,       path: '/kds',          accent: 'bg-purple-600 text-white' },
         { label: 'Inventario',         icon: CircleStackIcon,   path: '/inventario',   accent: 'bg-emerald-600 text-white' },
-        { label: 'Calculadora',        icon: CalculatorIcon,    path: '/calculadora',  accent: 'bg-amber-500 text-white' },
         { label: 'Cuentas',            icon: WalletIcon,        path: '/cuentas',      accent: 'bg-rose-500 text-white' },
     ];
 

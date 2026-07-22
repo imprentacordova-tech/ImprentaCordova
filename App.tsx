@@ -33,6 +33,7 @@ import TrabajosPage from './pages/Trabajos';
 import RegistroActividadPage from './pages/RegistroActividad';
 import CuentasPage from './pages/Cuentas';
 import VitrinaPage from './pages/Vitrina';
+import FacturacionElectronicaPage from './pages/FacturacionElectronica';
 
 /**
  * ProtectedRoute component to handle authenticated access.
@@ -107,6 +108,7 @@ const App: React.FC = () => {
             <Route path="/finanzas" element={<FinanzasPage />} />
             <Route path="/usuarios" element={<GestionUsuariosPage />} />
             <Route path="/cuentas" element={<CuentasPage />} />
+            <Route path="/facturacion" element={<FacturacionElectronicaPage />} />
             <Route path="/registro" element={<RegistroActividadPage />} />
             <Route path="/calculadora" element={<CalculadoraPreciosPage />} />
             <Route path="/configuracion" element={<ConfiguracionPage />} />

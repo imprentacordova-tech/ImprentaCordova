@@ -70,6 +70,10 @@ const TrabajoDetallePage: React.FC = () => {
                         <PrinterIcon className="w-4 h-4 text-brand-blue" /> Recibo Epson
                     </button>
 
+                    <button onClick={() => navigate('/facturacion')} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm hover:bg-emerald-700 transition-all flex items-center gap-2">
+                        <ReceiptIcon className="w-4 h-4" /> Factura Electrónica SRI
+                    </button>
+
                     {(trabajo.estado === TrabajoEstado.VITRINA || trabajo.estado === TrabajoEstado.ENTREGADO) && (
                         <button onClick={() => navigate(`/nota-de-venta/${trabajo.id}`)} className="px-6 py-3 bg-brand-red text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm hover:bg-rose-700 transition-all flex items-center gap-2">
                             <PrinterIcon className="w-4 h-4" /> Nota de Retiro

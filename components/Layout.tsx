@@ -52,6 +52,7 @@ const buildNavGroups = (isAdmin: boolean) => [
         title: 'Finanzas',
         items: [
             { path: '/cuentas',     label: 'Cuentas por Cobrar',  icon: WalletIcon,       badge: 'cobrar' },
+            { path: '/facturacion', label: 'Facturación SRI',     icon: ReceiptIcon,      badge: null },
             { path: '/finanzas',    label: 'Flujo de Caja',        icon: ReceiptIcon,      badge: null },
             { path: '/calculadora', label: 'Calculadora',          icon: CalculatorIcon,   badge: null },
         ],
@@ -84,6 +85,7 @@ const PAGE_TITLES: Record<string, string> = {
     '/diseno':        'Diseño Gráfico',
     '/inventario':    'Bodega de Insumos',
     '/cuentas':       'Cuentas por Cobrar',
+    '/facturacion':   'Facturación Electrónica SRI',
     '/finanzas':      'Flujo de Caja',
     '/calculadora':   'Calculadora de Precios',
     '/clientes':      'Directorio de Clientes',
