@@ -1,0 +1,21 @@
+{
+  "name": "cordova-sri-backend",
+  "version": "1.0.0",
+  "description": "Microservicio de Firma Electrónica y Conexión SRI Ecuador para Imprenta Córdova",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "node-forge": "^1.3.1",
+    "fast-xml-parser": "^4.3.2",
+    "axios": "^1.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
