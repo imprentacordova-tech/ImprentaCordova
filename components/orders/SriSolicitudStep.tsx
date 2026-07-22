@@ -6,21 +6,15 @@ import {
     KeyIcon, 
     MapPinIcon,
     ArrowRightIcon,
-    CheckBadgeIcon,
     SparklesIcon,
     PlusIcon,
     PencilIcon,
     TrashIcon,
-    XMarkIcon,
-    ExclamationTriangleIcon,
     ShieldCheckIcon,
-    LayersIcon,
-    ShieldIcon,
-    CpuIcon,
     Building2Icon,
-    BoltIcon,
-    RocketLaunchIcon,
-    ArrowPathIcon
+    CheckCircleIcon,
+    ChevronLeftIcon,
+    Loader2Icon
 } from '../Icons';
 import { Cliente } from '../../types';
 import { useData } from '../../contexts/DataContext';
@@ -44,62 +38,6 @@ interface SriSolicitudStepProps {
     onBack: () => void;
 }
 
-const ValidationTerminal = ({ active }: { active: boolean }) => {
-    const [logs, setLogs] = useState<string[]>([]);
-    const messages = [
-        "INITIATING_SECURE_SRI_PROTOCOL [V5.1.0]...",
-        "RSA_KEY_EXCHANGE: AUTHENTICATED [0x7FF-EA]",
-        "ESTABLISHING_TRACEABLE_TRADEMARK_LINK...",
-        "ENCRYPTING_PAYLOAD [AES-256-GCM]...",
-        "VALIDATING_POINT_EMISSION_DATA...",
-        "TAXPAYER_REGIMEN_MATCH: OK",
-        "SYNCING_METADATA_WITH_SUPABASE_PRODUCTION...",
-        "SECURE_TOKEN_GRANTED: PR-992-DELTA",
-        "HANDSHAKE_COMPLETE: STANDBY_DEPLOY"
-    ];
-
-    useEffect(() => {
-        if (active && logs.length === 0) {
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < messages.length) {
-                    setLogs(prev => [...prev, messages[i]]);
-                    i++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 300);
-            return () => clearInterval(interval);
-        }
-        if (!active) setLogs([]);
-    }, [active]);
-
-    return (
-        <div className="bg-slate-50/80 backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-8 h-48 font-mono text-[10px] overflow-hidden relative group shadow-2xl tactical-border">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-blue/40 animate-shimmer z-20" />
-            <div className="absolute inset-0 bg-scanlines opacity-10 pointer-events-none" />
-            
-            <div className="space-y-2 relative z-10">
-                <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                    <span className="text-[10px] text-brand-blue font-black tracking-[0.5em]">SRI_LIVE_TELEMETRY</span>
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-blue-glow" />
-                        <span className="text-[9px] text-emerald-500 font-black uppercase tracking-widest">LINK_STABLE</span>
-                    </div>
-                </div>
-                <div className="space-y-1.5 overflow-y-auto max-h-24 custom-scrollbar">
-                    {logs.map((log, i) => (
-                        <div key={i} className="flex gap-4 items-center animate-in slide-in-from-left-4 duration-300">
-                            <span className="text-brand-blue/30 font-black">[{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span>
-                            <span className={i === logs.length - 1 ? "text-brand-blue font-black" : "text-slate-400 font-bold"}>{log}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({ 
     cliente, 
     initialData, 
@@ -111,7 +49,7 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
     const [establecimiento, setEstablecimiento] = useState(initialData.establecimiento || '001');
     const [puntoEmision, setPuntoEmision] = useState(initialData.puntoEmision || '001');
     const [clave, setClave] = useState(initialData.clave || '');
-    const [modo, setModo] = useState<'NUEVO' | 'RENOVACION'>(initialData.modo || 'NUEVO');
+    const [modo, setModo] = useState<'NUEVO' | 'RENOVACION'>(initialData.modo || 'RENOVACION');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [localActividades, setLocalActividades] = useState<string[]>(() => {
@@ -119,17 +57,6 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
             return cliente.fiscal_data.actividades.map(a => a.descripcion);
         }
         return cliente.actividades ? cliente.actividades.split('|').map(a => a.trim()).filter(a => a.length > 0) : [];
-    });
-
-    const [availableEstablecimientos] = useState<{codigo: string, nombre: string, direccion: string}[]>(() => {
-        if (cliente.fiscal_data?.establecimientos && cliente.fiscal_data.establecimientos.length > 0) {
-            return cliente.fiscal_data.establecimientos.map(e => ({
-                codigo: e.codigo,
-                nombre: e.nombre,
-                direccion: e.direccion
-            }));
-        }
-        return [{ codigo: '001', nombre: 'MATRIZ', direccion: cliente.direccion }];
     });
 
     const [isAdding, setIsAdding] = useState(false);
@@ -150,13 +77,13 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                 actividades: newActs.join(' | ')
             });
         } catch (err) {
-            console.error("Error persistiendo actividades:", err);
+            console.error("Error al guardar actividades:", err);
         }
     };
 
     const handleAddManual = async () => {
         if (!newActInput.trim()) return;
-        const formatted = newActInput.startsWith('•') ? newActInput.trim() : `• ${newActInput.trim()}`;
+        const formatted = newActInput.trim();
         const updated = [...localActividades, formatted];
         setLocalActividades(updated);
         setActividad(formatted);
@@ -196,313 +123,282 @@ const SriSolicitudStep: React.FC<SriSolicitudStepProps> = ({
                 clave,
                 modo
             });
-        }, 3200);
+        }, 600);
     };
 
     const isFormValid = actividad && establecimiento.length === 3 && puntoEmision.length === 3 && clave;
 
     return (
-        <div className="space-y-10 md:space-y-14 relative overflow-hidden px-1 md:px-0">
-            {/* Tactical Grid Background Overlay */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:40px_40px] z-0" />
-
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-10 relative pb-10 md:pb-14 border-b border-slate-100 z-10">
-                <div className="absolute top-0 left-0 w-32 md:w-48 h-[2px] bg-brand-blue shadow-blue-glow animate-pulse" />
-                <div className="flex items-center gap-6 w-full md:w-auto">
-                    <div className="min-w-0 space-y-2">
-                        <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none truncate">
-                            Protocolo <span className="text-blue-gradient">Elite SRI</span>
-                        </h2>
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-blue-glow" />
-                            <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-[9px] md:text-[11px]">
-                                VALIDACIÓN_TRIBUTARIA_SÍNCRONA
-                            </p>
+        <div className="space-y-8">
+            {/* Header del Cliente */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
+                        <ShieldCheckIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest">Contribuyente Seleccionado</span>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight">{cliente.nombre}</h2>
+                        <div className="flex items-center gap-2 mt-0.5 text-[11px] font-mono text-slate-500">
+                            <span>RUC/CI: <strong>{cliente.ruc || cliente.cedula}</strong></span>
+                            <span>•</span>
+                            <span>Régimen: <strong className="text-brand-blue">{cliente.regimen || 'General'}</strong></span>
                         </div>
                     </div>
                 </div>
-                <div className="w-full md:w-auto glass-panel-light border border-slate-200 px-8 md:px-12 py-6 md:py-8 rounded-[2.5rem] flex items-center gap-6 md:gap-10 relative group overflow-hidden shadow-luxury tactical-border">
-                    <div className="absolute inset-0 bg-gradient-to-r from-brand-blue/10 via-transparent to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-blue text-white rounded-2xl flex items-center justify-center shadow-blue-glow flex-shrink-0 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                        <FingerPrintIcon className="w-6 h-6 md:w-8 md:h-8 relative z-10" />
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                        <p className="text-[10px] md:text-[12px] text-brand-blue font-black uppercase tracking-[0.4em] mb-1">OPERADOR_VERIFIED</p>
-                        <p className="text-slate-900 font-black tracking-tighter uppercase text-xl md:text-3xl leading-none truncate">{cliente.nombre}</p>
-                    </div>
+
+                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-1.5 rounded-full text-[10px] font-bold">
+                    <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                    <span>Datos SRI Verificados</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16 relative z-10">
-                {/* Left Column: Activity Management */}
-                <div className="space-y-10 md:space-y-12">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 md:gap-10">
-                        <label className="flex items-center gap-4 text-[12px] md:text-[14px] text-slate-400 font-black uppercase tracking-[0.4em]">
-                            <SparklesIcon className="w-6 h-6 text-brand-blue animate-pulse" />
-                            Vector de Actividad
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                {/* Columna Izquierda: Tipo de Trámite y Actividades */}
+                <div className="lg:col-span-7 space-y-6">
+
+                    {/* Selector Modo de Trámite */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                            Modo de Solicitud SRI
                         </label>
-                        <button 
-                            onClick={() => setIsAdding(true)}
-                            className="w-full sm:w-auto text-[11px] md:text-[13px] bg-slate-100 hover:bg-brand-blue px-8 py-4 md:py-5 rounded-[2rem] text-slate-900 hover:text-white font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-4 border border-slate-200 hover:border-brand-blue shadow-luxury active:scale-95"
-                        >
-                            <PlusIcon className="w-5 h-5" /> INYECTAR_REGISTRO
-                        </button>
-                    </div>
-                    
-                    <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[600px] overflow-y-auto pr-4 md:pr-8 custom-scrollbar">
-                        <AnimatePresence mode="popLayout">
-                            {isAdding && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: -40, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    className="p-10 md:p-14 bg-brand-blue/5 border-2 border-brand-blue rounded-[3rem] md:rounded-[4rem] space-y-8 shadow-blue-glow tactical-border"
-                                >
-                                    <textarea 
-                                        autoFocus
-                                        value={newActInput}
-                                        onChange={(e) => setNewActInput(e.target.value)}
-                                        placeholder="DESCRIBA LA ACTIVIDAD TRIBUTARIA SEGÚN RUC..."
-                                        className="w-full bg-white border border-brand-blue/40 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 text-slate-900 text-base md:text-xl font-black uppercase min-h-[150px] md:min-h-[200px] focus:ring-0 focus:border-brand-blue placeholder:text-brand-blue/20"
-                                    />
-                                    <div className="flex gap-4 md:gap-6">
-                                        <button 
-                                            onClick={handleAddManual}
-                                            className="flex-1 bg-brand-blue text-white py-6 md:py-8 rounded-[2rem] font-black text-[12px] md:text-[15px] uppercase tracking-[0.3em] hover:bg-brand-blue-dark transition-all active:scale-95 shadow-luxury"
-                                        >
-                                            AUTORIZAR_SINCRONIZACIÓN
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsAdding(false)}
-                                            className="px-8 md:px-10 bg-slate-100 text-slate-900 rounded-[2rem] hover:bg-slate-200 transition-all border border-slate-200"
-                                        >
-                                            <XMarkIcon className="w-8 h-8" />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {localActividades.map((acc, idx) => (
-                                <motion.div key={idx} layout initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
-                                    {editingIdx === idx ? (
-                                        <div className="p-10 md:p-14 glass-panel-light border-2 border-slate-200 rounded-[3rem] md:rounded-[4rem] space-y-8 backdrop-blur-3xl tactical-border shadow-luxury">
-                                            <textarea 
-                                                autoFocus
-                                                value={editInput}
-                                                onChange={(e) => setEditInput(e.target.value)}
-                                                className="w-full bg-white border border-slate-200 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 text-slate-900 text-base md:text-xl font-black uppercase min-h-[150px] md:min-h-[200px] focus:ring-0 focus:border-brand-blue"
-                                            />
-                                            <div className="flex gap-4 md:gap-6">
-                                                <button 
-                                                    onClick={handleSaveEdit}
-                                                    className="flex-1 bg-brand-blue text-white py-6 md:py-8 rounded-[2rem] font-black text-[12px] md:text-[15px] uppercase tracking-[0.3em] shadow-blue-glow active:scale-95"
-                                                >
-                                                    SOBRESCRIBIR_REGISTRO
-                                                </button>
-                                                <button 
-                                                    onClick={() => setEditingIdx(null)}
-                                                    className="px-8 md:px-10 bg-slate-100 text-slate-900 rounded-[2rem] hover:bg-slate-200 border border-slate-200 transition-all"
-                                                >
-                                                    <XMarkIcon className="w-8 h-8" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="group relative">
-                                            <button
-                                                onClick={() => setActividad(acc)}
-                                                className={`w-full text-left p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border transition-all duration-700 flex items-center justify-between overflow-hidden relative ${
-                                                    actividad === acc 
-                                                    ? 'bg-brand-blue/5 border-brand-blue/60 text-slate-900 shadow-blue-glow' 
-                                                    : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300 hover:bg-slate-50'
-                                                }`}
-                                            >
-                                                {actividad === acc && (
-                                                    <motion.div 
-                                                        layoutId="glow" 
-                                                        className="absolute inset-0 bg-gradient-to-r from-brand-blue/5 via-transparent to-brand-blue/5 pointer-events-none" 
-                                                    />
-                                                )}
-                                                <div className="flex flex-col gap-3 relative z-10 min-w-0 w-full">
-                                                    <div className="flex items-center gap-3">
-                                                        <LayersIcon className={`w-4 h-4 ${actividad === acc ? 'text-brand-blue shadow-blue-glow' : 'text-slate-200'}`} />
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40 font-mono">NODE_REG_{idx + 1}</span>
-                                                    </div>
-                                                    <span className={`text-base md:text-xl font-black uppercase tracking-tight leading-tight pr-20 transition-all duration-500 ${actividad === acc ? 'text-slate-900' : 'group-hover:text-slate-900'}`}>
-                                                        {acc}
-                                                    </span>
-                                                </div>
-                                                {actividad === acc && (
-                                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 md:w-20 md:h-20 bg-brand-blue rounded-[1.5rem] flex items-center justify-center text-white shadow-blue-glow flex-shrink-0 z-10 animate-scale-in">
-                                                        <CheckBadgeIcon className="w-8 h-8 md:w-12 md:h-12" />
-                                                    </div>
-                                                )}
-                                            </button>
-                                            
-                                            <div className="absolute right-8 md:right-12 top-1/2 -translate-y-1/2 flex items-center gap-4 md:gap-6 opacity-0 group-hover:opacity-100 transition-all translate-x-10 group-hover:translate-x-0 z-20">
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setEditingIdx(idx);
-                                                        setEditInput(acc);
-                                                    }}
-                                                    className="w-12 h-12 md:w-16 md:h-16 glass-panel-light text-slate-900 rounded-2xl border border-slate-200 hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all shadow-luxury flex items-center justify-center"
-                                                >
-                                                    <PencilIcon className="w-6 h-6 md:w-8 md:h-8" />
-                                                </button>
-                                                <button 
-                                                    onClick={(e) => handleDeleteAct(idx, e)}
-                                                    className="w-12 h-12 md:w-16 md:h-16 glass-panel-light text-rose-500 rounded-2xl border border-rose-500/10 hover:bg-rose-600 hover:text-white transition-all shadow-luxury flex items-center justify-center"
-                                                >
-                                                    <TrashIcon className="w-6 h-6 md:w-8 md:h-8" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-
-                        {localActividades.length === 0 && !isAdding && (
-                            <div className="p-16 md:p-24 bg-brand-blue/5 border-2 border-dashed border-brand-blue/20 rounded-[3rem] md:rounded-[4rem] text-center flex flex-col items-center gap-8">
-                                <div className="w-24 h-24 md:w-32 md:h-32 bg-brand-blue/10 rounded-full flex items-center justify-center text-brand-blue/40 animate-pulse border border-brand-blue/20 shadow-blue-glow-sm">
-                                    <ExclamationTriangleIcon className="w-12 h-12 md:w-16 md:h-16" />
-                                </div>
-                                <p className="text-[12px] md:text-[16px] text-brand-blue font-black uppercase tracking-[0.4em] max-w-sm leading-relaxed">
-                                    PROTOCOL_PENDING: Inyecte registro de actividad para habilitar despliegue.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Right Column: Execution Parameters */}
-                <div className="space-y-10 md:space-y-14">
-                    {/* Execution Mode */}
-                    <div className="space-y-8">
-                        <label className="flex items-center gap-4 text-[12px] md:text-[14px] text-slate-400 font-black uppercase tracking-[0.4em]">
-                            <CpuIcon className="w-6 h-6 text-brand-blue animate-pulse" />
-                            Modo de Ejecución
-                        </label>
-                        <div className="grid grid-cols-2 p-3 bg-slate-100 rounded-[2.5rem] border border-slate-200 relative overflow-hidden group shadow-luxury tactical-border">
-                            <div className="absolute inset-0 bg-scanlines opacity-5 pointer-events-none" />
-                            {['NUEVO', 'RENOVACION'].map((m) => (
-                                <button
-                                    key={m}
-                                    onClick={() => setModo(m as 'NUEVO' | 'RENOVACION')}
-                                    className={`relative z-10 py-6 md:py-8 rounded-[2rem] text-[12px] md:text-[15px] font-black uppercase tracking-[0.4em] transition-all duration-700 ${
-                                        modo === m 
-                                        ? 'text-white shadow-blue-glow' 
-                                        : 'text-slate-400 hover:text-slate-900'
-                                    }`}
-                                >
-                                    {modo === m && (
-                                        <motion.div 
-                                            layoutId="mode-bg"
-                                            className="absolute inset-0 bg-brand-blue rounded-[2rem] -z-10"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                        />
-                                    )}
-                                    {m === 'NUEVO' ? 'Primer Talonario' : 'Renovación SRI'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* SRI Credentials */}
-                    <div className="glass-panel-light border border-slate-200 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 space-y-10 md:space-y-12 relative overflow-hidden shadow-luxury tactical-border">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-brand-blue/[0.03] blur-[120px] pointer-events-none" />
-                        
-                        <div className="grid grid-cols-2 gap-8 md:gap-12 relative z-10">
-                            <div className="space-y-4">
-                                <label className="text-[11px] md:text-[13px] text-brand-blue font-black uppercase tracking-[0.4em] ml-2">Establecimiento</label>
-                                <div className="relative group/input">
-                                    <MapPinIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-brand-blue/40 group-focus-within/input:text-brand-blue transition-colors" />
-                                    <select 
-                                        value={establecimiento}
-                                        onChange={(e) => setEstablecimiento(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] py-6 md:py-8 pl-16 pr-8 text-slate-900 font-black text-xl md:text-3xl focus:border-brand-blue focus:ring-0 transition-all uppercase tracking-widest appearance-none outline-none cursor-pointer text-center"
-                                    >
-                                        {availableEstablecimientos.map(e => (
-                                            <option key={e.codigo} value={e.codigo} className="bg-white text-slate-900">{e.codigo}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="text-[11px] md:text-[13px] text-brand-blue font-black uppercase tracking-[0.4em] ml-2">Punto de Emisión</label>
-                                <div className="relative group/input">
-                                    <BoltIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-brand-blue/40 group-focus-within/input:text-brand-blue transition-colors" />
-                                    <input 
-                                        type="text"
-                                        value={puntoEmision}
-                                        onChange={(e) => setPuntoEmision(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                        placeholder="001"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] py-6 md:py-8 pl-16 pr-8 text-slate-900 font-black text-xl md:text-3xl placeholder:text-slate-200 focus:border-brand-blue focus:ring-0 transition-all uppercase tracking-widest text-center"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 relative z-10">
-                            <label className="text-[11px] md:text-[13px] text-brand-blue font-black uppercase tracking-[0.4em] ml-2">Clave de Acceso SRI</label>
-                            <div className="relative group/pass">
-                                <KeyIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-brand-blue/40 group-focus-within/pass:text-brand-blue transition-colors" />
-                                <input 
-                                    type="password"
-                                    value={clave}
-                                    onChange={(e) => setClave(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] py-6 md:py-8 pl-16 pr-8 text-slate-900 font-black text-xl md:text-3xl placeholder:text-slate-200 focus:border-brand-blue focus:ring-0 transition-all tracking-[0.6em] md:tracking-[0.8em]"
-                                />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-slate-200 group-focus-within/pass:text-brand-blue group-focus-within/pass:border-brand-blue/30 transition-all">
-                                    <ShieldCheckIcon className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <ValidationTerminal active={isSubmitting || !!(actividad && establecimiento && puntoEmision && clave)} />
-
-                        <div className="pt-6">
+                        <div className="grid grid-cols-2 gap-3">
                             <button
-                                onClick={handleSubmit}
-                                disabled={!isFormValid || isSubmitting}
-                                className={`w-full group relative overflow-hidden rounded-[2.5rem] py-10 md:py-12 flex items-center justify-center gap-6 transition-all duration-700 shadow-luxury active:scale-[0.98] ${
-                                    !isFormValid 
-                                    ? 'bg-slate-100 text-slate-300 cursor-not-allowed border border-slate-200' 
-                                    : 'bg-brand-blue text-white shadow-blue-glow hover:scale-[1.01]'
+                                type="button"
+                                onClick={() => setModo('RENOVACION')}
+                                className={`p-4 rounded-xl border text-left transition-all ${
+                                    modo === 'RENOVACION'
+                                        ? 'bg-brand-blue/5 border-brand-blue text-brand-blue ring-2 ring-brand-blue/10'
+                                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                                 }`}
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                                
-                                {isSubmitting ? (
-                                    <>
-                                        <ArrowPathIcon className="w-8 h-8 md:w-10 md:h-10 animate-spin" />
-                                        <span className="text-xl md:text-3xl font-black uppercase tracking-[0.5em]">DEPLOYING_PROTOCOL...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <RocketLaunchIcon className={`w-8 h-8 md:w-10 md:h-10 transition-transform duration-500 ${isFormValid ? 'group-hover:-translate-y-2 group-hover:translate-x-2' : ''}`} />
-                                        <span className="text-xl md:text-3xl font-black uppercase tracking-[0.5em]">Desplegar Protocolo</span>
-                                    </>
-                                )}
+                                <div className="text-[12px] font-black uppercase">Reimpresión / Renovación</div>
+                                <div className="text-[10px] text-slate-400 mt-1">Siguiente talonario o actualización de datos</div>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setModo('NUEVO')}
+                                className={`p-4 rounded-xl border text-left transition-all ${
+                                    modo === 'NUEVO'
+                                        ? 'bg-brand-blue/5 border-brand-blue text-brand-blue ring-2 ring-brand-blue/10'
+                                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                                }`}
+                            >
+                                <div className="text-[12px] font-black uppercase">Primer Talonario</div>
+                                <div className="text-[10px] text-slate-400 mt-1">Primera autorización de imprenta por el SRI</div>
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Back Navigation */}
-            <div className="flex justify-center pt-10 md:pt-16 pb-10 border-t border-slate-100">
-                <button 
-                    onClick={onBack}
-                    className="flex items-center gap-4 text-[12px] md:text-[15px] text-slate-400 font-black uppercase tracking-[0.4em] hover:text-brand-blue transition-all duration-500 group active:scale-95"
-                >
-                    <span className="group-hover:-translate-x-4 transition-transform">←</span> RETORNAR_A_IDENTIDAD
-                </button>
+                    {/* Actividades Económicas */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Actividad Económica a Imprimir
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setIsAdding(true)}
+                                className="text-[10px] font-black text-brand-blue hover:underline flex items-center gap-1 uppercase"
+                            >
+                                <PlusIcon className="w-3.5 h-3.5" /> Agregar Actividad
+                            </button>
+                        </div>
+
+                        {/* Modal/Input rápido para agregar */}
+                        {isAdding && (
+                            <div className="flex gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <input
+                                    type="text"
+                                    value={newActInput}
+                                    onChange={e => setNewActInput(e.target.value)}
+                                    placeholder="Escribe la actividad económica..."
+                                    className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-[12px] font-medium outline-none focus:border-brand-blue"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAddManual}
+                                    className="px-4 py-2 bg-brand-blue text-white text-[10px] font-black uppercase rounded-lg hover:bg-brand-blue/90"
+                                >
+                                    Guardar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAdding(false)}
+                                    className="px-3 py-2 text-slate-400 hover:text-slate-600 text-[10px]"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Lista de actividades disponibles */}
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            {localActividades.length === 0 ? (
+                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-700 font-medium">
+                                    No hay actividades asociadas. Haz clic en "Agregar Actividad" para ingresar la del comprobante.
+                                </div>
+                            ) : (
+                                localActividades.map((act, idx) => {
+                                    const isSelected = actividad === act;
+                                    const isEditing = editingIdx === idx;
+
+                                    if (isEditing) {
+                                        return (
+                                            <div key={idx} className="flex gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                                <input
+                                                    type="text"
+                                                    value={editInput}
+                                                    onChange={e => setEditInput(e.target.value)}
+                                                    className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] outline-none"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSaveEdit}
+                                                    className="px-3 py-1.5 bg-brand-blue text-white text-[10px] font-bold rounded-lg"
+                                                >
+                                                    OK
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setActividad(act)}
+                                            className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                                                isSelected
+                                                    ? 'bg-brand-blue/5 border-brand-blue text-brand-blue font-bold shadow-sm'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0 pr-2">
+                                                <span className={`w-2 h-2 rounded-full shrink-0 ${isSelected ? 'bg-brand-blue' : 'bg-slate-300'}`} />
+                                                <span className="text-[12px] truncate">{act}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); setEditInput(act); }}
+                                                    className="p-1 text-slate-400 hover:text-slate-700"
+                                                    title="Editar"
+                                                >
+                                                    <PencilIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => handleDeleteAct(idx, e)}
+                                                    className="p-1 text-slate-400 hover:text-red-500"
+                                                    title="Eliminar"
+                                                >
+                                                    <TrashIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Columna Derecha: Establecimiento, Punto Emisión y Clave */}
+                <div className="lg:col-span-5 space-y-6">
+
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                            Parámetros del SRI
+                        </label>
+
+                        {/* Establecimiento & Punto Emisión */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
+                                    Establecimiento
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        maxLength={3}
+                                        value={establecimiento}
+                                        onChange={e => setEstablecimiento(e.target.value.padStart(3, '0').slice(-3))}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-mono text-center font-black text-slate-900 text-base outline-none focus:border-brand-blue"
+                                        placeholder="001"
+                                    />
+                                </div>
+                                <span className="text-[9px] text-slate-400 mt-0.5 block text-center">3 dígitos (Ej. 001)</span>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
+                                    Punto de Emisión
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        maxLength={3}
+                                        value={puntoEmision}
+                                        onChange={e => setPuntoEmision(e.target.value.padStart(3, '0').slice(-3))}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-mono text-center font-black text-slate-900 text-base outline-none focus:border-brand-blue"
+                                        placeholder="001"
+                                    />
+                                </div>
+                                <span className="text-[9px] text-slate-400 mt-0.5 block text-center">3 dígitos (Ej. 001)</span>
+                            </div>
+                        </div>
+
+                        {/* Clave del SRI */}
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
+                                Clave / Código de Trámite SRI
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={clave}
+                                    onChange={e => setClave(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 font-mono font-bold text-slate-900 text-sm outline-none focus:border-brand-blue"
+                                    placeholder="Ingresa clave o código SRI..."
+                                />
+                                <KeyIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            </div>
+                            <span className="text-[9px] text-slate-400 mt-1 block">Clave otorgada por el portal del SRI para autorizar impresión</span>
+                        </div>
+                    </div>
+
+                    {/* Botones de Navegación */}
+                    <div className="flex items-center justify-between gap-4 pt-2">
+                        <button
+                            type="button"
+                            onClick={onBack}
+                            className="flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-black uppercase transition-all"
+                        >
+                            <ChevronLeftIcon className="w-4 h-4" /> Atrás
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled={!isFormValid || isSubmitting}
+                            onClick={handleSubmit}
+                            className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-blue text-white rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-brand-blue/90 disabled:opacity-40 transition-all shadow-blue-glow-sm"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2Icon className="w-4 h-4 animate-spin" /> Procesando Trámite...
+                                </>
+                            ) : (
+                                <>
+                                    Continuar a Selección de Servicios <ArrowRightIcon className="w-4 h-4" />
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     );
