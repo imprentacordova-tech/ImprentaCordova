@@ -1,13 +1,13 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
     SearchIcon, ShieldCheckIcon, 
     CheckCircleIcon, SparklesIcon,
-    BoxIcon, LayersIcon
+    BoxIcon, LayersIcon, PlusIcon, ChevronRightIcon
 } from '../Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Regimen } from '../../types';
 import { useData, CATEGORY_EMOJIS } from '../../contexts/DataContext';
+import { formatCurrency } from '../../utils';
 
 interface ServiceSelectorProps {
     onSelect: (servicio: any) => void;
@@ -55,7 +55,6 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                 if (effectiveRegimen) {
                     const name = (p.nombre || '').toUpperCase();
                     const isPopular = effectiveRegimen === Regimen.NEGOCIO_POPULAR;
-                    const isEmprendedor = effectiveRegimen === Regimen.EMPRENDEDOR;
                     const cleanName = name.replace(/\(.*\)/, '').trim(); 
                     
                     const docsPopular = ['FACTURA', 'NOTA DE VENTA', 'LIQUIDACION DE COMPRA', 'NOTAS DE CREDITO', 'NOTAS DE DEBITO', 'GUIAS DE REMISION', 'BOLETOS', 'ENTRADAS', 'FACTURERO', 'COMPROBANTE', 'RETENCION'];
@@ -89,163 +88,125 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
     }, [activeCategory, searchTerm]);
 
     return (
-        <div className="space-y-12 animate-fade-in pb-20">
-            {/* --- CABECERA TÁCTICA --- */}
-            <div className="glass-panel-light p-8 md:p-12 rounded-[3.5rem] border-slate-200 relative overflow-hidden group tactical-border shadow-luxury">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-transparent to-transparent opacity-30" />
-                
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
-                    <div className="flex-1 max-w-2xl space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-brand-blue shadow-blue-glow animate-pulse" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">CATÁLOGO_INDUSTRIAL_ALFA</p>
-                        </div>
-                        <div className="relative group">
-                            <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within:text-brand-blue group-focus-within:scale-110 transition-all" />
-                            <input 
-                                type="text" 
-                                value={searchTerm} 
-                                onChange={e => setSearchTerm(e.target.value)} 
-                                placeholder="IDENTIFICAR VECTOR DE PRODUCCIÓN..." 
-                                className="w-full pl-16 pr-8 py-7 bg-slate-50 border border-slate-200 rounded-3xl text-xl font-black text-slate-900 focus:border-brand-blue/40 transition-all placeholder:text-slate-300 uppercase tracking-widest" 
-                            />
-                        </div>
+        <div className="space-y-6 pb-6">
+            {/* ── BÚSQUEDA Y SELECCIÓN DE CATEGORÍAS ───────────────────────── */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="relative flex-1 w-full">
+                        <SearchIcon className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                        <input 
+                            type="text" 
+                            value={searchTerm} 
+                            onChange={e => setSearchTerm(e.target.value)} 
+                            placeholder="Buscar producto o servicio gráfico..." 
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[12px] font-bold text-slate-900 focus:border-brand-blue outline-none transition-all placeholder:text-slate-400" 
+                        />
                     </div>
-
-                    {!forcedCategory && (
-                        <div className="flex-shrink-0 space-y-4">
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest ml-4">Segmentación_Filtro</p>
-                            <div className="flex gap-2 p-1.5 bg-slate-50 rounded-[2rem] border border-slate-200 overflow-x-auto no-scrollbar max-w-full">
-                                {categories.map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setActiveCategory(cat)}
-                                        className={`relative px-6 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap z-10 ${
-                                            activeCategory === cat ? 'text-white' : 'text-slate-500 hover:text-slate-900'
-                                        }`}
-                                    >
-                                        {activeCategory === cat && (
-                                            <motion.div layoutId="activeCat" className="absolute inset-0 bg-brand-blue rounded-2xl -z-10 shadow-blue-glow-sm" />
-                                        )}
-                                        <span className="flex items-center gap-3">
-                                            <span className="text-lg">{(CATEGORY_EMOJIS as any)[cat] || '📦'}</span> {cat}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
-                {/* RÉGIMEN SELECTOR */}
-                {(activeCategory === 'SRI' || forcedCategory === 'SRI') && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-10 pt-10 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-2">
-                            <p className="text-[10px] text-brand-blue font-black uppercase tracking-widest flex items-center gap-3">
-                                <ShieldCheckIcon className="w-4 h-4"/> Sincronización de Régimen Fiscal
-                            </p>
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                {effectiveRegimen ? `VECTOR ACTIVO: ${effectiveRegimen.toUpperCase()}` : 'SELECCIONE PROTOCOLO PARA VALIDACIÓN DINÁMICA'}
-                            </p>
-                        </div>
-                        <div className="flex gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
-                            {[Regimen.GENERAL, Regimen.EMPRENDEDOR, Regimen.NEGOCIO_POPULAR].map((reg) => (
+                {/* Pill categories scroll */}
+                {!forcedCategory && (
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        {categories.map(cat => {
+                            const isSelected = activeCategory === cat;
+                            const emoji = (CATEGORY_EMOJIS as any)[cat] || '📦';
+                            return (
                                 <button
-                                    key={reg}
-                                    onClick={() => setManualRegimen(reg)}
-                                    className={`px-5 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                                        effectiveRegimen === reg ? 'bg-brand-blue text-white shadow-blue-glow-sm' : 'text-slate-400 hover:text-slate-900'
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all border ${
+                                        isSelected
+                                            ? 'bg-brand-blue text-white border-brand-blue shadow-blue-glow-sm'
+                                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                                     }`}
                                 >
-                                    {reg}
+                                    <span>{emoji}</span>
+                                    <span>{cat}</span>
                                 </button>
-                            ))}
-                        </div>
-                    </motion.div>
+                            );
+                        })}
+                    </div>
                 )}
             </div>
 
-            {/* --- GRID DE RESULTADOS --- */}
-            <div ref={scrollRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10">
+            {/* ── GRID DE PRODUCTOS DEL CATÁLOGO ─────────────────────────── */}
+            <div ref={scrollRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <AnimatePresence mode="popLayout">
-                    {finalFiltered.map((p, idx) => (
-                        <motion.button
-                            layout key={p.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.05 } }}
-                            whileHover={{ y: -10, transition: { duration: 0.4 } }}
-                            onClick={() => onSelect(p)}
-                            className={`group relative flex flex-col h-[320px] md:h-[380px] rounded-[3rem] overflow-hidden border-2 transition-all duration-700 bg-white shadow-luxury ${
-                                selectedId === p.id ? 'border-brand-blue shadow-blue-glow-strong' : 'border-slate-100 hover:border-slate-300'
-                            }`}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/0 via-brand-blue/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                            
-                            {/* Visual Asset Container */}
-                            <div className="relative h-1/2 overflow-hidden bg-slate-50">
-                                {p.imagenUrl ? (
-                                    <img src={p.imagenUrl} alt={p.nombre} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <LayersIcon className="w-24 h-24 text-slate-300" />
-                                    </div>
-                                )}
-                                
-                                {p.esSRI && (
-                                    <div className="absolute top-6 left-6 bg-brand-blue text-white text-[10px] font-black px-4 py-1.5 rounded-xl uppercase tracking-widest flex items-center gap-2 shadow-blue-glow-sm z-20">
-                                        <ShieldCheckIcon className="w-3.5 h-3.5" /> SRI_ACTIVE
-                                    </div>
-                                )}
-
-                                <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-100 z-20 group-hover:border-brand-blue/50 transition-all">
-                                    <span className="text-base font-black text-slate-900 tracking-tighter tabular-nums">${(p.precio || 0).toFixed(2)}</span>
-                                </div>
-
-                                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
-                            </div>
-
-                            {/* Data Panel */}
-                            <div className="p-8 md:p-10 flex flex-col flex-1 relative z-10 justify-between">
+                    {finalFiltered.map((p) => {
+                        const isSelected = selectedId === p.id;
+                        return (
+                            <motion.div
+                                layout
+                                key={p.id}
+                                onClick={() => onSelect(p)}
+                                className={`group bg-white rounded-2xl border-2 p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${
+                                    isSelected
+                                        ? 'border-brand-blue bg-brand-blue/5'
+                                        : 'border-slate-200 hover:border-slate-300'
+                                }`}
+                            >
                                 <div className="space-y-3">
-                                    <h4 className={`text-lg md:text-xl font-black uppercase tracking-tighter leading-none transition-colors ${
-                                        selectedId === p.id ? 'text-brand-blue' : 'text-slate-900 group-hover:text-brand-blue'
-                                    }`}>{p.nombre}</h4>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-sm">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-lg shrink-0">
                                             {(CATEGORY_EMOJIS as any)[p.categoria] || '📦'}
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{p.categoria || 'GENERAL'}</span>
+                                        {p.esSRI ? (
+                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-full bg-brand-blue/10 text-brand-blue border border-brand-blue/20 uppercase">
+                                                SRI Fiscal
+                                            </span>
+                                        ) : (
+                                            <span className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase">
+                                                {p.categoria || 'General'}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-sm font-black text-slate-900 uppercase leading-snug group-hover:text-brand-blue transition-colors">
+                                            {p.nombre}
+                                        </h4>
+                                        <p className="text-[10px] text-slate-400 line-clamp-2 mt-1">
+                                            {p.descripcion || 'Producto o servicio de imprenta'}
+                                        </p>
                                     </div>
                                 </div>
-                                
-                                <div className="flex justify-between items-center mt-6">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest group-hover:text-brand-blue/40 transition-colors">ESTADO: OPERACIONAL</span>
-                                    {selectedId === p.id ? (
-                                        <div className="w-8 h-8 rounded-full bg-brand-blue flex items-center justify-center shadow-blue-glow animate-pulse">
-                                            <CheckCircleIcon className="w-5 h-5 text-white" />
-                                        </div>
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-300 group-hover:border-brand-blue/40 group-hover:text-brand-blue transition-all">
-                                            <SparklesIcon className="w-4 h-4" />
-                                        </div>
-                                    )}
+
+                                <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-4">
+                                    <div>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase block">Precio Base</span>
+                                        <span className="text-base font-black text-slate-900">{formatCurrency(p.precio || 0)}</span>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1 ${
+                                            isSelected
+                                                ? 'bg-brand-blue text-white shadow-sm'
+                                                : 'bg-slate-100 text-slate-700 group-hover:bg-brand-blue group-hover:text-white'
+                                        }`}
+                                    >
+                                        <span>Seleccionar</span>
+                                        <ChevronRightIcon className="w-3.5 h-3.5" />
+                                    </button>
                                 </div>
-                            </div>
-                        </motion.button>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </AnimatePresence>
-                
-                {/* FALLBACK TÁCTICO */}
+
+                {/* Fallback cuando no hay resultados */}
                 {searchTerm && finalFiltered.length === 0 && (
-                    <motion.button 
-                        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                    <div 
                         onClick={() => onSelect({ id: 'custom', nombre: searchTerm, categoria: 'Manual', precio: 0 })}
-                        className="col-span-full h-[300px] rounded-[3.5rem] border-2 border-dashed border-brand-blue/20 bg-brand-blue/5 flex flex-col items-center justify-center gap-6 group hover:border-brand-blue/50 transition-all relative overflow-hidden shadow-luxury"
+                        className="col-span-full bg-white p-8 rounded-2xl border-2 border-dashed border-slate-300 hover:border-brand-blue text-center cursor-pointer space-y-3 transition-all"
                     >
-                        <SparklesIcon className="w-16 h-16 text-brand-blue/20 group-hover:text-brand-blue group-hover:rotate-12 transition-all duration-700" />
-                        <div className="text-center space-y-2">
-                            <p className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Vector Desconocido</p>
-                            <p className="text-[10px] text-brand-blue/60 font-black uppercase tracking-[0.4em]">INICIAR PROCESO DE DISEÑO PERSONALIZADO PARA "{searchTerm}"</p>
-                        </div>
-                    </motion.button>
+                        <SparklesIcon className="w-8 h-8 text-brand-blue mx-auto" />
+                        <h3 className="text-sm font-black text-slate-900 uppercase">Crear Ítem Personalizado</h3>
+                        <p className="text-[11px] text-slate-500">
+                            Ingresar "{searchTerm}" como producto personalizado para esta orden.
+                        </p>
+                    </div>
                 )}
             </div>
         </div>
