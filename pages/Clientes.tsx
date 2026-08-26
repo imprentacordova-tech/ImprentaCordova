@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useOutletContext, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
@@ -257,7 +258,9 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
 
 const ClientesPage: React.FC = () => {
     const navigate = useNavigate();
-    const { currentUser } = useOutletContext<{ currentUser: any }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: any }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { clientes, trabajos, loading, addCliente, updateCliente } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isFormOpen, setIsFormOpen] = useState(false);

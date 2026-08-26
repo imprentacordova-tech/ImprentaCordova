@@ -28,6 +28,7 @@ import {
 } from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { User } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -158,7 +159,9 @@ const TransactionFormModal: React.FC<{
 };
 
 const CuentasPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const [ledger, setLedger] = useState<FinancialEntry[]>([]);
     const [balance, setBalance] = useState({ ingresos: 0, egresos: 0, total: 0 });
     const [loading, setLoading] = useState(true);

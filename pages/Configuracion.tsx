@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { User, SriCredential } from '../types';
@@ -94,7 +95,9 @@ const DEFAULT_CONFIG = {
 };
 
 const ConfiguracionPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { 
         config: cloudConfig, updateConfig, 
         sriCredentials, deleteSriCredential, bulkAddSriCredentials, 

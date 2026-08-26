@@ -9,6 +9,7 @@ import {
 import { formatCurrency } from '../utils';
 import { InventoryItem, User } from '../types';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -225,7 +226,9 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
 };
 
 const InventarioPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const navigate = useNavigate();
     const { inventario, loading, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useData();
     const [searchTerm, setSearchTerm] = useState('');

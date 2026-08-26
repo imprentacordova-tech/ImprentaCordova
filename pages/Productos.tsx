@@ -9,6 +9,7 @@ import {
 } from '../components/Icons';
 import { formatCurrency } from '../utils';
 import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -80,7 +81,9 @@ const ProductCard: React.FC<{
 };
 
 const ProductosPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { 
         productos, loading, createProducto, updateProducto, 
         deleteProducto, bulkCreateProductos, refreshData, seedCatalog 

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { 
@@ -18,7 +19,9 @@ import { useWindowSize } from 'react-use';
 import { SEO } from '../components/SEO';
 
 const RetirosPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const navigate = useNavigate();
     const { trabajos, clientes, loading, registerRetiro, uploadFile } = useData();
     const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);

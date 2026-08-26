@@ -4,6 +4,7 @@ import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, DailySales, FinancialProjection, User } from '../types';
 import { formatCurrency } from '../utils';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { 
     DollarIcon, FinanceIcon, ClockIcon, ArrowDownTrayIcon, 
@@ -70,7 +71,9 @@ const itemVariants = {
 };
 
 const FinanzasPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { trabajos, clientes, loading } = useData();
     const [analyzing, setAnalyzing] = useState(false);
     const [aiProjection, setAiProjection] = useState<FinancialProjection | null>(null);

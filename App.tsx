@@ -59,7 +59,7 @@ const ProtectedRoute: React.FC = () => {
   
   return (
     <Layout>
-      <Outlet />
+      <Outlet context={{ currentUser: user }} />
     </Layout>
   );
 };

@@ -7,12 +7,15 @@ import {
     LayersIcon, ShieldCheckIcon, RocketLaunchIcon
 } from '../components/Icons';
 import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 
 const ProduccionPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const navigate = useNavigate();
     const { trabajos, clientes, loading, updateTrabajoStatus, updateTrabajoEvidencia } = useData();
     const [selectedJob, setSelectedJob] = useState<Trabajo | null>(null);

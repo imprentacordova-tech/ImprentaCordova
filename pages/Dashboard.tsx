@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { TrabajoEstado, User } from '../types';
 import {
     SparklesIcon, ArrowRightIcon, ActivityIcon,
@@ -127,7 +128,9 @@ const QuickAction: React.FC<{
 
 // ─── DASHBOARD PAGE ─────────────────────────────────────────────────────────
 const DashboardPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { trabajos, clientes, loading } = useData();
     const navigate = useNavigate();
     const [logs, setLogs] = useState<ActivityEntry[]>([]);

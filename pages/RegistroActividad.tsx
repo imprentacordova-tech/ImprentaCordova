@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { getActivityLog, getLogStats, purgeOldEntries, exportLogAsCSV, ActivityEntry, logActivity } from '../services/activityLogService';
 import { 
     HomeIcon, ArrowDownTrayIcon, SearchIcon, Loader2Icon, 
@@ -67,7 +68,9 @@ const KpiCard: React.FC<{
 );
 
 const RegistroActividadPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: any }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: any }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const navigate = useNavigate();
     const [log, setLog] = useState<ActivityEntry[]>([]);
     const [stats, setStats] = useState<any>(null);

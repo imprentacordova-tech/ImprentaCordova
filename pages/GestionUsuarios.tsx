@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { User } from '../types';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { 
     UsersIcon, UserPlusIcon, ExclamationTriangleIcon, PencilIcon, SearchIcon, 
@@ -126,7 +127,9 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
 };
 
 const GestionUsuariosPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');

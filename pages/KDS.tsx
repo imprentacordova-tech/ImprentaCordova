@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Cliente, Trabajo, TrabajoEstado, User, Regimen } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
 import { 
@@ -287,7 +288,9 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ trabajo, cliente, onCardClick, 
 // --- PÁGINA PRINCIPAL ---
 
 const KDSPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { trabajos, clientes, updateTrabajoStatus, updateTrabajoPhoto } = useData();
     const navigate = useNavigate();
     

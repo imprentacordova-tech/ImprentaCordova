@@ -3,12 +3,15 @@ import { useData } from '../contexts/DataContext';
 import { Trabajo, TrabajoEstado, SupervisorAnalysis, User } from '../types';
 import { PaletteIcon, SparklesIcon, Loader2Icon, PrinterIcon, EyeIcon, RocketLaunchIcon } from '../components/Icons';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { analyzeDesignWithSupervisor } from '../services/geminiService';
 import { logActivity } from '../services/activityLogService';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const DisenoPage: React.FC = () => {
-    const { currentUser } = useOutletContext<{ currentUser: User }>();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
     const { trabajos, clientes, loading, updateTrabajoStatus } = useData();
     const [selectedJob, setSelectedJob] = useState<Trabajo | null>(null);
     

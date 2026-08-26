@@ -791,7 +791,7 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 import { ProductManagementModal } from '../components/ProductManagementModal';
 
 const CalculadoraPreciosPage: React.FC = () => {
-    const context = useOutletContext<{ currentUser: any }>();
+    const context = useOutletContext<{ currentUser?: any }>() || {};
     const currentUser = context?.currentUser;
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
