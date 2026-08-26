@@ -434,8 +434,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadOrdersFromStorage() {
     chrome.storage.local.get(['cordova_orders'], (result) => {
-      allOrders = result.cordova_orders || [];
+      const localOrders = result.cordova_orders || [];
+      allOrders = localOrders;
       filterAndRender();
+
+      // Sincronización Bidireccional en Tiempo Real con imprentacordova.net (Supabase)
+      const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
+
+      fetch(`${supabaseUrl}?select=*&order=fecha_entrada.desc`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const remoteMapped = data.map(t => ({
+            orderNum: String(t.orden || t.id).padStart(4, '0'),
+            timestamp: t.fecha_entrada ? new Date(t.fecha_entrada).getTime() : Date.now(),
+            clientName: t.titular || 'CONSUMIDOR FINAL',
+            clientRuc: t.cedula_ruc || t.ruc || '',
+            clave: t.establecimiento || '001',
+            activity: t.actividad_seleccionada || 'Comercio / Servicios General',
+            clientPhone: t.telefono || '',
+            phoneOpt: 'Dictado',
+            docSize: t.tamano || '1/4 Oficio',
+            docPaper: t.subtipo || 'Químico',
+            docName: t.tipo || 'Nota de Venta',
+            docEst: t.establecimiento || '001',
+            docPto: t.punto_emision || '001',
+            docQty: t.cantidad || 100,
+            total: parseFloat(t.total) || 0,
+            abono: parseFloat(t.abono) || 0,
+            saldo: parseFloat(t.saldo) || 0,
+            deliveryDate: t.fecha_entrega || '',
+            caducidad: t.fecha_vencimiento || '',
+            vigencia: '12 meses',
+            notes: t.observaciones || '',
+            renovacion: t.es_renovacion ? 'SÍ' : 'NO'
+          }));
+
+          const orderMap = new Map();
+          localOrders.forEach(o => orderMap.set(o.orderNum, o));
+          remoteMapped.forEach(o => {
+            if (!orderMap.has(o.orderNum)) {
+              orderMap.set(o.orderNum, o);
+            }
+          });
+
+          allOrders = Array.from(orderMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          chrome.storage.local.set({ cordova_orders: allOrders });
+          filterAndRender();
+        }
+      })
+      .catch(err => console.warn('⚠️ [Sync Cloud] No se pudo cargar desde Supabase:', err.message));
     });
   }
 
