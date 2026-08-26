@@ -33,7 +33,7 @@ const OrdenProduccionPage: React.FC = () => {
     } : { emisorDireccionMatriz: 'Colón y Sucre, Pasaje' };
 
     if (dataLoading || !trabajo || !cliente) return (
-        <div className="flex h-screen items-center justify-center bg-slate-100">
+        <div className="flex h-screen items-center justify-center bg-brand-dark">
             <Loader2Icon className="animate-spin h-10 w-10 text-brand-blue" />
         </div>
     );
@@ -51,7 +51,7 @@ const OrdenProduccionPage: React.FC = () => {
     const fechaRetiroFormateada = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} ${diaMes} (Tarde)`;
 
     return (
-        <div className="bg-slate-400 min-h-screen py-10 flex flex-col items-center overflow-y-auto">
+        <div className="bg-brand-dark min-h-screen py-10 flex flex-col items-center overflow-y-auto">
             <style>{`
                 @media print {
                     @page { size: A5 landscape; margin: 0; }
@@ -71,7 +71,7 @@ const OrdenProduccionPage: React.FC = () => {
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white font-black text-xs uppercase tracking-widest hover:text-slate-200 transition-colors">
                     <ArrowLeftIcon className="w-4 h-4"/> Volver
                 </button>
-                <button onClick={() => window.print()} className="bg-white text-brand-blue px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 hover:bg-slate-50 transition-all">
+                <button onClick={() => window.print()} className="bg-obsidian-card text-brand-blue px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 hover:bg-white/[0.04] transition-all">
                     <PrinterIcon className="w-5 h-5"/> Imprimir Orden de Taller
                 </button>
             </div>

@@ -817,7 +817,7 @@ function injectSRILoginAssistant() {
       if (nativeRucInput) nativeRucInput.value = ruc;
       if (nativePassInput && pass) nativePassInput.value = pass;
 
-      ReportadorState.isRunning = true;
+      ReportadorState.isRunning = false;
       ReportadorState.targetMode = 'ACEPTAR';
       ReportadorState.save();
 
@@ -1070,13 +1070,12 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     injectReportadorAssistant();
     injectImprentaSubtleBanner();
     
-    // Si estamos en la página de Solicitudes Recibidas, se detiene el motor para que el usuario trabaje cómodo sin ser redirigido
-    if (url.includes("no-procesadas-listado.jspa")) {
+    // Por defecto al entrar en Imprenta NO se ejecuta ningún bucle de saltos automático
+    if (!ReportadorState.isRunning || url.includes("no-procesadas-listado.jspa") || url.includes("inicio-contribuyente.jspa")) {
       ReportadorState.isRunning = false;
-      ReportadorState.log("✓ SOLICITUDES RECIBIDAS LISTAS");
+      ReportadorState.log("✓ ESPERANDO ACCIÓN");
       await ReportadorState.save();
     } else if (ReportadorState.isRunning) {
-      // Ejecución solo si isRunning está activo y no hemos llegado a la página de solicitudes recibidas
       runReportadorWorkflow().catch(e => console.error("Error en Reportador Workflow:", e));
       
       if (window.reportadorInterval) clearInterval(window.reportadorInterval);

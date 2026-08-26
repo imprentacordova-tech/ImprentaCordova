@@ -362,7 +362,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             onClick={() => handleSelectCategory('COMERCIAL')}
                                             className="group bg-obsidian-card p-8 rounded-2xl border-2 border-white/[0.06] hover:border-purple-600 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
                                         >
-                                            <div className="w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                                            <div className="w-14 h-14 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                                                 <BookOpenIcon className="w-8 h-8" />
                                             </div>
                                             <div className="space-y-1">
@@ -463,7 +463,7 @@ const NuevoPedidoPage: React.FC = () => {
                             {step === 5 && (
                                 <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full space-y-4">
                                     {error && (
-                                        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold flex items-center gap-2">
+                                        <div className="p-4 bg-brand-red/10 border border-brand-red/20 rounded-xl text-brand-red text-xs font-bold flex items-center gap-2">
                                             <ExclamationTriangleIcon className="w-5 h-5 text-rose-500 shrink-0" />
                                             <span>{error}</span>
                                         </div>

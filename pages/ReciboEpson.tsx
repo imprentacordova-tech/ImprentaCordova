@@ -97,7 +97,7 @@ const ReciboEpson: React.FC = () => {
     const ordenStr = String(trabajo.orden).padStart(6, '0');
 
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col items-center py-10 print:p-0 print:bg-white">
+        <div className="min-h-screen bg-brand-dark flex flex-col items-center py-10 print:p-0 print:bg-white">
             <style>{`
                 @media print {
                     @page { size: 216mm 165mm; margin: 0; }
@@ -124,14 +124,14 @@ const ReciboEpson: React.FC = () => {
             `}</style>
 
             {/* Toolbar */}
-            <div className="no-print mb-8 flex gap-4 bg-white p-4 rounded-3xl shadow-xl border border-slate-200">
-                <button onClick={() => navigate(-1)} className="p-3 hover:bg-slate-100 rounded-2xl transition-all"><ArrowLeftIcon className="w-5 h-5 text-slate-600"/></button>
+            <div className="no-print mb-8 flex gap-4 bg-obsidian-card p-4 rounded-3xl shadow-xl border border-white/[0.06]">
+                <button onClick={() => navigate(-1)} className="p-3 hover:bg-white/[0.04] rounded-2xl transition-all"><ArrowLeftIcon className="w-5 h-5 text-slate-300"/></button>
                 <button onClick={handleWhatsApp} className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-green-600 transition-all"><WhatsAppIcon className="w-4 h-4"/> WhatsApp</button>
                 <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-black transition-all"><ArrowDownTrayIcon className="w-4 h-4"/> PDF</button>
                 <button onClick={handlePrint} className="flex items-center gap-2 bg-brand-blue text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-blue-600 transition-all shadow-blue-glow-sm"><PrinterIcon className="w-4 h-4"/> Imprimir</button>
                 <button 
                     onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
-                    className={`ml-auto px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue shadow-blue-glow-sm' : 'bg-transparent text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                    className={`ml-auto px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue shadow-blue-glow-sm' : 'bg-transparent text-slate-400 border-white/[0.06] hover:bg-white/[0.04]'}`}
                 >
                     {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
                 </button>

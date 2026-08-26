@@ -63,7 +63,7 @@ const ReciboAbonoPage: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 font-sans">
+        <div className="min-h-screen bg-brand-dark flex flex-col items-center py-8 font-sans">
             <style>{`
                 @media print {
                     @page { size: ${isThermal ? '80mm auto' : 'A6'}; margin: 0; }
@@ -83,7 +83,7 @@ const ReciboAbonoPage: React.FC = () => {
             `}</style>
 
             <div className="no-print mb-6 flex flex-col items-center gap-4">
-                <div className="bg-white p-1 rounded-xl shadow-sm flex">
+                <div className="bg-obsidian-card p-1 rounded-xl shadow-sm flex">
                     <button onClick={() => setIsThermal(true)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${isThermal ? 'bg-brand-blue text-white shadow-md' : 'text-gray-500'}`}>Ticket 80mm</button>
                     <button onClick={() => setIsThermal(false)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isThermal ? 'bg-brand-blue text-white shadow-md' : 'text-gray-500'}`}>Estándar A6</button>
                 </div>
@@ -102,7 +102,7 @@ const ReciboAbonoPage: React.FC = () => {
                     </button>
                     <button 
                         onClick={() => setIsConsumidorFinal(!isConsumidorFinal)}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-lg transition-all hover:-translate-y-0.5 border ${isConsumidorFinal ? 'bg-amber-500 border-amber-500 text-white shadow-gold-glow' : 'bg-transparent text-slate-600 border-slate-300 hover:bg-slate-100'}`}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-lg transition-all hover:-translate-y-0.5 border ${isConsumidorFinal ? 'bg-amber-500 border-amber-500 text-white shadow-gold-glow' : 'bg-transparent text-slate-400 border-white/[0.06] hover:bg-white/[0.04]'}`}
                     >
                         {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
                     </button>

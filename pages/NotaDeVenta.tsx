@@ -178,26 +178,26 @@ const NotaDeVentaPage: React.FC = () => {
     };
 
     if (dataLoading || (isRetrying && !trabajo)) return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-20 h-20 border-4 border-slate-100 border-t-brand-blue rounded-full animate-spin mb-8 shadow-sm"></div>
-            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-[0.3em] mb-4">Sincronizando Archivos</h2>
+        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-20 h-20 border-4 border-white/[0.06] border-t-brand-blue rounded-full animate-spin mb-8 shadow-sm"></div>
+            <h2 className="text-2xl font-black text-white uppercase tracking-[0.3em] mb-4">Sincronizando Archivos</h2>
             <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Buscando registro en el núcleo de datos...</p>
         </div>
     );
 
     if (!trabajo || !cliente) return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-6 text-center">
             <div className="p-8 rounded-[3rem] bg-red-500/10 border border-red-500/20 mb-10 shadow-luxury animate-pulse">
                 <AlertTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-4">Documento No Encontrado</h2>
-                <p className="text-slate-500 font-bold text-sm max-w-md mx-auto leading-relaxed">
+                <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Documento No Encontrado</h2>
+                <p className="text-slate-400 font-bold text-sm max-w-md mx-auto leading-relaxed">
                     {error || "La orden solicitada no existe, el cliente está desvinculado o ha sido eliminada del sistema."}
                 </p>
             </div>
             <div className="flex gap-4">
                 <button 
                     onClick={() => navigate(-1)}
-                    className="px-10 py-5 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all"
+                    className="px-10 py-5 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/[0.04] transition-all"
                 >
                     Regresar
                 </button>
@@ -216,21 +216,21 @@ const NotaDeVentaPage: React.FC = () => {
     const totalEnLetras = numeroALetras(trabajo.total);
 
     return (
-        <div className="bg-slate-500 min-h-screen py-8 flex flex-col items-center justify-start overflow-y-auto font-sans">
+        <div className="bg-brand-dark min-h-screen py-8 flex flex-col items-center justify-start overflow-y-auto font-sans">
             <AnimatePresence>
                 {isCelebrationVisible && (
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/95 backdrop-blur-2xl"
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-dark/95 backdrop-blur-2xl"
                     >
                         <Confetti width={width} height={height} recycle={false} numberOfPieces={500} colors={['#3B82F6', '#1E293B', '#10B981']} />
                         
                         <motion.div 
                             initial={{ scale: 0.8, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="max-w-2xl w-full bg-white border border-slate-200 p-12 rounded-[3.5rem] shadow-2xl text-center relative overflow-hidden"
+                            className="max-w-2xl w-full bg-obsidian-card border border-white/[0.06] p-12 rounded-[3.5rem] shadow-2xl text-center relative overflow-hidden"
                         >
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-blue/10 rounded-full blur-[100px] -z-10" />
                             
@@ -243,7 +243,7 @@ const NotaDeVentaPage: React.FC = () => {
                                 <TrophyIcon className="w-16 h-16 text-white" />
                             </motion.div>
 
-                            <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter mb-4 leading-none">
+                            <h2 className="text-5xl font-black text-white uppercase tracking-tighter mb-4 leading-none">
                                 ¡CIRCUITO CERRADO!
                             </h2>
                             <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-10 max-w-md mx-auto">
@@ -251,9 +251,9 @@ const NotaDeVentaPage: React.FC = () => {
                             </p>
 
                             <div className="grid grid-cols-2 gap-4 mb-10">
-                                <div className="bg-slate-50 border border-slate-200 p-6 rounded-3xl">
+                                <div className="bg-white/[0.04] border border-white/[0.06] p-6 rounded-3xl">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Orden Finalizada</p>
-                                    <p className="text-2xl font-black text-slate-900">#{trabajo.orden}</p>
+                                    <p className="text-2xl font-black text-white">#{trabajo.orden}</p>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-3xl">
                                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Efectivo Recibido</p>
@@ -264,7 +264,7 @@ const NotaDeVentaPage: React.FC = () => {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <button 
                                     onClick={() => setIsCelebrationVisible(false)}
-                                    className="px-10 py-5 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-900 transition-all flex items-center justify-center gap-3"
+                                    className="px-10 py-5 bg-obsidian-card hover:bg-white/[0.04] border border-white/[0.06] rounded-2xl font-black text-[10px] uppercase tracking-widest text-white transition-all flex items-center justify-center gap-3"
                                 >
                                     Ver Comprobante
                                 </button>
@@ -280,16 +280,16 @@ const NotaDeVentaPage: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-10 no-print px-8 py-4 bg-white/90 backdrop-blur-xl rounded-[2.5rem] border border-slate-200 shadow-2xl relative z-50">
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-10 no-print px-8 py-4 bg-brand-dark/90 backdrop-blur-xl rounded-[2.5rem] border border-white/[0.06] shadow-2xl relative z-50">
                 <div className="flex gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-all">
-                        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-brand-blue transition-all">
+                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                        <div className="w-8 h-8 rounded-full border border-white/[0.06] flex items-center justify-center group-hover:border-brand-blue transition-all">
                             <HomeIcon className="w-4 h-4" />
                         </div>
                         Dashboard
                     </button>
-                    <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-all">
-                        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-brand-blue transition-all">
+                    <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
+                        <div className="w-8 h-8 rounded-full border border-white/[0.06] flex items-center justify-center group-hover:border-brand-blue transition-all">
                             <ArrowLeftIcon className="w-4 h-4" />
                         </div>
                         Atrás
@@ -299,7 +299,7 @@ const NotaDeVentaPage: React.FC = () => {
                     <button 
                         onClick={generatePDF} 
                         disabled={isGenerating}
-                        className="bg-white text-brand-blue px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-2 disabled:opacity-70"
+                        className="bg-obsidian-card text-brand-blue px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-white/[0.04] border border-white/[0.06] transition-all flex items-center gap-2 disabled:opacity-70"
                     >
                         {isGenerating ? <Loader2Icon className="w-4 h-4 animate-spin"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
                         {isGenerating ? 'Generando...' : 'Descargar PDF'}
@@ -312,7 +312,7 @@ const NotaDeVentaPage: React.FC = () => {
                     </button>
                     <button 
                         onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
-                        className={`px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue' : 'bg-transparent text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                        className={`px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue' : 'bg-transparent text-slate-400 border-white/[0.06] hover:bg-white/[0.04]'}`}
                     >
                         {isConsumidorFinal ? 'Restaurar Datos Cliente' : 'Emitir como Consumidor Final'}
                     </button>
