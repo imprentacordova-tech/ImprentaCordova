@@ -353,7 +353,7 @@ const ReportadorCONFIG = {
     },
     styles: `
         #sri-assistant {
-            position: fixed; bottom: 20px; right: 20px; height: 42px; min-width: 170px;
+            position: fixed; bottom: 75px; right: 20px; height: 38px; min-width: 150px;
             background: rgba(11, 19, 38, 0.75); backdrop-filter: blur(14px) saturate(190%);
             -webkit-backdrop-filter: blur(14px) saturate(190%);
             border: 1px solid rgba(78, 222, 163, 0.25); border-radius: 21px;
@@ -797,11 +797,7 @@ function injectSRILoginAssistant() {
     </div>
   `;
 
-  if (loginForm && loginForm.parentNode) {
-    loginForm.parentNode.insertBefore(bar, loginForm);
-  } else {
-    document.body.insertBefore(bar, document.body.firstChild);
-  }
+  document.body.appendChild(bar);
 
   // 1. MODO CLIENTE: Limpia campos nativos para escritura manual sin interferencias
   document.getElementById('cdv-btn-login-mode-client').addEventListener('click', () => {
