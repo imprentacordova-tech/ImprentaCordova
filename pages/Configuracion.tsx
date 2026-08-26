@@ -9,7 +9,7 @@ import {
     EyeIcon, EyeSlashIcon, LockClosedIcon, 
     SparklesIcon, CloudIcon, PrinterIcon,
     KeyIcon, ServerIcon, CpuIcon, FingerPrintIcon,
-    ActivityIcon, SettingsIcon
+    ActivityIcon, SettingsIcon, PuzzlePieceIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Papa from 'papaparse';
@@ -304,6 +304,35 @@ const ConfiguracionPage: React.FC = () => {
                     <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 border border-emerald-100 flex items-center justify-center relative">
                         <ServerIcon className="w-6 h-6" />
                     </div>
+                </div>
+            </motion.div>
+
+            {/* --- TARJETA DE DESCARGA EXTENSIÓN CHROME SRI --- */}
+            <motion.div variants={itemVariants} className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#0f2b48] p-8 md:p-10 rounded-[2.5rem] border border-slate-700/50 shadow-xl text-white relative overflow-hidden">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
+                    <div className="flex items-center gap-6">
+                        <div className="p-5 rounded-3xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center shadow-lg">
+                            <PuzzlePieceIcon className="w-10 h-10" />
+                        </div>
+                        <div>
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 mb-2 inline-block">
+                                HERRAMIENTA OFICIAL • EXTENSIÓN CHROME V2.1
+                            </span>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Extensión SRI Solicitador Córdova</h3>
+                            <p className="text-xs font-bold text-slate-300 mt-1 max-w-2xl">
+                                Automatización de comprobantes SRI, pasarela de clientes/imprenta, 4 formatos de impresión A4 y auto-registro sincronizado con la plataforma.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <a 
+                        href="/extension-cordova.zip" 
+                        download="extension-cordova.zip"
+                        className="px-8 py-5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-500/20 flex items-center gap-4 transition-all transform hover:-translate-y-1 active:translate-y-0 flex-shrink-0"
+                    >
+                        <ArrowDownTrayIcon className="w-6 h-6" />
+                        Descargar Extensión (.ZIP)
+                    </a>
                 </div>
             </motion.div>
 

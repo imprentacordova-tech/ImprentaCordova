@@ -11,10 +11,11 @@ import {
     ActivityIcon, WalletIcon, CircleStackIcon, ShieldCheckIcon,
     MonitorIcon, FingerPrintIcon,
     GlobeIcon, ChevronDownIcon, ChevronRightIcon,
-    ReceiptIcon, HistoryIcon, BoltIcon
+    ReceiptIcon, HistoryIcon, BoltIcon, PuzzlePieceIcon
 } from './Icons';
-import { User, TrabajoEstado } from '../types';
+import { TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { SEO } from './SEO';
 import { MobileFloatingNav } from './MobileFloatingNav';
 import { SearchOmni } from './SearchOmni';
@@ -22,8 +23,6 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 interface LayoutProps {
     children: React.ReactNode;
-    onLogout: () => void;
-    user: User;
 }
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────────────────
@@ -72,6 +71,7 @@ const buildNavGroups = (isAdmin: boolean) => [
             { path: '/usuarios',      label: 'Usuarios',           icon: ShieldCheckIcon,  badge: null },
             { path: '/registro',      label: 'Auditoría',          icon: HistoryIcon,      badge: null },
             { path: '/configuracion', label: 'Configuración',      icon: Cog8ToothIcon,    badge: null },
+            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: 'v2.1' },
         ],
     }] : []),
 ];
@@ -96,7 +96,7 @@ const PAGE_TITLES: Record<string, string> = {
 };
 
 // ─── ROLE BADGE ─────────────────────────────────────────────────────────────
-const RoleBadge: React.FC<{ rol: string }> = ({ rol }) => {
+const RoleBadge: React.FC<{ rol: string }> = React.memo(({ rol }) => {
     const config = {
         'Admin':     { bg: 'bg-amber-50 border-amber-200 text-amber-700' },
         'root':      { bg: 'bg-red-50 border-red-200 text-red-700' },
@@ -109,15 +109,33 @@ const RoleBadge: React.FC<{ rol: string }> = ({ rol }) => {
             {rol}
         </span>
     );
-};
+});
 
 // ─── NAV ITEM ────────────────────────────────────────────────────────────────
 const NavItem: React.FC<{
     item: { path: string; label: string; icon: any; badge: string | null };
     badges: Record<string, number>;
     onClick?: () => void;
-}> = ({ item, badges, onClick }) => {
-    const badgeCount = item.badge ? badges[item.badge] : 0;
+}> = React.memo(({ item, badges, onClick }) => {
+    const badgeCount = item.badge ? (typeof item.badge === 'number' ? item.badge : badges[item.badge]) : 0;
+    const isDownload = item.path.endsWith('.zip');
+
+    if (isDownload) {
+        return (
+            <a
+                href={item.path}
+                download
+                onClick={onClick}
+                className="group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-300 relative text-left w-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border border-emerald-500/20 my-1"
+            >
+                <item.icon className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span className="text-[11px] font-bold tracking-wide flex-1 truncate">{item.label}</span>
+                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 bg-emerald-500 text-white uppercase tracking-wider">
+                    {item.badge || 'ZIP'}
+                </span>
+            </a>
+        );
+    }
 
     return (
         <NavLink
@@ -145,14 +163,14 @@ const NavItem: React.FC<{
             )}
         </NavLink>
     );
-};
+});
 
 // ─── NAV GROUP ───────────────────────────────────────────────────────────────
 const NavGroup: React.FC<{
     group: ReturnType<typeof buildNavGroups>[number];
     badges: Record<string, number>;
     onNavClick?: () => void;
-}> = ({ group, badges, onNavClick }) => {
+}> = React.memo(({ group, badges, onNavClick }) => {
     const location = useLocation();
     const isGroupActive = group.items.some(i => location.pathname === i.path);
     const [open, setOpen] = useState(true);
@@ -200,15 +218,18 @@ const NavGroup: React.FC<{
             </AnimatePresence>
         </div>
     );
-};
+});
 
 // ─── MAIN LAYOUT ─────────────────────────────────────────────────────────────
-const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { trabajos, loading } = useData();
+    const { trabajos } = useData();
+    const { user, logout: authLogout } = useAuth();
     useKeyboardShortcuts();
+
+    if (!user) return null;
 
     const isAdmin = user.rol === 'Admin' || (user.rol as string) === 'root';
     const navGroups = useMemo(() => buildNavGroups(isAdmin), [isAdmin]);
@@ -299,7 +320,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
 
                 {/* Logout */}
                 <button
-                    onClick={onLogout}
+                    onClick={authLogout}
                     className="w-full flex items-center justify-center gap-2.5 py-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-100 transition-all text-[10px] font-black uppercase tracking-widest"
                 >
                     <LogoutIcon className="w-3.5 h-3.5" />
@@ -417,7 +438,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, user }) => {
                             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                             className="min-h-full"
                         >
-                            {children}
+                            {React.cloneElement(children as React.ReactElement, { currentUser: user })}
                         </motion.div>
                     </AnimatePresence>
                 </div>

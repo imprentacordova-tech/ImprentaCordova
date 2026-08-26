@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { Cliente, User, TrabajoEstado } from '../types';
 import { 
@@ -22,7 +23,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const NuevoPedidoPage: React.FC = () => {
     const outletCtx = useOutletContext<{ currentUser?: User }>();
-    const currentUser = outletCtx?.currentUser || { nombre: 'Pedro Córdova', rol: 'Administrador' };
+    const { user: authUser } = useAuth();
+    const currentUser = outletCtx?.currentUser || authUser || { nombre: 'Pedro Cordova', rol: 'Administrador' };
     const { refreshData, addTrabajo, addCliente, clientes } = useData();
     const navigate = useNavigate();
 
@@ -31,7 +33,8 @@ const NuevoPedidoPage: React.FC = () => {
     const [orderMode, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [tempClient, setTempClient] = useState({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [tempClient, setTempClient] = useState<any>({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
     const [servicio, setServicio] = useState<any>(null);
     const [detalle, setDetalle] = useState('');
     const [precio, setPrecio] = useState(0);

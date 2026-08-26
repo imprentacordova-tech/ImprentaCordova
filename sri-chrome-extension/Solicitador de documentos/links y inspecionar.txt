@@ -1,0 +1,64 @@
+https://srienlinea.sri.gob.ec/facturacion-internet/direccionamiento.jspa
+<div class="sri-ruc-cabecera" bis_skin_checked="1">0702065319001</div> este es el id o ruc de la imprenta a este recibe el pedido osea cuado detecte este ruc no se activa el envio de solicitud, al contrario me gustaira que me lleve a solicitudes recividas, estamos en proceso de eso.
+<div class="sri-razon-social-cabecera" bis_skin_checked="1">GOMEZ VERA FREDDY RAFAEL</div> este es un id de un cliente asi esta extencions es para ayudar a automatizar la peticion de solicitud de impresion osea cuando detectes que sea diferente a :CORDOVA RODRIGUEZ PEDRO MANUEL, alli pudes suereir hacer la solicitud rapido.
+
+<a href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa">Petición de Documentos Preimpresos</a>
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/inicio-contribuyente.jspa
+<td style="text-align: center" class="primeraCol">001</td>
+( en esta es de selecionar los establecimientos o negocios del cliente, estos parametros los ponemos al iniciar para ir de lago en este caso solo hay uno)
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/seleccionar-establecimiento-contibuyente-imprenta.jspa
+<input type="text" name="documento0_1" value="" align="middle" size="9" maxlength="9">
+(aqui es de poner la cantidad, el casillero que te di es de nota de venta) esta inf de cuantas tambien se da la info antes de empezar, al futuro talvez le ponga mas documento pero el que uso a diario es ese.
+
+<input type="text" name="documento0_1" value="" align="middle" size="9" maxlength="9"> le damos siguiente despues de poner la cantidad.
+
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/agregar-cantidades-imprenta.jspa
+<a href="javascript:siguientePaso();">&nbsp;Siguiente&nbsp;</a>
+
+<tr class="impar">
+					<td style="text-align: center" class="primeraCol" align="center" width="10%" rowspan="1">001-001
+					</td>
+					<td style="text-align: center" align="center" rowspan="1">NOTA DE VENTA</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">100</td>
+				</tr> confirmamos la info
+
+<a href="javascript:siguientePaso();">&nbsp;Siguiente&nbsp;</a> ( le das siguiente)
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/confirmar-cantidades.jspa
+<td width="78%">GOMEZ VERA FREDDY RAFAEL</td> para que confirmes y tengas en cuenta de quien estas haciendo la solicitud
+<td width="78%">29/Abril/2027
+				</td> para que tengas en cuenta la caducidad, si caduca en 3 meses me da una alerta para confirmar si seguir sino seguir sin novedad eso dejar en claro al final que salido para 1 año eso debe de saber las fechas
+marcar check: <input type="radio" name="FR" value="1" onclick="habilitar(this);">  <input type="text" name="numero" value="" maxlength="5"> las numeracions y tipo de documento alli en esta ventana esta todo 
+<a href="javascript:siguientePaso();">&nbsp;Siguiente&nbsp;</a> luego siguiente
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/confirmar-cantidades.jspa
+Selección de establecimientos aqui podemos buscar de varias formas
+Por RUC del Establecimiento Gráfico	:0702065319001	
+ Por No. de autorización del Establecimiento Gráfico	8634
+ Por Razón Social o Nombre Comercial	
+ Por ubicación del Establecimiento Gráfico	Provincia:
+
+<input type="radio" name="FR" value="1" onclick="habilitar(this);"> este le damos check en numero de autorizacion es el mas corto 8634
+
+<input type="text" name="numero" value="" maxlength="5"> aqui ponesmo 8634 el codigo de imprenta
+<a href="javascript:javascript:nextPage();">&nbsp;Buscar&nbsp;</a> le damos en buscar
+
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/seleccionar-imprenta.jspa
+ 
+Listado de Establecimientos Gráficos
+
+No.	Ruc	Razón Social	Nombre Comercial	Código de Autorización	Establecimiento	Dirección	Teléfono	Estado
+1	0702065319001	CORDOVA RODRIGUEZ PEDRO MANUEL	IMPRENTA CORDOVA	8634	001	COLON S/N Y SUCRE Y ROCAFUERTE
+PASAJE	072917167	Activa
+
+<td nowrap="nowrap" style="text-align: center">CORDOVA RODRIGUEZ PEDRO MANUEL</td>
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/seleccionar-establecimiento-imprenta.jspa
+nos procesa una hoja tipo pdf
+abriamos llegado al objetivo
+<embed type="application/x-google-chrome-pdf" src="chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/38b40238-8eaa-4e17-a6c0-c47d059e0b82" original-url="https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/seleccionar-establecimiento-imprenta.jspa" background-color="4280821800" javascript="allow" full-frame=""> este es para regresar a inicio: https://srienlinea.sri.gob.ec/facturacion-internet/menuPrincipal.jspa o podemos sugerir imprimir seria una ventana de aviso que diga solicitud enviada con exito a Imprenta Cordova de 1Block de 100hojas Valor: 13 Dolares, el de 50h vale 10.00 dolares, los 2block o 200h vale 20 dolares.

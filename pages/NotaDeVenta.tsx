@@ -58,14 +58,10 @@ const NotaDeVentaPage: React.FC = () => {
     const [isCelebrationVisible, setIsCelebrationVisible] = useState(false);
 
     useEffect(() => {
-        console.log(`[NotaDeVenta] Montando para trabajoId: ${trabajoId}`);
-        
         const fetchDirectly = async () => {
             if (!trabajoId) return;
             setIsRetrying(true);
-            console.log("[NotaDeVenta] Iniciando búsqueda directa en Supabase...");
             try {
-                // Fetch Trabajo
                 const { data: tData, error: tError } = await supabase
                     .from('trabajos')
                     .select('*')
@@ -76,9 +72,7 @@ const NotaDeVentaPage: React.FC = () => {
                 if (tData) {
                     const mappedT = mapDBTrabajo(tData);
                     setTrabajo(mappedT);
-                    console.log("[NotaDeVenta] Trabajo recuperado vía fetch directo:", mappedT.id);
 
-                    // Fetch Cliente
                     const { data: cData, error: cError } = await supabase
                         .from('clientes')
                         .select('*')
@@ -87,7 +81,6 @@ const NotaDeVentaPage: React.FC = () => {
                     
                     if (!cError && cData) {
                         setCliente(cData);
-                        console.log("[NotaDeVenta] Cliente recuperado vía fetch directo:", cData.nombre);
                     }
                 }
             } catch (err) {
@@ -102,16 +95,14 @@ const NotaDeVentaPage: React.FC = () => {
 
         const currentTrabajo = trabajos.find(t => t.id === trabajoId);
         if (currentTrabajo) {
-            console.log("[NotaDeVenta] Trabajo encontrado en cache local.");
             setTrabajo(currentTrabajo);
             const foundCliente = clientes.find(c => c.id === currentTrabajo.clienteId) || null;
             if (foundCliente) {
                 setCliente(foundCliente);
             } else {
-                fetchDirectly(); // Fallback for client
+                fetchDirectly();
             }
         } else {
-            console.warn(`[NotaDeVenta] Trabajo no encontrado en cache local: ${trabajoId}`);
             fetchDirectly();
         }
 
@@ -158,7 +149,7 @@ const NotaDeVentaPage: React.FC = () => {
         const opt = {
             margin: 0,
             filename: `NV-${String(trabajo.orden).padStart(6,'0')}-${cliente.nombre.split(' ')[0]}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg' as const, quality: 0.98 },
             html2canvas: { 
                 scale: 2,
                 useCORS: true, 
@@ -169,7 +160,7 @@ const NotaDeVentaPage: React.FC = () => {
             jsPDF: { 
                 unit: 'mm', 
                 format: 'a5', 
-                orientation: 'portrait',
+                orientation: 'portrait' as const,
                 compress: true
             }
         };

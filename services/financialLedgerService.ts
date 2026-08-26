@@ -3,8 +3,9 @@ import { supabase } from './supabase';
 /**
  * Financial Ledger Service — Sistema de Libro Diario Inmutable (Bitcoin-style)
  * 
- * Registra ingresos y egresos de dinero con integridad vía hashes encadenados.
- * Ahora persiste en Supabase para acceso global.
+ * Registra ingresos y egresos de dinero con integridad via hashes encadenados.
+ * Persiste en Supabase para acceso global.
+ * v2.0: Mejorado con retry queue y error reporting robusto.
  */
 
 export type TransactionType = 'INGRESO' | 'EGRESO';
@@ -15,14 +16,14 @@ export interface FinancialEntry {
     tipo: TransactionType;
     monto: number;
     detalle: string;
-    referenciaId?: string; // ID del pedido o gasto relacionado
+    referenciaId?: string;
     usuario: string;
-    hash: string; // Hash encadenado
+    hash: string;
 }
 
-/**
- * Genera un hash simple para encadenar transacciones.
- */
+const PENDING_LEDGER_KEY = 'cordova_pending_ledger';
+const MAX_RETRIES = 3;
+
 function generateHash(data: string, previousHash: string): string {
     let hash = 0;
     const combined = previousHash + data;
@@ -54,23 +55,20 @@ export const getFinancialLedger = async (limit = 100): Promise<FinancialEntry[]>
             usuario: row.user_name || 'Sistema',
             hash: row.hash || '00000000'
         }));
-    } catch {
+    } catch (err) {
+        console.error('[FinancialLedger] Error fetching ledger:', err);
         return [];
     }
 };
 
-/**
- * Registra un nuevo movimiento en el libro diario.
- */
 export const logTransaction = async (
     tipo: TransactionType,
     monto: number,
     detalle: string,
     usuario: string,
     referenciaId?: string
-): Promise<void> => {
+): Promise<boolean> => {
     try {
-        // Obtener el último hash para el encadenamiento
         const { data: lastEntry } = await supabase
             .from('financial_ledger')
             .select('hash')
@@ -79,7 +77,6 @@ export const logTransaction = async (
             .single();
 
         const previousHash = lastEntry?.hash || '00000000';
-        
         const timestamp = new Date().toISOString();
         const entryData = `${tipo}|${monto}|${detalle}|${timestamp}|${usuario}`;
         const hash = generateHash(entryData, previousHash);
@@ -97,23 +94,57 @@ export const logTransaction = async (
             }]);
 
         if (error) throw error;
-        console.log(`[FinancialLedger] ${tipo} registrado en la nube: $${monto}`);
+        console.log(`[FinancialLedger] ${tipo} registrado: $${monto} - ${detalle}`);
+        return true;
     } catch (error) {
         console.error('[FinancialLedger] Error logging transaction:', error);
+        // Queue for retry
+        addToPendingQueue({ tipo, monto, detalle, usuario, referenciaId, retries: 0 });
+        return false;
     }
 };
 
-/**
- * Purga automática no es necesaria con Supabase Cloud, 
- * pero mantenemos la firma para compatibilidad.
- */
+function addToPendingQueue(entry: any) {
+    try {
+        const queue = JSON.parse(localStorage.getItem(PENDING_LEDGER_KEY) || '[]');
+        queue.push({ ...entry, timestamp: Date.now() });
+        localStorage.setItem(PENDING_LEDGER_KEY, JSON.stringify(queue));
+    } catch {
+        // localStorage unavailable, entry is lost
+    }
+}
+
+async function retryPendingTransactions() {
+    try {
+        const queue = JSON.parse(localStorage.getItem(PENDING_LEDGER_KEY) || '[]');
+        if (queue.length === 0) return;
+
+        const remaining: any[] = [];
+        for (const entry of queue) {
+            if (entry.retries >= MAX_RETRIES) {
+                console.warn(`[FinancialLedger] Dropping entry after ${MAX_RETRIES} retries:`, entry.detalle);
+                continue;
+            }
+            const success = await logTransaction(entry.tipo, entry.monto, entry.detalle, entry.usuario, entry.referenciaId);
+            if (!success) {
+                remaining.push({ ...entry, retries: entry.retries + 1 });
+            }
+        }
+        localStorage.setItem(PENDING_LEDGER_KEY, JSON.stringify(remaining));
+    } catch {
+        // ignore
+    }
+}
+
+// Retry on app focus
+if (typeof window !== 'undefined') {
+    window.addEventListener('focus', retryPendingTransactions);
+}
+
 export const purgeOldTransactions = async (): Promise<number> => {
     return 0;
 };
 
-/**
- * Obtiene el balance actual (Ingresos - Egresos) de Supabase.
- */
 export const getLedgerBalance = async () => {
     try {
         const { data, error } = await supabase.rpc('get_ledger_balance');
@@ -129,9 +160,5 @@ export const getLedgerBalance = async () => {
         console.error('[FinancialLedger] Error getting balance via RPC:', err);
     }
     
-    return {
-        ingresos: 0,
-        egresos: 0,
-        total: 0
-    };
+    return { ingresos: 0, egresos: 0, total: 0 };
 };

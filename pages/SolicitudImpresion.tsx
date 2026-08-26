@@ -91,7 +91,6 @@ const SolicitudImpresionPage: React.FC = () => {
         if (!trabajoId) return;
 
         const fetchDirectly = async () => {
-            console.log("[SolicitudImpresion] Iniciando búsqueda directa...");
             setIsRetrying(true);
             try {
                 const { data: tData, error: tError } = await supabase
@@ -162,9 +161,9 @@ const SolicitudImpresionPage: React.FC = () => {
         const opt = {
             margin: 0,
             filename: `Elite-SRI-${trabajo.orden}-${cliente?.ruc || cliente?.cedula}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
+            image: { type: 'jpeg' as const, quality: 1 },
             html2canvas: { scale: 3, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
         };
         html2pdf().from(element).set(opt).save();
     };

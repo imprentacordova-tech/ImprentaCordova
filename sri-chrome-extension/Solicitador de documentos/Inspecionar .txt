@@ -1,0 +1,2547 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0705562767001</div>
+							<div class="sri-razon-social-cabecera">CARREÑO QUIZHPE BRYAN JOSUE</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <span id="actual">Men&uacute;
+		Principal</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Men&uacute; Principal</div>
+</div>
+<!-- Inicio contenido -->
+<div id="contenido">
+	<div class="listaLinks">
+		   <a href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa">Petición de Documentos Preimpresos</a><div>&nbsp;</div>
+   <a href="/facturacion-internet/menuSolicitudes.jsp">Ingreso de Formularios</a><div>&nbsp;</div>
+   <a href="/facturacion-internet/menuConsultas.jsp">Consultas</a><div>&nbsp;</div>
+   <a href="/facturacion-internet/logout.jspa">Cerrar Sesión</a><div>&nbsp;</div>
+
+	</div>
+</div>
+<!--fin contenido-->
+
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/formularios.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/tablas.css"
+	type="text/css" />
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0705562767001</div>
+							<div class="sri-razon-social-cabecera">CARREÑO QUIZHPE BRYAN JOSUE</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+
+
+
+
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <a
+		href="/facturacion-internet/menuPrincipal.jspa"
+		title="Men&uacute; Principal">Men&uacute; Principal</a>/ <span
+		id="actual">Selecci&oacute;n de establecimientos</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Selecci&oacute;n de establecimientos</div>
+</div>
+
+<form name="forma"
+	action="/facturacion-internet/preimpresos/seleccionar-establecimiento-contibuyente-imprenta.jspa"
+	method="post">
+	<input type="hidden" name="tipoCI" value="CON" /> <input type="hidden"
+		name="accion" /> <input type="hidden" name="numeroEstablecimiento" />
+	<!-- Inicio contenido -->
+	<div id="contenido">
+		<div class="merror">
+			
+		</div>
+		<table width="100%" border="0" cellpadding="0" cellspacing="0"
+			class="formulario">
+			<tr>
+				<th style="width: 22%">RUC:</th>
+				<td width="78%">0705562767001</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+
+
+			<tr>
+				<th style="width: 22%">Raz&oacute;n Social:</th>
+				<td width="78%">CARREÑO QUIZHPE BRYAN JOSUE</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+			<tr>
+				<th style="width: 22%">Fecha de Caducidad:</th>
+				<td width="78%">28/Abril/2027
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+		</table>
+		<div>&nbsp;</div>
+		<div class="titulos">Seleccione el establecimiento para el que
+			solicita autorizaci&oacute;n:</div>
+		<div>&nbsp;</div>
+		<div>
+			<table class="reporte" cellspacing="0" width="100%">
+				<tr>
+					<th>Establecimiento</th>
+					<th>Nombre Comercial</th>
+					<th>Estado</th>
+				</tr>
+				
+				<tr class="seleccion" bgcolor="#EFEEF4"
+					title="Haga click aqu&iacute; para seleccionar puntos de emisi&oacute;n en este establecimiento"
+					onMouseOver="this.className = 'seleccionDestacado'"
+					onMouseOut="this.className = 'seleccion'"
+					onClick="forma.accion.value = 'establecimiento';forma.numeroEstablecimiento.value = '1'; forma.submit();">
+					<td style="text-align: center" class="primeraCol">001</td>
+					<td style="text-align: center"></td>
+					<td style="text-align: center">Abierto</td>
+				</tr>
+				
+				
+			</table>
+		</div>
+		<div>
+			<table width="100%" border="0">
+				
+				<tr>
+					<td colspan="8" align="center">
+						<table>
+							<tr>
+								<td>L&iacute;neas por p&aacute;gina:</td>
+								<td><input type="text" name="lineasPagina" size="2" /></td>
+								<td><input class="boton" type="button"
+									name="cambiarLineasPagina" value="Cambiar"
+									onClick='validarNum(1, document.forma.lineasPagina.value, 10, 0)' /></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				
+	  
+	  <tr>
+	  	<td colspan="8" align="center">
+	  		<table style="height: 130px;">
+	  			<tr>
+	  				<td>
+	  					<div>
+	  						<a href="https://www.youtube.com/watch?v=k0fBwOjEbkU" target="_blank">
+	  							<img src="/facturacion-internet/img/video.svg" width="150px" height="50px;"/>
+	  						</a>
+	  					</div>
+	  				</td>
+	  				<td width="150px"></td>
+	  				<td>
+                    	 <div>
+                    	  	<a href="https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/e2a5ff76-b9b9-47d9-887a-fc25fc77f614/Guia%20para%20solicitud%20de%20preimpresos.pdf" target="_blank">
+                    	  		<img src="/facturacion-internet/img/guias.svg" width="150px" height="50px;"/>
+                    	  	</a>
+                    	 </div>
+                    </td>
+	  			</tr>
+	  		</table>
+	  		
+	  		</td>
+	  	</tr>
+	  
+			</table>
+		</div>
+	</div>
+	<!-- fin contenido-->
+</form>
+<script type="text/javascript">
+	function cancelarTramite() {
+        if (confirm('Si cancela su solicitud, esta no se registrar\u00E1. Desea continuar?')) {
+            document.forma.accion.value = 'cancelar';
+            document.forma.submit();
+        }
+    }
+    
+function validarNum(b, obj, valor, a){		
+	if ((obj=="")||(obj==0)){
+		alert ("Debe ingresar un valor v\u00E1lido.");
+	}else{
+		var bNumeric=true;
+		for (var ii = 0 ; ii < obj.length ; ii++) {
+			if(0 > ('0123456789').indexOf(obj.substring(ii, ii+1))) {
+				bNumeric=false;
+				break;
+			}
+		}
+		if (bNumeric!=true){
+			alert ("Debe ingresar un n\u00FAmero.");
+		}else{
+			if (b==1){
+				if (obj > valor){
+					alert ("No puede ingresar un n\u00FAmero superior al n\u00FAmero total de registros.");
+				}else{	
+					document.forma.accion.value='cambiar-lineas-pagina';
+					document.forma.submit();
+				}
+			}else{
+				if (obj > a){
+					alert ("No puede ingresar un n\u00FAmero superior al n\u00FAmero total de p\u00E1ginas.");
+				}else{	
+					document.forma.accion.value='ir-a-pagina';
+					document.forma.submit();
+				}
+			}
+		}
+	}
+}    
+</script>
+
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/formularios.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/tablas.css"
+	type="text/css" />
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0705562767001</div>
+							<div class="sri-razon-social-cabecera">CARREÑO QUIZHPE BRYAN JOSUE</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="/facturacion-internet/js/jquery-1.11.3.min.js"></script> 
+<script type="text/javascript" src="/facturacion-internet/js/jquery-ui-1.11.4.min.js"></script>
+<link rel="stylesheet" href="/facturacion-internet/css/jquery-ui-1.11.4.min.css" type="text/css" />
+<script type="text/javascript" src="/facturacion-internet/js/configuracion-modales.js"></script>
+<link rel="stylesheet" href="/facturacion-internet/css/estilos-modal.css" type="text/css" />
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <a
+		href="/facturacion-internet/menuPrincipal.jspa"
+		title="Men&uacute; Principal">Men&uacute; Principal</a>/ <a
+		href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa">Selecci&oacute;n
+		de establecimientos </a>/ <span id="actual">Selecci&oacute;n de
+		puntos de emisi&oacute;n</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Selecci&oacute;n de puntos de
+		emisi&oacute;n</div>
+</div>
+
+<div id="ajaxLoading" align="center"></div>
+
+<!-- Inicio contenido -->
+<div id="contenido">
+	<div class="merror">
+		
+	</div>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0"
+		class="formulario">
+		<tr>
+			<th>RUC:</th>
+			<td>0705562767001</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="lineaSep" />
+		</tr>
+		<tr>
+			<th>Raz&oacute;n Social:</th>
+			<td>CARREÑO QUIZHPE BRYAN JOSUE</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="lineaSep" />
+		</tr>
+		<tr>
+			<th>Establecimiento:</th>
+			<td>001</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="lineaSep" />
+		</tr>
+		<tr>
+			<th>Nombre Comercial del Establecimiento:</th>
+			<td>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="lineaSep" />
+		</tr>
+		
+		<tr>
+			<th>Fecha de Caducidad:</th>
+			<td>28/Abril/2027
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="lineaSep" />
+		</tr>
+	</table>
+	<br />
+	<div class="titulos">Si requiere aumentar puntos de
+		emisi&oacute;n para este establecimiento haga clic en "Agregar".</div>
+
+	<div align="center">
+		<div class="botonLink" style="float: right">
+			<a href="javascript:agregar();">&nbsp;Agregar&nbsp;</a>
+		</div>
+		<div>&nbsp;</div>
+	</div>
+	<div>&nbsp;</div>
+</div>
+
+<div>
+	<form name="forma"
+		action="/facturacion-internet/preimpresos/agregar-cantidades-imprenta.jspa"
+		method="post">
+		<input type="hidden" name="tipoCI" value="CON" /> <input
+			type="hidden" name="accion" />
+		
+		<div class="titulos">Ingrese en cada punto de emisi&oacute;n la
+			cantidad requerida por tipo de documento, cuando complete toda la
+			informaci&oacute;n presione "Siguiente" para continuar.</div>
+		<br/>	
+			
+		
+		<table class="reporte" cellspacing="0" width="100%">
+			<tr>
+				<th width="8%">SERIE</th>
+				<!--Iteracion de tipos de documentos -->
+				
+				<th>FACTURA</th>
+				
+				<th>NOTA DE VENTA</th>
+				
+				<th>LIQUIDACION DE COMPRA DE BIENES MUEBLES USADOS</th>
+				
+				<th>NOTAS DE CREDITO</th>
+				
+				<th>NOTAS DE DEBITO</th>
+				
+				<th>GUIAS DE REMISION</th>
+				
+				<th>BOLETOS O ENTRADAS A ESPECTACULOS PUBLICOS</th>
+				
+				<th>LIQUIDACION DE COMPRA DE VEHICULOS USADOS</th>
+				
+				<th>ACTA DE ENTREGA - RECEPCION DE VEHICULOS USADOS</th>
+				
+				<th>LIQUIDACION DE COMPRA DE BIENES O PRESTACION DE SERVICIOS</th>
+				
+				<!--Fin Iteracion de tipos de documentos -->
+			</tr>
+			
+			<tr class="impar">
+				<td style="text-align: center" class="primeraCol">001-001
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_0'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_1'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_2'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_3'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_4'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_5'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_6'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_7'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_8'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+				<td style="text-align: center" width='9%'><input type="text"
+					name='documento0_10'
+					value=''
+					align="middle"
+					size="9"
+					maxlength="9" />
+				</td>
+				
+                    
+                    
+                    
+			</tr>
+			
+			
+
+		</table>
+		<div>
+			<table width="100%" border="0">
+				
+				<tr>
+					<td colspan="8" align="center">
+						<table>
+							<tr>
+								<td>L&iacute;neas por p&aacute;gina:</td>
+								<td><input type="text" name="lineasPagina" size="2" /></td>
+								<td><input class="boton" type="button"
+									name="cambiarLineasPagina" value="Cambiar"
+									onClick='validarNum(1, document.forma.lineasPagina.value, 10, 0)' /></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				
+			</table>
+			
+		</div>
+		<div>&nbsp;</div>
+		<div class="informacion">Recuerde que durante el proceso, puede
+			salir sin guardar ninguna informaci&oacute;n en la solicitud,
+			presionando la opci&oacute;n "Cancelar".</div>
+
+		<div align="center">
+			<div>&nbsp;</div>
+			<div class="botonLink" style="float: right">
+				<a href='javascript:siguientePaso();'>&nbsp;Siguiente&nbsp;</a>
+			</div>
+			<div style="float: right">&nbsp;&nbsp;</div>
+			<div class="botonLink" style="float: right">
+				<a href='javascript:cancelarTramite();'>&nbsp;Cancelar&nbsp;</a>
+			</div>
+			<div style="float: right">&nbsp;&nbsp;</div>
+			<div class="botonLink" style="float: right">
+				<a href='javascript:anterior();'>&nbsp;Anterior&nbsp;</a>
+			</div>
+			<div>&nbsp;</div>
+			<div>&nbsp;</div>
+		</div>
+
+	</form>
+	
+	
+	<div id="dialogoInformacionSocioTransportista">
+		
+
+<div id="contenido" align="center">
+<form id="frmAgregarSocioTransportista" name="frmAgregarSocioTransportista" method="post" 
+action="/facturacion-internet/preimpresos/seleccionar-establecimiento-contibuyente-imprenta.jspa">
+
+	<input type="hidden" name="tipoAccion" value="agregar" />
+	<br/>
+	<div id="formularioSocioTransportista">
+		<table>
+			<tbody>
+				
+				<tr>
+					<td>RUC:</td>
+					
+					<td>
+						<input id="rucSocio" type="text" name="rucSocio" size="13" maxlength="13"
+							value="" style=" width : 81px;"/>
+						
+						<input id="btnConsultar" type="button" value="Consultar" name="consultar" class="botones"
+						 onclick="javascript:makeRequest();" />
+						 
+						<input id="btnLimpiar" type="button" value="Asignaci&oacute;n a operadora" name="limpiar"  class="botones"
+						 onclick="javascript:limpiarRequest();" />
+						
+					</td>
+					
+				</tr>
+				
+				<tr>
+					<td>RAZON SOCIAL:</td>
+					<td>
+						<input id="razonSocial" type="text" class="impuestoPagado" name="razonSocial_"
+						value="" disabled style=" width : 380px;"/>
+						
+					</td>
+					
+				</tr>
+				<tr>
+					<td>REGIMEN:</td>
+					<td>
+						<input id="regimen" type="text" class="ingresosRentasExentas" name="regimen_"
+						value="" disabled style=" width : 140px;"/>
+					</td>
+				</tr>
+				
+			</tbody>
+		</table>
+		<div id="fila_obervaciones" style="text-align: center; padding-top: 12px">
+			<input id="obervaciones" type="text" name="obervaciones_" value="" disabled style=" width : 290px;"/>
+		</div>
+		
+		<div id="fila_secuencial" style="visibility:hidden; text-align: center;">
+			<input id="secuencial" type="text" name="secuencial_" value="" disabled style=" width : 60px;"/>
+		</div>
+		
+		
+		
+	</div>
+</form>
+</div>
+
+<script type="text/javascript" language='JavaScript'> 
+
+	function getXMLHttpRequest() {
+		var xmlHttpReq = false;
+		// to create XMLHttpRequest object in non-Microsoft browsers
+		if (window.XMLHttpRequest) {
+			xmlHttpReq = new XMLHttpRequest();
+		} else if (window.ActiveXObject) {
+			try {
+				// to create XMLHttpRequest object in later versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+			} catch (exp1) {
+				try {
+					// to create XMLHttpRequest object in older versions
+					// of Internet Explorer
+					xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+				} catch (exp2) {
+					xmlHttpReq = false;
+				}
+			}
+		}
+		return xmlHttpReq;
+	}
+
+	/*
+	 * AJAX call starts with this function
+	 */
+	function makeRequest() {
+		
+		if (validarCampoRuc()){
+			var params="";
+			params = "rucSocio" + "=" + document.getElementById("rucSocio").value + "&";
+			params += "secuencial" + "=" + document.getElementById("secuencial").value + "&";
+			params += "accion" + "=" + "grabarSession" + "&";
+			params += "grabar" + "=" + "no";
+			var xmlHttpRequest = getXMLHttpRequest();
+			xmlHttpRequest.onreadystatechange = getReadyStateHandler(xmlHttpRequest);
+			xmlHttpRequest.open("POST", "formConsultarRuc.ajax", true);
+			xmlHttpRequest.setRequestHeader("Content-Type",
+					"application/x-www-form-urlencoded");
+			xmlHttpRequest.send(params);
+			}
+
+	}
+
+
+function limpiarRequest() {
+		
+	var params="";
+	params = "secuencial" + "=" + document.getElementById("secuencial").value + "&";
+	params += "accion" + "=" + "limpiarSession";
+	var xmlHttpRequest = getXMLHttpRequest();
+	xmlHttpRequest.onreadystatechange = getLimpiarDatosPuntoEmision(xmlHttpRequest);
+	xmlHttpRequest.open("POST", "formConsultarRuc.ajax", true);
+	xmlHttpRequest.setRequestHeader("Content-Type",
+			"application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+
+}
+
+	/*
+	 * Returns a function that waits for the state change in XMLHttpRequest
+	 */
+	function getReadyStateHandler(xmlHttpRequest) {
+
+		// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			var regimen = null;
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var arrayDatos = xmlHttpRequest.responseText.split("-");
+					if(arrayDatos[0] == "SI"){
+						document.getElementById("razonSocial").value = arrayDatos[1];
+						switch(arrayDatos[2]){
+						case 'OTR':
+							regimen = 'GENERAL';
+							break;
+						case 'RIS':
+							regimen = 'RISE';
+							break;
+						case 'ESP':
+							regimen = 'ESPECIAL';
+							break;
+						case 'RMP':
+							regimen = 'RIMPE';
+							break;								
+						}
+						document.getElementById("regimen").value = regimen;
+
+						if(arrayDatos[3] != "null" ){
+							document.getElementById("obervaciones").value = arrayDatos[3];
+		
+							$("#fila_obervaciones").css("display", "block");
+							
+							$("#guardar_socio").button("option", "disabled", true);
+
+							$("#btnLimpiar").css("display", "none");
+						}else{
+							document.getElementById("obervaciones").value = "";
+							
+							$("#fila_obervaciones").css("display", "none");
+							
+							$("#guardar_socio").button("option", "disabled", false);
+
+							$("#btnLimpiar").css("display", "none");
+							}
+						
+					}else{
+						document.getElementById("obervaciones").value = arrayDatos[1];
+						document.getElementById("razonSocial").value = '';
+						document.getElementById("regimen").value = '';
+						
+						$("#fila_obervaciones").css("display", "block");
+						
+						$("#guardar_socio").button("option", "disabled", true);
+
+						$("#btnLimpiar").css("display", "none");
+						
+					}
+				} else {
+					$("#guardar_socio").button("option", "disabled", true);
+					alert("HTTP error " + xmlHttpRequest.status + ": " + xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+
+	function getLimpiarDatosPuntoEmision(xmlHttpRequest) {
+
+		// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			var regimen = null;
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var arrayDatos = xmlHttpRequest.responseText.split("-");
+					if(arrayDatos[0] == "LIMPIAR"){
+						$("#btnLimpiar").css("display", "none");
+						$("#rucSocio").val('');
+						$("#razonSocial").val('');
+						$("#regimen").val('');						
+						$('.ui-dialog-content').dialog('close');
+						//$("#frmAgregarSocioTransportista").closest('.ui-dialog-content').dialog('close');
+						
+					}
+						
+				} else {
+					$("#btnLimpiar").css("display", "none");
+					$("#guardar_socio").button("option", "disabled", true);
+					alert("HTTP error " + xmlHttpRequest.status + ": " + xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+	function validarCampoRuc() {
+		var pasaValidacion = true;
+	  if (!isNumeric(document.frmAgregarSocioTransportista.rucSocio.value)) {
+		  alert("El RUC debe ser num\u00E9rico.");
+	      pasaValidacion=false;
+	  }
+	  else if ((document.frmAgregarSocioTransportista.rucSocio.value.length > 13)  || (document.frmAgregarSocioTransportista.rucSocio.value.length < 13))  {
+		  alert("El RUC debe ser de 13 d\u00EDgitos.");
+	      pasaValidacion=false;
+	  }
+	  
+	  return pasaValidacion;
+	}
+
+	function isNumeric(valor) {
+	    var bNumeric=true;
+	    for (var ii = 0 ; ii < valor.length ; ii++) {
+	            if(0 > ('0123456789').indexOf(valor.substring(ii, ii+1))) {
+	                                    bNumeric=false;
+	                break;
+	            }
+	    }
+	    return bNumeric;
+	}
+	
+</script>
+
+	</div>
+	
+	<script type="text/javascript" language='JavaScript'>
+	
+	function agregar() {
+     document.forma.accion.value = 'puntos'; 
+     document.forma.submit();
+    }
+   function anterior() {
+     document.forma.accion.value = 'anterior';
+     document.forma.submit();
+    }
+
+	function cancelarTramite() {
+        if (confirm('Si cancela su solicitud, esta no se registrar\u00E1. Desea continuar?')) {
+            document.forma.accion.value = 'cancelar';
+            document.forma.submit();
+        }
+    }
+
+	function siguientePaso(){
+	    var valor=false;	       
+	    var forma = document.forma;
+        for(var i=0; i < forma.elements.length ; i++){
+            var elemento = forma.elements[i];
+            if (forma.elements[i].value != "" && forma.elements[i].type == 'text'  && forma.elements[i].name != 'lineasPagina' && forma.elements[i].name != 'numeroPagina'){ 			
+                if(!isNumeric(forma.elements[i].value)){
+                   alert("La cantidad '" + forma.elements[i].value + "' de documentos debe de ser un valor num\u00E9rico.");
+                   return ;
+                }                    
+                if(parseInt(forma.elements[i].value) <= 0){
+					alert("La cantidad " + forma.elements[i].value + " de documentos debe de ser un valor mayor a cero.");
+                    return ;
+                }
+	    		valor=true;                  
+             }
+        }
+        for(var i=0; i < forma.elements.length ; i++){
+        	if(forma.elements[i].value >= 100000000 && forma.elements[i].value >= 999999999){
+            	alert("La secuencia final otorgada ser\u00E1 hasta " + "999.999.999" + " si requiere una mayor cantidad de documentos deber\u00E1 realizar una solicitud de autorizaci\u00F3n adicional.");
+				break;
+            }
+            
+        }
+         
+         
+	    if(valor==false) {
+	      alert("Debe ingresar una cantidad de al menos un tipo de documento para continuar.");
+	      return ;
+	    }
+         
+	    forma.accion.value = 'siguiente'; 
+	    forma.submit();
+	}
+	
+	function isNumeric(valor) {
+		var bNumeric=true;		
+		for (var ii = 0 ; ii < valor.length ; ii++) {
+			if(0 > ('0123456789').indexOf(valor.substring(ii, ii+1))) {
+					bNumeric=false;
+					break;
+			}
+		}
+		return bNumeric;
+	}
+	
+function validarNum(b, obj, valor, a){		
+	if ((obj=="")||(obj==0)){
+		alert ("Debe ingresar un valor v\u00E1lido.");
+	}else{		
+		if (isNumeric(obj)!=true){
+			alert ("Debe ingresar un n\u00FAmero.");
+		}else{
+			if (b==1){
+				if (obj > valor){
+					alert ("No puede ingresar un n\u00FAmero superior al n\u00FAmero total de registros.");
+				}else{	
+					document.forma.accion.value='cambiar-lineas-pagina';
+					document.forma.submit();
+				}
+			}else{
+				if (obj > a){
+					alert ("No puede ingresar un n\u00FAmero superior al n\u00FAmero total de p\u00E1ginas.");
+				}else{	
+					document.forma.accion.value='ir-a-pagina';
+					document.forma.submit();
+				}
+			}
+		}
+	}
+}
+	
+</script>
+	
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/formularios.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/tablas.css"
+	type="text/css" />
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0705562767001</div>
+							<div class="sri-razon-social-cabecera">CARREÑO QUIZHPE BRYAN JOSUE</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+
+
+
+
+
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <a
+		href="/facturacion-internet/menuPrincipal.jspa"
+		title="Men&uacute; Principal">Men&uacute; Principal</a>/ <a
+		href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa"
+		title="Selecci&oacute;n de establecimientos">Selecci&oacute;n de
+		establecimientos</a>/ <a
+		href="/facturacion-internet/preimpresos/confirmar-cantidades.jspa?accion=anterior">Selecci&oacute;n
+		de puntos de emisi&oacute;n</a>/ <span id="actual">Confirmaci&oacute;n
+		de la Solicitud</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Confirmaci&oacute;n de la Solicitud</div>
+</div>
+
+<!-- Inicio contenido -->
+<div id="contenido">
+	<form name="forma"
+		action="/facturacion-internet/preimpresos/confirmar-cantidades.jspa"
+		method="post">
+		<input type="hidden" name="accion" />
+		<div class="merror">
+			
+		</div>
+		<table width="100%" border="0" cellpadding="0" cellspacing="0"
+			class="formulario">
+			<tr>
+				<th style="width: 22%">RUC:</th>
+				<td width="78%">0705562767001</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+			<tr>
+				<th style="width: 22%">Raz&oacute;n Social:</th>
+				<td width="78%">CARREÑO QUIZHPE BRYAN JOSUE</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+			<tr>
+				<th style="width: 22%">Establecimiento:</th>
+				<td width="78%">001</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+			<tr>
+				<th style="width: 22%">Nombre Comercial del Establecimiento:</th>
+				<td width="78%">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+			
+			<tr>
+				<th style="width: 22%">Fecha de Caducidad:</th>
+				<td width="78%">28/Abril/2027
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="lineaSep" />
+			</tr>
+			
+			
+			
+                	
+		</table>
+		<br />
+		<div>Las secuencias solicitadas son las siguientes, si la
+			informaci&oacute;n es correcta presione "Siguiente" para continuar,
+			caso contrario presione "Anterior".</div>
+		<br />
+		<table class="reporte" cellspacing="0">
+			<thead>
+				<tr>
+					<th rowspan="2">Serie</th>
+					<th rowspan="2">Tipo de Documento</th>
+					<th colspan="2" class="division">Secuencia solicitada</th>
+				</tr>
+				<tr>
+					<th>Inicial</th>
+					<th>#Final</th>
+				</tr>
+			</thead>
+			<tbody>
+				
+				<tr class="impar">
+					<td style="text-align: center" class="primeraCol" align="center"
+						width="10%" rowspan="1">001-001
+					</td>
+					<td style="text-align: center" align="center" rowspan="1">NOTA DE VENTA</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">100</td>
+				</tr>
+				
+			</tbody>
+		</table>
+	</form>
+	<br /> <br />
+	<div class="informacion">Recuerde que durante el proceso, puede
+		salir sin guardar ninguna informaci&oacute;n en la solicitud,
+		presionando la opci&oacute;n "Cancelar".</div>
+	<div align="center">
+		<div>&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:siguientePaso();'>&nbsp;Siguiente&nbsp;</a>
+		</div>
+		<div style="float: right">&nbsp;&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:cancelarTramite();'>&nbsp;Cancelar&nbsp;</a>
+		</div>
+		<div style="float: right">&nbsp;&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:anterior();'>&nbsp;Anterior&nbsp;</a>
+		</div>
+		<div>&nbsp;</div>
+		<div>&nbsp;</div>
+	</div>
+</div>
+<script type="text/javascript" language="javascript">
+	function anterior(){
+		document.forma.accion.value = 'anterior';
+		 document.forma.submit();
+	}
+	
+
+    function cancelarTramite() {
+        if (confirm('Si cancela su solicitud, esta no se registrar\u00E1. Desea continuar?')) {
+            document.forma.accion.value = 'cancelar';
+            document.forma.submit();
+        }
+    }
+    
+    function siguientePaso(){
+        if (!confirm("Recuerde que las secuencias son tentativas, cuando la imprenta acepte la autorizaci\u00F3n, se dar\u00E1n las secuencias reales.")){
+        	return
+        }else{
+        document.forma.accion.value = 'siguiente';
+        document.forma.submit();
+        }
+    }
+  </script>
+
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body 
+	onload="init();" >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0703223768001</div>
+							<div class="sri-razon-social-cabecera">GOMEZ VERA FREDDY RAFAEL</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <a
+		href="/facturacion-internet/menuPrincipal.jspa"
+		title="Men&uacute; Principal">Men&uacute; Principal</a>/ <a
+		href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa"
+		title="Selecci&oacute;n de establecimientos">Selecci&oacute;n de
+		establecimientos</a>/ <a
+		href="/facturacion-internet/preimpresos/confirmar-cantidades.jspa?accion=anterior">Selecci&oacute;n
+		de puntos de emisi&oacute;n</a>/ <span id="actual">Selecci&oacute;n
+		de establecimientos</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Selecci&oacute;n de establecimientos</div>
+</div>
+
+<!-- Inicio contenido -->
+<div id="contenido">
+	<div class="merror">
+		
+	</div>
+	<form name="forma" method="post"
+		action="/facturacion-internet/preimpresos/seleccionar-imprenta.jspa">
+		<input type="hidden" name="accion" value="siguiente" />
+		<table border="0" align="center" width="100%" cellpadding="0"
+			cellspacing="0">
+			<tr>
+				<td width="45%"><input type="radio" name="FR" value="0"
+					onClick='habilitar(this);' />Por RUC del Establecimiento
+					Gr&aacute;fico</td>
+				<td><input type="text" name="ruc" value="" maxlength='13' /></td>
+			</tr>
+			<tr>
+				<td><input type="radio" name="FR" value="1"
+					onClick='habilitar(this);' /> Por No. de autorizaci&oacute;n del
+					Establecimiento Gr&aacute;fico</td>
+				<td><input type="text" name="numero" value="" maxlength='5' />
+				</td>
+			</tr>
+			<tr>
+				<td><input type="radio" name="FR" value="2"
+					onClick='habilitar(this);' /> Por Raz&oacute;n Social o Nombre
+					Comercial</td>
+				<td><input type="text" name="palabra" value="" maxlength='30' />
+				</td>
+			</tr>
+			<tr>
+				<td><input type="radio" name="FR" value="3"
+					onClick='habilitar(this);' /> Por ubicaci&oacute;n del
+					Establecimiento Gr&aacute;fico</td>
+				<td>Provincia: &nbsp; <select name='provincia'>
+						<option value='0' selected>
+							Ninguna
+							
+						
+						<option value='201'>AZUAY</option>
+						
+						
+						<option value='202'>BOLIVAR</option>
+						
+						
+						<option value='204'>CARCHI</option>
+						
+						
+						<option value='203'>CAÑAR</option>
+						
+						
+						<option value='206'>CHIMBORAZO</option>
+						
+						
+						<option value='205'>COTOPAXI</option>
+						
+						
+						<option value='107'>EL ORO</option>
+						
+						
+						<option value='888'>ELECTRONICO</option>
+						
+						
+						<option value='108'>ESMERALDAS</option>
+						
+						
+						<option value='420'>GALAPAGOS</option>
+						
+						
+						<option value='109'>GUAYAS</option>
+						
+						
+						<option value='210'>IMBABURA</option>
+						
+						
+						<option value='211'>LOJA</option>
+						
+						
+						<option value='112'>LOS RIOS</option>
+						
+						
+						<option value='113'>MANABI</option>
+						
+						
+						<option value='314'>MORONA SANTIAGO</option>
+						
+						
+						<option value='315'>NAPO</option>
+						
+						
+						<option value='322'>ORELLANA</option>
+						
+						
+						<option value='316'>PASTAZA</option>
+						
+						
+						<option value='217'>PICHINCHA</option>
+						
+						
+						<option value='124'>SANTA ELENA</option>
+						
+						
+						<option value='223'>SANTO DOMINGO DE LOS TSACHILAS</option>
+						
+						
+						<option value='321'>SUCUMBIOS</option>
+						
+						
+						<option value='218'>TUNGURAHUA</option>
+						
+						
+						<option value='999'>VERIFICAR</option>
+						
+						
+						<option value='319'>ZAMORA CHINCHIPE</option>
+						
+				</select>
+				</td>
+			</tr>
+		</table>
+	</form>
+
+	<div>&nbsp;</div>
+	<div class="informacion">Recuerde que durante el proceso, puede
+		salir sin guardar ninguna informaci&oacute;n en la solicitud,
+		presionando la opci&oacute;n "Cancelar".</div>
+	<div align="center">
+		<div>&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:javascript:nextPage();'>&nbsp;Buscar&nbsp;</a>
+		</div>
+		<div style="float: right">&nbsp;&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:cancelarTramite();'>&nbsp;Cancelar&nbsp;</a>
+		</div>
+		<div style="float: right">&nbsp;&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:anterior();'>&nbsp;Anterior&nbsp;</a>
+		</div>
+		<div>&nbsp;</div>
+		<div>&nbsp;</div>
+	</div>
+</div>
+<!--fin contenido-->
+<script type="text/javascript" language="javascript">
+  function anterior(){
+  	document.forma.accion.value = 'anterior';
+	document.forma.submit();
+  }	
+  function init() {
+    var form=document.forma;
+    form.FR[0].checked=false;
+    form.FR[1].checked=false;
+    form.FR[2].checked=false;
+    form.FR[3].checked=false;
+    form.ruc.value="";
+    form.ruc.disabled=true;
+    form.numero.value="";
+    form.numero.disabled=true;
+    form.palabra.value="";
+    form.palabra.disabled=true;
+    form.provincia.disabled=true;
+  }
+
+  function habilitar(tipo) {
+    var form=document.forma;
+    if(tipo.value==3) {
+      form.ruc.value="";
+      form.ruc.disabled=true;
+      form.numero.value="";
+      form.numero.disabled=true;
+      form.palabra.value="";
+      form.palabra.disabled=true;
+      form.provincia.disabled=false;
+    } else {
+      form.ruc.value="";
+      form.ruc.disabled=true;
+      form.numero.value="";
+      form.numero.disabled=true;
+      form.palabra.value="";
+      form.palabra.disabled=true;
+      form.provincia.value=0;
+      form.provincia.disabled=true;
+        if(tipo.value==0) {
+          form.ruc.disabled=false;
+          form.ruc.value="";
+        }
+        if(tipo.value==1) {
+          form.numero.disabled=false;
+          form.numero.value="";
+        }
+        if(tipo.value==2) {
+          form.palabra.disabled=false;
+          form.palabra.value="";
+        }
+    }
+  }
+
+  function nextPage() {
+    var form=document.forma;
+    if(!form.FR[0].checked && !form.FR[1].checked && !form.FR[2].checked && !form.FR[3].checked) {
+      alert("Debe seleccionar un criterio para realizar la busqueda de imprentas.");
+      return;
+    }
+    if(form.FR[0].checked == true) {
+      if(!isNumeric(form.ruc.value)) {
+        alert ("El RUC debe ser un valor num\u00E9rico.");
+        return ;
+       }
+      if(form.ruc.value.length != 13) {
+        alert ("El RUC debe ser de 13 d\u00EDgitos.");
+        return;
+       }
+    }
+    if(form.FR[1].checked == true) {
+      if(!isNumeric(form.numero.value)) {
+        alert ("El n\u00FAmero de la imprenta debe ser un valor num\u00E9rico.");
+        return;
+       }
+      if(form.numero.value.length != 4 && form.numero.value.length != 5) {
+        alert ("El n\u00FAmero de la imprenta debe ser m\u00EDnimo de 4 d\u00EDgitos.");
+        return false;
+       }
+    }
+    if(form.FR[2].checked==true && form.palabra.value=="") {
+        alert ("Debe ingresar al menos una palabra clave para ejecutar la b\u00FAsqueda.");
+        return;
+    }
+    if(form.FR[3].checked==true && form.provincia.value==0) {
+        alert ("Debe seleccionar una provincia para buscar una imprenta por ubicaci\u00F3n.");
+        return;
+    }
+	form.accion.value = 'siguiente';
+	form.submit();
+  }				
+
+  function isNumeric(valor) {
+    var bNumeric=true;
+    for (var ii = 0 ; ii < valor.length ; ii++) {
+      if(0 > ('0123456789').indexOf(valor.substring(ii, ii+1))) {
+        bNumeric=false;
+        break;
+      }
+    }
+    return bNumeric;
+  }
+  
+function cancelarTramite() {
+        if (confirm('Si cancela su solicitud, esta no se registrar\u00E1. Desea continuar?')) {
+            document.forma.accion.value = 'cancelar';
+            document.forma.submit();
+        }
+    }
+  
+  </script>
+
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body 
+	onload="init();" >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0705562767001</div>
+							<div class="sri-razon-social-cabecera">CARREÑO QUIZHPE BRYAN JOSUE</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <a
+		href="/facturacion-internet/menuPrincipal.jspa"
+		title="Men&uacute; Principal">Men&uacute; Principal</a>/ <a
+		href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa"
+		title="Selecci&oacute;n de establecimientos">Selecci&oacute;n de
+		establecimientos</a>/ <a
+		href="/facturacion-internet/preimpresos/confirmar-cantidades.jspa?accion=anterior">Selecci&oacute;n
+		de puntos de emisi&oacute;n</a>/ <span id="actual">Selecci&oacute;n
+		de establecimientos</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Selecci&oacute;n de establecimientos</div>
+</div>
+
+<!-- Inicio contenido -->
+<div id="contenido">
+	<div class="merror">
+		
+	</div>
+	<form name="forma" method="post"
+		action="/facturacion-internet/preimpresos/seleccionar-imprenta.jspa">
+		<input type="hidden" name="accion" value="siguiente" />
+		<table border="0" align="center" width="100%" cellpadding="0"
+			cellspacing="0">
+			<tr>
+				<td width="45%"><input type="radio" name="FR" value="0"
+					onClick='habilitar(this);' />Por RUC del Establecimiento
+					Gr&aacute;fico</td>
+				<td><input type="text" name="ruc" value="" maxlength='13' /></td>
+			</tr>
+			<tr>
+				<td><input type="radio" name="FR" value="1"
+					onClick='habilitar(this);' /> Por No. de autorizaci&oacute;n del
+					Establecimiento Gr&aacute;fico</td>
+				<td><input type="text" name="numero" value="" maxlength='5' />
+				</td>
+			</tr>
+			<tr>
+				<td><input type="radio" name="FR" value="2"
+					onClick='habilitar(this);' /> Por Raz&oacute;n Social o Nombre
+					Comercial</td>
+				<td><input type="text" name="palabra" value="" maxlength='30' />
+				</td>
+			</tr>
+			<tr>
+				<td><input type="radio" name="FR" value="3"
+					onClick='habilitar(this);' /> Por ubicaci&oacute;n del
+					Establecimiento Gr&aacute;fico</td>
+				<td>Provincia: &nbsp; <select name='provincia'>
+						<option value='0' selected>
+							Ninguna
+							
+						
+						<option value='201'>AZUAY</option>
+						
+						
+						<option value='202'>BOLIVAR</option>
+						
+						
+						<option value='204'>CARCHI</option>
+						
+						
+						<option value='203'>CAÑAR</option>
+						
+						
+						<option value='206'>CHIMBORAZO</option>
+						
+						
+						<option value='205'>COTOPAXI</option>
+						
+						
+						<option value='107'>EL ORO</option>
+						
+						
+						<option value='888'>ELECTRONICO</option>
+						
+						
+						<option value='108'>ESMERALDAS</option>
+						
+						
+						<option value='420'>GALAPAGOS</option>
+						
+						
+						<option value='109'>GUAYAS</option>
+						
+						
+						<option value='210'>IMBABURA</option>
+						
+						
+						<option value='211'>LOJA</option>
+						
+						
+						<option value='112'>LOS RIOS</option>
+						
+						
+						<option value='113'>MANABI</option>
+						
+						
+						<option value='314'>MORONA SANTIAGO</option>
+						
+						
+						<option value='315'>NAPO</option>
+						
+						
+						<option value='322'>ORELLANA</option>
+						
+						
+						<option value='316'>PASTAZA</option>
+						
+						
+						<option value='217'>PICHINCHA</option>
+						
+						
+						<option value='124'>SANTA ELENA</option>
+						
+						
+						<option value='223'>SANTO DOMINGO DE LOS TSACHILAS</option>
+						
+						
+						<option value='321'>SUCUMBIOS</option>
+						
+						
+						<option value='218'>TUNGURAHUA</option>
+						
+						
+						<option value='999'>VERIFICAR</option>
+						
+						
+						<option value='319'>ZAMORA CHINCHIPE</option>
+						
+				</select>
+				</td>
+			</tr>
+		</table>
+	</form>
+
+	<div>&nbsp;</div>
+	<div class="informacion">Recuerde que durante el proceso, puede
+		salir sin guardar ninguna informaci&oacute;n en la solicitud,
+		presionando la opci&oacute;n "Cancelar".</div>
+	<div align="center">
+		<div>&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:javascript:nextPage();'>&nbsp;Buscar&nbsp;</a>
+		</div>
+		<div style="float: right">&nbsp;&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:cancelarTramite();'>&nbsp;Cancelar&nbsp;</a>
+		</div>
+		<div style="float: right">&nbsp;&nbsp;</div>
+		<div class="botonLink" style="float: right">
+			<a href='javascript:anterior();'>&nbsp;Anterior&nbsp;</a>
+		</div>
+		<div>&nbsp;</div>
+		<div>&nbsp;</div>
+	</div>
+</div>
+<!--fin contenido-->
+<script type="text/javascript" language="javascript">
+  function anterior(){
+  	document.forma.accion.value = 'anterior';
+	document.forma.submit();
+  }	
+  function init() {
+    var form=document.forma;
+    form.FR[0].checked=false;
+    form.FR[1].checked=false;
+    form.FR[2].checked=false;
+    form.FR[3].checked=false;
+    form.ruc.value="";
+    form.ruc.disabled=true;
+    form.numero.value="";
+    form.numero.disabled=true;
+    form.palabra.value="";
+    form.palabra.disabled=true;
+    form.provincia.disabled=true;
+  }
+
+  function habilitar(tipo) {
+    var form=document.forma;
+    if(tipo.value==3) {
+      form.ruc.value="";
+      form.ruc.disabled=true;
+      form.numero.value="";
+      form.numero.disabled=true;
+      form.palabra.value="";
+      form.palabra.disabled=true;
+      form.provincia.disabled=false;
+    } else {
+      form.ruc.value="";
+      form.ruc.disabled=true;
+      form.numero.value="";
+      form.numero.disabled=true;
+      form.palabra.value="";
+      form.palabra.disabled=true;
+      form.provincia.value=0;
+      form.provincia.disabled=true;
+        if(tipo.value==0) {
+          form.ruc.disabled=false;
+          form.ruc.value="";
+        }
+        if(tipo.value==1) {
+          form.numero.disabled=false;
+          form.numero.value="";
+        }
+        if(tipo.value==2) {
+          form.palabra.disabled=false;
+          form.palabra.value="";
+        }
+    }
+  }
+
+  function nextPage() {
+    var form=document.forma;
+    if(!form.FR[0].checked && !form.FR[1].checked && !form.FR[2].checked && !form.FR[3].checked) {
+      alert("Debe seleccionar un criterio para realizar la busqueda de imprentas.");
+      return;
+    }
+    if(form.FR[0].checked == true) {
+      if(!isNumeric(form.ruc.value)) {
+        alert ("El RUC debe ser un valor num\u00E9rico.");
+        return ;
+       }
+      if(form.ruc.value.length != 13) {
+        alert ("El RUC debe ser de 13 d\u00EDgitos.");
+        return;
+       }
+    }
+    if(form.FR[1].checked == true) {
+      if(!isNumeric(form.numero.value)) {
+        alert ("El n\u00FAmero de la imprenta debe ser un valor num\u00E9rico.");
+        return;
+       }
+      if(form.numero.value.length != 4 && form.numero.value.length != 5) {
+        alert ("El n\u00FAmero de la imprenta debe ser m\u00EDnimo de 4 d\u00EDgitos.");
+        return false;
+       }
+    }
+    if(form.FR[2].checked==true && form.palabra.value=="") {
+        alert ("Debe ingresar al menos una palabra clave para ejecutar la b\u00FAsqueda.");
+        return;
+    }
+    if(form.FR[3].checked==true && form.provincia.value==0) {
+        alert ("Debe seleccionar una provincia para buscar una imprenta por ubicaci\u00F3n.");
+        return;
+    }
+	form.accion.value = 'siguiente';
+	form.submit();
+  }				
+
+  function isNumeric(valor) {
+    var bNumeric=true;
+    for (var ii = 0 ; ii < valor.length ; ii++) {
+      if(0 > ('0123456789').indexOf(valor.substring(ii, ii+1))) {
+        bNumeric=false;
+        break;
+      }
+    }
+    return bNumeric;
+  }
+  
+function cancelarTramite() {
+        if (confirm('Si cancela su solicitud, esta no se registrar\u00E1. Desea continuar?')) {
+            document.forma.accion.value = 'cancelar';
+            document.forma.submit();
+        }
+    }
+  
+  </script>
+
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sistema de Autorizaci&oacute;n de Documentos</title>
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet"
+	href="/facturacion-internet/css/sri.css"
+	type="text/css" />
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/factu.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/listas.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/formularios.css"
+	type="text/css" />
+
+
+<link rel="stylesheet"
+	href="/facturacion-internet/css/tablas.css"
+	type="text/css" />
+
+
+
+
+
+<script type="text/javascript"
+	src="/facturacion-internet/js/comun.js"></script>
+<script type="text/javascript"
+	src="/recursos-tpi/js/sri.js"></script>
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-reconstruccion.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/sri-recursos-sri.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/menu.css" type="text/css" />
+<link rel="stylesheet"
+	href="/recursos-tpi/css/animate.min.css" type="text/css" />
+		
+
+
+<!-- TCS William Calderon  Cambio de dominio y contingencia  -->
+
+
+</head>
+<body >
+	<table id="anchoDoc">
+		<tr>
+			<td class="general">
+				<div class="sri-header">
+					<div class="sri-logo-cabecera sri-tooltip">
+						<span class="tooltiptext-derecha sri-tooltip-inicio">Inicio</span>
+						<a class="sri-imagen-cabecera"
+							href="/facturacion-internet/revisar-tipo-contribuyente.jspa"></a>
+					</div>
+					
+					<div class="sri-info-usuario-cabecera">
+						
+							<div class="sri-ruc-cabecera">0703223768001</div>
+							<div class="sri-razon-social-cabecera">GOMEZ VERA FREDDY RAFAEL</div>
+								
+							
+					</div>
+					<div class="sri-botones-navegacion-cabecera">
+						<div class="sri-tooltip">
+							<span class="tooltiptext-izquierda">Inicio</span>
+							<a href="/facturacion-internet/revisar-tipo-contribuyente.jspa" aria-expanded="false"><span
+							class="topbar-icon material-icons sri-cl-blanco">home</span>
+							<span class="sri-salirOutputLinkText">home</span> </a>
+						</div>	 
+						
+							<div class="sri-tooltip">
+                                <span class="tooltiptext-izquierda">Cerrar sesi&#243;n</span>
+								<a href="/facturacion-internet/logout.jspa" aria-expanded="false" class="sri-flex-unico"><span
+									class="topbar-icon-sri sri-flex-centrado sri-icon-cerrar-sesion sri-cl-blanco"></span>
+									<span class="sri-salirOutputLinkText">sri-icon-cerrar-sesion</span>
+								</a>
+							</div>	
+						
+					</div>
+				</div>
+				
+				<div id="cuadroAplicacion">
+					<div id="cuadroAppSup">&nbsp;</div>
+					<div id="nombreAplicacion">
+						<br /> Autorizaci&oacute;n de Documentos<br /> <br />
+					</div>
+					<div id="cuadroAppInf">&nbsp;</div>
+				</div>
+
+				<div id="contenedorPrincipal">
+					<div id="contenedorCentro">
+
+
+
+
+
+
+<div id="path">
+	Autorizaci&oacute;n de Documentos / <a
+		href="/facturacion-internet/menuPrincipal.jspa"
+		title="Men&uacute; Principal">Men&uacute; Principal</a>/ <a
+		href="/facturacion-internet/preimpresos/inicio-contribuyente.jspa"
+		title="Selecci&oacute;n de establecimientos">Selecci&oacute;n de
+		establecimientos</a>/ <a
+		href="/facturacion-internet/preimpresos/confirmar-cantidades.jspa?accion=anterior">Selecci&oacute;n
+		de puntos de emisi&oacute;n</a>/ <span id="actual">Listado de
+		Establecimientos Gr&aacute;ficos</span>
+</div>
+<div id="tituloPagina">
+	<div id="esquinaIzq">&nbsp;</div>
+	<div id="esquinaDer">&nbsp;</div>
+	<div id="textoTitulo">Listado de Establecimientos Gr&aacute;ficos</div>
+</div>
+<form name="forma"
+	action="/facturacion-internet/preimpresos/seleccionar-establecimiento-imprenta.jspa"
+	method="post">
+	<input type="hidden" name="accion" value='siguiente' /> <input
+		type="hidden" name="imprenta" />
+	<!-- Inicio contenido -->
+	<div id="contenido">
+		<div class="merror">
+			
+		</div>
+		
+		<div class="titulos">Escoja la imprenta que desee del listado
+			que se muestra a continuaci&oacute;n:</div>
+
+		<div>
+			<table border="0" class="reporte">
+				<tr>
+					<th width="5%">No.</th>
+					<th width="10%">Ruc</th>
+					<th nowrap="nowrap">Raz&oacute;n Social</th>
+					<th width="20%">Nombre Comercial</th>
+					<th width="10">C&oacute;digo de Autorizaci&oacute;n</th>
+					<th width="5%">Establecimiento</th>
+					<th width="10%">Direcci&oacute;n</th>
+					<th width="5%">Tel&eacute;fono</th>
+					<th width="5%">Estado</th>
+				</tr>
+				
+				<tr class="seleccion" bgcolor="#EFEEF4"
+					title="Haga click aqui&iacute; para seleccionar esta imprenta"
+					onMouseOver="this.className = 'seleccionDestacado'"
+					onMouseOut="this.className = 'seleccion'"
+					onClick="javascript:siguientePaso(8155);">
+					
+					<td class="primeraCol" style="text-align: center">1</td>
+					<td style="text-align: center">0702065319001</td>
+					<td nowrap="nowrap" style="text-align: center">CORDOVA RODRIGUEZ PEDRO MANUEL</td>
+					<td style="text-align: center">IMPRENTA CORDOVA</td>
+					<td style="text-align: center">8634</td>
+					<td style="text-align: center">001</td>
+					<td style="text-align: center">COLON S/N Y SUCRE Y ROCAFUERTE<br />PASAJE</td>
+					<td style="text-align: center">072917167</td>
+					<td style="text-align: center">Activa</td>
+				</tr>
+				
+			</table>
+		</div>
+		<div>
+			<table width="100%" border="0">
+				
+				<tr>
+					<td colspan="8" align="center">
+						<table>
+							<tr>
+								<td>L&iacute;neas por p&aacute;gina:</td>
+								<td><input type="text" name="lineasPagina" size="2" /></td>
+								<td><input class="boton" type="button"
+									name="cambiarLineasPagina" value="Cambiar"
+									onClick='validarNum(1, document.forma.lineasPagina.value, 10, 0)' /></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				
+			</table>
+		</div>
+		
+
+
+
+		<div align="center">
+			<div>&nbsp;</div>
+
+			<div class="botonLink" style="float: right">
+				<a href='javascript:anterior();'>&nbsp;Anterior&nbsp;</a>
+			</div>
+			<div>&nbsp;</div>
+			<div>&nbsp;</div>
+		</div>
+	</div>
+</form>
+<script type="text/javascript" language='JavaScript'>
+	
+	 function anterior(){
+  	document.forma.accion.value = 'anterior';
+  	document.forma.submit();
+  
+  }
+  function siguientePaso(codigo) {
+        if (confirm("Si continua se registrar\u00E1 su solicitud de autorizaci\u00F3n y se enviar\u00E1 a la imprenta.  Esta informaci\u00F3n no podr\u00E1 ser modificada, desea continuar?")) {
+            esconder();
+		    document.forma.imprenta.value = codigo;
+		    document.forma.submit();
+		}
+  }
+  
+	function cancelarTramite() {
+        if (confirm('Si cancela su solicitud, esta no se registrar\u00E1. Desea continuar?')) {
+            document.forma.accion.value = 'cancelar';
+            document.forma.submit();
+        }
+    }
+function changeDiv(the_div,the_change)
+{
+  var the_style = getStyleObject(the_div);
+  if (the_style != false)
+  {
+    the_style.display = the_change;
+  }
+}
+
+function esconder()
+{
+  changeDiv('botones','none');
+}
+
+function getStyleObject(objectId) {
+  if (document.getElementById && document.getElementById(objectId)) {
+    return document.getElementById(objectId).style;
+  } else if (document.all && document.all(objectId)) {
+    return document.all(objectId).style;
+  } else {
+    return false;
+  }
+}  
+
+function validarNum(b, obj, valor, a){		
+	if ((obj=="")||(obj==0)){
+		alert ("Debe ingresar un valor v\u00E1lido.");
+	}else{
+		var bNumeric=true;
+		for (var ii = 0 ; ii < obj.length ; ii++) {
+			if(0 > ('0123456789').indexOf(obj.substring(ii, ii+1))) {
+				bNumeric=false;
+				break;
+			}
+		}
+		if (bNumeric!=true){
+			alert ("Debe ingresar un n\u00FAmero.");
+		}else{
+			if (b==1){
+				if (obj > valor){
+					alert ("No puede ingresar un n\u00FAmero superior al n\u00FAmero total de registros.");
+				}else{	
+					document.forma.accion.value='cambiar-lineas-pagina';
+					document.forma.submit();
+				}
+			}else{
+				if (obj > a){
+					alert ("No puede ingresar un n\u00FAmero superior al n\u00FAmero total de p\u00E1ginas.");
+				}else{	
+					document.forma.accion.value='ir-a-pagina';
+					document.forma.submit();
+				}
+			}
+		}
+	}
+}	
+ 	  
+</script>
+
+
+
+</div>
+<!-- FIN contenedor Centro -->
+
+
+</div>
+<!-- Fin contenedorPrincipal -->
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+
+https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/seleccionar-establecimiento-imprenta.jspa

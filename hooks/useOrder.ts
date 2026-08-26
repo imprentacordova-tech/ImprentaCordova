@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
-import { useData } from '../contexts/DataContext';
+import { useTrabajos } from '../contexts/TrabajosContext';
+import { useConfig } from '../contexts/ConfigContext';
+import { useProductos } from '../contexts/ProductosContext';
 import { logTransaction } from '../services/financialLedgerService';
 
 export interface CartItem {
@@ -13,7 +15,9 @@ export interface CartItem {
 }
 
 export const useOrder = (user: string) => {
-    const { addTrabajo, upsertSriCredential, addProducto, sriCredentials } = useData();
+    const { addTrabajo } = useTrabajos();
+    const { upsertSriCredential, sriCredentials } = useConfig();
+    const { addProducto } = useProductos();
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
     const [tempClient, setTempClient] = useState({ nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL });
     const [selectedProductos, setSelectedProductos] = useState<Map<string, CartItem>>(new Map());

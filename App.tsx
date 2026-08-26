@@ -1,90 +1,90 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { User } from './types';
+import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
-import { logActivity, purgeOldEntries } from './services/activityLogService';
+import { purgeOldEntries } from './services/activityLogService';
+import { logActivity } from './services/activityLogService';
+import { Loader2Icon } from './components/Icons';
 
-// Pages
-import VisualLanding from './pages/VisualLanding'; // Changed from LandingPage
-import LoginPage from './pages/Login';
-import DashboardPage from './pages/Dashboard';
-import KDSPage from './pages/KDS';
-import FinanzasPage from './pages/Finanzas';
-import ClientesPage from './pages/Clientes';
-import NuevoPedidoPage from './pages/NuevoPedido';
-import ConfiguracionPage from './pages/Configuracion';
-import ProductosPage from './pages/Productos';
-import CalculadoraPreciosPage from './pages/CalculadoraPrecios';
-import InventarioPage from './pages/Inventario';
-import GestionUsuariosPage from './pages/GestionUsuarios';
-import RetirosPage from './pages/Retiros';
-import ProveedoresPage from './pages/Proveedores';
-import DisenoPage from './pages/Diseno';
-import ProduccionPage from './pages/Produccion';
-import TrackingPage from './pages/Tracking';
-import OrdenProduccionPage from './pages/OrdenProduccion';
-import NotaDeVentaPage from './pages/NotaDeVenta';
-import SolicitudImpresionPage from './pages/SolicitudImpresion';
-import ReciboAbonoPage from './pages/ReciboAbono';
-import ReciboEpsonPage from './pages/ReciboEpson';
-import TrabajoDetallePage from './pages/TrabajoDetalle';
-import TrabajosPage from './pages/Trabajos';
-import RegistroActividadPage from './pages/RegistroActividad';
-import CuentasPage from './pages/Cuentas';
-import VitrinaPage from './pages/Vitrina';
-import FacturacionElectronicaPage from './pages/FacturacionElectronica';
+// ── Lazy-loaded Public Pages ─────────────────────────────────────────────
+const VisualLanding = React.lazy(() => import('./pages/VisualLanding'));
+const LoginPage = React.lazy(() => import('./pages/Login'));
+const TrackingPage = React.lazy(() => import('./pages/Tracking'));
+const VitrinaPage = React.lazy(() => import('./pages/Vitrina'));
 
-/**
- * ProtectedRoute component to handle authenticated access.
- */
-const ProtectedRoute = ({ user, onLogout }: { user: User | null, onLogout: () => void }) => {
+// ── Lazy-loaded Printable Documents ──────────────────────────────────────
+const OrdenProduccionPage = React.lazy(() => import('./pages/OrdenProduccion'));
+const NotaDeVentaPage = React.lazy(() => import('./pages/NotaDeVenta'));
+const SolicitudImpresionPage = React.lazy(() => import('./pages/SolicitudImpresion'));
+const ReciboAbonoPage = React.lazy(() => import('./pages/ReciboAbono'));
+const ReciboEpsonPage = React.lazy(() => import('./pages/ReciboEpson'));
+
+// ── Lazy-loaded Admin Pages ──────────────────────────────────────────────
+const DashboardPage = React.lazy(() => import('./pages/Dashboard'));
+const NuevoPedidoPage = React.lazy(() => import('./pages/NuevoPedido'));
+const KDSPage = React.lazy(() => import('./pages/KDS'));
+const FinanzasPage = React.lazy(() => import('./pages/Finanzas'));
+const ClientesPage = React.lazy(() => import('./pages/Clientes'));
+const ConfiguracionPage = React.lazy(() => import('./pages/Configuracion'));
+const ProductosPage = React.lazy(() => import('./pages/Productos'));
+const CalculadoraPreciosPage = React.lazy(() => import('./pages/CalculadoraPrecios'));
+const InventarioPage = React.lazy(() => import('./pages/Inventario'));
+const GestionUsuariosPage = React.lazy(() => import('./pages/GestionUsuarios'));
+const RetirosPage = React.lazy(() => import('./pages/Retiros'));
+const ProveedoresPage = React.lazy(() => import('./pages/Proveedores'));
+const DisenoPage = React.lazy(() => import('./pages/Diseno'));
+const ProduccionPage = React.lazy(() => import('./pages/Produccion'));
+const TrabajoDetallePage = React.lazy(() => import('./pages/TrabajoDetalle'));
+const TrabajosPage = React.lazy(() => import('./pages/Trabajos'));
+const RegistroActividadPage = React.lazy(() => import('./pages/RegistroActividad'));
+const CuentasPage = React.lazy(() => import('./pages/Cuentas'));
+const FacturacionElectronicaPage = React.lazy(() => import('./pages/FacturacionElectronica'));
+
+// ── Loading Fallback ─────────────────────────────────────────────────────
+const PageLoader = () => (
+  <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2Icon className="w-8 h-8 text-brand-blue animate-spin" />
+      <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cargando modulo...</span>
+    </div>
+  </div>
+);
+
+// ── Protected Route ──────────────────────────────────────────────────────
+const ProtectedRoute: React.FC = () => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
+  
   return (
-    <Layout user={user} onLogout={onLogout}>
-      <Outlet context={{ currentUser: user }} />
+    <Layout>
+      <Outlet />
     </Layout>
   );
 };
 
-/**
- * Main App component with defined routing structure.
- */
+// ── Main App ─────────────────────────────────────────────────────────────
 const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('currentUser');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const { user, logout } = useAuth();
 
-  // Auto-purga de registros de actividad al iniciar la app
   useEffect(() => {
     purgeOldEntries();
   }, []);
 
-  const handleLogin = (user: User, remember: boolean) => {
-    setCurrentUser(user);
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    logActivity(user.nombre, user.rol, 'LOGIN', `Inicio de sesión exitoso`, 'Sistema');
-  };
-
-  const handleLogout = () => {
-    if (currentUser) {
-      logActivity(currentUser.nombre, currentUser.rol, 'LOGOUT', `Cierre de sesión`, 'Sistema');
-    }
-    setCurrentUser(null);
-    localStorage.removeItem('currentUser');
-  };
-
   return (
-      <HashRouter>
+    <HashRouter>
+      <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Public Routes - NOW USING PREMIUM VISUAL LANDING */}
+          {/* Public Routes */}
           <Route path="/" element={<VisualLanding />} />
           <Route path="/vitrina" element={<VitrinaPage />} />
-          <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <LoginPage onLoginSuccess={handleLogin} />} />
+          <Route path="/login" element={
+            user ? <Navigate to="/dashboard" replace /> : <LoginPage />
+          } />
           <Route path="/tracking" element={<TrackingPage />} />
-          
-          {/* Internal Print Views (No Navigation Layout) */}
+
+          {/* Internal Print Views (No Layout) */}
           <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
           <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
           <Route path="/orden-produccion/:trabajoId" element={<OrdenProduccionPage />} />
@@ -92,7 +92,7 @@ const App: React.FC = () => {
           <Route path="/recibo-epson/:trabajoId" element={<ReciboEpsonPage />} />
 
           {/* Protected Administration Routes */}
-          <Route element={<ProtectedRoute user={currentUser} onLogout={handleLogout} />}>
+          <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/nuevo" element={<NuevoPedidoPage />} />
             <Route path="/diseno" element={<DisenoPage />} />
@@ -114,10 +114,11 @@ const App: React.FC = () => {
             <Route path="/configuracion" element={<ConfiguracionPage />} />
           </Route>
 
-          {/* Fallback to Home */}
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </HashRouter>
+      </Suspense>
+    </HashRouter>
   );
 };
 

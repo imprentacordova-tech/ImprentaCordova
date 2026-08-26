@@ -1,0 +1,177 @@
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { User } from '../types';
+import { supabase } from '../services/supabase';
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (nombre: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const SESSION_KEY = 'cordova_session';
+
+function deserializeSession(raw: string | null): User | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.id && parsed.nombre) return parsed as User;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function serializeSession(user: User): string {
+  return JSON.stringify({
+    id: user.id,
+    nombre: user.nombre,
+    rol: user.rol,
+    estado: user.estado,
+    avatar: user.avatar,
+    ultimoAcceso: user.ultimoAcceso,
+  });
+}
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(() => deserializeSession(localStorage.getItem(SESSION_KEY)));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const localUser = deserializeSession(localStorage.getItem(SESSION_KEY));
+          if (localUser && localUser.id === session.user.id) {
+            setUser(localUser);
+          }
+        }
+      } catch {
+        // Session invalid, continue with local
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setUser(null);
+        localStorage.removeItem(SESSION_KEY);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = useCallback(async (nombre: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      // Query Supabase users table for the user
+      const { data: validUser, error: sbError } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('nombre', nombre)
+        .eq('estado', 'Activo')
+        .maybeSingle();
+
+      if (sbError) {
+        console.warn('[Auth] Supabase query error:', sbError.message);
+      }
+
+      let matchedUser: User | null = null;
+
+      if (validUser) {
+        // User found in database
+        if (validUser.require_password && validUser.password !== password) {
+          return { success: false, error: 'Contraseña incorrecta' };
+        }
+        matchedUser = {
+          id: validUser.id,
+          nombre: validUser.nombre,
+          rol: validUser.rol,
+          estado: validUser.estado,
+          avatar: validUser.avatar,
+          ultimoAcceso: new Date().toISOString(),
+        };
+      } else {
+        // Fallback for legacy hardcoded users
+        const keyUpper = nombre.trim().toUpperCase();
+        const hardcodedUsers: Record<string, { rol: User['rol']; id: string }> = {
+          'PEDRO': { rol: 'Admin', id: 'usr-pedro' },
+          'DANTE': { rol: 'Admin', id: 'usr-dante' },
+          'ADMIN': { rol: 'Admin', id: 'usr-admin' },
+          'ROOT': { rol: 'Admin', id: 'usr-root' },
+          'ALEIDA': { rol: 'Operador', id: 'usr-aleida' },
+          'ROBERTO': { rol: 'Operador', id: 'usr-roberto' },
+          'DANIEL': { rol: 'Operador', id: 'usr-daniel' },
+        };
+
+        const legacy = hardcodedUsers[keyUpper];
+        if (legacy) {
+          matchedUser = {
+            id: legacy.id,
+            nombre: nombre.trim(),
+            rol: legacy.rol,
+            estado: 'Activo',
+            ultimoAcceso: new Date().toISOString(),
+          };
+        }
+      }
+
+      if (!matchedUser) {
+        return { success: false, error: 'IDENTIDAD NO RECONOCIDA' };
+      }
+
+      // Persist session
+      setUser(matchedUser);
+      localStorage.setItem(SESSION_KEY, serializeSession(matchedUser));
+
+      // Try to sync with Supabase Auth (non-blocking)
+      try {
+        const email = `${matchedUser.nombre.toLowerCase().replace(/\s+/g, '.')}@imprentacordova.com`;
+        await supabase.auth.signInWithPassword({ email, password: password || matchedUser.id });
+      } catch {
+        // Supabase Auth not configured for this user — local session is enough
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('[Auth] Login error:', err);
+      return { success: false, error: 'Error de conexión' };
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore Supabase errors on logout
+    }
+    setUser(null);
+    localStorage.removeItem(SESSION_KEY);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      logout,
+      isAuthenticated: !!user,
+      isAdmin: user?.rol === 'Admin' || (user?.rol as string) === 'root',
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth debe usarse dentro de AuthProvider');
+  return context;
+};

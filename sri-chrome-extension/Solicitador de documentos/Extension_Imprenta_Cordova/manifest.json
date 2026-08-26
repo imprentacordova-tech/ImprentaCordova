@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "SRI Solicitador Cordova",
+  "version": "1.0.0",
+  "description": "Automatización Elite para Solicitudes SRI - Imprenta Cordova",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.sri.gob.ec/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "SRI Solicitador Cordova"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://srienlinea.sri.gob.ec/facturacion-internet/*", "https://srienlinea.sri.gob.ec/facturacion-internet"],
+      "js": ["content/overrides.js"],
+      "world": "MAIN",
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://srienlinea.sri.gob.ec/facturacion-internet/*", "https://srienlinea.sri.gob.ec/facturacion-internet"],
+      "js": ["content/content.js"],
+      "css": ["content/inject.css"],
+      "world": "ISOLATED",
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/icon128.png"],
+      "matches": ["https://srienlinea.sri.gob.ec/*"]
+    }
+  ]
+}

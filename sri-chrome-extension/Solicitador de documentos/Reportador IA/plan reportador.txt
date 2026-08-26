@@ -1,0 +1,92 @@
+*PLAN PRINICPAL* Reportador de impresion de documentos autorizados por el sri * objetivo trabajar en esta pagina https://srienlinea.sri.gob.ec/facturacion-internet/login.jspa con usuario: 0702065319001, una ves abierto estamos aqui: https://srienlinea.sri.gob.ec/facturacion-internet/revisar-tipo-contribuyente.jspa, y nos dice esto: Autorización de Documentos /Seleccione el Tipo de Contribuyente
+  
+Seleccione el Tipo de Contribuyente
+Contribuyente
+ 
+Imprenta, luego de escojer imprenta nos lleva a este url: https://srienlinea.sri.gob.ec/facturacion-internet/usuarioPrincipal/seleccionar-tipo-contribuyente.jspa, y nos pone a elegir: Autorización de Documentos / Menú Principal
+  
+Menú Principal
+Manejo de Autorizaciones para Documentos
+ 
+Cerrar Sesión
+ 
+Ingreso de Formularios
+ , marcamos esta: *Manejo de Autorizaciones para Documentos, nos lleva a esta url: : https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/establecimientos-imprenta.jspa : Autorización de Documentos / Menú Principal/ Selección de Establecimientos de Imprenta
+  
+Selección de Establecimientos de Imprenta
+RUC:	0702065319001
+
+Seleccione el Establecimiento Gráfico con el cual desea trabajar:
+Establecimiento	Nombre Comercial	Tipo	Direccion	Cantón	Estado
+001	IMPRENTA CORDOVA	MAT	COLON S/N Y SUCRE Y ROCAFUERTE	PASAJE	Activa
+
+ 
+ Cancelar 
+ 
+ escojemos 
+Establecimiento	Nombre Comercial	Tipo	Direccion	Cantón	Estado
+001	IMPRENTA CORDOVA	MAT	COLON S/N Y SUCRE Y ROCAFUERTE	PASAJE	Activa (<td style="text-align: center" align="center">COLON S/N Y SUCRE Y ROCAFUERTE</td>)  ahora estamos en esta url: https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/menu-preimpresos.jspa :  
+Autorizaciones de Impresión
+
+Solicitudes enviadas directamente por el contribuyente
+ 
+Solicitudes de autorización
+ 
+Autorizaciones Pendientes de Reportar
+ 
+Consulta de Trabajos Reportados
+  escojemos: Autorizaciones Pendientes de Reportar* ,  luego estamos en esta url: https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/pendientes-reportar-busqueda.jsp :  
+Búsqueda de Autorizaciones Pendientes de Reportar
+Para realizar la consulta de autorizaciones pendientes de reportar, deberá ingresar uno de los siguientes parámetros de búsqueda.
+Fecha en la cual desea el reporte (mes/año):	
+	Mes	
+Marzo
+Año	
+2026
+RUC del contribuyente:	
+	
+Número de Autorización:	
+	Inicio:	
+Fin:	
+Todas las autorizaciones:
+Si utiliza esta opción la respuesta puede tomar algunos minutos.	
+	 
+marcamos: Todas las autorizaciones:
+Si utiliza esta opción la respuesta puede tomar algunos minutos.	
+	 
+y le damos click en buscar(<a href="javascript:nextPage();">&nbsp;Buscar&nbsp;</a>), aqui tenemos la lista de clientes  imgen 1  pondemos darle clic en el primero y alli es siguiente<td style="text-align: center" class="primeraCol" width="4%">1</td>  nos aparece esta pagina del cliente a reportar: Autorización de Documentos / Menú Principal/ Selección de Establecimientos/ Autorizaciones de Impresión/ Reporte de Autorización
+  
+Reporte de Autorización
+RUC:	0703426882001
+Razón Social:	VILLEGAS CAMPOS TERESA VANESSA
+Dirección de la Matriz:	AV MONGOMERY SANCHEZ S/N
+Código del Establecimiento:	001
+Nombre Comercial del Establecimiento:	
+Dirección del Establecimiento:	AV MONGOMERY SANCHEZ S/N
+Pie de imprenta:	0702065319001, CORDOVA RODRIGUEZ PEDRO MANUEL, 8634.
+Fecha de Caducidad:	23/Febrero/2027
+Número de autorización:	1133291544
+
+
+#	Serie	Tipo de Documento	Secuencia Autorizada	Por Informar	Con Requisitos de Factura Comercial Negociable
+# Inicial	# Final	# Inicial	# Final	SI	NO
+1	001-001	NOTA DE VENTA	251	350	
+251
+350
+ <input type="button" class="boton" name="btnSiguiente" value="Siguiente" onclick="javascript:siguientePaso();"> le damos a siguiente, te recuerdo que estamos en esta url: https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/pendientes-reportar-listado.jspa, se habre el reporte del cliente del trabajo del esta url: https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/pendiente-reportar-informacion.jspa eso dice el reporte te lo dejo en imagen 2 para regresar al menu luego de aber reportado el trabajo como realizado  tomas esa info para al final dar un informe final cuando se termine de reportar saber cuantos clientes, cuantos talonarios de 100 cuantos de 50 y asi este es el boton de regreso <embed type="application/x-google-chrome-pdf" src="chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/864b86fb-21d2-45f3-bafa-a4182a45b475" original-url="https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/pendiente-reportar-informacion.jspa" background-color="4280821800" javascript="allow" full-frame=""> es el boton que ves en la segunda imagen  dice 
+Servicio de Rentas Internas, nos regresa aqui: https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/pendientes-reportar-busqueda.jsp, donde decia esto: Autorización de Documentos / Menú Principal/ Selección de Establecimientos/ Autorizaciones de Impresión/ Búsqueda de Autorizaciones Pendientes de Reportar
+  
+Búsqueda de Autorizaciones Pendientes de Reportar
+Para realizar la consulta de autorizaciones pendientes de reportar, deberá ingresar uno de los siguientes parámetros de búsqueda.
+Fecha en la cual desea el reporte (mes/año):	
+	Mes	
+Marzo
+Año	
+2026
+RUC del contribuyente:	
+	
+Número de Autorización:	
+	Inicio:	
+Fin:	
+Todas las autorizaciones:
+Si utiliza esta opción la respuesta puede tomar algunos minutos.	**guarda bien ese plan esto es lo principal te dejo la clave api de stitch usala  para un acabado de diseño (EL TIPO DE DISEÑO TE LO DEJO A TI PARA QUE ME SORPRENDAS DE FELICIDAD) AQ.Ab8RN6JzvDgi_WIOLKfcONPHYuU5N0JpivOBy5_voQBepkiNmg PUEDES USAR UN ASISTENTE QUE SE ACTIVE U OCULTE DESDE LA EXTENCION. . * GUARDA ESTE PLAN

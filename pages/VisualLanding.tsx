@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
     WhatsAppIcon, ShieldCheckIcon, ActivityIcon,
     SparklesIcon, CpuIcon, FileTextIcon, BoxIcon,
-    CheckCircleIcon, ArrowRightIcon, ChevronDownIcon, ClockIcon, LocationIcon
+    CheckCircleIcon, ArrowRightIcon, ChevronDownIcon, ClockIcon, MapPinIcon
 } from '../components/Icons';
 import { generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
@@ -239,7 +239,7 @@ const VisualLanding: React.FC = () => {
 
     const fadeUp = {
         hidden: { opacity: 0, y: 30 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.23, 1, 0.32, 1] } },
+        show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.23, 1, 0.32, 1] as const } },
     };
 
     return (
@@ -913,7 +913,7 @@ const VisualLanding: React.FC = () => {
                                 transition={{ delay: 0.4 }}
                                 className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/[0.03] border border-white/[0.08]"
                             >
-                                <LocationIcon className="w-4 h-4 text-liquid-gold" />
+                                <MapPinIcon className="w-4 h-4 text-liquid-gold" />
                                 <span className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-slate-300">
                                     Av. Las Palmeras y Calle 4ta · Machala · Lun–Vie 8–18h · Sáb 8–14h
                                 </span>

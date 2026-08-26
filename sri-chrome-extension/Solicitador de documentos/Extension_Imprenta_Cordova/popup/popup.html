@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <title>Cordova Elite</title>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER CON LOGO Y STATUS BACKEND -->
+    <div class="header">
+      <div class="header-top-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span class="backend-status-chip" id="backend-status-chip" title="Estado de conexión con imprentacordova.com">
+          <span class="dot-status"></span> <span id="backend-status-text">Backend Online</span>
+        </span>
+        <span style="font-size: 9px; font-weight: 800; color: #2563eb; background: #eff6ff; padding: 2px 6px; border-radius: 4px;">v2.0 SRI</span>
+      </div>
+
+      <div class="logo-wrapper">
+        <img src="../icons/icon128.png" alt="Cordova Logo" class="logo">
+      </div>
+      <h1 id="app-title">IMPRENTA CORDOVA</h1>
+      <p class="subtitle" id="app-subtitle">SISTEMA INTELIGENTE DE AUTOMATIZACIÓN SRI</p>
+    </div>
+
+    <!-- PESTAÑAS DE MODOS DE TRABAJO -->
+    <div class="mode-tabs-wrap" style="display: flex; background: #e2e8f0; padding: 3px; border-radius: 10px; margin-bottom: 12px;">
+      <button class="mode-tab-btn active" id="tab-mode-cliente" style="flex: 1; padding: 6px; border: none; border-radius: 8px; font-size: 10.5px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+        👤 Contribuyente
+      </button>
+      <button class="mode-tab-btn" id="tab-mode-imprenta" style="flex: 1; padding: 6px; border: none; border-radius: 8px; font-size: 10.5px; font-weight: 800; cursor: pointer; transition: all 0.2s; background: transparent; color: #64748b;">
+        🏢 Imprenta Córdova
+      </button>
+    </div>
+    
+    <!-- ========================================== -->
+    <!-- CLIENTE: AUTOMATIZACIÓN DE SOLICITUDES     -->
+    <!-- ========================================== -->
+    <div id="section-cliente" class="view-section">
+      <div class="card">
+        <div class="setting-row">
+          <label class="setting-lbl">Piloto Automático</label>
+          <label class="switch">
+            <input type="checkbox" id="auto-pilot">
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="setting-row">
+          <label class="setting-lbl">Sugerencia Automática</label>
+          <label class="switch">
+            <input type="checkbox" id="auto-suggest" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="divider"></div>
+
+        <label class="section-lbl">Tipo de Documento:</label>
+        <div class="doc-chips">
+          <div class="doc-chip active" data-val="1">Nota de Venta</div>
+          <div class="doc-chip" data-val="0">Factura</div>
+          <div class="doc-chip" data-val="5">Guías de Rem.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <label class="section-lbl">Cantidad (Comprobantes):</label>
+        <div class="qty-chips">
+          <div class="qty-chip" data-val="25">25</div>
+          <div class="qty-chip" data-val="50">50</div>
+          <div class="qty-chip active" data-val="100">100</div>
+          <div class="qty-chip" data-val="200">200</div>
+        </div>
+        
+        <div class="input-group" style="margin-top: 10px;">
+          <label class="section-lbl">Otro valor:</label>
+          <input type="number" id="blocks" value="100" min="1" max="10000" style="font-size: 18px; border-bottom: 1px solid #3498db; width: 80px;">
+        </div>
+      </div>
+
+      <div class="status-box">
+        <div class="status-indicator active"></div>
+        <span id="status-text-cliente">Listo (Configura y presiona Iniciar)</span>
+      </div>
+
+      <button id="btn-start" class="btn-start">INICIAR AUTOMATIZACIÓN</button>
+      <button id="btn-registry" class="btn-registry">REGISTRO DE RETIROS</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- IMPRENTA: REPORTE MENSUAL DE TRABAJOS     -->
+    <!-- ========================================== -->
+    <div id="section-imprenta" class="view-section" style="display: none;">
+      <!-- STATUS DOT -->
+      <div class="status-pill-wrap" style="display: flex; justify-content: center; margin-bottom: 5px;">
+        <div class="status-pill" id="statusPill">
+          <div class="dot"></div>
+          <span id="statusText">Sistema Listo</span>
+        </div>
+      </div>
+
+      <!-- COUNTERS CARD -->
+      <div class="card">
+        <label class="section-lbl" style="margin-bottom: 6px; font-weight: bold;">Resumen de Reportes Mensuales:</label>
+        <div class="data-grid">
+          <div class="data-card">
+            <label>25h</label>
+            <span id="labelT25">0</span>
+            <div class="data-bar"><div class="data-bar-fill" style="width:0%"></div></div>
+          </div>
+          <div class="data-card">
+            <label>50h</label>
+            <span id="labelT50">0</span>
+            <div class="data-bar"><div class="data-bar-fill" style="width:0%"></div></div>
+          </div>
+          <div class="data-card">
+            <label>100h</label>
+            <span id="labelT100">0</span>
+            <div class="data-bar"><div class="data-bar-fill" style="width:0%"></div></div>
+          </div>
+          <div class="data-card">
+            <label>200h</label>
+            <span id="labelT200">0</span>
+            <div class="data-bar"><div class="data-bar-fill" style="width:0%"></div></div>
+          </div>
+          <div class="data-card">
+            <label>Otros</label>
+            <span id="labelTOther">0</span>
+            <div class="data-bar"><div class="data-bar-fill" style="width:0%"></div></div>
+          </div>
+          <div class="data-card total-card">
+            <label>TOTAL</label>
+            <span id="countValue">0</span>
+            <div class="data-bar"><div class="data-bar-fill total-bar-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+        
+        <div class="divider"></div>
+
+        <div class="setting-row">
+          <label class="setting-lbl">Asistente en Pantalla</label>
+          <label class="switch">
+            <input type="checkbox" id="chkAssistant" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- AUTO-LOGIN ANTESALA DESDE AFUERA -->
+      <div class="card" style="margin-top: 6px;">
+        <label class="section-lbl" style="font-weight: bold; color: #0f2b48;">🔑 Antesala Auto-Login SRI:</label>
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px;">
+          <input type="text" id="imprenta-ruc" value="0702065319001" placeholder="RUC Imprenta" style="font-size: 11px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+          <input type="password" id="imprenta-pass" placeholder="Clave SRI Imprenta" style="font-size: 11px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+            <label style="font-size: 10px; font-weight: 700; color: #64748b;">Auto-Ingresar (.boton-ingresar-login)</label>
+            <label class="switch">
+              <input type="checkbox" id="auto-login-switch" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <button id="btnStartReport" class="btn-start" style="background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        INICIAR REPORTE
+      </button>
+
+      <button id="btnAceptar" class="btn-start" style="background: linear-gradient(135deg, #4edea3 0%, #2ecc71 100%); border-color: #4edea3; margin-top: 8px; color: #fff;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
+        IR A SOLICITUDES
+      </button>
+
+      <div class="btn-group" style="display: flex; gap: 8px; margin-top: 8px;">
+        <button id="btnStop" class="btn-registry" style="flex: 1; margin-top: 0; background: transparent; border-color: #cbd5e1; color: #64748b;">Detener</button>
+        <button id="btnReset" class="btn-registry" style="flex: 1; margin-top: 0; background: transparent; border-color: #cbd5e1; color: #64748b;">Reiniciar</button>
+      </div>
+
+      <!-- CONSOLE LOGS -->
+      <div class="console" id="logContainer" style="margin-top: 10px;">
+        <!-- Logs go here -->
+      </div>
+
+      <!-- EXTRA LINK FOR THE IMPRENTA TO OPEN REGISTRY -->
+      <button id="btn-registry-imprenta" class="btn-registry" style="margin-top: 8px;">Bandeja de Retiros (Local)</button>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="margin-top: 12px; text-align: center; font-size: 8.5px; color: var(--text-muted); letter-spacing: 0.5px;">
+      IMPRENTA CORDOVA &copy; 2026 &bull; SANTIAGO CORDOVA
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
