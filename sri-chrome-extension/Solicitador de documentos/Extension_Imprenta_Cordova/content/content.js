@@ -1416,6 +1416,55 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
   }
 });
 
+async function autoSyncToSupabase(orderData) {
+  const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
+
+  const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+  const docName = docNames[orderData.docType] || 'Nota de Venta';
+
+  const payload = {
+    titular: (orderData.clientName || 'CLIENTE SRI').toUpperCase(),
+    servicio: `${docName} (${orderData.blocks} Hojas)`,
+    detalle: `Solicitud SRI Autorizada • RUC: ${orderData.clientRuc} • ${orderData.blocks} comprobantes (${orderData.docSize})`,
+    cantidad: 1,
+    precio: orderData.total || 13,
+    abono: orderData.abono || 0,
+    saldo: Math.max(0, (orderData.total || 13) - (orderData.abono || 0)),
+    prioridad: 'Normal',
+    estado: 'PENDIENTE',
+    fecha_entrada: new Date().toISOString(),
+    responsable: 'SRI Extension Auto Sync',
+    origen: 'SRI Extension',
+    es_sri: true,
+    establecimiento: '001',
+    punto_emision: '001',
+    tamano: orderData.docSize || '1/4 Oficio',
+    actividad_seleccionada: orderData.activity || 'Comercio / Servicios General',
+    fecha_vencimiento: orderData.caducidad || null
+  };
+
+  try {
+    const res = await fetch(supabaseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      console.log('⚡ [SRI Extension] Orden sincronizada en Supabase Cloud exitosamente.');
+      return true;
+    }
+  } catch(e) {
+    console.error('⚠️ [SRI Extension] Error al sincronizar con Supabase Cloud:', e);
+  }
+  return false;
+}
+
 // ---------------------------------------------------------
 // MODELO DE SOLICITUD EDITABLE MINIMALISTA & ELEGANTE
 // ---------------------------------------------------------
@@ -1730,6 +1779,9 @@ function showCordovaSuccessModal(finalData, blocks) {
         renovacion: selectedRenovacionVal
       };
 
+      // Sincronización automática directa en Supabase Cloud (Zero-Touch)
+      autoSyncToSupabase(pendingOrder).catch(e => console.error(e));
+
       chrome.storage.local.set({ cordova_pending_order: pendingOrder }, callback);
     };
 
@@ -1737,7 +1789,43 @@ function showCordovaSuccessModal(finalData, blocks) {
       btnWebPlatform.addEventListener('click', () => {
         savePendingAndRedirect(false, () => {
           const ruc = finalData.cordovaClientRuc || '';
-          const webUrl = `https://www.imprentacordova.net/nuevo-pedido?mode=sri&ruc=${encodeURIComponent(ruc)}`;
+          const editedName = inputEditName ? inputEditName.value.trim().toUpperCase() : (finalData.cordovaClientName || '');
+          const editedActivity = inputEditActivity ? inputEditActivity.value.trim() : selectedActivity;
+          const editedPhone = inputEditPhone ? inputEditPhone.value.trim() : selectedPhoneVal;
+          const editedEmail = inputEditEmail ? inputEditEmail.value.trim() : selectedEmailVal;
+          
+          let finalAbono = 0;
+          if (selectedAbonoVal === 'custom') {
+            finalAbono = parseFloat(inputAbonoManual.value) || 0;
+          } else {
+            finalAbono = parseFloat(selectedAbonoVal) || 0;
+          }
+
+          const params = new URLSearchParams({
+            mode: 'sri',
+            ruc: ruc,
+            name: editedName,
+            activity: editedActivity,
+            phone: editedPhone,
+            email: editedEmail,
+            docType: finalData.cordovaDocType || '1',
+            blocks: String(blocks),
+            docSize: selectedSize,
+            abono: String(finalAbono),
+            total: String(currentTotal),
+            caducidad: finalData.cordovaCaducidad || '',
+            renovacion: selectedRenovacionVal
+          });
+
+          // Intentar comunicación local si la pestaña ya está abierta
+          try {
+            window.postMessage({
+              type: 'CORDOVA_SRI_ORDER_EVENT',
+              payload: Object.fromEntries(params)
+            }, '*');
+          } catch(e) {}
+
+          const webUrl = `https://www.imprentacordova.net/nuevo-pedido?${params.toString()}`;
           window.open(webUrl, '_blank');
         });
       });
@@ -1766,13 +1854,16 @@ function showCordovaSuccessModal(finalData, blocks) {
         }
         const saldoVal = Math.max(0, currentTotal - abonoVal);
 
+        const clientRucVal = finalData.cordovaClientRuc || '';
         const msg = encodeURIComponent(
           `¡Hola ${name}! 🖨️ *IMPRENTA CÓRDOVA*\n` +
-          `Su solicitud SRI para *${docName}* (${blocks} comprobantes) ha sido registrada.\n\n` +
+          `Su solicitud SRI para *${docName}* (${blocks} comprobantes) ha sido autorizada exitosamente.\n\n` +
+          `📋 *RUC:* ${clientRucVal}\n` +
+          `📐 *Tamaño:* ${selectedSize}\n` +
           `💰 *Total:* $${currentTotal.toFixed(2)}\n` +
           `💵 *Abono:* $${abonoVal.toFixed(2)}\n` +
           `📌 *Saldo Restante:* $${saldoVal.toFixed(2)}\n\n` +
-          `Puede rastrear su pedido en: https://www.imprentacordova.net/tracking`
+          `Rastree el estado de su talonario en: https://www.imprentacordova.net/tracking`
         );
 
         const waUrl = cleanPhone.length >= 10 ? `https://wa.me/${cleanPhone}?text=${msg}` : `https://wa.me/?text=${msg}`;

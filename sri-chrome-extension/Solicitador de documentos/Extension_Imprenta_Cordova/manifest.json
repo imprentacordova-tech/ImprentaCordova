@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "SRI Solicitador Cordova",
-  "version": "2.2.0",
-  "description": "Automatización Elite para Solicitudes SRI - Imprenta Cordova",
+  "version": "2.3.0",
+  "description": "Automatización Élite SRI & Gestión de Órdenes - Imprenta Córdova",
   "permissions": [
     "storage",
     "activeTab",

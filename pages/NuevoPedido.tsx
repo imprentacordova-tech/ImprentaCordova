@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,6 +27,7 @@ const NuevoPedidoPage: React.FC = () => {
     const currentUser = outletCtx?.currentUser || authUser || { nombre: 'Pedro Cordova', rol: 'Administrador' };
     const { refreshData, addTrabajo, addCliente, clientes } = useData();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [step, setStep] = useState(1);
     const [missionCategory, setMissionCategory] = useState<'SRI' | 'COMERCIAL' | null>(null);
@@ -55,10 +56,81 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
     const [imprimirClave, setImprimirClave] = useState(false);
     const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+    const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
 
     useEffect(() => {
         document.body.style.overflow = 'auto';
-    }, []);
+
+        const applySriPayload = (payload: any) => {
+            if (!payload) return;
+            const ruc = payload.ruc || payload.clientRuc || '';
+            const name = payload.name || payload.clientName || '';
+            const phone = payload.phone || payload.clientPhone || '';
+            const activity = payload.activity || 'Comercio / Servicios General';
+            const docType = payload.docType || '1';
+            const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
+            const docSize = payload.docSize || '1/4 Oficio';
+            const totalVal = parseFloat(payload.total) || 13;
+            const abonoVal = parseFloat(payload.abono) || 0;
+            const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
+
+            setMissionCategory('SRI');
+            setIsSriOrder(true);
+            setOrderMode('CATALOG');
+            setSriActividad(activity);
+            setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
+
+            if (ruc || name) {
+                const cleanRuc = ruc.replace(/\D/g, '');
+                const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
+                if (found) {
+                    setCliente(found);
+                } else {
+                    setTempClient({
+                        nombre: (name || 'CLIENTE SRI').toUpperCase(),
+                        cedula: cleanRuc || '0700000000001',
+                        telefono: phone,
+                        regimen: docType === '1' ? 'Rimpe Popular' : 'General'
+                    });
+                }
+            }
+
+            const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+            const docName = docNames[docType] || 'Nota de Venta';
+
+            const sriItem = {
+                nombre: `${docName} (${blocks} Hojas)`,
+                cantidad: 1,
+                precioFinal: totalVal,
+                especificaciones: {
+                    tamano: docSize,
+                    paginas: blocks,
+                    sri: { vencimiento: payload.caducidad || '' }
+                }
+            };
+
+            setItems([sriItem]);
+            setPrecio(totalVal);
+            setAbono(abonoVal);
+            setStep(4);
+        };
+
+        // 1. Parse URL Parameters
+        const params = new URLSearchParams(location.search);
+        if (params.get('mode') === 'sri') {
+            const payload = Object.fromEntries(params.entries());
+            applySriPayload(payload);
+        }
+
+        // 2. PostMessage listener from Chrome Extension
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data && e.data.type === 'CORDOVA_SRI_ORDER_EVENT') {
+                setSriAutoFillBanner(e.data.payload);
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [location.search, clientes]);
 
     const canAdvance = () => {
         if (step === 1) return !!missionCategory;
@@ -269,6 +341,94 @@ const NuevoPedidoPage: React.FC = () => {
     return (
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
             <div className="max-w-[1440px] mx-auto space-y-6">
+
+                {/* ── SRI AUTO-FILL BANNER (REALTIME EMBED) ──────────────── */}
+                {sriAutoFillBanner && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-r from-blue-900/80 to-slate-900/90 border border-blue-500/40 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4 backdrop-blur-md"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 text-xl font-black">
+                                ⚡
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-black text-blue-300 uppercase tracking-widest">Solicitud SRI Detectada</h4>
+                                <p className="text-sm font-bold text-white">
+                                    RUC {sriAutoFillBanner.ruc || sriAutoFillBanner.clientRuc} • {sriAutoFillBanner.name || sriAutoFillBanner.clientName} ({sriAutoFillBanner.blocks || 100} Comprobantes)
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    const payload = sriAutoFillBanner;
+                                    const ruc = payload.ruc || payload.clientRuc || '';
+                                    const name = payload.name || payload.clientName || '';
+                                    const phone = payload.phone || payload.clientPhone || '';
+                                    const activity = payload.activity || 'Comercio / Servicios General';
+                                    const docType = payload.docType || '1';
+                                    const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
+                                    const docSize = payload.docSize || '1/4 Oficio';
+                                    const totalVal = parseFloat(payload.total) || 13;
+                                    const abonoVal = parseFloat(payload.abono) || 0;
+                                    const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
+
+                                    setMissionCategory('SRI');
+                                    setIsSriOrder(true);
+                                    setOrderMode('CATALOG');
+                                    setSriActividad(activity);
+                                    setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
+
+                                    if (ruc || name) {
+                                        const cleanRuc = ruc.replace(/\D/g, '');
+                                        const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
+                                        if (found) {
+                                            setCliente(found);
+                                        } else {
+                                            setTempClient({
+                                                nombre: (name || 'CLIENTE SRI').toUpperCase(),
+                                                cedula: cleanRuc || '0700000000001',
+                                                telefono: phone,
+                                                regimen: docType === '1' ? 'Rimpe Popular' : 'General'
+                                            });
+                                        }
+                                    }
+
+                                    const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+                                    const docName = docNames[docType] || 'Nota de Venta';
+
+                                    const sriItem = {
+                                        nombre: `${docName} (${blocks} Hojas)`,
+                                        cantidad: 1,
+                                        precioFinal: totalVal,
+                                        especificaciones: {
+                                            tamano: docSize,
+                                            paginas: blocks,
+                                            sri: { vencimiento: payload.caducidad || '' }
+                                        }
+                                    };
+
+                                    setItems([sriItem]);
+                                    setPrecio(totalVal);
+                                    setAbono(abonoVal);
+                                    setStep(4);
+                                    setSriAutoFillBanner(null);
+                                }}
+                                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md"
+                            >
+                                Importar Datos (1-Clic)
+                            </button>
+                            <button
+                                onClick={() => setSriAutoFillBanner(null)}
+                                className="p-2 text-slate-400 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* ── STEPPER HEADER ────────────────────────────────────────── */}
                 <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl p-4 shadow-sm flex items-center justify-between overflow-x-auto gap-4">

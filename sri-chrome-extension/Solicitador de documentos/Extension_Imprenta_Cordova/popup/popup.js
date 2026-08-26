@@ -69,30 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isImp) {
       sectionCliente.style.display = 'none';
       sectionImprenta.style.display = 'block';
-      if (tabModeCliente) {
-        tabModeCliente.classList.remove('active');
-        tabModeCliente.style.background = 'transparent';
-        tabModeCliente.style.color = '#64748b';
-      }
-      if (tabModeImprenta) {
-        tabModeImprenta.classList.add('active');
-        tabModeImprenta.style.background = '#ffffff';
-        tabModeImprenta.style.color = '#0f2b48';
-      }
+      if (tabModeCliente) tabModeCliente.classList.remove('active');
+      if (tabModeImprenta) tabModeImprenta.classList.add('active');
       syncFromStorage();
     } else {
       sectionCliente.style.display = 'block';
       sectionImprenta.style.display = 'none';
-      if (tabModeImprenta) {
-        tabModeImprenta.classList.remove('active');
-        tabModeImprenta.style.background = 'transparent';
-        tabModeImprenta.style.color = '#64748b';
-      }
-      if (tabModeCliente) {
-        tabModeCliente.classList.add('active');
-        tabModeCliente.style.background = '#ffffff';
-        tabModeCliente.style.color = '#0f2b48';
-      }
+      if (tabModeImprenta) tabModeImprenta.classList.remove('active');
+      if (tabModeCliente) tabModeCliente.classList.add('active');
       loadClientConfig();
     }
   }
