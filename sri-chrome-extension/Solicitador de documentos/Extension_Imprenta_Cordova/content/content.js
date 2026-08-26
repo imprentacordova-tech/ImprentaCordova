@@ -1559,10 +1559,21 @@ function showCordovaSuccessModal(finalData, blocks) {
           <div style="font-size: 13px; font-weight: 800; color: #2563eb;">Saldo Deudor: <span id="cdv-live-saldo">$${currentTotal.toFixed(2)}</span></div>
         </div>
 
-        <!-- PRIMARY 1-CLICK ACTION BUTTON -->
-        <button class="cordova-btn" id="cdv-btn-direct-print" style="width: 100%; font-size: 13px; font-weight: 800; padding: 12px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; color: #ffffff; border-radius: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35); cursor: pointer; transition: all 0.25s ease; text-align: center; text-transform: uppercase; letter-spacing: 0.8px;">
-          📄 CONFIRMAR Y GENERAR PDF (1-CLIC)
-        </button>
+        <!-- PRIMARY 1-CLICK ACTION BUTTONS -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="cordova-btn" id="cdv-btn-web-platform" style="width: 100%; font-size: 13px; font-weight: 800; padding: 13px; background: linear-gradient(135deg, #0f2b48 0%, #1e40af 100%); border: 1.5px solid #3b82f6; color: #ffffff; border-radius: 10px; box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4); cursor: pointer; transition: all 0.25s ease; text-align: center; text-transform: uppercase; letter-spacing: 0.8px;">
+            🌐 ABRIR EN PLATAFORMA WEB (imprentacordova.net)
+          </button>
+          
+          <div style="display: flex; gap: 8px;">
+            <button class="cordova-btn" id="cdv-btn-direct-print" style="flex: 1; font-size: 11px; font-weight: 800; padding: 10px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border: none; color: #ffffff; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
+              🖨️ Impresión Local A4
+            </button>
+            <button class="cordova-btn" id="cdv-btn-whatsapp" style="flex: 1; font-size: 11px; font-weight: 800; padding: 10px; background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); border: none; color: #ffffff; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+              📱 Notificar WhatsApp
+            </button>
+          </div>
+        </div>
 
         <!-- SECONDARY BUTTONS -->
         <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -1582,7 +1593,9 @@ function showCordovaSuccessModal(finalData, blocks) {
     const inputEditActivity = document.getElementById('cdv-edit-activity');
     const inputEditPhone = document.getElementById('cdv-edit-phone');
     const inputEditEmail = document.getElementById('cdv-edit-email');
+    const btnWebPlatform = document.getElementById('cdv-btn-web-platform');
     const btnPrint = document.getElementById('cdv-btn-direct-print');
+    const btnWhatsApp = document.getElementById('cdv-btn-whatsapp');
 
     const updateLiveFinancials = () => {
       currentTotal = getPrice(selectedSize, blocks);
@@ -1720,11 +1733,50 @@ function showCordovaSuccessModal(finalData, blocks) {
       chrome.storage.local.set({ cordova_pending_order: pendingOrder }, callback);
     };
 
+    if (btnWebPlatform) {
+      btnWebPlatform.addEventListener('click', () => {
+        savePendingAndRedirect(false, () => {
+          const ruc = finalData.cordovaClientRuc || '';
+          const webUrl = `https://www.imprentacordova.net/nuevo-pedido?mode=sri&ruc=${encodeURIComponent(ruc)}`;
+          window.open(webUrl, '_blank');
+        });
+      });
+    }
+
     if (btnPrint) {
       btnPrint.addEventListener('click', () => {
         savePendingAndRedirect(true, () => {
           chrome.runtime.sendMessage({ action: "openRegistry" });
         });
+      });
+    }
+
+    if (btnWhatsApp) {
+      btnWhatsApp.addEventListener('click', () => {
+        const phone = inputEditPhone ? inputEditPhone.value.trim() : selectedPhoneVal;
+        let cleanPhone = phone.replace(/\D/g, '');
+        if (cleanPhone.startsWith('09')) cleanPhone = '593' + cleanPhone.substring(1);
+        else if (cleanPhone.length === 9 && cleanPhone.startsWith('9')) cleanPhone = '593' + cleanPhone;
+        else if (cleanPhone.length === 10 && cleanPhone.startsWith('0')) cleanPhone = '593' + cleanPhone.substring(1);
+
+        const name = inputEditName ? inputEditName.value.trim() : (finalData.cordovaClientName || 'Estimado cliente');
+        let abonoVal = parseFloat(selectedAbonoVal) || 0;
+        if (selectedAbonoVal === 'custom' && inputAbonoManual) {
+          abonoVal = parseFloat(inputAbonoManual.value) || 0;
+        }
+        const saldoVal = Math.max(0, currentTotal - abonoVal);
+
+        const msg = encodeURIComponent(
+          `¡Hola ${name}! 🖨️ *IMPRENTA CÓRDOVA*\n` +
+          `Su solicitud SRI para *${docName}* (${blocks} comprobantes) ha sido registrada.\n\n` +
+          `💰 *Total:* $${currentTotal.toFixed(2)}\n` +
+          `💵 *Abono:* $${abonoVal.toFixed(2)}\n` +
+          `📌 *Saldo Restante:* $${saldoVal.toFixed(2)}\n\n` +
+          `Puede rastrear su pedido en: https://www.imprentacordova.net/tracking`
+        );
+
+        const waUrl = cleanPhone.length >= 10 ? `https://wa.me/${cleanPhone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+        window.open(waUrl, '_blank');
       });
     }
 
