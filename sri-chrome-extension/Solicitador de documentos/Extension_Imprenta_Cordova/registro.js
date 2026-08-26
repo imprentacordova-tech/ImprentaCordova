@@ -264,22 +264,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function validateAbonoDetail() {
     const abono = parseFloat(finAbonoInput.value) || 0;
     if (abono < 5) {
-      if (abonoWarningDetail) abonoWarningDetail.style.display = 'block';
-      if (btnSavePrint) {
-        btnSavePrint.disabled = true;
-        btnSavePrint.style.opacity = '0.5';
-        btnSavePrint.style.pointerEvents = 'none';
+      if (abonoWarningDetail) {
+        abonoWarningDetail.style.display = 'block';
+        abonoWarningDetail.textContent = 'ℹ️ Abono menor a $5.00 (Pendiente de cobro total al entregar)';
       }
-      return false;
     } else {
       if (abonoWarningDetail) abonoWarningDetail.style.display = 'none';
-      if (btnSavePrint) {
-        btnSavePrint.disabled = false;
-        btnSavePrint.style.opacity = '1';
-        btnSavePrint.style.pointerEvents = 'auto';
-      }
-      return true;
     }
+    if (btnSavePrint) {
+      btnSavePrint.disabled = false;
+      btnSavePrint.style.opacity = '1';
+      btnSavePrint.style.pointerEvents = 'auto';
+    }
+    return true;
   }
 
   // Bind change events
@@ -969,10 +966,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const docQty = parseInt(tblQtyInput.value, 10) || 100;
     const total = parseFloat(tblPriceInput.value) || 0;
     const abono = parseFloat(finAbonoInput.value) || 0;
-    if (abono < 5) {
-      alert("El abono mínimo es de $5.00 para poder generar el comprobante.");
-      return;
-    }
     const saldo = Math.max(0, total - abono);
 
     const deliveryDate = deliveryDateInput.value;

@@ -1784,3 +1784,73 @@ textarea {
   }
 }
 
+/* ================================================================= */
+/* MODAL OVERLAY & PRINT SELECTOR CARDS CSS */
+/* ================================================================= */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInModal 0.25s ease-out forwards;
+}
+
+.modal-overlay.active {
+  display: flex !important;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.print-option-card {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.print-option-card:hover {
+  border-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+.print-option-card.active {
+  border-color: #3498db;
+  background: #f0f7fc;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+}
+
+.print-option-card .opt-icon {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.print-option-card .opt-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.print-option-card .opt-desc {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+
