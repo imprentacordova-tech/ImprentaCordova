@@ -84,6 +84,14 @@ const QUOTE_PRODUCTS = [
         minQty: 1,
         turnaround: '24 horas',
         type: 'Lona Eco-Solvente Roland'
+    },
+    {
+        id: 'tarjetas',
+        label: 'Tarjetas Lujo Seda',
+        unitPrice: 0.09,
+        minQty: 100,
+        turnaround: '48 horas',
+        type: 'Couché 300g + Soft Touch'
     }
 ];
 
@@ -751,25 +759,31 @@ const VisualLanding: React.FC = () => {
                             </h2>
                         </motion.div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                             {[
                                 {
                                     step: '01',
-                                    title: 'Solicitud & Datos SRI',
-                                    desc: 'Envíe sus requerimientos o datos de RUC por WhatsApp. Nosotros preparamos el arte preliminar.',
-                                    color: 'rgba(212,175,55,0.15)',
+                                    title: 'Validación SRI & RUC',
+                                    desc: 'Ingreso directo de RUC para verificación de secuencia tributaria bajo Registro SRI Código 8634.',
+                                    color: 'rgba(212,175,55,0.18)',
                                 },
                                 {
                                     step: '02',
-                                    title: 'Aprobación & Diagramación',
-                                    desc: 'Reciba el boceto digital para su revisión previa a impresión física con secuencias numéricas.',
-                                    color: 'rgba(14,165,233,0.15)',
+                                    title: 'Diagramación Preflight IA',
+                                    desc: 'Revisión técnica de alta definición, fuentes vectoriales y prueba de color digital enviada a su WhatsApp.',
+                                    color: 'rgba(14,165,233,0.18)',
                                 },
                                 {
                                     step: '03',
-                                    title: 'Producción & Entrega',
-                                    desc: 'Impresión de alta resolución, empaste y retiro en taller o envío a domicilio con rastreo en tiempo real.',
-                                    color: 'rgba(16,185,129,0.15)',
+                                    title: 'Impresión Roland HD',
+                                    desc: 'Impresión en prensas offset y plotters Roland de 1440 DPI con secuencias numéricas correlativas.',
+                                    color: 'rgba(168,85,247,0.18)',
+                                },
+                                {
+                                    step: '04',
+                                    title: 'Control & Despacho 24h',
+                                    desc: 'Guillotinado micrométrico, perforado autocopiativo, empaque protector y despacho a taller o domicilio.',
+                                    color: 'rgba(16,185,129,0.18)',
                                 },
                             ].map((item, idx) => (
                                 <motion.div
@@ -779,10 +793,10 @@ const VisualLanding: React.FC = () => {
                                     viewport={{ once: true }}
                                     transition={{ delay: idx * 0.12, duration: 0.7 }}
                                     whileHover={{ y: -6 }}
-                                    className="spotlight-card p-10 relative"
+                                    className="spotlight-card p-7 relative flex flex-col justify-between"
                                 >
                                     <div
-                                        className="absolute top-6 right-6 text-7xl font-black leading-none select-none pointer-events-none font-display"
+                                        className="absolute top-4 right-4 text-6xl font-black leading-none select-none pointer-events-none font-display"
                                         style={{ color: item.color }}
                                     >
                                         {item.step}
@@ -791,7 +805,7 @@ const VisualLanding: React.FC = () => {
                                         <div className="text-[9px] font-black uppercase tracking-[0.4em] text-liquid-gold mb-3 font-mono">
                                             Fase {item.step}
                                         </div>
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-3 font-display">
+                                        <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2.5 font-display">
                                             {item.title}
                                         </h3>
                                         <p className="text-slate-400 text-xs leading-relaxed font-medium">
