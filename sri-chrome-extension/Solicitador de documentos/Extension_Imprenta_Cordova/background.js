@@ -10,7 +10,13 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "openRegistry") {
-    chrome.tabs.create({ url: chrome.runtime.getURL('registro.html') });
+    chrome.storage.local.get(['cordovaOpenWebDirect'], (res) => {
+      if (res.cordovaOpenWebDirect) {
+        chrome.tabs.create({ url: 'https://www.imprentacordova.net/nuevo-pedido' });
+      } else {
+        chrome.tabs.create({ url: chrome.runtime.getURL('registro.html') });
+      }
+    });
     return;
   }
   if (request.action === "callFunction" && sender.tab) {
