@@ -242,7 +242,7 @@ const DashboardPage: React.FC = () => {
                     sub="Diseño + Prensa"
                     icon={BoltIcon}
                     accent="text-purple-600"
-                    iconBg="bg-purple-50"
+                    iconBg="bg-purple-500/10"
                     onClick={() => navigate('/kds')}
                     delay={0.1}
                 />

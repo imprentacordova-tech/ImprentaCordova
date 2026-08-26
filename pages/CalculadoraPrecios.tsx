@@ -1043,8 +1043,8 @@ const CalculadoraPreciosPage: React.FC = () => {
 
                     {mode !== 'HUB' && (
                         <div className="flex gap-4 p-2.5 bg-obsidian-card rounded-[2.8rem] border border-white/[0.06] shadow-sm">
-                            <button onClick={() => setMode('OFFSET')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all ${mode === 'OFFSET' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-400 hover:text-slate-600'}`}>Offset</button>
-                            <button onClick={() => setMode('DIGITAL')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all ${mode === 'DIGITAL' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-400 hover:text-slate-600'}`}>Digital</button>
+                            <button onClick={() => setMode('OFFSET')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all ${mode === 'OFFSET' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-400 hover:text-slate-300'}`}>Offset</button>
+                            <button onClick={() => setMode('DIGITAL')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all ${mode === 'DIGITAL' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-400 hover:text-slate-300'}`}>Digital</button>
                         </div>
                     )}
                 </header>
@@ -1127,7 +1127,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.6em]">Protocolo de Ajuste Financiero Maestro</p>
                                     </div>
                                     <div className="flex gap-6">
-                                        <button onClick={() => setMode('HUB')} className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Cancelar</button>
+                                        <button onClick={() => setMode('HUB')} className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
                                         <button onClick={() => handleSaveConfig(costs)} className="px-12 py-5 bg-brand-blue text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-brand-blue/20">Guardar Matriz</button>
                                     </div>
                                 </div>

@@ -212,7 +212,7 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
                         </div>
 
                         <div className="flex gap-4 pt-6">
-                            <button type="button" onClick={onClose} className="flex-1 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-all">Cancelar</button>
+                            <button type="button" onClick={onClose} className="flex-1 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-all">Cancelar</button>
                             <button type="submit" className="flex-[2] bg-brand-blue text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 transition-all active:scale-95">
                                 GUARDAR RECURSO
                             </button>

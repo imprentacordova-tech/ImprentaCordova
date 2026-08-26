@@ -244,7 +244,7 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                     </div>
 
                     <div className="flex gap-4 pt-6">
-                        <button type="button" onClick={onClose} className="flex-1 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-slate-600 transition-all">ABORT_MISSION</button>
+                        <button type="button" onClick={onClose} className="flex-1 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-white transition-all">ABORT_MISSION</button>
                         <button type="submit" className="flex-[2] bg-brand-blue text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand-blue/20">
                             {formData.id ? 'UPDATE_IDENTITY' : 'REGISTER_ENTIDAD'}
                         </button>
@@ -388,7 +388,7 @@ const ClientesPage: React.FC = () => {
                                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">CONTACT_CHANNELS</p>
                                         <div className="flex flex-col gap-3">
                                             {c.telefono.map((tel, i) => (
-                                                <div key={i} className="flex items-center gap-4 text-slate-600 group/tel">
+                                                <div key={i} className="flex items-center gap-4 text-slate-300 group/tel">
                                                     <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center border border-white/[0.06] group-hover/tel:bg-brand-blue/10 group-hover/tel:text-brand-blue transition-all">
                                                         <PhoneIcon className="w-3.5 h-3.5" />
                                                     </div>
@@ -396,7 +396,7 @@ const ClientesPage: React.FC = () => {
                                                 </div>
                                             ))}
                                             {c.email && (
-                                                <div className="flex items-center gap-4 text-slate-600 group/email">
+                                                <div className="flex items-center gap-4 text-slate-300 group/email">
                                                     <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center border border-white/[0.06] group-hover/email:bg-brand-blue/10 group-hover/email:text-brand-blue transition-all">
                                                         <EnvelopeIcon className="w-3.5 h-3.5" />
                                                     </div>

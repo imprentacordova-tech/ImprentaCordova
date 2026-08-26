@@ -24,7 +24,7 @@ const PrecisionClock: React.FC = () => {
     return (
         <div className="flex flex-col items-end">
             <span className="text-[10px] text-brand-blue/60 tracking-[0.3em] font-black uppercase">SYSTEM_TIME</span>
-            <span className="text-sm text-slate-900 font-black tracking-tighter">
+            <span className="text-sm text-white font-black tracking-tighter">
                 {time.toLocaleTimeString('es-EC', { hour12: false })}
             </span>
         </div>
@@ -64,7 +64,7 @@ const urgencyConfig = {
     },
     safe: { 
         border: 'border-l-slate-200', 
-        bg: 'bg-slate-50', 
+        bg: 'bg-white/[0.04]', 
         text: 'text-slate-400', 
         label: 'STATUS_STABLE', 
         glow: '',
@@ -415,7 +415,7 @@ const KDSPage: React.FC = () => {
                 {/* Tactical Stats Section */}
                 <div className="flex gap-6 lg:gap-10 mt-12 px-2 overflow-x-auto no-scrollbar">
                     {[
-                        { label: 'Órdenes Activas', value: filteredTrabajos.length, icon: BoxIcon, color: 'text-slate-900' },
+                        { label: 'Órdenes Activas', value: filteredTrabajos.length, icon: BoxIcon, color: 'text-white' },
                         { label: 'Prioridad Crítica', value: filteredTrabajos.filter(t => getUrgencyLevel(t.fechaEntrega || t.fechaVencimiento) === 'critical').length, icon: BoltIcon, color: 'text-rose-500' },
                         { label: 'Valor en Taller', value: formatCurrency(filteredTrabajos.reduce((acc, t) => acc + t.total, 0)), icon: ActivityIcon, color: 'text-brand-blue' },
                     ].map((stat, i) => (
@@ -516,7 +516,7 @@ const KDSPage: React.FC = () => {
                                                     status === TrabajoEstado.EN_DISENO ? 'bg-cyan-500' :
                                                     status === TrabajoEstado.PROCESO ? 'bg-brand-blue shadow-[0_0_10px_rgba(14,165,233,0.3)]' : 'bg-emerald-500'
                                                 }`} />
-                                                <h3 className="font-black text-slate-900 uppercase tracking-[0.3em] text-[13px]">
+                                                <h3 className="font-black text-white uppercase tracking-[0.3em] text-[13px]">
                                                     {status}
                                                 </h3>
                                             </div>
@@ -546,7 +546,7 @@ const KDSPage: React.FC = () => {
                                         
                                         {columns[status].length === 0 && (
                                             <div className="h-full flex flex-col items-center justify-center opacity-30 py-32 gap-6">
-                                                <div className="w-20 h-20 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center">
+                                                <div className="w-20 h-20 rounded-[2rem] border-2 border-dashed border-white/[0.06] flex items-center justify-center">
                                                     <BoxIcon className="w-8 h-8 text-slate-300" />
                                                 </div>
                                                 <p className="text-[10px] font-black tracking-[0.4em] uppercase text-slate-400">NO_ACTIVE_LOAD_DETECTED</p>

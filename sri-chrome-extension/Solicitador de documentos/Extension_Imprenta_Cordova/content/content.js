@@ -340,7 +340,7 @@ const ReportadorCONFIG = {
         btnImprenta: "//a[contains(@href, 'enviar(19)')] | //div[@id='cuadroAplicacion']//a[contains(., 'Imprenta')] | //a[contains(@href, 'enviar(19)') and contains(., 'Imprenta')]",
         linkManejoAutorizaciones: "//a[contains(., 'Manejo de Autorizaciones')]",
         linkPendientesReportar: "//a[contains(., 'Autorizaciones Pendientes de Reportar')]",
-        linkSolicitudesAutorizacion: "//a[contains(., 'Solicitudes de autorización')] | //a[contains(@href, 'solicitudes-autorizacion')]",
+        linkSolicitudesAutorizacion: "//a[contains(@href, 'no-procesadas-listado')] | //a[contains(., 'Solicitudes enviadas directamente por el contribuyente')] | //a[contains(., 'Solicitudes enviadas directamente')]",
         rowEstablishment: "//tr[contains(@class, 'seleccion') and td[contains(., 'COLON S/N')]] | //tr[contains(@onclick, 'idEstablecimientoImprenta')]",
         radioTodas: "//input[@name='FR' and @value='3'] | //input[@id='todasRadio'] | //input[@value='T']",
         btnBuscar: "//a[contains(@href, 'nextPage')] | //a[contains(@href, 'consultar')] | //a[contains(., 'Buscar')] | //a[contains(., 'Consultar')] | //input[@value='Buscar'] | //input[@value='Consultar']",
@@ -866,12 +866,25 @@ async function runReportadorWorkflow() {
         return;
     }
     
+    // Redirección directa si el SRI cae en inicio-impresion.jsp
+    if (url.includes("inicio-impresion.jsp")) {
+        window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/no-procesadas-listado.jspa";
+        return;
+    }
+
     // --- 4. ACCESO A REPORTES O SOLICITUDES ---
     if (url.includes("menu-preimpresos.jspa") && !url.includes("busqueda") && !url.includes("listado")) {
         ReportadorState.currentStep = "Opciones";
         if (ReportadorState.isRunning) {
             if (ReportadorState.targetMode === 'ACEPTAR') {
-                ReportadorClick(ReportadorCONFIG.selectors.linkSolicitudesAutorizacion, "Ir a Solicitudes...");
+                const link = ReportadorGetX("//a[contains(@href, 'no-procesadas-listado')] | //a[contains(., 'Solicitudes enviadas directamente')]") || ReportadorGetX(ReportadorCONFIG.selectors.linkSolicitudesAutorizacion);
+                if (link) {
+                    const path = ReportadorGetXPath(link);
+                    if (path) ReportadorClick(path, "Ir a Solicitudes Recibidas...");
+                    else window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/no-procesadas-listado.jspa";
+                } else {
+                    window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/no-procesadas-listado.jspa";
+                }
             } else {
                 ReportadorClick(ReportadorCONFIG.selectors.linkPendientesReportar, "Reportes...");
             }

@@ -204,13 +204,13 @@ const NuevoPedidoPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }} 
             className="lg:col-span-4 sticky top-6 space-y-4"
         >
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="bg-obsidian-card p-6 rounded-2xl border border-white/[0.06] shadow-sm space-y-6">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
-                        <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-wider">Resumen de Orden</h3>
+                        <h3 className="text-[11px] font-black text-white uppercase tracking-wider">Resumen de Orden</h3>
                     </div>
-                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                         En Línea
                     </span>
                 </div>
@@ -220,34 +220,34 @@ const NuevoPedidoPage: React.FC = () => {
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">
                             Tipo de Solicitud
                         </span>
-                        <div className="text-xl font-black text-slate-900 uppercase">
+                        <div className="text-xl font-black text-white uppercase">
                             {missionCategory === 'SRI' ? 'Facturación Fiscal SRI' : (missionCategory === 'COMERCIAL' ? 'Trabajo Comercial' : 'Sin Selección')}
                         </div>
                     </div>
 
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
+                    <div className="p-4 bg-white/[0.04] rounded-xl border border-white/[0.06] space-y-2">
                         <div className="flex justify-between items-baseline">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Monto Total</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Monto Total</span>
                             <span className="text-2xl font-black text-brand-blue">{formatCurrency(precio)}</span>
                         </div>
-                        <div className="flex justify-between text-[11px] font-medium text-slate-600 pt-2 border-t border-slate-200">
+                        <div className="flex justify-between text-[11px] font-medium text-slate-300 pt-2 border-t border-white/[0.06]">
                             <span>Abono Ingresado:</span>
                             <span className="font-bold text-emerald-600">{formatCurrency(abono)}</span>
                         </div>
-                        <div className="flex justify-between text-[11px] font-medium text-slate-600">
+                        <div className="flex justify-between text-[11px] font-medium text-slate-300">
                             <span>Saldo Pendiente:</span>
                             <span className="font-bold text-red-500">{formatCurrency(precio - abono)}</span>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="p-3 bg-white/[0.04] rounded-xl border border-white/[0.06]">
                             <span className="text-[9px] font-bold text-slate-400 uppercase block">Ítems</span>
-                            <span className="text-lg font-black text-slate-800">{items.length}</span>
+                            <span className="text-lg font-black text-white">{items.length}</span>
                         </div>
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="p-3 bg-white/[0.04] rounded-xl border border-white/[0.06]">
                             <span className="text-[9px] font-bold text-slate-400 uppercase block">Prioridad</span>
-                            <span className={`text-xs font-black uppercase ${prioridad === 'Urgente' ? 'text-red-500' : 'text-slate-800'}`}>
+                            <span className={`text-xs font-black uppercase ${prioridad === 'Urgente' ? 'text-red-500' : 'text-white'}`}>
                                 {prioridad}
                             </span>
                         </div>
@@ -256,7 +256,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                 <button 
                     onClick={() => setIsSidebarMinimized(true)} 
-                    className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider transition-all"
+                    className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[10px] font-bold text-slate-400 uppercase tracking-wider transition-all"
                 >
                     Ocultar Resumen
                 </button>
@@ -286,7 +286,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             isActive
                                                 ? 'bg-brand-blue text-white shadow-blue-glow-sm font-bold'
                                                 : isPast
-                                                ? 'bg-slate-100 text-slate-800 hover:bg-slate-200 font-bold'
+                                                ? 'bg-white/[0.08] text-white hover:bg-white/[0.12] font-bold'
                                                 : 'text-slate-400 opacity-60'
                                         }`}
                                     >
@@ -500,7 +500,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     </div>
 
                                     <div className="flex flex-wrap gap-4 justify-center pt-4">
-                                        <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-black uppercase transition-all">
+                                        <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl text-[11px] font-black uppercase transition-all">
                                             Ir al Dashboard
                                         </button>
                                         <button onClick={() => window.location.reload()} className="px-6 py-3 bg-brand-blue text-white rounded-xl text-[11px] font-black uppercase transition-all shadow-blue-glow-sm">
@@ -514,10 +514,10 @@ const NuevoPedidoPage: React.FC = () => {
 
                         {/* NAVEGACIÓN ENTRE PASOS */}
                         {step < 5 && step > 1 && (
-                            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-center bg-obsidian-card p-4 rounded-2xl border border-white/[0.06] shadow-sm">
                                 <button
                                     onClick={() => setStep(p => p - 1)}
-                                    className="flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-wider hover:text-slate-800 transition-colors"
+                                    className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-wider hover:text-white transition-colors"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" /> Atrás
                                 </button>
