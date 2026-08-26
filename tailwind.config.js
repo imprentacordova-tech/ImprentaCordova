@@ -35,7 +35,6 @@ export default {
         'gold-glow':     '0 0 40px rgba(212, 175, 55, 0.12)',
         'gold-glow-soft':'0 0 20px rgba(212, 175, 55, 0.08)',
         'gold-ultra':    '0 0 80px rgba(212, 175, 55, 0.18), 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(212, 175, 55, 0.2)',
-        'glass':         '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
       },
       animation: {
         'fade-in':      'fadeIn 0.5s ease-out forwards',

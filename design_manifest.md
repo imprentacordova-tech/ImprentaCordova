@@ -30,7 +30,7 @@ Este documento establece las reglas fundamentales para el desarrollo de la inter
 | **Router** | react-router-dom (HashRouter) |
 | **Backend** | Supabase (PostgreSQL) + Google Apps Script (cloud sync) |
 | **Hosting** | Vercel (auto-deploy desde `main`) |
-| **Fuentes** | Outfit (display), Inter (body) — via Google Fonts |
+| **Fuentes** | Outfit (display), Inter (body), JetBrains Mono (mono) — via Google Fonts |
 
 ---
 
@@ -38,57 +38,85 @@ Este documento establece las reglas fundamentales para el desarrollo de la inter
 
 ### Paleta de Colores (Obligatoria)
 
-| Token | HEX | Uso |
+| Token Tailwind | HEX | Uso |
 |---|---|---|
-| `brand-dark` | `#020617` | Fondo principal de toda la app |
+| `obsidian` / `brand-dark` | `#050810` | Fondo principal de toda la app |
+| `obsidian-mid` / `surface-dark` | `#0a0f1e` | Superficies elevadas, sidebars |
+| `obsidian-card` | `#0c1224` | Fondos de cards (`bg-obsidian-card`) |
 | `liquid-gold` | `#D4AF37` | Acentos de lujo, botones primarios, gradientes |
+| `gold-bright` | `#f2ca50` | Variante brillante del gold (gradientes) |
+| `champagne` | `#F5E6C8` | Textos cálidos de soporte |
+| `brand-blue` | `#0ea5e9` | Indicadores informativos, botones secundarios (acciones) |
+| `brand-blue-dark` | `#0369a1` | Hover states de brand-blue |
 | `brand-red` | `#E11D48` | SOLO para errores, alertas y estados urgentes |
-| `brand-blue` | `#3B82F6` | SOLO para indicadores informativos, estados de "sync" |
+| `luxury-slate` | `#191f31` | Bordes y fondos sutiles |
+| `accent-blue` | `#bfcdff` | Textos informativos claros |
 | Textos principales | `text-white` | Títulos y datos clave |
 | Textos secundarios | `text-slate-500` | Labels, subtítulos, timestamps |
-| Bordes | `border-white/5` | Separadores sutiles |
-| Fondos de cards | `bg-white/5` + `backdrop-blur-xl` | Glassmorphism sobre fondo oscuro |
+| Bordes | `border-white/[0.06]` | Separadores sutiles en cards |
+| Fondos de cards | `bg-obsidian-card` | Cards oscuras con borde sutil |
 
 ### Clases Utilitarias del Proyecto
 
 ```
-glass-card-luxury    → bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] shadow-luxury
-shadow-luxury        → Sombra negra profunda con efecto 3D
-shadow-gold-glow     → Halo dorado sutil (para hover states)
-text-gold-gradient   → Gradiente dorado en texto (para títulos)
-input-atelier        → Input oscuro con borde sutil y foco dorado
-animate-fade-in      → Entrada suave con opacity
-animate-slide-up     → Entrada desde abajo
+bg-obsidian-card      → bg-[#0c1224] — Cards oscuras con borde sutil (Tailwind color)
+bg-architect-grid     → Grid pattern dorado sutil (60px, opacity 0.04)
+bg-noise              → Grain overlay con SVG fractalNoise (opacity 0.03, mix-blend-overlay)
+stats-bar             → Barra dorada sutil con bordes para métricas
+text-gold-gradient    → Gradiente dorado animado (shimmer-sweep 6s)
+section-eyebrow       → text-[10px] font-black uppercase tracking-[0.5em] text-liquid-gold
+section-title         → text-4xl md:text-5xl font-black uppercase tracking-tighter
+spotlight-card        → Card oscura con hover dorado y efecto de luz
+btn-gold              → Botón primario dorado con shimmer sweep
+btn-ghost             → Botón transparente con borde sutil y hover dorado
+shadow-luxury         → Sombra negra profunda (0 25px 50px -12px rgba(0,0,0,0.7))
+shadow-gold-glow      → Halo dorado sutil (para hover states)
+shadow-gold-glow-soft → Halo dorado más sutil
+shadow-gold-ultra     → Halo dorado intenso con inset highlight
+shadow-blue-glow-sm   → Halo azul sutil para botones/actions
+shadow-emerald-glow   → Halo verde para estados positivos
+shadow-red-glow       → Halo rojo para estados de alerta
+animate-scan          → Scanline animation (10s linear infinite)
+animate-laser         → Laser sweep animation (3s ease-in-out infinite)
+animate-shake         → Shake animation (0.5s ease-in-out)
+custom-scrollbar      → Scrollbar dorado personalizado
+no-scrollbar          → Oculta scrollbar completamente
 ```
 
 ### Tipografía
 
-- **Títulos**: `font-black text-3xl lg:text-4xl uppercase tracking-tighter italic`
-- **Labels/Etiquetas**: `text-[10px] font-black uppercase tracking-[0.2em] text-slate-500`
+- **Títulos**: `font-display font-black text-3xl lg:text-4xl uppercase tracking-tighter`
+- **Labels/Etiquetas**: `text-[10px] font-black uppercase tracking-[0.2em] text-slate-500` o `section-eyebrow`
 - **Valores/Datos**: `font-black text-white` en tamaño proporcional al dato
-- **Botones**: `text-[10px] font-black uppercase tracking-[0.2em]`
+- **Botones**: `text-[10px] font-black uppercase tracking-[0.2em]` (o `tracking-[0.3em]` en btn-gold/btn-ghost)
+- **Mono (códigos/logs)**: `font-mono` (JetBrains Mono)
 
 ### Botones
 
-| Tipo | Clase |
+| Tipo | Clase / Patrón |
 |---|---|
-| **Primario (Acción principal)** | `bg-liquid-gold text-brand-dark font-black rounded-2xl shadow-gold-glow hover:bg-white` |
-| **Secundario** | `bg-white/10 text-white border border-white/10 rounded-2xl hover:bg-white/20` |
-| **Peligro** | `bg-red-500/10 text-red-400 border border-red-500/20 rounded-2xl hover:bg-red-500 hover:text-white` |
+| **Primario (Gold)** | `bg-liquid-gold text-obsidian font-black rounded-2xl shadow-gold-glow` — usar `btn-gold` paraCTAs de landing |
+| **Primario (Blue)** | `bg-brand-blue text-white font-black rounded-xl shadow-blue-glow-sm` — acciones internas |
+| **Secundario** | `bg-white/[0.04] text-white border border-white/[0.1] rounded-2xl hover:bg-liquid-gold/5` — usar `btn-ghost` en landing |
+| **Peligro** | `bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white` |
 | **WhatsApp** | `bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl hover:bg-emerald-500` |
 
 ### Modales
 
+Usar el componente `ui/Modal.tsx`:
+
 ```tsx
-// Overlay
-className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex justify-center items-center p-4 animate-fade-in"
-// Container
-className="bg-brand-dark/95 backdrop-blur-xl rounded-[2.5rem] shadow-luxury w-full max-w-lg overflow-hidden border border-white/10"
-// Header
-className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5"
-// Footer
-className="p-6 bg-white/5 flex justify-end border-t border-white/5"
+<Modal isOpen={open} onClose={close} title="Título" size="md">
+  {/* contenido */}
+</Modal>
 ```
+
+Estilos internos del Modal:
+- Overlay: `fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex justify-center items-center p-4`
+- Container: `bg-obsidian-card border border-white/[0.06] rounded-2xl shadow-luxury overflow-hidden`
+- Header: `p-6 border-b border-white/[0.06]`
+- Body: `max-h-[70vh] overflow-y-auto custom-scrollbar`
+- Footer: `p-6 bg-white/[0.03] flex justify-end border-t border-white/[0.06]`
 
 ---
 
@@ -153,28 +181,53 @@ La mitad de los clientes diarios son recurrentes que vienen a **renovar su talon
 
 ---
 
-## 7. Estructura de Menú (Layout.tsx)
+## 7. Estructura de Menú y Páginas (Layout.tsx)
 
-| Grupo | Ruta | Vista | Icono |
+| Grupo | Ruta | Vista | Archivo |
 |---|---|---|---|
-| **Principal** | `/dashboard` | Panel Principal | DashboardIcon |
-| | `/` | Vista Pública | GlobeAltIcon |
-| **Producción** | `/nuevo` | Nueva Orden | AddIcon |
-| | `/diseno` | Diseño | PaletteIcon |
-| | `/kds` | Taller (KDS) | KdsIcon |
-| | `/retiros` | Entregas | ReceiptIcon |
-| **Gestión** | `/clientes` | Clientes | ClientsIcon |
-| | `/trabajos` | Historial | DocumentIcon |
-| | `/productos` | Catálogo | BoxIcon |
-| | `/inventario` | Inventario | SolidBoxIcon |
-| **Sistema** *(Admin)* | `/finanzas` | Finanzas IA | FinanceIcon |
-| | `/usuarios` | Usuarios | UsersIcon |
-| | `/registro` | Registro de Actividad | ClockIcon |
-| | `/configuracion` | Ajustes | Cog8ToothIcon |
+| **Principal** | `/dashboard` | Panel Principal | `Dashboard.tsx` |
+| | `/` | Landing Pública | `VisualLanding.tsx` |
+| | `/vitrina` | Vitrina Online | `Vitrina.tsx` |
+| **Producción** | `/nuevo` | Nueva Orden | `NuevoPedido.tsx` |
+| | `/diseno` | Diseño | `Diseno.tsx` |
+| | `/kds` | Taller (KDS) | `KDS.tsx` |
+| | `/retiros` | Entregas | `Retiros.tsx` |
+| | `/produccion` | Flujo de Producción | `Produccion.tsx` |
+| **Gestión** | `/clientes` | Clientes | `Clientes.tsx` |
+| | `/trabajos` | Historial de Trabajos | `Trabajos.tsx` |
+| | `/productos` | Catálogo de Productos | `Productos.tsx` |
+| | `/inventario` | Inventario | `Inventario.tsx` |
+| | `/proveedores` | Proveedores | `Proveedores.tsx` |
+| | `/calculadora` | Calculadora de Precios | `CalculadoraPrecios.tsx` |
+| **Sistema** *(Admin)* | `/finanzas` | Finanzas IA | `Finanzas.tsx` |
+| | `/usuarios` | Gestión de Usuarios | `GestionUsuarios.tsx` |
+| | `/cuentas` | Cuentas | `Cuentas.tsx` |
+| | `/facturacion` | Facturación Electrónica | `FacturacionElectronica.tsx` |
+| | `/registro` | Registro de Actividad | `RegistroActividad.tsx` |
+| | `/configuracion` | Ajustes | `Configuracion.tsx` |
+| **Documentos** | `/nota-venta/:id` | Nota de Venta (SRI) | `NotaDeVenta.tsx` |
+| | `/recibo-abono/:id` | Recibo de Abono | `ReciboAbono.tsx` |
+| | `/orden-produccion/:id` | Orden de Producción | `OrdenProduccion.tsx` |
+| | `/solicitud-impresion/:id` | Solicitud de Impresión | `SolicitudImpresion.tsx` |
+| | `/recibo-epson/:id` | Recibo Epson | `ReciboEpson.tsx` |
+| **Público** | `/tracking` | Tracking de Pedido | `Tracking.tsx` |
+| | `/login` | Login | `Login.tsx` |
 
 ---
 
-## 8. Idioma
+## 8. Componentes UI Reutilizables (`components/ui/`)
+
+| Componente | Archivo | Uso |
+|---|---|---|
+| **Button** | `ui/Button.tsx` | Botones con variantes: `primary` (blue), `gold`, `danger`, `ghost`, `outline` |
+| **Input** | `ui/Input.tsx` | Inputs oscuros con label, error state, icon support |
+| **Modal** | `ui/Modal.tsx` | Modales con overlay, header, body, footer. Sizes: `sm`, `md`, `lg`, `xl` |
+| **Badge** | `ui/Badge.tsx` | Badges/etiquetas con variantes de color |
+| **Card** | `ui/Card.tsx` | Cards con variantes: `default`, `elevated`, `interactive`, `highlight` (gold border) |
+
+---
+
+## 9. Idioma
 
 **Español Latino (Ecuador)** es el idioma ÚNICO de toda la interfaz interna. No se permiten:
 - Labels en inglés ("Submit", "Cancel", "Search", "Identity Key", etc.)
@@ -183,7 +236,7 @@ La mitad de los clientes diarios son recurrentes que vienen a **renovar su talon
 
 ---
 
-## 9. Archivos que NO se deben modificar estéticamente
+## 10. Archivos que NO se deben modificar estéticamente
 
 Estos archivos son documentos de impresión y DEBEN mantener fondo blanco:
 - `NotaDeVenta.tsx`
@@ -193,7 +246,7 @@ Estos archivos son documentos de impresión y DEBEN mantener fondo blanco:
 
 ---
 
-## 10. Sistema de Registro de Actividad (Activity Log)
+## 11. Sistema de Registro de Actividad (Activity Log)
 
 El sistema incluye un módulo de auditoría tipo blockchain que registra TODAS las acciones de los usuarios:
 - **Servicio**: `services/activityLogService.ts`

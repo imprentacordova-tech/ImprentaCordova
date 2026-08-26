@@ -793,14 +793,18 @@ function injectSRILoginAssistant() {
 
   // 1. MODO CLIENTE: Limpia campos nativos para escritura manual sin interferencias
   document.getElementById('cdv-btn-login-mode-client').addEventListener('click', () => {
-    const nativeRucInput = document.querySelector('input[name="usuario"], input[name="ruc"], #usuario');
-    const nativePassInput = document.querySelector('input[type="password"], #pass');
+    const nativeRucInput = document.querySelector('#userPri, input[name="j_username"], input[name="usuario"], input[name="ruc"], #usuario');
+    const nativePassInput = document.querySelector('input[type="password"], #pass, #password');
 
     if (nativeRucInput) {
       nativeRucInput.value = '';
+      nativeRucInput.style.border = '2px solid #2563eb';
+      nativeRucInput.style.backgroundColor = '#ffffff';
       nativeRucInput.focus();
     }
-    if (nativePassInput) nativePassInput.value = '';
+    if (nativePassInput) {
+      nativePassInput.value = '';
+    }
 
     chrome.storage.local.set({ current_session_ruc: null, cordovaAutoPilot: false });
   });
@@ -811,8 +815,8 @@ function injectSRILoginAssistant() {
       const ruc = creds.cordova_imprenta_ruc || '0702065319001';
       const pass = creds.cordova_imprenta_pass || '';
 
-      const nativeRucInput = document.querySelector('input[name="usuario"], input[name="ruc"], #usuario');
-      const nativePassInput = document.querySelector('input[type="password"], #pass');
+      const nativeRucInput = document.querySelector('#userPri, input[name="j_username"], input[name="usuario"], input[name="ruc"], #usuario');
+      const nativePassInput = document.querySelector('input[type="password"], #pass, #password');
 
       if (nativeRucInput) nativeRucInput.value = ruc;
       if (nativePassInput && pass) nativePassInput.value = pass;
