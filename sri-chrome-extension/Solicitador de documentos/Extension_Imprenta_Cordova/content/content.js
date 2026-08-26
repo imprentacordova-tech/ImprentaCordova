@@ -744,14 +744,26 @@ function injectImprentaSubtleBanner() {
     ReportadorState.isRunning = true;
     ReportadorState.targetMode = 'ACEPTAR';
     ReportadorState.save();
-    window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/no-procesadas-listado.jspa";
+
+    const directLink = document.querySelector('a[href*="no-procesadas-listado"]');
+    if (directLink) {
+      directLink.click();
+    } else {
+      window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/revisar-tipo-contribuyente.jspa";
+    }
   });
 
   document.getElementById('cdv-btn-goto-reportar').addEventListener('click', () => {
     ReportadorState.isRunning = true;
     ReportadorState.targetMode = 'REPORTAR';
     ReportadorState.save();
-    window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/pendientes-reportar-busqueda.jsp";
+
+    const directReportLink = document.querySelector('a[href*="pendientes-reportar-busqueda"]');
+    if (directReportLink) {
+      directReportLink.click();
+    } else {
+      window.location.href = "https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/revisar-tipo-contribuyente.jspa";
+    }
   });
 
   document.getElementById('cdv-btn-close-subtle').addEventListener('click', () => {
@@ -833,8 +845,9 @@ function injectSRILoginAssistant() {
         nativePassInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
-      ReportadorState.isRunning = false;
+      ReportadorState.isRunning = true;
       ReportadorState.targetMode = 'ACEPTAR';
+      ReportadorState.currentStep = 'Inicio';
       ReportadorState.save();
 
       chrome.storage.local.set({ current_session_ruc: ruc }, () => {
