@@ -809,17 +809,29 @@ function injectSRILoginAssistant() {
     chrome.storage.local.set({ current_session_ruc: null, cordovaAutoPilot: false });
   });
 
-  // 2. MODO IMPRENTA: Auto-Rellena credenciales imprenta e ingresa directo a Solicitudes Recibidas
+  // 2. MODO IMPRENTA: Auto-Rellena credenciales imprenta (GrafiCoR8634@) e ingresa directo
   document.getElementById('cdv-btn-login-mode-imprenta').addEventListener('click', () => {
     chrome.storage.local.get(['cordova_imprenta_ruc', 'cordova_imprenta_pass'], (creds) => {
       const ruc = creds.cordova_imprenta_ruc || '0702065319001';
-      const pass = creds.cordova_imprenta_pass || '';
+      const pass = creds.cordova_imprenta_pass || 'GrafiCoR8634@';
+
+      // Guardar credenciales por defecto en storage local si no estaban presentes
+      chrome.storage.local.set({ cordova_imprenta_ruc: ruc, cordova_imprenta_pass: pass });
 
       const nativeRucInput = document.querySelector('#userPri, input[name="j_username"], input[name="usuario"], input[name="ruc"], #usuario');
-      const nativePassInput = document.querySelector('input[type="password"], #pass, #password');
+      const nativePassInput = document.querySelector('#password, input[name="password"], input[type="password"], #pass');
 
-      if (nativeRucInput) nativeRucInput.value = ruc;
-      if (nativePassInput && pass) nativePassInput.value = pass;
+      if (nativeRucInput) {
+        nativeRucInput.value = ruc;
+        nativeRucInput.dispatchEvent(new Event('input', { bubbles: true }));
+        nativeRucInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      
+      if (nativePassInput) {
+        nativePassInput.value = pass;
+        nativePassInput.dispatchEvent(new Event('input', { bubbles: true }));
+        nativePassInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
 
       ReportadorState.isRunning = false;
       ReportadorState.targetMode = 'ACEPTAR';
@@ -829,7 +841,9 @@ function injectSRILoginAssistant() {
         const submitBtn = document.querySelector('input.boton-ingresar-login, input[name="boton"][value="Ingresar"]');
         if (submitBtn) {
           highlightSRIElement(submitBtn);
-          submitBtn.click();
+          setTimeout(() => {
+            submitBtn.click();
+          }, 150);
         }
       });
     });
@@ -1125,10 +1139,11 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     if (loginSubmitBtn) {
       chrome.storage.local.get(['cordova_imprenta_ruc', 'cordova_imprenta_pass', 'cordova_auto_login'], (creds) => {
         if (creds.cordova_auto_login && creds.cordova_imprenta_ruc) {
-          const rucInput = document.querySelector('input[name="usuario"], input[name="ruc"], #usuario');
-          const passInput = document.querySelector('input[type="password"], #pass');
+          const rucInput = document.querySelector('#userPri, input[name="j_username"], input[name="usuario"], input[name="ruc"], #usuario');
+          const passInput = document.querySelector('#password, input[name="password"], input[type="password"], #pass');
+          const passVal = creds.cordova_imprenta_pass || 'GrafiCoR8634@';
           if (rucInput && !rucInput.value) rucInput.value = creds.cordova_imprenta_ruc;
-          if (passInput && creds.cordova_imprenta_pass && !passInput.value) passInput.value = creds.cordova_imprenta_pass;
+          if (passInput && !passInput.value) passInput.value = passVal;
           highlightSRIElement(loginSubmitBtn);
         }
       });

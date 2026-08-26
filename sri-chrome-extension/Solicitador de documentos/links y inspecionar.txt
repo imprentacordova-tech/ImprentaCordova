@@ -1,3 +1,12 @@
+https://srienlinea.sri.gob.ec/facturacion-internet/login.jspa
+<input id="userPri" name="j_username" class="input-datos-login form-control sri-padding" type="text" maxlength="13" size="15"> Campo RUC/Usuario
+<input id="password" name="password" class="form-control input-datos-login tooltips" type="text" autocomplete="off" maxlength="30" placeholder="Clave"> Campo Clave SRI
+
+Credenciales Imprenta Córdova:
+RUC: 0702065319001
+Clave SRI: GrafiCoR8634@
+Código Autorización: 8634
+
 https://srienlinea.sri.gob.ec/facturacion-internet/direccionamiento.jspa
 <div class="sri-ruc-cabecera" bis_skin_checked="1">0702065319001</div> este es el id o ruc de la imprenta a este recibe el pedido osea cuado detecte este ruc no se activa el envio de solicitud, al contrario me gustaira que me lleve a solicitudes recividas, estamos en proceso de eso.
 <div class="sri-razon-social-cabecera" bis_skin_checked="1">GOMEZ VERA FREDDY RAFAEL</div> este es un id de un cliente asi esta extencions es para ayudar a automatizar la peticion de solicitud de impresion osea cuando detectes que sea diferente a :CORDOVA RODRIGUEZ PEDRO MANUEL, alli pudes suereir hacer la solicitud rapido.
