@@ -95,6 +95,38 @@ const LOCAL_BUSINESS_SCHEMA = {
     },
 };
 
+// ── Schema.org FAQPage ────────────────────────────────────────────────────────
+const FAQ_SCHEMA = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+        {
+            '@type': 'Question',
+            name: '¿Cómo autorizar e imprimir comprobantes del SRI (Facturas y Notas de Venta) en Pasaje, El Oro?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'En Imprenta Córdova (Código Autorización SRI 8634, RUC 0702065319001) gestionamos tu autorización directamente en el portal del SRI. Elaboramos libretas y talonarios de Facturas, Notas de Venta RIMPE, Guías de Remisión y Retenciones en 24 a 48 horas.'
+            }
+        },
+        {
+            '@type': 'Question',
+            name: '¿Hacen envíos de impresiones a domicilio en Pasaje, Machala y Ecuador?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Sí, entregamos a domicilio en Pasaje, Machala, Santa Rosa, Huaquillas, El Guabo, Piñas y realizamos envíos express por encomienda a todo el Ecuador.'
+            }
+        },
+        {
+            '@type': 'Question',
+            name: '¿Qué productos gráficos elabora Imprenta Córdova?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Ofrecemos gigantografías HD, sellos automáticos Trodat / Shiny, talonarios autocopiativos, volantes, afiches, tarjetas de presentación, encuadernación de tesis y empastados de lujo.'
+            }
+        }
+    ]
+};
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface SEOProps {
     /** Título de la página. Se añade automáticamente "| Imprenta Córdova" si no lo lleva */
@@ -175,9 +207,14 @@ export const SEO: React.FC<SEOProps> = ({
 
             {/* ── JSON-LD: LocalBusiness ── */}
             {includeLocalBusiness && (
-                <script type="application/ld+json">
-                    {JSON.stringify(LOCAL_BUSINESS_SCHEMA, null, 0)}
-                </script>
+                <>
+                    <script type="application/ld+json">
+                        {JSON.stringify(LOCAL_BUSINESS_SCHEMA, null, 0)}
+                    </script>
+                    <script type="application/ld+json">
+                        {JSON.stringify(FAQ_SCHEMA, null, 0)}
+                    </script>
+                </>
             )}
         </Helmet>
     );
