@@ -66,7 +66,7 @@ const VisualStep: React.FC<{
             <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-[2px] bg-gradient-to-r from-white/10 to-transparent z-0"></div>
         )}
         
-        <div className="bg-white border border-slate-200 shadow-sm group/step h-full flex flex-col relative overflow-hidden rounded-[2.5rem]">
+        <div className="bg-obsidian-card border border-white/[0.06] shadow-sm group/step h-full flex flex-col relative overflow-hidden rounded-[2.5rem]">
             <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none" />
             <Scanline />
             
@@ -101,14 +101,14 @@ const VisualStep: React.FC<{
             <div className="p-8 flex flex-col flex-grow bg-white/[0.01] relative">
                 <div className="flex items-center gap-3 mb-4">
                     {icon && <div className="text-brand-blue opacity-40 group-hover/step:opacity-100 transition-opacity">{icon}</div>}
-                    <h4 className="font-bold text-slate-900 text-lg leading-none group-hover/step:text-brand-blue transition-colors tracking-tighter uppercase">{subtitle}</h4>
+                    <h4 className="font-bold text-white text-lg leading-none group-hover/step:text-brand-blue transition-colors tracking-tighter uppercase">{subtitle}</h4>
                 </div>
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-8 flex-grow leading-relaxed">{detail}</p>
                 
                 {cost !== undefined && (
                     <div className="flex justify-between items-center border-t border-white/5 pt-6 mt-auto">
                     <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Valorización Neta</span>
-                        <span className="font-black text-xl text-slate-900 tracking-tighter group-hover/step:text-brand-blue transition-colors">{formatCurrency(cost)}</span>
+                        <span className="font-black text-xl text-white tracking-tighter group-hover/step:text-brand-blue transition-colors">{formatCurrency(cost)}</span>
                     </div>
                 )}
             </div>
@@ -322,14 +322,14 @@ const OffsetCalculator: React.FC<{
                 animate={{ opacity: 1, x: 0 }}
                 className="lg:col-span-4 space-y-8"
             >
-                <div className="bg-white border border-slate-200 rounded-[3rem] p-10 relative overflow-hidden group shadow-sm">
+                <div className="bg-obsidian-card border border-white/[0.06] rounded-[3rem] p-10 relative overflow-hidden group shadow-sm">
                     <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
-                    <div className="flex items-center gap-6 mb-12 pb-10 border-b border-slate-100">
+                    <div className="flex items-center gap-6 mb-12 pb-10 border-b border-white/[0.06]">
                         <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 text-brand-blue">
                             <CpuIcon className="w-8 h-8" />
                         </div>
                         <div className="space-y-1">
-                            <h2 className="font-bold text-slate-900 text-2xl tracking-tight uppercase leading-none">Matriz <span className="text-brand-blue">Offset</span></h2>
+                            <h2 className="font-bold text-white text-2xl tracking-tight uppercase leading-none">Matriz <span className="text-brand-blue">Offset</span></h2>
                             <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.4em]">Configuración de Manufactura</p>
                         </div>
                     </div>
@@ -342,7 +342,7 @@ const OffsetCalculator: React.FC<{
                             <select 
                                 value={paperId} 
                                 onChange={e => {setPaperId(e.target.value); handlePresetChange('1/4_OFICIO')}} 
-                                className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-black text-slate-900 outline-none focus:border-brand-blue/50 transition-all cursor-pointer uppercase"
+                                className="w-full p-5 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-sm font-black text-white outline-none focus:border-brand-blue/50 transition-all cursor-pointer uppercase"
                             >
                                 {SOURCE_PAPERS.map(p => <option key={p.id} value={p.id} className="bg-white">{p.nombre.toUpperCase()}</option>)}
                             </select>
@@ -351,17 +351,17 @@ const OffsetCalculator: React.FC<{
                         <div className="space-y-4">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dimensiones Finales (mm)</label>
                             <div className="grid grid-cols-2 gap-4">
-                                <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-black text-center text-xl outline-none" />
-                                <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-black text-center text-xl outline-none" />
+                                <input type="number" value={finalW} onChange={e => setFinalW(parseFloat(e.target.value))} className="w-full p-5 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-white font-black text-center text-xl outline-none" />
+                                <input type="number" value={finalH} onChange={e => setFinalH(parseFloat(e.target.value))} className="w-full p-5 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-white font-black text-center text-xl outline-none" />
                             </div>
                         </div>
 
                         <div className="space-y-4">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Solicitado</label>
                             <div className="flex gap-4">
-                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="flex-1 p-6 bg-slate-50 border border-slate-200 rounded-2xl text-3xl font-black text-brand-blue outline-none text-center shadow-inner" />
+                                <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="flex-1 p-6 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-3xl font-black text-brand-blue outline-none text-center shadow-inner" />
                                 {paperId === 'QUIMICO' && (
-                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-1/3 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black text-slate-900 p-2 outline-none text-center cursor-pointer uppercase">
+                                    <select value={cantidadHojasBlock} onChange={e => setCantidadHojasBlock(parseInt(e.target.value))} className="w-1/3 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-[10px] font-black text-white p-2 outline-none text-center cursor-pointer uppercase">
                                         <option value={100}>100 HJS</option>
                                         <option value={50}>50 HJS</option>
                                     </select>
@@ -372,10 +372,10 @@ const OffsetCalculator: React.FC<{
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">Partes</label>
-                                <input type="number" value={parts} onChange={e => setParts(Math.max(1, parseInt(e.target.value)))} className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-black text-center text-xl outline-none" />
+                                <input type="number" value={parts} onChange={e => setParts(Math.max(1, parseInt(e.target.value)))} className="w-full p-5 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-white font-black text-center text-xl outline-none" />
                             </div>
                             <div className="pt-8">
-                                <button onClick={() => setHasDesign(!hasDesign)} className={`w-full py-4 border rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all ${hasDesign ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-transparent border-slate-200 text-slate-400'}`}>
+                                <button onClick={() => setHasDesign(!hasDesign)} className={`w-full py-4 border rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all ${hasDesign ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-transparent border-white/[0.06] text-slate-400'}`}>
                                     {hasDesign ? 'CON ARTE' : 'SIN ARTE'}
                                 </button>
                             </div>
@@ -405,15 +405,15 @@ const OffsetCalculator: React.FC<{
                         />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 relative overflow-hidden group">
+                            <div className="bg-obsidian-card border border-white/[0.06] rounded-[2.5rem] p-10 relative overflow-hidden group">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">Costo Operativo</span>
                                 <div className="flex items-baseline gap-3">
-                                    <span className="text-3xl font-black text-slate-900 tracking-tighter">{formatCurrency(result.costoTotalProduccion)}</span>
+                                    <span className="text-3xl font-black text-white tracking-tighter">{formatCurrency(result.costoTotalProduccion)}</span>
                                     <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">NET_VAL</span>
                                 </div>
                             </div>
 
-                            <div className="bg-white border-2 border-brand-blue/20 rounded-[2.5rem] p-10 relative overflow-hidden group shadow-xl shadow-brand-blue/5">
+                            <div className="bg-obsidian-card border-2 border-brand-blue/20 rounded-[2.5rem] p-10 relative overflow-hidden group shadow-xl shadow-brand-blue/5">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 blur-3xl -mr-16 -mt-16" />
                                 <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest block mb-4">PVP Sugerido Elite</span>
                                 <div className="flex items-baseline gap-3">
@@ -422,10 +422,10 @@ const OffsetCalculator: React.FC<{
                                 </div>
                             </div>
 
-                            <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 relative overflow-hidden group">
+                            <div className="bg-obsidian-card border border-white/[0.06] rounded-[2.5rem] p-10 relative overflow-hidden group">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">Valor por Unidad</span>
                                 <div className="flex items-baseline gap-3">
-                                    <span className="text-3xl font-black text-slate-900 tracking-tighter">{formatCurrency(result.unitario)}</span>
+                                    <span className="text-3xl font-black text-white tracking-tighter">{formatCurrency(result.unitario)}</span>
                                     <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">UNIT_VAL</span>
                                 </div>
                             </div>
@@ -462,7 +462,7 @@ const OffsetCalculator: React.FC<{
                                     precio: result.pvp,
                                     specs: [`${finalW}x${finalH} mm`, `${quantity} un.`, `${parts} pts`]
                                 })}
-                                className="flex-1 py-6 bg-white border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center gap-4 group/btn"
+className="flex-1 py-6 bg-obsidian-card border border-white/[0.06] text-slate-300 font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-white/[0.04] transition-all flex items-center justify-center gap-4 group/btn"
                             >
                                 <RocketLaunchIcon className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                                 Vincular Pedido
@@ -470,9 +470,9 @@ const OffsetCalculator: React.FC<{
                         </div>
                     </>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100 p-20 text-center">
+                    <div className="h-full flex flex-col items-center justify-center bg-obsidian-card rounded-[3rem] border-2 border-dashed border-white/[0.06] p-20 text-center">
                         <ExclamationTriangleIcon className="w-16 h-16 text-rose-500/20 mb-8" />
-                        <h4 className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter uppercase">Fallo Geométrico</h4>
+                        <h4 className="text-2xl font-bold text-white mb-4 tracking-tighter uppercase">Fallo Geométrico</h4>
                         <p className="text-slate-400 font-black max-w-sm uppercase text-[10px] tracking-widest leading-loose">Las dimensiones declaradas superan los límites físicos de la matriz seleccionada.</p>
                     </div>
                 )}
@@ -555,14 +555,14 @@ const DigitalCalculator: React.FC<{
                 animate={{ opacity: 1, x: 0 }}
                 className="lg:col-span-4 space-y-8"
             >
-                <div className="bg-white p-10 relative overflow-hidden group shadow-sm border border-slate-200 rounded-[3rem]">
+                <div className="bg-obsidian-card p-10 relative overflow-hidden group shadow-sm border border-white/[0.06] rounded-[3rem]">
                     <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
-                    <div className="flex items-center gap-6 mb-12 pb-10 border-b border-slate-100">
+                    <div className="flex items-center gap-6 mb-12 pb-10 border-b border-white/[0.06]">
                         <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 text-brand-blue">
                             <RocketLaunchIcon className="w-8 h-8" />
                         </div>
                         <div className="space-y-1">
-                            <h2 className="font-bold text-slate-900 text-2xl tracking-tight uppercase leading-none">Matriz <span className="text-brand-blue">Digital</span></h2>
+                            <h2 className="font-bold text-white text-2xl tracking-tight uppercase leading-none">Matriz <span className="text-brand-blue">Digital</span></h2>
                             <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.4em]">Configuración On-Demand</p>
                         </div>
                     </div>
@@ -572,12 +572,12 @@ const DigitalCalculator: React.FC<{
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <LayersIcon className="w-3 h-3 text-brand-blue" /> Formato de Salida
                             </label>
-                            <div className="flex gap-3 p-2 bg-slate-50 rounded-2xl border border-slate-200">
+                            <div className="flex gap-3 p-2 bg-white/[0.04] rounded-2xl border border-white/[0.06]">
                                 {['A4', 'A3', 'SRA3'].map((f) => (
                                     <button 
                                         key={f} 
                                         onClick={() => setFormat(f as any)} 
-                                        className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${format === f ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                                        className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${format === f ? 'bg-obsidian-card text-white shadow-sm border border-white/[0.06]' : 'text-slate-400 hover:text-slate-300'}`}
                                     >
                                         {f}
                                     </button>
@@ -590,7 +590,7 @@ const DigitalCalculator: React.FC<{
                             <select 
                                 value={paperType} 
                                 onChange={e => setPaperType(e.target.value)} 
-                                className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-black text-slate-900 outline-none focus:border-brand-blue/50 transition-all cursor-pointer uppercase shadow-inner"
+                                className="w-full p-5 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-sm font-black text-white outline-none focus:border-brand-blue/50 transition-all cursor-pointer uppercase shadow-inner"
                             >
                                 <option value="BOND" className="bg-white">Bond 75g Estandar</option>
                                 <option value="COUCHE_115" className="bg-white">Couché 115g Pro</option>
@@ -605,23 +605,23 @@ const DigitalCalculator: React.FC<{
                                 type="number" 
                                 value={quantity} 
                                 onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 0))} 
-                                className="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl text-3xl font-black text-brand-blue outline-none text-center shadow-inner" 
+                                className="w-full p-6 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-3xl font-black text-brand-blue outline-none text-center shadow-inner" 
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">Cromatismo</label>
-                                <div className="flex bg-slate-50 rounded-xl p-1.5 border border-slate-200">
-                                    <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${colorMode === 'COLOR' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>CMYK</button>
-                                    <button onClick={() => setColorMode('BW')} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${colorMode === 'BW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>B/N</button>
+                                <div className="flex bg-white/[0.04] rounded-xl p-1.5 border border-white/[0.06]">
+                                    <button onClick={() => setColorMode('COLOR')} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${colorMode === 'COLOR' ? 'bg-obsidian-card text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}>CMYK</button>
+                                    <button onClick={() => setColorMode('BW')} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${colorMode === 'BW' ? 'bg-obsidian-card text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}>B/N</button>
                                 </div>
                             </div>
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">Faces</label>
-                                <div className="flex bg-slate-50 rounded-xl p-1.5 border border-slate-200">
-                                    <button onClick={() => setSides(1)} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${sides === 1 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>1 Lado</button>
-                                    <button onClick={() => setSides(2)} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${sides === 2 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>2 Lados</button>
+                                <div className="flex bg-white/[0.04] rounded-xl p-1.5 border border-white/[0.06]">
+                                    <button onClick={() => setSides(1)} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${sides === 1 ? 'bg-obsidian-card text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}>1 Lado</button>
+                                    <button onClick={() => setSides(2)} className={`flex-1 py-3 text-[8px] font-black uppercase rounded-lg transition-all ${sides === 2 ? 'bg-obsidian-card text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}>2 Lados</button>
                                 </div>
                             </div>
                         </div>
@@ -651,16 +651,16 @@ const DigitalCalculator: React.FC<{
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="bg-white p-10 relative overflow-hidden group border border-slate-200 rounded-[2.5rem]">
+                    <div className="bg-obsidian-card p-10 relative overflow-hidden group border border-white/[0.06] rounded-[2.5rem]">
                         <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">Costo Operativo</span>
                         <div className="flex items-baseline gap-3">
-                            <span className="text-3xl font-black text-slate-900 tracking-tighter">{formatCurrency(calculation.totalCost)}</span>
+                            <span className="text-3xl font-black text-white tracking-tighter">{formatCurrency(calculation.totalCost)}</span>
                             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">NET_VAL</span>
                         </div>
                     </div>
 
-                    <div className="bg-white p-10 relative overflow-hidden group border-2 border-brand-blue/20 rounded-[2.5rem]">
+                    <div className="bg-obsidian-card p-10 relative overflow-hidden group border-2 border-brand-blue/20 rounded-[2.5rem]">
                         <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
                         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 blur-3xl -mr-16 -mt-16" />
                         <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest block mb-4">PVP Sugerido Elite</span>
@@ -670,11 +670,11 @@ const DigitalCalculator: React.FC<{
                         </div>
                     </div>
 
-                    <div className="bg-white p-10 relative overflow-hidden group border border-slate-200 rounded-[2.5rem]">
+                    <div className="bg-obsidian-card p-10 relative overflow-hidden group border border-white/[0.06] rounded-[2.5rem]">
                         <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">Valor por Unidad</span>
                         <div className="flex items-baseline gap-3">
-                            <span className="text-3xl font-black text-slate-900 tracking-tighter">{formatCurrency(calculation.unitPvp)}</span>
+                            <span className="text-3xl font-black text-white tracking-tighter">{formatCurrency(calculation.unitPvp)}</span>
                             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">UNIT_VAL</span>
                         </div>
                     </div>
@@ -711,7 +711,7 @@ const DigitalCalculator: React.FC<{
                             precio: calculation.totalPvp, 
                             specs: [format, `${quantity} un.`, colorMode]
                         })}
-                        className="flex-1 py-6 bg-white border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center gap-4 group/btn"
+                        className="flex-1 py-6 bg-obsidian-card border border-white/[0.06] text-slate-300 font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-white/[0.04] transition-all flex items-center justify-center gap-4 group/btn"
                     >
                         <RocketLaunchIcon className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                         Vincular Pedido
@@ -732,24 +732,24 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     ];
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-10 bg-white/90 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-10 bg-black/60 backdrop-blur-xl">
             <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-5xl bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-sm"
+                className="w-full max-w-5xl bg-obsidian-card rounded-[4rem] border border-white/[0.06] overflow-hidden shadow-sm"
             >
-                <div className="p-12 border-b border-slate-100 flex justify-between items-start relative overflow-hidden">
+                <div className="p-12 border-b border-white/[0.06] flex justify-between items-start relative overflow-hidden">
                     <div className="flex items-center gap-6 relative z-10">
                         <div className="w-16 h-16 bg-brand-blue/5 rounded-[1.5rem] flex items-center justify-center text-brand-blue border border-brand-blue/10">
                             <CpuIcon className="w-8 h-8" />
                         </div>
                         <div>
-                            <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Matriz de Referencia</h2>
+                            <h2 className="text-4xl font-black text-white tracking-tighter uppercase">Matriz de Referencia</h2>
                             <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.5em] mt-2">Valores de Mercado Pre-Calculados</p>
                         </div>
                     </div>
                     
-                    <button onClick={onClose} className="p-5 bg-slate-50 hover:bg-slate-100 rounded-2xl text-slate-500 transition-all border border-slate-200 active:scale-95">
+                    <button onClick={onClose} className="p-5 bg-white/[0.04] hover:bg-white/[0.08] rounded-2xl text-slate-400 transition-all border border-white/[0.06] active:scale-95">
                         <CloseIcon />
                     </button>
                 </div>
@@ -757,7 +757,7 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="p-12 overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="border-b border-slate-100 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            <tr className="border-b border-white/[0.06] text-[11px] font-black text-slate-400 uppercase tracking-widest">
                                 <th className="pb-8 pl-4">Artefacto</th>
                                 <th className="pb-8">Dimensión</th>
                                 <th className="pb-8">Escala</th>
@@ -765,10 +765,10 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 <th className="pb-8 pr-4 text-right">Valor Base</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-white/[0.06]">
                             {matrices.map((m, i) => (
-                                <tr key={i} className="group hover:bg-slate-50 transition-colors">
-                                    <td className="py-10 pl-4 font-black text-slate-900 text-lg tracking-tight">{m.name}</td>
+                                <tr key={i} className="group hover:bg-white/[0.04] transition-colors">
+                                    <td className="py-10 pl-4 font-black text-white text-lg tracking-tight">{m.name}</td>
                                     <td className="py-10 text-[11px] font-black text-slate-500 uppercase tracking-widest">{m.size}</td>
                                     <td className="py-10 text-[11px] font-black text-slate-500 uppercase tracking-widest">{m.units}</td>
                                     <td className="py-10 text-[11px] font-black text-slate-500 uppercase tracking-widest">{m.parts}</td>
@@ -779,7 +779,7 @@ const MasterTableModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </table>
                 </div>
                 
-                <div className="p-12 bg-slate-50 border-t border-slate-100 text-center">
+                <div className="p-12 bg-white/[0.04] border-t border-white/[0.06] text-center">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Valores sujetos a fluctuación de insumos según mercado local</p>
                 </div>
             </motion.div>
@@ -953,7 +953,7 @@ const CalculadoraPreciosPage: React.FC = () => {
             className={`w-full flex items-center gap-5 px-8 py-6 rounded-3xl transition-all duration-500 group relative ${
                 active 
                 ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' 
-                : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
             }`}
         >
             <Icon className={`w-5 h-5 ${active ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'}`} />
@@ -968,18 +968,18 @@ const CalculadoraPreciosPage: React.FC = () => {
     );
 
     return (
-        <div className="min-h-screen relative overflow-hidden flex bg-slate-50">
+        <div className="min-h-screen relative overflow-hidden flex bg-brand-dark">
             <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none"></div>
             
             {/* Premium Sidebar Menu */}
-            <aside className="w-80 border-r border-slate-200 bg-white p-10 flex flex-col gap-12 sticky top-0 h-screen z-50">
+            <aside className="w-80 border-r border-white/[0.06] bg-obsidian-card p-10 flex flex-col gap-12 sticky top-0 h-screen z-50">
                 <div className="space-y-4">
                     <div className="flex items-center gap-4 px-4">
                         <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/20">
                             <CpuIcon className="w-6 h-6 text-white" />
                         </div>
                         <div className="space-y-0.5">
-                            <h3 className="text-slate-900 font-black text-sm uppercase tracking-[-0.04em] leading-none text-nowrap">IMPRENTA CÓRDOVA</h3>
+                            <h3 className="text-white font-black text-sm uppercase tracking-[-0.04em] leading-none text-nowrap">IMPRENTA CÓRDOVA</h3>
                             <div className="flex gap-1 items-center mt-1">
                                 <div className="w-1 h-1 rounded-full bg-cyan-500 animate-pulse" />
                                 <div className="w-1 h-1 rounded-full bg-yellow-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
@@ -988,29 +988,29 @@ const CalculadoraPreciosPage: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="h-[1px] w-full bg-slate-100 my-8" />
+                    <div className="h-[1px] w-full bg-white/[0.06] my-8" />
                 </div>
 
                 <nav className="flex-grow space-y-4">
-                    <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] mb-6 px-4">Protocolos</p>
+                    <p className="text-[9px] font-black text-slate-200 uppercase tracking-[0.4em] mb-6 px-4">Protocolos</p>
                     <SidebarItem id="HUB" label="Dashboard" icon={LayoutDashboardIcon} active={mode === 'HUB'} />
                     <SidebarItem id="OFFSET" label="Industrial Offset" icon={PrinterIcon} active={mode === 'OFFSET'} />
                     <SidebarItem id="DIGITAL" label="Digital Boutique" icon={RocketLaunchIcon} active={mode === 'DIGITAL'} />
                     
                     <div className="pt-10">
-                        <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] mb-6 px-4">Utilidades</p>
+                        <p className="text-[9px] font-black text-slate-200 uppercase tracking-[0.4em] mb-6 px-4">Utilidades</p>
                         <SidebarItem id="TABLE" label="Matriz Maestra" icon={TableIcon} active={showMasterTable} />
                         <SidebarItem id="CONFIG" label="Calibración" icon={SettingsIcon} active={mode === 'CONFIG'} />
                     </div>
                 </nav>
 
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                <div className="bg-white/[0.04] p-6 rounded-3xl border border-white/[0.06]">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-200">
-                            <span className="text-[10px] font-black text-slate-900">{currentUser?.nombre?.charAt(0) || 'A'}</span>
+                        <div className="w-8 h-8 rounded-full bg-obsidian-card flex items-center justify-center border border-white/[0.06]">
+                            <span className="text-[10px] font-black text-white">{currentUser?.nombre?.charAt(0) || 'A'}</span>
                         </div>
                         <div className="space-y-0.5">
-                            <p className="text-[9px] font-black text-slate-900 uppercase tracking-widest leading-none">{currentUser?.nombre || 'Operador'}</p>
+                            <p className="text-[9px] font-black text-white uppercase tracking-widest leading-none">{currentUser?.nombre || 'Operador'}</p>
                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{currentUser?.rol || 'Staff'}</p>
                         </div>
                     </div>
@@ -1033,7 +1033,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                             key={mode}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase"
+                            className="text-2xl lg:text-3xl font-black text-white tracking-tight uppercase"
                         >
                             Calculadora de Precios <span className="text-brand-blue font-bold">
                                 {mode === 'HUB' ? '• Cotizador' : mode === 'OFFSET' ? '• Offset' : mode === 'DIGITAL' ? '• Digital' : '• Calibración'}
@@ -1042,7 +1042,7 @@ const CalculadoraPreciosPage: React.FC = () => {
                     </div>
 
                     {mode !== 'HUB' && (
-                        <div className="flex gap-4 p-2.5 bg-white rounded-[2.8rem] border border-slate-200 shadow-sm">
+                        <div className="flex gap-4 p-2.5 bg-obsidian-card rounded-[2.8rem] border border-white/[0.06] shadow-sm">
                             <button onClick={() => setMode('OFFSET')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all ${mode === 'OFFSET' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-400 hover:text-slate-600'}`}>Offset</button>
                             <button onClick={() => setMode('DIGITAL')} className={`py-4 px-8 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all ${mode === 'DIGITAL' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'text-slate-400 hover:text-slate-600'}`}>Digital</button>
                         </div>
@@ -1061,9 +1061,9 @@ const CalculadoraPreciosPage: React.FC = () => {
                     >
                         {mode === 'HUB' && (
                             <div className="flex flex-col gap-16 relative z-10">
-                                <div className="relative p-16 rounded-[4rem] bg-white border border-slate-200 overflow-hidden shadow-sm">
+                                <div className="relative p-16 rounded-[4rem] bg-obsidian-card border border-white/[0.06] overflow-hidden shadow-sm">
                                     <div className="relative z-10 max-w-2xl">
-                                        <h2 className="text-6xl font-black text-slate-900 tracking-[-0.04em] uppercase leading-none mb-8">ECOSISTEMA DE <br/> <span className="text-brand-blue">INGENIERÍA CÓRDOVA</span></h2>
+                                        <h2 className="text-6xl font-black text-white tracking-[-0.04em] uppercase leading-none mb-8">ECOSISTEMA DE <br/> <span className="text-brand-blue">INGENIERÍA CÓRDOVA</span></h2>
                                         <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.5em] leading-loose">Calibración de algoritmos de producción para optimización de rentabilidad industrial y precisión de costos.</p>
                                     </div>
                                 </div>
@@ -1078,15 +1078,15 @@ const CalculadoraPreciosPage: React.FC = () => {
                                             key={item.id}
                                             whileHover={{ y: -10, scale: 1.02 }}
                                             onClick={() => handleSetMode(item.id as Mode)}
-                                            className="bg-white p-12 rounded-[4rem] border border-slate-200 text-left group transition-all hover:border-brand-blue/30 hover:shadow-xl flex flex-col h-full"
+                                            className="bg-obsidian-card p-12 rounded-[4rem] border border-white/[0.06] text-left group transition-all hover:border-brand-blue/30 hover:shadow-xl flex flex-col h-full"
                                         >
                                             <div className="flex justify-between items-start mb-10">
-                                                <div className={`w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center group-hover:bg-brand-blue group-hover:text-white transition-all ${item.color}`}>
+                                                <div className={`w-20 h-20 rounded-3xl bg-white/[0.04] flex items-center justify-center group-hover:bg-brand-blue group-hover:text-white transition-all ${item.color}`}>
                                                     <item.icon className="w-10 h-10" />
                                                 </div>
-                                                <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-slate-100 rounded-full text-slate-400">{item.tag}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-white/[0.04] rounded-full text-slate-400">{item.tag}</span>
                                             </div>
-                                            <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-4">{item.title}</h3>
+                                            <h3 className="text-3xl font-black text-white tracking-tighter uppercase mb-4">{item.title}</h3>
                                             <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-loose flex-grow">{item.desc}</p>
                                             <div className="mt-10 flex items-center gap-4 text-brand-blue opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Inicializar Protocolo</span>
@@ -1119,11 +1119,11 @@ const CalculadoraPreciosPage: React.FC = () => {
                             <motion.div 
                                 initial={{ opacity: 0, y: 40 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white p-16 rounded-[4rem] border border-slate-200 shadow-sm"
+                                className="bg-obsidian-card p-16 rounded-[4rem] border border-white/[0.06] shadow-sm"
                             >
-                                <div className="flex justify-between items-center mb-16 pb-12 border-b border-slate-100">
+                                <div className="flex justify-between items-center mb-16 pb-12 border-b border-white/[0.06]">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Calibración de <span className="text-brand-blue">Costos Bases</span></h2>
+                                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase">Calibración de <span className="text-brand-blue">Costos Bases</span></h2>
                                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.6em]">Protocolo de Ajuste Financiero Maestro</p>
                                     </div>
                                     <div className="flex gap-6">
@@ -1140,12 +1140,12 @@ const CalculadoraPreciosPage: React.FC = () => {
                                                     type="number" step="0.0001" 
                                                     value={val as number} 
                                                     onChange={e => setCosts({...costs, [key]: parseFloat(e.target.value)})}
-                                                    className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-black text-lg outline-none focus:border-brand-blue/30 transition-all shadow-inner"
+                                                    className="w-full p-5 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-white font-black text-lg outline-none focus:border-brand-blue/30 transition-all shadow-inner"
                                                 />
                                                 <select 
                                                     value={costs.proveedoresPredeterminados?.[key] || ''} 
                                                     onChange={e => setCosts({...costs, proveedoresPredeterminados: {...(costs.proveedoresPredeterminados || {}), [key]: e.target.value}})}
-                                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-brand-blue/30 cursor-pointer"
+                                                    className="w-full p-3 bg-white/[0.04] border border-white/[0.06] rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-brand-blue/30 cursor-pointer"
                                                 >
                                                     <option value="" className="bg-white">SIN PROVEEDOR PREDETERMINADO</option>
                                                     {proveedores.map(p => (

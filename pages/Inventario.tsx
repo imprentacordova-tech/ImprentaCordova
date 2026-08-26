@@ -24,10 +24,10 @@ const MetricCard: React.FC<{
 }> = ({ label, value, icon: Icon, colorClass = "text-brand-blue", subValue }) => (
     <motion.div 
         whileHover={{ y: -5, transition: { duration: 0.3 } }}
-        className="bg-white p-8 relative group overflow-hidden border border-slate-200 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-300"
+        className="bg-obsidian-card p-8 relative group overflow-hidden border border-white/[0.06] rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-300"
     >
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-all duration-500 rotate-12 scale-150">
-            <Icon className="w-24 h-24 text-slate-900" />
+            <Icon className="w-24 h-24 text-white" />
         </div>
         <div className="relative z-10 space-y-6">
             <div className="flex items-center gap-4">
@@ -70,12 +70,12 @@ const InputField: React.FC<{
                 name={name}
                 value={value}
                 onChange={onChange}
-                className={`peer w-full bg-slate-50 border p-6 pt-9 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 transition-all outline-none appearance-none cursor-pointer
+                className={`peer w-full bg-white/[0.04] border p-6 pt-9 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 transition-all outline-none appearance-none cursor-pointer
                     ${error
                         ? 'border-rose-200 focus:ring-rose-500/5 focus:border-rose-400'
                         : isHighlighted
                             ? 'border-brand-blue/20 focus:ring-brand-blue/5 focus:border-brand-blue/40'
-                            : 'border-slate-200 focus:ring-brand-blue/5 focus:border-brand-blue/20'
+                            : 'border-white/[0.06] focus:ring-brand-blue/5 focus:border-brand-blue/20'
                     }`}
                 {...props}
             >
@@ -90,12 +90,12 @@ const InputField: React.FC<{
                 type={type}
                 value={value}
                 onChange={onChange}
-                className={`peer w-full bg-slate-50 border p-6 pt-9 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 transition-all placeholder-transparent outline-none
+                className={`peer w-full bg-white/[0.04] border p-6 pt-9 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 transition-all placeholder-transparent outline-none
                     ${error
                         ? 'border-rose-200 focus:ring-rose-500/5 focus:border-rose-400'
                         : isHighlighted
                             ? 'border-brand-blue/20 focus:ring-brand-blue/5 focus:border-brand-blue/40'
-                            : 'border-slate-200 focus:ring-brand-blue/5 focus:border-brand-blue/20'
+                            : 'border-white/[0.06] focus:ring-brand-blue/5 focus:border-brand-blue/20'
                     }`}
                 placeholder={label}
                 {...props}
@@ -128,11 +128,11 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
                     initial={{ scale: 0.95, opacity: 0, y: 30 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 30 }}
-                    className="bg-white border border-slate-200 w-full max-w-xl overflow-hidden relative z-10 shadow-2xl rounded-[2.5rem]" 
+                    className="bg-obsidian-card border border-white/[0.06] w-full max-w-xl overflow-hidden relative z-10 shadow-2xl rounded-[2.5rem]" 
                 >
-                    <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <div className="p-10 border-b border-white/[0.06] bg-white/[0.04] flex justify-between items-center">
                         <div>
-                            <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">Gestión de <span className="text-brand-blue">Activos</span></h2>
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tight leading-none">Gestión de <span className="text-brand-blue">Activos</span></h2>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">REGISTRO DE INVENTARIO ESTRATÉGICO</p>
                         </div>
                         <button onClick={onClose} className="p-4 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all group">
@@ -188,7 +188,7 @@ const InventoryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (
                                 />
                             </div>
 
-                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-2xl grid grid-cols-2 gap-6">
+                            <div className="p-6 bg-white/[0.04] border border-white/[0.06] rounded-2xl grid grid-cols-2 gap-6">
                                 <InputField 
                                     label="Costo Unitario ($)" 
                                     name="costoUnitario" 
@@ -303,14 +303,14 @@ const InventarioPage: React.FC = () => {
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-12 pb-32 pt-8 animate-fade-in px-6 sm:px-12 bg-brand-light min-h-screen">
+        <div className="max-w-[1600px] mx-auto space-y-12 pb-32 pt-8 animate-fade-in px-6 sm:px-12 min-h-screen">
             {/* --- CABECERA --- */}
             <div className="flex flex-col gap-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-slate-200 pb-10">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/[0.06] pb-10">
                     <div className="flex items-center gap-8">
                         <button 
                             onClick={() => navigate('/dashboard')}
-                            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-brand-blue transition-all group shadow-sm"
+                            className="p-5 bg-obsidian-card border border-white/[0.06] rounded-2xl hover:border-brand-blue transition-all group shadow-sm"
                         >
                             <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue transition-colors" />
                         </button>
@@ -319,7 +319,7 @@ const InventarioPage: React.FC = () => {
                                 <span className="w-2 h-2 rounded-full bg-brand-blue" />
                                 <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Gestión de Recursos & Insumos</p>
                             </div>
-                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                                 Control de Inventario <span className="text-brand-blue font-bold">• Insumos</span>
                             </h1>
                         </div>
@@ -330,7 +330,7 @@ const InventarioPage: React.FC = () => {
                         <button 
                             onClick={() => fileInputRef.current?.click()} 
                             disabled={isImporting}
-                            className="flex items-center justify-center gap-3 px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl shadow-sm uppercase text-[10px] tracking-widest group disabled:opacity-50 hover:bg-slate-50 transition-all"
+                            className="flex items-center justify-center gap-3 px-8 py-4 bg-obsidian-card border border-white/[0.06] text-slate-200 font-bold rounded-2xl shadow-sm uppercase text-[10px] tracking-widest group disabled:opacity-50 hover:bg-white/[0.04] transition-all"
                         >
                             {isImporting ? <Loader2Icon className="w-4 h-4 animate-spin text-brand-blue" /> : <ArrowDownTrayIcon className="w-4 h-4 text-brand-blue group-hover:-translate-y-0.5 transition-transform" />}
                             <span>IMPORTAR_CSV</span>
@@ -376,7 +376,7 @@ const InventarioPage: React.FC = () => {
                         placeholder="IDENTIFICAR MATERIAL O REFERENCIA..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full pl-16 pr-6 py-6 bg-white border border-slate-200 focus:border-brand-blue/40 rounded-2xl text-[12px] font-bold text-slate-700 uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-sm transition-all"
+                        className="w-full pl-16 pr-6 py-6 bg-obsidian-card border border-white/[0.06] focus:border-brand-blue/40 rounded-2xl text-[12px] font-bold text-slate-200 uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-sm transition-all"
                     />
                 </div>
             </div>
@@ -385,7 +385,7 @@ const InventarioPage: React.FC = () => {
             <div className="space-y-8">
                 <AnimatePresence mode="popLayout">
                     {loading ? (
-                        <div className="py-40 flex flex-col items-center justify-center gap-6 border-2 border-dashed border-slate-200 rounded-[3rem] bg-white/50">
+                        <div className="py-40 flex flex-col items-center justify-center gap-6 border-2 border-dashed border-white/[0.06] rounded-[3rem] bg-obsidian-card/50">
                             <Loader2Icon className="w-12 h-12 text-brand-blue opacity-20 animate-spin" />
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] animate-pulse">SINCRONIZANDO BÓVEDA...</p>
                         </div>
@@ -401,20 +401,20 @@ const InventarioPage: React.FC = () => {
                                         viewport={{ once: true }}
                                         transition={{ delay: idx * 0.05, duration: 0.5 }}
                                         key={item.id} 
-                                        className={`group relative bg-white p-10 flex flex-col gap-10 border ${isLow ? 'border-rose-200 shadow-rose-100/50' : 'border-slate-200'} hover:border-brand-blue/30 hover:shadow-xl transition-all duration-500 rounded-[2.5rem] overflow-hidden`}
+                                        className={`group relative bg-obsidian-card p-10 flex flex-col gap-10 border ${isLow ? 'border-rose-200 shadow-rose-100/50' : 'border-white/[0.06]'} hover:border-brand-blue/30 hover:shadow-xl transition-all duration-500 rounded-[2.5rem] overflow-hidden`}
                                     >
                                         <div className="flex justify-between items-start relative z-10">
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${isLow ? 'bg-rose-50 text-rose-500 border-rose-100 animate-pulse' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                                                    <div className={`px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${isLow ? 'bg-brand-red/10 text-brand-red border-brand-red/20 animate-pulse' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
                                                         {isLow ? 'STOCK_CRÍTICO' : 'OPERATIVO'}
                                                     </div>
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">{item.unidad}</span>
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-white/[0.04] px-3 py-1.5 rounded-lg border border-white/[0.06]">{item.unidad}</span>
                                                 </div>
-                                                <h4 className="text-3xl font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-blue transition-colors">{item.item}</h4>
+                                                <h4 className="text-3xl font-black text-white uppercase tracking-tight group-hover:text-brand-blue transition-colors">{item.item}</h4>
                                             </div>
                                             <div className="flex gap-3">
-                                                <button onClick={() => setItemToEdit(item)} className="p-4 bg-slate-50 border border-slate-100 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all">
+                                                <button onClick={() => setItemToEdit(item)} className="p-4 bg-white/[0.04] border border-white/[0.06] text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all">
                                                     <PencilIcon className="h-4 w-4" />
                                                 </button>
                                                 <button 
@@ -435,10 +435,10 @@ const InventarioPage: React.FC = () => {
                                             <div className="space-y-5">
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">EXISTENCIAS EN BÓVEDA</p>
                                                 <div className="flex items-end gap-3">
-                                                    <span className={`text-2xl font-black tracking-tight leading-none ${isLow ? 'text-rose-500' : 'text-slate-900 group-hover:text-brand-blue transition-colors duration-300'}`}>{item.cantidad.toFixed(2)}</span>
+                                                    <span className={`text-2xl font-black tracking-tight leading-none ${isLow ? 'text-rose-500' : 'text-white group-hover:text-brand-blue transition-colors duration-300'}`}>{item.cantidad.toFixed(2)}</span>
                                                     <span className="text-xs font-bold text-slate-400 uppercase pb-1 tracking-widest">{item.unidad}</span>
                                                 </div>
-                                                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                                                <div className="w-full h-2 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.06]">
                                                     <motion.div 
                                                         initial={{ width: 0 }}
                                                         whileInView={{ width: `${progress}%` }}
@@ -449,13 +449,13 @@ const InventarioPage: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="bg-slate-50/50 p-6 rounded-[1.5rem] border border-slate-100 flex flex-col justify-between text-right">
+                                            <div className="bg-white/[0.04] p-6 rounded-[1.5rem] border border-white/[0.06] flex flex-col justify-between text-right">
                                                 <div>
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">VALORACIÓN_ESTIMADA</p>
                                                     <div className="h-[1px] w-full bg-slate-200/50 mt-3" />
                                                 </div>
                                                 <div className="pt-4">
-                                                    <p className="text-4xl font-black text-slate-900 tracking-tight group-hover:text-brand-blue transition-colors">{formatCurrency(item.cantidad * item.costoUnitario).split(',')[0]}<span className="text-base opacity-20 ml-0.5 font-bold">.00</span></p>
+                                                    <p className="text-4xl font-black text-white tracking-tight group-hover:text-brand-blue transition-colors">{formatCurrency(item.cantidad * item.costoUnitario).split(',')[0]}<span className="text-base opacity-20 ml-0.5 font-bold">.00</span></p>
                                                     <div className="flex justify-end items-center gap-2 mt-2">
                                                         <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-500 opacity-40" />
                                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Costo: {formatCurrency(item.costoUnitario)}</p>
@@ -468,9 +468,9 @@ const InventarioPage: React.FC = () => {
                             })}
                         </div>
                     ) : (
-                        <div className="py-40 bg-white border border-slate-200 border-dashed rounded-[3rem] text-center flex flex-col items-center justify-center">
+                        <div className="py-40 bg-obsidian-card border border-white/[0.06] border-dashed rounded-[3rem] text-center flex flex-col items-center justify-center">
                             <BoxIcon className="w-24 h-24 text-slate-100 mb-6" />
-                            <h3 className="text-2xl font-black text-slate-300 uppercase tracking-widest">Bóveda Vacía</h3>
+                            <h3 className="text-2xl font-black text-slate-200 uppercase tracking-widest">Bóveda Vacía</h3>
                             <p className="text-slate-400 text-[10px] font-bold uppercase mt-2 tracking-[0.4em]">NO SE HAN DETECTADO ACTIVOS REGISTRADOS</p>
                         </div>
                     )}
@@ -479,7 +479,7 @@ const InventarioPage: React.FC = () => {
 
             {/* --- ANALYTICS HUD --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div className="bg-white p-12 rounded-[3rem] border border-slate-200 relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+                <div className="bg-obsidian-card p-12 rounded-[3rem] border border-white/[0.06] relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.02] group-hover:opacity-[0.05] translate-x-1/4 -translate-y-1/4 group-hover:scale-125 transition-all duration-1000 rotate-12">
                         <TruckIcon className="w-80 h-80 text-brand-blue" />
                     </div>
@@ -488,7 +488,7 @@ const InventarioPage: React.FC = () => {
                             <div className="p-4 bg-brand-blue/5 rounded-2xl border border-brand-blue/10">
                                 <TrendingDownIcon className="w-6 h-6 text-brand-blue" />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Análisis de <span className="text-brand-blue">Consumo</span></h3>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Análisis de <span className="text-brand-blue">Consumo</span></h3>
                         </div>
                         <p className="text-slate-400 text-[11px] font-bold leading-loose max-w-md uppercase tracking-widest">
                             Monitoreo preventivo de la cadena de suministro para evitar interrupciones en la fase de producción masiva.
@@ -496,9 +496,9 @@ const InventarioPage: React.FC = () => {
                         <div className="flex items-center gap-16 pt-6">
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ÚLTIMO EGRESO</p>
-                                <p className="text-3xl font-black text-slate-900 tracking-tight">-0.125 <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Resmas</span></p>
+                                <p className="text-3xl font-black text-white tracking-tight">-0.125 <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Resmas</span></p>
                             </div>
-                            <div className="w-[1px] h-12 bg-slate-100"></div>
+                            <div className="w-[1px] h-12 bg-white/[0.06]"></div>
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SALUD_STOCK</p>
                                 <div className="flex items-center gap-3">
@@ -510,7 +510,7 @@ const InventarioPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-12 rounded-[3rem] border border-slate-200 relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+                <div className="bg-obsidian-card p-12 rounded-[3rem] border border-white/[0.06] relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
                     <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/[0.05] to-transparent"></div>
                     <div className="relative z-10 h-full flex flex-col justify-between gap-10">
                         <div className="flex items-center gap-4 text-[11px] font-black text-brand-blue uppercase tracking-[0.5em]">
@@ -519,28 +519,28 @@ const InventarioPage: React.FC = () => {
                         </div>
                         
                         <div className="space-y-8">
-                            <div className="flex justify-between items-end border-b border-slate-100 pb-8">
+                            <div className="flex justify-between items-end border-b border-white/[0.06] pb-8">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">PRIORIDAD REPOSICIÓN</p>
-                                    <p className="text-4xl font-black text-slate-900 uppercase tracking-tight">NIVEL <span className="text-emerald-500">NOMINAL</span></p>
+                                    <p className="text-4xl font-black text-white uppercase tracking-tight">NIVEL <span className="text-emerald-500">NOMINAL</span></p>
                                 </div>
                                 <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                                     <ShieldCheckIcon className="w-6 h-6 text-emerald-500" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 hover:border-brand-blue/20 transition-all">
+                                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/[0.06] hover:border-brand-blue/20 transition-all">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">LOTES_ACTIVOS</p>
                                     <div className="flex items-end gap-2">
-                                        <p className="text-3xl font-black text-slate-900 tracking-tight">04</p>
+                                        <p className="text-3xl font-black text-white tracking-tight">04</p>
                                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pb-1">Protocolos</span>
                                     </div>
                                 </div>
-                                <div className="bg-white/5 p-6 rounded-2xl border border-slate-100 hover:border-brand-blue/20 transition-all">
+                                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/[0.06] hover:border-brand-blue/20 transition-all">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">ALMACENAMIENTO</p>
                                     <div className="flex items-end gap-3">
-                                        <p className="text-3xl font-black text-slate-900 tracking-tight">64.2%</p>
-                                        <div className="w-16 h-1 bg-slate-100 mb-3 rounded-full overflow-hidden">
+                                        <p className="text-3xl font-black text-white tracking-tight">64.2%</p>
+                                        <div className="w-16 h-1 bg-white/[0.04] mb-3 rounded-full overflow-hidden">
                                             <div className="h-full bg-brand-blue w-[64%]" />
                                         </div>
                                     </div>

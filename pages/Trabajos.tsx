@@ -16,23 +16,23 @@ import { SEO } from '../components/SEO';
 const statusMeta: Record<TrabajoEstado, { label: string; icon: any; color: string; bg: string; dot: string }> = {
     [TrabajoEstado.PENDIENTE]: { 
         label: 'Pendiente', icon: ClockIcon, 
-        color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' 
+        color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', dot: 'bg-amber-500' 
     },
     [TrabajoEstado.EN_DISENO]: { 
         label: 'En Diseño', icon: PaletteIcon, 
-        color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200', dot: 'bg-purple-500' 
+        color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', dot: 'bg-purple-500' 
     },
     [TrabajoEstado.PROCESO]: { 
         label: 'En Prensa', icon: PrinterIcon, 
-        color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' 
+        color: 'text-brand-blue', bg: 'bg-brand-blue/10 border-brand-blue/20', dot: 'bg-blue-500' 
     },
     [TrabajoEstado.VITRINA]: { 
         label: 'Listo / Vitrina', icon: MonitorIcon, 
-        color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' 
+        color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', dot: 'bg-emerald-500' 
     },
     [TrabajoEstado.ENTREGADO]: { 
         label: 'Entregado', icon: CheckCircleIcon, 
-        color: 'text-slate-600', bg: 'bg-slate-100 border-slate-200', dot: 'bg-slate-400' 
+        color: 'text-slate-300', bg: 'bg-white/[0.04] border-white/[0.06]', dot: 'bg-slate-400' 
     },
 };
 
@@ -81,7 +81,7 @@ const TrabajosPage: React.FC = () => {
             <SEO title="Gestión de Órdenes · Imprenta Córdova" />
 
             {/* ── HEADER ─────────────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.06] pb-5">
                 <div>
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
@@ -89,7 +89,7 @@ const TrabajosPage: React.FC = () => {
                             Control de Producción ({trabajos.length} órdenes)
                         </span>
                     </div>
-                    <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tighter uppercase mt-0.5">
+                    <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tighter uppercase mt-0.5">
                         Gestión de Órdenes
                     </h1>
                 </div>
@@ -114,16 +114,16 @@ const TrabajosPage: React.FC = () => {
                         placeholder="Buscar por cliente, N° orden, producto o tipo..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-[12px] font-medium outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 transition-all"
+                        className="w-full bg-obsidian-card border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-[12px] font-medium outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 transition-all"
                     />
                 </div>
 
                 {/* Filtro Tipo (Todos / SRI / Comercial) */}
-                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+                <div className="flex bg-white/[0.04] p-1 rounded-xl border border-white/[0.06] shrink-0">
                     <button
                         onClick={() => setTipoFilter('Todos')}
                         className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
-                            tipoFilter === 'Todos' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                            tipoFilter === 'Todos' ? 'bg-obsidian-card text-white shadow-sm' : 'text-slate-400 hover:text-white'
                         }`}
                     >
                         Todos
@@ -131,7 +131,7 @@ const TrabajosPage: React.FC = () => {
                     <button
                         onClick={() => setTipoFilter('SRI')}
                         className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
-                            tipoFilter === 'SRI' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                            tipoFilter === 'SRI' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-400 hover:text-white'
                         }`}
                     >
                         SRI Fiscal
@@ -139,7 +139,7 @@ const TrabajosPage: React.FC = () => {
                     <button
                         onClick={() => setTipoFilter('GENERAL')}
                         className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
-                            tipoFilter === 'GENERAL' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                            tipoFilter === 'GENERAL' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                         }`}
                     >
                         Comercial
@@ -154,12 +154,12 @@ const TrabajosPage: React.FC = () => {
                     className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all border ${
                         estadoFilter === 'Todos'
                             ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                            : 'bg-obsidian-card text-slate-300 border-white/[0.06] hover:border-white/[0.1]'
                     }`}
                 >
                     <span>Todas las Órdenes</span>
                     <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${
-                        estadoFilter === 'Todos' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                        estadoFilter === 'Todos' ? 'bg-white/20 text-white' : 'bg-white/[0.04] text-slate-300'
                     }`}>
                         {counts.total}
                     </span>
@@ -177,13 +177,13 @@ const TrabajosPage: React.FC = () => {
                             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all border ${
                                 isSelected
                                     ? `${meta.bg} ${meta.color} font-black shadow-sm`
-                                    : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                                    : 'bg-obsidian-card text-slate-400 border-white/[0.06] hover:border-white/[0.1]'
                             }`}
                         >
                             <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
                             <span>{meta.label}</span>
                             <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${
-                                isSelected ? 'bg-black/10' : 'bg-slate-100 text-slate-500'
+                                isSelected ? 'bg-black/10' : 'bg-white/[0.04] text-slate-400'
                             }`}>
                                 {count}
                             </span>
@@ -193,7 +193,7 @@ const TrabajosPage: React.FC = () => {
             </div>
 
             {/* ── LISTADO DESKTOP & TABLET / CARDS MOBILE ──────────────────── */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl overflow-hidden shadow-sm">
                 {loading ? (
                     <div className="p-12 text-center space-y-3">
                         <Loader2Icon className="w-8 h-8 text-brand-blue animate-spin mx-auto" />
@@ -202,7 +202,7 @@ const TrabajosPage: React.FC = () => {
                 ) : filteredTrabajos.length === 0 ? (
                     <div className="p-12 text-center space-y-3">
                         <ActivityIcon className="w-10 h-10 text-slate-300 mx-auto" />
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider">No se encontraron órdenes</h3>
+                        <p className="text-sm font-black text-slate-200 uppercase tracking-wider">No se encontraron órdenes</p>
                         <p className="text-[11px] text-slate-400">Intenta cambiando el filtro de búsqueda o estado.</p>
                     </div>
                 ) : (
@@ -211,7 +211,7 @@ const TrabajosPage: React.FC = () => {
                         <div className="hidden sm:block overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                    <tr className="bg-white/[0.04] border-b border-white/[0.06] text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                         <th className="p-4">N° Orden / Fecha</th>
                                         <th className="p-4">Cliente / Titular</th>
                                         <th className="p-4">Servicio / Producto</th>
@@ -220,7 +220,7 @@ const TrabajosPage: React.FC = () => {
                                         <th className="p-4 text-right">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 text-[11px] font-medium text-slate-700">
+                                <tbody className="divide-y divide-white/[0.06] text-[11px] font-medium text-slate-200">
                                     {filteredTrabajos.map((t) => {
                                         const clienteObj = clientes.find(c => c.id === t.clienteId);
                                         const meta = statusMeta[t.estado] || statusMeta[TrabajoEstado.PENDIENTE];
@@ -230,10 +230,10 @@ const TrabajosPage: React.FC = () => {
                                             <tr
                                                 key={t.id}
                                                 onClick={() => navigate(`/trabajos/${t.id}`)}
-                                                className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                                                className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
                                             >
                                                 <td className="p-4">
-                                                    <div className="font-black text-slate-900 font-mono text-sm group-hover:text-brand-blue transition-colors">
+                                                    <div className="font-black text-white font-mono text-sm group-hover:text-brand-blue transition-colors">
                                                         #{String(t.orden).padStart(4, '0')}
                                                     </div>
                                                     <div className="text-[9px] font-mono text-slate-400">
@@ -242,7 +242,7 @@ const TrabajosPage: React.FC = () => {
                                                 </td>
 
                                                 <td className="p-4">
-                                                    <div className="font-bold text-slate-900 truncate max-w-[220px]">
+                                                    <div className="font-bold text-white truncate max-w-[220px]">
                                                         {clienteObj ? clienteObj.nombre : t.titular}
                                                     </div>
                                                     <div className="text-[9px] text-slate-400 uppercase font-mono">
@@ -253,11 +253,11 @@ const TrabajosPage: React.FC = () => {
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-2">
                                                         <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${
-                                                            t.esSRI ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' : 'bg-slate-100 text-slate-600 border-slate-200'
+                                                            t.esSRI ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' : 'bg-white/[0.04] text-slate-300 border-white/[0.06]'
                                                         }`}>
                                                             {t.tipo}
                                                         </span>
-                                                        <span className="text-[11px] text-slate-700 font-bold truncate max-w-[180px]">
+                                                        <span className="text-[11px] text-slate-200 font-bold truncate max-w-[180px]">
                                                             {t.subtipo || t.detalle || 'Trabajo General'}
                                                         </span>
                                                     </div>
@@ -271,7 +271,7 @@ const TrabajosPage: React.FC = () => {
                                                 </td>
 
                                                 <td className="p-4">
-                                                    <div className="font-black text-slate-900 text-sm">
+                                                    <div className="font-black text-white text-sm">
                                                         {formatCurrency(t.total)}
                                                     </div>
                                                     {hasBalance ? (
@@ -286,7 +286,7 @@ const TrabajosPage: React.FC = () => {
                                                 </td>
 
                                                 <td className="p-4 text-right">
-                                                    <button className="p-2 bg-slate-100 group-hover:bg-brand-blue group-hover:text-white rounded-lg text-slate-500 transition-colors">
+                                                    <button className="p-2 bg-white/[0.04] group-hover:bg-brand-blue group-hover:text-white rounded-lg text-slate-400 transition-colors">
                                                         <ChevronRightIcon className="w-4 h-4" />
                                                     </button>
                                                 </td>
@@ -298,7 +298,7 @@ const TrabajosPage: React.FC = () => {
                         </div>
 
                         {/* Vista Cards Móvil */}
-                        <div className="sm:hidden divide-y divide-slate-100">
+                        <div className="sm:hidden divide-y divide-white/[0.06]">
                             {filteredTrabajos.map((t) => {
                                 const clienteObj = clientes.find(c => c.id === t.clienteId);
                                 const meta = statusMeta[t.estado] || statusMeta[TrabajoEstado.PENDIENTE];
@@ -308,10 +308,10 @@ const TrabajosPage: React.FC = () => {
                                     <div
                                         key={t.id}
                                         onClick={() => navigate(`/trabajos/${t.id}`)}
-                                        className="p-4 space-y-3 active:bg-slate-50 transition-colors"
+                                        className="p-4 space-y-3 active:bg-white/[0.04] transition-colors"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="font-black text-slate-900 font-mono text-sm">
+                                            <span className="font-black text-white font-mono text-sm">
                                                 #{String(t.orden).padStart(4, '0')}
                                             </span>
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ${meta.bg} ${meta.color}`}>
@@ -321,7 +321,7 @@ const TrabajosPage: React.FC = () => {
                                         </div>
 
                                         <div>
-                                            <h4 className="font-bold text-slate-900 text-sm">
+                                            <h4 className="font-bold text-white text-sm">
                                                 {clienteObj ? clienteObj.nombre : t.titular}
                                             </h4>
                                             <p className="text-[11px] text-slate-500 mt-0.5">
@@ -329,9 +329,9 @@ const TrabajosPage: React.FC = () => {
                                             </p>
                                         </div>
 
-                                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                                        <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
                                             <div>
-                                                <span className="text-sm font-black text-slate-900">{formatCurrency(t.total)}</span>
+                                                <span className="text-sm font-black text-white">{formatCurrency(t.total)}</span>
                                                 {hasBalance && (
                                                     <span className="text-[10px] font-bold text-red-500 ml-2">Saldo: {formatCurrency(t.saldo)}</span>
                                                 )}

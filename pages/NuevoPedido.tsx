@@ -267,11 +267,11 @@ const NuevoPedidoPage: React.FC = () => {
     const showSidebar = !isSidebarMinimized && missionCategory && step < 5;
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
             <div className="max-w-[1440px] mx-auto space-y-6">
 
                 {/* ── STEPPER HEADER ────────────────────────────────────────── */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between overflow-x-auto gap-4">
+                <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl p-4 shadow-sm flex items-center justify-between overflow-x-auto gap-4">
                     <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
                         {getSteps().map((s, idx) => {
                             const isActive = step === s.id;
@@ -296,7 +296,7 @@ const NuevoPedidoPage: React.FC = () => {
                                         </span>
                                     </button>
                                     {idx < getSteps().length - 1 && (
-                                        <div className={`h-0.5 w-6 rounded-full shrink-0 ${isPast ? 'bg-brand-blue/30' : 'bg-slate-200'}`} />
+                                        <div className={`h-0.5 w-6 rounded-full shrink-0 ${isPast ? 'bg-brand-blue/30' : 'bg-white/[0.08]'}`} />
                                     )}
                                 </React.Fragment>
                             );
@@ -306,7 +306,7 @@ const NuevoPedidoPage: React.FC = () => {
                     {missionCategory && isSidebarMinimized && (
                         <button
                             onClick={() => setIsSidebarMinimized(false)}
-                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[10px] font-bold uppercase shrink-0 transition-colors"
+                            className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl text-[10px] font-bold uppercase shrink-0 transition-colors"
                         >
                             Ver Resumen
                         </button>
@@ -325,11 +325,11 @@ const NuevoPedidoPage: React.FC = () => {
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -16 }}
-                                    className="bg-white p-8 lg:p-12 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-center"
+                                    className="bg-obsidian-card p-8 lg:p-12 rounded-2xl border border-white/[0.06] shadow-sm space-y-8 text-center"
                                 >
                                     <div className="space-y-2 max-w-xl mx-auto">
                                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em]">RECEPCIÓN DE TRABAJOS</span>
-                                        <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">
+                                        <h2 className="text-3xl font-black text-white uppercase tracking-tight">
                                             Selecciona el Tipo de Orden
                                         </h2>
                                         <p className="text-[12px] text-slate-500 font-medium">
@@ -341,13 +341,13 @@ const NuevoPedidoPage: React.FC = () => {
                                         {/* Card SRI */}
                                         <div
                                             onClick={() => handleSelectCategory('SRI')}
-                                            className="group bg-white p-8 rounded-2xl border-2 border-slate-200 hover:border-brand-blue transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
+                                            className="group bg-obsidian-card p-8 rounded-2xl border-2 border-white/[0.06] hover:border-brand-blue transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
                                         >
                                             <div className="w-14 h-14 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center group-hover:scale-105 transition-transform">
                                                 <ShieldCheckIcon className="w-8 h-8" />
                                             </div>
                                             <div className="space-y-1">
-                                                <h3 className="text-xl font-black text-slate-900 uppercase">Facturación SRI</h3>
+                                                <h3 className="text-xl font-black text-white uppercase">Facturación SRI</h3>
                                                 <p className="text-[12px] text-slate-500">
                                                     Documentos fiscales autorizados (Facturas, Notas de Venta, Retenciones, Guías de Remisión).
                                                 </p>
@@ -360,13 +360,13 @@ const NuevoPedidoPage: React.FC = () => {
                                         {/* Card Comercial */}
                                         <div
                                             onClick={() => handleSelectCategory('COMERCIAL')}
-                                            className="group bg-white p-8 rounded-2xl border-2 border-slate-200 hover:border-purple-600 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
+                                            className="group bg-obsidian-card p-8 rounded-2xl border-2 border-white/[0.06] hover:border-purple-600 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
                                         >
                                             <div className="w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                                                 <BookOpenIcon className="w-8 h-8" />
                                             </div>
                                             <div className="space-y-1">
-                                                <h3 className="text-xl font-black text-slate-900 uppercase">Trabajos Comerciales</h3>
+                                                <h3 className="text-xl font-black text-white uppercase">Trabajos Comerciales</h3>
                                                 <p className="text-[12px] text-slate-500">
                                                     Impresión publicitaria, gigantografías, sellos, merchandising, tarjetas y diseño gráfico.
                                                 </p>
@@ -381,10 +381,10 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 2: CLIENTE (SRI) */}
                             {step === 2 && missionCategory === 'SRI' && (
-                                <motion.div key="s2sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                                    <div className="space-y-1 border-b border-slate-100 pb-4">
+                                <motion.div key="s2sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-obsidian-card p-6 lg:p-8 rounded-2xl border border-white/[0.06] shadow-sm space-y-6">
+                                    <div className="space-y-1 border-b border-white/[0.06] pb-4">
                                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-wider">Paso 2 — Identificación</span>
-                                        <h2 className="text-2xl font-black text-slate-900 uppercase">Seleccionar o Registrar Cliente SRI</h2>
+                                        <h2 className="text-2xl font-black text-white uppercase">Seleccionar o Registrar Cliente SRI</h2>
                                     </div>
                                     <ClientSelector onSelect={c => { setCliente(c); if(c){setSriEstablecimiento(c.establecimientoPredeterminado || '001'); setSriPuntoEmision(c.puntoEmisionPredeterminado || '001'); setSriActividad(c.actividades || ''); setStep(3);} }} onCancel={() => setStep(1)} hideQuickButtons />
                                 </motion.div>
@@ -408,14 +408,14 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 3: TRÁMITES SRI */}
                             {step === 3 && missionCategory === 'SRI' && cliente && (
-                                <motion.div key="s3sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                <motion.div key="s3sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-obsidian-card p-6 lg:p-8 rounded-2xl border border-white/[0.06] shadow-sm">
                                     <SriSolicitudStep cliente={cliente} initialData={{ actividad: sriActividad, modo: sriMode, clave: sriClave, establecimiento: sriEstablecimiento, puntoEmision: sriPuntoEmision }} onBack={() => setStep(2)} onComplete={d => { setSriActividad(d.actividad); setSriMode(d.modo); setSriClave(d.clave); setSriEstablecimiento(d.establecimiento); setSriPuntoEmision(d.puntoEmision); setStep(4); }} />
                                 </motion.div>
                             )}
 
                             {/* PASO 4: SERVICIOS Y PRODUCTOS (SRI) */}
                             {step === 4 && missionCategory === 'SRI' && (
-                                <motion.div key="s4sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                                <motion.div key="s4sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-obsidian-card p-6 lg:p-8 rounded-2xl border border-white/[0.06] shadow-sm space-y-6">
                                     {(isAddingItem || items.length === 0) ? (
                                         !servicio ? <ServiceSelector onSelect={setServicio} regimen={cliente?.regimen} forcedCategory="SRI" /> : 
                                         <ProductConfigurator product={servicio} regimen={cliente?.regimen} onCancel={() => setServicio(null)} onComplete={c => { setItems(p => [...p, c]); setPrecio(p => p + c.precioFinal); setServicio(null); setIsAddingItem(false); }} />
@@ -423,20 +423,20 @@ const NuevoPedidoPage: React.FC = () => {
                                         <div className="space-y-6">
                                             <div className="space-y-3">
                                                 {items.map((item, idx) => (
-                                                    <div key={idx} className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex items-center justify-between">
+                                                    <div key={idx} className="bg-white/[0.04] p-5 rounded-xl border border-white/[0.06] flex items-center justify-between">
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-lg flex items-center justify-center font-black">
                                                                 {idx + 1}
                                                             </div>
                                                             <div>
-                                                                <h4 className="text-base font-black text-slate-900 uppercase">{item.nombre}</h4>
+                                                                <h4 className="text-base font-black text-white uppercase">{item.nombre}</h4>
                                                                 <p className="text-[10px] text-slate-500 font-bold uppercase">{item.cantidad} UNID | {item.especificaciones?.tamano || 'Estándar'}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-6">
                                                             <div className="text-right">
                                                                 <span className="text-[9px] font-bold text-slate-400 uppercase block">Subtotal</span>
-                                                                <span className="text-lg font-black text-slate-900">{formatCurrency(item.precioFinal)}</span>
+                                                                <span className="text-lg font-black text-white">{formatCurrency(item.precioFinal)}</span>
                                                             </div>
                                                             <button
                                                                 onClick={() => { setItems(p => p.filter((_, i) => i !== idx)); setPrecio(p => p - item.precioFinal); }}
@@ -450,7 +450,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             </div>
                                             <button
                                                 onClick={() => setIsAddingItem(true)}
-                                                className="w-full py-4 border-2 border-dashed border-slate-200 hover:border-brand-blue rounded-xl text-slate-600 font-bold uppercase text-[11px] tracking-wider hover:bg-brand-blue/5 transition-all flex items-center justify-center gap-2"
+                                                className="w-full py-4 border-2 border-dashed border-white/[0.06] hover:border-brand-blue rounded-xl text-slate-300 font-bold uppercase text-[11px] tracking-wider hover:bg-brand-blue/5 transition-all flex items-center justify-center gap-2"
                                             >
                                                 <SparklesIcon className="w-4 h-4 text-brand-blue" /> Agregar Otro Ítem
                                             </button>
@@ -490,13 +490,13 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 6: ORDEN CONFIRMADA */}
                             {step === 6 && (
-                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white p-8 lg:p-16 rounded-2xl border border-slate-200 shadow-sm text-center space-y-8">
+                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-obsidian-card p-8 lg:p-16 rounded-2xl border border-white/[0.06] shadow-sm text-center space-y-8">
                                     <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
                                         <CheckCircleIcon className="w-10 h-10" />
                                     </div>
                                     <div className="space-y-2">
                                         <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Orden Creada Correctamente</span>
-                                        <h2 className="text-3xl font-black text-slate-900 uppercase">Orden #{createdTrabajoId?.substring(0, 8)}</h2>
+                                        <h2 className="text-3xl font-black text-white uppercase">Orden #{createdTrabajoId?.substring(0, 8)}</h2>
                                     </div>
 
                                     <div className="flex flex-wrap gap-4 justify-center pt-4">

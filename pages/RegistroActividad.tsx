@@ -11,34 +11,34 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ACTION_LABELS: Record<string, { label: string; color: string; icon: any }> = {
-    LOGIN: { label: 'Auth Success', color: 'text-emerald-600 bg-emerald-50 border-emerald-100', icon: ShieldCheckIcon },
-    LOGOUT: { label: 'Session End', color: 'text-slate-600 bg-slate-50 border-slate-100', icon: LockIcon },
-    CREAR_ORDEN: { label: 'Mission Created', color: 'text-brand-blue bg-sky-50 border-sky-100', icon: BoxIcon },
-    EDITAR_ORDEN: { label: 'Asset Updated', color: 'text-indigo-600 bg-indigo-50 border-indigo-100', icon: CpuIcon },
-    CAMBIO_ESTADO: { label: 'Status Shift', color: 'text-purple-600 bg-purple-50 border-purple-100', icon: ActivityIcon },
-    RETIRO_PROCESADO: { label: 'Dispatch Flux', color: 'text-emerald-600 bg-emerald-50 border-emerald-100', icon: BoltIcon },
-    CREAR_CLIENTE: { label: 'Entity Registered', color: 'text-cyan-600 bg-cyan-50 border-cyan-100', icon: UsersIcon },
-    EDITAR_CLIENTE: { label: 'Entity Modified', color: 'text-cyan-600 bg-cyan-50 border-cyan-100', icon: UsersIcon },
-    CREAR_USUARIO: { label: 'Identity Created', color: 'text-violet-600 bg-violet-50 border-violet-100', icon: SparklesIcon },
-    EDITAR_USUARIO: { label: 'Identity Updated', color: 'text-violet-600 bg-violet-50 border-violet-100', icon: SparklesIcon },
-    TOGGLE_USUARIO: { label: 'Access Toggle', color: 'text-amber-600 bg-amber-50 border-amber-100', icon: ShieldCheckIcon },
-    CAMBIO_CONFIG: { label: 'Core Adjustment', color: 'text-rose-600 bg-rose-50 border-rose-100', icon: CpuIcon },
-    SYNC_CLOUD: { label: 'Neural Sync', color: 'text-sky-600 bg-sky-50 border-sky-100', icon: SparklesIcon },
-    SEED_CATALOGO: { label: 'Matrix Loaded', color: 'text-lime-600 bg-lime-50 border-lime-100', icon: DocumentIcon },
-    EXPORTAR_PDF: { label: 'Artifact Export', color: 'text-orange-600 bg-orange-50 border-orange-100', icon: DocumentIcon },
-    ENVIAR_WHATSAPP: { label: 'Comms Uplink', color: 'text-emerald-600 bg-emerald-50 border-emerald-100', icon: BoltIcon },
-    ABONO_REGISTRADO: { label: 'Credit Flux', color: 'text-green-600 bg-green-50 border-green-100', icon: BoltIcon },
-    ARTE_APROBADO: { label: 'Visual Approval', color: 'text-pink-600 bg-pink-50 border-pink-100', icon: SparklesIcon },
-    FOTO_CAPTURADA: { label: 'Optical Scan', color: 'text-indigo-600 bg-indigo-50 border-indigo-100', icon: SparklesIcon },
-    ACCESO_MODULO: { label: 'Module Access', color: 'text-slate-600 bg-slate-50 border-slate-100', icon: ShieldCheckIcon },
-    CREAR_PROVEEDOR: { label: 'Supplier Created', color: 'text-teal-600 bg-teal-50 border-teal-100', icon: UsersIcon },
-    EDITAR_PROVEEDOR: { label: 'Supplier Updated', color: 'text-teal-600 bg-teal-50 border-teal-100', icon: UsersIcon },
-    BORRAR_PROVEEDOR: { label: 'Supplier Removed', color: 'text-red-600 bg-red-50 border-red-100', icon: ExclamationTriangleIcon },
-    AGENDAR_TAREA: { label: 'Task Scheduled', color: 'text-amber-600 bg-amber-50 border-amber-100', icon: ClockIcon },
-    COMPLETAR_TAREA: { label: 'Task Completed', color: 'text-emerald-600 bg-emerald-50 border-emerald-100', icon: CheckCircleIcon },
-    FINALIZADO_DIRECTO: { label: 'Direct Finish', color: 'text-orange-600 bg-orange-50 border-orange-100', icon: RocketLaunchIcon },
-    INVENTARIO_MODIFICADO: { label: 'Asset Mutation', color: 'text-cyan-600 bg-cyan-50 border-cyan-100', icon: BoxIcon },
-    ALERTA_STOCK: { label: 'System Alert', color: 'text-rose-600 bg-rose-50 border-rose-100', icon: ShieldExclamationIcon },
+    LOGIN: { label: 'Auth Success', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: ShieldCheckIcon },
+    LOGOUT: { label: 'Session End', color: 'text-slate-300 bg-white/[0.04] border-white/[0.06]', icon: LockIcon },
+    CREAR_ORDEN: { label: 'Mission Created', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: BoxIcon },
+    EDITAR_ORDEN: { label: 'Asset Updated', color: 'text-indigo-400 bg-brand-blue/10 border-brand-blue/20', icon: CpuIcon },
+    CAMBIO_ESTADO: { label: 'Status Shift', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20', icon: ActivityIcon },
+    RETIRO_PROCESADO: { label: 'Dispatch Flux', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: BoltIcon },
+    CREAR_CLIENTE: { label: 'Entity Registered', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', icon: UsersIcon },
+    EDITAR_CLIENTE: { label: 'Entity Modified', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', icon: UsersIcon },
+    CREAR_USUARIO: { label: 'Identity Created', color: 'text-violet-400 bg-purple-500/10 border-purple-500/20', icon: SparklesIcon },
+    EDITAR_USUARIO: { label: 'Identity Updated', color: 'text-violet-400 bg-purple-500/10 border-purple-500/20', icon: SparklesIcon },
+    TOGGLE_USUARIO: { label: 'Access Toggle', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', icon: ShieldCheckIcon },
+    CAMBIO_CONFIG: { label: 'Core Adjustment', color: 'text-rose-400 bg-brand-red/10 border-brand-red/20', icon: CpuIcon },
+    SYNC_CLOUD: { label: 'Neural Sync', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: SparklesIcon },
+    SEED_CATALOGO: { label: 'Matrix Loaded', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: DocumentIcon },
+    EXPORTAR_PDF: { label: 'Artifact Export', color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', icon: DocumentIcon },
+    ENVIAR_WHATSAPP: { label: 'Comms Uplink', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: BoltIcon },
+    ABONO_REGISTRADO: { label: 'Credit Flux', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: BoltIcon },
+    ARTE_APROBADO: { label: 'Visual Approval', color: 'text-pink-400 bg-purple-500/10 border-purple-500/20', icon: SparklesIcon },
+    FOTO_CAPTURADA: { label: 'Optical Scan', color: 'text-indigo-400 bg-brand-blue/10 border-brand-blue/20', icon: SparklesIcon },
+    ACCESO_MODULO: { label: 'Module Access', color: 'text-slate-300 bg-white/[0.04] border-white/[0.06]', icon: ShieldCheckIcon },
+    CREAR_PROVEEDOR: { label: 'Supplier Created', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: UsersIcon },
+    EDITAR_PROVEEDOR: { label: 'Supplier Updated', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: UsersIcon },
+    BORRAR_PROVEEDOR: { label: 'Supplier Removed', color: 'text-brand-red bg-brand-red/10 border-brand-red/20', icon: ExclamationTriangleIcon },
+    AGENDAR_TAREA: { label: 'Task Scheduled', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', icon: ClockIcon },
+    COMPLETAR_TAREA: { label: 'Task Completed', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: CheckCircleIcon },
+    FINALIZADO_DIRECTO: { label: 'Direct Finish', color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', icon: RocketLaunchIcon },
+    INVENTARIO_MODIFICADO: { label: 'Asset Mutation', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', icon: BoxIcon },
+    ALERTA_STOCK: { label: 'System Alert', color: 'text-rose-400 bg-brand-red/10 border-brand-red/20', icon: ShieldExclamationIcon },
 };
 
 const KpiCard: React.FC<{ 
@@ -49,7 +49,7 @@ const KpiCard: React.FC<{
 }> = ({ label, value, icon: Icon, color = "text-brand-blue" }) => (
     <motion.div 
         whileHover={{ y: -4, transition: { duration: 0.3 } }}
-        className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group"
+        className="bg-obsidian-card p-8 rounded-3xl border border-white/[0.06] shadow-sm relative overflow-hidden group"
     >
         <div className="flex flex-col gap-4 relative z-10">
             <div className={`w-12 h-12 rounded-2xl ${color.replace('text-', 'bg-').replace('600', '50')} flex items-center justify-center ${color} shadow-sm group-hover:scale-110 transition-transform duration-500`}>
@@ -57,7 +57,7 @@ const KpiCard: React.FC<{
             </div>
             <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{value}</p>
+                <p className="text-3xl font-black text-white tracking-tight mt-1">{value}</p>
             </div>
         </div>
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
@@ -147,7 +147,7 @@ const RegistroActividadPage: React.FC = () => {
                 <div className="flex items-center gap-6">
                     <button 
                         onClick={() => navigate('/dashboard')}
-                        className="w-14 h-14 bg-white hover:bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center transition-all shadow-sm group"
+                        className="w-14 h-14 bg-obsidian-card hover:bg-white/[0.04] border border-white/[0.06] rounded-2xl flex items-center justify-center transition-all shadow-sm group"
                     >
                         <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue" />
                     </button>
@@ -156,7 +156,7 @@ const RegistroActividadPage: React.FC = () => {
                             <span className="w-2 h-2 bg-brand-blue rounded-full"></span>
                             <p className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">Auditoría Operativa</p>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight uppercase">Monitor de <span className="text-brand-blue">Actividad</span></h1>
+                        <h1 className="text-4xl font-black text-white tracking-tight uppercase">Monitor de <span className="text-brand-blue">Actividad</span></h1>
                     </div>
                 </div>
 
@@ -180,7 +180,7 @@ const RegistroActividadPage: React.FC = () => {
             )}
 
             {/* Filters */}
-            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+            <div className="bg-obsidian-card p-6 rounded-[2.5rem] border border-white/[0.06] shadow-sm space-y-6">
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="relative flex-grow">
                         <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
@@ -189,14 +189,14 @@ const RegistroActividadPage: React.FC = () => {
                             placeholder="Buscar en el registro (Hash, Usuario, Detalle)..." 
                             value={searchTerm} 
                             onChange={e => setSearchTerm(e.target.value)} 
-                            className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 placeholder:text-slate-300 outline-none focus:bg-white focus:border-brand-blue/30 transition-all"
+                            className="w-full pl-14 pr-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-sm font-bold text-white placeholder:text-slate-300 outline-none focus:bg-obsidian-card focus:border-brand-blue/30 transition-all"
                         />
                     </div>
                     
                     <div className="flex gap-4">
                         <select 
                             value={filterAction} onChange={e => { setFilterAction(e.target.value); setPage(0); }}
-                            className="px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:bg-white transition-all"
+                            className="px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:bg-white/[0.08] transition-all"
                         >
                             <option value="">Todas las acciones</option>
                             {uniqueActions.map(a => (
@@ -206,7 +206,7 @@ const RegistroActividadPage: React.FC = () => {
 
                         <select 
                             value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(0); }}
-                            className="px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:bg-white transition-all"
+                            className="px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:bg-white/[0.08] transition-all"
                         >
                             <option value="">Todos los usuarios</option>
                             {uniqueUsers.map(u => (
@@ -217,7 +217,7 @@ const RegistroActividadPage: React.FC = () => {
                 </div>
 
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                    <div className="flex items-center justify-between pt-6 border-t border-white/[0.06]">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             Segmento <span className="text-brand-blue">{page + 1} de {totalPages}</span>
                         </p>
@@ -225,14 +225,14 @@ const RegistroActividadPage: React.FC = () => {
                             <button 
                                 disabled={page === 0} 
                                 onClick={() => setPage(p => p - 1)} 
-                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 text-slate-400 disabled:opacity-30 hover:bg-slate-50 transition-all"
+                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/[0.06] text-slate-400 disabled:opacity-30 hover:bg-white/[0.04] transition-all"
                             >
                                 <ChevronLeftIcon className="w-5 h-5" />
                             </button>
                             <button 
                                 disabled={page >= totalPages - 1} 
                                 onClick={() => setPage(p => p + 1)} 
-                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 text-slate-400 disabled:opacity-30 hover:bg-slate-50 transition-all"
+                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/[0.06] text-slate-400 disabled:opacity-30 hover:bg-white/[0.04] transition-all"
                             >
                                 <ChevronRightIcon className="w-5 h-5" />
                             </button>
@@ -245,13 +245,13 @@ const RegistroActividadPage: React.FC = () => {
             <div className="space-y-4">
                 <AnimatePresence mode="popLayout">
                     {loading ? (
-                        <div className="py-40 flex flex-col items-center justify-center gap-6 bg-white rounded-[3rem] border border-slate-100">
+                        <div className="py-40 flex flex-col items-center justify-center gap-6 bg-obsidian-card rounded-[3rem] border border-white/[0.06]">
                             <Loader2Icon className="w-12 h-12 text-brand-blue animate-spin" />
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Sincronizando Historial...</p>
                         </div>
                     ) : paginated.length > 0 ? (
                         paginated.map((entry, idx) => {
-                            const actionMeta = ACTION_LABELS[entry.accion] || { label: entry.accion, color: 'text-slate-600 bg-slate-50 border-slate-100', icon: ActivityIcon };
+                            const actionMeta = ACTION_LABELS[entry.accion] || { label: entry.accion, color: 'text-slate-300 bg-white/[0.04] border-white/[0.06]', icon: ActivityIcon };
                             const { date, time } = formatTimestamp(entry.timestamp);
 
                             return (
@@ -260,12 +260,12 @@ const RegistroActividadPage: React.FC = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: (idx % 20) * 0.02 }}
-                                    className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-brand-blue/10 transition-all group flex flex-col sm:flex-row items-center gap-8"
+                                    className="bg-obsidian-card p-6 sm:p-8 rounded-3xl border border-white/[0.06] shadow-sm hover:shadow-md hover:border-brand-blue/10 transition-all group flex flex-col sm:flex-row items-center gap-8"
                                 >
                                     {/* Time */}
                                     <div className="flex flex-col items-center sm:items-start shrink-0 min-w-[100px]">
                                         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">{date}</span>
-                                        <span className="text-xl font-black text-slate-900 tracking-tight">{time}</span>
+                                        <span className="text-xl font-black text-white tracking-tight">{time}</span>
                                     </div>
 
                                     {/* Action Icon */}
@@ -283,7 +283,7 @@ const RegistroActividadPage: React.FC = () => {
                                                 {entry.usuario} • {entry.modulo}
                                             </span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-brand-blue transition-colors">{entry.detalle}</h3>
+                                        <h3 className="text-lg font-bold text-white leading-tight group-hover:text-brand-blue transition-colors">{entry.detalle}</h3>
                                     </div>
 
                                     {/* Integrity Hash */}
@@ -292,7 +292,7 @@ const RegistroActividadPage: React.FC = () => {
                                             <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Hash de Integridad</span>
                                             <FingerPrintIcon className="w-3 h-3 text-slate-200" />
                                         </div>
-                                        <code className="text-[9px] font-mono text-slate-400 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
+                                        <code className="text-[9px] font-mono text-slate-400 px-3 py-1.5 bg-white/[0.04] rounded-lg border border-white/[0.06]">
                                             #{entry.hash.substring(0, 12).toUpperCase()}
                                         </code>
                                     </div>
@@ -300,7 +300,7 @@ const RegistroActividadPage: React.FC = () => {
                             );
                         })
                     ) : (
-                        <div className="py-40 bg-white rounded-[3rem] border border-slate-100 text-center">
+                        <div className="py-40 bg-obsidian-card rounded-[3rem] border border-white/[0.06] text-center">
                             <ShieldExclamationIcon className="w-20 h-20 text-slate-100 mx-auto mb-6" />
                             <h3 className="text-xl font-black text-slate-300 uppercase tracking-widest">Registro Vacío</h3>
                             <p className="text-[10px] font-bold text-slate-200 uppercase mt-2 tracking-widest">No se detectaron registros en este segmento</p>

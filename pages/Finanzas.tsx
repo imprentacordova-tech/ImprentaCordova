@@ -25,10 +25,10 @@ const MetricCard: React.FC<{
 }> = ({ label, value, icon: Icon, trend, trendUp }) => (
     <motion.div 
         whileHover={{ y: -4, transition: { duration: 0.2 } }}
-        className="bg-white border border-slate-200 p-8 rounded-[2.5rem] relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+        className="bg-obsidian-card border border-white/[0.06] p-8 rounded-[2.5rem] relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
     >
         <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-all duration-500">
-            <Icon className="w-20 h-20 text-slate-900" />
+            <Icon className="w-20 h-20 text-white" />
         </div>
         <div className="relative z-10 space-y-4">
             <div className="flex items-center gap-3">
@@ -38,7 +38,7 @@ const MetricCard: React.FC<{
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">{label}</span>
             </div>
             <div className="flex items-end justify-between">
-                <p className="text-3xl font-black text-slate-900 tracking-tighter leading-none">
+                <p className="text-3xl font-black text-white tracking-tighter leading-none">
                     {value}
                 </p>
                 {trend && (
@@ -116,16 +116,16 @@ const FinanzasPage: React.FC = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="max-w-[1600px] mx-auto space-y-12 pb-32 px-6 sm:px-12 relative bg-brand-light min-h-screen pt-8"
+            className="max-w-[1600px] mx-auto space-y-12 pb-32 px-6 sm:px-12 relative min-h-screen pt-8"
         >
             {/* --- CABECERA --- */}
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-slate-200 pb-10">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/[0.06] pb-10">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Telemetría Financiera</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                         Finanzas & Caja <span className="text-brand-blue font-bold">• Métricas</span>
                     </h1>
                 </div>
@@ -170,17 +170,17 @@ const FinanzasPage: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className="bg-white border border-slate-200 p-10 lg:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group/oracle"
+                        className="bg-obsidian-card border border-white/[0.06] p-10 lg:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group/oracle"
                     >
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/[0.03] rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none"></div>
                         
                         <div className="relative z-10">
-                            <div className="flex items-center gap-6 mb-12 border-b border-slate-100 pb-10">
+                            <div className="flex items-center gap-6 mb-12 border-b border-white/[0.06] pb-10">
                                 <div className="p-4 rounded-2xl bg-brand-blue text-white shadow-lg shadow-brand-blue/20">
                                     <CpuIcon className="w-7 h-7" />
                                 </div>
                                 <div>
-                                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Proyección de <span className="text-brand-blue">Activos</span></h2>
+                                    <h2 className="text-3xl font-black text-white uppercase tracking-tight">Proyección de <span className="text-brand-blue">Activos</span></h2>
                                     <div className="mt-2 flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SIMULACIÓN ESTRATÉGICA GÉMINIS</span>
@@ -191,7 +191,7 @@ const FinanzasPage: React.FC = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                                 {/* GRÁFICO PRINCIPAL */}
                                 <div className="lg:col-span-8 space-y-6">
-                                    <div className="h-[400px] w-full bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-inner">
+                                    <div className="h-[400px] w-full bg-white/[0.04] rounded-[2.5rem] p-8 border border-white/[0.06] shadow-inner">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <AreaChart data={aiProjection.forecast}>
                                                 <defs>
@@ -247,7 +247,7 @@ const FinanzasPage: React.FC = () => {
                                     <div className="flex items-center gap-4 px-4">
                                         <div className="flex -space-x-2">
                                             {[1,2,3].map(i => (
-                                                <div key={i} className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center">
+                                                <div key={i} className="w-7 h-7 rounded-full border-2 border-white/[0.06] bg-white/[0.04] flex items-center justify-center">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-brand-blue opacity-50"></div>
                                                 </div>
                                             ))}
@@ -260,7 +260,7 @@ const FinanzasPage: React.FC = () => {
                                 
                                 {/* PANEL DE INSIGHTS */}
                                 <div className="lg:col-span-4 space-y-8">
-                                    <div className="p-8 rounded-[2rem] bg-slate-50 border border-slate-100 group/card hover:border-brand-blue/20 transition-all duration-300">
+                                    <div className="p-8 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group/card hover:border-brand-blue/20 transition-all duration-300">
                                         <h3 className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
                                             <ClockIcon className="w-4 h-4 opacity-70"/> VENTANAS_BAJO_TRAFICO
                                         </h3>
@@ -268,7 +268,7 @@ const FinanzasPage: React.FC = () => {
                                             {aiProjection.lowTrafficDays.map(day => (
                                                 <span 
                                                     key={day} 
-                                                    className="px-4 py-2 bg-white rounded-xl text-[10px] font-black text-slate-600 border border-slate-200 uppercase tracking-widest shadow-sm"
+                                                    className="px-4 py-2 bg-obsidian-card rounded-xl text-[10px] font-black text-slate-300 border border-white/[0.06] uppercase tracking-widest shadow-sm"
                                                 >
                                                     {day}
                                                 </span>
@@ -280,14 +280,14 @@ const FinanzasPage: React.FC = () => {
                                         <div className="absolute top-[-10px] left-8 px-4 py-1.5 bg-brand-blue rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-md">
                                             ESTRATEGIA_RECOMENDADA
                                         </div>
-                                        <p className="text-base text-slate-700 italic font-medium leading-relaxed relative z-10 pt-2">
+                                        <p className="text-base text-slate-200 italic font-medium leading-relaxed relative z-10 pt-2">
                                             “{aiProjection.suggestion}”
                                         </p>
                                     </div>
 
                                     <button 
                                         onClick={() => setAiProjection(null)}
-                                        className="w-full py-5 rounded-2xl bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] hover:bg-slate-200 hover:text-slate-600 transition-all active:scale-95"
+                                        className="w-full py-5 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] hover:bg-white/[0.08] hover:text-slate-200 transition-all active:scale-95"
                                     >
                                         TERMINAR_SESIÓN_IA
                                     </button>
@@ -301,19 +301,19 @@ const FinanzasPage: React.FC = () => {
             {/* --- SECCIÓN HISTÓRICA --- */}
             <motion.div variants={itemVariants} className="space-y-10">
                 <div className="flex items-center gap-6">
-                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Estado <span className="text-slate-400">Patrimonial</span></h3>
-                    <div className="flex-grow h-[2px] bg-slate-100 rounded-full"></div>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tight italic">Estado <span className="text-slate-400">Patrimonial</span></h3>
+                    <div className="flex-grow h-[2px] bg-white/[0.04] rounded-full"></div>
                 </div>
 
-                <div className="bg-white p-10 relative overflow-hidden rounded-[3rem] border border-slate-200 shadow-sm">
+                <div className="bg-obsidian-card p-10 relative overflow-hidden rounded-[3rem] border border-white/[0.06] shadow-sm">
                     <div className="flex justify-between items-center mb-12">
                          <div className="flex items-center gap-6">
-                            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400">
+                            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-slate-400">
                                 <ChartBarIcon className="w-6 h-6" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">FLUJO DE RECAUDACIÓN</p>
-                                <p className="text-xl font-black text-slate-900 uppercase tracking-tight italic">COMPORTAMIENTO DE MERCADO</p>
+                                <p className="text-xl font-black text-white uppercase tracking-tight italic">COMPORTAMIENTO DE MERCADO</p>
                             </div>
                          </div>
                     </div>
@@ -355,23 +355,23 @@ const FinanzasPage: React.FC = () => {
                         </ResponsiveContainer>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-slate-100">
-                        <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 group hover:border-emerald-500/20 transition-all duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group hover:border-emerald-500/20 transition-all duration-300">
                             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-inner">
                                 <ArrowTrendingUpIcon className="w-6 h-6" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">CRECIMIENTO OPERATIVO</p>
-                                <p className="text-xl font-bold text-slate-900 italic">Impulso Positivo +4.2%</p>
+                                <p className="text-xl font-bold text-white italic">Impulso Positivo +4.2%</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 group hover:border-brand-blue/20 transition-all duration-300">
+                        <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group hover:border-brand-blue/20 transition-all duration-300">
                             <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:scale-110 transition-transform shadow-inner">
                                 <BoxIcon className="w-6 h-6" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">EFICIENCIA DE INSUMOS</p>
-                                <p className="text-xl font-bold text-slate-900 italic">Gestión Óptima</p>
+                                <p className="text-xl font-bold text-white italic">Gestión Óptima</p>
                             </div>
                         </div>
                     </div>

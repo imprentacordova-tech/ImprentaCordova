@@ -95,7 +95,7 @@ const RetirosPage: React.FC = () => {
             <SEO title="Despacho y Entregas · Imprenta Córdova" />
 
             {/* ── HEADER ─────────────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.06] pb-5">
                 <div>
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -103,23 +103,23 @@ const RetirosPage: React.FC = () => {
                             Control de Entregas ({totals.count} listos)
                         </span>
                     </div>
-                    <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tighter uppercase mt-0.5">
+                    <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tighter uppercase mt-0.5">
                         Despacho y Vitrina
                     </h1>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-3 shadow-sm">
+                    <div className="bg-obsidian-card border border-white/[0.06] rounded-xl px-4 py-2 flex items-center gap-3 shadow-sm">
                         <div className="p-2 bg-brand-blue/10 text-brand-blue rounded-lg">
                             <BoxIcon className="w-4 h-4" />
                         </div>
                         <div>
                             <span className="text-[9px] font-bold text-slate-400 uppercase block">Por Entregar</span>
-                            <span className="text-base font-black text-slate-900">{totals.count} pedidos</span>
+                            <span className="text-base font-black text-white">{totals.count} pedidos</span>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-3 shadow-sm">
+                    <div className="bg-obsidian-card border border-white/[0.06] rounded-xl px-4 py-2 flex items-center gap-3 shadow-sm">
                         <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
                             <CreditCardIcon className="w-4 h-4" />
                         </div>
@@ -139,7 +139,7 @@ const RetirosPage: React.FC = () => {
                     placeholder="Buscar por cliente, N° de orden o producto..." 
                     value={searchTerm} 
                     onChange={e => setSearchTerm(e.target.value)} 
-                    className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-[12px] font-bold text-slate-900 outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 transition-all placeholder:text-slate-400 shadow-sm"
+                    className="w-full bg-obsidian-card border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-[12px] font-bold text-white outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 transition-all placeholder:text-slate-400 shadow-sm"
                 />
             </div>
 
@@ -160,7 +160,7 @@ const RetirosPage: React.FC = () => {
                         return (
                             <div 
                                 key={t.id}
-                                className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4 relative overflow-hidden"
+                                className="bg-obsidian-card rounded-2xl p-5 border border-white/[0.06] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4 relative overflow-hidden"
                             >
                                 {isOld && (
                                     <div className="absolute top-3 right-3 bg-amber-100 border border-amber-200 text-amber-800 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase">
@@ -170,18 +170,18 @@ const RetirosPage: React.FC = () => {
 
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-mono text-sm font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
+                                        <span className="font-mono text-sm font-black text-white bg-white/[0.04] px-2 py-0.5 rounded">
                                             #{String(t.orden).padStart(4, '0')}
                                         </span>
                                         <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${
-                                            t.esSRI ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' : 'bg-slate-100 text-slate-600 border-slate-200'
+                                            t.esSRI ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' : 'bg-white/[0.04] text-slate-300 border-white/[0.06]'
                                         }`}>
                                             {t.tipo}
                                         </span>
                                     </div>
 
                                     <div>
-                                        <h3 className="text-base font-black text-slate-900 uppercase leading-snug">
+                                        <h3 className="text-base font-black text-white uppercase leading-snug">
                                             {clienteObj ? clienteObj.nombre : t.titular}
                                         </h3>
                                         <p className="text-[11px] font-bold text-slate-500 mt-0.5">
@@ -190,10 +190,10 @@ const RetirosPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
+                                <div className="p-4 bg-white/[0.04] rounded-xl border border-white/[0.06] space-y-2">
                                     <div className="flex justify-between items-center text-[11px]">
                                         <span className="font-bold text-slate-500">Monto Total:</span>
-                                        <span className="font-black text-slate-900">{formatCurrency(t.total)}</span>
+                                        <span className="font-black text-white">{formatCurrency(t.total)}</span>
                                     </div>
 
                                     <div className="flex justify-between items-center text-[11px]">
@@ -201,8 +201,8 @@ const RetirosPage: React.FC = () => {
                                         <span className="font-black text-emerald-600">{formatCurrency(t.abono)}</span>
                                     </div>
 
-                                    <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                                        <span className="text-[11px] font-black text-slate-700 uppercase">Saldo Pendiente:</span>
+                                    <div className="pt-2 border-t border-white/[0.06] flex justify-between items-center">
+                                        <span className="text-[11px] font-black text-slate-200 uppercase">Saldo Pendiente:</span>
                                         <span className={`text-lg font-black ${hasBalance ? 'text-red-500' : 'text-emerald-600'}`}>
                                             {formatCurrency(t.saldo)}
                                         </span>
@@ -213,7 +213,7 @@ const RetirosPage: React.FC = () => {
                                     <button 
                                         type="button"
                                         onClick={() => notifyClient(t)}
-                                        className="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl border border-emerald-200 transition-colors"
+                                        className="p-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-xl border border-emerald-500/20 transition-colors"
                                         title="Avisar al cliente por WhatsApp"
                                     >
                                         <WhatsAppIcon className="w-5 h-5" />
@@ -231,9 +231,9 @@ const RetirosPage: React.FC = () => {
                         );
                     })
                 ) : (
-                    <div className="col-span-full py-20 bg-white rounded-2xl border border-slate-200 text-center space-y-3">
+                    <div className="col-span-full py-20 bg-obsidian-card rounded-2xl border border-white/[0.06] text-center space-y-3">
                         <BoxIcon className="w-12 h-12 text-slate-300 mx-auto" />
-                        <h3 className="text-sm font-black text-slate-700 uppercase">Vitrina de Entregas Vacía</h3>
+                        <h3 className="text-sm font-black text-slate-200 uppercase">Vitrina de Entregas Vacía</h3>
                         <p className="text-[11px] text-slate-400">No hay órdenes pendientes de retiro en este momento.</p>
                     </div>
                 )}
@@ -247,14 +247,14 @@ const RetirosPage: React.FC = () => {
             >
                 {selectedTrabajo && (
                     <div className="space-y-6">
-                        <div className="p-6 bg-red-50 rounded-2xl text-center border border-red-200 space-y-1">
-                            <span className="text-[10px] font-black text-red-600 uppercase tracking-widest block">Saldo Pendiente a Cobrar Hoy</span>
-                            <span className="text-4xl font-black text-red-600 tracking-tight">{formatCurrency(selectedTrabajo.saldo)}</span>
+                        <div className="p-6 bg-brand-red/10 rounded-2xl text-center border border-brand-red/20 space-y-1">
+                            <span className="text-[10px] font-black text-brand-red uppercase tracking-widest block">Saldo Pendiente a Cobrar Hoy</span>
+                            <span className="text-4xl font-black text-brand-red tracking-tight">{formatCurrency(selectedTrabajo.saldo)}</span>
                         </div>
                         
                         <div className="bg-brand-blue/5 p-4 rounded-xl flex items-center gap-3 border border-brand-blue/20">
                             <CheckCircleIcon className="w-5 h-5 text-brand-blue shrink-0"/>
-                            <p className="text-[11px] font-bold text-slate-700">
+                            <p className="text-[11px] font-bold text-slate-200">
                                 Al confirmar, la orden pasará a estado <strong>ENTREGADO</strong> y se generará el recibo o comprobante final.
                             </p>
                         </div>
@@ -262,11 +262,11 @@ const RetirosPage: React.FC = () => {
                         {/* Captura de Foto Opcional */}
                         <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Foto o Respaldo de Entrega (Opcional)</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Foto o Respaldo de Entrega (Opcional)</label>
                                 <button 
                                     type="button"
                                     onClick={() => setShowCamera(!showCamera)}
-                                    className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-700 transition-colors"
+                                    className="flex items-center gap-1 px-3 py-1 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg text-[10px] font-bold text-slate-200 transition-colors"
                                 >
                                     <CameraIcon className="w-3.5 h-3.5" />
                                     <span>{showCamera ? 'Cerrar Cámara' : 'Tomar Foto'}</span>
@@ -274,7 +274,7 @@ const RetirosPage: React.FC = () => {
                             </div>
                             
                             {showCamera && (
-                                <div className="aspect-video w-full bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden">
+                                <div className="aspect-video w-full bg-white/[0.04] rounded-2xl border border-white/[0.06] overflow-hidden">
                                     <PhotoCapture onImageCaptured={(file) => setRetiroPhoto(file)} />
                                 </div>
                             )}
@@ -301,7 +301,7 @@ const RetirosPage: React.FC = () => {
                             <button 
                                 type="button" 
                                 onClick={() => setSelectedTrabajo(null)} 
-                                className="text-[11px] font-bold text-slate-400 hover:text-slate-700 uppercase"
+                                className="text-[11px] font-bold text-slate-400 hover:text-white uppercase"
                             >
                                 Cancelar
                             </button>

@@ -880,13 +880,11 @@ async function runReportadorWorkflow() {
     }
 
     // --- 4.1 DESTINO SOLICITUDES ALCANZADO ---
-    if (url.includes("solicitudes-autorizacion") || bodyText.includes("Solicitudes de autorización")) {
-        ReportadorState.currentStep = "Solicitudes";
-        if (ReportadorState.isRunning && ReportadorState.targetMode === 'ACEPTAR') {
-            ReportadorState.isRunning = false;
-            ReportadorState.log("✓ SOLICITUDES CARGADAS");
-            ReportadorState.save();
-        }
+    if (url.includes("no-procesadas-listado") || url.includes("solicitudes-autorizacion") || bodyText.includes("Solicitudes enviadas directamente por el contribuyente") || bodyText.includes("Solicitudes de autorización")) {
+        ReportadorState.currentStep = "Solicitudes Recibidas";
+        ReportadorState.isRunning = false;
+        ReportadorState.log("✓ SOLICITUDES RECIBIDAS LISTAS");
+        ReportadorState.save();
         return;
     }
     
@@ -1059,13 +1057,24 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     injectReportadorAssistant();
     injectImprentaSubtleBanner();
     
-    // Ejecución inmediata al cargar la página
-    runReportadorWorkflow().catch(e => console.error("Error en Reportador Workflow:", e));
-    
-    if (window.reportadorInterval) clearInterval(window.reportadorInterval);
-    window.reportadorInterval = setInterval(() => {
+    // Si estamos en la página de Solicitudes Recibidas, se detiene el motor para que el usuario trabaje cómodo sin ser redirigido
+    if (url.includes("no-procesadas-listado.jspa")) {
+      ReportadorState.isRunning = false;
+      ReportadorState.log("✓ SOLICITUDES RECIBIDAS LISTAS");
+      await ReportadorState.save();
+    } else if (ReportadorState.isRunning) {
+      // Ejecución solo si isRunning está activo y no hemos llegado a la página de solicitudes recibidas
       runReportadorWorkflow().catch(e => console.error("Error en Reportador Workflow:", e));
-    }, 700);
+      
+      if (window.reportadorInterval) clearInterval(window.reportadorInterval);
+      window.reportadorInterval = setInterval(() => {
+        if (ReportadorState.isRunning && !window.location.href.includes("no-procesadas-listado.jspa")) {
+          runReportadorWorkflow().catch(e => console.error("Error en Reportador Workflow:", e));
+        } else {
+          clearInterval(window.reportadorInterval);
+        }
+      }, 300);
+    }
     
     chrome.runtime.onMessage.addListener((msg) => {
         if (msg.action === 'START') {

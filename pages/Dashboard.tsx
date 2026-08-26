@@ -17,11 +17,11 @@ import { getActivityLog, ActivityEntry } from '../services/activityLogService';
 
 // ─── STATUS CONFIG ─────────────────────────────────────────────────────────
 const ESTADO_CONFIG: Record<TrabajoEstado, { label: string; dot: string; bg: string; text: string }> = {
-    [TrabajoEstado.PENDIENTE]:  { label: 'Pendiente',   dot: 'bg-amber-400',   bg: 'bg-amber-50',   text: 'text-amber-700' },
-    [TrabajoEstado.EN_DISENO]:  { label: 'En Diseño',   dot: 'bg-purple-400',  bg: 'bg-purple-50',  text: 'text-purple-700' },
-    [TrabajoEstado.PROCESO]:    { label: 'En Prensa',   dot: 'bg-blue-400',    bg: 'bg-blue-50',    text: 'text-blue-700' },
-    [TrabajoEstado.VITRINA]:    { label: 'Listo',       dot: 'bg-emerald-400', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-    [TrabajoEstado.ENTREGADO]:  { label: 'Entregado',   dot: 'bg-slate-300',   bg: 'bg-slate-50',   text: 'text-slate-500' },
+    [TrabajoEstado.PENDIENTE]:  { label: 'Pendiente',   dot: 'bg-amber-400',   bg: 'bg-amber-500/10',   text: 'text-amber-400' },
+    [TrabajoEstado.EN_DISENO]:  { label: 'En Diseño',   dot: 'bg-purple-400',  bg: 'bg-purple-500/10',  text: 'text-purple-400' },
+    [TrabajoEstado.PROCESO]:    { label: 'En Prensa',   dot: 'bg-blue-400',    bg: 'bg-brand-blue/10',  text: 'text-brand-blue' },
+    [TrabajoEstado.VITRINA]:    { label: 'Listo',       dot: 'bg-emerald-400', bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+    [TrabajoEstado.ENTREGADO]:  { label: 'Entregado',   dot: 'bg-slate-300',   bg: 'bg-white/[0.04]',   text: 'text-slate-400' },
 };
 
 // ─── KPI CARD ─────────────────────────────────────────────────────────────
@@ -40,19 +40,19 @@ const KpiCard: React.FC<{
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
         onClick={onClick}
-        className={`group bg-white border border-slate-100 rounded-2xl p-5 flex flex-col gap-4 hover:border-slate-200 hover:shadow-md transition-all duration-300 ${onClick ? 'cursor-pointer' : ''}`}
+        className={`group bg-obsidian-card border border-white/[0.06] rounded-2xl p-5 flex flex-col gap-4 hover:border-white/[0.08] hover:shadow-md transition-all duration-300 ${onClick ? 'cursor-pointer' : ''}`}
     >
         <div className="flex items-start justify-between">
             <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
                 <Icon className={`w-5 h-5 ${accent}`} />
             </div>
             {onClick && (
-                <ChevronRightIcon className="w-4 h-4 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
+                <ChevronRightIcon className="w-4 h-4 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />
             )}
         </div>
         <div>
             <div className={`text-3xl font-black tracking-tighter ${accent}`}>{value}</div>
-            <div className="text-[11px] font-bold text-slate-900 mt-0.5">{label}</div>
+            <div className="text-[11px] font-bold text-white mt-0.5">{label}</div>
             <div className="text-[10px] text-slate-400 mt-0.5">{sub}</div>
         </div>
     </motion.div>
@@ -67,7 +67,7 @@ const OrderRow: React.FC<{ t: any; onClick: () => void; idx: number }> = ({ t, o
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.05, duration: 0.4 }}
             onClick={onClick}
-            className="group flex items-center gap-4 px-4 py-3.5 hover:bg-slate-50 rounded-xl transition-all cursor-pointer border border-transparent hover:border-slate-100"
+            className="group flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.04] rounded-xl transition-all cursor-pointer border border-transparent hover:border-white/[0.06]"
         >
             {/* Status dot */}
             <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
@@ -76,9 +76,9 @@ const OrderRow: React.FC<{ t: any; onClick: () => void; idx: number }> = ({ t, o
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-slate-400 font-mono">#{String(t.orden).padStart(4, '0')}</span>
-                    <span className="text-[12px] font-bold text-slate-800 truncate">{t.titular}</span>
+                    <span className="text-[12px] font-bold text-white truncate">{t.titular}</span>
                     {t.prioridad === 'Urgente' && (
-                        <span className="text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-red-50 text-red-500 border border-red-100 rounded-full shrink-0">
+                        <span className="text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-brand-red/10 text-brand-red border border-brand-red/20 rounded-full shrink-0">
                             Urgente
                         </span>
                     )}
@@ -94,13 +94,13 @@ const OrderRow: React.FC<{ t: any; onClick: () => void; idx: number }> = ({ t, o
 
             {/* Amount */}
             <div className="text-right shrink-0">
-                <div className="text-[12px] font-black text-slate-800">{formatCurrency(t.total)}</div>
+                <div className="text-[12px] font-black text-white">{formatCurrency(t.total)}</div>
                 {t.saldo > 0 && (
                     <div className="text-[9px] font-bold text-red-500">−{formatCurrency(t.saldo)}</div>
                 )}
             </div>
 
-            <ChevronRightIcon className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 shrink-0 transition-colors" />
+            <ChevronRightIcon className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 shrink-0 transition-colors" />
         </motion.div>
     );
 };
@@ -117,7 +117,7 @@ const QuickAction: React.FC<{
         className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide transition-all active:scale-95 ${
             variant === 'primary'
                 ? 'bg-brand-blue text-white hover:bg-brand-blue/90 shadow-blue-glow-sm'
-                : 'bg-white text-slate-700 border border-slate-200 hover:border-brand-blue/30 hover:text-brand-blue'
+                : 'bg-obsidian-card text-slate-200 border border-white/[0.06] hover:border-brand-blue/30 hover:text-brand-blue'
         }`}
     >
         <Icon className="w-3.5 h-3.5" />
@@ -196,7 +196,7 @@ const DashboardPage: React.FC = () => {
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.35em]">
                         {greeting}, {currentUser.nombre.split(' ')[0]}
                     </p>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tighter mt-0.5">
+                    <h1 className="text-2xl font-black text-white tracking-tighter mt-0.5">
                         Panel de Control
                     </h1>
                 </div>
@@ -213,11 +213,11 @@ const DashboardPage: React.FC = () => {
                 <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-3 px-5 py-3.5 bg-red-50 border border-red-200 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3.5 bg-brand-red/10 border border-brand-red/20 rounded-xl cursor-pointer hover:bg-brand-red/15 transition-colors"
                     onClick={() => navigate('/trabajos')}
                 >
                     <ExclamationTriangleIcon className="w-4 h-4 text-red-500 shrink-0" />
-                    <span className="text-[11px] font-black text-red-700 uppercase tracking-wider">
+                    <span className="text-[11px] font-black text-brand-red uppercase tracking-wider">
                         {kpis.urgentes} {kpis.urgentes === 1 ? 'orden urgente pendiente' : 'órdenes urgentes pendientes'}
                     </span>
                     <ChevronRightIcon className="w-3.5 h-3.5 text-red-400 ml-auto" />
@@ -271,11 +271,11 @@ const DashboardPage: React.FC = () => {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
                 {/* Left: Orders list */}
-                <div className="xl:col-span-8 bg-white border border-slate-100 rounded-2xl overflow-hidden">
+                <div className="xl:col-span-8 bg-obsidian-card border border-white/[0.06] rounded-2xl overflow-hidden">
                     {/* Panel header */}
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
                         <div>
-                            <h2 className="text-[13px] font-black text-slate-900">Órdenes Activas</h2>
+                            <h2 className="text-[13px] font-black text-white">Órdenes Activas</h2>
                             <p className="text-[10px] text-slate-400 mt-0.5">{kpis.activos} trabajos en curso</p>
                         </div>
                         <Link
@@ -291,7 +291,7 @@ const DashboardPage: React.FC = () => {
                         {recentOrders.length === 0 ? (
                             <div className="text-center py-12">
                                 <CheckCircleIcon className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
-                                <p className="text-[12px] font-bold text-slate-500">Sin órdenes activas.</p>
+                                <p className="text-[12px] font-bold text-slate-300">Sin órdenes activas.</p>
                                 <button
                                     onClick={() => navigate('/nuevo')}
                                     className="mt-4 flex items-center gap-2 mx-auto text-[10px] font-black text-brand-blue uppercase tracking-wider hover:text-brand-blue/70 transition-colors"
@@ -316,18 +316,18 @@ const DashboardPage: React.FC = () => {
                 <div className="xl:col-span-4 space-y-5">
 
                     {/* Production chart */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-5 h-[200px]">
+                    <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl p-5 h-[200px]">
                         <ProductionPulse trabajos={trabajos} />
                     </div>
 
                     {/* Area load chart */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-5 h-[200px]">
+                    <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl p-5 h-[200px]">
                         <AreaLoad trabajos={trabajos} />
                     </div>
 
                     {/* Quick stats bar */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-5">
-                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Resumen</h3>
+                    <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl p-5">
+                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-4">Resumen</h3>
                         <div className="space-y-3">
                             {[
                                 { label: 'Total clientes',  value: kpis.totalClientes,            icon: UsersIcon,  color: 'text-brand-blue' },
@@ -337,7 +337,7 @@ const DashboardPage: React.FC = () => {
                             ].map(item => (
                                 <div key={item.label} className="flex items-center gap-3">
                                     <item.icon className={`w-4 h-4 ${item.color} shrink-0`} />
-                                    <span className="text-[11px] font-medium text-slate-600 flex-1">{item.label}</span>
+                                    <span className="text-[11px] font-medium text-slate-300 flex-1">{item.label}</span>
                                     <span className={`text-[13px] font-black ${item.color}`}>{item.value}</span>
                                 </div>
                             ))}
@@ -347,10 +347,10 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* ── ACTIVITY LOG ───────────────────────────────────────────── */}
-            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
                     <div className="flex items-center gap-2.5">
-                        <h2 className="text-[13px] font-black text-slate-900">Actividad Reciente</h2>
+                        <h2 className="text-[13px] font-black text-white">Actividad Reciente</h2>
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     </div>
                     <Link to="/registro" className="text-[10px] font-black text-brand-blue hover:text-brand-blue/70 uppercase tracking-wider transition-colors flex items-center gap-1">

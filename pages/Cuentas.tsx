@@ -42,14 +42,14 @@ const MetricCard: React.FC<{
 }> = ({ label, value, icon: Icon, colorClass = "text-brand-blue" }) => (
     <motion.div 
         whileHover={{ y: -5 }}
-        className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden"
+        className="bg-obsidian-card p-10 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative group overflow-hidden"
     >
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-all duration-700">
-            <Icon className="w-24 h-24 text-slate-900" />
+            <Icon className="w-24 h-24 text-white" />
         </div>
         <div className="relative z-10 space-y-6">
             <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl bg-slate-50 border border-slate-100 ${colorClass}`}>
+                <div className={`p-3 rounded-xl bg-white/[0.04] border border-white/[0.06] ${colorClass}`}>
                     <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{label}</span>
@@ -102,22 +102,22 @@ const TransactionFormModal: React.FC<{
                     initial={{ scale: 0.95, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="bg-white w-full max-w-xl overflow-hidden relative z-10 border border-slate-200 shadow-2xl rounded-[3rem]" 
+                    className="bg-obsidian-card w-full max-w-xl overflow-hidden relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]" 
                 >
-                    <div className="p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div className="p-10 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.04]">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Nueva <span className="text-brand-blue">Operación</span></h2>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Nueva <span className="text-brand-blue">Operación</span></h2>
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">LOG DE TRANSACCIÓN MANUAL</p>
                         </div>
-                        <button onClick={onClose} className="p-3 bg-white hover:bg-slate-50 text-slate-400 border border-slate-200 rounded-xl transition-all"><CloseIcon className="w-5 h-5"/></button>
+                        <button onClick={onClose} className="p-3 bg-obsidian-card hover:bg-white/[0.04] text-slate-400 border border-white/[0.06] rounded-xl transition-all"><CloseIcon className="w-5 h-5"/></button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-10 space-y-10">
                         <div className="grid grid-cols-2 gap-6">
-                            <button type="button" onClick={() => setTipo('INGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'INGRESO' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-sm' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}>
+                            <button type="button" onClick={() => setTipo('INGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'INGRESO' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-sm' : 'bg-obsidian-card border-white/[0.06] text-slate-400 hover:bg-white/[0.04]'}`}>
                                 Ingreso
                             </button>
-                            <button type="button" onClick={() => setTipo('EGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'EGRESO' ? 'bg-rose-50 border-rose-200 text-rose-600 shadow-sm' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}>
+                            <button type="button" onClick={() => setTipo('EGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'EGRESO' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-sm' : 'bg-obsidian-card border-white/[0.06] text-slate-400 hover:bg-white/[0.04]'}`}>
                                 Egreso
                             </button>
                         </div>
@@ -129,7 +129,7 @@ const TransactionFormModal: React.FC<{
                                 <input 
                                     type="number" step="0.01" value={monto} 
                                     onChange={e => setMonto(e.target.value)} 
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-6 pl-12 pr-6 text-3xl font-black text-slate-900 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all" 
+                                    className="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl py-6 pl-12 pr-6 text-3xl font-black text-white focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all" 
                                     placeholder="0.00" autoFocus required 
                                 />
                             </div>
@@ -139,13 +139,13 @@ const TransactionFormModal: React.FC<{
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Detalle Auditivo</label>
                             <textarea 
                                 value={detalle} onChange={e => setDetalle(e.target.value)} 
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-900 placeholder:text-slate-300 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all h-32 resize-none" 
+                                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 text-sm font-medium text-white placeholder:text-slate-500 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all h-32 resize-none" 
                                 placeholder="Especifique el motivo de la transacción..." required 
                             />
                         </div>
 
                         <div className="flex gap-6 pt-4">
-                            <button type="button" onClick={onClose} className="flex-1 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-slate-900 transition-colors">Cancelar</button>
+                            <button type="button" onClick={onClose} className="flex-1 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-white transition-colors">Cancelar</button>
                             <button type="submit" className="flex-[2] bg-brand-blue text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all active:scale-95">
                                 Registrar Operación
                             </button>
@@ -223,13 +223,13 @@ const CuentasPage: React.FC = () => {
             className="max-w-[1600px] mx-auto space-y-16 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in"
         >
             {/* --- LEDGER HEADER --- */}
-            <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-slate-200 pb-16">
+            <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-white/[0.06] pb-16">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Control de Cartera</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                         Cuentas por Cobrar & Pagar <span className="text-brand-blue font-bold">• Cartera</span>
                     </h1>
                 </div>
@@ -239,7 +239,7 @@ const CuentasPage: React.FC = () => {
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleExportCSV} 
-                        className="px-10 py-5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all font-black uppercase text-[10px] tracking-widest flex items-center gap-4 shadow-sm"
+                        className="px-10 py-5 bg-obsidian-card border border-white/[0.06] rounded-2xl text-slate-300 hover:bg-white/[0.04] transition-all font-black uppercase text-[10px] tracking-widest flex items-center gap-4 shadow-sm"
                     >
                         <ArchiveIcon className="w-4 h-4 text-slate-400" /> 
                         Exportar Historial
@@ -275,7 +275,7 @@ const CuentasPage: React.FC = () => {
                         placeholder="BUSCAR TRANSACCIÓN O USUARIO..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full bg-white border border-slate-200 rounded-2xl py-5 pl-16 pr-6 text-[11px] font-black uppercase tracking-widest text-slate-900 placeholder:text-slate-300 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
+                        className="w-full bg-obsidian-card border border-white/[0.06] rounded-2xl py-5 pl-16 pr-6 text-[11px] font-black uppercase tracking-widest text-white placeholder:text-slate-500 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
                     />
                 </div>
                 
@@ -283,7 +283,7 @@ const CuentasPage: React.FC = () => {
                     <select 
                         value={filterType} 
                         onChange={e => { setFilterType(e.target.value); setPage(0); }}
-                        className="w-full bg-white border border-slate-200 rounded-2xl py-5 px-8 text-[10px] font-black uppercase tracking-widest text-slate-600 appearance-none cursor-pointer focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
+                        className="w-full bg-obsidian-card border border-white/[0.06] rounded-2xl py-5 px-8 text-[10px] font-black uppercase tracking-widest text-slate-300 appearance-none cursor-pointer focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
                     >
                         <option value="">Protocolo: Todos</option>
                         <option value="INGRESO">Tipo: Ingresos</option>
@@ -310,29 +310,29 @@ const CuentasPage: React.FC = () => {
                                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.05 }}
                                         key={entry.id} 
-                                        className="group bg-white p-8 flex flex-col lg:flex-row items-center gap-8 border border-slate-200 rounded-[2.5rem] hover:border-brand-blue/30 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 relative overflow-hidden"
+                                        className="group bg-obsidian-card p-8 flex flex-col lg:flex-row items-center gap-8 border border-white/[0.06] rounded-[2.5rem] hover:border-brand-blue/30 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 relative overflow-hidden"
                                     >
                                         <div className="flex items-center gap-8 min-w-[200px]">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${isIngreso ? 'bg-emerald-50 text-emerald-500 border-emerald-100' : 'bg-rose-50 text-rose-500 border-rose-100'} group-hover:scale-110`}>
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} group-hover:scale-110`}>
                                                 {isIngreso ? <ArrowTrendingUpIcon className="w-7 h-7" /> : <ArrowTrendingDownIcon className="w-7 h-7" />}
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[13px] font-black text-slate-900 tracking-tighter">{formatDate(entry.timestamp)}</p>
+                                                <p className="text-[13px] font-black text-white tracking-tighter">{formatDate(entry.timestamp)}</p>
                                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
 
                                         <div className="flex-grow min-w-0 space-y-3">
                                             <div className="flex items-center gap-3">
-                                                <div className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${isIngreso ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                                <div className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
                                                     {isIngreso ? 'INGRESO_ACTIVO' : 'EGRESO_CAPITAL'}
                                                 </div>
-                                                <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.04] rounded-lg border border-white/[0.06]">
                                                     <FingerPrintIcon className="w-3 h-3 text-slate-300" />
                                                     <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">#{entry.id.substring(0, 8)}</span>
                                                 </div>
                                             </div>
-                                            <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight truncate leading-none">{entry.detalle}</h4>
+                                            <h4 className="text-xl font-black text-white uppercase tracking-tight truncate leading-none">{entry.detalle}</h4>
                                             <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest truncate max-w-md">SIG: {entry.hash}</p>
                                         </div>
 
@@ -353,10 +353,10 @@ const CuentasPage: React.FC = () => {
                     ) : (
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="py-40 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200 text-center flex flex-col items-center justify-center"
+                            className="py-40 bg-white/[0.04] rounded-[3rem] border border-dashed border-white/[0.06] text-center flex flex-col items-center justify-center"
                         >
                             <ShieldCheckIcon className="w-20 h-20 text-slate-100 mb-6" />
-                            <h3 className="text-2xl font-black text-slate-300 uppercase tracking-widest italic">Historial Vacío</h3>
+                            <h3 className="text-2xl font-black text-slate-400 uppercase tracking-widest italic">Historial Vacío</h3>
                             <p className="text-slate-400 text-[9px] font-black uppercase mt-4 tracking-widest">No se detectan señales financieras en la ventana actual.</p>
                         </motion.div>
                     )}
@@ -369,13 +369,13 @@ const CuentasPage: React.FC = () => {
                     <button 
                         disabled={page === 0} 
                         onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }} 
-                        className="px-10 py-4 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm"
+                        className="px-10 py-4 bg-obsidian-card border border-white/[0.06] rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest disabled:opacity-30 hover:bg-white/[0.04] transition-all shadow-sm"
                     >
                         Anterior
                     </button>
                     
                     <div className="flex flex-col items-center gap-1">
-                        <span className="text-[12px] font-black text-slate-900 bg-slate-100 px-5 py-2 rounded-xl flex items-center gap-2">
+                        <span className="text-[12px] font-black text-white bg-white/[0.04] px-5 py-2 rounded-xl flex items-center gap-2">
                             <span className="text-brand-blue">{page + 1}</span>
                             <span className="text-slate-300">/</span>
                             <span className="text-slate-400">{totalPages}</span>
@@ -385,7 +385,7 @@ const CuentasPage: React.FC = () => {
                     <button 
                         disabled={page >= totalPages - 1} 
                         onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }} 
-                        className="px-10 py-4 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm"
+                        className="px-10 py-4 bg-obsidian-card border border-white/[0.06] rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest disabled:opacity-30 hover:bg-white/[0.04] transition-all shadow-sm"
                     >
                         Siguiente
                     </button>
@@ -397,7 +397,7 @@ const CuentasPage: React.FC = () => {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
             `}</style>
         </motion.div>
     );

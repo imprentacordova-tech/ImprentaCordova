@@ -48,21 +48,21 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
             <motion.div 
                 initial={{ scale: 0.9, opacity: 0, y: 30 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-white border border-slate-200 rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden relative group" 
+                className="bg-obsidian-card border border-white/[0.06] rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden relative group" 
                 onClick={e => e.stopPropagation()}
             >
                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.3] pointer-events-none" />
                 <div className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none" />
                 
-                <div className="p-10 border-b border-slate-100 relative z-10 flex justify-between items-center bg-slate-50/50">
+                <div className="p-10 border-b border-white/[0.06] relative z-10 flex justify-between items-center bg-white/[0.04]">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse shadow-[0_0_10px_rgba(14,165,233,0.5)]" />
                             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-brand-blue">GÉMINIS_AI_PROTOCOL</span>
                         </div>
-                        <h2 className="text-3xl font-black tracking-tight uppercase leading-none text-slate-900">RE-ENGAGE_<span className="text-brand-blue">STRATEGY</span></h2>
+                        <h2 className="text-3xl font-black tracking-tight uppercase leading-none text-white">RE-ENGAGE_<span className="text-brand-blue">STRATEGY</span></h2>
                     </div>
-                    <button onClick={onClose} className="p-4 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-2xl transition-all border border-slate-200 group/close">
+                    <button onClick={onClose} className="p-4 bg-obsidian-card hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-2xl transition-all border border-white/[0.06] group/close">
                         <CloseIcon className="w-6 h-6 group-hover/close:rotate-90 transition-transform duration-500" />
                     </button>
                 </div>
@@ -80,10 +80,10 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
                         </div>
                     ) : (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                            <div className="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100 relative group/msg shadow-inner overflow-hidden">
+                            <div className="bg-white/[0.04] p-10 rounded-[2.5rem] border border-white/[0.06] relative group/msg shadow-inner overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-blue/20 animate-scan-y" />
                                 <SparklesIcon className="absolute top-8 right-8 w-6 h-6 text-brand-blue/20 group-hover:text-brand-blue transition-colors" />
-                                <p className="text-xl text-slate-700 leading-relaxed font-medium pr-10">
+                                <p className="text-xl text-slate-200 leading-relaxed font-medium pr-10">
                                     "{message}"
                                 </p>
                             </div>
@@ -97,14 +97,14 @@ const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClos
                                 </button>
                                 <button 
                                     onClick={() => { navigator.clipboard.writeText(message); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} 
-                                    className={`flex-1 px-8 py-5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] border-2 transition-all duration-300 ${copied ? 'bg-brand-blue border-brand-blue text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-brand-blue hover:text-brand-blue'}`}
+                                    className={`flex-1 px-8 py-5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] border-2 transition-all duration-300 ${copied ? 'bg-brand-blue border-brand-blue text-white' : 'bg-obsidian-card border-white/[0.06] text-slate-300 hover:border-brand-blue hover:text-brand-blue'}`}
                                 >
                                     {copied ? "COPIED_TO_CLIPBOARD" : "COPY_CONTENT"}
                                 </button>
                             </div>
                             
                             <div className="text-center pt-2">
-                                <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.5em]">Powered by Google Gemini Enterprise AI</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.5em]">Powered by Google Gemini Enterprise AI</p>
                             </div>
                         </motion.div>
                     )}
@@ -162,17 +162,17 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
             <motion.div 
                 initial={{ scale: 0.9, opacity: 0, y: 50 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl rounded-[3rem]" 
+                className="bg-obsidian-card border border-white/[0.06] w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl rounded-[3rem]" 
                 onClick={e => e.stopPropagation()}
             >
                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.2] pointer-events-none" />
                 
-                <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center relative">
+                <div className="p-10 border-b border-white/[0.06] bg-white/[0.04] flex justify-between items-center relative">
                     <div className="space-y-1">
-                        <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">Identity <span className="text-brand-blue">Protocol</span></h2>
+                        <h2 className="text-3xl font-black text-white uppercase tracking-tight leading-none">Identity <span className="text-brand-blue">Protocol</span></h2>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">REGISTRO CENTRALIZADO DE ENTIDADES</p>
                     </div>
-                    <button onClick={onClose} className="p-4 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-2xl transition-all border border-slate-200 group">
+                    <button onClick={onClose} className="p-4 bg-obsidian-card hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-2xl transition-all border border-white/[0.06] group">
                         <CloseIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500"/>
                     </button>
                 </div>
@@ -189,7 +189,7 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                                     if (val.length >= 10) handleIdLookup(val);
                                 }}
                                 placeholder="IDENTIFICACIÓN (RUC/CÉDULA)"
-                                className={`w-full bg-slate-50 border p-6 pt-10 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 transition-all uppercase outline-none ${idError ? 'border-rose-300 focus:ring-rose-100' : 'border-slate-200 focus:ring-brand-blue/5 focus:border-brand-blue/30'}`}
+                                className={`w-full bg-white/[0.04] border p-6 pt-10 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 transition-all uppercase outline-none ${idError ? 'border-rose-300 focus:ring-rose-100' : 'border-white/[0.06] focus:ring-brand-blue/5 focus:border-brand-blue/30'}`}
                             />
                             <label className={`absolute left-6 top-4 text-[9px] font-black uppercase tracking-[0.4em] transition-all ${idError ? 'text-rose-500' : 'text-slate-400'}`}>IDENTIFICACIÓN_ID</label>
                             {isLookingUp && <div className="absolute right-6 top-1/2 -translate-y-1/2"><Loader2Icon className="animate-spin w-5 h-5 text-brand-blue" /></div>}
@@ -202,7 +202,7 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                                 value={formData.nombre || ''}
                                 onChange={e => setFormData({...formData, nombre: e.target.value})}
                                 placeholder="RAZÓN SOCIAL / NOMBRE"
-                                className="w-full bg-slate-50 border border-slate-200 p-6 pt-10 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none"
+                                className="w-full bg-white/[0.04] border border-white/[0.06] p-6 pt-10 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none"
                             />
                             <label className="absolute left-6 top-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">ASSET_IDENTITY</label>
                         </div>
@@ -214,7 +214,7 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                                     value={formData.telefono?.[0] || ''}
                                     onChange={e => setFormData({...formData, telefono: [e.target.value]})}
                                     placeholder="TELÉFONO"
-                                    className="w-full bg-slate-50 border border-slate-200 p-6 pt-10 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none"
+                                    className="w-full bg-white/[0.04] border border-white/[0.06] p-6 pt-10 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none"
                                 />
                                 <label className="absolute left-6 top-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">COMM_UPLINK</label>
                             </div>
@@ -224,7 +224,7 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                                     value={formData.email || ''}
                                     onChange={e => setFormData({...formData, email: e.target.value})}
                                     placeholder="EMAIL"
-                                    className="w-full bg-slate-50 border border-slate-200 p-6 pt-10 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none"
+                                    className="w-full bg-white/[0.04] border border-white/[0.06] p-6 pt-10 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none"
                                 />
                                 <label className="absolute left-6 top-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">VIRTUAL_ADDRESS</label>
                             </div>
@@ -234,12 +234,12 @@ const ClientFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: 
                             <select 
                                 value={formData.regimen || Regimen.NEGOCIO_POPULAR}
                                 onChange={e => setFormData({...formData, regimen: e.target.value as Regimen})}
-                                className="w-full bg-slate-50 border border-slate-200 p-6 pt-10 pb-4 rounded-2xl text-slate-900 font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none appearance-none"
+                                className="w-full bg-white/[0.04] border border-white/[0.06] p-6 pt-10 pb-4 rounded-2xl text-white font-bold text-lg focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue/30 transition-all uppercase outline-none appearance-none"
                             >
                                 {Object.values(Regimen).map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
                             </select>
                             <label className="absolute left-6 top-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">FISCAL_REGIME</label>
-                            <ArrowRightIcon className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 rotate-90 pointer-events-none" />
+                            <ArrowRightIcon className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />
                         </div>
                     </div>
 
@@ -285,7 +285,7 @@ const ClientesPage: React.FC = () => {
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-12 pb-32 pt-8 px-4 sm:px-10 animate-fade-in bg-brand-light min-h-screen">
+        <div className="max-w-[1600px] mx-auto space-y-12 pb-32 pt-8 px-4 sm:px-10 animate-fade-in min-h-screen">
             <SEO title="Bóveda de Identidades - Imprenta Córdova" description="Gestión centralizada de clientes y aliados estratégicos." />
             
             {/* --- CABECERA ELITE --- */}
@@ -294,17 +294,17 @@ const ClientesPage: React.FC = () => {
                     <div className="flex items-center gap-8">
                         <button 
                             onClick={() => navigate('/dashboard')}
-                            className="p-5 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all group shadow-sm"
+                            className="p-5 bg-obsidian-card hover:bg-white/[0.04] border border-white/[0.06] rounded-2xl transition-all group shadow-sm"
                         >
                             <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue transition-colors" />
                         </button>
-                        <div className="w-[1px] h-16 bg-slate-200 hidden md:block"></div>
+                        <div className="w-[1px] h-16 bg-white/[0.06] hidden md:block"></div>
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-brand-blue" />
                                 <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Base de Datos de Clientes</p>
                             </div>
-                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                                 Directorio de Clientes <span className="text-brand-blue font-bold">• SRI</span>
                             </h1>
                         </div>
@@ -327,7 +327,7 @@ const ClientesPage: React.FC = () => {
                         placeholder="BUSCAR ENTIDAD: NOMBRE // RUC // CÉDULA..." 
                         value={searchTerm} 
                         onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full pl-16 pr-8 py-6 bg-white border border-slate-200 focus:border-brand-blue/40 rounded-2xl text-[14px] font-bold text-slate-900 uppercase tracking-widest placeholder:text-slate-300 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all duration-300 shadow-sm"
+                        className="w-full pl-16 pr-8 py-6 bg-obsidian-card border border-white/[0.06] focus:border-brand-blue/40 rounded-2xl text-[14px] font-bold text-white uppercase tracking-widest placeholder:text-slate-300 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all duration-300 shadow-sm"
                     />
                 </div>
             </div>
@@ -336,7 +336,7 @@ const ClientesPage: React.FC = () => {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <AnimatePresence mode="popLayout">
                     {loading ? (
-                        <div className="col-span-full py-40 flex flex-col items-center justify-center gap-8 bg-white/50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                        <div className="col-span-full py-40 bg-obsidian-card/50 rounded-[3rem] border-2 border-dashed border-white/[0.06]">
                             <Loader2Icon className="w-16 h-16 text-brand-blue animate-spin" />
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.8em] animate-pulse">DECRYPTING_IDENTITY_RECORDS...</p>
                         </div>
@@ -351,7 +351,7 @@ const ClientesPage: React.FC = () => {
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.02 }}
                                 key={c.id}
-                                className="group relative bg-white p-10 border border-slate-200 hover:border-brand-blue/30 transition-all duration-300 rounded-[2.5rem] shadow-sm hover:shadow-xl overflow-hidden"
+                                className="group relative bg-obsidian-card p-10 border border-white/[0.06] hover:border-brand-blue/30 transition-all duration-300 rounded-[2.5rem] shadow-sm hover:shadow-xl overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.1] pointer-events-none" />
                                 
@@ -359,24 +359,24 @@ const ClientesPage: React.FC = () => {
                                     <div className="space-y-5">
                                         <div className="flex items-center gap-3">
                                             <div className="px-4 py-1.5 rounded-full border border-brand-blue/20 bg-brand-blue/5 text-brand-blue text-[9px] font-black uppercase tracking-[0.3em]">IDENTITY_VERIFIED</div>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">#{c.id}</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white/[0.04] px-3 py-1.5 rounded-xl">#{c.id}</span>
                                         </div>
                                         <div className="space-y-1">
-                                            <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-blue transition-colors duration-300 leading-none">{c.nombre}</h3>
+                                            <h3 className="text-3xl font-black text-white uppercase tracking-tight group-hover:text-brand-blue transition-colors duration-300 leading-none">{c.nombre}</h3>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-3">{c.direccion || 'UBICACIÓN NO REGISTRADA'}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
                                         <button 
                                             onClick={() => setMarketingClient(c)}
-                                            className="p-4 bg-slate-50 hover:bg-brand-blue text-slate-400 hover:text-white rounded-xl transition-all border border-slate-100 shadow-sm"
+                                            className="p-4 bg-white/[0.04] hover:bg-brand-blue text-slate-400 hover:text-white rounded-xl transition-all border border-white/[0.06] shadow-sm"
                                             title="Géminis AI Strategy"
                                         >
                                             <SparklesIcon className="w-5 h-5" />
                                         </button>
                                         <button 
                                             onClick={() => { setClientToEdit(c); setIsFormOpen(true); }}
-                                            className="p-4 bg-slate-50 hover:bg-slate-900 text-slate-400 hover:text-white rounded-xl transition-all border border-slate-100 shadow-sm"
+                                            className="p-4 bg-white/[0.04] hover:bg-slate-900 text-slate-400 hover:text-white rounded-xl transition-all border border-white/[0.06] shadow-sm"
                                         >
                                             <PencilIcon className="w-5 h-5" />
                                         </button>
@@ -389,31 +389,31 @@ const ClientesPage: React.FC = () => {
                                         <div className="flex flex-col gap-3">
                                             {c.telefono.map((tel, i) => (
                                                 <div key={i} className="flex items-center gap-4 text-slate-600 group/tel">
-                                                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/tel:bg-brand-blue/10 group-hover/tel:text-brand-blue transition-all">
+                                                    <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center border border-white/[0.06] group-hover/tel:bg-brand-blue/10 group-hover/tel:text-brand-blue transition-all">
                                                         <PhoneIcon className="w-3.5 h-3.5" />
                                                     </div>
-                                                    <span className="text-base font-bold tracking-tight">{tel}</span>
+                                                    <span className="text-base font-bold tracking-tight text-slate-200">{tel}</span>
                                                 </div>
                                             ))}
                                             {c.email && (
                                                 <div className="flex items-center gap-4 text-slate-600 group/email">
-                                                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/email:bg-brand-blue/10 group-hover/email:text-brand-blue transition-all">
+                                                    <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center border border-white/[0.06] group-hover/email:bg-brand-blue/10 group-hover/email:text-brand-blue transition-all">
                                                         <EnvelopeIcon className="w-3.5 h-3.5" />
                                                     </div>
-                                                    <span className="text-base font-bold tracking-tight lowercase truncate">{c.email}</span>
+                                                    <span className="text-base font-bold tracking-tight text-slate-200 lowercase truncate">{c.email}</span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-6 group-hover:border-brand-blue/10 transition-all shadow-inner">
+                                    <div className="bg-white/[0.04] p-6 rounded-3xl border border-white/[0.06] space-y-6 group-hover:border-brand-blue/10 transition-all shadow-inner">
                                         <div className="flex justify-between items-center">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">MISSION_LOGS</p>
-                                            <div className="px-3 py-1 rounded-full bg-white text-[9px] font-black text-slate-500 shadow-sm border border-slate-100">{clientJobs.length} ORDENES</div>
+                                            <div className="px-3 py-1 rounded-full bg-obsidian-card text-[9px] font-black text-slate-400 shadow-sm border border-white/[0.06]">{clientJobs.length} ORDENES</div>
                                         </div>
                                         {lastJob ? (
                                             <div className="space-y-3">
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">ÚLTIMA_ACTIVA: <span className="text-slate-900">{lastJob.subtipo}</span></p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ÚLTIMA_ACTIVA: <span className="text-white">{lastJob.subtipo}</span></p>
                                                 <div className="flex justify-between items-end">
                                                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{formatDate(lastJob.fechaEntrada)}</p>
                                                     <p className="text-2xl font-black text-brand-blue tracking-tighter">{formatCurrency(lastJob.total)}</p>
@@ -429,7 +429,7 @@ const ClientesPage: React.FC = () => {
                             </motion.div>
                         );
                     }) : (
-                        <div className="col-span-full py-40 bg-white/50 border-2 border-dashed border-slate-200 rounded-[3rem] text-center flex flex-col items-center justify-center shadow-inner">
+                        <div className="col-span-full py-40 bg-obsidian-card/50 border-2 border-dashed border-white/[0.06] rounded-[3rem] text-center flex flex-col items-center justify-center shadow-inner">
                             <FingerPrintIcon className="w-24 h-24 text-slate-100 mb-8" />
                             <h3 className="text-3xl font-black text-slate-200 uppercase tracking-[0.5em]">VAULT_VACANT</h3>
                             <p className="text-slate-300 text-[10px] font-black uppercase mt-4 tracking-[0.8em]">NO_IDENTITY_ENTITIES_DETECTED_IN_DATABASE</p>

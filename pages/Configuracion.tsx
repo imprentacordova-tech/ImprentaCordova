@@ -37,7 +37,7 @@ const ControlInput: React.FC<{
                 value={value}
                 onChange={onChange}
                 maxLength={maxLength}
-                className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all duration-300 font-bold tracking-tight text-slate-900 placeholder:text-slate-300"
+                className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all duration-300 font-bold tracking-tight text-white placeholder:text-slate-300"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within/field:opacity-100 transition-all duration-500">
                 <div className="w-1.5 h-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(14,165,233,0.5)] animate-pulse"></div>
@@ -53,11 +53,11 @@ const ControlHeader: React.FC<{
     colorClass?: string 
 }> = ({ icon, title, subtitle, colorClass = "bg-brand-blue/10" }) => (
     <div className="flex items-center gap-6 mb-12 relative">
-        <div className={`p-4 rounded-2xl ${colorClass} border border-slate-100 shadow-sm flex items-center justify-center text-brand-blue`}>
+        <div className={`p-4 rounded-2xl ${colorClass} border border-white/[0.06] shadow-sm flex items-center justify-center text-brand-blue`}>
             {icon}
         </div>
         <div>
-            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{title}</h2>
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight">{title}</h2>
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">{subtitle}</p>
         </div>
     </div>
@@ -285,23 +285,23 @@ const ConfiguracionPage: React.FC = () => {
             className="max-w-[1600px] mx-auto space-y-16 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in"
         >
             {/* --- COMMAND HEADER --- */}
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-slate-200 pb-10">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-white/[0.06] pb-10">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Centro de Mando & Parámetros</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                         Configuración del Sistema <span className="text-brand-blue font-bold">• Ajustes</span>
                     </h1>
                 </div>
                 
-                <div className="flex items-center gap-6 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-6 bg-obsidian-card p-5 rounded-3xl border border-white/[0.06] shadow-sm">
                     <div className="flex flex-col items-end">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status del Servidor</span>
                         <span className="text-[11px] font-black text-emerald-500 uppercase tracking-tighter">OPERACIONAL • CLOUD READY</span>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 border border-emerald-100 flex items-center justify-center relative">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center relative">
                         <ServerIcon className="w-6 h-6" />
                     </div>
                 </div>
@@ -343,14 +343,14 @@ const ConfiguracionPage: React.FC = () => {
                 <div className="xl:col-span-8 space-y-12">
                     
                     {/* SYSTEM INITIALIZATION CARD */}
-                    <motion.div variants={itemVariants} className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                    <motion.div variants={itemVariants} className="bg-obsidian-card p-10 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative overflow-hidden group">
                         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 relative z-10">
                             <div className="flex items-center gap-8">
-                                <div className="p-6 rounded-3xl bg-slate-50 text-brand-blue border border-slate-100 flex items-center justify-center shadow-sm">
+                                <div className="p-6 rounded-3xl bg-white/[0.04] text-brand-blue border border-white/[0.06] flex items-center justify-center shadow-sm">
                                     <SparklesIcon className="w-10 h-10" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Catálogo Maestro</h3>
+                                    <h3 className="text-2xl font-black text-white uppercase tracking-tight">Catálogo Maestro</h3>
                                     <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[9px] mt-2">Sincronización de productos predeterminados</p>
                                 </div>
                             </div>
@@ -367,7 +367,7 @@ const ConfiguracionPage: React.FC = () => {
                                     }
                                 }} 
                                 disabled={syncing}
-                                className="px-12 py-5 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-4 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                                className="px-12 py-5 bg-obsidian-card border border-white/[0.06] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-4 hover:bg-white/[0.04] transition-all shadow-sm active:scale-95"
                             >
                                 {syncing ? <Loader2Icon className="animate-spin w-4 h-4 text-brand-blue"/> : <CloudIcon className="w-4 h-4 text-brand-blue"/>}
                                 Restaurar Catálogo
@@ -376,7 +376,7 @@ const ConfiguracionPage: React.FC = () => {
                     </motion.div>
 
                     {/* SETTINGS FORM */}
-                    <motion.div variants={itemVariants} className="bg-white p-12 rounded-[3rem] border border-slate-200 shadow-sm">
+                    <motion.div variants={itemVariants} className="bg-obsidian-card p-12 rounded-[3rem] border border-white/[0.06] shadow-sm">
                         <form onSubmit={handleSaveGeneral} className="space-y-16">
                             
                             <div className="grid lg:grid-cols-2 gap-20">
@@ -405,9 +405,9 @@ const ConfiguracionPage: React.FC = () => {
                                         icon={<PrinterIcon className="w-6 h-6" />} 
                                         title="Perfil de Imprenta" 
                                         subtitle="IDENTIFICACIÓN DE TALLER"
-                                        colorClass="bg-emerald-50 text-emerald-500"
+                                        colorClass="bg-emerald-500/10 text-emerald-500"
                                     />
-                                    <div className="space-y-8 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100">
+                                    <div className="space-y-8 p-8 rounded-[2.5rem] bg-white/[0.04] border border-white/[0.06]">
                                         <ControlInput label="Nombre Comercial" name="imprentaNombre" value={localConfig.imprentaNombre} onChange={e => setLocalConfig({...localConfig, imprentaNombre: e.target.value})} />
                                         <div className="grid grid-cols-2 gap-8">
                                             <ControlInput label="RUC Taller" name="imprentaRuc" value={localConfig.imprentaRuc} onChange={e => setLocalConfig({...localConfig, imprentaRuc: e.target.value})} maxLength={13} />
@@ -419,14 +419,14 @@ const ConfiguracionPage: React.FC = () => {
                             </div>
 
                             {/* SUBMIT SECTION */}
-                            <div className="pt-12 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-8">
+                            <div className="pt-12 border-t border-white/[0.06] flex flex-col sm:flex-row justify-between items-center gap-8">
                                 <div className="flex items-center gap-4">
                                     <AnimatePresence>
                                         {showSuccess && (
                                             <motion.div 
                                                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} 
                                                 exit={{ opacity: 0 }}
-                                                className="flex items-center gap-3 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100"
+                                                className="flex items-center gap-3 px-6 py-2 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20"
                                             >
                                                 <CheckCircleIcon className="w-4 h-4"/> 
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Sincronizado</span>
@@ -453,16 +453,16 @@ const ConfiguracionPage: React.FC = () => {
                 <div className="xl:col-span-4 space-y-12">
                     
                     {/* SRI CREDENTIALS VAULT */}
-                    <motion.div variants={itemVariants} className="bg-white rounded-[3rem] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+                    <motion.div variants={itemVariants} className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm flex flex-col h-full overflow-hidden">
                         
                         {/* VAULT HEADER */}
-                        <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                        <div className="p-8 border-b border-white/[0.06] bg-white/[0.04]/50">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-xl bg-white border border-slate-200 text-brand-blue shadow-sm">
+                                    <div className="p-3 rounded-xl bg-obsidian-card border border-white/[0.06] text-brand-blue shadow-sm">
                                         <LockClosedIcon className="w-6 h-6" />
                                     </div>
-                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Bóveda SRI</h3>
+                                    <h3 className="text-xl font-black text-white uppercase tracking-tighter">Bóveda SRI</h3>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -475,7 +475,7 @@ const ConfiguracionPage: React.FC = () => {
                                 <button 
                                     onClick={() => fileInputRef.current?.click()} 
                                     disabled={isImporting} 
-                                    className="w-full py-4 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-600 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"
+                                    className="w-full py-4 bg-obsidian-card border border-white/[0.06] rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-300 flex items-center justify-center gap-3 hover:bg-white/[0.04] transition-all"
                                 >
                                     {isImporting ? <Loader2Icon className="animate-spin w-4 h-4 text-brand-blue"/> : <ArrowDownTrayIcon className="w-4 h-4 text-brand-blue"/>}
                                     Importar Claves (Chrome)
@@ -511,7 +511,7 @@ const ConfiguracionPage: React.FC = () => {
                                     placeholder="BUSCAR RUC O CLIENTE..." 
                                     value={searchTerm} 
                                     onChange={e => setSearchTerm(e.target.value)} 
-                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
+                                    className="w-full pl-12 pr-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
                                 />
                             </div>
                         </div>
@@ -521,15 +521,15 @@ const ConfiguracionPage: React.FC = () => {
                             {filteredCredentials.map(c => (
                                 <motion.div 
                                     key={c.ruc} layout
-                                    className="p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-brand-blue/30 hover:bg-white hover:shadow-lg transition-all duration-300 group/item"
+                                    className="p-5 rounded-2xl bg-white/[0.04] border border-white/[0.06] hover:border-brand-blue/30 hover:bg-white/[0.08] hover:shadow-lg transition-all duration-300 group/item"
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-start gap-4">
-                                            <div className="p-2 rounded-lg bg-white border border-slate-100 text-slate-400 group-hover/item:text-brand-blue">
+                                            <div className="p-2 rounded-lg bg-obsidian-card border border-white/[0.06] text-slate-400 group-hover/item:text-brand-blue">
                                                 <FingerPrintIcon className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-[12px] font-black text-slate-900 uppercase tracking-tight leading-tight mb-1">
+                                                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-tight mb-1">
                                                     {c.origen || 'Cliente Anónimo'}
                                                 </p>
                                                 <p className="text-[9px] font-mono font-bold text-slate-400 tracking-widest">
@@ -539,7 +539,7 @@ const ConfiguracionPage: React.FC = () => {
                                         </div>
                                         <button 
                                             onClick={() => { if(window.confirm(`¿Eliminar nodo ${c.ruc}?`)) deleteSriCredential(c.ruc); }} 
-                                            className="p-2 text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all rounded-lg"
+                                            className="p-2 text-slate-200 hover:text-red-500 hover:bg-brand-red/10 transition-all rounded-lg"
                                         >
                                             <TrashIcon className="w-4 h-4"/>
                                         </button>
@@ -547,14 +547,14 @@ const ConfiguracionPage: React.FC = () => {
                                     
                                     <button 
                                         onClick={() => togglePasswordVisibility(c.ruc)} 
-                                        className="w-full py-3 px-4 bg-white border border-slate-100 rounded-xl text-slate-600 flex items-center justify-between group/pass"
+                                        className="w-full py-3 px-4 bg-obsidian-card border border-white/[0.06] rounded-xl text-slate-300 flex items-center justify-between group/pass"
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
                                             <KeyIcon className="w-3 h-3 text-slate-300 group-hover/pass:text-brand-blue" />
                                             {visiblePasswords.has(c.ruc) ? 
                                                 <span className="text-[11px] font-mono font-black text-brand-blue tracking-widest truncate">{c.password}</span> : 
                                                 <div className="flex gap-1">
-                                                    {[1,2,3,4,5,6].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>)}
+                                                    {[1,2,3,4,5,6].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/[0.08]"></div>)}
                                                 </div>
                                             }
                                         </div>
@@ -565,7 +565,7 @@ const ConfiguracionPage: React.FC = () => {
                         </div>
 
                         {/* VAULT FOOTER */}
-                        <div className="p-8 border-t border-slate-100 bg-slate-50/50">
+                        <div className="p-8 border-t border-white/[0.06] bg-white/[0.04]/50">
                             <div className="p-5 rounded-2xl border border-brand-blue/10 bg-brand-blue/5 flex gap-4 items-center">
                                 <ShieldCheckIcon className="w-5 h-5 text-brand-blue flex-shrink-0" />
                                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
@@ -580,7 +580,7 @@ const ConfiguracionPage: React.FC = () => {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
             `}</style>
         </motion.div>
     );

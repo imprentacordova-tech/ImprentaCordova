@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,9 +8,9 @@ import {
     DashboardIcon, CalculatorIcon, PaletteIcon, CordovaLogo,
     SparklesIcon, RocketLaunchIcon,
     ActivityIcon, WalletIcon, CircleStackIcon, ShieldCheckIcon,
-    MonitorIcon, FingerPrintIcon,
+    MonitorIcon,
     GlobeIcon, ChevronDownIcon, ChevronRightIcon,
-    ReceiptIcon, HistoryIcon, BoltIcon, PuzzlePieceIcon
+    ReceiptIcon, HistoryIcon, PuzzlePieceIcon
 } from './Icons';
 import { TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
@@ -25,7 +24,6 @@ interface LayoutProps {
     children: React.ReactNode;
 }
 
-// ─── NAV GROUPS ─────────────────────────────────────────────────────────────
 const buildNavGroups = (isAdmin: boolean) => [
     {
         id: 'operaciones',
@@ -95,14 +93,13 @@ const PAGE_TITLES: Record<string, string> = {
     '/configuracion': 'Configuración General',
 };
 
-// ─── ROLE BADGE ─────────────────────────────────────────────────────────────
 const RoleBadge: React.FC<{ rol: string }> = React.memo(({ rol }) => {
     const config = {
-        'Admin':     { bg: 'bg-amber-50 border-amber-200 text-amber-700' },
-        'root':      { bg: 'bg-red-50 border-red-200 text-red-700' },
-        'Operador':  { bg: 'bg-blue-50 border-blue-200 text-blue-700' },
-        'Diseñador': { bg: 'bg-purple-50 border-purple-200 text-purple-700' },
-    }[rol] ?? { bg: 'bg-slate-50 border-slate-200 text-slate-600' };
+        'Admin':     { bg: 'bg-amber-500/10 border-amber-500/20 text-amber-400' },
+        'root':      { bg: 'bg-brand-red/10 border-brand-red/20 text-brand-red' },
+        'Operador':  { bg: 'bg-brand-blue/10 border-brand-blue/20 text-brand-blue' },
+        'Diseñador': { bg: 'bg-purple-500/10 border-purple-500/20 text-purple-400' },
+    }[rol] ?? { bg: 'bg-white/5 border-white/10 text-slate-400' };
 
     return (
         <span className={`text-[7px] font-black uppercase tracking-[0.3em] px-2 py-0.5 rounded-full border ${config.bg}`}>
@@ -111,7 +108,6 @@ const RoleBadge: React.FC<{ rol: string }> = React.memo(({ rol }) => {
     );
 });
 
-// ─── NAV ITEM ────────────────────────────────────────────────────────────────
 const NavItem: React.FC<{
     item: { path: string; label: string; icon: any; badge: string | null };
     badges: Record<string, number>;
@@ -126,11 +122,11 @@ const NavItem: React.FC<{
                 href={item.path}
                 download
                 onClick={onClick}
-                className="group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-300 relative text-left w-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border border-emerald-500/20 my-1"
+                className="group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-300 relative text-left w-full text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 border border-emerald-500/15 my-1"
             >
-                <item.icon className="w-4 h-4 shrink-0 text-emerald-600" />
+                <item.icon className="w-4 h-4 shrink-0 text-emerald-400" />
                 <span className="text-[11px] font-bold tracking-wide flex-1 truncate">{item.label}</span>
-                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 bg-emerald-500 text-white uppercase tracking-wider">
+                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 bg-emerald-500/20 text-emerald-300 uppercase tracking-wider">
                     {item.badge || 'ZIP'}
                 </span>
             </a>
@@ -144,17 +140,17 @@ const NavItem: React.FC<{
             className={({ isActive }) => `
                 group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-300 relative text-left w-full
                 ${isActive
-                    ? 'bg-brand-blue text-white shadow-blue-glow-sm'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}
+                    ? 'bg-liquid-gold/10 text-liquid-gold border-l-2 border-liquid-gold'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'}
             `}
         >
             {({ isActive }) => (
                 <>
-                    <item.icon className={`w-4 h-4 shrink-0 transition-all duration-300 ${isActive ? 'text-white' : ''}`} />
+                    <item.icon className={`w-4 h-4 shrink-0 transition-all duration-300 ${isActive ? 'text-liquid-gold' : ''}`} />
                     <span className="text-[11px] font-bold tracking-wide flex-1 truncate">{item.label}</span>
                     {badgeCount > 0 && (
                         <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-brand-blue/10 text-brand-blue'
+                            isActive ? 'bg-liquid-gold/20 text-liquid-gold' : 'bg-liquid-gold/10 text-liquid-gold/60'
                         }`}>
                             {badgeCount}
                         </span>
@@ -165,7 +161,6 @@ const NavItem: React.FC<{
     );
 });
 
-// ─── NAV GROUP ───────────────────────────────────────────────────────────────
 const NavGroup: React.FC<{
     group: ReturnType<typeof buildNavGroups>[number];
     badges: Record<string, number>;
@@ -175,7 +170,6 @@ const NavGroup: React.FC<{
     const isGroupActive = group.items.some(i => location.pathname === i.path);
     const [open, setOpen] = useState(true);
 
-    // Load saved state
     useEffect(() => {
         const saved = localStorage.getItem(`nav-group-${group.id}`);
         if (saved !== null) setOpen(saved === 'true');
@@ -194,11 +188,11 @@ const NavGroup: React.FC<{
                 className="w-full flex items-center justify-between px-4 py-1.5 group"
             >
                 <span className={`text-[9px] font-black uppercase tracking-[0.4em] transition-colors ${
-                    isGroupActive ? 'text-brand-blue' : 'text-slate-300 group-hover:text-slate-500'
+                    isGroupActive ? 'text-liquid-gold' : 'text-slate-500 group-hover:text-slate-400'
                 }`}>
                     {group.title}
                 </span>
-                <ChevronDownIcon className={`w-3 h-3 text-slate-300 transition-transform duration-300 ${open ? '' : '-rotate-90'}`} />
+                <ChevronDownIcon className={`w-3 h-3 text-slate-500 transition-transform duration-300 ${open ? '' : '-rotate-90'}`} />
             </button>
 
             <AnimatePresence initial={false}>
@@ -220,7 +214,6 @@ const NavGroup: React.FC<{
     );
 });
 
-// ─── MAIN LAYOUT ─────────────────────────────────────────────────────────────
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
@@ -234,23 +227,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const isAdmin = user.rol === 'Admin' || (user.rol as string) === 'root';
     const navGroups = useMemo(() => buildNavGroups(isAdmin), [isAdmin]);
 
-    // Compute live badges from real data
     const badges = useMemo<Record<string, number>>(() => {
         if (!trabajos) return {};
         const activos = trabajos.filter(t => t.estado !== TrabajoEstado.ENTREGADO);
         return {
             ordenes: activos.length,
             cobrar: activos.filter(t => t.saldo > 0).length,
-            stock:  0, // Inventory alerts would go here
+            stock:  0,
         };
     }, [trabajos]);
 
-    const pageTitle = useMemo(() => PAGE_TITLES[location.pathname] || 'Sistema Operativo', [location.pathname]);
+    const pageTitle = useMemo(() => PAGE_TITLES[location.pathname] || 'Sistema', [location.pathname]);
 
-    // Close sidebar on route change
     useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
-    // Current time display
     const [time, setTime] = useState(() => new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }));
     useEffect(() => {
         const timer = setInterval(() => {
@@ -262,38 +252,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const userInitials = user.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     const SidebarContent = ({ onNavClick }: { onNavClick?: () => void }) => (
-        <div className="h-full flex flex-col">
-
-            {/* ── Brand ── */}
-            <div className="px-5 pt-6 pb-4 border-b border-slate-100">
+        <div className="h-full flex flex-col bg-obsidian-mid">
+            {/* Brand */}
+            <div className="px-5 pt-6 pb-4 border-b border-white/[0.06]">
                 <Link to="/" className="flex items-center gap-3 group">
                     <div className="relative w-9 h-9 shrink-0">
                         <CordovaLogo className="w-9 h-9 object-contain transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute -inset-1.5 bg-brand-blue/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute -inset-1.5 bg-liquid-gold/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex flex-col leading-none min-w-0">
-                        <span className="text-base font-black tracking-tighter text-slate-900 leading-none">
-                            CÓRDOVA<span className="text-brand-blue">.</span>
+                        <span className="text-base font-black tracking-tighter text-white leading-none">
+                            CÓRDOVA<span className="text-liquid-gold">.</span>
                         </span>
-                        <span className="text-[7px] font-bold text-slate-400 uppercase tracking-[0.45em] mt-0.5">
+                        <span className="text-[7px] font-bold text-slate-500 uppercase tracking-[0.45em] mt-0.5">
                             Centro de Producción
                         </span>
                     </div>
                 </Link>
             </div>
 
-            {/* ── Quick Action ── */}
+            {/* Quick Action */}
             <div className="px-4 pt-4 pb-3">
                 <button
                     onClick={() => { navigate('/nuevo'); onNavClick?.(); }}
-                    className="w-full flex items-center justify-center gap-2.5 py-3 bg-brand-blue text-white rounded-xl text-[10px] font-black uppercase tracking-[0.25em] hover:bg-brand-blue/90 active:scale-95 transition-all shadow-blue-glow-sm"
+                    className="w-full flex items-center justify-center gap-2.5 py-3 btn-gold rounded-xl"
                 >
                     <SparklesIcon className="w-3.5 h-3.5" />
                     Nueva Orden
                 </button>
             </div>
 
-            {/* ── Navigation ── */}
+            {/* Navigation */}
             <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-5 no-scrollbar">
                 {navGroups.map(group => (
                     <NavGroup
@@ -305,23 +294,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 ))}
             </nav>
 
-            {/* ── User Footer ── */}
-            <div className="px-4 pb-5 pt-3 border-t border-slate-100 space-y-3">
-                {/* User info */}
-                <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-50 transition-colors cursor-default">
-                    <div className="w-9 h-9 rounded-xl bg-brand-blue/10 border border-brand-blue/15 flex items-center justify-center shrink-0">
-                        <span className="text-[11px] font-black text-brand-blue">{userInitials}</span>
+            {/* User Footer */}
+            <div className="px-4 pb-5 pt-3 border-t border-white/[0.06] space-y-3">
+                <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/[0.03] transition-colors cursor-default">
+                    <div className="w-9 h-9 rounded-xl bg-liquid-gold/10 border border-liquid-gold/15 flex items-center justify-center shrink-0">
+                        <span className="text-[11px] font-black text-liquid-gold">{userInitials}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-black text-slate-800 truncate">{user.nombre}</div>
+                        <div className="text-[11px] font-black text-white truncate">{user.nombre}</div>
                         <RoleBadge rol={user.rol} />
                     </div>
                 </div>
 
-                {/* Logout */}
                 <button
                     onClick={authLogout}
-                    className="w-full flex items-center justify-center gap-2.5 py-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-100 transition-all text-[10px] font-black uppercase tracking-widest"
+                    className="w-full flex items-center justify-center gap-2.5 py-2.5 text-slate-500 hover:text-brand-red hover:bg-brand-red/5 rounded-xl border border-transparent hover:border-brand-red/10 transition-all text-[10px] font-black uppercase tracking-widest"
                 >
                     <LogoutIcon className="w-3.5 h-3.5" />
                     Cerrar Sesión
@@ -331,15 +318,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex overflow-hidden">
+        <div className="min-h-screen bg-brand-dark text-slate-200 font-sans flex overflow-hidden">
             <SEO title={`${pageTitle} · Imprenta Córdova`} />
 
-            {/* ── SIDEBAR DESKTOP ── */}
-            <aside className="hidden lg:flex flex-col w-[240px] shrink-0 bg-white border-r border-slate-200 h-screen sticky top-0 z-[100]">
+            {/* SIDEBAR DESKTOP */}
+            <aside className="hidden lg:flex flex-col w-[240px] shrink-0 bg-obsidian-mid border-r border-white/[0.06] h-screen sticky top-0 z-[100]">
                 <SidebarContent />
             </aside>
 
-            {/* ── SIDEBAR MOBILE OVERLAY ── */}
+            {/* SIDEBAR MOBILE */}
             <AnimatePresence>
                 {sidebarOpen && (
                     <>
@@ -347,7 +334,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[140] bg-slate-900/40 backdrop-blur-sm lg:hidden"
+                            className="fixed inset-0 z-[140] bg-black/60 backdrop-blur-sm lg:hidden"
                             onClick={() => setSidebarOpen(false)}
                         />
                         <motion.aside
@@ -355,12 +342,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             animate={{ x: 0 }}
                             exit={{ x: -280 }}
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                            className="fixed inset-y-0 left-0 z-[150] w-[260px] bg-white border-r border-slate-200 lg:hidden"
+                            className="fixed inset-y-0 left-0 z-[150] w-[260px] bg-obsidian-mid border-r border-white/[0.06] lg:hidden"
                         >
                             <div className="absolute top-4 right-4 z-10">
                                 <button
                                     onClick={() => setSidebarOpen(false)}
-                                    className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all"
                                 >
                                     <CloseIcon className="w-4 h-4" />
                                 </button>
@@ -371,48 +358,42 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 )}
             </AnimatePresence>
 
-            {/* ── MAIN CONTENT ── */}
+            {/* MAIN CONTENT */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-                {/* ── TOP HEADER ── */}
-                <header className="h-[72px] bg-white/90 backdrop-blur-xl border-b border-slate-200 px-5 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-[90]">
-                    {/* Left: Menu + Title */}
+                {/* TOP HEADER */}
+                <header className="h-[72px] bg-obsidian-mid/90 backdrop-blur-xl border-b border-white/[0.06] px-5 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-[90]">
                     <div className="flex items-center gap-4 min-w-0">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all lg:hidden shrink-0"
+                            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all lg:hidden shrink-0"
                             aria-label="Abrir menú"
                         >
                             <MenuIcon className="w-5 h-5" />
                         </button>
 
                         <div className="flex flex-col min-w-0">
-                            {/* Breadcrumb */}
-                            <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em]">
+                            <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">
                                 <span>Imprenta Córdova</span>
                                 <ChevronRightIcon className="w-2.5 h-2.5" />
-                                <span className="text-brand-blue truncate">{pageTitle}</span>
+                                <span className="text-liquid-gold truncate">{pageTitle}</span>
                             </div>
-                            {/* Sync indicator */}
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="text-[8px] font-mono text-slate-400 uppercase tracking-[0.2em]">
+                                <span className="text-[8px] font-mono text-slate-500 uppercase tracking-[0.2em]">
                                     Sistema en línea · {time}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Actions */}
                     <div className="flex items-center gap-2 shrink-0">
-                        {/* Total pendientes badge */}
                         {badges.ordenes > 0 && (
                             <button
                                 onClick={() => navigate('/trabajos')}
-                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
+                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg hover:bg-amber-500/15 transition-colors"
                             >
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider">
                                     {badges.ordenes} activas
                                 </span>
                             </button>
@@ -420,14 +401,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
                         <SearchOmni />
 
-                        {/* User avatar */}
-                        <div className="w-9 h-9 rounded-xl bg-brand-blue/10 border border-brand-blue/15 flex items-center justify-center cursor-default">
-                            <span className="text-[10px] font-black text-brand-blue">{userInitials}</span>
+                        <div className="w-9 h-9 rounded-xl bg-liquid-gold/10 border border-liquid-gold/15 flex items-center justify-center cursor-default">
+                            <span className="text-[10px] font-black text-liquid-gold">{userInitials}</span>
                         </div>
                     </div>
                 </header>
 
-                {/* ── PAGE CONTENT ── */}
+                {/* PAGE CONTENT */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -444,7 +424,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
             </main>
 
-            {/* Mobile Nav */}
             <MobileFloatingNav />
         </div>
     );

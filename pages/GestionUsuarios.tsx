@@ -18,14 +18,14 @@ const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -5 }}
-        className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group transition-all"
+        className="bg-obsidian-card p-8 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative group transition-all"
     >
         <div className="flex justify-between items-start">
             <div className="space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{title}</p>
-                <p className="text-4xl font-black text-slate-900 tracking-tighter">{value}</p>
+                <p className="text-4xl font-black text-white tracking-tighter">{value}</p>
             </div>
-            <div className={`${colorClass} p-4 rounded-2xl border border-slate-100 shadow-sm`}>
+            <div className={`${colorClass} p-4 rounded-2xl border border-white/[0.06] shadow-sm`}>
                 <Icon className="h-6 w-6" />
             </div>
         </div>
@@ -53,30 +53,30 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
                     initial={{ scale: 0.95, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="bg-white w-full max-w-lg overflow-hidden flex flex-col relative z-10 border border-slate-200 shadow-2xl rounded-[3rem]" 
+                    className="bg-obsidian-card w-full max-w-lg overflow-hidden flex flex-col relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]" 
                     onClick={e => e.stopPropagation()}
                 >
-                    <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-brand-blue">Perfil</span></h2>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-brand-blue">Perfil</span></h2>
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Gstión de Accesos de Personal</p>
                         </div>
-                        <button onClick={onClose} className="p-3 bg-white hover:bg-slate-50 text-slate-400 border border-slate-200 rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
+                        <button onClick={onClose} className="p-3 bg-obsidian-card hover:bg-white/[0.04] text-slate-400 border border-white/[0.06] rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
                         <div className="space-y-6">
                             <div className="group/field">
                                 <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Nombre Completo</label>
-                                <input type="text" value={formData.nombre || ''} onChange={e => setFormData({...formData, nombre: e.target.value})} required className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900" placeholder="Ej. Juan Pérez" />
+                                <input type="text" value={formData.nombre || ''} onChange={e => setFormData({...formData, nombre: e.target.value})} required className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white" placeholder="Ej. Juan Pérez" />
                             </div>
                             <div className="group/field">
                                 <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Correo Electrónico</label>
-                                <input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} required className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900" placeholder="correo@ejemplo.com" />
+                                <input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} required className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white" placeholder="correo@ejemplo.com" />
                             </div>
                             <div className="group/field">
                                 <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Rol en el Sistema</label>
-                                <select value={formData.rol || 'Operador'} onChange={e => setFormData({...formData, rol: e.target.value as any})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
+                                <select value={formData.rol || 'Operador'} onChange={e => setFormData({...formData, rol: e.target.value as any})} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white appearance-none cursor-pointer">
                                     <option value="Admin">ADMINISTRADOR</option>
                                     <option value="Operador">OPERADOR</option>
                                     <option value="Diseñador">DISEÑADOR</option>
@@ -84,11 +84,11 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
                             </div>
                         </div>
 
-                        <div className="pt-8 border-t border-slate-100 space-y-6">
+                        <div className="pt-8 border-t border-white/[0.06] space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <KeyIcon className="w-5 h-5 text-brand-blue" />
-                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Protección de Cuenta</span>
+                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Protección de Cuenta</span>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input 
@@ -97,7 +97,7 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
                                         onChange={e => setFormData({...formData, requirePassword: e.target.checked})} 
                                         className="sr-only peer" 
                                     />
-                                    <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
+                                    <div className="w-11 h-6 bg-white/[0.08] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
                                 </label>
                             </div>
 
@@ -108,15 +108,15 @@ const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void;
                                         type="text" value={formData.password || ''} 
                                         onChange={e => setFormData({...formData, password: e.target.value})} 
                                         placeholder="CONTRASEÑA MAESTRA"
-                                        className="w-full p-4 bg-white border border-brand-blue/20 rounded-xl text-sm font-black text-slate-900 focus:border-brand-blue outline-none transition-all" 
+                                        className="w-full p-4 bg-obsidian-card border border-brand-blue/20 rounded-xl text-sm font-black text-white focus:border-brand-blue outline-none transition-all" 
                                     />
                                 </motion.div>
                             )}
                         </div>
                     </form>
 
-                    <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Cancelar</button>
+                    <div className="p-10 border-t border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
+                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
                         <button onClick={handleSubmit} className="px-12 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-brand-blue/20 active:scale-95 transition-all">Sincronizar Perfil</button>
                     </div>
                 </motion.div>
@@ -191,13 +191,13 @@ const GestionUsuariosPage: React.FC = () => {
     return (
         <div className="max-w-[1600px] mx-auto space-y-12 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in">
             {/* --- HEADER --- */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-slate-200 pb-10">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-white/[0.06] pb-10">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Control de Accesos & Roles</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                         Gestión de Usuarios <span className="text-brand-blue font-bold">• Personal</span>
                     </h1>
                 </div>
@@ -213,22 +213,22 @@ const GestionUsuariosPage: React.FC = () => {
             {/* --- KPI SECTION --- */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <KpiCard title="Censo Total" value={users.length} icon={UsersIcon} />
-                <KpiCard title="Portales Activos" value={users.filter(u => u.estado === 'Activo').length} icon={ShieldCheckIcon} colorClass="bg-emerald-50 text-emerald-500" />
-                <KpiCard title="Protocolos en Pausa" value={users.filter(u => u.estado === 'Inactivo').length} icon={ExclamationTriangleIcon} colorClass="bg-rose-50 text-rose-500" />
+                <KpiCard title="Portales Activos" value={users.filter(u => u.estado === 'Activo').length} icon={ShieldCheckIcon} colorClass="bg-emerald-500/10 text-emerald-500" />
+                <KpiCard title="Protocolos en Pausa" value={users.filter(u => u.estado === 'Inactivo').length} icon={ExclamationTriangleIcon} colorClass="bg-brand-red/10 text-rose-500" />
             </div>
 
             {/* --- TABLE SECTION --- */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden"
+                className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm overflow-hidden"
             >
-                <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/50">
+                <div className="p-8 border-b border-white/[0.06] flex flex-col md:flex-row justify-between items-center gap-6 bg-white/[0.04]/50">
                     <div className="relative group w-full md:max-w-md">
                         <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
                         <input 
                             type="text" placeholder="RASTREAR USUARIO O EMAIL..." value={searchTerm} 
                             onChange={e => setSearchTerm(e.target.value)} 
-                            className="w-full pl-16 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
+                            className="w-full pl-16 pr-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
                         />
                     </div>
                     <div className="flex items-center gap-4">
@@ -240,7 +240,7 @@ const GestionUsuariosPage: React.FC = () => {
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-slate-100">
+                            <tr className="bg-white/[0.04]/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-white/[0.06]">
                                 <th className="px-10 py-6">Usuario Atelier</th>
                                 <th className="px-10 py-6">Rango Operativo</th>
                                 <th className="px-10 py-6">Seguridad</th>
@@ -249,19 +249,19 @@ const GestionUsuariosPage: React.FC = () => {
                                 <th className="px-10 py-6 text-right">Acción</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-white/[0.06]">
                             {loading ? (
                                 <tr><td colSpan={6} className="py-40 text-center"><Loader2Icon className="w-10 h-10 text-brand-blue animate-spin mx-auto"/></td></tr>
                             ) : filteredAndSortedUsers.length === 0 ? (
-                                <tr><td colSpan={6} className="py-40 text-center"><UsersIcon className="w-12 h-12 mx-auto mb-4 text-slate-100"/><p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin Coincidencias</p></td></tr>
+                                <tr><td colSpan={6} className="py-40 text-center"><UsersIcon className="w-12 h-12 mx-auto mb-4 text-white/10"/><p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin Coincidencias</p></td></tr>
                             ) : filteredAndSortedUsers.map((user) => (
-                                <tr key={user.id} className="group hover:bg-slate-50 transition-all duration-300">
+                                <tr key={user.id} className="group hover:bg-white/[0.04] transition-all duration-300">
                                     <td className="px-10 py-8">
-                                        <p className="text-slate-900 font-black uppercase tracking-tight text-lg group-hover:text-brand-blue transition-colors">{user.nombre}</p>
+                                        <p className="text-white font-black uppercase tracking-tight text-lg group-hover:text-brand-blue transition-colors">{user.nombre}</p>
                                         <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest">{user.email}</p>
                                     </td>
                                     <td className="px-10 py-8">
-                                        <span className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${user.rol === 'Admin' ? 'bg-brand-blue/5 text-brand-blue border-brand-blue/20' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>{user.rol}</span>
+                                        <span className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${user.rol === 'Admin' ? 'bg-brand-blue/5 text-brand-blue border-brand-blue/20'                                             : 'bg-white/[0.04] text-slate-400 border-white/[0.06]'}`}>{user.rol}</span>
                                     </td>
                                     <td className="px-10 py-8">
                                         {user.requirePassword ? (
@@ -284,11 +284,11 @@ const GestionUsuariosPage: React.FC = () => {
                                                 logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `${newStatus === 'Activo' ? 'Activó' : 'Desactivó'} a ${user.nombre}`, 'Seguridad');
                                                 fetchUsers();
                                             }} className="sr-only peer" />
-                                            <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
+                                            <div className="w-11 h-6 bg-white/[0.08] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
                                         </label>
                                     </td>
                                     <td className="px-10 py-8 text-right">
-                                        <button onClick={() => setEditingUser(user)} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 rounded-xl transition-all shadow-sm">
+                                        <button onClick={() => setEditingUser(user)} className="p-3 bg-obsidian-card border border-white/[0.06] text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 rounded-xl transition-all shadow-sm">
                                             <PencilIcon className="h-5 w-5" />
                                         </button>
                                     </td>
@@ -302,7 +302,7 @@ const GestionUsuariosPage: React.FC = () => {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
             `}</style>
         </div>
     );

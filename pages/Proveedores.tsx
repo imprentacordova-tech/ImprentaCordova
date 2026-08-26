@@ -29,14 +29,14 @@ const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -5 }}
-        className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group transition-all"
+        className="bg-obsidian-card p-8 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative group transition-all"
     >
         <div className="flex justify-between items-start">
             <div className="space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{title}</p>
-                <p className="text-4xl font-black text-slate-900 tracking-tighter">{value}</p>
+                <p className="text-4xl font-black text-white tracking-tighter">{value}</p>
             </div>
-            <div className={`${colorClass} p-4 rounded-2xl border border-slate-100 shadow-sm`}>
+            <div className={`${colorClass} p-4 rounded-2xl border border-white/[0.06] shadow-sm`}>
                 <Icon className="h-6 w-6" />
             </div>
         </div>
@@ -47,24 +47,24 @@ const InputField: React.FC<{ label: string; name: string; value: any; onChange: 
     <div className="space-y-3">
         <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">{label}</label>
         {props.type === 'select' ? (
-            <select name={name} value={value} onChange={onChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
+            <select name={name} value={value} onChange={onChange} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white appearance-none cursor-pointer">
                 {props.children}
             </select>
         ) : (
-            <input name={name} value={value} onChange={onChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900" {...props} />
+            <input name={name} value={value} onChange={onChange} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white" {...props} />
         )}
     </div>
 );
 
 const InfoItem: React.FC<{icon?: React.FC<any>, label: string, value: any, link?: string}> = ({ icon: Icon, label, value, link }) => (
-    <div className="flex items-start gap-4 p-5 rounded-[2rem] bg-slate-50 border border-slate-200 group transition-all hover:border-brand-blue/30">
-        {Icon && <div className="p-3 bg-white rounded-xl border border-slate-100 group-hover:text-brand-blue transition-colors shadow-sm"><Icon className="h-4 w-4" /></div>}
+    <div className="flex items-start gap-4 p-5 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group transition-all hover:border-brand-blue/30">
+        {Icon && <div className="p-3 bg-obsidian-card rounded-xl border border-white/[0.06] group-hover:text-brand-blue transition-colors shadow-sm"><Icon className="h-4 w-4" /></div>}
         <div className="min-w-0">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
             {link ? (
-                <a href={link} target="_blank" rel="noopener noreferrer" className="text-sm font-black text-slate-900 hover:text-brand-blue transition-colors truncate block uppercase">{value || 'SIN VINCULO'}</a>
+                <a href={link} target="_blank" rel="noopener noreferrer" className="text-sm font-black text-white hover:text-brand-blue transition-colors truncate block uppercase">{value || 'SIN VINCULO'}</a>
             ) : (
-                <p className="text-sm font-black text-slate-900 truncate block uppercase">{value || 'N/A'}</p>
+                <p className="text-sm font-black text-white truncate block uppercase">{value || 'N/A'}</p>
             )}
         </div>
     </div>
@@ -90,15 +90,15 @@ const ProveedorFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSav
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
                 <motion.div 
                     initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="bg-white w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-slate-200 shadow-2xl rounded-[3rem]" 
+                    className="bg-obsidian-card w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]" 
                     onClick={e => e.stopPropagation()}
                 >
-                    <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Registro de <span className="text-brand-blue">Aliado</span></h2>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Registro de <span className="text-brand-blue">Aliado</span></h2>
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Integración de Red Logística</p>
                         </div>
-                        <button onClick={onClose} className="p-3 bg-white hover:bg-slate-50 text-slate-400 border border-slate-200 rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
+                        <button onClick={onClose} className="p-3 bg-obsidian-card hover:bg-white/[0.04] text-slate-400 border border-white/[0.06] rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
                     </div>
                     
                     <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
@@ -122,12 +122,12 @@ const ProveedorFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSav
                         </div>
                         <div className="space-y-3">
                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Portafolio de Productos</label>
-                            <textarea value={formData.productos || ''} onChange={e => setFormData({...formData, productos: e.target.value})} rows={3} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-slate-900 uppercase tracking-widest min-h-[120px]" placeholder="DESCRIBA LOS PRODUCTOS O SERVICIOS QUE PROVEE..." />
+                            <textarea value={formData.productos || ''} onChange={e => setFormData({...formData, productos: e.target.value})} rows={3} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white uppercase tracking-widest min-h-[120px]" placeholder="DESCRIBA LOS PRODUCTOS O SERVICIOS QUE PROVEE..." />
                         </div>
                     </form>
 
-                    <div className="p-10 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Cancelar</button>
+                    <div className="p-10 border-t border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
+                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
                         <button onClick={handleSubmit} className="px-12 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-brand-blue/20 active:scale-95 transition-all">Sincronizar Protocolo</button>
                     </div>
                 </motion.div>
@@ -179,13 +179,13 @@ const ProveedoresPage: React.FC = () => {
     return (
         <div className="max-w-[1600px] mx-auto space-y-12 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in">
             {/* --- HEADER --- */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-slate-200 pb-10">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-white/[0.06] pb-10">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className="w-2 h-2 rounded-full bg-brand-blue" />
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Red de Abastecimiento</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
                         Directorio de Proveedores <span className="text-brand-blue font-bold">• Insumos</span>
                     </h1>
                 </div>
@@ -201,8 +201,8 @@ const ProveedoresPage: React.FC = () => {
             {/* --- KPI SECTION --- */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <KpiCard title="Nodos Activos" value={kpis.total} icon={BuildingStorefrontIcon} />
-                <KpiCard title="Protocolos Pendientes" value={kpis.pendientes} icon={ActivityIcon} colorClass="bg-amber-50 text-amber-500" />
-                <KpiCard title="Ciclos de Servicio" value={kpis.mantenimientos} icon={WrenchScrewdriverIcon} colorClass="bg-indigo-50 text-indigo-500" />
+                <KpiCard title="Protocolos Pendientes" value={kpis.pendientes} icon={ActivityIcon} colorClass="bg-amber-500/10 text-amber-500" />
+                <KpiCard title="Ciclos de Servicio" value={kpis.mantenimientos} icon={WrenchScrewdriverIcon} colorClass="bg-brand-blue/10 text-indigo-500" />
             </div>
 
             {/* --- CONTENT GRID --- */}
@@ -210,15 +210,15 @@ const ProveedoresPage: React.FC = () => {
                 
                 {/* DIRECTORY PANEL */}
                 <div className="lg:col-span-12 xl:col-span-7 space-y-10 flex flex-col min-h-[800px]">
-                    <div className="bg-white rounded-[3rem] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-                        <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-6">
-                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Directorio <span className="text-brand-blue">Estratégico</span></h2>
+                    <div className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm flex flex-col h-full overflow-hidden">
+                        <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Directorio <span className="text-brand-blue">Estratégico</span></h2>
                             <div className="flex gap-4 w-full md:w-auto">
                                 <div className="relative group flex-1 md:w-64">
                                     <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5 group-focus-within:text-brand-blue transition-colors"/>
-                                    <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="RASTREAR..." className="w-full pl-16 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue outline-none transition-all shadow-sm" />
+                                    <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="RASTREAR..." className="w-full pl-16 pr-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue outline-none transition-all shadow-sm" />
                                 </div>
-                                <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-6 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none transition-all shadow-sm appearance-none cursor-pointer">
+                                <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none transition-all shadow-sm appearance-none cursor-pointer">
                                     {categories.map(cat => <option key={cat} value={cat}>{cat.toUpperCase()}</option>)}
                                 </select>
                             </div>
@@ -230,21 +230,21 @@ const ProveedoresPage: React.FC = () => {
                                     <motion.div 
                                         key={p.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                                         onClick={() => setViewingProveedor(p)}
-                                        className="bg-white border border-slate-100 rounded-[2.5rem] p-10 cursor-pointer group flex flex-col h-full hover:bg-slate-50 transition-all duration-500 hover:border-brand-blue/20 hover:shadow-xl hover:shadow-brand-blue/5"
+                                        className="bg-obsidian-card border border-white/[0.06] rounded-[2.5rem] p-10 cursor-pointer group flex flex-col h-full hover:bg-white/[0.04] transition-all duration-500 hover:border-brand-blue/20 hover:shadow-xl hover:shadow-brand-blue/5"
                                     >
                                         <div className="flex-grow space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <h3 className="text-2xl font-black text-slate-900 group-hover:text-brand-blue transition-colors uppercase tracking-tight leading-none">{p.nombre}</h3>
+                                                <h3 className="text-2xl font-black text-white group-hover:text-brand-blue transition-colors uppercase tracking-tight leading-none">{p.nombre}</h3>
                                                 <div className={`w-3 h-3 rounded-full ${p.estado === 'Activo' ? 'bg-emerald-500' : 'bg-rose-500'} shadow-lg`}></div>
                                             </div>
                                             <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] block">{p.categoria}</span>
                                             <p className="text-xs font-bold text-slate-400 h-10 line-clamp-2 uppercase leading-relaxed tracking-wider italic">{p.productos || 'SIN PORTAFOLIO REGISTRADO'}</p>
                                         </div>
-                                        <div className="mt-10 pt-8 border-t border-slate-100 flex justify-between items-center">
-                                            <a href={formatWhatsAppLink(p.telefono)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="px-5 py-3 bg-emerald-50 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all duration-500 flex items-center gap-3 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                        <div className="mt-10 pt-8 border-t border-white/[0.06] flex justify-between items-center">
+                                            <a href={formatWhatsAppLink(p.telefono)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="px-5 py-3 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all duration-500 flex items-center gap-3 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                                                 <WhatsAppIcon className="w-4 h-4"/> Canal Directo
                                             </a>
-                                            <div className="p-3 bg-slate-50 text-slate-300 group-hover:text-brand-blue rounded-xl transition-all">
+                                            <div className="p-3 bg-white/[0.04] text-slate-300 group-hover:text-brand-blue rounded-xl transition-all">
                                                 <ArrowRightIcon className="w-5 h-5"/>
                                             </div>
                                         </div>
@@ -260,9 +260,9 @@ const ProveedoresPage: React.FC = () => {
 
                 {/* AGENDA PANEL */}
                 <div className="lg:col-span-12 xl:col-span-5 flex flex-col min-h-[800px]">
-                    <div className="bg-white rounded-[3rem] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-                        <div className="p-10 border-b border-slate-100 bg-slate-50/50">
-                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-4">
+                    <div className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm flex flex-col h-full overflow-hidden">
+                        <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50">
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-4">
                                 <CalendarDaysIcon className="w-7 h-7 text-brand-blue"/> Flujo Operativo
                             </h2>
                         </div>
@@ -274,54 +274,54 @@ const ProveedoresPage: React.FC = () => {
                             await createTareaProveedor(newTarea);
                             setNewTarea({ proveedorId: '', titulo: '', tipo: 'General', descripcion: '', fechaVencimiento: '' });
                             logActivity(currentUser.nombre, currentUser.rol, 'GESTION_PROVEEDOR', `Tarea programada: ${newTarea.titulo}`, 'Proveedores');
-                        }} className="p-10 space-y-6 bg-slate-50/30 border-b border-slate-100">
+                        }} className="p-10 space-y-6 bg-white/[0.04]/30 border-b border-white/[0.06]">
                             <div className="grid grid-cols-2 gap-4">
-                                <select value={newTarea.proveedorId} onChange={e => setNewTarea({...newTarea, proveedorId: e.target.value})} className="px-5 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black tracking-widest outline-none transition-all shadow-sm cursor-pointer" required>
+                                <select value={newTarea.proveedorId} onChange={e => setNewTarea({...newTarea, proveedorId: e.target.value})} className="px-5 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black tracking-widest outline-none transition-all shadow-sm cursor-pointer" required>
                                     <option value="">VINCULAR NODO</option>
                                     {proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                                 </select>
-                                <select value={newTarea.tipo} onChange={e => setNewTarea({...newTarea, tipo: e.target.value as any})} className="px-5 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black tracking-widest outline-none transition-all shadow-sm cursor-pointer">
+                                <select value={newTarea.tipo} onChange={e => setNewTarea({...newTarea, tipo: e.target.value as any})} className="px-5 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black tracking-widest outline-none transition-all shadow-sm cursor-pointer">
                                     <option value="General">OP. GENERAL</option>
                                     <option value="Mantenimiento">MANTENIMIENTO</option>
                                 </select>
                             </div>
-                            <input type="text" placeholder="OBJETIVO DE MISIÓN..." value={newTarea.titulo} onChange={e => setNewTarea({...newTarea, titulo: e.target.value.toUpperCase()})} className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:border-brand-blue outline-none transition-all shadow-sm" required/>
+                            <input type="text" placeholder="OBJETIVO DE MISIÓN..." value={newTarea.titulo} onChange={e => setNewTarea({...newTarea, titulo: e.target.value.toUpperCase()})} className="w-full px-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-xs font-black uppercase tracking-widest focus:border-brand-blue outline-none transition-all shadow-sm" required/>
                             <div className="flex gap-4">
-                                <input type="date" value={newTarea.fechaVencimiento} onChange={e => setNewTarea({...newTarea, fechaVencimiento: e.target.value})} className="flex-grow px-6 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none transition-all shadow-sm" required/>
+                                <input type="date" value={newTarea.fechaVencimiento} onChange={e => setNewTarea({...newTarea, fechaVencimiento: e.target.value})} className="flex-grow px-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none transition-all shadow-sm" required/>
                                 <button type="submit" className="p-4 bg-brand-blue text-white rounded-2xl shadow-lg shadow-brand-blue/20 active:scale-95 transition-all"><PlusIcon className="w-6 h-6"/></button>
                             </div>
                         </form>
 
                         <div className="flex-grow flex flex-col overflow-hidden">
-                            <div className="flex border-b border-slate-100 bg-slate-50/50">
+                            <div className="flex border-b border-white/[0.06] bg-white/[0.04]/50">
                                 {(['tareas', 'mantenimiento'] as const).map(tab => (
                                     <button 
                                         key={tab} onClick={() => setAgendaTab(tab)}
-                                        className={`flex-1 py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all border-b-2 ${agendaTab === tab ? 'text-brand-blue border-brand-blue bg-white' : 'text-slate-400 border-transparent hover:text-slate-900'}`}
+                                        className={`flex-1 py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all border-b-2 ${agendaTab === tab ? 'text-brand-blue border-brand-blue bg-white/[0.04]' : 'text-slate-400 border-transparent hover:text-white'}`}
                                     >
                                         {tab === 'tareas' ? 'Misiones Activas' : 'Ciclos de Servicio'}
                                     </button>
                                 ))}
                             </div>
 
-                            <div className="p-10 overflow-y-auto custom-scrollbar space-y-4 bg-white">
+                            <div className="p-10 overflow-y-auto custom-scrollbar space-y-4 bg-obsidian-card">
                                 <AnimatePresence mode="popLayout">
                                     {filteredAgendaItems.map(t => (
                                         <motion.div 
                                             key={t.id} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.9 }}
-                                            className={`p-6 rounded-[2rem] border transition-all duration-500 ${t.completada ? 'bg-slate-50 border-transparent grayscale' : 'bg-white border-slate-100 hover:border-brand-blue/20 shadow-sm group'}`}
+                                            className={`p-6 rounded-[2rem] border transition-all duration-500 ${t.completada ? 'bg-white/[0.04] border-transparent grayscale' : 'bg-obsidian-card border-white/[0.06] hover:border-brand-blue/20 shadow-sm group'}`}
                                         >
                                             <div className="flex gap-5">
                                                 <div className="relative pt-1">
                                                     <input 
                                                         type="checkbox" checked={t.completada} 
                                                         onChange={() => updateTareaProveedor(t.id, { completada: !t.completada })}
-                                                        className="w-6 h-6 outline-none appearance-none border-2 border-slate-200 rounded-xl checked:bg-brand-blue checked:border-brand-blue transition-all cursor-pointer shadow-inner"
+                                                        className="w-6 h-6 outline-none appearance-none border-2 border-white/[0.06] rounded-xl checked:bg-brand-blue checked:border-brand-blue transition-all cursor-pointer shadow-inner"
                                                     />
                                                     {t.completada && <CheckBadgeIcon className="absolute top-[2px] left-[2px] w-5 h-5 text-white pointer-events-none" />}
                                                 </div>
                                                 <div className="min-w-0 flex-grow">
-                                                    <p className={`text-sm font-black uppercase tracking-tight transition-all ${t.completada ? 'line-through text-slate-300' : 'text-slate-900'}`}>{t.titulo}</p>
+                                                    <p className={`text-sm font-black uppercase tracking-tight transition-all ${t.completada ? 'line-through text-slate-300' : 'text-white'}`}>{t.titulo}</p>
                                                     <div className="flex flex-wrap gap-4 mt-3">
                                                         <div className="flex items-center gap-2">
                                                             <div className="w-1.5 h-1.5 rounded-full bg-brand-blue/30"></div>
@@ -356,14 +356,14 @@ const ProveedoresPage: React.FC = () => {
                 {viewingProveedor && (
                     <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setViewingProveedor(null)} />
-                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-white w-full max-w-2xl overflow-hidden flex flex-col relative z-10 border border-slate-200 shadow-2xl rounded-[3rem]">
+                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-obsidian-card w-full max-w-2xl overflow-hidden flex flex-col relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]">
                             <div className="p-16 space-y-12">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-4">
                                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.6em] bg-brand-blue/5 px-6 py-2 rounded-full inline-block border border-brand-blue/10">{viewingProveedor.categoria}</span>
-                                        <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">{viewingProveedor.nombre}</h1>
+                                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">{viewingProveedor.nombre}</h1>
                                     </div>
-                                    <button onClick={() => setViewingProveedor(null)} className="p-4 hover:bg-slate-50 text-slate-300 hover:text-slate-900 rounded-full transition-all"><CloseIcon className="w-8 h-8"/></button>
+                                    <button onClick={() => setViewingProveedor(null)} className="p-4 hover:bg-white/[0.04] text-slate-300 hover:text-white rounded-full transition-all"><CloseIcon className="w-8 h-8"/></button>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -375,12 +375,12 @@ const ProveedoresPage: React.FC = () => {
 
                                 <div className="space-y-4">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Mapa de Suministros</p>
-                                    <div className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-200">
-                                        <p className="text-sm font-bold text-slate-600 leading-relaxed uppercase tracking-wider italic">{viewingProveedor.productos || 'SIN PORTAFOLIO REGISTRADO'}</p>
+                                    <div className="p-8 rounded-[2.5rem] bg-white/[0.04] border border-white/[0.06]">
+                                        <p className="text-sm font-bold text-slate-300 leading-relaxed uppercase tracking-wider italic">{viewingProveedor.productos || 'SIN PORTAFOLIO REGISTRADO'}</p>
                                     </div>
                                 </div>
 
-                                <div className="pt-10 border-t border-slate-100 flex justify-between items-center">
+                                <div className="pt-10 border-t border-white/[0.06] flex justify-between items-center">
                                     <button onClick={() => { deleteProveedor(viewingProveedor.id); setViewingProveedor(null); }} className="text-[10px] font-black text-rose-500/40 hover:text-rose-500 transition-colors uppercase tracking-widest underline decoration-dashed">Protocolo: Anular Nodo</button>
                                     <div className="flex gap-4">
                                         <button onClick={() => { setProveedorToEdit(viewingProveedor); setViewingProveedor(null); setIsFormModalOpen(true); }} className="px-10 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-brand-blue/20">Sincronizar Perfil</button>
@@ -394,7 +394,7 @@ const ProveedoresPage: React.FC = () => {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
             `}</style>
         </div>
     );
