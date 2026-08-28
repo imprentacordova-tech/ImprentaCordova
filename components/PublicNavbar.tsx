@@ -1,246 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import {
-    CordovaLogo, MenuIcon, CloseIcon, WhatsAppIcon,
-    ShieldCheckIcon, HomeIcon, ActivityIcon, BoxIcon
-} from './Icons';
+import { Link, useLocation, NavLink } from 'react-router-dom';
 
-const publicNavLinks = [
-    { name: 'Inicio',    href: '/',         icon: HomeIcon },
-    { name: 'Catálogo',  href: '/vitrina',  icon: BoxIcon },
-    { name: 'Rastreo',   href: '/tracking', icon: ActivityIcon },
+/**
+ * Cabecera pública — fiel a los diseños `Publica-B-*` (Claude Design).
+ * Misma paleta azul/blanco del panel interno "Marino & Oro".
+ */
+
+const C = { ink: '#0A1140', royal: '#16309B', royalHover: '#0F2280', border: '#E9ECF5', body: '#3C4763', soft: '#F2F4FA', chip: '#EEF1FC' };
+const WA = 'https://wa.me/593993083943?text=Hola%2C+me+gustar%C3%ADa+cotizar+un+trabajo.';
+
+const LINKS = [
+    { name: 'Catálogo', to: '/vitrina' },
+    { name: 'Documentos SRI', to: '/' },
+    { name: 'Rastrear', to: '/tracking' },
 ];
 
-/** Returns true if within business hours: Mon-Fri 8-18, Sat 8-14 (EC time) */
 function isBusinessHoursNow(): boolean {
     const now = new Date();
-    // UTC-5 (Ecuador)
     const utcOffset = now.getTimezoneOffset();
     const ecOffset = -5 * 60;
     const ecNow = new Date(now.getTime() + (ecOffset - (-utcOffset)) * 60000);
-    const day = ecNow.getDay(); // 0=Sun, 6=Sat
+    const day = ecNow.getDay();
     const hour = ecNow.getHours();
     if (day === 0) return false;
     if (day === 6) return hour >= 8 && hour < 14;
     return hour >= 8 && hour < 18;
 }
 
-const TICKER_ITEMS = [
-    '✦ IMPRENTA CÓRDOVA · Machala, El Oro',
-    '✦ SRI AUTORIZADO · Reg. Especial 001-001',
-    '✦ Facturas · Notas de Venta · Talonarios · Sellos',
-    '✦ Retiro en tienda o Envío a domicilio',
-    '✦ Diseño gráfico incluido en pedidos',
-    '✦ +2,400 trabajos entregados con éxito',
-];
-
 const PublicNavbar: React.FC = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [isOpen24, setIsOpen24] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [abierto, setAbierto] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
-        setIsOpen24(isBusinessHoursNow());
-        const timer = setInterval(() => setIsOpen24(isBusinessHoursNow()), 60000);
-        return () => clearInterval(timer);
+        setAbierto(isBusinessHoursNow());
+        const t = setInterval(() => setAbierto(isBusinessHoursNow()), 60000);
+        return () => clearInterval(t);
     }, []);
-
-    useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 30);
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    // Close menu on route change
-    useEffect(() => { setIsOpen(false); }, [location.pathname]);
-
-    const tickerContent = [...TICKER_ITEMS, ...TICKER_ITEMS]; // duplicate for seamless loop
+    useEffect(() => { setOpen(false); }, [location.pathname]);
 
     return (
-        <>
-            {/* ── TOP ANNOUNCEMENT BAR ── */}
-            <div className="top-announcement-bar fixed top-0 inset-x-0 z-[160] h-9 flex items-center overflow-hidden">
-                <div className="flex items-center gap-0 animate-ticker whitespace-nowrap">
-                    {tickerContent.map((item, i) => (
-                        <span
-                            key={i}
-                            className="text-[9px] font-black uppercase tracking-[0.35em] text-liquid-gold/70 px-10 shrink-0"
-                        >
-                            {item}
-                        </span>
+        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px,3vw,44px)', minHeight: 74, display: 'flex', alignItems: 'center', gap: 'clamp(12px,2vw,36px)', flexWrap: 'wrap' }}>
+                <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+                    <img src="/LOGO.png" alt="Imprenta Córdova" style={{ height: 32, width: 'auto' }} />
+                    <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16.5, fontWeight: 700, letterSpacing: '-.02em', color: C.ink }}>Imprenta Córdova</span>
+                </Link>
+
+                <nav className="hidden md:flex" style={{ alignItems: 'center', gap: 2, flex: 1, flexWrap: 'wrap' }}>
+                    {LINKS.map(l => (
+                        <NavLink key={l.to} to={l.to} end={l.to === '/'}
+                            style={({ isActive }) => ({
+                                padding: '9px 14px', fontSize: 14, borderRadius: 8, textDecoration: 'none',
+                                fontWeight: isActive ? 600 : 500,
+                                color: isActive ? C.royal : C.body,
+                                background: isActive ? C.chip : 'transparent',
+                            })}>
+                            {l.name}
+                        </NavLink>
                     ))}
-                </div>
-                {/* Right status pill */}
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/10">
-                    <span className={`w-1.5 h-1.5 rounded-full ${isOpen24 ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-                    <span className={`text-[8px] font-black uppercase tracking-[0.3em] ${isOpen24 ? 'text-emerald-400' : 'text-slate-500'}`}>
-                        {isOpen24 ? 'ABIERTO' : 'CERRADO'}
+                </nav>
+
+                <div className="hidden md:flex" style={{ alignItems: 'center', gap: 10 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 12px', background: abierto ? '#F2F7F2' : C.soft, border: `1px solid ${abierto ? '#D8E8DC' : C.border}`, borderRadius: 99 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: 99, background: abierto ? '#1B8A4B' : '#A6AFC8', animation: abierto ? 'pn-blink 2.4s ease-in-out infinite' : 'none' }} />
+                        <span style={{ fontSize: 11.5, fontWeight: 600, color: abierto ? '#1B6E3E' : '#6B7590' }}>{abierto ? 'Taller abierto' : 'Taller cerrado'}</span>
                     </span>
+                    <a href={WA} target="_blank" rel="noopener noreferrer" style={{ padding: '11px 19px', background: C.royal, color: '#fff', borderRadius: 10, fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>Cotizar</a>
                 </div>
+
+                <button className="md:hidden" onClick={() => setOpen(o => !o)}
+                    style={{ marginLeft: 'auto', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.soft, border: `1px solid ${C.border}`, borderRadius: 10, cursor: 'pointer' }}
+                    aria-label="Menú">
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: 3.5, width: 16 }}>
+                        <span style={{ height: 2, background: C.ink, borderRadius: 2 }} />
+                        <span style={{ height: 2, background: C.ink, borderRadius: 2 }} />
+                        <span style={{ height: 2, background: C.ink, borderRadius: 2 }} />
+                    </span>
+                </button>
             </div>
 
-            {/* ── MAIN NAV ── */}
-            <nav
-                className={`fixed top-9 inset-x-0 z-[150] transition-all duration-700 ${
-                    scrolled
-                        ? 'bg-[#050810]/90 backdrop-blur-3xl border-b border-white/5 py-3 shadow-[0_4px_40px_rgba(0,0,0,0.6)]'
-                        : 'bg-transparent py-6'
-                }`}
-            >
-                <div className="container mx-auto px-6 lg:px-14">
-                    <div className="flex items-center justify-between h-14">
-
-                        {/* ── BRAND MARK ── */}
-                        <Link to="/" className="group flex items-center gap-4 shrink-0">
-                            <div className="relative">
-                                <CordovaLogo className="h-8 w-auto brightness-0 invert group-hover:scale-105 transition-transform duration-700" />
-                                <div className="absolute -inset-3 bg-liquid-gold/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            </div>
-                            <div className="flex flex-col leading-none gap-0.5">
-                                <span className="font-black text-lg text-white tracking-tighter uppercase leading-none">
-                                    CÓRDOVA<span className="text-liquid-gold">.</span>
-                                </span>
-                                <span className="font-mono text-[7px] text-slate-500 tracking-[0.4em] uppercase leading-none">
-                                    Atelier Gráfico · EST. 2009
-                                </span>
-                            </div>
-                        </Link>
-
-                        {/* ── DESKTOP LINKS ── */}
-                        <div className="hidden lg:flex items-center gap-1">
-                            {publicNavLinks.map(link => {
-                                const isActive = location.pathname === link.href;
-                                return (
-                                    <Link
-                                        key={link.name}
-                                        to={link.href}
-                                        className={`group relative px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-400 rounded-xl ${
-                                            isActive ? 'text-liquid-gold' : 'text-slate-400 hover:text-white'
-                                        }`}
-                                    >
-                                        <span className="relative z-10">{link.name}</span>
-                                        {isActive && (
-                                            <motion.div
-                                                layoutId="publicNavActive"
-                                                className="absolute inset-0 bg-liquid-gold/8 rounded-xl border border-liquid-gold/15"
-                                            />
-                                        )}
-                                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-px bg-liquid-gold/60 transition-all duration-400 group-hover:w-4 opacity-0 group-hover:opacity-100" />
-                                    </Link>
-                                );
-                            })}
-                        </div>
-
-                        {/* ── ACTION CLUSTER ── */}
-                        <div className="flex items-center gap-3">
-                            <Link
-                                to="/login"
-                                className="hidden md:flex items-center gap-2.5 px-5 py-2.5 bg-white/[0.04] border border-white/8 text-slate-300 rounded-xl text-[9px] font-black uppercase tracking-[0.25em] hover:bg-white/8 hover:text-white hover:border-liquid-gold/20 transition-all duration-300"
-                            >
-                                <ShieldCheckIcon className="w-3.5 h-3.5 text-liquid-gold/70" />
-                                Panel
-                            </Link>
-
-                            <a
-                                href="https://wa.me/593993083943?text=Hola%2C+visité+su+web+y+me+gustaría+cotizar+un+trabajo."
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn-gold !py-2.5 !px-6 !rounded-xl !text-[9px] shadow-gold-glow"
-                            >
-                                <WhatsAppIcon className="w-3.5 h-3.5" />
-                                Cotizar
-                            </a>
-
-                            <button
-                                id="mobile-menu-btn"
-                                onClick={() => setIsOpen(true)}
-                                className="p-2.5 bg-white/[0.04] border border-white/8 rounded-xl text-slate-300 hover:text-white hover:border-white/20 transition-all lg:hidden"
-                                aria-label="Abrir menú"
-                            >
-                                <MenuIcon className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
+            {open && (
+                <div className="md:hidden" style={{ borderTop: `1px solid ${C.border}`, padding: '10px 16px 16px', display: 'flex', flexDirection: 'column', gap: 4, background: '#fff' }}>
+                    {LINKS.map(l => (
+                        <NavLink key={l.to} to={l.to} end={l.to === '/'}
+                            style={({ isActive }) => ({ padding: '11px 12px', borderRadius: 9, fontSize: 14.5, fontWeight: 600, textDecoration: 'none', color: isActive ? C.royal : C.body, background: isActive ? C.chip : 'transparent' })}>
+                            {l.name}
+                        </NavLink>
+                    ))}
+                    <a href={WA} target="_blank" rel="noopener noreferrer" style={{ marginTop: 6, padding: 13, textAlign: 'center', background: C.royal, color: '#fff', borderRadius: 11, fontSize: 14.5, fontWeight: 600, textDecoration: 'none' }}>Cotizar por WhatsApp</a>
                 </div>
-            </nav>
-
-            {/* ── MOBILE MENU OVERLAY ── */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, x: '100%' }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: '100%' }}
-                        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                        className="fixed inset-0 z-[300] flex flex-col bg-[#050810]/98 backdrop-blur-3xl border-l border-white/5 text-white p-8"
-                    >
-                        {/* Close row */}
-                        <div className="flex justify-between items-center mb-16">
-                            <div className="flex flex-col leading-none gap-0.5">
-                                <span className="font-black text-xl text-white tracking-tighter uppercase">
-                                    CÓRDOVA<span className="text-liquid-gold">.</span>
-                                </span>
-                                <span className="font-mono text-[7px] text-slate-500 tracking-[0.4em] uppercase">
-                                    Atelier Gráfico
-                                </span>
-                            </div>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-liquid-gold/20 transition-all"
-                                aria-label="Cerrar menú"
-                            >
-                                <CloseIcon className="w-5 h-5 text-white" />
-                            </button>
-                        </div>
-
-                        {/* Nav links */}
-                        <div className="flex-1 space-y-2">
-                            {publicNavLinks.map((link, idx) => (
-                                <motion.div
-                                    key={link.name}
-                                    initial={{ opacity: 0, x: 30 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.07 }}
-                                >
-                                    <Link
-                                        to={link.href}
-                                        className="group flex items-center justify-between py-5 border-b border-white/5 text-3xl font-black text-white uppercase hover:text-liquid-gold transition-colors"
-                                    >
-                                        <span>{link.name}</span>
-                                        <span className="text-liquid-gold/30 text-base font-mono">0{idx + 1}</span>
-                                    </Link>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Bottom actions */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.25 }}
-                            className="space-y-3 pt-8 border-t border-white/5"
-                        >
-                            <a
-                                href="https://wa.me/593993083943?text=Hola%2C+me+gustaría+cotizar+un+trabajo."
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full flex items-center justify-center gap-3 py-5 bg-liquid-gold text-slate-950 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-gold-glow"
-                            >
-                                <WhatsAppIcon className="w-5 h-5" /> Cotizar por WhatsApp
-                            </a>
-                            <Link
-                                to="/login"
-                                className="w-full flex items-center justify-center gap-3 py-4 bg-white/5 border border-white/10 text-slate-300 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-liquid-gold/20 transition-all"
-                            >
-                                <ShieldCheckIcon className="w-4 h-4 text-liquid-gold/60" /> Acceso Operador
-                            </Link>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </>
+            )}
+            <style>{'@keyframes pn-blink{0%,100%{opacity:1}50%{opacity:.2}}'}</style>
+        </header>
     );
 };
 
