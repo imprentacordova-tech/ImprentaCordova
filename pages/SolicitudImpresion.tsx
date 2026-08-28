@@ -1,54 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Cliente, Trabajo, Regimen } from '../types';
+import { Cliente, Trabajo } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
-    Loader2Icon, MapPinIcon, ExclamationTriangleIcon, ShieldCheckIcon,
-    FingerPrintIcon, CpuIcon, ActivityIcon, LockIcon, HomeIcon,
-    AlertTriangleIcon
+    Loader2Icon, HomeIcon, AlertTriangleIcon
 } from '../components/Icons';
-import { formatCurrency } from '../utils';
 import { supabase } from '../services/supabase';
 import html2pdf from 'html2pdf.js';
-
-const DigitalSeal = () => (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none z-0">
-        <div className="w-[600px] h-[600px] border-[12px] border-black rounded-full flex items-center justify-center rotate-12 relative">
-            <div className="absolute inset-4 border-2 border-black rounded-full border-dashed animate-reverse-spin" style={{ animationDuration: '60s' }} />
-            <div className="text-[50px] font-black text-center leading-tight uppercase tracking-tighter">
-                PROTOCOLO ELITE CÓRDOVA<br/>
-                <span className="text-[70px]">AUTORIZACIÓN_SRI</span><br/>
-                INGRESO_INDUSTRIAL_SEGURO
-            </div>
-        </div>
-    </div>
-);
-
-const SecurityWatermark = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none opacity-[0.02] z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[120%] flex flex-wrap gap-20 rotate-[-25deg]">
-            {Array.from({ length: 40 }).map((_, i) => (
-                <div key={i} className="text-[10px] font-mono font-black whitespace-nowrap tracking-[0.5em]">
-                    SISTEMA_ELITE_CORDOVA_DOCUMENTO_AUTENTICO_VERIFICADO_SIN_COPIAS
-                </div>
-            ))}
-        </div>
-    </div>
-);
-
-const TacticalStatusBar = ({ id }: { id: string }) => (
-    <div className="w-full flex justify-between items-center px-4 py-1.5 bg-slate-100 border-t border-slate-300 font-mono text-[7px] text-slate-500 font-black uppercase tracking-[0.2em] relative z-20">
-        <div className="flex gap-4">
-            <span className="flex items-center gap-1"><CpuIcon className="w-2.5 h-2.5" /> FIRMA_SISTEMA: {id.substring(0, 12)}</span>
-            <span className="flex items-center gap-1"><ActivityIcon className="w-2.5 h-2.5" /> LATENCIA: 12ms</span>
-        </div>
-        <div className="flex gap-4">
-            <span className="flex items-center gap-1"><LockIcon className="w-2.5 h-2.5" /> CIFRADO: AES_256_GCM</span>
-            <span>VERSIÓN_v2.0.26_ESTABLE</span>
-        </div>
-    </div>
-);
 
 const mapDBTrabajo = (t: any): Trabajo => ({
     ...t,
@@ -80,8 +39,8 @@ const SolicitudImpresionPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const format = queryParams.get('format') || 'a4'; 
-    const { trabajos, clientes, sriCredentials, config: cloudConfig, loading: dataLoading } = useData();
+    const format = queryParams.get('format') || 'a5'; 
+    const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -138,21 +97,12 @@ const SolicitudImpresionPage: React.FC = () => {
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
 
-    const getEstablecimientoAddress = () => {
-        if (!cliente || !trabajo) return '';
-        if (cliente.fiscal_data?.establecimientos) {
-            const est = cliente.fiscal_data.establecimientos.find(e => e.codigo === trabajo.establecimiento);
-            if (est) return est.direccion;
-        }
-        return cliente.direccion;
-    };
-
     const config = {
-        emisorDireccionMatriz: cloudConfig?.direccion || 'Colón e/ Sucre y Av. Rocafuerte',
-        emisorTelefono: cloudConfig?.imprentaTelefono || '0993083943 • 0962585172',
-        emisorRuc: cloudConfig?.emisorRuc || cloudConfig?.imprentaRuc || '0702065319001',
-        imprentaAutorizacion: cloudConfig?.imprentaAutorizacion || '8634',
-        emisorEmail: 'imprentacordova@gmail.com',
+        direccion: cloudConfig?.direccion || 'Colón e/. Sucre y Av. Rocafuerte',
+        telefono: cloudConfig?.imprentaTelefono || '0993083943 • 0962585172',
+        ruc: cloudConfig?.emisorRuc || cloudConfig?.imprentaRuc || '0702065319001',
+        autorizacion: cloudConfig?.imprentaAutorizacion || '8634',
+        email: 'imprentacordova@gmail.com',
     };
 
     const handleDownloadPdf = () => {
@@ -160,7 +110,7 @@ const SolicitudImpresionPage: React.FC = () => {
         if (!element || !trabajo) return;
         const opt = {
             margin: 0,
-            filename: `Elite-SRI-${trabajo.orden}-${cliente?.ruc || cliente?.cedula}.pdf`,
+            filename: `Solicitud-SRI-${trabajo.orden}-${cliente?.ruc || cliente?.cedula}.pdf`,
             image: { type: 'jpeg' as const, quality: 1 },
             html2canvas: { scale: 3, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
@@ -171,312 +121,302 @@ const SolicitudImpresionPage: React.FC = () => {
     if (dataLoading || isRetrying) return (
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b]">
             <div className="flex flex-col items-center gap-4">
-                <Loader2Icon className="w-12 h-12 text-amber-500 animate-spin" />
-                <span className="text-amber-500 font-mono text-xs uppercase tracking-[0.3em] animate-pulse">Inicializando Protocolo Elite...</span>
+                <Loader2Icon className="w-10 h-10 text-amber-500 animate-spin" />
+                <span className="text-amber-500 font-mono text-xs uppercase tracking-widest animate-pulse">Cargando Solicitud SRI...</span>
             </div>
         </div>
     );
 
     if (error || !trabajo || !cliente) return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0b] p-6 text-center">
-            <div className="p-8 rounded-[3rem] bg-red-500/10 border border-red-500/20 mb-10 shadow-luxury">
-                <AlertTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                <h2 className="text-center font-black text-sm uppercase tracking-widest mb-1">IMPRENTA CÓRDOVA</h2>
-                <p className="text-center text-[10px] font-bold uppercase mb-4 tracking-tighter">SOLICITUD DE PRODUCCIÓN</p>
-                <p className="text-slate-400 font-bold text-sm max-w-md mx-auto leading-relaxed uppercase">
-                    {error || "El registro solicitado no está disponible en la base de datos local ni remota."}
+            <div className="p-8 rounded-3xl bg-red-500/10 border border-red-500/20 mb-8 max-w-md">
+                <AlertTriangleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <h2 className="font-bold text-sm uppercase tracking-widest text-white mb-2">SOLICITUD NO ENCONTRADA</h2>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                    {error || "El registro no está disponible en la base de datos."}
                 </p>
             </div>
             <button 
                 onClick={() => navigate('/dashboard')}
-                className="px-10 py-5 bg-amber-500 rounded-2xl text-[10px] font-black text-black uppercase tracking-widest hover:scale-105 transition-all shadow-gold-glow"
+                className="px-8 py-3 bg-amber-500 rounded-xl text-xs font-black text-black uppercase tracking-widest hover:scale-105 transition-all"
             >
-                Volver al Centro de Mando
+                Volver al Panel
             </button>
         </div>
     );
 
-    const fechaHoy = new Date();
+    const fechaHoy = new Date(trabajo.fechaEntrada || Date.now());
     const dia = fechaHoy.getDate().toString().padStart(2, '0');
     const mes = (fechaHoy.getMonth() + 1).toString().padStart(2, '0');
-    const anio = fechaHoy.getFullYear().toString();
+    const anio = fechaHoy.getFullYear().toString().slice(-2);
     const hora = fechaHoy.toLocaleTimeString('es-EC', {hour: '2-digit', minute:'2-digit'});
 
+    const fechaEntrega = trabajo.fechaEntrega ? new Date(trabajo.fechaEntrega) : new Date(Date.now() + 86400000);
+    const horaEntrega = fechaEntrega.toLocaleTimeString('es-EC', {hour: '2-digit', minute:'2-digit'});
+
     const rawSubtipo = trabajo.subtipo || '';
-    const parsedJobItems = rawSubtipo.split(',').map(part => {
-        const trimmed = part.trim();
-        const match = trimmed.match(/^(\d+)x\s+(.*)$/i);
-        return {
-            cantidad: match ? match[1] : trabajo.cantidad.toString(),
-            descripcion: (match ? match[2] : trimmed).toLowerCase()
-        };
-    });
+    const docSize = trabajo.tamano || '1/4 Oficio';
+    const isQuimico = !rawSubtipo.toLowerCase().includes('bond');
 
-    const isRimpe = cliente.regimen === Regimen.NEGOCIO_POPULAR;
+    const totalVal = parseFloat(String(trabajo.total || 0)) || 13.00;
+    const abonoVal = parseFloat(String(trabajo.abono || 0)) || 0.00;
+    const saldoVal = Math.max(0, totalVal - abonoVal);
 
-    const standardTypes = [
-        { key: 'factura', label: 'Facturas' },
-        { key: 'nota de venta', label: 'Nota de Venta' },
-        { key: 'liquidacion de compra de bienes muebles', label: 'Liq. Compra Bienes Muebles Usados' },
-        { key: 'credito', label: 'Notas de Crédito' },
-        { key: 'debito', label: 'Notas de Débito' },
-        { key: 'guia', label: 'Guías de Remisión' },
-        { key: 'boleto', label: 'Boletos / Entradas Espectáculos' },
-        { key: 'vehiculo', label: 'Liq. Compra Vehículos Usados' },
-        { key: 'acta', label: 'Acta Entrega-Recepción Vehículos' },
-        { key: 'servicios', label: 'Liq. Compra Bienes o Prest. Servicios' },
-        { key: 'retencion', label: 'Comprobante de Retención' },
-        { key: 'recibo', label: 'Recibos (No SRI)' }
-    ];
+    const docName = trabajo.tipo || 'Nota de Venta';
+    const docQty = trabajo.cantidad ? (trabajo.cantidad > 10 ? trabajo.cantidad : (trabajo.cantidad * 100)) : 100;
 
-    const hasSriKey = sriCredentials.some(c => c.ruc === cliente.ruc);
+    const rucRaw = (cliente.ruc || cliente.cedula || '0700000000001').padStart(13, '0');
+    const rucArray = rucRaw.split('').slice(0, 13);
+    while (rucArray.length < 13) rucArray.push('');
 
-    const mappedItems = standardTypes.map(st => {
-        const match = parsedJobItems.find(pj => pj.descripcion.includes(st.key));
-        if (match) {
-            return { 
-                tipo: st.label, 
-                cant: match.cantidad, 
-                estab: trabajo.establecimiento || '001', 
-                punto: trabajo.puntoEmision || '001', 
-                isChecked: true,
-                precio: (trabajo.total / (parsedJobItems.length || 1)).toFixed(2)
-            };
-        }
-        return { tipo: st.label, cant: '', estab: '', punto: '', isChecked: false, precio: '' };
-    });
-
-    const RucArray = (cliente.ruc || cliente.cedula || '9999999999001').split('').slice(0, 13);
-    while (RucArray.length < 13) RucArray.push('');
-
-    const renderFormulario = (variant: 'cliente' | 'imprenta' | 'full') => {
-        const isClient = variant === 'cliente';
-        const isA5 = format === 'a5';
+    const renderTicketA5 = (variant: 'cliente' | 'imprenta') => {
         const isOperator = variant === 'imprenta';
         
-        const headerBg = isClient ? 'bg-slate-50' : 'bg-slate-50';
-        const headerBorder = isClient ? 'border-slate-300' : 'border-slate-300';
-        const headerText = isClient ? 'text-slate-900' : 'text-slate-900';
-        const tableHeaderBg = isClient ? 'bg-slate-800' : 'bg-slate-900';
-        const checkboxActive = isClient ? 'bg-slate-100 text-slate-900' : 'bg-slate-100 text-slate-900';
-        
-        const paddingClass = isA5 ? 'p-5' : 'p-10';
-        const titleSize = isA5 ? 'text-2xl' : 'text-4xl';
-        const tableTextSize = isA5 ? 'text-[9px]' : 'text-[11px]';
-
         return (
-            <div className={`relative flex flex-col box-border text-black ${paddingClass} h-full bg-white overflow-hidden`}>
+            <div className="w-full h-full bg-white text-[#0f2b48] font-sans p-3 box-border flex flex-col justify-between select-none relative" style={{ height: '143mm' }}>
                 
-                <div className="absolute inset-0 opacity-[0.02] pointer-events-none select-none z-0" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-                <SecurityWatermark />
-                <DigitalSeal />
-
-                <div className={`${headerBg} ${headerText} rounded-3xl overflow-hidden border-2 ${headerBorder} flex flex-col shadow-2xl relative z-10 mb-6`}>
-                    <div className={`flex justify-between items-center px-8 py-3 ${isClient ? 'bg-slate-50 border-b border-slate-200' : 'bg-slate-50'}`}>
-                        <div className="flex items-center gap-6">
-                            <div className="flex flex-col">
-                                <h1 className={`${titleSize} font-black tracking-[-0.04em] leading-none flex items-center gap-2`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                                    IMPRENTA CÓRDOVA <span className="text-brand-blue">ELITE</span>
-                                </h1>
+                {/* CABECERA OFICIAL AZUL MARINO */}
+                <div className="border border-[#0e3150] rounded-t-md overflow-hidden">
+                    <div className="bg-[#0e3150] text-white px-3 py-1.5 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded bg-white text-[#0e3150] font-black text-xs flex items-center justify-center border border-[#0e3150] shadow-sm">
+                                IC
+                            </div>
+                            <div>
+                                <h1 className="text-sm font-black tracking-wider uppercase leading-none m-0">IMPRENTA CORDOVA</h1>
                             </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                            <div className="bg-slate-900/10 border border-slate-900/20 px-4 py-1 rounded-lg">
-                                <span className="text-[12px] font-black text-slate-900 uppercase tracking-widest">ORDEN #{trabajo.orden}</span>
-                            </div>
+                        <div className="text-right text-[7px] leading-tight text-slate-200">
+                            <div>Direc.: {config.direccion} &nbsp; 📞 {config.telefono}</div>
+                            <div>RUC: {config.ruc} • CODIGO AUT SRI: {config.autorizacion} &nbsp; ✉ Email: {config.email}</div>
                         </div>
                     </div>
-                    
-                    <div className={`px-8 ${isA5?'py-2':'py-4'} flex justify-between items-center border-t ${isClient ? 'border-slate-200' : 'border-slate-200'}`}>
-                        <div className={`flex gap-8 ${isA5?'text-[10px]':'text-[12px]'} font-bold`}>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Matriz_Ubicación</span>
-                                <span className="flex items-center gap-2"><MapPinIcon className="w-3.5 h-3.5 text-brand-blue"/> {config.emisorDireccionMatriz}</span>
-                            </div>
-                            <div className="flex flex-col border-l border-slate-200 pl-8">
-                                <span className="text-[8px] uppercase opacity-40 mb-0.5 tracking-widest">Enlace_Comercial</span>
-                                <span className="flex items-center gap-2"><PrinterIcon className="w-3.5 h-3.5 text-brand-blue"/> {config.emisorTelefono}</span>
-                            </div>
+
+                    {/* TÍTULO SOLICITUD */}
+                    <div className="bg-white px-3 py-1 flex justify-between items-center border-t border-[#0e3150]">
+                        <div className="text-[10.5px] font-black uppercase tracking-wider text-[#0e3150] flex items-center gap-2">
+                            SOLICITUD DE AUTORIZACIÓN DE IMPRESIÓN <span className="text-[#0284c7] font-black">SRi</span>
+                            {isOperator && <span className="text-[8px] bg-slate-200 text-slate-800 px-1.5 py-0.2 rounded font-bold ml-2">COPIA TALLER</span>}
+                        </div>
+                        <div className="text-[9px] font-black text-[#0e3150]">
+                            ORDEN N°: <span className="font-mono">{String(trabajo.orden || trabajo.id).padStart(8, '0')}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 mb-6 relative z-10">
-                    <div className="flex-grow h-px bg-slate-200" />
-                    <div className="flex items-center gap-3 bg-white border-2 border-slate-800 px-8 py-2 rounded-2xl shadow-xl transform rotate-[-0.5deg]">
-                        <h2 className={`${isA5?'text-xs':'text-sm'} font-black text-slate-800 uppercase tracking-[0.3em]`}>
-                            Solicitud de Autorización de Impresión
-                        </h2>
+                {/* FORMULARIO DATOS DEL CLIENTE */}
+                <div className="border-x border-b border-[#0e3150] p-2 text-[8px] flex flex-col gap-1">
+                    <div className="flex items-baseline gap-1">
+                        <span className="font-bold whitespace-nowrap">Apellidos y Nombres:</span>
+                        <span className="flex-1 border-b border-dotted border-slate-400 font-bold uppercase text-[8.5px] truncate pl-1">{cliente.nombre}</span>
                     </div>
-                    <div className="flex-grow h-px bg-slate-200" />
-                </div>
 
-                <div className={`grid grid-cols-12 gap-8 ${isA5?'mb-6':'mb-10'} relative z-10`}>
-                    <div className="col-span-7 space-y-4">
-                        <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex flex-col">
-                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] mb-1">Identificación_Sujeto</span>
-                                    <span className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight">{cliente.nombre}</span>
-                                    <div className="flex justify-between items-end mt-1">
-                                        <p className="text-[10px] font-bold text-slate-800 leading-tight flex-1">{cliente.nombreComercial || 'Sin_Nombre_Comercial'}</p>
-                                        <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter max-w-[200px] truncate">{getEstablecimientoAddress()}</span>
-                                    </div>
-                                </div>
-                                <div className="h-px bg-slate-200 w-full" />
-                                <div className="flex gap-10">
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Tipo_de_Régimen</span>
-                                        <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm ${isRimpe ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-800'}`}>
-                                            {cliente.regimen || 'GENERAL_ESTÁNDAR'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex items-baseline gap-1">
+                        <span className="font-bold whitespace-nowrap">Razón Social:</span>
+                        <span className="flex-1 border-b border-dotted border-slate-400 font-semibold uppercase truncate pl-1">{cliente.nombreComercial || cliente.nombre}</span>
+                    </div>
 
-                        <div className="flex flex-col gap-2">
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em] px-4">RUC_Registro_Nacional</span>
-                            <div className="flex gap-1.5 p-1.5 bg-slate-100 border-2 border-slate-800 rounded-2xl shadow-xl">
-                                {RucArray.map((digit, i) => (
-                                    <div key={i} className="flex-grow h-12 bg-white flex items-center justify-center font-mono font-black text-xl text-slate-900 border border-slate-200 rounded-xl shadow-inner">
+                    <div className="flex items-baseline gap-1">
+                        <span className="font-bold whitespace-nowrap">Actividad Ec.:</span>
+                        <span className="flex-1 border-b border-dotted border-slate-400 font-semibold uppercase truncate pl-1">{trabajo.actividadSeleccionada || cliente.actividades || 'Comercio / Servicios General'}</span>
+                    </div>
+
+                    {/* RUC 13 CASILLAS Y CLAVE */}
+                    <div className="flex items-center gap-3 pt-0.5">
+                        <div className="flex items-center gap-1">
+                            <span className="font-bold">RUC:</span>
+                            <div className="flex gap-[1px]">
+                                {rucArray.map((digit, idx) => (
+                                    <span key={idx} className="w-3 h-3.5 border border-[#0e3150] bg-slate-50 flex items-center justify-center font-mono font-bold text-[8px] leading-none">
                                         {digit}
-                                    </div>
+                                    </span>
                                 ))}
                             </div>
                         </div>
+                        <div className="flex items-baseline gap-1 flex-1">
+                            <span className="font-bold">Clave:</span>
+                            <span className="flex-1 border-b border-dotted border-slate-400 font-mono font-bold text-center">{trabajo.establecimiento || '001'}</span>
+                        </div>
                     </div>
 
-                    <div className="col-span-5 flex flex-col gap-4">
-                        <div className="bg-slate-50 text-slate-900 p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-2 border-slate-200 flex flex-col justify-between h-full">
-                            <div className="flex justify-between items-start relative z-10">
-                                <div className="flex flex-col">
-                                    <span className="text-[7px] font-black text-brand-blue uppercase tracking-widest mb-0.5">SALDO PENDIENTE</span>
-                                    {hasSriKey || trabajo.estadoClave === 'LISTA' ? (
-                                        <span className="text-xl font-black text-slate-900 flex items-center gap-3">
-                                            <ShieldCheckIcon className="w-7 h-7 text-emerald-600" /> SEGURO_OK
-                                        </span>
-                                    ) : (
-                                        <span className="text-xl font-black text-slate-400">NO_VERIFICADO_PENDIENTE</span>
-                                    )}
-                                </div>
-                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-200">
-                                    <LockIcon className="w-6 h-6 text-brand-blue" />
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4 mt-6 relative z-10">
-                                <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
-                                    <span className="text-[6px] font-black uppercase tracking-widest">VALOR TOTAL</span>
-                                    <span className="font-mono text-sm font-black tracking-widest">{hora}</span>
-                                </div>
-                                <div className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center">
-                                    <span className="text-[7px] font-black opacity-40 uppercase tracking-widest mb-1">Fecha_de_Ciclo</span>
-                                    <span className="font-mono text-sm font-black tracking-widest">{dia}.{mes}.{anio}</span>
-                                </div>
-                            </div>
+                    {/* FECHA, HORAS Y DÍAS */}
+                    <div className="flex items-center justify-between text-[7.5px] pt-0.5">
+                        <div className="flex items-center gap-1">
+                            <span className="font-bold">Hora:</span>
+                            <span className="border-b border-dotted border-slate-400 font-mono px-1">{hora}</span>
                         </div>
+                        <div className="flex items-center gap-1">
+                            <span className="font-bold">Fecha:</span>
+                            <span className="font-mono font-bold bg-slate-100 border border-[#0e3150] px-1.5 py-0.5 rounded-[2px]">{dia} | {mes} | {anio}</span>
+                            <span className="font-mono text-[7px] text-slate-500 font-bold ml-1">[L][M][M][J][V][S]</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <span className="font-bold">Hora y Entrega:</span>
+                            <span className="border-b border-dotted border-slate-400 font-mono px-1">{horaEntrega}</span>
+                            <span className="font-mono text-[7px] text-slate-500 font-bold">[L][M][M][J][V][S]</span>
+                        </div>
+                    </div>
+
+                    {/* TELÉFONO Y CORREO */}
+                    <div className="flex items-baseline gap-2 pt-0.5">
+                        <div className="flex items-center gap-1">
+                            <span className="font-bold">Telef:</span>
+                            <span className="text-[7px] text-slate-600">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
+                            <span className="border-b border-dotted border-slate-400 font-mono font-bold px-1">{cliente.telefono?.[0] || 'Dictado'}</span>
+                        </div>
+                        <div className="flex items-baseline gap-1 flex-1">
+                            <span className="font-bold">Email:</span>
+                            <span className="flex-1 border-b border-dotted border-slate-400 text-slate-600 truncate pl-1">{cliente.email || 'imprentacordova@gmail.com'}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-baseline gap-1">
+                        <span className="font-bold whitespace-nowrap">Correo Electrónico:</span>
+                        <span className="flex-1 border-b border-dotted border-slate-400 text-slate-700 truncate pl-1">{cliente.email || ''}</span>
                     </div>
                 </div>
 
-                <div className="flex-grow border-2 border-slate-900 rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] relative z-10 bg-white mb-6">
-                    <div className={`${tableHeaderBg} text-white flex justify-between items-center px-10 py-3.5 font-black uppercase tracking-[0.4em] relative overflow-hidden`}>
-                        <span className="text-[10px] relative z-10 flex items-center gap-3">
-                            <ActivityIcon className="w-4 h-4 text-brand-blue" /> Matriz_de_Producción_Industrial_v2
-                        </span>
+                {/* TABLA DE COMPROBANTES DETALLADOS */}
+                <div className="border border-[#0e3150] rounded-md overflow-hidden mt-1">
+                    <div className="bg-[#0e3150] text-white text-center font-black text-[7.5px] py-0.5 tracking-wider uppercase">
+                        SOLICITO LA ELABORACIÓN DE LOS DOCUMENTOS DETALLADOS A CONTINUACIÓN:
                     </div>
+                    <table className="w-full text-center text-[7.5px] border-collapse">
+                        <thead>
+                            <tr className="bg-slate-100 text-[#0e3150] border-b border-[#0e3150] font-bold">
+                                <th className="py-0.5 px-1 border-r border-[#0e3150] w-[14%]">TAMAÑO</th>
+                                <th className="py-0.5 px-2 border-r border-[#0e3150] text-left w-[36%]">TIPO DE DOCUMENTO</th>
+                                <th className="py-0.5 px-1 border-r border-[#0e3150] w-[16%]">PAPEL<br/><span className="text-[6px]">(Químico | Bond)</span></th>
+                                <th className="py-0.5 px-1 border-r border-[#0e3150] w-[9%]">ESTABLEC.</th>
+                                <th className="py-0.5 px-1 border-r border-[#0e3150] w-[9%]">PTO. EMISIÓN</th>
+                                <th className="py-0.5 px-1 border-r border-[#0e3150] w-[8%]">CANTIDAD</th>
+                                <th className="py-0.5 px-1 w-[8%]">PRECIO</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            {/* NOTA DE VENTA */}
+                            <tr className={docName.toLowerCase().includes('nota') ? 'font-bold bg-slate-50/50' : ''}>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('nota') ? docSize : ''}</td>
+                                <td className="py-0.5 px-2 border-r border-slate-300 text-left">Nota de Venta</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono text-[7px]">
+                                    {docName.toLowerCase().includes('nota') ? (isQuimico ? '( [✓] [ ] )' : '( [ ] [✓] )') : '( [ ] [ ] )'}
+                                </td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('nota') ? (trabajo.establecimiento || '001') : ''}</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('nota') ? (trabajo.puntoEmision || '001') : ''}</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono font-bold">{docName.toLowerCase().includes('nota') ? docQty : ''}</td>
+                                <td className="py-0.5 font-mono font-bold">{docName.toLowerCase().includes('nota') ? `$${totalVal.toFixed(2)}` : ''}</td>
+                            </tr>
+
+                            {/* GUÍA DE REMISIÓN */}
+                            <tr className={docName.toLowerCase().includes('guía') ? 'font-bold bg-slate-50/50' : ''}>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('guía') ? docSize : ''}</td>
+                                <td className="py-0.5 px-2 border-r border-slate-300 text-left">Guía de Remisión</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono text-[7px]">
+                                    {docName.toLowerCase().includes('guía') ? (isQuimico ? '( [✓] [ ] )' : '( [ ] [✓] )') : '( [ ] [ ] )'}
+                                </td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('guía') ? (trabajo.establecimiento || '001') : ''}</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('guía') ? (trabajo.puntoEmision || '001') : ''}</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono font-bold">{docName.toLowerCase().includes('guía') ? docQty : ''}</td>
+                                <td className="py-0.5 font-mono font-bold">{docName.toLowerCase().includes('guía') ? `$${totalVal.toFixed(2)}` : ''}</td>
+                            </tr>
+
+                            {/* NOTA DE CRÉDITO */}
+                            <tr className={docName.toLowerCase().includes('crédito') ? 'font-bold bg-slate-50/50' : ''}>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('crédito') ? docSize : ''}</td>
+                                <td className="py-0.5 px-2 border-r border-slate-300 text-left">Nota de Crédito</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono text-[7px]">( [ ] [ ] )</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 font-mono"></td>
+                            </tr>
+
+                            {/* LIQUIDACIÓN DE COMPRAS */}
+                            <tr className={docName.toLowerCase().includes('liquid') ? 'font-bold bg-slate-50/50' : ''}>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('liquid') ? docSize : ''}</td>
+                                <td className="py-0.5 px-2 border-r border-slate-300 text-left text-[6.5px]">Liquidación de Compras o Prestación de Servicios</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono text-[7px]">( [ ] [ ] )</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 font-mono"></td>
+                            </tr>
+
+                            {/* RECIBOS */}
+                            <tr className={docName.toLowerCase().includes('recibo') ? 'font-bold bg-slate-50/50' : ''}>
+                                <td className="py-0.5 border-r border-slate-300 font-mono">{docName.toLowerCase().includes('recibo') ? docSize : ''}</td>
+                                <td className="py-0.5 px-2 border-r border-slate-300 text-left font-black">RECIBOS</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono text-[7px]">( [ ] [ ] )</td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono"></td>
+                                <td className="py-0.5 font-mono"></td>
+                            </tr>
+
+                            {/* FILA EXTRA */}
+                            <tr>
+                                <td className="py-0.5 border-r border-slate-300"></td>
+                                <td className="py-0.5 px-2 border-r border-slate-300 text-left"></td>
+                                <td className="py-0.5 border-r border-slate-300 font-mono text-[7px]">( [ ] [ ] )</td>
+                                <td className="py-0.5 border-r border-slate-300"></td>
+                                <td className="py-0.5 border-r border-slate-300"></td>
+                                <td className="py-0.5 border-r border-slate-300"></td>
+                                <td className="py-0.5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
                     
-                    <div className="flex-grow overflow-hidden">
-                        <table className={`w-full text-center ${tableTextSize} font-bold text-slate-800 border-collapse h-full`}>
-                            <thead>
-                                <tr className="border-b-2 border-slate-900 bg-slate-50">
-                                    <th className="py-2.5 border-r border-slate-200 w-[12%] uppercase tracking-widest text-[8px] text-slate-400">Tamaño_Esp</th>
-                                    <th className="py-2.5 px-6 border-r border-slate-200 w-[40%] text-left uppercase tracking-widest text-[8px] text-slate-400">Categoría_Descriptor</th>
-                                    <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Estab</th>
-                                    <th className="py-2.5 border-r border-slate-200 w-[10%] text-[8px] text-slate-400 uppercase tracking-widest">Punto_Em</th>
-                                    <th className="py-2.5 border-r border-slate-200 w-[12%] text-[8px] text-slate-400 uppercase tracking-widest">Cantidad</th>
-                                    <th className="py-2.5 w-[16%] text-[8px] text-slate-400 uppercase tracking-widest">Valor_Unit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {mappedItems.map((item, idx) => (
-                                    <tr key={idx} className={`border-b border-slate-100 last:border-0 ${item.isChecked ? checkboxActive : 'opacity-[0.15]'}`}>
-                                        <td className="py-1 font-mono text-[9px] border-r border-slate-100">{item.isChecked ? (trabajo.tamano || 'A5') : ''}</td>
-                                        <td className={`text-left pl-8 uppercase ${isA5?'text-[10px]':'text-[12px]'} ${isA5?'h-7':'h-9'} border-r border-slate-100 font-black tracking-tighter relative`}>
-                                            {item.isChecked && <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 bg-brand-blue rounded-full" />}
-                                            {item.tipo}
-                                        </td>
-                                        <td className="py-1 font-mono border-r border-slate-100">{item.isChecked?item.estab:''}</td>
-                                        <td className="py-1 font-mono border-r border-slate-100">{item.isChecked?item.punto:''}</td>
-                                        <td className={`py-1 ${isA5?'text-sm':'text-xl'} font-black border-r border-slate-100 text-slate-900`}>{item.isChecked?item.cant:''}</td>
-                                        <td className="py-1 font-mono font-black text-slate-700">{item.isChecked ? `$${item.precio}` : ''}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="p-1 text-[7px] flex items-baseline gap-1 border-t border-slate-300">
+                        <span className="font-bold">Detalles adicionales:</span>
+                        <span className="border-b border-dotted border-slate-400 flex-1 truncate">{trabajo.detalle || 'Ninguno'}</span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-12 gap-8 items-stretch relative z-10 mb-6">
-                    <div className="col-span-8 flex flex-col gap-6">
-                        <div className="bg-slate-50 text-slate-900 rounded-3xl p-6 border-2 border-slate-200 shadow-sm flex items-center gap-8 relative overflow-hidden group">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-brand-blue border border-slate-200 shrink-0">
-                                <LockIcon className="w-7 h-7" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] mb-1">Protocolo_Aviso_Legal</span>
-                                <p className="text-[9px] font-bold uppercase tracking-wider leading-relaxed opacity-80">
-                                    Este documento constituye una orden de producción vinculante. La custodia de los comprobantes autorizados es responsabilidad exclusiva del sujeto pasivo según normativa vigente del SRI.
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-6">
-                            <div className="flex-grow bg-slate-50 border-2 border-slate-200 rounded-[2rem] p-8 h-36 flex flex-col justify-end items-center relative group">
-                                <div className="w-[80%] h-px bg-slate-400 mb-3" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Firma_Contribuyente_Autorizado</span>
-                            </div>
-                            <div className="w-32 bg-slate-100 rounded-[2rem] border-2 border-slate-200 flex flex-col items-center justify-center p-4">
-                                <div className="w-14 h-14 bg-white rounded-xl border border-slate-300 flex flex-center items-center justify-center mb-2 shadow-inner">
-                                    <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest text-center">Sello_Físico</span>
-                                </div>
-                                <p className="text-[6px] font-black text-slate-400 mt-1 uppercase tracking-widest">{isOperator ? 'COPIA OPERADOR' : 'ORIGINAL CLIENTE'}</p>
-                            </div>
-                        </div>
+                {/* AVISO IMPORTANTE */}
+                <div className="bg-[#0e3150] text-white text-center rounded py-1 px-2 mt-1">
+                    <div className="font-black text-[7.5px] uppercase tracking-wider">
+                        NOTA IMPORTANTE: SIN RECIBO PIERDE EL DERECHO A RETIRAR SU TRABAJO Y SU DINERO
                     </div>
+                    <div className="text-[6px] text-slate-300 font-medium leading-tight mt-0.5">
+                        PASADO EL MES DE NO HABER RETIRADO SUS DOCUMENTOS (FACTURAS, RETENCIONES, GUÍAS, ETC) NO NOS HACEMOS RESPONSABLES DE SU ABONO Y TODO RECLAMO QUEDA ANULADO.
+                    </div>
+                </div>
 
-                    <div className="col-span-4 flex flex-col gap-3">
-                            
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Subtotal</span>
-                                    <span className="font-mono text-lg font-bold">{formatCurrency(trabajo.total)}</span>
-                                </div>
-                                <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                                    <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em]">Crédito_Abono</span>
-                                    <span className="font-mono text-lg font-bold text-emerald-400">-{formatCurrency(trabajo.abono)}</span>
-                                </div>
-                            </div>
-                            
-                            <div className="pt-6 flex flex-col items-end relative z-10">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                                    <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.5em]">Saldo_Pendiente</span>
-                                </div>
-                                <span className="text-5xl font-black tracking-tighter leading-none shadow-sm">{formatCurrency(trabajo.saldo)}</span>
-                            </div>
-                        </div>
-                        <div className="bg-slate-100 rounded-2xl p-2.5 text-center border border-slate-200">
-                            <span className="text-[8px] font-mono text-slate-500 font-black uppercase tracking-[0.5em]">PROTOCOLO_VERIFICADO_SRI_v2.0.26</span>
-                        </div>
+                {/* DECLARACIÓN LEGAL Y FIRMA */}
+                <div className="grid grid-cols-12 gap-3 text-[7px] text-slate-700 mt-1 items-end">
+                    <div className="col-span-6 leading-tight">
+                        <p>Declaro que los datos proporcionados en esta solicitud son exactos y verdaderos, por lo que asumo la responsabilidad sobre su presentación.</p>
+                        <p className="font-bold text-[6.5px] mt-1">Nota: En caso de que el trámite sea realizado por un tercero deberá adjuntar poder especial o general.</p>
                     </div>
-                <TacticalStatusBar id={trabajo.id} />
+                    <div className="col-span-6 text-center">
+                        <div className="border-b border-dotted border-slate-500 w-full mb-1"></div>
+                        <div className="font-black text-[7.5px] text-[#0e3150] uppercase">Firma del Solicitante</div>
+                        <div className="text-[6.5px] text-slate-500 truncate">Razón social / Apellidos y nombres: {cliente.nombre}</div>
+                        <div className="text-[6.5px] text-slate-500">C.I.: {cliente.ruc || cliente.cedula}</div>
+                    </div>
+                </div>
+
+                {/* BARRA FINANCIERA INFERIOR AZUL */}
+                <div className="bg-[#0e3150] text-white rounded-md p-1 flex justify-between items-center gap-2 mt-1">
+                    <div className="flex-1 bg-white text-[#0e3150] rounded px-2 py-0.5 flex justify-between items-center font-bold text-[8.5px]">
+                        <span>Valor $</span>
+                        <span className="font-mono text-[9.5px]">{totalVal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex-1 bg-white text-[#0e3150] rounded px-2 py-0.5 flex justify-between items-center font-bold text-[8.5px]">
+                        <span>Abona $</span>
+                        <span className="font-mono text-[9.5px] text-emerald-700">{abonoVal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex-1 bg-[#f8fafc] text-[#0e3150] border border-white/40 rounded px-2 py-0.5 flex justify-between items-center font-black text-[8.5px]">
+                        <span className="text-[#2563eb]">Saldo $</span>
+                        <span className="font-mono text-[10.5px] text-[#2563eb]">{saldoVal.toFixed(2)}</span>
+                    </div>
+                </div>
             </div>
         );
     };
 
     return (
-        <div className="bg-[#0f1113] min-h-screen py-16 flex flex-col items-center overflow-y-auto font-sans relative">
+        <div className="bg-[#0a0a0b] min-h-screen py-10 flex flex-col items-center overflow-y-auto font-sans relative">
             <style>{`
                 @media print {
                     .no-print { display: none !important; }
@@ -495,81 +435,58 @@ const SolicitudImpresionPage: React.FC = () => {
                     height: 297mm;
                     background: white;
                     position: relative;
+                    box-sizing: border-box;
                 }
                 .web-shadow {
-                    box-shadow: 0 60px 150px -30px rgba(0,0,0,0.8);
-                }
-                @keyframes reverse-spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(-360deg); }
-                }
-                .animate-reverse-spin {
-                    animation: reverse-spin linear infinite;
-                }
-                .shadow-gold-glow-text {
-                    text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+                    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
                 }
             `}</style>
 
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-12 no-print px-10 py-6 bg-white/5 backdrop-blur-2xl rounded-[3rem] border border-white/10 shadow-2xl relative z-50">
-                <div className="flex gap-6">
-                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-4 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
-                            <HomeIcon className="w-5 h-5" />
-                        </div>
-                        Dashboard
+            {/* BARRA SUPERIOR DE CONTROL */}
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-6 no-print px-8 py-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl relative z-50">
+                <div className="flex gap-4">
+                    <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-white/60 font-bold text-xs uppercase tracking-wider hover:text-white transition-all">
+                        <HomeIcon className="w-4 h-4" /> Dashboard
                     </button>
-                    <button onClick={() => navigate(-1)} className="group flex items-center gap-4 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-all">
-                            <ArrowLeftIcon className="w-5 h-5" />
-                        </div>
-                        Volver
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/60 font-bold text-xs uppercase tracking-wider hover:text-white transition-all">
+                        <ArrowLeftIcon className="w-4 h-4" /> Volver
                     </button>
                 </div>
                 
-                <div className="flex gap-5">
-                    <div className="hidden md:flex flex-col items-end justify-center mr-6 border-r border-white/10 pr-10">
-                        <span className="text-[8px] font-black text-amber-500/50 uppercase tracking-[0.5em] mb-1">Formato_Salida</span>
-                        <span className="text-[12px] font-black text-white uppercase tracking-widest">
-                            {format === 'a5' ? 'Doble Industrial (A5)' : 'Protocolo Maestro (A4)'}
-                        </span>
-                    </div>
+                <div className="flex gap-4 items-center">
+                    <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest mr-2">
+                        {format === 'a5' ? '📄 Doble Solicitud (2x A5 en Hoja A4)' : '📄 Hoja Única'}
+                    </span>
                     
-                    <button onClick={handleDownloadPdf} className="bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-[2rem] font-black text-[10px] uppercase tracking-widest text-white transition-all flex items-center gap-4 active:scale-95">
-                        <ArrowDownTrayIcon className="w-6 h-6 text-amber-500" /> Exportar PDF
+                    <button onClick={handleDownloadPdf} className="bg-white/10 hover:bg-white/15 border border-white/15 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider text-white transition-all flex items-center gap-2">
+                        <ArrowDownTrayIcon className="w-4 h-4 text-amber-400" /> Exportar PDF
                     </button>
                     
-                    <button onClick={() => window.print()} className="bg-amber-500 text-black px-12 py-4 rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_-10px_rgba(245,158,11,0.5)] hover:shadow-amber-500/40 flex items-center gap-4 hover:scale-105 transition-all active:scale-95">
-                        <PrinterIcon className="w-6 h-6"/> Ejecutar Impresión
+                    <button onClick={() => window.print()} className="bg-amber-500 text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg hover:bg-amber-400 flex items-center gap-2 hover:scale-105 transition-all">
+                        <PrinterIcon className="w-4 h-4"/> Imprimir Solicitud
                     </button>
                 </div>
             </div>
 
-            <div id="documento-maestro-sri" className="page-container web-shadow rounded-[0.5rem] relative z-10 scale-[0.95] origin-top">
-                {format === 'a5' ? (
-                    <div className="flex flex-col h-[297mm]">
-                        <div className="h-[148.5mm] overflow-hidden">
-                            {renderFormulario('cliente')}
-                        </div>
-                        <div className="w-full h-0 border-t-4 border-dashed border-slate-300 my-0 relative z-50">
-                            <div className="absolute left-1/2 -translate-x-1/2 -top-5 bg-white border-2 border-slate-800 px-8 py-2 rounded-full text-[9px] text-slate-800 font-black flex items-center gap-4 shadow-2xl">
-                                <span className="rotate-90 text-[12px]">✂</span> PERFORADO DE SEGURIDAD / LÍNEA DE CORTE INDUSTRIAL
-                            </div>
-                        </div>
-                        <div className="h-[148.5mm] overflow-hidden">
-                            {renderFormulario('imprenta')}
-                        </div>
+            {/* CONTENEDOR EXACTO A4 (2x A5 CON CORTE INDUSTRIAL) */}
+            <div id="documento-maestro-sri" className="page-container web-shadow rounded-sm relative z-10 flex flex-col justify-between p-2">
+                {/* COPIA 1: ORIGINAL CLIENTE (A5 SUPERIOR) */}
+                <div className="h-[143mm] overflow-hidden">
+                    {renderTicketA5('cliente')}
+                </div>
+
+                {/* LÍNEA DE CORTE CENTRAL INDUSTRIAL */}
+                <div className="w-full flex items-center justify-center my-1 relative z-20">
+                    <div className="w-full border-t border-dashed border-slate-400"></div>
+                    <div className="absolute bg-white px-4 py-0.5 text-[8px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 border border-slate-300 rounded-full shadow-sm">
+                        <span>✂</span> CORTAR AQUÍ (COPIA IMPRENTA / TALLER)
                     </div>
-                ) : (
-                    <div className="h-[297mm]">
-                        {renderFormulario('full')}
-                    </div>
-                )}
-            </div>
-            
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px]" />
+                </div>
+
+                {/* COPIA 2: COPIA TALLER (A5 INFERIOR) */}
+                <div className="h-[143mm] overflow-hidden">
+                    {renderTicketA5('imprenta')}
+                </div>
             </div>
         </div>
     );

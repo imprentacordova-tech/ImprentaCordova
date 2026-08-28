@@ -889,188 +889,390 @@
     <div id="print-target-actual-content"></div>
   </div>
 
-  <!-- OPCIÓN 3: FORMATO COMPLETO + LLENADO (TALONARIO MATRIZ SRI IMPRENTA CORDOVA) -->
+  <!-- OPCIÓN 3: FORMATO COMPLETO + LLENADO (DOBLE TICKET A5 EN HOJA A4 CON CORTE) -->
   <div id="print-target-formato-llenado" class="print-document-target">
-    <div class="solic-sheet">
-      <!-- CABECERA OFICIAL IMPRENTA CORDOVA -->
-      <div class="solic-header">
-        <div class="solic-brand-wrap">
-          <div class="solic-logo-ic">IC</div>
-          <div class="solic-brand-text">
-            <h1 class="solic-main-title">IMPRENTA CORDOVA</h1>
-            <div class="solic-sub-info">
-              <span>Direc.: Colón e/. Sucre y Av. Rocafuerte</span>
-              <span>📞 0993083943 • 0962585172</span>
+    <div style="width: 210mm; min-height: 297mm; padding: 6mm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; background: #ffffff; margin: 0 auto;">
+      
+      <!-- TICKET 1: ORIGINAL CLIENTE (A5 SUPERIOR) -->
+      <div class="solic-sheet" style="border: 1.5px solid #0e3150; border-radius: 6px; padding: 8px 10px; margin-bottom: 2mm;">
+        <!-- CABECERA OFICIAL IMPRENTA CORDOVA -->
+        <div class="solic-header" style="border-bottom: 1.5px solid #0e3150; padding-bottom: 4px; margin-bottom: 4px;">
+          <div class="solic-brand-wrap" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 32px; height: 32px; background: #0e3150; color: #fff; font-weight: 900; font-size: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">IC</div>
+              <div>
+                <h1 style="font-size: 15px; font-weight: 900; color: #0e3150; margin: 0; text-transform: uppercase;">IMPRENTA CORDOVA</h1>
+              </div>
             </div>
-            <div class="solic-sub-info">
-              <span>RUC: 0702065319001 • CODIGO AUT SRI: 8634</span>
-              <span>✉️ Email: imprentacordova@gmail.com</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TITLE BAR -->
-      <div class="solic-title-bar">
-        <h2>SOLICITUD DE AUTORIZACIÓN DE IMPRESIÓN <span class="sri-badge">SRi</span></h2>
-      </div>
-
-      <!-- CAMPOS DEL CLIENTE -->
-      <div class="solic-fields-body">
-        <div class="solic-row">
-          <span class="lbl">Apellidos y Nombres:</span>
-          <span class="val dotted prt-val-client-name"></span>
-        </div>
-
-        <div class="solic-row">
-          <span class="lbl">Razón Social:</span>
-          <span class="val dotted prt-val-client-name"></span>
-        </div>
-
-        <div class="solic-row">
-          <span class="lbl">Actividad Ec.:</span>
-          <span class="val dotted prt-val-activity"></span>
-        </div>
-
-        <div class="solic-row inline-row">
-          <span class="lbl">RUC:</span>
-          <div class="ruc-grid-boxes prt-ruc-boxes">
-            <!-- 13 casillas de RUC -->
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span class="fixed">0</span><span class="fixed">0</span><span class="fixed">1</span>
-          </div>
-          <span class="lbl" style="margin-left: 15px;">Clave / Estab:</span>
-          <span class="val dotted prt-val-clave" style="width: 120px;">001</span>
-        </div>
-
-        <div class="solic-row inline-row">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span class="lbl">Hora:</span>
-            <span class="val dotted prt-val-hora" style="width: 60px;"></span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px; margin-left: 10px;">
-            <span class="lbl">Fecha:</span>
-            <div class="date-boxes prt-date-boxes">
-              <span class="d1"></span><span class="d2"></span>
-              <span class="m1"></span><span class="m2"></span>
-              <span class="a1"></span><span class="a2"></span>
+            <div style="font-size: 7.5px; text-align: right; color: #334155; line-height: 1.3;">
+              <div>Direc.: Colón e/. Sucre y Av. Rocafuerte &nbsp; 📞 0993083943 • 0962585172</div>
+              <div>RUC: 0702065319001 • CODIGO AUT SRI: 8634 &nbsp; ✉ Email: imprentacordova@gmail.com</div>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px; margin-left: 10px;">
-            <span class="lbl">Hora y Entrega:</span>
-            <span class="val dotted prt-val-entrega" style="width: 110px;"></span>
+        </div>
+
+        <!-- TITLE BAR -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0e3150; padding-bottom: 3px; margin-bottom: 4px;">
+          <div style="font-size: 10.5px; font-weight: 900; color: #0e3150; text-transform: uppercase;">
+            SOLICITUD DE AUTORIZACIÓN DE IMPRESIÓN <span style="color: #0284c7; font-weight: 900;">SRi</span>
+          </div>
+          <div style="font-size: 9px; font-weight: 800; color: #0e3150;">
+            ORDEN N°: <span class="prt-val-order-num" style="font-family: monospace;">00000001</span>
           </div>
         </div>
 
-        <div class="solic-row inline-row">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span class="lbl">Telef:</span>
-            <span class="opt-chk">[ ] Aument.</span>
-            <span class="opt-chk">[ ] Cambiar</span>
-            <span class="opt-chk">[ ] Mismo</span>
-            <span class="val dotted prt-val-client-phone" style="width: 120px;"></span>
+        <!-- CAMPOS DEL CLIENTE -->
+        <div class="solic-fields-body" style="font-size: 8px; line-height: 1.4; margin-bottom: 4px;">
+          <div class="solic-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Apellidos y Nombres:</span>
+            <span class="val dotted prt-val-client-name" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-weight: 700; text-transform: uppercase; padding-left: 4px;"></span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px; flex: 1; margin-left: 15px;">
-            <span class="lbl">Email:</span>
-            <span class="val dotted prt-val-client-email"></span> <!-- CORRECCIÓN: EMAIL DEL CLIENTE -->
+
+          <div class="solic-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Razón Social:</span>
+            <span class="val dotted prt-val-client-name" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-weight: 600; text-transform: uppercase; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Actividad Ec.:</span>
+            <span class="val dotted prt-val-activity" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-weight: 600; text-transform: uppercase; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row inline-row" style="display: flex; align-items: center; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; margin-right: 4px;">RUC:</span>
+            <div class="ruc-grid-boxes prt-ruc-boxes" style="display: flex; gap: 1px;">
+              <!-- 13 casillas de RUC -->
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold; background: #f1f5f9;">0</span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold; background: #f1f5f9;">0</span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold; background: #f1f5f9;">1</span>
+            </div>
+            <span class="lbl" style="font-weight: 700; color: #0e3150; margin-left: 10px;">Clave:</span>
+            <span class="val dotted prt-val-clave" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-family: monospace; font-weight: bold; text-align: center;">001</span>
+          </div>
+
+          <div class="solic-row inline-row" style="display: flex; justify-content: space-between; align-items: center; font-size: 7.5px; margin-bottom: 2px;">
+            <div><span class="lbl" style="font-weight: bold;">Hora:</span> <span class="val dotted prt-val-hora" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; padding: 0 4px;"></span></div>
+            <div><span class="lbl" style="font-weight: bold;">Fecha:</span> <span class="date-boxes prt-date-boxes" style="font-weight: bold; border: 1px solid #0e3150; padding: 1px 4px; border-radius: 2px; font-family: monospace;"><span class="d1"></span><span class="d2"></span> | <span class="m1"></span><span class="m2"></span> | <span class="a1"></span><span class="a2"></span></span> <span style="font-size: 7px; color: #64748b;">[L][M][M][J][V][S]</span></div>
+            <div><span class="lbl" style="font-weight: bold;">Hora y Entrega:</span> <span class="val dotted prt-val-entrega" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; padding: 0 4px;"></span> <span style="font-size: 7px; color: #64748b;">[L][M][M][J][V][S]</span></div>
+          </div>
+
+          <div class="solic-row inline-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: bold;">Telef:</span>
+            <span style="font-size: 7px; color: #475569; margin: 0 4px;">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
+            <span class="val dotted prt-val-client-phone" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; font-weight: bold; padding: 0 6px;"></span>
+            <span class="lbl" style="font-weight: bold; margin-left: 10px;">Email:</span>
+            <span class="val dotted prt-val-client-email" style="flex: 1; border-bottom: 1px dotted #94a3b8; color: #475569; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row" style="display: flex; align-items: baseline;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Correo Electrónico:</span>
+            <span class="val dotted prt-val-client-email" style="flex: 1; border-bottom: 1px dotted #94a3b8; color: #334155; padding-left: 4px;"></span>
           </div>
         </div>
 
-        <div class="solic-row">
-          <span class="lbl">Correo Electrónico:</span>
-          <span class="val dotted prt-val-client-email"></span>
+        <!-- TABLA COMPROBANTES -->
+        <div class="solic-table-section" style="border: 1px solid #0e3150; border-radius: 4px; overflow: hidden; margin-bottom: 3px;">
+          <div style="background: #0e3150; color: #fff; text-align: center; font-size: 7.5px; font-weight: 900; padding: 2px 4px; text-transform: uppercase;">
+            SOLICITO LA ELABORACIÓN DE LOS DOCUMENTOS DETALLADOS A CONTINUACIÓN:
+          </div>
+          <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 7.5px;">
+            <thead>
+              <tr style="background: #f1f5f9; color: #0e3150; font-weight: bold; border-bottom: 1px solid #0e3150;">
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 14%;">TAMAÑO</th>
+                <th style="padding: 2px 4px; border-right: 1px solid #0e3150; text-align: left; width: 36%;">TIPO DE DOCUMENTO</th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 16%;">PAPEL<br><span style="font-size: 6px;">(Químico | Bond)</span></th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 9%;">ESTABLEC.</th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 9%;">PTO. EMISIÓN</th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 8%;">CANTIDAD</th>
+                <th style="padding: 2px; width: 8%;">PRECIO</th>
+              </tr>
+            </thead>
+            <tbody style="line-height: 1.2;">
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td class="prt-row-size" style="border-right: 1px solid #e2e8f0; font-family: monospace; font-weight: bold;">1/4 Oficio</td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">Nota de Venta</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [✓] [ ] )</td>
+                <td class="prt-row-est" style="border-right: 1px solid #e2e8f0; font-family: monospace;">001</td>
+                <td class="prt-row-pto" style="border-right: 1px solid #e2e8f0; font-family: monospace;">001</td>
+                <td class="prt-row-qty" style="border-right: 1px solid #e2e8f0; font-family: monospace; font-weight: bold;">100</td>
+                <td class="prt-row-price" style="font-family: monospace; font-weight: bold;">$13.00</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">Guía de Remisión</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">Nota de Crédito</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0; font-size: 6.5px;">Liquidación de Compras o Prestación de Servicios</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">RECIBOS</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr>
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="padding: 2px 4px; font-size: 7px; border-top: 1px solid #e2e8f0; display: flex; align-items: baseline;">
+            <span style="font-weight: bold; margin-right: 4px;">Detalles adicionales:</span>
+            <span class="val dotted prt-val-detalles" style="flex: 1; border-bottom: 1px dotted #94a3b8;"></span>
+          </div>
+        </div>
+
+        <!-- NOTA IMPORTANTE BANNER -->
+        <div style="background: #0e3150; color: #fff; text-align: center; border-radius: 3px; padding: 2px 4px; margin-bottom: 3px;">
+          <div style="font-size: 7.5px; font-weight: 900; text-transform: uppercase;">NOTA IMPORTANTE: SIN RECIBO PIERDE EL DERECHO A RETIRAR SU TRABAJO Y SU DINERO</div>
+          <div style="font-size: 6px; color: #e2e8f0;">PASADO EL MES DE NO HABER RETIRADO SUS DOCUMENTOS (FACTURAS, RETENCIONES, GUÍAS, ETC) NO NOS HACEMOS RESPONSABLES DE SU ABONO Y TODO RECLAMO QUEDA ANULADO.</div>
+        </div>
+
+        <!-- DECLARACIÓN Y FIRMA -->
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 7px; color: #475569; margin-bottom: 3px;">
+          <div style="flex: 1.2; line-height: 1.2;">
+            Declaro que los datos proporcionados en esta solicitud son exactos y verdaderos, por lo que asumo la responsabilidad sobre su presentación.<br>
+            <strong style="font-size: 6.5px;">Nota: En caso de que el trámite sea realizado por un tercero deberá adjuntar poder especial o general.</strong>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted #64748b; margin-bottom: 2px;"></div>
+            <div style="font-weight: 900; color: #0e3150; font-size: 7.5px; text-transform: uppercase;">Firma del Solicitante</div>
+            <div style="font-size: 6.5px; color: #64748b;">Razón social / Apellidos y nombres: <span class="prt-val-client-name"></span></div>
+            <div style="font-size: 6.5px; color: #64748b;">C.I.: <span class="prt-val-client-ruc"></span></div>
+          </div>
+        </div>
+
+        <!-- BARRA FINANCIERA -->
+        <div style="background: #0e3150; color: #fff; border-radius: 4px; padding: 2px 4px; display: flex; justify-content: space-between; gap: 4px;">
+          <div style="flex: 1; background: #fff; color: #0e3150; border-radius: 3px; padding: 1px 4px; display: flex; justify-content: space-between; font-weight: bold; font-size: 8px;">
+            <span>Valor $</span> <strong class="prt-val-total" style="font-family: monospace;">0.00</strong>
+          </div>
+          <div style="flex: 1; background: #fff; color: #0e3150; border-radius: 3px; padding: 1px 4px; display: flex; justify-content: space-between; font-weight: bold; font-size: 8px;">
+            <span>Abona $</span> <strong class="prt-val-abono" style="font-family: monospace; color: #16a34a;">0.00</strong>
+          </div>
+          <div style="flex: 1; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 3px; padding: 1px 4px; display: flex; justify-content: space-between; font-weight: 900; font-size: 8.5px;">
+            <span>Saldo $</span> <strong class="prt-val-saldo" style="font-family: monospace;">0.00</strong>
+          </div>
         </div>
       </div>
 
-      <!-- SECCIÓN TABLA COMPROBANTES -->
-      <div class="solic-table-section">
-        <div class="solic-table-header-title">
-          SOLICITO LA ELABORACIÓN DE LOS DOCUMENTOS DETALLADOS A CONTINUACIÓN:
-        </div>
-        <table class="solic-matrix-table">
-          <thead>
-            <tr>
-              <th style="width: 12%;">TAMAÑO</th>
-              <th style="width: 32%;">TIPO DE DOCUMENTO</th>
-              <th style="width: 16%;">PAPEL<br><small>(Químico | Bond)</small></th>
-              <th style="width: 10%;">ESTABLEC.</th>
-              <th style="width: 10%;">PUNTO EMISION</th>
-              <th style="width: 10%;">CANTIDAD</th>
-              <th style="width: 10%;">PRECIO</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="row-doc-nota-venta">
-              <td class="prt-row-size">1/4 Oficio</td>
-              <td style="font-weight: bold; text-align: left; padding-left: 8px;">Nota de Venta</td>
-              <td><span class="chk-quimico">[ ]</span> <span class="chk-bond">[ ]</span></td>
-              <td class="prt-row-est">001</td>
-              <td class="prt-row-pto">001</td>
-              <td class="prt-row-qty">100</td>
-              <td class="prt-row-price">$13.00</td>
-            </tr>
-            <tr class="row-doc-guia">
-              <td></td>
-              <td style="font-weight: bold; text-align: left; padding-left: 8px;">Guía de Remisión</td>
-              <td>[ ] [ ]</td>
-              <td></td><td></td><td></td><td></td>
-            </tr>
-            <tr class="row-doc-credito">
-              <td></td>
-              <td style="font-weight: bold; text-align: left; padding-left: 8px;">Nota de Crédito</td>
-              <td>[ ] [ ]</td>
-              <td></td><td></td><td></td><td></td>
-            </tr>
-            <tr class="row-doc-liquidacion">
-              <td></td>
-              <td style="font-weight: bold; text-align: left; padding-left: 8px;">Liquidación de Compras o Prestación de Servicios</td>
-              <td>[ ] [ ]</td>
-              <td></td><td></td><td></td><td></td>
-            </tr>
-            <tr class="row-doc-recibos">
-              <td></td>
-              <td style="font-weight: bold; text-align: left; padding-left: 8px;">RECIBOS</td>
-              <td>[ ] [ ]</td>
-              <td></td><td></td><td></td><td></td>
-            </tr>
-            <tr>
-              <td></td><td></td><td>[ ] [ ]</td><td></td><td></td><td></td><td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="solic-row" style="margin-top: 6px;">
-        <span class="lbl">Detalles adicionales:</span>
-        <span class="val dotted prt-val-detalles"></span>
-      </div>
-
-      <!-- NOTA IMPORTANTE BANNER -->
-      <div class="solic-alert-banner">
-        <div class="alert-title">NOTA IMPORTANTE:</div>
-        <div class="alert-sub">SIN RECIBO PIERDE EL DERECHO A RETIRAR SU TRABAJO Y SU DINERO</div>
-        <div class="alert-desc">PASADO EL MES DE NO HABER RETIRADO SUS DOCUMENTOS (FACTURAS, RETENCIONES, GUIAS, ETC) NO NOS HACEMOS RESPONSABLES DE SU ABONO Y TODO RECLAMO QUEDA ANULADO.</div>
-      </div>
-
-      <!-- DECLARACIÓN Y FIRMA -->
-      <div class="solic-footer-declaration">
-        <div class="decl-text">
-          Declaro que los datos proporcionados en esta solicitud son exactos y verdaderos, por lo que asumo la responsabilidad sobre su presentación.<br><br>
-          <small>Nota: En caso de que el trámite sea realizado por un tercero deberá adjuntar poder especial o general.</small>
-        </div>
-        <div class="sig-area">
-          <div class="sig-line"></div>
-          <div class="sig-lbl">Firma del Solicitante</div>
-          <div style="font-size: 8px; color: #475569; margin-top: 2px;">Razón social / Apellidos y nombres: <span class="prt-val-client-name"></span></div>
-          <div style="font-size: 8px; color: #475569;">C.I.: <span class="prt-val-client-ruc"></span></div>
+      <!-- LÍNEA DE CORTE INDUSTRIAL -->
+      <div style="display: flex; align-items: center; justify-content: center; margin: 1.5mm 0; position: relative;">
+        <div style="width: 100%; border-top: 1.5px dashed #94a3b8;"></div>
+        <div style="position: absolute; background: #fff; padding: 0 8px; font-size: 7.5px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #cbd5e1; border-radius: 10px;">
+          ✂ CORTAR AQUÍ • COPIA IMPRENTA / TALLER
         </div>
       </div>
 
-      <!-- BARRA DE VALORES DE ABAJO -->
-      <div class="solic-bottom-financials">
-        <div class="fin-pill">Valor $ <strong class="prt-val-total">0.00</strong></div>
-        <div class="fin-pill">Abona $ <strong class="prt-val-abono">0.00</strong></div>
-        <div class="fin-pill highlight">Saldo $ <strong class="prt-val-saldo">0.00</strong></div>
+      <!-- TICKET 2: COPIA TALLER (A5 INFERIOR) -->
+      <div class="solic-sheet" style="border: 1.5px solid #0e3150; border-radius: 6px; padding: 8px 10px;">
+        <!-- CABECERA OFICIAL IMPRENTA CORDOVA -->
+        <div class="solic-header" style="border-bottom: 1.5px solid #0e3150; padding-bottom: 4px; margin-bottom: 4px;">
+          <div class="solic-brand-wrap" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 32px; height: 32px; background: #0e3150; color: #fff; font-weight: 900; font-size: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">IC</div>
+              <div>
+                <h1 style="font-size: 15px; font-weight: 900; color: #0e3150; margin: 0; text-transform: uppercase;">IMPRENTA CORDOVA</h1>
+              </div>
+            </div>
+            <div style="font-size: 7.5px; text-align: right; color: #334155; line-height: 1.3;">
+              <div>Direc.: Colón e/. Sucre y Av. Rocafuerte &nbsp; 📞 0993083943 • 0962585172</div>
+              <div>RUC: 0702065319001 • CODIGO AUT SRI: 8634 &nbsp; ✉ Email: imprentacordova@gmail.com</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TITLE BAR -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0e3150; padding-bottom: 3px; margin-bottom: 4px;">
+          <div style="font-size: 10.5px; font-weight: 900; color: #0e3150; text-transform: uppercase;">
+            SOLICITUD DE AUTORIZACIÓN DE IMPRESIÓN <span style="color: #0284c7; font-weight: 900;">SRi</span> <span style="font-size: 7.5px; background: #e2e8f0; color: #0f172a; padding: 1px 4px; border-radius: 2px; margin-left: 4px;">COPIA TALLER</span>
+          </div>
+          <div style="font-size: 9px; font-weight: 800; color: #0e3150;">
+            ORDEN N°: <span class="prt-val-order-num" style="font-family: monospace;">00000001</span>
+          </div>
+        </div>
+
+        <!-- CAMPOS DEL CLIENTE -->
+        <div class="solic-fields-body" style="font-size: 8px; line-height: 1.4; margin-bottom: 4px;">
+          <div class="solic-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Apellidos y Nombres:</span>
+            <span class="val dotted prt-val-client-name" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-weight: 700; text-transform: uppercase; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Razón Social:</span>
+            <span class="val dotted prt-val-client-name" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-weight: 600; text-transform: uppercase; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Actividad Ec.:</span>
+            <span class="val dotted prt-val-activity" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-weight: 600; text-transform: uppercase; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row inline-row" style="display: flex; align-items: center; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; margin-right: 4px;">RUC:</span>
+            <div class="ruc-grid-boxes prt-ruc-boxes" style="display: flex; gap: 1px;">
+              <!-- 13 casillas de RUC -->
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold;"></span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold; background: #f1f5f9;">0</span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold; background: #f1f5f9;">0</span>
+              <span style="width: 10px; height: 12px; border: 1px solid #0e3150; text-align: center; font-size: 7.5px; line-height: 12px; font-family: monospace; font-weight: bold; background: #f1f5f9;">1</span>
+            </div>
+            <span class="lbl" style="font-weight: 700; color: #0e3150; margin-left: 10px;">Clave:</span>
+            <span class="val dotted prt-val-clave" style="flex: 1; border-bottom: 1px dotted #94a3b8; font-family: monospace; font-weight: bold; text-align: center;">001</span>
+          </div>
+
+          <div class="solic-row inline-row" style="display: flex; justify-content: space-between; align-items: center; font-size: 7.5px; margin-bottom: 2px;">
+            <div><span class="lbl" style="font-weight: bold;">Hora:</span> <span class="val dotted prt-val-hora" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; padding: 0 4px;"></span></div>
+            <div><span class="lbl" style="font-weight: bold;">Fecha:</span> <span class="date-boxes prt-date-boxes" style="font-weight: bold; border: 1px solid #0e3150; padding: 1px 4px; border-radius: 2px; font-family: monospace;"><span class="d1"></span><span class="d2"></span> | <span class="m1"></span><span class="m2"></span> | <span class="a1"></span><span class="a2"></span></span> <span style="font-size: 7px; color: #64748b;">[L][M][M][J][V][S]</span></div>
+            <div><span class="lbl" style="font-weight: bold;">Hora y Entrega:</span> <span class="val dotted prt-val-entrega" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; padding: 0 4px;"></span> <span style="font-size: 7px; color: #64748b;">[L][M][M][J][V][S]</span></div>
+          </div>
+
+          <div class="solic-row inline-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
+            <span class="lbl" style="font-weight: bold;">Telef:</span>
+            <span style="font-size: 7px; color: #475569; margin: 0 4px;">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
+            <span class="val dotted prt-val-client-phone" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; font-weight: bold; padding: 0 6px;"></span>
+            <span class="lbl" style="font-weight: bold; margin-left: 10px;">Email:</span>
+            <span class="val dotted prt-val-client-email" style="flex: 1; border-bottom: 1px dotted #94a3b8; color: #475569; padding-left: 4px;"></span>
+          </div>
+
+          <div class="solic-row" style="display: flex; align-items: baseline;">
+            <span class="lbl" style="font-weight: 700; color: #0e3150; min-width: 95px;">Correo Electrónico:</span>
+            <span class="val dotted prt-val-client-email" style="flex: 1; border-bottom: 1px dotted #94a3b8; color: #334155; padding-left: 4px;"></span>
+          </div>
+        </div>
+
+        <!-- TABLA COMPROBANTES -->
+        <div class="solic-table-section" style="border: 1px solid #0e3150; border-radius: 4px; overflow: hidden; margin-bottom: 3px;">
+          <div style="background: #0e3150; color: #fff; text-align: center; font-size: 7.5px; font-weight: 900; padding: 2px 4px; text-transform: uppercase;">
+            SOLICITO LA ELABORACIÓN DE LOS DOCUMENTOS DETALLADOS A CONTINUACIÓN:
+          </div>
+          <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 7.5px;">
+            <thead>
+              <tr style="background: #f1f5f9; color: #0e3150; font-weight: bold; border-bottom: 1px solid #0e3150;">
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 14%;">TAMAÑO</th>
+                <th style="padding: 2px 4px; border-right: 1px solid #0e3150; text-align: left; width: 36%;">TIPO DE DOCUMENTO</th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 16%;">PAPEL<br><span style="font-size: 6px;">(Químico | Bond)</span></th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 9%;">ESTABLEC.</th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 9%;">PTO. EMISIÓN</th>
+                <th style="padding: 2px; border-right: 1px solid #0e3150; width: 8%;">CANTIDAD</th>
+                <th style="padding: 2px; width: 8%;">PRECIO</th>
+              </tr>
+            </thead>
+            <tbody style="line-height: 1.2;">
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td class="prt-row-size" style="border-right: 1px solid #e2e8f0; font-family: monospace; font-weight: bold;">1/4 Oficio</td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">Nota de Venta</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [✓] [ ] )</td>
+                <td class="prt-row-est" style="border-right: 1px solid #e2e8f0; font-family: monospace;">001</td>
+                <td class="prt-row-pto" style="border-right: 1px solid #e2e8f0; font-family: monospace;">001</td>
+                <td class="prt-row-qty" style="border-right: 1px solid #e2e8f0; font-family: monospace; font-weight: bold;">100</td>
+                <td class="prt-row-price" style="font-family: monospace; font-weight: bold;">$13.00</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">Guía de Remisión</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">Nota de Crédito</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0; font-size: 6.5px;">Liquidación de Compras o Prestación de Servicios</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="font-weight: bold; text-align: left; padding-left: 6px; border-right: 1px solid #e2e8f0;">RECIBOS</td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+              <tr>
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="border-right: 1px solid #e2e8f0;"></td>
+                <td style="border-right: 1px solid #e2e8f0; font-family: monospace; font-size: 7px;">( [ ] [ ] )</td>
+                <td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td style="border-right: 1px solid #e2e8f0;"></td><td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="padding: 2px 4px; font-size: 7px; border-top: 1px solid #e2e8f0; display: flex; align-items: baseline;">
+            <span style="font-weight: bold; margin-right: 4px;">Detalles adicionales:</span>
+            <span class="val dotted prt-val-detalles" style="flex: 1; border-bottom: 1px dotted #94a3b8;"></span>
+          </div>
+        </div>
+
+        <!-- NOTA IMPORTANTE BANNER -->
+        <div style="background: #0e3150; color: #fff; text-align: center; border-radius: 3px; padding: 2px 4px; margin-bottom: 3px;">
+          <div style="font-size: 7.5px; font-weight: 900; text-transform: uppercase;">NOTA IMPORTANTE: SIN RECIBO PIERDE EL DERECHO A RETIRAR SU TRABAJO Y SU DINERO</div>
+          <div style="font-size: 6px; color: #e2e8f0;">PASADO EL MES DE NO HABER RETIRADO SUS DOCUMENTOS (FACTURAS, RETENCIONES, GUÍAS, ETC) NO NOS HACEMOS RESPONSABLES DE SU ABONO Y TODO RECLAMO QUEDA ANULADO.</div>
+        </div>
+
+        <!-- DECLARACIÓN Y FIRMA -->
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 7px; color: #475569; margin-bottom: 3px;">
+          <div style="flex: 1.2; line-height: 1.2;">
+            Declaro que los datos proporcionados en esta solicitud son exactos y verdaderos, por lo que asumo la responsabilidad sobre su presentación.<br>
+            <strong style="font-size: 6.5px;">Nota: En caso de que el trámite sea realizado por un tercero deberá adjuntar poder especial o general.</strong>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted #64748b; margin-bottom: 2px;"></div>
+            <div style="font-weight: 900; color: #0e3150; font-size: 7.5px; text-transform: uppercase;">Firma del Solicitante</div>
+            <div style="font-size: 6.5px; color: #64748b;">Razón social / Apellidos y nombres: <span class="prt-val-client-name"></span></div>
+            <div style="font-size: 6.5px; color: #64748b;">C.I.: <span class="prt-val-client-ruc"></span></div>
+          </div>
+        </div>
+
+        <!-- BARRA FINANCIERA -->
+        <div style="background: #0e3150; color: #fff; border-radius: 4px; padding: 2px 4px; display: flex; justify-content: space-between; gap: 4px;">
+          <div style="flex: 1; background: #fff; color: #0e3150; border-radius: 3px; padding: 1px 4px; display: flex; justify-content: space-between; font-weight: bold; font-size: 8px;">
+            <span>Valor $</span> <strong class="prt-val-total" style="font-family: monospace;">0.00</strong>
+          </div>
+          <div style="flex: 1; background: #fff; color: #0e3150; border-radius: 3px; padding: 1px 4px; display: flex; justify-content: space-between; font-weight: bold; font-size: 8px;">
+            <span>Abona $</span> <strong class="prt-val-abono" style="font-family: monospace; color: #16a34a;">0.00</strong>
+          </div>
+          <div style="flex: 1; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 3px; padding: 1px 4px; display: flex; justify-content: space-between; font-weight: 900; font-size: 8.5px;">
+            <span>Saldo $</span> <strong class="prt-val-saldo" style="font-family: monospace;">0.00</strong>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 

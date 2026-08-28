@@ -84,6 +84,67 @@ const NuevoPedidoPage: React.FC = () => {
 
     useEffect(() => {
         document.body.style.overflow = 'auto';
+<<<<<<< Updated upstream
+=======
+
+        const applySriPayload = (payload: any) => {
+            if (!payload) return;
+            const ruc = payload.ruc || payload.clientRuc || '';
+            const name = payload.name || payload.clientName || '';
+            const phone = payload.phone || payload.clientPhone || '';
+            const activity = payload.activity || 'Comercio / Servicios General';
+            const docType = payload.docType || '1';
+            const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
+            const docSize = payload.docSize || '1/4 Oficio';
+            const totalVal = parseFloat(payload.total) || 13;
+            const abonoVal = parseFloat(payload.abono) || 0;
+            const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
+
+            setMissionCategory('SRI');
+            setIsSriOrder(true);
+            setOrderMode('CATALOG');
+            setSriActividad(activity);
+            setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
+
+            if (ruc || name) {
+                const cleanRuc = ruc.replace(/\D/g, '');
+                const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
+                if (found) {
+                    setCliente(found);
+                } else {
+                    setTempClient({
+                        nombre: (name || 'CLIENTE SRI').toUpperCase(),
+                        cedula: cleanRuc || '0700000000001',
+                        telefono: phone,
+                        email: payload.email || undefined,
+                        actividades: activity || undefined,
+                        regimen: docType === '1' ? 'Rimpe Popular' : 'General'
+                    });
+                }
+            }
+
+            const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+            const docName = docNames[docType] || 'Nota de Venta';
+
+            const sriItem = {
+                nombre: `${docName} (${blocks} Hojas)`,
+                cantidad: 1,
+                precioFinal: totalVal,
+                especificaciones: {
+                    tamano: docSize,
+                    paginas: blocks,
+                    sri: { vencimiento: payload.caducidad || '' }
+                }
+            };
+
+            setItems([sriItem]);
+            setPrecio(totalVal);
+            setAbono(abonoVal);
+            setStep(4);
+        };
+
+        // 1. Parse URL Parameters
+>>>>>>> Stashed changes
         const params = new URLSearchParams(location.search);
         if (params.get('mode') === 'sri') applySriPayload(Object.fromEntries(params.entries()));
         const handleMessage = (e: MessageEvent) => {

@@ -1,702 +1,165 @@
-/* Inject CSS for Cordova Elite Extension - Light Mode & Celestial Blue Theme */
+/* ==========================================================================
+   CORDOVA ELITE SRI EXTENSION - SUBTLE, NON-INTRUSIVE & CELESTIAL THEME
+   Designed for seamless background automation without blocking user view
+   ========================================================================== */
 
-.cordova-alert-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.4s ease, visibility 0.4s ease;
-}
-
-.cordova-alert-box {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 20px;
-  padding: 35px 30px;
-  max-width: 420px;
-  text-align: center;
-  color: #2c3e50;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  transform: translateY(30px) scale(0.95);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.cordova-alert-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.cordova-alert-overlay.show .cordova-alert-box {
-  transform: translateY(0) scale(1);
-}
-
-.cordova-logo {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
-  border: 1.5px solid #3498db;
-}
-
-.cordova-title {
-  font-size: 22px;
-  color: #3498db;
-  margin: 0 0 12px;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  font-weight: 700;
-}
-
-.cordova-message {
-  font-size: 15px;
-  line-height: 1.6;
-  color: #64748b;
-  margin-bottom: 25px;
-  font-weight: 400;
-}
-
-.cordova-prices {
-  text-align: left;
-  background: #f8fafc;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  border: 1px solid #e2e8f0;
-}
-
-.cordova-prices div {
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: #475569;
-  display: flex;
-  justify-content: space-between;
-}
-
-.cordova-prices div:last-child {
-  margin-bottom: 0;
-}
-
-.cordova-prices span {
-  color: #3498db;
-  font-weight: bold;
-}
-
-.cordova-btn-group {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.cordova-btn {
-  background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
-  color: #ffffff;
-  border: 1px solid #5dade2;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
-}
-
-.cordova-btn:hover {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
-}
-
-.cordova-btn:active {
-  transform: translateY(1px);
-}
-
-.cordova-btn-secondary {
-  background: transparent;
-  color: #3498db;
-  border: 1px solid rgba(52, 152, 219, 0.5);
-  box-shadow: none;
-}
-
-.cordova-btn-secondary:hover {
-  background: rgba(52, 152, 219, 0.08);
-  box-shadow: none;
-  color: #2980b9;
-  border-color: #2980b9;
-}
-
-/* New Suggestion Grid Styles */
-.cordova-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.cordova-grid-btn {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #475569;
-  padding: 10px 5px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 13px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cordova-grid-btn:hover {
-  background: rgba(52, 152, 219, 0.08);
-  color: #3498db;
-  border-color: #3498db;
-  box-shadow: 0 0 10px rgba(52, 152, 219, 0.15);
-}
-
-.cordova-custom-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-
-.cordova-custom-input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #cbd5e1;
-  color: #2c3e50;
-  text-align: center;
-  width: 50px;
-  font-size: 14px;
-  outline: none;
-  font-family: 'Inter', sans-serif;
-}
-
-.cordova-custom-input:focus {
-  border-bottom: 2px solid #3498db;
-}
-
-.cordova-ignore {
-  display: inline-block;
-  margin-top: 15px;
-  color: #64748b;
-  font-size: 12px;
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.cordova-ignore:hover {
-  color: #3498db;
-}
-
-/* SUCCESS MODAL QUICK FORM INTERACTION STYLES */
-.cdv-segment-btn, .cdv-tag-item, .cdv-phone-opt, .cdv-btn-add-activity, .cdv-btn-save-activity {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.cdv-segment-btn:hover {
-  background: rgba(52, 152, 219, 0.05) !important;
-  color: #3498db !important;
-  border-color: rgba(52, 152, 219, 0.4) !important;
-}
-
-.cdv-segment-btn.active:hover {
-  background: rgba(52, 152, 219, 0.25) !important;
-  border-color: #3498db !important;
-}
-
-.cdv-tag-item:hover {
-  background: rgba(52, 152, 219, 0.05) !important;
-  border-color: rgba(52, 152, 219, 0.4) !important;
-  color: #3498db !important;
-}
-
-.cdv-tag-item.active:hover {
-  background: rgba(52, 152, 219, 0.25) !important;
-  border-color: #3498db !important;
-}
-
-.cdv-phone-opt:hover {
-  color: #3498db !important;
-  background: rgba(52, 152, 219, 0.05) !important;
-}
-
-.cdv-phone-opt.active:hover {
-  background: rgba(52, 152, 219, 0.2) !important;
-  color: #3498db !important;
-}
-
-.cdv-btn-add-activity:hover {
-  background: rgba(52, 152, 219, 0.08) !important;
-  color: #3498db !important;
-}
-
-.cdv-btn-save-activity:hover {
-  background: #2980b9 !important;
-  transform: scale(1.03);
-}
-
-/* Custom Scrollbar for activities list */
-.cdv-tag-list::-webkit-scrollbar {
-  width: 4px;
-}
-.cdv-tag-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-}
-.cdv-tag-list::-webkit-scrollbar-thumb {
-  background: rgba(52, 152, 219, 0.3);
-  border-radius: 4px;
-}
-.cdv-tag-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(52, 152, 219, 0.6);
-}
-
-/* Activity Chips Container and Items */
-.cdv-activity-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  max-height: 110px;
-  overflow-y: auto;
-  padding: 4px 0;
-}
-
-.cdv-activity-chip {
-  padding: 5px 10px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  color: #475569;
-  font-size: 11px;
-  cursor: pointer;
-  user-select: none;
-  font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-block;
-}
-
-.cdv-activity-chip:hover {
-  background: rgba(52, 152, 219, 0.05);
-  color: #3498db;
-  border-color: rgba(52, 152, 219, 0.4);
-}
-
-.cdv-activity-chip.active {
-  background: rgba(52, 152, 219, 0.15);
-  border-color: #3498db;
-  color: #3498db;
-  font-weight: 600;
-  box-shadow: 0 0 8px rgba(52, 152, 219, 0.15);
-}
-
-.cdv-activity-chip::-webkit-scrollbar {
-  width: 4px;
-}
-
-/* Searchable Activity Checklist Styles */
-.cdv-activity-search {
-  width: 100%;
-  padding: 6px 10px;
-  font-size: 11px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #2c3e50;
-  outline: none;
-  margin-bottom: 6px;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease;
-}
-
-.cdv-activity-search:focus {
-  border-color: #3498db;
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-}
-
-.cdv-activity-checklist {
-  max-height: 105px;
-  overflow-y: auto;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 6px 8px;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  box-sizing: border-box;
-}
-
-.cdv-activity-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #475569;
-  cursor: pointer;
-  font-size: 11px;
-  user-select: none;
-  padding: 4px 6px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.cdv-activity-item:hover {
-  background: #f1f5f9;
-  color: #2c3e50;
-}
-
-.cdv-activity-item.selected {
-  background: rgba(52, 152, 219, 0.08);
-  color: #3498db;
-}
-
-.cdv-activity-item input[type="checkbox"] {
-  accent-color: #3498db;
-  cursor: pointer;
-  margin: 0;
-  width: 13px;
-  height: 13px;
-}
-
-.cdv-activity-checklist::-webkit-scrollbar {
-  width: 4px;
-}
-.cdv-activity-checklist::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.02);
-}
-.cdv-activity-checklist::-webkit-scrollbar-thumb {
-  background: rgba(52, 152, 219, 0.3);
-  border-radius: 4px;
-}
-.cdv-activity-checklist::-webkit-scrollbar-thumb:hover {
-  background: rgba(52, 152, 219, 0.6);
-}
-
-/* PREMIUM SUGGESTION PROMPT STYLES */
-.cordova-suggestion-box {
-  position: relative !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 24px !important;
-  padding: 40px 30px 30px 30px !important;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15), 0 0 1px 1px rgba(0, 0, 0, 0.05) !important;
-  overflow: hidden;
-}
-
-/* Top accent gradient line */
-.cordova-suggestion-box::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
-  border-radius: 24px 24px 0 0;
-}
-
-/* Close button in top-right corner */
-.cordova-close-btn {
-  position: absolute !important;
-  top: 15px !important;
-  right: 15px !important;
-  background: #f1f5f9 !important;
-  border: none !important;
-  font-size: 18px !important;
-  font-weight: 500 !important;
-  color: #64748b !important;
-  cursor: pointer !important;
-  width: 28px !important;
-  height: 28px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  outline: none !important;
-  padding: 0 !important;
-  line-height: 1 !important;
-  box-sizing: border-box !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-}
-
-.cordova-close-btn:hover {
-  background: #fee2e2 !important;
-  color: #ef4444 !important;
-  transform: rotate(90deg) scale(1.05) !important;
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.15) !important;
-}
-
-.cordova-close-btn:active {
-  transform: scale(0.95) !important;
-}
-
-/* Customized Grid Buttons for suggestion */
-.cordova-suggestion-box .cordova-grid-btn {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #334155 !important;
-  border-radius: 12px !important;
-  font-weight: 600 !important;
-  padding: 12px 6px !important;
-  font-size: 13px !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-}
-
-.cordova-suggestion-box .cordova-grid-btn:hover {
-  background: rgba(52, 152, 219, 0.06) !important;
-  color: #3498db !important;
-  border-color: #3498db !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.12) !important;
-}
-
-.cordova-suggestion-box .cordova-grid-btn:active {
-  transform: translateY(0) !important;
-}
-
-/* Customized Custom input wrap for suggestion */
-.cordova-suggestion-box .cordova-custom-wrap {
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  padding: 4px 10px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  box-sizing: border-box !important;
-  height: auto !important;
-}
-
-.cordova-suggestion-box .cordova-custom-input {
-  border: none !important;
-  border-bottom: 2px solid #cbd5e1 !important;
-  font-weight: 700 !important;
-  color: #3498db !important;
-  background: transparent !important;
-  text-align: center !important;
-  font-size: 14px !important;
-  width: 45px !important;
-  margin: 0 !important;
-  padding: 2px 0 !important;
-  outline: none !important;
-  transition: border-bottom-color 0.2s ease !important;
-}
-
-.cordova-suggestion-box .cordova-custom-input:focus {
-  border-bottom-color: #3498db !important;
-}
-
-.cordova-suggestion-box #cdv-custom-btn {
-  background: #3498db !important;
-  border: none !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  padding: 6px 12px !important;
-  font-size: 12px !important;
-  font-weight: bold !important;
-  cursor: pointer !important;
-  box-shadow: 0 2px 6px rgba(52,152,219,0.3) !important;
-}
-
-.cordova-suggestion-box #cdv-custom-btn:hover {
-  background: #2980b9 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 10px rgba(52,152,219,0.4) !important;
-}
-
-.cordova-suggestion-box #cdv-custom-btn:active {
-  transform: translateY(0) !important;
-}
-
-/* ========================================================= */
-/* SUBTLE FLOATING SUGGESTION BANNER (UNOBTRUSIVE)           */
-/* ========================================================= */
-/* SUBTLE FLOATING SUGGESTION BANNER (TRANSLUCENT NAVY GLASS) */
-/* Banner Asistente Piloto: Pastilla Flotante Compacta (Esquina Inferior Derecha - 50% Transparente) */
+/* -------------------------------------------------------------
+   1. NON-BLOCKING FLOATING HUD (PILL / MINI-DOCK)
+   ------------------------------------------------------------- */
 .cordova-suggestion-banner {
   position: fixed !important;
-  bottom: 20px !important;
-  right: 20px !important;
+  bottom: 18px !important;
+  right: 18px !important;
   left: auto !important;
-  transform: scale(0.95) !important;
-  z-index: 2147483646 !important;
-  width: auto !important;
-  min-width: 260px !important;
-  max-width: 420px !important;
-  background: rgba(15, 43, 72, 0.50) !important; /* 50% Opacidad Cristal */
-  backdrop-filter: blur(12px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 0 0 15px rgba(56, 189, 248, 0.2) !important;
-  padding: 10px 16px !important;
+  z-index: 2147483640 !important;
+  min-width: 240px !important;
+  max-width: 380px !important;
+  background: rgba(10, 25, 47, 0.72) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.15) !important;
+  padding: 8px 14px !important;
   color: #ffffff !important;
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  opacity: 0.75 !important;
-  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-sizing: border-box !important;
   pointer-events: auto !important;
   user-select: none !important;
   overflow: hidden !important;
+  opacity: 0.9 !important;
 }
 
-/* Ocultar el contenido expandido cuando está en reposo */
-.cordova-suggestion-banner .cordova-banner-body {
+.cordova-suggestion-banner:hover {
+  opacity: 1 !important;
+  background: rgba(10, 25, 47, 0.92) !important;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 14px 40px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Collapsed Mini-Mode */
+.cordova-suggestion-banner.minimized {
+  min-width: unset !important;
+  max-width: fit-content !important;
+  padding: 6px 12px !important;
+  border-radius: 24px !important;
+  cursor: pointer !important;
+}
+
+.cordova-suggestion-banner.minimized .cordova-banner-body,
+.cordova-suggestion-banner.minimized .cordova-stepper-container,
+.cordova-suggestion-banner.minimized .cordova-banner-hint {
   display: none !important;
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
-/* Continuous Laser Pulse Sweep at Top Edge for Automatic Mode */
+/* Neon Top Glow Sweep */
 .cordova-suggestion-banner::before {
   content: "";
   position: absolute;
-  top: 0; left: -100%; right: 0;
+  top: 0; left: 0; right: 0;
   height: 2px;
-  width: 200%;
-  background: linear-gradient(90deg, transparent 0%, #3498db 30%, #4edea3 50%, #00f2fe 70%, transparent 100%);
-  border-radius: 20px 20px 0 0;
-  opacity: 0.6;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, #4edea3 80%, transparent 100%);
+  opacity: 0.8;
 }
 
 .cordova-suggestion-banner.autopilot-active::before {
-  opacity: 1;
   animation: neon-laser-sweep 2.5s infinite linear;
 }
 
 @keyframes neon-laser-sweep {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(50%); }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-.cordova-suggestion-banner.show {
-  opacity: 0.85 !important;
-}
-
-/* Estado Desplegado al Interactuar (Hover / Focus) */
-.cordova-suggestion-banner:hover,
-.cordova-suggestion-banner:focus-within {
-  transform: scale(1) translateY(-4px) !important;
-  opacity: 1 !important;
-  background: rgba(15, 43, 72, 0.94) !important; /* Se vuelve visible para controlar */
-  border-color: rgba(56, 189, 248, 0.7) !important;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(56, 189, 248, 0.35) !important;
-}
-
-.cordova-suggestion-banner:hover .cordova-banner-body,
-.cordova-suggestion-banner:focus-within .cordova-banner-body {
-  display: block !important;
-  opacity: 1 !important;
-}
-
-/* Trigger Header Bar (Visible when collapsed) */
+/* Trigger Header Bar */
 .cordova-banner-trigger {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  height: 24px !important;
+  gap: 8px !important;
   cursor: pointer !important;
-  gap: 10px !important;
 }
 
 .cordova-banner-brand {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 7px !important;
 }
 
 .cordova-banner-logo {
-  width: 20px !important;
-  height: 20px !important;
-  border-radius: 5px !important;
-  border: 1.2px solid #3498db !important;
-  box-shadow: 0 2px 6px rgba(52, 152, 219, 0.4) !important;
-  margin: 0 !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 4px !important;
+  border: 1px solid #38bdf8 !important;
 }
 
 .cordova-banner-title {
-  font-size: 12px !important;
-  font-weight: 700 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
   color: #ffffff !important;
+  letter-spacing: 0.5px !important;
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
   white-space: nowrap !important;
 }
 
 .cordova-banner-badge {
-  font-size: 10.5px !important;
-  background: rgba(52, 152, 219, 0.2) !important;
+  font-size: 9.5px !important;
+  background: rgba(56, 189, 248, 0.15) !important;
   color: #38bdf8 !important;
-  border: 1px solid rgba(52, 152, 219, 0.4) !important;
-  padding: 1px 8px !important;
-  border-radius: 10px !important;
-  font-weight: 600 !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  padding: 1px 6px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
   display: flex !important;
   align-items: center !important;
-  gap: 5px !important;
+  gap: 4px !important;
   white-space: nowrap !important;
 }
 
-/* Orbital Beacon Pulse Dot */
+/* Beacon Pulse Dot */
 .cordova-beacon-dot {
-  width: 7px !important;
-  height: 7px !important;
+  width: 6px !important;
+  height: 6px !important;
   border-radius: 50% !important;
   background: #38bdf8 !important;
-  box-shadow: 0 0 8px #38bdf8 !important;
+  box-shadow: 0 0 6px #38bdf8 !important;
   display: inline-block !important;
 }
 
 .autopilot-active .cordova-beacon-dot {
   background: #4edea3 !important;
-  box-shadow: 0 0 10px #4edea3 !important;
+  box-shadow: 0 0 8px #4edea3 !important;
   animation: beacon-pulse 1.4s infinite cubic-bezier(0.45, 0, 0.55, 1) !important;
 }
 
 @keyframes beacon-pulse {
-  0% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 4px #4edea3; }
-  50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 14px #4edea3; }
-  100% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 4px #4edea3; }
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px #4edea3; }
+  100% { transform: scale(0.9); opacity: 0.7; }
 }
 
 .cordova-banner-actions {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 4px !important;
 }
 
 .cordova-banner-hint {
-  font-size: 10px !important;
+  font-size: 9px !important;
   color: #94a3b8 !important;
   font-weight: 500 !important;
-  transition: opacity 0.2s ease !important;
-  white-space: nowrap !important;
 }
 
-.cordova-suggestion-banner:hover .cordova-banner-hint {
-  opacity: 0.3 !important;
-}
-
+.cordova-banner-btn-min,
 .cordova-banner-close {
   background: rgba(255, 255, 255, 0.08) !important;
   border: none !important;
   color: #94a3b8 !important;
-  width: 22px !important;
-  height: 22px !important;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: 50% !important;
-  font-size: 14px !important;
+  font-size: 11px !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -706,27 +169,32 @@
   padding: 0 !important;
 }
 
+.cordova-banner-btn-min:hover,
 .cordova-banner-close:hover {
-  background: rgba(231, 76, 60, 0.35) !important;
-  color: #ef4444 !important;
-  transform: scale(1.1) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
 }
 
-/* Step Progress Stepper Bar in Expanded View */
+.cordova-banner-close:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  color: #ef4444 !important;
+}
+
+/* Stepper Progress Bar */
 .cordova-stepper-container {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  margin: 12px 0 10px 0 !important;
+  margin: 8px 0 6px 0 !important;
   position: relative !important;
-  padding: 0 5px !important;
+  padding: 0 4px !important;
 }
 
 .cordova-stepper-line {
   position: absolute !important;
   top: 50% !important;
-  left: 20px !important;
-  right: 20px !important;
+  left: 14px !important;
+  right: 14px !important;
   height: 2px !important;
   background: rgba(255, 255, 255, 0.12) !important;
   transform: translateY(-50%) !important;
@@ -735,82 +203,74 @@
 
 .cordova-stepper-line-fill {
   height: 100% !important;
-  background: linear-gradient(90deg, #3498db, #4edea3) !important;
+  background: linear-gradient(90deg, #38bdf8, #4edea3) !important;
   width: 0% !important;
   transition: width 0.4s ease !important;
-  box-shadow: 0 0 8px rgba(78, 222, 163, 0.6) !important;
 }
 
 .cordova-step-node {
   position: relative !important;
   z-index: 2 !important;
   background: #0f172a !important;
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
   color: #94a3b8 !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 10.5px !important;
+  font-size: 9px !important;
   font-weight: 700 !important;
   transition: all 0.3s ease !important;
 }
 
 .cordova-step-node.completed {
-  background: #3498db !important;
-  border-color: #3498db !important;
+  background: #2563eb !important;
+  border-color: #38bdf8 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(52, 152, 219, 0.5) !important;
 }
 
 .cordova-step-node.active {
   background: #4edea3 !important;
   border-color: #ffffff !important;
   color: #0f172a !important;
-  box-shadow: 0 0 14px rgba(78, 222, 163, 0.8) !important;
-  transform: scale(1.15) !important;
+  box-shadow: 0 0 10px rgba(78, 222, 163, 0.8) !important;
+  transform: scale(1.1) !important;
 }
 
 /* Expanded Body Content */
 .cordova-banner-body {
-  margin-top: 10px !important;
-  padding-top: 10px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-top: 6px !important;
+  padding-top: 6px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .cordova-banner-step-info {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-radius: 10px !important;
-  padding: 8px 12px !important;
-  margin-bottom: 10px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .cordova-banner-where {
-  font-size: 12px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
   color: #38bdf8 !important;
-  margin-bottom: 4px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+  margin-bottom: 2px !important;
 }
 
 .cordova-banner-next {
-  font-size: 11px !important;
+  font-size: 10px !important;
   font-weight: 500 !important;
   color: #cbd5e1 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
 }
 
 .cordova-banner-pills {
   display: flex !important;
   flex-wrap: wrap !important;
-  gap: 6px !important;
+  gap: 5px !important;
   align-items: center !important;
 }
 
@@ -818,186 +278,457 @@
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   color: #e2e8f0 !important;
-  padding: 5px 10px !important;
-  border-radius: 8px !important;
-  font-size: 11px !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  font-size: 10px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
 }
 
 .cordova-pill-btn:hover {
-  background: rgba(52, 152, 219, 0.35) !important;
-  border-color: #3498db !important;
+  background: rgba(56, 189, 248, 0.25) !important;
+  border-color: #38bdf8 !important;
   color: #ffffff !important;
-  transform: translateY(-1px) !important;
 }
 
 .cordova-pill-btn.highlight {
-  background: linear-gradient(135deg, #3498db 0%, #2563eb 100%) !important;
-  border-color: #3498db !important;
-  color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.35) !important;
-}
-
-.cordova-pill-btn.highlight:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.5) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
 }
 
 .cordova-banner-custom {
   display: flex !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 3px !important;
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   padding: 2px 4px !important;
 }
 
 .cordova-banner-custom input {
-  width: 44px !important;
+  width: 38px !important;
   background: transparent !important;
   border: none !important;
   color: #ffffff !important;
-  font-size: 11px !important;
+  font-size: 10px !important;
   text-align: center !important;
-  padding: 2px 0 !important;
+  padding: 1px 0 !important;
   outline: none !important;
 }
 
 .cordova-banner-custom button {
-  background: #3498db !important;
+  background: #38bdf8 !important;
   border: none !important;
-  color: #ffffff !important;
-  padding: 3px 7px !important;
-  border-radius: 5px !important;
-  font-size: 10.5px !important;
-  font-weight: 700 !important;
+  color: #0f172a !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
   cursor: pointer !important;
-  transition: background 0.2s ease !important;
 }
 
-.cordova-banner-custom button:hover {
-  background: #2563eb !important;
-}
-
-/* Dynamic SRI Target Element Highlight Aura */
-.cdv-target-highlight {
-  outline: 3px solid #38bdf8 !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.7) !important;
-  transition: all 0.3s ease !important;
-  animation: target-aura-pulse 1.2s infinite ease-in-out !important;
-}
-
-@keyframes target-aura-pulse {
-  0% { outline-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
-  50% { outline-color: #4edea3; box-shadow: 0 0 22px rgba(78, 222, 163, 0.8); }
-  100% { outline-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
-}
-
-/* Live Editable Model Card Polish */
-.cdv-model-card input {
-  transition: all 0.2s ease !important;
-}
-
-.cdv-model-card input:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
-}
-
-#cdv-btn-direct-print:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45) !important;
-}
-
-#cdv-btn-direct-print:active {
-  transform: translateY(0) !important;
-}
-
-/* BANNER SUTIL SUBE 50% TRANSPARENTE PARA MODO IMPRENTA */
-.cordova-imprenta-subtle-banner {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 999999;
-  background: rgba(15, 43, 72, 0.50) !important; /* 50% Opacity Imperial Navy */
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 16px !important;
-  padding: 12px 18px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+/* -------------------------------------------------------------
+   2. NON-BLOCKING TOASTS & MINI ALERTS
+   ------------------------------------------------------------- */
+.cordova-toast-hud {
+  position: fixed !important;
+  top: 18px !important;
+  right: 18px !important;
+  z-index: 2147483647 !important;
+  background: rgba(10, 25, 47, 0.94) !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 12px !important;
+  padding: 10px 16px !important;
+  color: #ffffff !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
-  font-family: 'Inter', sans-serif !important;
-  color: #ffffff !important;
-  transition: all 0.3s ease !important;
+  gap: 10px !important;
+  pointer-events: auto !important;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.cordova-imprenta-subtle-banner:hover {
-  background: rgba(15, 43, 72, 0.85) !important; /* Se vuelve más visible al interactuar */
+.cordova-toast-hud.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.cordova-imprenta-subtle-banner .subtle-title {
-  font-size: 11px !important;
+.cordova-toast-hud img {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 4px !important;
+  border: 1px solid #38bdf8 !important;
+}
+
+/* Non-blocking Warning Toast for Unsupported Regime */
+.cordova-warning-card {
+  position: fixed !important;
+  top: 70px !important;
+  right: 18px !important;
+  z-index: 2147483647 !important;
+  background: #ffffff !important;
+  border: 1.5px solid #f59e0b !important;
+  border-radius: 14px !important;
+  padding: 18px !important;
+  max-width: 360px !important;
+  color: #0f172a !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.25) !important;
+  box-sizing: border-box !important;
+}
+
+.cordova-warning-card .warn-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 8px !important;
+}
+
+.cordova-warning-card .warn-title {
+  font-size: 13px !important;
   font-weight: 800 !important;
-  letter-spacing: 0.5px !important;
-  color: #93c5fd !important;
+  color: #b45309 !important;
   text-transform: uppercase !important;
 }
 
-.cordova-imprenta-subtle-banner .subtle-btn {
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+.cordova-warning-card .warn-body {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  color: #475569 !important;
+  margin-bottom: 12px !important;
+}
+
+.cordova-warning-card .warn-btn {
+  background: #f59e0b !important;
   color: #ffffff !important;
   border: none !important;
-  padding: 8px 14px !important;
+  padding: 8px 16px !important;
   border-radius: 8px !important;
-  font-size: 11px !important;
   font-weight: 800 !important;
+  font-size: 11px !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3) !important;
-  transition: all 0.2s ease !important;
+  width: 100% !important;
+  text-transform: uppercase !important;
+}
+
+/* -------------------------------------------------------------
+   3. FLOATING COMPLETION DRAWER (RIGHT-SIDE SMART PANEL)
+   ------------------------------------------------------------- */
+.cordova-completion-drawer-overlay {
+  position: fixed !important;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none !important; /* Allows clicking background SRI elements */
+  z-index: 2147483645 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+}
+
+.cordova-completion-card {
+  pointer-events: auto !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 18px !important;
+  width: 440px !important;
+  max-width: 95vw !important;
+  max-height: calc(100vh - 32px) !important;
+  overflow-y: auto !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+  transform: translateX(20px);
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cordova-completion-drawer-overlay.show .cordova-completion-card {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.cordova-completion-card::-webkit-scrollbar {
+  width: 4px;
+}
+.cordova-completion-card::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Header */
+.drawer-header {
   display: flex !important;
   align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1.5px solid #f1f5f9 !important;
+  padding-bottom: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+.drawer-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.drawer-logo {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  border: 1.5px solid #2563eb !important;
+}
+
+.drawer-title {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+}
+
+.drawer-badge-sri {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  color: #2563eb !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.drawer-close-btn {
+  background: #f1f5f9 !important;
+  border: none !important;
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  font-size: 14px !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.drawer-close-btn:hover {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+/* Success Banner */
+.drawer-success-banner {
+  background: #f0fdf4 !important;
+  border: 1px solid #86efac !important;
+  color: #166534 !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  margin-bottom: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   gap: 6px !important;
 }
 
-.cordova-imprenta-subtle-banner .subtle-btn.secondary {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+/* Editable Form Box */
+.drawer-form-box {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  margin-bottom: 12px !important;
 }
 
-.cordova-imprenta-subtle-banner .subtle-btn:hover {
+.drawer-field-lbl {
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  margin-bottom: 2px !important;
+}
+
+.drawer-input {
+  width: 100% !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  padding: 5px 8px !important;
+  font-size: 11px !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.drawer-input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+}
+
+.drawer-input-inline-name {
+  border: none !important;
+  border-bottom: 1.5px solid #2563eb !important;
+  background: transparent !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  padding: 2px 0 !important;
+  width: 100% !important;
+  outline: none !important;
+}
+
+/* Segmented Buttons */
+.drawer-segment-group {
+  display: flex !important;
+  gap: 5px !important;
+}
+
+.drawer-segment-btn {
+  flex: 1 !important;
+  padding: 5px 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.drawer-segment-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+.drawer-segment-btn.active {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+  box-shadow: 0 0 0 1px #2563eb !important;
+}
+
+/* Live Financial Bar */
+.drawer-financial-bar {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  color: #475569 !important;
+  margin-bottom: 12px !important;
+}
+
+.drawer-financial-bar .total-val {
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.drawer-financial-bar .saldo-val {
+  font-size: 12.5px !important;
+  font-weight: 900 !important;
+  color: #2563eb !important;
+}
+
+/* Action Buttons */
+.drawer-btn-primary {
+  width: 100% !important;
+  padding: 11px !important;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+  border: 1px solid #22c55e !important;
+  color: #ffffff !important;
+  border-radius: 9px !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35) !important;
+  transition: all 0.2s ease !important;
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.drawer-btn-primary:hover {
   transform: translateY(-1px) !important;
-  filter: brightness(1.1) !important;
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.45) !important;
 }
 
-/* ========================================================= */
-/* BARRA MINIMALISTA DE ANTESALA SRI (LOGIN.JSPA)            */
-/* ========================================================= */
+.drawer-actions-row {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+
+.drawer-btn-sec {
+  flex: 1 !important;
+  padding: 9px !important;
+  border-radius: 8px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  border: none !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+}
+
+.drawer-btn-sec.print {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25) !important;
+}
+
+.drawer-btn-sec.wa {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%) !important;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.25) !important;
+}
+
+.drawer-btn-sec:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.08) !important;
+}
+
+/* -------------------------------------------------------------
+   4. SRI LOGIN ASSISTANT BAR
+   ------------------------------------------------------------- */
 .cordova-login-minimal-bar {
   position: fixed !important;
-  top: 16px !important;
+  top: 14px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   z-index: 2147483647 !important;
   width: auto !important;
-  max-width: 92vw !important;
-  background: rgba(15, 43, 72, 0.96) !important;
+  max-width: 90vw !important;
+  background: rgba(10, 25, 47, 0.94) !important;
   backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
-  border-radius: 30px !important;
-  padding: 8px 20px !important;
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 24px !important;
+  padding: 6px 16px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 14px !important;
+  gap: 12px !important;
   font-family: 'Inter', sans-serif !important;
   color: #ffffff !important;
 }
@@ -1005,31 +736,30 @@
 .cordova-login-minimal-bar .bar-brand {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  font-size: 11.5px !important;
+  gap: 6px !important;
+  font-size: 11px !important;
   font-weight: 800 !important;
-  letter-spacing: 0.5px !important;
-  color: #bfdbfe !important;
+  color: #38bdf8 !important;
   white-space: nowrap !important;
 }
 
 .cordova-login-minimal-bar .bar-brand img {
-  width: 22px !important;
-  height: 22px !important;
-  border-radius: 6px !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 4px !important;
 }
 
 .cordova-login-minimal-bar .bar-btns {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
 }
 
 .cordova-login-minimal-bar .mode-btn {
   border: none !important;
-  padding: 6px 14px !important;
-  border-radius: 20px !important;
-  font-size: 11px !important;
+  padding: 5px 12px !important;
+  border-radius: 16px !important;
+  font-size: 10.5px !important;
   font-weight: 800 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
@@ -1038,27 +768,26 @@
 
 .cordova-login-minimal-bar .mode-btn.client {
   background: #ffffff !important;
-  color: #0f2b48 !important;
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2) !important;
-}
-
-.cordova-login-minimal-bar .mode-btn.client:hover {
-  background: #f1f5f9 !important;
-  transform: translateY(-1px) !important;
+  color: #0f172a !important;
 }
 
 .cordova-login-minimal-bar .mode-btn.imprenta {
   background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3) !important;
 }
 
-.cordova-login-minimal-bar .mode-btn.imprenta:hover {
-  filter: brightness(1.1) !important;
+.cordova-login-minimal-bar .mode-btn:hover {
   transform: translateY(-1px) !important;
+  filter: brightness(1.1) !important;
 }
 
-
-
-
-
+/* -------------------------------------------------------------
+   5. SRI TARGET ELEMENT HIGHLIGHT
+   ------------------------------------------------------------- */
+.cdv-target-highlight {
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6) !important;
+  transition: all 0.3s ease !important;
+}
