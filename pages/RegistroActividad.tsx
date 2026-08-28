@@ -90,7 +90,7 @@ const RegistroActividadPage: React.FC = () => {
                 </div>
 
                 {stats && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                         {[
                             { l: 'Registros totales', v: stats.totalEntries },
                             { l: 'Actividad de hoy', v: stats.todayEntries },

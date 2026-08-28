@@ -63,7 +63,7 @@ const FinanzasPage: React.FC = () => {
                     <button style={S.primaryBtn} disabled={analyzing} onClick={handleAIAnalysis}>{analyzing ? 'Consultando IA…' : 'Simulación IA'}</button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                     {[
                         { l: 'Ingresos consolidados', v: formatCurrency(totalRevenue), c: C.royal },
                         { l: 'Ticket promedio', v: formatCurrency(avgSale), c: C.ink },

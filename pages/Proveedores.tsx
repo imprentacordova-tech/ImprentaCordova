@@ -108,7 +108,7 @@ const ProveedoresPage: React.FC = () => {
                     <button style={S.primaryBtn} onClick={() => { setToEdit({}); setIsFormOpen(true); }}>Registrar proveedor</button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                     {[
                         { l: 'Proveedores activos', v: kpis.total },
                         { l: 'Tareas pendientes', v: kpis.pendientes },

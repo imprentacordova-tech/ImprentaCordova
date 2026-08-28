@@ -134,7 +134,7 @@ const InventarioPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                     {[
                         { l: 'Inversión en almacén', v: formatCurrency(kpis.valorTotal), c: C.royal },
                         { l: 'Materiales registrados', v: String(kpis.totalItems), c: C.ink },

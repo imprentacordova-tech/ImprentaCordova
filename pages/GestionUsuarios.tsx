@@ -115,7 +115,7 @@ const GestionUsuariosPage: React.FC = () => {
                     <button style={S.primaryBtn} onClick={() => setEditingUser({})}>Crear usuario</button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                     {[
                         { l: 'Total de usuarios', v: users.length, c: C.ink },
                         { l: 'Activos', v: users.filter(u => u.estado === 'Activo').length, c: C.successDot },

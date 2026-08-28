@@ -154,7 +154,7 @@ const CuentasPage: React.FC = () => {
                 </div>
 
                 {/* KPIs */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                     {kpis.map(k => (
                         <div key={k.l} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
                             <div style={S.colHead}>{k.l}</div>

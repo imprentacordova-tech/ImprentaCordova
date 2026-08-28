@@ -121,7 +121,7 @@ export const FacturacionElectronicaPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>
                     {[
                         { l: 'Total facturado', v: formatCurrency(stats.totalFacturado), c: C.royal },
                         { l: 'Autorizadas', v: String(stats.autorizadas), c: C.success },

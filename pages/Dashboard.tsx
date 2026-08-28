@@ -146,8 +146,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* KPIs */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                {/* KPIs — 2 col en celular, auto en pantallas grandes */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 12 }}>
                     {kpiCards.map(k => (
                         <div key={k.label} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>

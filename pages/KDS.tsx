@@ -215,7 +215,8 @@ const KDSPage: React.FC = () => {
 
                 {/* Tablero */}
                 <div style={{ overflowX: 'auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 14, alignItems: 'start' }}>
+                    {/* tablet/escritorio: 4 columnas; celular: una por pestaña */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 14, alignItems: 'start' }}>
                         {COLS.map(status => {
                             const cfg = estadoCfg(status);
                             const cards = columns[status] || [];
