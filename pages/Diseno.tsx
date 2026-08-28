@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, TrabajoEstado, SupervisorAnalysis, User } from '../types';
-import { PaletteIcon, SparklesIcon, Loader2Icon, PrinterIcon, EyeIcon, RocketLaunchIcon } from '../components/Icons';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { analyzeDesignWithSupervisor } from '../services/geminiService';
 import { logActivity } from '../services/activityLogService';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+
+const ANALISIS_COLOR: Record<string, { bg: string; color: string; border: string }> = {
+    VERDE: { bg: '#F2F7F2', color: '#1B6E3E', border: '#D8E8DC' },
+    AMARILLO: { bg: '#FFFBEB', color: '#7A5A00', border: '#F4E3A8' },
+    ROJO: { bg: '#FEF2F2', color: '#B91C1C', border: '#FBD5D5' },
+};
 
 const DisenoPage: React.FC = () => {
     const auth = useAuth();
@@ -14,249 +20,155 @@ const DisenoPage: React.FC = () => {
     const currentUser = outletContext.currentUser || auth.user;
     const { trabajos, clientes, loading, updateTrabajoStatus } = useData();
     const [selectedJob, setSelectedJob] = useState<Trabajo | null>(null);
-    
-    // Estados de IA
     const [analyzing, setAnalyzing] = useState(false);
     const [aiAnalysis, setAiAnalysis] = useState<SupervisorAnalysis | null>(null);
 
-    useEffect(() => {
-        setAiAnalysis(null);
-    }, [selectedJob]);
+    useEffect(() => { setAiAnalysis(null); }, [selectedJob]);
 
-    const pendingJobs = trabajos.filter(t => 
-        t.estado === TrabajoEstado.PENDIENTE || 
-        t.estado === TrabajoEstado.EN_DISENO
-    ).sort((a, b) => new Date(a.fechaEntrada).getTime() - new Date(b.fechaEntrada).getTime());
+    const pendingJobs = trabajos
+        .filter(t => t.estado === TrabajoEstado.PENDIENTE || t.estado === TrabajoEstado.EN_DISENO)
+        .sort((a, b) => new Date(a.fechaEntrada).getTime() - new Date(b.fechaEntrada).getTime());
 
-    const getClientName = (id: string) => clientes.find(c => c.id === id)?.nombre || 'Cliente Desconocido';
+    const nombreDe = (id: string) => clientes.find(c => c.id === id)?.nombre || 'Consumidor Final';
 
-    const handleRunAI = async () => {
+    const runAI = async () => {
         if (!selectedJob?.fotoOriginalUrl) return;
         setAnalyzing(true);
         try {
             const result = await analyzeDesignWithSupervisor(selectedJob.fotoOriginalUrl, selectedJob.subtipo);
             setAiAnalysis(result);
-            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'ARTE_APROBADO', `Análisis técnico completado para orden #${selectedJob.orden}`, 'Diseño');
-        } catch (error) {
-            console.error("AI Analysis failed", error);
-        } finally {
-            setAnalyzing(false);
-        }
+            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'ARTE_APROBADO', `Análisis técnico orden #${selectedJob.orden}`, 'Diseño');
+        } catch (e) { console.error('Análisis IA falló', e); }
+        finally { setAnalyzing(false); }
     };
 
-    const handleSendToPrint = async () => {
+    const sendToPrint = async () => {
         if (!selectedJob) return;
-        
-        if (!aiAnalysis && !window.confirm("El Supervisor IA no ha validado este diseño. ¿Enviar a producción de todas formas?")) {
-            return;
-        }
-
+        if (!aiAnalysis && !window.confirm('El supervisor IA no validó este diseño. ¿Enviar a producción de todas formas?')) return;
         try {
             await updateTrabajoStatus(selectedJob.id, TrabajoEstado.PROCESO, currentUser.nombre);
-            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'CAMBIO_ESTADO', `Orden #${selectedJob.orden} enviada a producción`, 'Diseño');
+            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'CAMBIO_ESTADO', `Orden #${selectedJob.orden} a producción`, 'Diseño');
             setSelectedJob(null);
-        } catch (error) {
-            alert("Error al procesar la orden.");
-        }
+        } catch { alert('Error al procesar la orden.'); }
     };
 
-    const handleSendToVitrina = async () => {
+    const sendToVitrina = async () => {
         if (!selectedJob) return;
-
-        if (!window.confirm("¿Seguro que desea enviar DIRECTO A VITRINA? Esta acción salta el paso de producción.")) {
-            return;
-        }
-
+        if (!window.confirm('¿Enviar directo a vitrina? Se salta el paso de producción.')) return;
         try {
             await updateTrabajoStatus(selectedJob.id, TrabajoEstado.VITRINA, currentUser.nombre);
-            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'FINALIZADO_DIRECTO', `Orden #${selectedJob.orden} enviada directamente a vitrina`, 'Diseño');
+            logActivity(currentUser.nombre, currentUser.rol || 'Diseñador', 'FINALIZADO_DIRECTO', `Orden #${selectedJob.orden} a vitrina`, 'Diseño');
             setSelectedJob(null);
-        } catch (error) {
-            alert("Error al finalizar la orden.");
-        }
+        } catch { alert('Error al finalizar la orden.'); }
     };
 
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] gap-6 pb-6 overflow-hidden">
-            
-            {/* --- COLA DE TRABAJOS --- */}
-            <div className="w-full lg:w-[320px] flex flex-col bg-obsidian-card rounded-[2rem] border border-white/[0.06] overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.04]">
-                    <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                        <PaletteIcon className="w-4 h-4 text-brand-blue" />
-                        Cola de Diseño
-                    </h2>
-                    <span className="bg-brand-blue/10 border border-brand-blue/20 px-2.5 py-1 rounded-lg text-brand-blue font-bold text-[9px] uppercase tracking-widest">{pendingJobs.length}</span>
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Diseño Gráfico · Imprenta Córdova" />
+            <div style={S.wrap}>
+                <div>
+                    <p style={S.eyebrow}>Taller</p>
+                    <h1 style={S.h1}>Diseño Gráfico</h1>
+                    <p style={S.lead}>Cola de diagramación. El arte maestro vive en CorelDRAW; aquí se controla el avance.</p>
                 </div>
-                
-                <div className="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                    {loading ? (
-                         <div className="flex justify-center py-10">
-                             <Loader2Icon className="w-6 h-6 text-brand-blue/40 animate-spin" />
-                         </div>
-                    ) : pendingJobs.map(job => (
-                        <motion.div 
-                            layoutId={job.id}
-                            key={job.id} 
-                            onClick={() => setSelectedJob(job)} 
-                            className={`p-4 rounded-xl cursor-pointer transition-all duration-300 border ${selectedJob?.id === job.id ? 'bg-brand-blue/5 border-brand-blue/40 shadow-sm' : 'bg-obsidian-card border-white/[0.06] hover:border-brand-blue/20 hover:bg-white/[0.04]'}`}
-                        >
-                            <div className="flex justify-between items-center mb-1">
-                                <p className={`font-black text-sm uppercase tracking-tighter ${selectedJob?.id === job.id ? 'text-brand-blue' : 'text-slate-400'}`}>ORD-{job.orden}</p>
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400 bg-white/[0.04] px-1.5 py-0.5 rounded">ESTÁNDAR</span>
-                            </div>
-                            <h3 className="font-bold text-xs text-white truncate uppercase">{getClientName(job.clienteId)}</h3>
-                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest truncate mt-1">{job.subtipo}</p>
-                        </motion.div>
-                    ))}
-                    {!loading && pendingJobs.length === 0 && (
-                        <div className="py-20 text-center opacity-30">
-                            <p className="text-[10px] font-bold uppercase tracking-widest">Sin pendientes</p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,300px) 1fr', gap: 16, alignItems: 'start' }}>
+
+                    {/* Cola */}
+                    <div style={{ ...S.card, overflow: 'hidden' }}>
+                        <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.divider}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h2 style={{ ...S.h2, fontSize: 15 }}>Cola de diseño</h2>
+                            <span style={{ fontSize: 12, fontFamily: MONO, color: C.royal }}>{pendingJobs.length}</span>
                         </div>
-                    )}
-                </div>
-            </div>
-
-            {/* --- ÁREA DE TRABAJO --- */}
-            <div className="flex-1 flex flex-col bg-obsidian-card rounded-[2rem] border border-white/[0.06] overflow-hidden shadow-sm">
-                {selectedJob ? (
-                    <div className="flex flex-col h-full overflow-hidden">
-                        
-                        {/* HEADER DE TRABAJO */}
-                        <div className="p-6 border-b border-white/[0.06] flex flex-col md:flex-row justify-between items-center gap-4 bg-white/[0.04]">
-                            <div>
-                                <h1 className="text-xl font-black text-white uppercase tracking-tight">Orden <span className="text-brand-blue">#{selectedJob.orden}</span></h1>
-                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{selectedJob.subtipo} • {getClientName(selectedJob.clienteId)}</p>
-                            </div>
-                            <div className="flex gap-4 items-center">
-                                <motion.button 
-                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                    onClick={handleRunAI}
-                                    disabled={analyzing || !selectedJob.fotoOriginalUrl}
-                                    className="group relative flex items-center gap-3 px-6 py-3.5 bg-white/[0.04] text-white font-black text-[9px] uppercase tracking-[0.3em] rounded-2xl hover:bg-white/[0.08] border border-white/[0.06] transition-all disabled:opacity-30 overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    {analyzing ? <Loader2Icon className="animate-spin w-5 h-5 text-brand-blue"/> : <SparklesIcon className="w-5 h-5 text-brand-blue group-hover:rotate-12 transition-transform"/>}
-                                    <div className="flex flex-col items-start leading-none gap-1">
-                                        <span>ANÁLISIS_IA</span>
-                                        <span className="text-[6px] text-slate-400 font-bold tracking-widest">PROTOCOLO_V4</span>
-                                    </div>
-                                </motion.button>
-
-                                <div className="h-10 w-px bg-white/[0.06] mx-2" />
-
-                                <motion.button 
-                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                    onClick={handleSendToPrint}
-                                    className="group relative flex items-center gap-4 px-8 py-3.5 bg-white/[0.04] text-white font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-white/[0.08] border border-white/[0.06] transition-all overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-slate-200/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <PrinterIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue transition-colors"/>
-                                    <div className="flex flex-col items-start leading-none gap-1">
-                                        <span>ENVIAR A PRODUCCIÓN</span>
-                                        <span className="text-[6px] text-slate-400 font-bold tracking-widest">COLA_INDUSTRIAL</span>
-                                    </div>
-                                </motion.button>
-
-                                <motion.button 
-                                    whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
-                                    onClick={handleSendToVitrina}
-                                    className="group relative flex items-center gap-4 px-10 py-4 bg-brand-blue text-white font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-brand-blue/90 transition-all shadow-blue-glow-sm overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
-                                    <RocketLaunchIcon className="w-6 h-6 animate-pulse"/>
-                                    <div className="flex flex-col items-start leading-none gap-1">
-                                        <span>SALTO A VITRINA</span>
-                                        <span className="text-[7px] text-white/60 font-black tracking-widest">BYPASS_PROCESO</span>
-                                    </div>
-                                </motion.button>
-                            </div>
+                        <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 560, overflowY: 'auto' }}>
+                            {loading ? (
+                                <div style={{ padding: 24, textAlign: 'center', color: C.faint, fontSize: 12 }}>Cargando…</div>
+                            ) : pendingJobs.length === 0 ? (
+                                <div style={{ padding: 24, textAlign: 'center', color: C.muted, fontSize: 12.5 }}>Sin pendientes.</div>
+                            ) : pendingJobs.map(job => {
+                                const on = selectedJob?.id === job.id;
+                                return (
+                                    <button key={job.id} onClick={() => setSelectedJob(job)}
+                                        style={{
+                                            textAlign: 'left', padding: '11px 12px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
+                                            border: `1px solid ${on ? C.royal : C.border}`, background: on ? C.chipBlue : '#fff',
+                                        }}>
+                                        <div style={{ fontSize: 12, fontFamily: MONO, color: on ? C.royal : C.faint }}>ORD-{String(job.orden).padStart(4, '0')}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nombreDe(job.clienteId)}</div>
+                                        <div style={{ fontSize: 11.5, color: C.faint, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.subtipo || job.tipo}</div>
+                                    </button>
+                                );
+                            })}
                         </div>
+                    </div>
 
-                        <div className="flex-grow p-6 overflow-hidden flex flex-col xl:flex-row gap-6">
-                            
-                            {/* VISUALIZADOR DE ARTE */}
-                            <div className="flex-1 flex flex-col overflow-hidden min-h-[300px]">
-                                <h3 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Arte de Referencia</h3>
-                                <div className="flex-grow bg-white/[0.04] rounded-3xl border border-white/[0.06] flex items-center justify-center relative overflow-hidden group shadow-inner">
-                                    {selectedJob.fotoOriginalUrl ? (
-                                        <img src={selectedJob.fotoOriginalUrl} className="w-full h-full object-contain p-4" alt="Arte" />
-                                    ) : (
-                                        <div className="text-center opacity-20 flex flex-col items-center">
-                                            <EyeIcon className="w-12 h-12 mb-3 text-slate-400"/>
-                                            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Sin archivo adjunto</p>
-                                        </div>
-                                    )}
-                                    
-                                    {analyzing && (
-                                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
-                                            <Loader2Icon className="animate-spin w-10 h-10 text-brand-blue mb-4"/>
-                                            <p className="font-black text-[10px] tracking-widest uppercase text-brand-blue">Analizando Diseño...</p>
-                                        </div>
-                                    )}
+                    {/* Área de trabajo */}
+                    <div style={{ ...S.card, overflow: 'hidden', minWidth: 0 }}>
+                        {!selectedJob ? (
+                            <div style={{ padding: 64, textAlign: 'center', color: C.muted }}>
+                                <p style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Módulo de diseño</p>
+                                <p style={{ fontSize: 12.5, marginTop: 4 }}>Selecciona una orden de la cola para comenzar.</p>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.divider}`, display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    <div>
+                                        <h2 style={S.h2}>Orden #{String(selectedJob.orden).padStart(4, '0')}</h2>
+                                        <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.faint }}>{selectedJob.subtipo || selectedJob.tipo} · {nombreDe(selectedJob.clienteId)}</p>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+                                        <button style={S.softBtn} disabled={analyzing || !selectedJob.fotoOriginalUrl} onClick={runAI}>
+                                            {analyzing ? 'Analizando…' : 'Análisis IA'}
+                                        </button>
+                                        <button style={S.outlineBtn} onClick={sendToPrint}>Enviar a producción</button>
+                                        <button style={S.primaryBtn} onClick={sendToVitrina}>Salto a vitrina</button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* PANEL DE ANÁLISIS IA */}
-                            <div className="w-full xl:w-[400px] flex flex-col overflow-hidden">
-                                <h3 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    <SparklesIcon className="w-3.5 h-3.5 text-brand-blue"/> Informe del Supervisor IA
-                                </h3>
-                                
-                                <div className="flex-grow bg-white/[0.04] border border-white/[0.06] rounded-3xl p-6 overflow-y-auto custom-scrollbar flex flex-col">
-                                    {aiAnalysis ? (
-                                        <div className="space-y-6">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Resultado del Análisis</span>
-                                                <div className={`px-2 py-0.5 rounded text-[8px] font-black border ${
-                                                    aiAnalysis.estado === 'VERDE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                                                    aiAnalysis.estado === 'AMARILLO' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-brand-red/10 text-brand-red border-brand-red/20'
-                                                }`}>
-                                                    ESTADO: {aiAnalysis.estado}
-                                                </div>
-                                            </div>
-                                            
-                                            <p className="text-slate-200 text-[13px] font-medium leading-relaxed bg-obsidian-card p-4 rounded-xl border border-white/[0.06] border-l-4 border-l-brand-blue shadow-sm">
-                                                "{aiAnalysis.resumen}"
-                                            </p>
-                                            
-                                            <div className="space-y-3">
-                                                {aiAnalysis.detalles.map((det, i) => (
-                                                    <div key={i} className="p-4 bg-obsidian-card rounded-xl border border-white/[0.06] shadow-sm">
-                                                        <p className="text-[8px] font-black text-brand-blue uppercase tracking-widest mb-1">{det.tipo}</p>
-                                                        <p className="text-xs font-black text-white uppercase mb-2 leading-tight">{det.descripcion}</p>
-                                                        <p className="text-[11px] text-slate-500 font-medium leading-relaxed">{det.sugerencia}</p>
+                                <div style={{ padding: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }}>
+                                    <div>
+                                        <div style={{ ...S.fieldLabel, marginBottom: 8 }}>Arte de referencia</div>
+                                        <div style={{ minHeight: 260, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                            {selectedJob.fotoOriginalUrl
+                                                ? <img src={selectedJob.fotoOriginalUrl} alt="Arte" style={{ maxWidth: '100%', maxHeight: 320, objectFit: 'contain', padding: 12 }} />
+                                                : <span style={{ color: C.ghost, fontSize: 12.5 }}>Sin archivo adjunto</span>}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div style={{ ...S.fieldLabel, marginBottom: 8 }}>Informe del supervisor IA</div>
+                                        <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, minHeight: 260 }}>
+                                            {analyzing ? (
+                                                <p style={{ textAlign: 'center', padding: '32px 0', fontSize: 12, fontWeight: 700, color: C.royal, textTransform: 'uppercase', letterSpacing: '.16em' }}>Analizando diseño…</p>
+                                            ) : aiAnalysis ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={S.colHead}>Resultado</span>
+                                                        <span style={{ padding: '3px 9px', borderRadius: 7, fontSize: 10.5, fontWeight: 800, ...(ANALISIS_COLOR[aiAnalysis.estado] || ANALISIS_COLOR.AMARILLO) }}>{aiAnalysis.estado}</span>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                    <p style={{ fontSize: 13, color: C.body, lineHeight: 1.6, borderLeft: `3px solid ${C.royal}`, paddingLeft: 12 }}>“{aiAnalysis.resumen}”</p>
+                                                    {aiAnalysis.detalles.map((d, i) => (
+                                                        <div key={i} style={{ ...S.card, padding: 12 }}>
+                                                            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.royal }}>{d.tipo}</div>
+                                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, marginTop: 4 }}>{d.descripcion}</div>
+                                                            <div style={{ fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 1.5 }}>{d.sugerencia}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p style={{ textAlign: 'center', padding: '32px 0', fontSize: 12.5, color: C.muted, lineHeight: 1.6 }}>
+                                                    Inicia el análisis para validar la viabilidad técnica del diseño.
+                                                </p>
+                                            )}
                                         </div>
-                                    ) : (
-                                        <div className="flex-grow flex flex-col items-center justify-center text-center p-6 opacity-40">
-                                            <SparklesIcon className="w-8 h-8 text-brand-blue mb-4" />
-                                            <h3 className="text-xs font-black text-white uppercase tracking-widest">Supervisor IA Disponible</h3>
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase mt-3 leading-relaxed">
-                                                Inicie el análisis para validar la viabilidad técnica del diseño.
-                                            </p>
-                                        </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center opacity-20">
-                        <PaletteIcon className="w-12 h-12 text-brand-blue mb-6" />
-                        <p className="text-sm font-black text-white uppercase tracking-[0.4em]">Módulo de Diseño</p>
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-2">Seleccione una orden para comenzar</p>
-                    </div>
-                )}
+                </div>
             </div>
-
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.05); border-radius: 10px; }
-            `}</style>
         </div>
     );
 };

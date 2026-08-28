@@ -1,157 +1,75 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Proveedor, TareaProveedor, User } from '../types';
 import { useData } from '../contexts/DataContext';
-import { useOutletContext, useNavigate } from 'react-router-dom';
-import { 
-    BuildingStorefrontIcon, UserPlusIcon, SearchIcon, CloseIcon, PencilIcon, TrashIcon, 
-    WhatsAppIcon, ExclamationTriangleIcon, PhoneIcon, CheckBadgeIcon, ClockIcon, 
-    WrenchScrewdriverIcon, CalendarDaysIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon,
-    LayersIcon, SparklesIcon, ActivityIcon, PlusIcon, ArrowRightIcon
-} from '../components/Icons';
+import { useOutletContext } from 'react-router-dom';
 import { formatDate } from '../utils';
 import { logActivity } from '../services/activityLogService';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
-// --- HELPERS ---
-
-const formatWhatsAppLink = (phone: string) => {
-    let cleanPhone = phone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('09')) cleanPhone = '593' + cleanPhone.substring(1);
-    else if (cleanPhone.length === 9 && cleanPhone.startsWith('9')) cleanPhone = '593' + cleanPhone;
-    else if (cleanPhone.length === 10 && cleanPhone.startsWith('0')) cleanPhone = '593' + cleanPhone.substring(1);
-    return `https://wa.me/${cleanPhone}`;
+const waLink = (phone: string) => {
+    let p = (phone || '').replace(/\D/g, '');
+    if (p.startsWith('09')) p = '593' + p.slice(1);
+    else if (p.length === 9 && p.startsWith('9')) p = '593' + p;
+    else if (p.length === 10 && p.startsWith('0')) p = '593' + p.slice(1);
+    return `https://wa.me/${p}`;
 };
 
-// --- PRECISION LIGHT COMPONENTS ---
-
-const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<any>; colorClass?: string }> = ({ title, value, icon: Icon, colorClass = "bg-brand-blue/10 text-brand-blue" }) => (
-    <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -5 }}
-        className="bg-obsidian-card p-8 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative group transition-all"
-    >
-        <div className="flex justify-between items-start">
-            <div className="space-y-2">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{title}</p>
-                <p className="text-4xl font-black text-white tracking-tighter">{value}</p>
-            </div>
-            <div className={`${colorClass} p-4 rounded-2xl border border-white/[0.06] shadow-sm`}>
-                <Icon className="h-6 w-6" />
-            </div>
-        </div>
-    </motion.div>
-);
-
-const InputField: React.FC<{ label: string; name: string; value: any; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void; [key: string]: any; }> = ({ label, name, value, onChange, ...props }) => (
-    <div className="space-y-3">
-        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">{label}</label>
-        {props.type === 'select' ? (
-            <select name={name} value={value} onChange={onChange} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white appearance-none cursor-pointer">
-                {props.children}
-            </select>
-        ) : (
-            <input name={name} value={value} onChange={onChange} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white" {...props} />
-        )}
-    </div>
-);
-
-const InfoItem: React.FC<{icon?: React.FC<any>, label: string, value: any, link?: string}> = ({ icon: Icon, label, value, link }) => (
-    <div className="flex items-start gap-4 p-5 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group transition-all hover:border-brand-blue/30">
-        {Icon && <div className="p-3 bg-obsidian-card rounded-xl border border-white/[0.06] group-hover:text-brand-blue transition-colors shadow-sm"><Icon className="h-4 w-4" /></div>}
-        <div className="min-w-0">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-            {link ? (
-                <a href={link} target="_blank" rel="noopener noreferrer" className="text-sm font-black text-white hover:text-brand-blue transition-colors truncate block uppercase">{value || 'SIN VINCULO'}</a>
-            ) : (
-                <p className="text-sm font-black text-white truncate block uppercase">{value || 'N/A'}</p>
-            )}
-        </div>
-    </div>
-);
-
-const ProveedorFormModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (proveedor: Partial<Proveedor>) => void; proveedorToEdit: Partial<Proveedor> | null; }> = ({ isOpen, onClose, onSave, proveedorToEdit }) => {
-    const [formData, setFormData] = useState<Partial<Proveedor>>({});
-
-    useEffect(() => {
-        setFormData(proveedorToEdit || { nombre: '', categoria: 'Papel y Cartulinas', tipo: 'Producto', contacto: '', telefono: '', estado: 'Activo' });
-    }, [proveedorToEdit, isOpen]);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
-    if (!isOpen) return null;
-
+const ProveedorFormModal: React.FC<{ open: boolean; onClose: () => void; onSave: (p: Partial<Proveedor>) => void; toEdit: Partial<Proveedor> | null }> = ({ open, onClose, onSave, toEdit }) => {
+    const [f, setF] = useState<Partial<Proveedor>>({});
+    useEffect(() => { setF(toEdit || { nombre: '', categoria: 'Papel y Cartulinas', tipo: 'Producto', contacto: '', telefono: '', estado: 'Activo' }); }, [toEdit, open]);
+    if (!open) return null;
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-                <motion.div 
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="bg-obsidian-card w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]" 
-                    onClick={e => e.stopPropagation()}
-                >
-                    <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
-                        <div>
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Registro de <span className="text-brand-blue">Aliado</span></h2>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Integración de Red Logística</p>
-                        </div>
-                        <button onClick={onClose} className="p-3 bg-obsidian-card hover:bg-white/[0.04] text-slate-400 border border-white/[0.06] rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }} onClick={onClose} />
+            <form onSubmit={e => { e.preventDefault(); onSave(f); }} style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 520, ...S.card, overflow: 'hidden' }}>
+                <div style={{ padding: '18px 22px', borderBottom: `1px solid ${C.divider}`, background: C.surfaceAlt }}>
+                    <h2 style={{ ...S.h2, fontSize: 17 }}>{f.id ? 'Editar proveedor' : 'Registrar proveedor'}</h2>
+                </div>
+                <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 14, maxHeight: '72vh', overflowY: 'auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Nombre</span>
+                            <input value={f.nombre || ''} onChange={e => setF({ ...f, nombre: e.target.value })} required style={S.input} /></label>
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Categoría</span>
+                            <input value={f.categoria || ''} onChange={e => setF({ ...f, categoria: e.target.value })} required style={S.input} /></label>
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Contacto</span>
+                            <input value={f.contacto || ''} onChange={e => setF({ ...f, contacto: e.target.value })} style={S.input} /></label>
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Teléfono (WhatsApp)</span>
+                            <input value={f.telefono || ''} onChange={e => setF({ ...f, telefono: e.target.value })} required style={S.input} /></label>
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Tipo</span>
+                            <select value={f.tipo || 'Producto'} onChange={e => setF({ ...f, tipo: e.target.value as any })} style={{ ...S.input, cursor: 'pointer' }}>
+                                <option value="Producto">Suministro de producto</option>
+                                <option value="Servicio">Prestación de servicio</option>
+                            </select></label>
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Estado</span>
+                            <select value={f.estado || 'Activo'} onChange={e => setF({ ...f, estado: e.target.value as any })} style={{ ...S.input, cursor: 'pointer' }}>
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </select></label>
                     </div>
-                    
-                    <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <InputField label="Nombre de Entidad" name="nombre" value={formData.nombre || ''} onChange={e => setFormData({...formData, nombre: e.target.value.toUpperCase()})} required placeholder="Ej. PAPELERA NACIONAL" />
-                            <InputField label="Rama Industrial" name="categoria" value={formData.categoria || ''} onChange={e => setFormData({...formData, categoria: e.target.value})} required placeholder="Ej. Insumos" />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <InputField label="Agente Principal" name="contacto" value={formData.contacto || ''} onChange={e => setFormData({...formData, contacto: e.target.value})} placeholder="Ej. Ing. Carlos Ruiz" />
-                            <InputField label="Comunicación Directa (WA)" name="telefono" value={formData.telefono || ''} onChange={e => setFormData({...formData, telefono: e.target.value})} required placeholder="Ej. 0987654321" />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <InputField label="Tipo de Servicio" name="tipo" value={formData.tipo || 'Producto'} onChange={e => setFormData({...formData, tipo: e.target.value as any})} type="select">
-                                <option value="Producto">SUMINISTRO DE PRODUCTO</option>
-                                <option value="Servicio">PRESTACIÓN DE SERVICIO</option>
-                            </InputField>
-                            <InputField label="Estado de Alianza" name="estado" value={formData.estado || 'Activo'} onChange={e => setFormData({...formData, estado: e.target.value as any})} type="select">
-                                <option value="Activo">ACTIVO / VINCULADO</option>
-                                <option value="Inactivo">EN PAUSA / INACTIVO</option>
-                            </InputField>
-                        </div>
-                        <div className="space-y-3">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Portafolio de Productos</label>
-                            <textarea value={formData.productos || ''} onChange={e => setFormData({...formData, productos: e.target.value})} rows={3} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white uppercase tracking-widest min-h-[120px]" placeholder="DESCRIBA LOS PRODUCTOS O SERVICIOS QUE PROVEE..." />
-                        </div>
-                    </form>
-
-                    <div className="p-10 border-t border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
-                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
-                        <button onClick={handleSubmit} className="px-12 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-brand-blue/20 active:scale-95 transition-all">Sincronizar Protocolo</button>
+                    <label style={{ display: 'block' }}><span style={S.fieldLabel}>Portafolio de productos</span>
+                        <textarea value={f.productos || ''} onChange={e => setF({ ...f, productos: e.target.value })} rows={3} style={{ ...S.input, resize: 'none' }} /></label>
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                        <button type="button" onClick={onClose} style={S.softBtn}>Cancelar</button>
+                        <button type="submit" style={S.primaryBtn}>Guardar</button>
                     </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+                </div>
+            </form>
+        </div>
     );
 };
 
 const ProveedoresPage: React.FC = () => {
     const { currentUser } = useOutletContext<{ currentUser: User }>();
-    const { 
-        proveedores, tareas, loading, addProveedor, updateProveedor, 
-        deleteProveedor, createTareaProveedor, updateTareaProveedor 
-    } = useData();
-    
+    const { proveedores, tareas, loading, addProveedor, updateProveedor, deleteProveedor, createTareaProveedor, updateTareaProveedor } = useData();
+
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('Todos');
     const [agendaTab, setAgendaTab] = useState<'tareas' | 'mantenimiento'>('tareas');
-    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-    const [proveedorToEdit, setProveedorToEdit] = useState<Partial<Proveedor> | null>(null);
-    const [viewingProveedor, setViewingProveedor] = useState<Proveedor | null>(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [toEdit, setToEdit] = useState<Partial<Proveedor> | null>(null);
+    const [viewing, setViewing] = useState<Proveedor | null>(null);
     const [newTarea, setNewTarea] = useState<Omit<TareaProveedor, 'id' | 'completada'>>({ proveedorId: '', titulo: '', tipo: 'General', descripcion: '', fechaVencimiento: '' });
-    
-    const agendaFormRef = useRef<HTMLFormElement>(null);
 
     const kpis = useMemo(() => ({
         total: proveedores.length,
@@ -161,241 +79,183 @@ const ProveedoresPage: React.FC = () => {
 
     const categories = useMemo(() => ['Todos', ...Array.from(new Set(proveedores.map(p => p.categoria))).sort()], [proveedores]);
 
-    const filteredProveedores = useMemo(() => {
-        const lower = searchTerm.toLowerCase();
+    const filteredProv = useMemo(() => {
+        const q = searchTerm.toLowerCase();
         return proveedores
             .filter(p => categoryFilter === 'Todos' || p.categoria === categoryFilter)
-            .filter(p => p.nombre.toLowerCase().includes(lower) || p.contacto.toLowerCase().includes(lower));
+            .filter(p => p.nombre.toLowerCase().includes(q) || (p.contacto || '').toLowerCase().includes(q));
     }, [proveedores, searchTerm, categoryFilter]);
 
-    const filteredAgendaItems = useMemo(() => {
-        return tareas
-            .filter(t => (agendaTab === 'tareas' ? t.tipo === 'General' : t.tipo === 'Mantenimiento'))
-            .sort((a, b) => (a.completada ? 1 : -1) || new Date(a.fechaVencimiento).getTime() - new Date(b.fechaVencimiento).getTime());
-    }, [tareas, agendaTab]);
-    
-    function getProveedorNombre(id: string) { return proveedores.find(p => p.id === id)?.nombre || 'SISTEMA_CENTRAL'; }
+    const agendaItems = useMemo(() =>
+        tareas
+            .filter(t => agendaTab === 'tareas' ? t.tipo === 'General' : t.tipo === 'Mantenimiento')
+            .sort((a, b) => (a.completada ? 1 : -1) || new Date(a.fechaVencimiento).getTime() - new Date(b.fechaVencimiento).getTime()),
+        [tareas, agendaTab]);
+
+    const nombreDe = (id: string) => proveedores.find(p => p.id === id)?.nombre || '—';
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-12 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in">
-            {/* --- HEADER --- */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-white/[0.06] pb-10">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
-                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Red de Abastecimiento</span>
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Gestión de Proveedores · Imprenta Córdova" />
+            <div style={S.wrap}>
+
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+                    <div>
+                        <p style={S.eyebrow}>Entidades</p>
+                        <h1 style={S.h1}>Gestión de Proveedores</h1>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
-                        Directorio de Proveedores <span className="text-brand-blue font-bold">• Insumos</span>
-                    </h1>
+                    <button style={S.primaryBtn} onClick={() => { setToEdit({}); setIsFormOpen(true); }}>Registrar proveedor</button>
                 </div>
-                <button 
-                    onClick={() => { setProveedorToEdit({}); setIsFormModalOpen(true); }} 
-                    className="px-10 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all flex items-center gap-4"
-                >
-                    <UserPlusIcon className="w-5 h-5" />
-                    Registrar Nodo
-                </button>
-            </div>
 
-            {/* --- KPI SECTION --- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <KpiCard title="Nodos Activos" value={kpis.total} icon={BuildingStorefrontIcon} />
-                <KpiCard title="Protocolos Pendientes" value={kpis.pendientes} icon={ActivityIcon} colorClass="bg-amber-500/10 text-amber-500" />
-                <KpiCard title="Ciclos de Servicio" value={kpis.mantenimientos} icon={WrenchScrewdriverIcon} colorClass="bg-brand-blue/10 text-indigo-500" />
-            </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                    {[
+                        { l: 'Proveedores activos', v: kpis.total },
+                        { l: 'Tareas pendientes', v: kpis.pendientes },
+                        { l: 'Mantenimientos', v: kpis.mantenimientos },
+                    ].map(k => (
+                        <div key={k.l} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
+                            <div style={S.colHead}>{k.l}</div>
+                            <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 600, letterSpacing: '-.04em', color: C.ink, marginTop: 8, lineHeight: 1 }}>{k.v}</div>
+                        </div>
+                    ))}
+                </div>
 
-            {/* --- CONTENT GRID --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                
-                {/* DIRECTORY PANEL */}
-                <div className="lg:col-span-12 xl:col-span-7 space-y-10 flex flex-col min-h-[800px]">
-                    <div className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm flex flex-col h-full overflow-hidden">
-                        <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50 flex flex-col md:flex-row justify-between items-center gap-6">
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Directorio <span className="text-brand-blue">Estratégico</span></h2>
-                            <div className="flex gap-4 w-full md:w-auto">
-                                <div className="relative group flex-1 md:w-64">
-                                    <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5 group-focus-within:text-brand-blue transition-colors"/>
-                                    <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="RASTREAR..." className="w-full pl-16 pr-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue outline-none transition-all shadow-sm" />
-                                </div>
-                                <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none transition-all shadow-sm appearance-none cursor-pointer">
-                                    {categories.map(cat => <option key={cat} value={cat}>{cat.toUpperCase()}</option>)}
-                                </select>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 16, alignItems: 'start' }}>
+
+                    {/* Directorio */}
+                    <div style={{ gridColumn: 'span 2', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ ...S.card, borderRadius: 14, padding: '12px 14px', display: 'flex', gap: 9, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div style={{ flex: 1, minWidth: 180, display: 'flex', alignItems: 'center', gap: 9 }}>
+                                <span style={{ color: C.faint, fontSize: 13 }}>⌕</span>
+                                <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar proveedor…"
+                                    style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: C.ink, fontFamily: 'inherit' }} />
                             </div>
+                            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} style={{ ...S.input, width: 'auto', padding: '8px 12px', fontSize: 12.5, cursor: 'pointer' }}>
+                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
                         </div>
 
-                        <div className="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-8 p-10 custom-scrollbar">
-                            <AnimatePresence>
-                                {filteredProveedores.map(p => (
-                                    <motion.div 
-                                        key={p.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                                        onClick={() => setViewingProveedor(p)}
-                                        className="bg-obsidian-card border border-white/[0.06] rounded-[2.5rem] p-10 cursor-pointer group flex flex-col h-full hover:bg-white/[0.04] transition-all duration-500 hover:border-brand-blue/20 hover:shadow-xl hover:shadow-brand-blue/5"
-                                    >
-                                        <div className="flex-grow space-y-4">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-2xl font-black text-white group-hover:text-brand-blue transition-colors uppercase tracking-tight leading-none">{p.nombre}</h3>
-                                                <div className={`w-3 h-3 rounded-full ${p.estado === 'Activo' ? 'bg-emerald-500' : 'bg-rose-500'} shadow-lg`}></div>
-                                            </div>
-                                            <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.4em] block">{p.categoria}</span>
-                                            <p className="text-xs font-bold text-slate-400 h-10 line-clamp-2 uppercase leading-relaxed tracking-wider italic">{p.productos || 'SIN PORTAFOLIO REGISTRADO'}</p>
+                        {loading ? (
+                            <div style={{ ...S.card, padding: 40, textAlign: 'center', color: C.faint, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.2em' }}>Cargando…</div>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 }}>
+                                {filteredProv.map(p => (
+                                    <div key={p.id} onClick={() => setViewing(p)} style={{ ...S.card, padding: '16px 18px', cursor: 'pointer' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+                                            <span style={{ fontSize: 15, fontWeight: 600, color: C.ink, lineHeight: 1.3 }}>{p.nombre}</span>
+                                            <span style={{ width: 8, height: 8, borderRadius: 99, flexShrink: 0, marginTop: 5, background: p.estado === 'Activo' ? C.successDot : C.danger }} />
                                         </div>
-                                        <div className="mt-10 pt-8 border-t border-white/[0.06] flex justify-between items-center">
-                                            <a href={formatWhatsAppLink(p.telefono)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="px-5 py-3 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all duration-500 flex items-center gap-3 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
-                                                <WhatsAppIcon className="w-4 h-4"/> Canal Directo
-                                            </a>
-                                            <div className="p-3 bg-white/[0.04] text-slate-300 group-hover:text-brand-blue rounded-xl transition-all">
-                                                <ArrowRightIcon className="w-5 h-5"/>
-                                            </div>
+                                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: C.royal, marginTop: 6 }}>{p.categoria}</div>
+                                        <div style={{ fontSize: 12.5, color: C.muted, marginTop: 8, lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            {p.productos || 'Sin portafolio registrado'}
                                         </div>
-                                    </motion.div>
+                                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.rowLine}` }}>
+                                            <a href={waLink(p.telefono)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                                                style={{ ...S.softBtn, background: '#F2F7F2', color: C.success, textDecoration: 'none' }}>WhatsApp</a>
+                                        </div>
+                                    </div>
                                 ))}
-                            </AnimatePresence>
-                            {filteredProveedores.length === 0 && (
-                                <div className="col-span-full py-40 text-center opacity-20 uppercase font-black text-[10px] tracking-[0.5em]">Sin Coincidencias en Red</div>
-                            )}
-                        </div>
+                                {filteredProv.length === 0 && (
+                                    <div style={{ ...S.card, padding: 40, textAlign: 'center', color: C.muted, fontSize: 13, gridColumn: '1 / -1' }}>Sin coincidencias.</div>
+                                )}
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                {/* AGENDA PANEL */}
-                <div className="lg:col-span-12 xl:col-span-5 flex flex-col min-h-[800px]">
-                    <div className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm flex flex-col h-full overflow-hidden">
-                        <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50">
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-4">
-                                <CalendarDaysIcon className="w-7 h-7 text-brand-blue"/> Flujo Operativo
-                            </h2>
+                    {/* Agenda */}
+                    <div style={{ ...S.card, overflow: 'hidden', minWidth: 0 }}>
+                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.divider}` }}>
+                            <h2 style={{ ...S.h2, fontSize: 16 }}>Agenda operativa</h2>
                         </div>
-
-                        {/* Program Form */}
-                        <form ref={agendaFormRef} onSubmit={async (e) => {
-                            e.preventDefault();
-                            if (!newTarea.proveedorId || !newTarea.titulo) return;
-                            await createTareaProveedor(newTarea);
-                            setNewTarea({ proveedorId: '', titulo: '', tipo: 'General', descripcion: '', fechaVencimiento: '' });
-                            logActivity(currentUser.nombre, currentUser.rol, 'GESTION_PROVEEDOR', `Tarea programada: ${newTarea.titulo}`, 'Proveedores');
-                        }} className="p-10 space-y-6 bg-white/[0.04]/30 border-b border-white/[0.06]">
-                            <div className="grid grid-cols-2 gap-4">
-                                <select value={newTarea.proveedorId} onChange={e => setNewTarea({...newTarea, proveedorId: e.target.value})} className="px-5 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black tracking-widest outline-none transition-all shadow-sm cursor-pointer" required>
-                                    <option value="">VINCULAR NODO</option>
+                        <form
+                            onSubmit={async e => {
+                                e.preventDefault();
+                                if (!newTarea.proveedorId || !newTarea.titulo) return;
+                                await createTareaProveedor(newTarea);
+                                logActivity(currentUser.nombre, currentUser.rol, 'GESTION_PROVEEDOR', `Tarea: ${newTarea.titulo}`, 'Proveedores');
+                                setNewTarea({ proveedorId: '', titulo: '', tipo: 'General', descripcion: '', fechaVencimiento: '' });
+                            }}
+                            style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, background: C.surfaceAlt, borderBottom: `1px solid ${C.divider}` }}
+                        >
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                <select value={newTarea.proveedorId} onChange={e => setNewTarea({ ...newTarea, proveedorId: e.target.value })} required style={{ ...S.input, padding: '9px 11px', fontSize: 12, cursor: 'pointer' }}>
+                                    <option value="">Proveedor…</option>
                                     {proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                                 </select>
-                                <select value={newTarea.tipo} onChange={e => setNewTarea({...newTarea, tipo: e.target.value as any})} className="px-5 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black tracking-widest outline-none transition-all shadow-sm cursor-pointer">
-                                    <option value="General">OP. GENERAL</option>
-                                    <option value="Mantenimiento">MANTENIMIENTO</option>
+                                <select value={newTarea.tipo} onChange={e => setNewTarea({ ...newTarea, tipo: e.target.value as any })} style={{ ...S.input, padding: '9px 11px', fontSize: 12, cursor: 'pointer' }}>
+                                    <option value="General">General</option>
+                                    <option value="Mantenimiento">Mantenimiento</option>
                                 </select>
                             </div>
-                            <input type="text" placeholder="OBJETIVO DE MISIÓN..." value={newTarea.titulo} onChange={e => setNewTarea({...newTarea, titulo: e.target.value.toUpperCase()})} className="w-full px-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-xs font-black uppercase tracking-widest focus:border-brand-blue outline-none transition-all shadow-sm" required/>
-                            <div className="flex gap-4">
-                                <input type="date" value={newTarea.fechaVencimiento} onChange={e => setNewTarea({...newTarea, fechaVencimiento: e.target.value})} className="flex-grow px-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none transition-all shadow-sm" required/>
-                                <button type="submit" className="p-4 bg-brand-blue text-white rounded-2xl shadow-lg shadow-brand-blue/20 active:scale-95 transition-all"><PlusIcon className="w-6 h-6"/></button>
+                            <input value={newTarea.titulo} onChange={e => setNewTarea({ ...newTarea, titulo: e.target.value })} placeholder="Objetivo de la tarea…" required style={{ ...S.input, padding: '9px 11px', fontSize: 12.5 }} />
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <input type="date" value={newTarea.fechaVencimiento} onChange={e => setNewTarea({ ...newTarea, fechaVencimiento: e.target.value })} required style={{ ...S.input, flex: 1, padding: '9px 11px', fontSize: 12.5 }} />
+                                <button type="submit" style={{ ...S.primaryBtn, padding: '9px 14px' }}>Añadir</button>
                             </div>
                         </form>
-
-                        <div className="flex-grow flex flex-col overflow-hidden">
-                            <div className="flex border-b border-white/[0.06] bg-white/[0.04]/50">
-                                {(['tareas', 'mantenimiento'] as const).map(tab => (
-                                    <button 
-                                        key={tab} onClick={() => setAgendaTab(tab)}
-                                        className={`flex-1 py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all border-b-2 ${agendaTab === tab ? 'text-brand-blue border-brand-blue bg-white/[0.04]' : 'text-slate-400 border-transparent hover:text-white'}`}
-                                    >
-                                        {tab === 'tareas' ? 'Misiones Activas' : 'Ciclos de Servicio'}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="p-10 overflow-y-auto custom-scrollbar space-y-4 bg-obsidian-card">
-                                <AnimatePresence mode="popLayout">
-                                    {filteredAgendaItems.map(t => (
-                                        <motion.div 
-                                            key={t.id} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.9 }}
-                                            className={`p-6 rounded-[2rem] border transition-all duration-500 ${t.completada ? 'bg-white/[0.04] border-transparent grayscale' : 'bg-obsidian-card border-white/[0.06] hover:border-brand-blue/20 shadow-sm group'}`}
-                                        >
-                                            <div className="flex gap-5">
-                                                <div className="relative pt-1">
-                                                    <input 
-                                                        type="checkbox" checked={t.completada} 
-                                                        onChange={() => updateTareaProveedor(t.id, { completada: !t.completada })}
-                                                        className="w-6 h-6 outline-none appearance-none border-2 border-white/[0.06] rounded-xl checked:bg-brand-blue checked:border-brand-blue transition-all cursor-pointer shadow-inner"
-                                                    />
-                                                    {t.completada && <CheckBadgeIcon className="absolute top-[2px] left-[2px] w-5 h-5 text-white pointer-events-none" />}
-                                                </div>
-                                                <div className="min-w-0 flex-grow">
-                                                    <p className={`text-sm font-black uppercase tracking-tight transition-all ${t.completada ? 'line-through text-slate-300' : 'text-white'}`}>{t.titulo}</p>
-                                                    <div className="flex flex-wrap gap-4 mt-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue/30"></div>
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{getProveedorNombre(t.proveedorId)}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <ClockIcon className="w-3 h-3 text-slate-300" />
-                                                            <span className={`text-[9px] font-black uppercase tracking-widest ${new Date(t.fechaVencimiento) < new Date() && !t.completada ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`}>
-                                                                {formatDate(t.fechaVencimiento)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                        <div style={{ display: 'flex', borderBottom: `1px solid ${C.divider}` }}>
+                            {(['tareas', 'mantenimiento'] as const).map(tab => (
+                                <button key={tab} onClick={() => setAgendaTab(tab)}
+                                    style={{ flex: 1, padding: '12px', border: 'none', background: agendaTab === tab ? C.chipBlue : 'transparent', color: agendaTab === tab ? C.royal : C.faint, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                    {tab === 'tareas' ? 'Tareas' : 'Mantenimiento'}
+                                </button>
+                            ))}
+                        </div>
+                        <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 420, overflowY: 'auto' }}>
+                            {agendaItems.map(t => {
+                                const vencida = new Date(t.fechaVencimiento) < new Date() && !t.completada;
+                                return (
+                                    <div key={t.id} style={{ display: 'flex', gap: 10, padding: '10px 12px', border: `1px solid ${C.border}`, borderRadius: 10, opacity: t.completada ? 0.55 : 1 }}>
+                                        <input type="checkbox" checked={t.completada} onChange={() => updateTareaProveedor(t.id, { completada: !t.completada })} style={{ marginTop: 2, cursor: 'pointer' }} />
+                                        <div style={{ minWidth: 0, flex: 1 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, textDecoration: t.completada ? 'line-through' : 'none' }}>{t.titulo}</div>
+                                            <div style={{ display: 'flex', gap: 10, marginTop: 3, fontSize: 11, color: C.faint }}>
+                                                <span>{nombreDe(t.proveedorId)}</span>
+                                                <span style={{ color: vencida ? C.danger : C.faint }}>{formatDate(t.fechaVencimiento)}</span>
                                             </div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                                {filteredAgendaItems.length === 0 && <div className="py-20 text-center opacity-10 uppercase font-black text-[10px] tracking-[0.5em] italic">No hay eventos programados</div>}
-                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {agendaItems.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: C.muted, fontSize: 12.5 }}>Sin eventos programados.</div>}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <ProveedorFormModal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} onSave={async (data) => {
-                if (data.id) await updateProveedor(data.id, data);
-                else await addProveedor(data as any);
-                setIsFormModalOpen(false);
-            }} proveedorToEdit={proveedorToEdit} />
+            <ProveedorFormModal open={isFormOpen} onClose={() => setIsFormOpen(false)} toEdit={toEdit}
+                onSave={async data => { if (data.id) await updateProveedor(data.id, data); else await addProveedor(data as any); setIsFormOpen(false); }} />
 
-            <AnimatePresence>
-                {viewingProveedor && (
-                    <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setViewingProveedor(null)} />
-                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-obsidian-card w-full max-w-2xl overflow-hidden flex flex-col relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]">
-                            <div className="p-16 space-y-12">
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-4">
-                                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.6em] bg-brand-blue/5 px-6 py-2 rounded-full inline-block border border-brand-blue/10">{viewingProveedor.categoria}</span>
-                                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">{viewingProveedor.nombre}</h1>
-                                    </div>
-                                    <button onClick={() => setViewingProveedor(null)} className="p-4 hover:bg-white/[0.04] text-slate-300 hover:text-white rounded-full transition-all"><CloseIcon className="w-8 h-8"/></button>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <InfoItem icon={PhoneIcon} label="Línea Directa" value={viewingProveedor.telefono} link={`tel:${viewingProveedor.telefono}`} />
-                                    <InfoItem icon={WhatsAppIcon} label="Canal WhatsApp" value="Enlace de comunicación" link={formatWhatsAppLink(viewingProveedor.telefono)} />
-                                    <InfoItem icon={MapPinIcon} label="Sede de Operaciones" value={viewingProveedor.ciudad || 'NODO GLOBAL'} />
-                                    <InfoItem icon={GlobeAltIcon} label="Portal Digital" value={viewingProveedor.website} link={viewingProveedor.website ? `https://${viewingProveedor.website}` : undefined} />
-                                </div>
-
-                                <div className="space-y-4">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Mapa de Suministros</p>
-                                    <div className="p-8 rounded-[2.5rem] bg-white/[0.04] border border-white/[0.06]">
-                                        <p className="text-sm font-bold text-slate-300 leading-relaxed uppercase tracking-wider italic">{viewingProveedor.productos || 'SIN PORTAFOLIO REGISTRADO'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="pt-10 border-t border-white/[0.06] flex justify-between items-center">
-                                    <button onClick={() => { deleteProveedor(viewingProveedor.id); setViewingProveedor(null); }} className="text-[10px] font-black text-rose-500/40 hover:text-rose-500 transition-colors uppercase tracking-widest underline decoration-dashed">Protocolo: Anular Nodo</button>
-                                    <div className="flex gap-4">
-                                        <button onClick={() => { setProveedorToEdit(viewingProveedor); setViewingProveedor(null); setIsFormModalOpen(true); }} className="px-10 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-brand-blue/20">Sincronizar Perfil</button>
-                                    </div>
+            {viewing && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }} onClick={() => setViewing(null)} />
+                    <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 480, ...S.card, overflow: 'hidden' }}>
+                        <div style={{ padding: '20px 22px', borderBottom: `1px solid ${C.divider}`, background: C.surfaceAlt }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: C.royal }}>{viewing.categoria}</p>
+                            <h2 style={{ ...S.h2, fontSize: 22, marginTop: 4 }}>{viewing.nombre}</h2>
+                        </div>
+                        <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ ...S.card, background: C.bg, padding: 14 }}>
+                                <div style={S.colHead}>Contacto</div>
+                                <div style={{ fontSize: 13.5, color: C.ink, marginTop: 4 }}>{viewing.contacto || '—'} · {viewing.telefono}</div>
+                            </div>
+                            <div style={{ ...S.card, background: C.bg, padding: 14 }}>
+                                <div style={S.colHead}>Portafolio</div>
+                                <div style={{ fontSize: 13, color: C.body, marginTop: 4, lineHeight: 1.6 }}>{viewing.productos || 'Sin portafolio registrado'}</div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8 }}>
+                                <button style={{ ...S.softBtn, background: 'transparent', color: '#B91C1C' }}
+                                    onClick={() => { deleteProveedor(viewing.id); setViewing(null); }}>Eliminar</button>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <button style={S.softBtn} onClick={() => setViewing(null)}>Cerrar</button>
+                                    <button style={S.primaryBtn} onClick={() => { setToEdit(viewing); setViewing(null); setIsFormOpen(true); }}>Editar</button>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
-                )}
-            </AnimatePresence>
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-            `}</style>
+                </div>
+            )}
         </div>
     );
 };
