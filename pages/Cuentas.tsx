@@ -1,84 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-    logTransaction, 
-    getFinancialLedger, 
-    getLedgerBalance, 
-    purgeOldTransactions, 
-    FinancialEntry, 
-    TransactionType 
+import {
+    logTransaction, getFinancialLedger, getLedgerBalance, purgeOldTransactions,
+    FinancialEntry, TransactionType,
 } from '../services/financialLedgerService';
-import { 
-    BanknotesIcon, 
-    ArrowTrendingUpIcon, 
-    ArrowTrendingDownIcon, 
-    CalendarIcon, 
-    MagnifyingGlassIcon as SearchIcon, 
-    ShieldCheckIcon,
-    PlusIcon,
-    ArrowDownTrayIcon,
-    ScaleIcon,
-    Loader2Icon,
-    SparklesIcon,
-    CloseIcon,
-    LockIcon,
-    FingerPrintIcon,
-    ArchiveIcon,
-    UserIcon,
-    SettingsIcon
-} from '../components/Icons';
 import { formatCurrency, formatDate } from '../utils';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { User } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
-// --- PRECISION LIGHT COMPONENTS ---
+const ITEMS_PER_PAGE = 30;
 
-const MetricCard: React.FC<{ 
-    label: string, 
-    value: string, 
-    icon: any, 
-    colorClass?: string 
-}> = ({ label, value, icon: Icon, colorClass = "text-brand-blue" }) => (
-    <motion.div 
-        whileHover={{ y: -5 }}
-        className="bg-obsidian-card p-10 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative group overflow-hidden"
-    >
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-all duration-700">
-            <Icon className="w-24 h-24 text-white" />
-        </div>
-        <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl bg-white/[0.04] border border-white/[0.06] ${colorClass}`}>
-                    <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{label}</span>
-            </div>
-            <p className={`text-5xl font-black tracking-tighter ${colorClass} leading-none`}>
-                {value}
-            </p>
-        </div>
-    </motion.div>
-);
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-        opacity: 1,
-        transition: { staggerChildren: 0.1 }
-    }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-        opacity: 1, 
-        y: 0,
-        transition: { duration: 0.6, ease: "easeOut" as any }
-    }
-};
-
+// ── Modal de nueva operación ────────────────────────────────────────────────
 const TransactionFormModal: React.FC<{
     onClose: () => void;
     onSave: (tipo: TransactionType, monto: number, detalle: string) => void;
@@ -87,74 +22,59 @@ const TransactionFormModal: React.FC<{
     const [monto, setMonto] = useState('');
     const [detalle, setDetalle] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const submit = (e: React.FormEvent) => {
         e.preventDefault();
         const m = parseFloat(monto);
-        if (isNaN(m) || m <= 0 || !detalle) return;
-        onSave(tipo, m, detalle);
+        if (isNaN(m) || m <= 0 || !detalle.trim()) return;
+        onSave(tipo, m, detalle.trim());
         onClose();
     };
 
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-                <motion.div 
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="bg-obsidian-card w-full max-w-xl overflow-hidden relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]" 
-                >
-                    <div className="p-10 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.04]">
-                        <div>
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Nueva <span className="text-brand-blue">Operación</span></h2>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">LOG DE TRANSACCIÓN MANUAL</p>
-                        </div>
-                        <button onClick={onClose} className="p-3 bg-obsidian-card hover:bg-white/[0.04] text-slate-400 border border-white/[0.06] rounded-xl transition-all"><CloseIcon className="w-5 h-5"/></button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }} onClick={onClose} />
+            <form onSubmit={submit} style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 460, ...S.card, overflow: 'hidden' }}>
+                <div style={{ padding: '18px 22px', borderBottom: `1px solid ${C.divider}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.surfaceAlt }}>
+                    <h2 style={{ ...S.h2, fontSize: 17 }}>Nueva operación</h2>
+                    <button type="button" onClick={onClose} style={{ ...S.softBtn, padding: '6px 10px' }}>Cerrar</button>
+                </div>
+                <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        {(['INGRESO', 'EGRESO'] as TransactionType[]).map(v => {
+                            const on = tipo === v;
+                            const ing = v === 'INGRESO';
+                            return (
+                                <button
+                                    key={v}
+                                    type="button"
+                                    onClick={() => setTipo(v)}
+                                    style={{
+                                        padding: '12px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                                        border: `1px solid ${on ? (ing ? '#D8E8DC' : '#FBD5D5') : C.borderStrong}`,
+                                        background: on ? (ing ? '#F2F7F2' : '#FEF2F2') : '#fff',
+                                        color: on ? (ing ? C.success : '#B91C1C') : C.faint,
+                                    }}
+                                >{ing ? 'Ingreso' : 'Egreso'}</button>
+                            );
+                        })}
                     </div>
-
-                    <form onSubmit={handleSubmit} className="p-10 space-y-10">
-                        <div className="grid grid-cols-2 gap-6">
-                            <button type="button" onClick={() => setTipo('INGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'INGRESO' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-sm' : 'bg-obsidian-card border-white/[0.06] text-slate-400 hover:bg-white/[0.04]'}`}>
-                                Ingreso
-                            </button>
-                            <button type="button" onClick={() => setTipo('EGRESO')} className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] border transition-all ${tipo === 'EGRESO' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-sm' : 'bg-obsidian-card border-white/[0.06] text-slate-400 hover:bg-white/[0.04]'}`}>
-                                Egreso
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Monto de la Operación</label>
-                            <div className="relative">
-                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-black">$</span>
-                                <input 
-                                    type="number" step="0.01" value={monto} 
-                                    onChange={e => setMonto(e.target.value)} 
-                                    className="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl py-6 pl-12 pr-6 text-3xl font-black text-white focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all" 
-                                    placeholder="0.00" autoFocus required 
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Detalle Auditivo</label>
-                            <textarea 
-                                value={detalle} onChange={e => setDetalle(e.target.value)} 
-                                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 text-sm font-medium text-white placeholder:text-slate-500 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all h-32 resize-none" 
-                                placeholder="Especifique el motivo de la transacción..." required 
-                            />
-                        </div>
-
-                        <div className="flex gap-6 pt-4">
-                            <button type="button" onClick={onClose} className="flex-1 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-white transition-colors">Cancelar</button>
-                            <button type="submit" className="flex-[2] bg-brand-blue text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all active:scale-95">
-                                Registrar Operación
-                            </button>
-                        </div>
-                    </form>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+                    <label style={{ display: 'block' }}>
+                        <span style={S.fieldLabel}>Monto</span>
+                        <input type="number" step="0.01" value={monto} onChange={e => setMonto(e.target.value)} placeholder="0.00" autoFocus required
+                            style={{ ...S.input, fontFamily: MONO, fontSize: 18 }} />
+                    </label>
+                    <label style={{ display: 'block' }}>
+                        <span style={S.fieldLabel}>Detalle</span>
+                        <textarea value={detalle} onChange={e => setDetalle(e.target.value)} placeholder="Motivo de la transacción…" required
+                            style={{ ...S.input, height: 90, resize: 'none' }} />
+                    </label>
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                        <button type="button" onClick={onClose} style={S.softBtn}>Cancelar</button>
+                        <button type="submit" style={S.primaryBtn}>Registrar operación</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     );
 };
 
@@ -169,240 +89,147 @@ const CuentasPage: React.FC = () => {
     const [filterType, setFilterType] = useState<string>('');
     const [page, setPage] = useState(0);
     const [showForm, setShowForm] = useState(false);
-    const ITEMS_PER_PAGE = 30;
 
     const refreshData = async () => {
         setLoading(true);
         await purgeOldTransactions();
         const data = await getFinancialLedger();
         setLedger([...data].reverse());
-        const bal = await getLedgerBalance();
-        setBalance(bal);
+        setBalance(await getLedgerBalance());
         setLoading(false);
     };
-
     useEffect(() => { refreshData(); }, []);
 
     const filtered = useMemo(() => {
-        let result = ledger;
+        let r = ledger;
         if (searchTerm) {
-            const lower = searchTerm.toLowerCase();
-            result = result.filter(e => 
-                e.detalle.toLowerCase().includes(lower) || 
-                e.usuario.toLowerCase().includes(lower) ||
-                e.hash.includes(lower)
-            );
+            const q = searchTerm.toLowerCase();
+            r = r.filter(e => e.detalle.toLowerCase().includes(q) || e.usuario.toLowerCase().includes(q) || e.hash.includes(q));
         }
-        if (filterType) {
-            result = result.filter(e => e.tipo === filterType);
-        }
-        return result;
+        if (filterType) r = r.filter(e => e.tipo === filterType);
+        return r;
     }, [ledger, searchTerm, filterType]);
 
     const paginated = useMemo(() => filtered.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE), [filtered, page]);
     const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
-    const handleAddTransaction = (tipo: TransactionType, monto: number, detalle: string) => {
+    const handleAdd = (tipo: TransactionType, monto: number, detalle: string) => {
         logTransaction(tipo, monto, detalle, currentUser.nombre);
         logActivity(currentUser.nombre, currentUser.rol, 'FINANZAS_MODIFICADA', `Registró ${tipo.toLowerCase()} manual: ${detalle}`, 'Finanzas');
         refreshData();
     };
 
     const handleExportCSV = () => {
-        const header = 'Fecha,Hora,Tipo,Monto,Detalle,Usuario,Hash\n';
-        const rows = filtered.map(e => `${new Date(e.timestamp).toLocaleDateString()},${new Date(e.timestamp).toLocaleTimeString()},${e.tipo},${e.monto},"${e.detalle}",${e.usuario},${e.hash}`).join('\n');
+        const header = 'Fecha,Hora,Tipo,Monto,Detalle,Usuario,Firma\n';
+        const rows = filtered.map(e => `${new Date(e.timestamp).toLocaleDateString('es-EC')},${new Date(e.timestamp).toLocaleTimeString('es-EC')},${e.tipo},${e.monto},"${e.detalle}",${e.usuario},${e.hash}`).join('\n');
         const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `ledger_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `cartera_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
     };
 
+    const kpis = [
+        { l: 'Ingresos', v: formatCurrency(balance.ingresos), c: C.success },
+        { l: 'Egresos', v: formatCurrency(balance.egresos), c: '#B91C1C' },
+        { l: 'Balance neto', v: formatCurrency(balance.total), c: balance.total >= 0 ? C.royal : '#B91C1C' },
+    ];
+
     return (
-        <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-            className="max-w-[1600px] mx-auto space-y-16 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in"
-        >
-            {/* --- LEDGER HEADER --- */}
-            <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-white/[0.06] pb-16">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
-                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Control de Cartera</span>
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Cuentas por Cobrar · Imprenta Córdova" />
+            <div style={S.wrap}>
+
+                {/* Cabecera */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+                    <div>
+                        <p style={S.eyebrow}>Finanzas</p>
+                        <h1 style={S.h1}>Cuentas por Cobrar</h1>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
-                        Cuentas por Cobrar & Pagar <span className="text-brand-blue font-bold">• Cartera</span>
-                    </h1>
-                </div>
-                
-                <div className="flex flex-wrap gap-4">
-                    <motion.button 
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={handleExportCSV} 
-                        className="px-10 py-5 bg-obsidian-card border border-white/[0.06] rounded-2xl text-slate-300 hover:bg-white/[0.04] transition-all font-black uppercase text-[10px] tracking-widest flex items-center gap-4 shadow-sm"
-                    >
-                        <ArchiveIcon className="w-4 h-4 text-slate-400" /> 
-                        Exportar Historial
-                    </motion.button>
-                    
-                    <motion.button 
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setShowForm(true)} 
-                        className="flex items-center gap-4 px-12 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-xl shadow-brand-blue/20 uppercase text-[10px] tracking-widest hover:bg-brand-blue/90 transition-all"
-                    >
-                        <PlusIcon className="w-5 h-5" />
-                        Registrar Movimiento
-                    </motion.button>
-                </div>
-            </motion.div>
-
-            {/* --- CORE KPIS --- */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <MetricCard label="Flujo de Ingresos" value={formatCurrency(balance.ingresos).split(',')[0]} icon={ArrowTrendingUpIcon} colorClass="text-emerald-500" />
-                <MetricCard label="Egresos Totales" value={formatCurrency(balance.egresos).split(',')[0]} icon={ArrowTrendingDownIcon} colorClass="text-rose-500" />
-                <MetricCard label="Balance Neto" value={formatCurrency(balance.total).split(',')[0]} icon={ScaleIcon} colorClass={balance.total >= 0 ? "text-brand-blue" : "text-rose-500"} />
-            </motion.div>
-
-            {/* --- MONITORING CONTROLS --- */}
-            <motion.div variants={itemVariants} className="flex flex-col lg:flex-row gap-6">
-                <div className="relative flex-grow group">
-                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                        <SearchIcon className="w-5 h-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
+                    <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+                        <button style={S.outlineBtn} onClick={handleExportCSV}>Exportar historial</button>
+                        <button style={S.primaryBtn} onClick={() => setShowForm(true)}>Nueva operación</button>
                     </div>
-                    <input 
-                        type="text" 
-                        placeholder="BUSCAR TRANSACCIÓN O USUARIO..." 
-                        value={searchTerm} 
-                        onChange={e => setSearchTerm(e.target.value)} 
-                        className="w-full bg-obsidian-card border border-white/[0.06] rounded-2xl py-5 pl-16 pr-6 text-[11px] font-black uppercase tracking-widest text-white placeholder:text-slate-500 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
-                    />
                 </div>
-                
-                <div className="relative lg:w-72">
-                    <select 
-                        value={filterType} 
-                        onChange={e => { setFilterType(e.target.value); setPage(0); }}
-                        className="w-full bg-obsidian-card border border-white/[0.06] rounded-2xl py-5 px-8 text-[10px] font-black uppercase tracking-widest text-slate-300 appearance-none cursor-pointer focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
-                    >
-                        <option value="">Protocolo: Todos</option>
-                        <option value="INGRESO">Tipo: Ingresos</option>
-                        <option value="EGRESO">Tipo: Egresos</option>
-                    </select>
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 text-xs">▼</div>
-                </div>
-            </motion.div>
 
-            {/* --- LEDGER STREAM --- */}
-            <motion.div variants={itemVariants} className="space-y-4">
-                <AnimatePresence mode="popLayout">
+                {/* KPIs */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                    {kpis.map(k => (
+                        <div key={k.l} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
+                            <div style={S.colHead}>{k.l}</div>
+                            <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 600, letterSpacing: '-.04em', color: k.c, marginTop: 8, lineHeight: 1 }}>{k.v}</div>
+                        </div>
+                    ))}
+                    <div style={{ ...S.accentCard, borderRadius: 14, padding: '17px 19px' }}>
+                        <div style={{ ...S.colHead, color: '#93A0C8' }}>Movimientos</div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 600, letterSpacing: '-.04em', marginTop: 8, lineHeight: 1 }}>{ledger.length}</div>
+                    </div>
+                </div>
+
+                {/* Controles + lista */}
+                <div style={{ ...S.card, overflow: 'hidden' }}>
+                    <div style={{ padding: '16px 20px 14px', borderBottom: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                        <h2 style={S.h2}>Movimientos</h2>
+                        <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', background: C.softGray, border: `1px solid ${C.border}`, borderRadius: 9, minWidth: 220 }}>
+                                <span style={{ color: C.faint, fontSize: 13 }}>⌕</span>
+                                <input value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(0); }} placeholder="Buscar transacción o usuario…"
+                                    style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 12.5, color: C.ink, fontFamily: 'inherit' }} />
+                            </div>
+                            <select value={filterType} onChange={e => { setFilterType(e.target.value); setPage(0); }}
+                                style={{ ...S.input, width: 'auto', padding: '9px 13px', fontSize: 12.5, cursor: 'pointer' }}>
+                                <option value="">Todos</option>
+                                <option value="INGRESO">Ingresos</option>
+                                <option value="EGRESO">Egresos</option>
+                            </select>
+                        </div>
+                    </div>
+
                     {loading ? (
-                        <div className="py-40 flex flex-col items-center justify-center gap-6">
-                            <Loader2Icon className="w-12 h-12 text-brand-blue animate-spin" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Analizando integridad de la bóveda...</p>
+                        <div style={{ padding: 48, textAlign: 'center', color: C.faint, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.2em' }}>Cargando cartera…</div>
+                    ) : paginated.length === 0 ? (
+                        <div style={{ padding: 48, textAlign: 'center' }}>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Historial vacío</p>
+                            <p style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>No hay movimientos en la ventana actual.</p>
                         </div>
-                    ) : paginated.length > 0 ? (
-                        <div className="space-y-4">
-                            {paginated.map((entry, idx) => {
-                                const isIngreso = entry.tipo === 'INGRESO';
-                                return (
-                                    <motion.div 
-                                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: idx * 0.05 }}
-                                        key={entry.id} 
-                                        className="group bg-obsidian-card p-8 flex flex-col lg:flex-row items-center gap-8 border border-white/[0.06] rounded-[2.5rem] hover:border-brand-blue/30 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 relative overflow-hidden"
-                                    >
-                                        <div className="flex items-center gap-8 min-w-[200px]">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} group-hover:scale-110`}>
-                                                {isIngreso ? <ArrowTrendingUpIcon className="w-7 h-7" /> : <ArrowTrendingDownIcon className="w-7 h-7" />}
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[13px] font-black text-white tracking-tighter">{formatDate(entry.timestamp)}</p>
-                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                            </div>
-                                        </div>
+                    ) : paginated.map(e => {
+                        const ing = e.tipo === 'INGRESO';
+                        return (
+                            <div key={e.id} style={{ padding: '14px 20px', borderBottom: `1px solid ${C.rowLine}`, display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: 14, alignItems: 'center' }}>
+                                <span style={{ padding: '3px 9px', borderRadius: 7, fontSize: 10.5, fontWeight: 800, letterSpacing: '.1em', ...(ing ? { background: '#F2F7F2', color: C.success } : { background: '#FEF2F2', color: '#B91C1C' }) }}>
+                                    {ing ? 'INGRESO' : 'EGRESO'}
+                                </span>
+                                <span style={{ minWidth: 0 }}>
+                                    <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.detalle}</span>
+                                    <span style={{ display: 'block', fontSize: 11, color: C.ghost, fontFamily: MONO, marginTop: 2 }}>firma {e.hash} · {e.usuario.split(' ')[0]}</span>
+                                </span>
+                                <span style={{ fontSize: 12, color: C.faint, fontFamily: MONO }}>
+                                    {formatDate(e.timestamp)} {new Date(e.timestamp).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <span style={{ fontSize: 14, fontFamily: MONO, fontWeight: 600, color: ing ? C.success : '#B91C1C', whiteSpace: 'nowrap' }}>
+                                    {ing ? '+ ' : '− '}{formatCurrency(e.monto)}
+                                </span>
+                            </div>
+                        );
+                    })}
 
-                                        <div className="flex-grow min-w-0 space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${isIngreso ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
-                                                    {isIngreso ? 'INGRESO_ACTIVO' : 'EGRESO_CAPITAL'}
-                                                </div>
-                                                <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.04] rounded-lg border border-white/[0.06]">
-                                                    <FingerPrintIcon className="w-3 h-3 text-slate-300" />
-                                                    <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">#{entry.id.substring(0, 8)}</span>
-                                                </div>
-                                            </div>
-                                            <h4 className="text-xl font-black text-white uppercase tracking-tight truncate leading-none">{entry.detalle}</h4>
-                                            <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest truncate max-w-md">SIG: {entry.hash}</p>
-                                        </div>
-
-                                        <div className="text-right min-w-[220px] space-y-2">
-                                            <p className={`text-4xl font-black tracking-tighter ${isIngreso ? 'text-emerald-500' : 'text-rose-500'} leading-none`}>
-                                                {isIngreso ? '+$' : '-$'}{formatCurrency(entry.monto).replace('$', '').split(',')[0]}
-                                                <span className="text-lg opacity-30 ml-1">.00</span>
-                                            </p>
-                                            <div className="flex items-center justify-end gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                                <UserIcon className="w-3.5 h-3.5 text-slate-300" />
-                                                AUTH BY_{entry.usuario.split(' ')[0]}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
+                    {totalPages > 1 && (
+                        <div style={{ padding: '14px 20px', background: C.surfaceAlt, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 12.5, color: C.muted }}>Página {page + 1} de {totalPages}</span>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button disabled={page === 0} onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }}
+                                    style={{ ...S.outlineBtn, padding: '8px 15px', fontSize: 12.5, opacity: page === 0 ? 0.4 : 1 }}>Anterior</button>
+                                <button disabled={page >= totalPages - 1} onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }}
+                                    style={{ ...S.outlineBtn, padding: '8px 15px', fontSize: 12.5, opacity: page >= totalPages - 1 ? 0.4 : 1 }}>Siguiente</button>
+                            </div>
                         </div>
-                    ) : (
-                        <motion.div 
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="py-40 bg-white/[0.04] rounded-[3rem] border border-dashed border-white/[0.06] text-center flex flex-col items-center justify-center"
-                        >
-                            <ShieldCheckIcon className="w-20 h-20 text-slate-100 mb-6" />
-                            <h3 className="text-2xl font-black text-slate-400 uppercase tracking-widest italic">Historial Vacío</h3>
-                            <p className="text-slate-400 text-[9px] font-black uppercase mt-4 tracking-widest">No se detectan señales financieras en la ventana actual.</p>
-                        </motion.div>
                     )}
-                </AnimatePresence>
-            </motion.div>
+                </div>
+            </div>
 
-            {/* --- PAGINATION --- */}
-            {totalPages > 1 && (
-                <motion.div variants={itemVariants} className="flex justify-center items-center gap-12 pt-8">
-                    <button 
-                        disabled={page === 0} 
-                        onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }} 
-                        className="px-10 py-4 bg-obsidian-card border border-white/[0.06] rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest disabled:opacity-30 hover:bg-white/[0.04] transition-all shadow-sm"
-                    >
-                        Anterior
-                    </button>
-                    
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-[12px] font-black text-white bg-white/[0.04] px-5 py-2 rounded-xl flex items-center gap-2">
-                            <span className="text-brand-blue">{page + 1}</span>
-                            <span className="text-slate-300">/</span>
-                            <span className="text-slate-400">{totalPages}</span>
-                        </span>
-                    </div>
-
-                    <button 
-                        disabled={page >= totalPages - 1} 
-                        onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }} 
-                        className="px-10 py-4 bg-obsidian-card border border-white/[0.06] rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest disabled:opacity-30 hover:bg-white/[0.04] transition-all shadow-sm"
-                    >
-                        Siguiente
-                    </button>
-                </motion.div>
-            )}
-
-            {showForm && <TransactionFormModal onClose={() => setShowForm(false)} onSave={handleAddTransaction} />}
-
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
-            `}</style>
-        </motion.div>
+            {showForm && <TransactionFormModal onClose={() => setShowForm(false)} onSave={handleAdd} />}
+        </div>
     );
 };
 

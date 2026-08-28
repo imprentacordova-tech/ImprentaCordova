@@ -1,31 +1,25 @@
 import React, { useState, useMemo } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
-import { formatCurrency, generateWhatsAppLink } from '../utils';
-import { 
-    SearchIcon, CloseIcon, DocumentCheckIcon, PrinterIcon, ArrowDownTrayIcon, 
-    ShieldCheckIcon, WhatsAppIcon, Loader2Icon, ArrowRightIcon, BoxIcon, 
-    ExclamationTriangleIcon, CordovaLogo, CheckCircleIcon, ClockIcon,
-    CameraIcon, SparklesIcon, PhotoIcon, XMarkIcon, CreditCardIcon,
-    HomeIcon, CheckBadgeIcon
-} from '../components/Icons';
+import { Trabajo, TrabajoEstado, User } from '../types';
+import { formatCurrency, formatDate, generateWhatsAppLink } from '../utils';
 import { BottomSheet } from '../components/BottomSheet';
-import { motion, AnimatePresence } from 'framer-motion';
 import PhotoCapture from '../components/orders/PhotoCapture';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { SEO } from '../components/SEO';
 import { notifyOrderReadyForPickupEmail, notifyOrderDeliveredEmail } from '../services/emailNotificationService';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+
+const diasEn = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
 
 const RetirosPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
-    const navigate = useNavigate();
     const { trabajos, clientes, loading, registerRetiro, uploadFile } = useData();
-    const [selectedTrabajo, setSelectedTrabajo] = useState<Trabajo | null>(null);
+    const [selected, setSelected] = useState<Trabajo | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -34,324 +28,195 @@ const RetirosPage: React.FC = () => {
     const { width, height } = useWindowSize();
 
     const filtered = useMemo(() => {
-        const lower = searchTerm.toLowerCase().trim();
-        const clientMap = new Map(clientes.map(c => [c.id, c.nombre.toLowerCase()]));
-        
-        return trabajos
+        const q = searchTerm.toLowerCase().trim();
+        const nombreDe = new Map(clientes.map(c => [c.id, c.nombre.toLowerCase()]));
+        return (trabajos ?? [])
             .filter(t => t.estado === TrabajoEstado.VITRINA)
-            .filter(t => {
-                const clientName = clientMap.get(t.clienteId) || '';
-                return lower === '' || 
-                       String(t.orden).includes(lower) || 
-                       clientName.includes(lower) ||
-                       (t.subtipo || '').toLowerCase().includes(lower);
-            });
+            .filter(t => q === '' || String(t.orden).includes(q) || (nombreDe.get(t.clienteId) || '').includes(q) || (t.subtipo || '').toLowerCase().includes(q));
     }, [trabajos, clientes, searchTerm]);
 
+    const totals = useMemo(() => ({
+        count: filtered.length,
+        totalSaldo: filtered.reduce((a, t) => a + (t.saldo || 0), 0),
+    }), [filtered]);
+
     const handleConfirmRetiro = async (pagoFinal: number) => {
-        if (!selectedTrabajo || isProcessing) return;
+        if (!selected || isProcessing) return;
         setIsProcessing(true);
         try {
             let photoUrl = '';
-            if (retiroPhoto) {
-                photoUrl = await uploadFile(retiroPhoto, 'trabajos', `${selectedTrabajo.id}/retiro_${Date.now()}`);
-            }
+            if (retiroPhoto) photoUrl = await uploadFile(retiroPhoto, 'trabajos', `${selected.id}/retiro_${Date.now()}`);
+            await registerRetiro(selected.id, pagoFinal, currentUser.nombre, photoUrl);
 
-            await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre, photoUrl);
-            
-            // Enviar notificación automática por correo vía Resend
-            const cliente = clientes.find(c => c.id === selectedTrabajo.clienteId);
-            if (cliente && cliente.email) {
+            const cliente = clientes.find(c => c.id === selected.clienteId);
+            if (cliente?.email) {
                 notifyOrderDeliveredEmail({
                     clienteNombre: cliente.nombre,
                     clienteEmail: cliente.email,
-                    ordenNumero: selectedTrabajo.orden || selectedTrabajo.id,
-                    servicioNombre: selectedTrabajo.subtipo || selectedTrabajo.tipo || 'Impresión de Documentos',
-                    montoTotal: selectedTrabajo.precio || 0,
-                    montoAbono: selectedTrabajo.abono || 0,
+                    ordenNumero: selected.orden || selected.id,
+                    servicioNombre: selected.subtipo || selected.tipo || 'Impresión de Documentos',
+                    montoTotal: selected.total || 0,
+                    montoAbono: selected.abono || 0,
                     montoSaldo: pagoFinal,
-                    fechaRetiro: new Date().toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                }).catch(e => console.error("Error enviando email de retiro:", e));
+                    fechaRetiro: new Date().toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                }).catch(e => console.error('Error email de retiro:', e));
             }
-
             setIsSuccess(true);
             setIsProcessing(false);
+            setSelected(null);
         } catch (error) {
-            console.error("Error al registrar despacho:", error);
-            alert("Error al procesar el despacho. Intente de nuevo.");
+            console.error('Error al registrar despacho:', error);
+            alert('Error al procesar el despacho. Intente de nuevo.');
             setIsProcessing(false);
         }
     };
 
-    const notifyClient = (trabajo: Trabajo) => {
-        const cliente = clientes.find(c => c.id === trabajo.clienteId);
-        
-        // Enviar notificación por correo si tiene correo registrado
-        if (cliente && cliente.email) {
+    const notifyClient = (t: Trabajo) => {
+        const cliente = clientes.find(c => c.id === t.clienteId);
+        if (cliente?.email) {
             notifyOrderReadyForPickupEmail({
                 clienteNombre: cliente.nombre,
                 clienteEmail: cliente.email,
-                ordenNumero: trabajo.orden || trabajo.id,
-                servicioNombre: trabajo.subtipo || trabajo.tipo || 'Impresión de Documentos',
-                montoTotal: trabajo.precio || 0,
-                montoAbono: trabajo.abono || 0,
-                montoSaldo: trabajo.saldo || 0
-            }).catch(e => console.error("Error enviando email listo para retiro:", e));
+                ordenNumero: t.orden || t.id,
+                servicioNombre: t.subtipo || t.tipo || 'Impresión de Documentos',
+                montoTotal: t.total || 0,
+                montoAbono: t.abono || 0,
+                montoSaldo: t.saldo || 0,
+            }).catch(e => console.error('Error email listo:', e));
         }
-
-        if (!cliente || !cliente.telefono || !cliente.telefono.length) {
-            alert("Notificación por correo enviada. El cliente no tiene teléfono registrado para WhatsApp.");
+        if (!cliente?.telefono?.length) {
+            alert('Notificación por correo enviada. El cliente no tiene teléfono registrado para WhatsApp.');
             return;
         }
-        
-        const saldoMsg = trabajo.saldo > 0 ? `Saldo pendiente: ${formatCurrency(trabajo.saldo)}.` : "Su pedido se encuentra pagado.";
-        const message = `👋 Hola ${cliente.nombre}, Imprenta Córdova le informa que su pedido #${trabajo.orden} (${trabajo.subtipo || trabajo.tipo}) está listo para ser retirado en nuestra imprenta. 📍 ${saldoMsg}`;
-        
+        const saldoMsg = t.saldo > 0 ? `Saldo pendiente: ${formatCurrency(t.saldo)}.` : 'Su pedido se encuentra pagado.';
+        const message = `Hola ${cliente.nombre}, Imprenta Córdova le informa que su pedido #${t.orden} (${t.subtipo || t.tipo}) está listo para retirar. ${saldoMsg}`;
         window.open(generateWhatsAppLink(cliente.telefono[0], message), '_blank');
     };
 
-    const getDaysInVitrina = (dateString: string) => {
-        const diff = new Date().getTime() - new Date(dateString).getTime();
-        return Math.floor(diff / (1000 * 3600 * 24));
-    };
-
-    const totals = useMemo(() => {
-        const jobs = filtered;
-        return {
-            count: jobs.length,
-            totalSaldo: jobs.reduce((acc, t) => acc + (t.saldo || 0), 0)
-        };
-    }, [filtered]);
-
     return (
-        <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-10 space-y-6 max-w-[1440px] mx-auto">
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
             <SEO title="Despacho y Entregas · Imprenta Córdova" />
+            <div style={S.wrap}>
 
-            {/* ── HEADER ─────────────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.06] pb-5">
+                {/* Cabecera */}
                 <div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-                            Control de Entregas ({totals.count} listos)
-                        </span>
-                    </div>
-                    <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tighter uppercase mt-0.5">
-                        Despacho y Vitrina
-                    </h1>
+                    <p style={S.eyebrow}>Operaciones</p>
+                    <h1 style={S.h1}>Despacho y Entregas</h1>
+                    <p style={S.lead}>Trabajos listos esperando retiro. Cobre el saldo y marque la entrega.</p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="bg-obsidian-card border border-white/[0.06] rounded-xl px-4 py-2 flex items-center gap-3 shadow-sm">
-                        <div className="p-2 bg-brand-blue/10 text-brand-blue rounded-lg">
-                            <BoxIcon className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase block">Por Entregar</span>
-                            <span className="text-base font-black text-white">{totals.count} pedidos</span>
-                        </div>
+                {/* Resumen + búsqueda */}
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ ...S.card, borderRadius: 14, padding: '14px 18px', minWidth: 170 }}>
+                        <div style={S.colHead}>Por entregar</div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 600, letterSpacing: '-.04em', color: C.ink, marginTop: 6 }}>{totals.count}</div>
                     </div>
-
-                    <div className="bg-obsidian-card border border-white/[0.06] rounded-xl px-4 py-2 flex items-center gap-3 shadow-sm">
-                        <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
-                            <CreditCardIcon className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase block">Saldo por Cobrar</span>
-                            <span className="text-base font-black text-emerald-600">{formatCurrency(totals.totalSaldo)}</span>
-                        </div>
+                    <div style={{ ...S.card, borderRadius: 14, padding: '14px 18px', minWidth: 170 }}>
+                        <div style={S.colHead}>Saldo por cobrar</div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 600, letterSpacing: '-.04em', color: C.success, marginTop: 6 }}>{formatCurrency(totals.totalSaldo)}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 220, display: 'flex', alignItems: 'center', gap: 9, padding: '10px 13px', ...S.card, borderRadius: 14 }}>
+                        <span style={{ color: C.faint, fontSize: 13 }}>⌕</span>
+                        <input
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Buscar por cliente, N° de orden o producto…"
+                            style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: C.ink, fontFamily: 'inherit' }}
+                        />
                     </div>
                 </div>
-            </div>
 
-            {/* ── BARRA DE BÚSQUEDA ───────────────────────────────────────── */}
-            <div className="relative max-w-xl">
-                <SearchIcon className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input 
-                    type="text" 
-                    placeholder="Buscar por cliente, N° de orden o producto..." 
-                    value={searchTerm} 
-                    onChange={e => setSearchTerm(e.target.value)} 
-                    className="w-full bg-obsidian-card border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-[12px] font-bold text-white outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 transition-all placeholder:text-slate-400 shadow-sm"
-                />
-            </div>
-
-            {/* ── GRID DE TARJETAS DE DESPACHO ────────────────────────────── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Lista */}
                 {loading ? (
-                    <div className="col-span-full py-16 text-center space-y-3">
-                        <Loader2Icon className="animate-spin w-8 h-8 text-brand-blue mx-auto" />
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Cargando productos en vitrina...</p>
+                    <div style={{ padding: 48, textAlign: 'center', color: C.faint, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.2em' }}>Cargando vitrina…</div>
+                ) : filtered.length === 0 ? (
+                    <div style={{ ...S.card, padding: 48, textAlign: 'center' }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Vitrina de entregas vacía</p>
+                        <p style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>No hay órdenes pendientes de retiro.</p>
                     </div>
-                ) : filtered.length > 0 ? (
-                    filtered.map(t => {
-                        const clienteObj = clientes.find(cl => cl.id === t.clienteId);
-                        const days = getDaysInVitrina(t.fechaEntrada);
-                        const isOld = days > 10;
-                        const hasBalance = t.saldo > 0;
-
-                        return (
-                            <div 
-                                key={t.id}
-                                className="bg-obsidian-card rounded-2xl p-5 border border-white/[0.06] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4 relative overflow-hidden"
-                            >
-                                {isOld && (
-                                    <div className="absolute top-3 right-3 bg-amber-100 border border-amber-200 text-amber-800 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase">
-                                        En vitrina hace {days}d
-                                    </div>
-                                )}
-
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-sm font-black text-white bg-white/[0.04] px-2 py-0.5 rounded">
-                                            #{String(t.orden).padStart(4, '0')}
-                                        </span>
-                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${
-                                            t.esSRI ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' : 'bg-white/[0.04] text-slate-300 border-white/[0.06]'
-                                        }`}>
-                                            {t.tipo}
-                                        </span>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-base font-black text-white uppercase leading-snug">
-                                            {clienteObj ? clienteObj.nombre : t.titular}
-                                        </h3>
-                                        <p className="text-[11px] font-bold text-slate-500 mt-0.5">
-                                            {t.subtipo || t.detalle || 'Trabajo listo para entrega'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-white/[0.04] rounded-xl border border-white/[0.06] space-y-2">
-                                    <div className="flex justify-between items-center text-[11px]">
-                                        <span className="font-bold text-slate-500">Monto Total:</span>
-                                        <span className="font-black text-white">{formatCurrency(t.total)}</span>
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-[11px]">
-                                        <span className="font-bold text-slate-500">Abono Ingresado:</span>
-                                        <span className="font-black text-emerald-600">{formatCurrency(t.abono)}</span>
-                                    </div>
-
-                                    <div className="pt-2 border-t border-white/[0.06] flex justify-between items-center">
-                                        <span className="text-[11px] font-black text-slate-200 uppercase">Saldo Pendiente:</span>
-                                        <span className={`text-lg font-black ${hasBalance ? 'text-red-500' : 'text-emerald-600'}`}>
-                                            {formatCurrency(t.saldo)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 pt-2">
-                                    <button 
-                                        type="button"
-                                        onClick={() => notifyClient(t)}
-                                        className="p-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-xl border border-emerald-500/20 transition-colors"
-                                        title="Avisar al cliente por WhatsApp"
-                                    >
-                                        <WhatsAppIcon className="w-5 h-5" />
-                                    </button>
-
-                                    <button 
-                                        type="button"
-                                        onClick={() => setSelectedTrabajo(t)} 
-                                        className="flex-1 py-3 bg-brand-blue hover:bg-brand-blue/90 text-white font-black text-[11px] uppercase tracking-wider rounded-xl transition-all shadow-blue-glow-sm flex items-center justify-center gap-2"
-                                    >
-                                        Entregar y Cobrar <ArrowRightIcon className="w-4 h-4"/>
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })
                 ) : (
-                    <div className="col-span-full py-20 bg-obsidian-card rounded-2xl border border-white/[0.06] text-center space-y-3">
-                        <BoxIcon className="w-12 h-12 text-slate-300 mx-auto" />
-                        <h3 className="text-sm font-black text-slate-200 uppercase">Vitrina de Entregas Vacía</h3>
-                        <p className="text-[11px] text-slate-400">No hay órdenes pendientes de retiro en este momento.</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {filtered.map(t => {
+                            const cli = clientes.find(c => c.id === t.clienteId);
+                            const dias = diasEn(t.fechaEntrada);
+                            const pagado = t.saldo <= 0;
+                            return (
+                                <div key={t.id} style={{ ...S.card, padding: '18px 20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16, alignItems: 'center' }}>
+                                    <div style={{ minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
+                                            <span style={{ fontSize: 12, fontFamily: MONO, color: C.faint }}>#{String(t.orden).padStart(4, '0')}</span>
+                                            <span style={{ padding: '4px 9px', borderRadius: 99, fontSize: 11.5, fontWeight: 700, ...(pagado ? { background: '#F2F7F2', color: C.success } : { background: '#FFFBEB', color: '#7A5A00' }) }}>
+                                                {pagado ? 'Pagado' : formatCurrency(t.saldo)}
+                                            </span>
+                                        </div>
+                                        <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginTop: 6 }}>{cli ? cli.nombre : t.titular}</div>
+                                        <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{t.subtipo || t.detalle || t.tipo || 'Trabajo listo'}</div>
+                                    </div>
+                                    <div>
+                                        <div style={S.colHead}>Listo desde</div>
+                                        <div style={{ fontSize: 14, color: C.ink, marginTop: 4 }}>
+                                            {formatDate(t.fechaEntrada)}{dias > 10 ? ` · hace ${dias} d` : ''}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={S.colHead}>Monto total</div>
+                                        <div style={{ fontSize: 14, color: C.ink, marginTop: 4, fontFamily: MONO }}>{formatCurrency(t.total)}</div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 9, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                        <button style={S.softBtn} onClick={() => notifyClient(t)}>Avisar</button>
+                                        <button style={S.primaryBtn} onClick={() => { setSelected(t); setRetiroPhoto(null); setShowCamera(false); }}>Entregar y cobrar</button>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
 
-            {/* ── MODAL BOTTOMSHEET CONFIRMACIÓN DE ENTREGA ──────────────── */}
-            <BottomSheet 
-                isOpen={!!selectedTrabajo} 
-                onClose={() => setSelectedTrabajo(null)}
-                title="Confirmar Entrega y Cobro de Trabajo"
-            >
-                {selectedTrabajo && (
-                    <div className="space-y-6">
-                        <div className="p-6 bg-brand-red/10 rounded-2xl text-center border border-brand-red/20 space-y-1">
-                            <span className="text-[10px] font-black text-brand-red uppercase tracking-widest block">Saldo Pendiente a Cobrar Hoy</span>
-                            <span className="text-4xl font-black text-brand-red tracking-tight">{formatCurrency(selectedTrabajo.saldo)}</span>
+            {/* Confirmación */}
+            <BottomSheet isOpen={!!selected} onClose={() => setSelected(null)} title="Confirmar entrega y cobro">
+                {selected && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '4px 0 24px' }}>
+                        <div style={{ background: '#FEF2F2', border: '1px solid #FBD5D5', borderRadius: 16, padding: 20, textAlign: 'center' }}>
+                            <span style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: '#B91C1C' }}>Saldo a cobrar hoy</span>
+                            <span style={{ display: 'block', fontFamily: DISPLAY, fontSize: 34, fontWeight: 700, letterSpacing: '-.04em', color: '#B91C1C', marginTop: 4 }}>{formatCurrency(selected.saldo)}</span>
                         </div>
-                        
-                        <div className="bg-brand-blue/5 p-4 rounded-xl flex items-center gap-3 border border-brand-blue/20">
-                            <CheckCircleIcon className="w-5 h-5 text-brand-blue shrink-0"/>
-                            <p className="text-[11px] font-bold text-slate-200">
-                                Al confirmar, la orden pasará a estado <strong>ENTREGADO</strong> y se generará el recibo o comprobante final.
-                            </p>
+                        <div style={{ background: C.chipBlue, border: `1px solid ${C.borderStrong}`, borderRadius: 12, padding: 14, fontSize: 12.5, color: C.body, lineHeight: 1.6 }}>
+                            Al confirmar, la orden pasa a estado <strong>Entregado</strong> y se genera el recibo o comprobante final.
                         </div>
 
-                        {/* Captura de Foto Opcional */}
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Foto o Respaldo de Entrega (Opcional)</label>
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowCamera(!showCamera)}
-                                    className="flex items-center gap-1 px-3 py-1 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg text-[10px] font-bold text-slate-200 transition-colors"
-                                >
-                                    <CameraIcon className="w-3.5 h-3.5" />
-                                    <span>{showCamera ? 'Cerrar Cámara' : 'Tomar Foto'}</span>
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <span style={{ ...S.fieldLabel, marginBottom: 0 }}>Foto de respaldo (opcional)</span>
+                                <button style={{ ...S.softBtn, padding: '6px 10px', fontSize: 11.5 }} onClick={() => setShowCamera(v => !v)}>
+                                    {showCamera ? 'Cerrar cámara' : 'Tomar foto'}
                                 </button>
                             </div>
-                            
                             {showCamera && (
-                                <div className="aspect-video w-full bg-white/[0.04] rounded-2xl border border-white/[0.06] overflow-hidden">
+                                <div style={{ aspectRatio: '16 / 9', width: '100%', background: C.softGray, borderRadius: 14, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
                                     <PhotoCapture onImageCaptured={(file) => setRetiroPhoto(file)} />
                                 </div>
                             )}
+                            {retiroPhoto && !showCamera && (
+                                <p style={{ fontSize: 12, color: C.success, marginTop: 6 }}>Foto lista para adjuntar.</p>
+                            )}
                         </div>
 
-                        <button 
-                            type="button"
-                            onClick={() => handleConfirmRetiro(selectedTrabajo.saldo)} 
+                        <button
+                            onClick={() => handleConfirmRetiro(selected.saldo)}
                             disabled={isProcessing}
-                            className="w-full py-4 bg-brand-blue hover:bg-brand-blue/90 disabled:opacity-50 text-white rounded-xl text-[12px] font-black uppercase tracking-wider shadow-blue-glow-sm transition-all flex items-center justify-center gap-2"
+                            style={{ ...S.primaryBtn, width: '100%', justifyContent: 'center', padding: 14, fontSize: 14, opacity: isProcessing ? 0.5 : 1 }}
                         >
-                            {isProcessing ? (
-                                <>
-                                    <Loader2Icon className="animate-spin w-4 h-4" /> Procesando Entrega...
-                                </>
-                            ) : (
-                                <>
-                                    <CheckCircleIcon className="w-4 h-4"/> Confirmar Entrega y Registrar Pago
-                                </>
-                            )}
+                            {isProcessing ? 'Procesando entrega…' : 'Confirmar entrega y registrar pago'}
                         </button>
-                        
-                        <div className="text-center">
-                            <button 
-                                type="button" 
-                                onClick={() => setSelectedTrabajo(null)} 
-                                className="text-[11px] font-bold text-slate-400 hover:text-white uppercase"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
+                        <button style={{ ...S.softBtn, alignSelf: 'center', background: 'transparent' }} onClick={() => setSelected(null)}>Cancelar</button>
                     </div>
                 )}
             </BottomSheet>
 
-            {/* Confetti al completar retiro */}
             {isSuccess && (
-                <Confetti
-                    width={width}
-                    height={height}
-                    recycle={false}
-                    numberOfPieces={300}
-                    onConfettiComplete={() => setIsSuccess(false)}
-                />
+                <Confetti width={width} height={height} recycle={false} numberOfPieces={300} onConfettiComplete={() => setIsSuccess(false)} />
             )}
         </div>
     );
