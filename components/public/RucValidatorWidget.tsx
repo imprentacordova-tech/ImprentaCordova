@@ -1,8 +1,29 @@
 import React, { useState } from 'react';
 import { sriLookupService, SriRucData } from '../../services/sriLookupService';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheckIcon, AlertTriangleIcon, Loader2Icon, WhatsAppIcon, CheckCircleIcon, FileTextIcon } from '../Icons';
 import { generateWhatsAppLink } from '../../utils';
+
+/**
+ * Tarjeta "Consulta de RUC" — fiel a `Publica-B-Vitrina.dc.html` (Claude Design).
+ * Conserva la consulta real al padrón SRI de El Oro (`sriLookupService`).
+ */
+
+const C = {
+    ink: '#0A1140', royal: '#16309B', border: '#E4E8F4', borderStrong: '#D7DDF0',
+    divider: '#EEF0F8', body: '#3C4763', muted: '#5B6480', faint: '#8A93AE', bg: '#F7F9FF',
+};
+const DISPLAY = "'Outfit',sans-serif";
+const MONO = "'JetBrains Mono',monospace";
+
+function reglasDeRegimen(regimenStr?: string) {
+    const raw = (regimenStr || '').toUpperCase();
+    if (raw.includes('POPULAR')) {
+        return { nombre: 'RIMPE Negocio Popular', comprobante: 'Nota de venta', producto: 'Talonario de notas de venta (100 juegos)' };
+    }
+    if (raw.includes('EMPRENDEDOR')) {
+        return { nombre: 'RIMPE Emprendedor', comprobante: 'Factura', producto: 'Talonario de facturas autorizadas' };
+    }
+    return { nombre: 'Régimen General', comprobante: 'Factura', producto: 'Talonario de facturas con copia autocopiativa' };
+}
 
 export const RucValidatorWidget: React.FC = () => {
     const [ruc, setRuc] = useState('');
@@ -12,209 +33,101 @@ export const RucValidatorWidget: React.FC = () => {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        const cleanRuc = ruc.trim().replace(/\D/g, '');
-        
-        if (cleanRuc.length < 13) {
-            setError('El RUC debe contener exactamente 13 dígitos numéricos.');
+        const clean = ruc.trim().replace(/\D/g, '');
+        if (clean.length < 10) {
+            setError('Ingrese un RUC de 13 dígitos o una cédula de 10.');
             setResult(null);
             return;
         }
-
         setLoading(true);
         setError(null);
         setResult(null);
-
         try {
-            // Latencia táctica simulada para feedback del motor
-            await new Promise(resolve => setTimeout(resolve, 800));
-            const data = await sriLookupService.lookupByRuc(cleanRuc);
-            
-            if (data) {
-                setResult(data);
-            } else {
-                setError('RUC no localizado en el padrón local de El Oro. Ingrese sus datos o consulte directamente por WhatsApp.');
-            }
+            const data = await sriLookupService.lookupByRuc(clean);
+            if (data) setResult(data);
+            else setError('No encontramos ese número en el padrón local de El Oro. Escríbanos por WhatsApp y lo verificamos.');
         } catch (err) {
             console.error(err);
-            setError('Error de conexión al consultar el padrón. Por favor intente de nuevo.');
+            setError('No pudimos consultar el padrón en este momento. Intente de nuevo.');
         } finally {
             setLoading(false);
         }
     };
 
-    const getRegimenRules = (regimenStr?: string) => {
-        const raw = (regimenStr || '').toUpperCase();
-        if (raw.includes('POPULAR') || raw.includes('RIMPE-NEGOCIO POPULAR')) {
-            return {
-                name: 'RIMPE - NEGOCIO POPULAR',
-                allowed: 'Notas de Venta Físicas Aprobadas por SRI (Simplificadas).',
-                prohibited: 'No emite Facturas con desglose de IVA salvo casos especiales.',
-                badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 shadow-emerald-glow-sm',
-                recommendedProduct: 'Talonario de Notas de Venta (100 Hojas autocopiativas)'
-            };
-        } else if (raw.includes('EMPRENDEDOR')) {
-            return {
-                name: 'RIMPE - EMPRENDEDOR',
-                allowed: 'Facturas Físicas Autorizadas (Máx. 25 comprobantes según normativa).',
-                prohibited: 'Prohibido emitir Notas de Venta de Régimen Popular.',
-                badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/25 shadow-blue-glow-sm',
-                recommendedProduct: 'Talonarios de Factura Autorizada SRI'
-            };
-        }
-        return {
-            name: 'RÉGIMEN GENERAL',
-            allowed: 'Facturas Físicas Autorizadas SRI (Comprobante Fiscal Completo).',
-            prohibited: 'Prohibido uso de impresos de Negocio Popular.',
-            badgeColor: 'bg-amber-500/10 text-liquid-gold border-liquid-gold/30 shadow-gold-glow-soft',
-            recommendedProduct: 'Talonarios de Facturas con Copia Autocopiativa'
-        };
-    };
+    const reglas = result ? reglasDeRegimen(result.regimen) : null;
+    const activo = (result?.estado_contribuyente || '').toUpperCase().includes('ACTIVO');
 
-    const rules = result ? getRegimenRules(result.regimen) : null;
+    const rows = result && reglas ? [
+        { k: 'Razón social', v: result.razon_social },
+        { k: 'Régimen', v: reglas.nombre },
+        { k: 'Estado', v: result.estado_contribuyente || '—' },
+        { k: 'Comprobante autorizado', v: reglas.comprobante },
+    ] : [
+        { k: 'Razón social', v: '—' },
+        { k: 'Régimen', v: '—' },
+        { k: 'Estado', v: '—' },
+        { k: 'Comprobante autorizado', v: '—' },
+    ];
 
     return (
-        <div className="w-full bg-gradient-to-b from-[#0A0F1E]/90 to-[#050810]/95 backdrop-blur-3xl border border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-luxury relative overflow-hidden group">
-            {/* Ambient gold glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-liquid-gold/5 blur-[100px] pointer-events-none group-hover:bg-liquid-gold/10 transition-colors duration-700" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-blue/5 blur-[100px] pointer-events-none" />
-
-            <div className="space-y-8 relative z-10">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-liquid-gold/10 border border-liquid-gold/20 flex items-center justify-center text-liquid-gold shadow-gold-glow shrink-0">
-                            <ShieldCheckIcon className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
-                                Consulter de Régimen SRI
-                            </h3>
-                            <p className="text-[9px] text-liquid-gold/70 font-mono font-black uppercase tracking-[0.35em] mt-1">
-                                Padrón Tributario Machala · El Oro · Ecuador
-                            </p>
-                        </div>
-                    </div>
-                    <span className="px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">
-                        SRI Verificado 2026
-                    </span>
-                </div>
-
-                {/* Form */}
-                <form onSubmit={handleSearch} className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-2">
-                        Ingrese Número de RUC Contribuyente (13 dígitos)
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <input
-                                type="text"
-                                maxLength={13}
-                                value={ruc}
-                                onChange={e => setRuc(e.target.value.replace(/\D/g, ''))}
-                                placeholder="Ej. 0702065319001"
-                                className="w-full bg-black/50 border border-white/10 focus:border-liquid-gold/60 rounded-2xl px-6 py-5 text-white font-mono font-bold text-lg outline-none focus:ring-4 focus:ring-liquid-gold/10 transition-all placeholder:text-slate-600 shadow-inner"
-                            />
-                            {ruc.length === 13 && (
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
-                                    13 DÍGITOS
-                                </span>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={loading || ruc.length < 13}
-                            className="px-10 py-5 bg-liquid-gold text-slate-950 rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] shadow-gold-glow hover:bg-white transition-all disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 shrink-0"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2Icon className="w-4 h-4 animate-spin text-slate-950" />
-                                    <span>Verificando...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <ShieldCheckIcon className="w-4 h-4" />
-                                    <span>Validar Régimen</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </form>
-
-                {/* Response / Error */}
-                <AnimatePresence mode="wait">
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="bg-rose-500/10 border border-rose-500/20 p-6 rounded-2xl flex items-start gap-4"
-                        >
-                            <AlertTriangleIcon className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-                            <div>
-                                <h5 className="text-xs font-black text-rose-300 uppercase tracking-wider mb-1">Aviso de Búsqueda</h5>
-                                <p className="text-[11px] text-rose-400/90 font-medium leading-relaxed">{error}</p>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {result && rules && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="bg-white/[0.02] border border-white/10 p-8 rounded-[2rem] space-y-6"
-                        >
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
-                                <div className="space-y-1">
-                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block">Razón Social Contribuyente</span>
-                                    <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">{result.razon_social}</h4>
-                                    <p className="text-xs font-mono text-liquid-gold/80">RUC: {result.ruc}</p>
-                                </div>
-                                <span className={`px-5 py-2.5 border rounded-2xl text-[10px] font-black uppercase tracking-widest ${rules.badgeColor}`}>
-                                    {rules.name}
-                                </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="space-y-2 p-5 bg-black/40 rounded-2xl border border-emerald-500/20">
-                                    <div className="flex items-center gap-2 text-emerald-400 text-[9px] font-black uppercase tracking-widest">
-                                        <CheckCircleIcon className="w-4 h-4 shrink-0" />
-                                        <span>Documentos Permitidos</span>
-                                    </div>
-                                    <p className="text-xs text-slate-200 font-medium leading-relaxed">{rules.allowed}</p>
-                                </div>
-
-                                <div className="space-y-2 p-5 bg-black/40 rounded-2xl border border-rose-500/20">
-                                    <div className="flex items-center gap-2 text-rose-400 text-[9px] font-black uppercase tracking-widest">
-                                        <AlertTriangleIcon className="w-4 h-4 shrink-0" />
-                                        <span>Restricciones Normativas</span>
-                                    </div>
-                                    <p className="text-xs text-slate-300 font-medium leading-relaxed">{rules.prohibited}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4 border-t border-white/5">
-                                <div className="text-left space-y-1">
-                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block">Ubicación y Actividad Registrada</span>
-                                    <p className="text-[10px] text-slate-300 font-bold uppercase leading-tight truncate max-w-md">
-                                        {result.canton} / {result.parroquia} &mdash; {result.actividad_economica}
-                                    </p>
-                                </div>
-
-                                <a
-                                    href={generateWhatsAppLink("593993083943", `Hola, validé mi RUC (${result.ruc}) como ${rules.name} en su sitio web. Deseo cotizar ${rules.recommendedProduct}.`)}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="w-full sm:w-auto px-8 py-4 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 rounded-2xl font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg"
-                                >
-                                    <WhatsAppIcon className="w-4 h-4" /> Cotizar Talonario SRI
-                                </a>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+        <div style={{ background: '#fff', borderRadius: 18, padding: '30px 32px', color: C.ink, boxShadow: '0 40px 80px -40px rgba(0,0,0,.6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 18, borderBottom: `1px solid ${C.divider}` }}>
+                <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700 }}>Consulta de RUC</div>
+                <span style={{ fontSize: 11, fontFamily: MONO, color: C.faint }}>padrón SRI</span>
             </div>
+
+            <form onSubmit={handleSearch} style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+                <input
+                    value={ruc}
+                    onChange={e => setRuc(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                    placeholder="0701234567001"
+                    inputMode="numeric"
+                    style={{ flex: 1, minWidth: 0, padding: '14px 16px', background: C.bg, border: `1px solid ${C.borderStrong}`, borderRadius: 11, fontSize: 14.5, fontFamily: MONO, color: C.ink, outline: 'none' }}
+                />
+                <button type="submit" disabled={loading}
+                    style={{ padding: '14px 20px', background: C.royal, color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: loading ? 0.6 : 1 }}>
+                    {loading ? 'Consultando…' : 'Consultar'}
+                </button>
+            </form>
+
+            <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 1, background: C.divider, border: `1px solid ${C.divider}`, borderRadius: 12, overflow: 'hidden' }}>
+                {rows.map(r => (
+                    <div key={r.k} style={{ background: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                        <span style={{ fontSize: 12.5, color: C.muted, flexShrink: 0 }}>{r.k}</span>
+                        <span style={{ fontSize: 13.5, fontWeight: 600, color: r.v === '—' ? C.faint : C.ink, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.v}</span>
+                    </div>
+                ))}
+            </div>
+
+            {error && (
+                <div style={{ marginTop: 18, padding: '14px 16px', background: '#FFFBEB', border: '1px solid #F4E3A8', borderRadius: 11, fontSize: 13, lineHeight: 1.6, color: '#7A5A00' }}>
+                    {error}
+                </div>
+            )}
+
+            {result && reglas && (
+                <>
+                    <div style={{
+                        marginTop: 18, padding: '14px 16px', borderRadius: 11, fontSize: 13, lineHeight: 1.6,
+                        ...(activo
+                            ? { background: '#F2F7F2', border: '1px solid #D8E8DC', color: '#1B6E3E' }
+                            : { background: '#FEF2F2', border: '1px solid #FBD5D5', color: '#B91C1C' }),
+                    }}>
+                        {activo
+                            ? `Contribuyente activo. Puede imprimir ${reglas.comprobante.toLowerCase()}.`
+                            : 'El contribuyente no figura activo en el padrón. Consúltenos antes de imprimir.'}
+                    </div>
+                    <a
+                        href={generateWhatsAppLink('593993083943', `Hola, validé mi RUC ${result.ruc} (${reglas.nombre}) en su web. Quiero cotizar: ${reglas.producto}.`)}
+                        target="_blank" rel="noreferrer"
+                        style={{ display: 'block', marginTop: 12, textAlign: 'center', padding: 12, background: C.royal, color: '#fff', borderRadius: 11, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
+                    >
+                        Cotizar por WhatsApp
+                    </a>
+                </>
+            )}
         </div>
     );
 };
 
+export default RucValidatorWidget;

@@ -18,15 +18,19 @@
     --font-mono: 'JetBrains Mono', monospace;
   }
 
+  /* Sistema "Marino & Oro": el panel interno y las páginas públicas B son
+     claras. Ver design_manifest.md §2. */
   body {
     font-family: var(--font-sans);
-    background-color: var(--obsidian);
-    color: #e2e8f0;
+    background-color: #F7F9FF;
+    color: #0A1140;
     @apply tracking-tight antialiased overflow-x-hidden;
   }
 
+  /* Sin uppercase/black global: cada vista define su peso y capitalización
+     (el diseño usa Outfit 600 con capitalización normal). */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tighter uppercase font-black;
+    @apply font-display;
   }
 }
 
