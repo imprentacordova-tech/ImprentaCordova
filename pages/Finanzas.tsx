@@ -1,388 +1,142 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Bar, BarChart, CartesianGrid, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line, AreaChart, Area } from 'recharts';
+import React, { useState, useMemo } from 'react';
+import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line } from 'recharts';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, Cliente, TrabajoEstado, DailySales, FinancialProjection, User } from '../types';
+import { FinancialProjection, User } from '../types';
 import { formatCurrency } from '../utils';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
-import { 
-    DollarIcon, FinanceIcon, ClockIcon, ArrowDownTrayIcon, 
-    BoxIcon, SolidFinanceIcon, SparklesIcon, Loader2Icon,
-    ArrowTrendingUpIcon, ArrowTrendingDownIcon, ScaleIcon,
-    LightningBoltIcon, ChartBarIcon, CpuIcon, ServerIcon
-} from '../components/Icons';
 import { generateFinancialProjection } from '../services/geminiService';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, DISPLAY, PANEL_KEYFRAMES, PageLoaderLite } from '../components/panelTheme';
 
-// --- COMPONENTES DE DISEÑO ---
-
-const MetricCard: React.FC<{ 
-    label: string, 
-    value: string, 
-    icon: any, 
-    trend?: string, 
-    trendUp?: boolean 
-}> = ({ label, value, icon: Icon, trend, trendUp }) => (
-    <motion.div 
-        whileHover={{ y: -4, transition: { duration: 0.2 } }}
-        className="bg-obsidian-card border border-white/[0.06] p-8 rounded-[2.5rem] relative group overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
-    >
-        <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-all duration-500">
-            <Icon className="w-20 h-20 text-white" />
-        </div>
-        <div className="relative z-10 space-y-4">
-            <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-brand-blue/5 border border-brand-blue/10 text-brand-blue">
-                    <Icon className="w-4 h-4" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">{label}</span>
-            </div>
-            <div className="flex items-end justify-between">
-                <p className="text-3xl font-black text-white tracking-tighter leading-none">
-                    {value}
-                </p>
-                {trend && (
-                    <div className={`flex items-center gap-1 text-[10px] font-black ${trendUp ? 'text-emerald-500' : 'text-rose-500'} uppercase tracking-widest`}>
-                        {trendUp ? '▲' : '▼'} {trend}
-                    </div>
-                )}
-            </div>
-        </div>
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-blue/30 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700"></div>
-    </motion.div>
-);
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-        opacity: 1,
-        transition: { staggerChildren: 0.05 }
-    }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-        opacity: 1, 
-        y: 0,
-        transition: { duration: 0.6, ease: "easeOut" as any }
-    }
+const tooltipStyle: React.CSSProperties = {
+    background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, fontSize: 12,
+    fontWeight: 600, color: C.ink, padding: '10px 14px', boxShadow: '0 14px 28px -18px rgba(10,17,64,.4)',
 };
 
 const FinanzasPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
-    const { trabajos, clientes, loading } = useData();
+    const { trabajos, loading } = useData();
     const [analyzing, setAnalyzing] = useState(false);
     const [aiProjection, setAiProjection] = useState<FinancialProjection | null>(null);
-    
+
     const historicalSales = useMemo(() => {
-        const salesMap = new Map<string, number>();
-        trabajos.forEach(t => {
-            const date = t.fechaEntrada.split('T')[0];
-            salesMap.set(date, (salesMap.get(date) || 0) + (t.abono || 0));
+        const m = new Map<string, number>();
+        (trabajos ?? []).forEach(t => {
+            const d = (t.fechaEntrada || '').split('T')[0];
+            if (d) m.set(d, (m.get(d) || 0) + (t.abono || 0));
         });
-        return Array.from(salesMap.entries())
-            .map(([date, sales]) => ({ date, sales }))
-            .sort((a, b) => a.date.localeCompare(b.date));
+        return Array.from(m.entries()).map(([date, sales]) => ({ date, sales })).sort((a, b) => a.date.localeCompare(b.date));
     }, [trabajos]);
 
-    const totalRevenue = useMemo(() => historicalSales.reduce((acc, curr) => acc + curr.sales, 0), [historicalSales]);
+    const totalRevenue = useMemo(() => historicalSales.reduce((a, c) => a + c.sales, 0), [historicalSales]);
     const avgSale = useMemo(() => totalRevenue / (historicalSales.length || 1), [totalRevenue, historicalSales]);
-    const peakSale = useMemo(() => Math.max(...historicalSales.map(s => s.sales), 0), [historicalSales]);
+    const peakSale = useMemo(() => Math.max(0, ...historicalSales.map(s => s.sales)), [historicalSales]);
 
     const handleAIAnalysis = async () => {
         setAnalyzing(true);
         try {
-            const history = historicalSales.slice(-60);
-            const projection = await generateFinancialProjection(history);
+            const projection = await generateFinancialProjection(historicalSales.slice(-60));
             setAiProjection(projection);
-            logActivity(currentUser.nombre, currentUser.rol, 'FINANZAS_ANALIZED', 'Ejecutó análisis financiero con Inteligencia Artificial', 'Finanzas');
-        } catch (error) {
-            console.error("AI Analysis failed:", error);
-        } finally {
-            setAnalyzing(false);
-        }
+            logActivity(currentUser.nombre, currentUser.rol, 'FINANZAS_ANALIZED', 'Análisis financiero con IA', 'Finanzas');
+        } catch (e) { console.error('Análisis IA falló:', e); }
+        finally { setAnalyzing(false); }
     };
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-            <Loader2Icon className="animate-spin w-10 h-10 text-brand-blue opacity-30"/>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.8em] animate-pulse">Sincronizando Bóveda de Capital...</p>
-        </div>
-    );
+    if (loading) return <PageLoaderLite label="Sincronizando finanzas…" />;
 
     return (
-        <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-            className="max-w-[1600px] mx-auto space-y-12 pb-32 px-6 sm:px-12 relative min-h-screen pt-8"
-        >
-            {/* --- CABECERA --- */}
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/[0.06] pb-10">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
-                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Telemetría Financiera</span>
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Flujo de Caja · Imprenta Córdova" />
+            <div style={S.wrap}>
+
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+                    <div>
+                        <p style={S.eyebrow}>Finanzas</p>
+                        <h1 style={S.h1}>Flujo de Caja</h1>
+                        <p style={S.lead}>Recaudación histórica por abonos y proyección con inteligencia artificial.</p>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
-                        Finanzas & Caja <span className="text-brand-blue font-bold">• Métricas</span>
-                    </h1>
+                    <button style={S.primaryBtn} disabled={analyzing} onClick={handleAIAnalysis}>{analyzing ? 'Consultando IA…' : 'Simulación IA'}</button>
                 </div>
-                
-                <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleAIAnalysis}
-                    disabled={analyzing}
-                    className="group relative flex items-center gap-4 px-10 py-5 bg-brand-blue text-white font-black rounded-2xl shadow-lg shadow-brand-blue/20 transition-all duration-300 disabled:opacity-50 overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                    {analyzing ? (
-                        <>
-                            <Loader2Icon className="animate-spin w-4 h-4 text-white"/>
-                            <span className="text-[10px] uppercase tracking-[0.2em] font-black">CONSULTANDO_IA...</span>
-                        </>
-                    ) : (
-                        <>
-                            <div className="relative">
-                                <SparklesIcon className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300"/>
-                                <div className="absolute inset-0 bg-white blur-md opacity-0 group-hover:opacity-30 transition-opacity"></div>
-                            </div>
-                            <span className="text-[10px] uppercase tracking-[0.2em] font-black">SIMULACIÓN_IA</span>
-                        </>
-                    )}
-                </motion.button>
-            </motion.div>
 
-            {/* --- GRID DE MÉTRICAS --- */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <MetricCard label="Ingresos Consolidados" value={formatCurrency(totalRevenue).split(',')[0]} icon={SolidFinanceIcon} trend="8.2%" trendUp={true} />
-                <MetricCard label="Valor Medio Transaccional" value={formatCurrency(avgSale).split(',')[0]} icon={ScaleIcon} />
-                <MetricCard label="Máximo Operativo" value={formatCurrency(peakSale).split(',')[0]} icon={LightningBoltIcon} />
-                <MetricCard label="Integridad de Datos" value="100%" icon={ServerIcon} trend="ÓPTIMO" trendUp={true} />
-            </motion.div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                    {[
+                        { l: 'Ingresos consolidados', v: formatCurrency(totalRevenue), c: C.royal },
+                        { l: 'Ticket promedio', v: formatCurrency(avgSale), c: C.ink },
+                        { l: 'Máximo diario', v: formatCurrency(peakSale), c: C.success },
+                        { l: 'Registros', v: String(historicalSales.length), c: C.faint },
+                    ].map(k => (
+                        <div key={k.l} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
+                            <div style={S.colHead}>{k.l}</div>
+                            <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 600, letterSpacing: '-.04em', color: k.c, marginTop: 8, lineHeight: 1 }}>{k.v}</div>
+                        </div>
+                    ))}
+                </div>
 
-            {/* --- SECCIÓN DE INTELIGENCIA IA --- */}
-            <AnimatePresence>
                 {aiProjection && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className="bg-obsidian-card border border-white/[0.06] p-10 lg:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group/oracle"
-                    >
-                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/[0.03] rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none"></div>
-                        
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-6 mb-12 border-b border-white/[0.06] pb-10">
-                                <div className="p-4 rounded-2xl bg-brand-blue text-white shadow-lg shadow-brand-blue/20">
-                                    <CpuIcon className="w-7 h-7" />
-                                </div>
-                                <div>
-                                    <h2 className="text-3xl font-black text-white uppercase tracking-tight">Proyección de <span className="text-brand-blue">Activos</span></h2>
-                                    <div className="mt-2 flex items-center gap-3">
-                                        <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SIMULACIÓN ESTRATÉGICA GÉMINIS</span>
-                                    </div>
-                                </div>
+                    <div style={{ ...S.card, padding: 20 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
+                            <h2 style={S.h2}>Proyección estratégica</h2>
+                            <button style={S.softBtn} onClick={() => setAiProjection(null)}>Cerrar</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }}>
+                            <div style={{ gridColumn: 'span 2', minWidth: 0, height: 320, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 12 }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={aiProjection.forecast}>
+                                        <defs>
+                                            <linearGradient id="fin-fill" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={C.royal} stopOpacity={0.18} />
+                                                <stop offset="95%" stopColor={C.royal} stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={C.rowLine} />
+                                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: C.faint }} axisLine={false} tickLine={false} />
+                                        <YAxis tickFormatter={v => `$${v}`} tick={{ fontSize: 10, fill: C.faint }} axisLine={false} tickLine={false} width={48} />
+                                        <Tooltip contentStyle={tooltipStyle} />
+                                        <Area type="monotone" dataKey="sales" stroke={C.royal} strokeWidth={3} fill="url(#fin-fill)" name="Proyección" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
                             </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                                {/* GRÁFICO PRINCIPAL */}
-                                <div className="lg:col-span-8 space-y-6">
-                                    <div className="h-[400px] w-full bg-white/[0.04] rounded-[2.5rem] p-8 border border-white/[0.06] shadow-inner">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={aiProjection.forecast}>
-                                                <defs>
-                                                    <linearGradient id="colorSalesAI" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.15}/>
-                                                        <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
-                                                <XAxis 
-                                                    dataKey="date" 
-                                                    tick={{fontSize: 9, fill: '#94a3b8', fontWeight: 'bold'}} 
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    dy={10}
-                                                />
-                                                <YAxis 
-                                                    tickFormatter={(val) => `$${val}`} 
-                                                    tick={{fontSize: 9, fill: '#94a3b8', fontWeight: 'bold'}}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    dx={-5}
-                                                />
-                                                <Tooltip 
-                                                    cursor={{ stroke: '#0ea5e9', strokeWidth: 1, strokeDasharray: '4 4' }}
-                                                    contentStyle={{
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                                        borderColor: 'rgba(14, 165, 233, 0.1)',
-                                                        borderRadius: '1.5rem',
-                                                        fontSize: '10px',
-                                                        fontWeight: 'bold',
-                                                        color: '#0f172a',
-                                                        backdropFilter: 'blur(10px)',
-                                                        padding: '1.5rem',
-                                                        border: '1px solid rgba(0,0,0,0.05)',
-                                                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-                                                    }}
-                                                    itemStyle={{ color: '#0ea5e9' }}
-                                                />
-                                                <Area 
-                                                    type="monotone" 
-                                                    dataKey="sales" 
-                                                    stroke="#0ea5e9" 
-                                                    strokeWidth={3} 
-                                                    fillOpacity={1} 
-                                                    fill="url(#colorSalesAI)" 
-                                                    name="Proyección" 
-                                                    animationDuration={2000}
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    <div className="flex items-center gap-4 px-4">
-                                        <div className="flex -space-x-2">
-                                            {[1,2,3].map(i => (
-                                                <div key={i} className="w-7 h-7 rounded-full border-2 border-white/[0.06] bg-white/[0.04] flex items-center justify-center">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-blue opacity-50"></div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
-                                            Análisis neuronal basado en {historicalSales.length} registros transaccionales.
-                                        </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                <div style={{ ...S.card, background: C.bg, padding: 16 }}>
+                                    <div style={S.colHead}>Días de bajo tráfico</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                                        {aiProjection.lowTrafficDays.map(d => (
+                                            <span key={d} style={{ padding: '4px 10px', background: '#fff', border: `1px solid ${C.borderStrong}`, borderRadius: 99, fontSize: 11.5, fontWeight: 600, color: C.body }}>{d}</span>
+                                        ))}
                                     </div>
                                 </div>
-                                
-                                {/* PANEL DE INSIGHTS */}
-                                <div className="lg:col-span-4 space-y-8">
-                                    <div className="p-8 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group/card hover:border-brand-blue/20 transition-all duration-300">
-                                        <h3 className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                                            <ClockIcon className="w-4 h-4 opacity-70"/> VENTANAS_BAJO_TRAFICO
-                                        </h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {aiProjection.lowTrafficDays.map(day => (
-                                                <span 
-                                                    key={day} 
-                                                    className="px-4 py-2 bg-obsidian-card rounded-xl text-[10px] font-black text-slate-300 border border-white/[0.06] uppercase tracking-widest shadow-sm"
-                                                >
-                                                    {day}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="p-10 rounded-[2rem] bg-brand-blue/5 border border-brand-blue/10 relative group/rec shadow-sm">
-                                        <div className="absolute top-[-10px] left-8 px-4 py-1.5 bg-brand-blue rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-md">
-                                            ESTRATEGIA_RECOMENDADA
-                                        </div>
-                                        <p className="text-base text-slate-200 italic font-medium leading-relaxed relative z-10 pt-2">
-                                            “{aiProjection.suggestion}”
-                                        </p>
-                                    </div>
-
-                                    <button 
-                                        onClick={() => setAiProjection(null)}
-                                        className="w-full py-5 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] hover:bg-white/[0.08] hover:text-slate-200 transition-all active:scale-95"
-                                    >
-                                        TERMINAR_SESIÓN_IA
-                                    </button>
+                                <div style={{ ...S.accentCard }}>
+                                    <div style={{ ...S.colHead, color: '#93A0C8' }}>Recomendación</div>
+                                    <p style={{ margin: '8px 0 0', fontSize: 13.5, lineHeight: 1.6 }}>“{aiProjection.suggestion}”</p>
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            
-            {/* --- SECCIÓN HISTÓRICA --- */}
-            <motion.div variants={itemVariants} className="space-y-10">
-                <div className="flex items-center gap-6">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tight italic">Estado <span className="text-slate-400">Patrimonial</span></h3>
-                    <div className="flex-grow h-[2px] bg-white/[0.04] rounded-full"></div>
-                </div>
-
-                <div className="bg-obsidian-card p-10 relative overflow-hidden rounded-[3rem] border border-white/[0.06] shadow-sm">
-                    <div className="flex justify-between items-center mb-12">
-                         <div className="flex items-center gap-6">
-                            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-slate-400">
-                                <ChartBarIcon className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">FLUJO DE RECAUDACIÓN</p>
-                                <p className="text-xl font-black text-white uppercase tracking-tight italic">COMPORTAMIENTO DE MERCADO</p>
-                            </div>
-                         </div>
                     </div>
+                )}
 
-                    <div className="h-[400px] w-full">
+                <div style={{ ...S.card, padding: 20 }}>
+                    <h2 style={{ ...S.h2, fontSize: 16, marginBottom: 14 }}>Flujo de recaudación</h2>
+                    <div style={{ height: 340, width: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={historicalSales}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.02)" />
-                                <XAxis 
-                                    dataKey="date" 
-                                    tick={{fontSize: 9, fill: '#94a3b8', fontWeight: 'bold'}} 
-                                    axisLine={false}
-                                    tickLine={false}
-                                    dy={10}
-                                />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={C.rowLine} />
+                                <XAxis dataKey="date" tick={{ fontSize: 10, fill: C.faint }} axisLine={false} tickLine={false} />
                                 <YAxis hide />
-                                <Tooltip 
-                                    cursor={{ stroke: 'rgba(14, 165, 233, 0.1)', strokeWidth: 1 }}
-                                    contentStyle={{
-                                        backgroundColor: '#ffffff',
-                                        borderColor: 'rgba(0,0,0,0.05)',
-                                        borderRadius: '1.5rem',
-                                        fontSize: '10px',
-                                        fontWeight: 'black',
-                                        padding: '1.5rem',
-                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)'
-                                    }}
-                                />
-                                <Line 
-                                    type="stepAfter" 
-                                    dataKey="sales" 
-                                    stroke="#0ea5e9" 
-                                    strokeWidth={3} 
-                                    dot={{ r: 4, fill: '#0ea5e9', strokeWidth: 0 }}
-                                    activeDot={{ r: 6, fill: '#fff', stroke: '#0ea5e9', strokeWidth: 2 }}
-                                    name="Transacción"
-                                />
+                                <Tooltip contentStyle={tooltipStyle} />
+                                <Line type="stepAfter" dataKey="sales" stroke={C.royal} strokeWidth={3}
+                                    dot={{ r: 3, fill: C.royal, strokeWidth: 0 }} activeDot={{ r: 6, fill: '#fff', stroke: C.royal, strokeWidth: 2 }} name="Abonos" />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/[0.06]">
-                        <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group hover:border-emerald-500/20 transition-all duration-300">
-                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-inner">
-                                <ArrowTrendingUpIcon className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">CRECIMIENTO OPERATIVO</p>
-                                <p className="text-xl font-bold text-white italic">Impulso Positivo +4.2%</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-white/[0.04] border border-white/[0.06] group hover:border-brand-blue/20 transition-all duration-300">
-                            <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:scale-110 transition-transform shadow-inner">
-                                <BoxIcon className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">EFICIENCIA DE INSUMOS</p>
-                                <p className="text-xl font-bold text-white italic">Gestión Óptima</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-            </motion.div>
-        </motion.div>
+            </div>
+        </div>
     );
 };
 
 export default FinanzasPage;
-

@@ -4,125 +4,53 @@ import { User } from '../types';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
-import { 
-    UsersIcon, UserPlusIcon, ExclamationTriangleIcon, PencilIcon, SearchIcon, 
-    CloseIcon, ArrowUpIcon, ArrowDownIcon, ShieldCheckIcon, SparklesIcon, KeyIcon,
-    Loader2Icon
-} from '../components/Icons';
 import { formatDate } from '../utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
-// --- PRECISION LIGHT COMPONENTS ---
+const ROL_STYLE: Record<string, React.CSSProperties> = {
+    Admin: { background: '#FFFBEB', color: '#7A5A00', border: '1px solid #F4E3A8' },
+    'Diseñador': { background: '#F5F3FF', color: '#6D28D9', border: '1px solid #DDD3FE' },
+    Operador: { background: C.chipBlue, color: C.royal, border: `1px solid ${C.borderStrong}` },
+};
 
-const KpiCard: React.FC<{ title: string; value: string | number; icon: React.FC<any>; colorClass?: string }> = ({ title, value, icon: Icon, colorClass = "bg-brand-blue/10 text-brand-blue" }) => (
-    <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -5 }}
-        className="bg-obsidian-card p-8 rounded-[2.5rem] border border-white/[0.06] shadow-sm relative group transition-all"
-    >
-        <div className="flex justify-between items-start">
-            <div className="space-y-2">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{title}</p>
-                <p className="text-4xl font-black text-white tracking-tighter">{value}</p>
-            </div>
-            <div className={`${colorClass} p-4 rounded-2xl border border-white/[0.06] shadow-sm`}>
-                <Icon className="h-6 w-6" />
-            </div>
-        </div>
-    </motion.div>
-);
-
-const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void; onSave: (user: Partial<User>) => void; }> = ({ user, onClose, onSave }) => {
-    const [formData, setFormData] = useState<Partial<User>>({});
-    useEffect(() => {
-        setFormData(user || { nombre: '', email: '', rol: 'Operador', estado: 'Activo', requirePassword: false, password: '' });
-    }, [user]);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
+const UserFormModal: React.FC<{ user: Partial<User> | null; onClose: () => void; onSave: (u: Partial<User>) => void }> = ({ user, onClose, onSave }) => {
+    const [f, setF] = useState<Partial<User>>({});
+    useEffect(() => { setF(user || { nombre: '', email: '', rol: 'Operador', estado: 'Activo', requirePassword: false, password: '' }); }, [user]);
     if (!user) return null;
-
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-[100] flex justify-center items-center p-6">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-                <motion.div 
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    className="bg-obsidian-card w-full max-w-lg overflow-hidden flex flex-col relative z-10 border border-white/[0.06] shadow-2xl rounded-[3rem]" 
-                    onClick={e => e.stopPropagation()}
-                >
-                    <div className="p-10 border-b border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
-                        <div>
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">{formData.id ? 'Editar' : 'Nuevo'} <span className="text-brand-blue">Perfil</span></h2>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Gstión de Accesos de Personal</p>
-                        </div>
-                        <button onClick={onClose} className="p-3 bg-obsidian-card hover:bg-white/[0.04] text-slate-400 border border-white/[0.06] rounded-xl transition-all"><CloseIcon className="w-6 h-6"/></button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }} onClick={onClose} />
+            <form onSubmit={e => { e.preventDefault(); onSave(f); }} style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 440, ...S.card, overflow: 'hidden' }}>
+                <div style={{ padding: '18px 22px', borderBottom: `1px solid ${C.divider}`, background: C.surfaceAlt }}>
+                    <h2 style={{ ...S.h2, fontSize: 17 }}>{f.id ? 'Editar usuario' : 'Nuevo usuario'}</h2>
+                </div>
+                <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <label style={{ display: 'block' }}><span style={S.fieldLabel}>Nombre completo</span>
+                        <input value={f.nombre || ''} onChange={e => setF({ ...f, nombre: e.target.value })} required style={S.input} /></label>
+                    <label style={{ display: 'block' }}><span style={S.fieldLabel}>Correo electrónico</span>
+                        <input type="email" value={f.email || ''} onChange={e => setF({ ...f, email: e.target.value })} required style={S.input} /></label>
+                    <label style={{ display: 'block' }}><span style={S.fieldLabel}>Rol</span>
+                        <select value={f.rol || 'Operador'} onChange={e => setF({ ...f, rol: e.target.value as any })} style={{ ...S.input, cursor: 'pointer' }}>
+                            <option value="Admin">Administrador</option>
+                            <option value="Operador">Operador</option>
+                            <option value="Diseñador">Diseñador</option>
+                        </select></label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: C.body }}>
+                        <input type="checkbox" checked={f.requirePassword || false} onChange={e => setF({ ...f, requirePassword: e.target.checked })} style={{ cursor: 'pointer' }} />
+                        Requiere contraseña para iniciar sesión
+                    </label>
+                    {f.requirePassword && (
+                        <label style={{ display: 'block' }}><span style={S.fieldLabel}>Contraseña</span>
+                            <input type="text" value={f.password || ''} onChange={e => setF({ ...f, password: e.target.value })} style={{ ...S.input, fontFamily: MONO }} /></label>
+                    )}
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                        <button type="button" onClick={onClose} style={S.softBtn}>Cancelar</button>
+                        <button type="submit" style={S.primaryBtn}>Guardar</button>
                     </div>
-
-                    <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
-                        <div className="space-y-6">
-                            <div className="group/field">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Nombre Completo</label>
-                                <input type="text" value={formData.nombre || ''} onChange={e => setFormData({...formData, nombre: e.target.value})} required className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white" placeholder="Ej. Juan Pérez" />
-                            </div>
-                            <div className="group/field">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Correo Electrónico</label>
-                                <input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} required className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white" placeholder="correo@ejemplo.com" />
-                            </div>
-                            <div className="group/field">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-1">Rol en el Sistema</label>
-                                <select value={formData.rol || 'Operador'} onChange={e => setFormData({...formData, rol: e.target.value as any})} className="w-full px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl focus:border-brand-blue outline-none transition-all font-bold text-white appearance-none cursor-pointer">
-                                    <option value="Admin">ADMINISTRADOR</option>
-                                    <option value="Operador">OPERADOR</option>
-                                    <option value="Diseñador">DISEÑADOR</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="pt-8 border-t border-white/[0.06] space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <KeyIcon className="w-5 h-5 text-brand-blue" />
-                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Protección de Cuenta</span>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={formData.requirePassword || false} 
-                                        onChange={e => setFormData({...formData, requirePassword: e.target.checked})} 
-                                        className="sr-only peer" 
-                                    />
-                                    <div className="w-11 h-6 bg-white/[0.08] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
-                                </label>
-                            </div>
-
-                            {formData.requirePassword && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-brand-blue/5 p-6 rounded-2xl border border-brand-blue/10">
-                                    <label className="block text-[9px] font-black text-brand-blue uppercase tracking-[0.3em] mb-3">Establecer Contraseña</label>
-                                    <input 
-                                        type="text" value={formData.password || ''} 
-                                        onChange={e => setFormData({...formData, password: e.target.value})} 
-                                        placeholder="CONTRASEÑA MAESTRA"
-                                        className="w-full p-4 bg-obsidian-card border border-brand-blue/20 rounded-xl text-sm font-black text-white focus:border-brand-blue outline-none transition-all" 
-                                    />
-                                </motion.div>
-                            )}
-                        </div>
-                    </form>
-
-                    <div className="p-10 border-t border-white/[0.06] bg-white/[0.04]/50 flex justify-between items-center">
-                        <button type="button" onClick={onClose} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Cancelar</button>
-                        <button onClick={handleSubmit} className="px-12 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-brand-blue/20 active:scale-95 transition-all">Sincronizar Perfil</button>
-                    </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+                </div>
+            </form>
+        </div>
     );
 };
 
@@ -133,56 +61,31 @@ const GestionUsuariosPage: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' }>({ key: 'nombre', direction: 'asc' });
-    
     const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
         const { data, error } = await supabase.from('users').select('*').order('nombre', { ascending: true });
         if (!error && data) {
-            const mappedUsers = data.map((u: any) => ({
-                id: u.id,
-                nombre: u.nombre,
-                email: u.email,
-                rol: u.rol,
-                estado: u.estado,
-                ultimoAcceso: u.ultimo_acceso,
-                requirePassword: u.require_password,
-                password: u.password
-            }));
-            setUsers(mappedUsers as User[]);
+            setUsers(data.map((u: any) => ({
+                id: u.id, nombre: u.nombre, email: u.email, rol: u.rol, estado: u.estado,
+                ultimoAcceso: u.ultimo_acceso, requirePassword: u.require_password, password: u.password,
+            })) as User[]);
         }
         setLoading(false);
     };
-
     useEffect(() => { fetchUsers(); }, []);
-    
-    const filteredAndSortedUsers = useMemo(() => {
-        return [...users]
-            .filter(u => u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
-            .sort((a, b) => {
-                const aVal = a[sortConfig.key] ?? '';
-                const bVal = b[sortConfig.key] ?? '';
-                if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-    }, [users, searchTerm, sortConfig]);
 
-    const handleSaveUser = async (user: Partial<User>) => {
-        const dbUser = {
-            nombre: user.nombre,
-            email: user.email,
-            rol: user.rol,
-            estado: user.estado,
-            require_password: user.requirePassword,
-            password: user.password
-        };
+    const filtered = useMemo(() => {
+        const q = searchTerm.toLowerCase();
+        return [...users].filter(u => u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+    }, [users, searchTerm]);
 
+    const handleSave = async (user: Partial<User>) => {
+        const dbUser = { nombre: user.nombre, email: user.email, rol: user.rol, estado: user.estado, require_password: user.requirePassword, password: user.password };
         if (user.id) {
             await supabase.from('users').update(dbUser).eq('id', user.id);
-            logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `Modificó al usuario ${user.nombre}`, 'Seguridad');
+            logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `Modificó a ${user.nombre}`, 'Seguridad');
         } else {
             await supabase.from('users').insert([dbUser]);
             logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_CREADO', `Creó usuario: ${user.nombre}`, 'Seguridad');
@@ -191,122 +94,71 @@ const GestionUsuariosPage: React.FC = () => {
         await fetchUsers();
     };
 
+    const toggleEstado = async (u: User) => {
+        const nuevo = u.estado === 'Activo' ? 'Inactivo' : 'Activo';
+        await supabase.from('users').update({ estado: nuevo }).eq('id', u.id);
+        logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `${nuevo === 'Activo' ? 'Activó' : 'Desactivó'} a ${u.nombre}`, 'Seguridad');
+        fetchUsers();
+    };
+
     return (
-        <div className="max-w-[1600px] mx-auto space-y-12 pb-40 pt-6 px-6 sm:px-12 relative animate-fade-in">
-            {/* --- HEADER --- */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10 border-b border-white/[0.06] pb-10">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
-                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Control de Accesos & Roles</span>
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Gestión de Usuarios · Imprenta Córdova" />
+            <div style={S.wrap}>
+
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+                    <div>
+                        <p style={S.eyebrow}>Sistema</p>
+                        <h1 style={S.h1}>Gestión de Usuarios</h1>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
-                        Gestión de Usuarios <span className="text-brand-blue font-bold">• Personal</span>
-                    </h1>
+                    <button style={S.primaryBtn} onClick={() => setEditingUser({})}>Crear usuario</button>
                 </div>
-                <button 
-                    onClick={() => setEditingUser({})} 
-                    className="px-10 py-5 bg-brand-blue text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all flex items-center gap-4"
-                >
-                    <UserPlusIcon className="w-5 h-5" />
-                    Nuevo Usuario
-                </button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
+                    {[
+                        { l: 'Total de usuarios', v: users.length, c: C.ink },
+                        { l: 'Activos', v: users.filter(u => u.estado === 'Activo').length, c: C.successDot },
+                        { l: 'Inactivos', v: users.filter(u => u.estado === 'Inactivo').length, c: C.danger },
+                    ].map(k => (
+                        <div key={k.l} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
+                            <div style={S.colHead}>{k.l}</div>
+                            <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 600, letterSpacing: '-.04em', color: k.c, marginTop: 8, lineHeight: 1 }}>{k.v}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <div style={{ ...S.card, borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 9 }}>
+                    <span style={{ color: C.faint, fontSize: 13 }}>⌕</span>
+                    <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar usuario o correo…"
+                        style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13.5, color: C.ink, fontFamily: 'inherit' }} />
+                </div>
+
+                <div style={{ ...S.card, overflow: 'hidden' }}>
+                    {loading ? (
+                        <div style={{ padding: 48, textAlign: 'center', color: C.faint, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.2em' }}>Cargando usuarios…</div>
+                    ) : filtered.length === 0 ? (
+                        <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontSize: 13 }}>Sin coincidencias.</div>
+                    ) : filtered.map(u => (
+                        <div key={u.id} style={{ padding: '15px 20px', borderBottom: `1px solid ${C.rowLine}`, display: 'grid', gridTemplateColumns: 'auto 1.3fr 1.4fr auto auto auto', gap: 14, alignItems: 'center' }}>
+                            <span style={{ width: 36, height: 36, borderRadius: 10, background: C.chipBlue, border: `1px solid ${C.borderStrong}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11.5, fontWeight: 800, color: C.royal }}>
+                                {u.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </span>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.nombre}</span>
+                            <span style={{ fontSize: 12.5, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</span>
+                            <span><span style={{ padding: '4px 10px', borderRadius: 99, fontSize: 10.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', ...(ROL_STYLE[u.rol] || ROL_STYLE.Operador) }}>{u.rol}</span></span>
+                            <span style={{ fontSize: 12, color: C.faint, textAlign: 'right' }}>{u.ultimoAcceso ? formatDate(u.ultimoAcceso) : '—'}</span>
+                            <span style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                <button style={{ ...S.softBtn, padding: '6px 10px', fontSize: 11.5, ...(u.estado === 'Activo' ? { background: '#F2F7F2', color: C.success } : { background: '#FEF2F2', color: '#B91C1C' }) }}
+                                    onClick={() => toggleEstado(u)}>{u.estado === 'Activo' ? 'Activo' : 'Inactivo'}</button>
+                                <button style={{ ...S.softBtn, padding: '6px 10px', fontSize: 11.5 }} onClick={() => setEditingUser(u)}>Editar</button>
+                            </span>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            {/* --- KPI SECTION --- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <KpiCard title="Censo Total" value={users.length} icon={UsersIcon} />
-                <KpiCard title="Portales Activos" value={users.filter(u => u.estado === 'Activo').length} icon={ShieldCheckIcon} colorClass="bg-emerald-500/10 text-emerald-500" />
-                <KpiCard title="Protocolos en Pausa" value={users.filter(u => u.estado === 'Inactivo').length} icon={ExclamationTriangleIcon} colorClass="bg-brand-red/10 text-rose-500" />
-            </div>
-
-            {/* --- TABLE SECTION --- */}
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-obsidian-card rounded-[3rem] border border-white/[0.06] shadow-sm overflow-hidden"
-            >
-                <div className="p-8 border-b border-white/[0.06] flex flex-col md:flex-row justify-between items-center gap-6 bg-white/[0.04]/50">
-                    <div className="relative group w-full md:max-w-md">
-                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
-                        <input 
-                            type="text" placeholder="RASTREAR USUARIO O EMAIL..." value={searchTerm} 
-                            onChange={e => setSearchTerm(e.target.value)} 
-                            className="w-full pl-16 pr-6 py-4 bg-obsidian-card border border-white/[0.06] rounded-2xl text-[10px] font-black uppercase tracking-widest focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all shadow-sm"
-                        />
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <SparklesIcon className="w-5 h-5 text-brand-blue animate-pulse" />
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Base Sincronizada</span>
-                    </div>
-                </div>
-
-                <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-white/[0.04]/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-white/[0.06]">
-                                <th className="px-10 py-6">Usuario Atelier</th>
-                                <th className="px-10 py-6">Rango Operativo</th>
-                                <th className="px-10 py-6">Seguridad</th>
-                                <th className="px-10 py-6">Último Vínculo</th>
-                                <th className="px-10 py-6">Estado</th>
-                                <th className="px-10 py-6 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/[0.06]">
-                            {loading ? (
-                                <tr><td colSpan={6} className="py-40 text-center"><Loader2Icon className="w-10 h-10 text-brand-blue animate-spin mx-auto"/></td></tr>
-                            ) : filteredAndSortedUsers.length === 0 ? (
-                                <tr><td colSpan={6} className="py-40 text-center"><UsersIcon className="w-12 h-12 mx-auto mb-4 text-white/10"/><p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin Coincidencias</p></td></tr>
-                            ) : filteredAndSortedUsers.map((user) => (
-                                <tr key={user.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                    <td className="px-10 py-8">
-                                        <p className="text-white font-black uppercase tracking-tight text-lg group-hover:text-brand-blue transition-colors">{user.nombre}</p>
-                                        <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest">{user.email}</p>
-                                    </td>
-                                    <td className="px-10 py-8">
-                                        <span className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${user.rol === 'Admin' ? 'bg-brand-blue/5 text-brand-blue border-brand-blue/20'                                             : 'bg-white/[0.04] text-slate-400 border-white/[0.06]'}`}>{user.rol}</span>
-                                    </td>
-                                    <td className="px-10 py-8">
-                                        {user.requirePassword ? (
-                                            <div className="flex items-center gap-2 text-emerald-500">
-                                                <ShieldCheckIcon className="w-4 h-4"/>
-                                                <span className="text-[9px] font-black uppercase tracking-widest">ENCRIPTADO</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-[9px] font-black text-slate-200 uppercase tracking-widest">ABIERTO</span>
-                                        )}
-                                    </td>
-                                    <td className="px-10 py-8">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{formatDate(user.ultimoAcceso)}</p>
-                                    </td>
-                                    <td className="px-10 py-8">
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" checked={user.estado === 'Activo'} onChange={async () => {
-                                                const newStatus = user.estado === 'Activo' ? 'Inactivo' : 'Activo';
-                                                await supabase.from('users').update({ estado: newStatus }).eq('id', user.id);
-                                                logActivity(currentUser.nombre, currentUser.rol, 'USUARIO_MODIFICADO', `${newStatus === 'Activo' ? 'Activó' : 'Desactivó'} a ${user.nombre}`, 'Seguridad');
-                                                fetchUsers();
-                                            }} className="sr-only peer" />
-                                            <div className="w-11 h-6 bg-white/[0.08] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue shadow-inner"></div>
-                                        </label>
-                                    </td>
-                                    <td className="px-10 py-8 text-right">
-                                        <button onClick={() => setEditingUser(user)} className="p-3 bg-obsidian-card border border-white/[0.06] text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 rounded-xl transition-all shadow-sm">
-                                            <PencilIcon className="h-5 w-5" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </motion.div>
-
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-            `}</style>
+            <UserFormModal user={editingUser} onClose={() => setEditingUser(null)} onSave={handleSave} />
         </div>
     );
 };

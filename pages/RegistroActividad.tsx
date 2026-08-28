@@ -1,315 +1,161 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getActivityLog, getLogStats, purgeOldEntries, exportLogAsCSV, ActivityEntry, logActivity } from '../services/activityLogService';
-import { 
-    HomeIcon, ArrowDownTrayIcon, SearchIcon, Loader2Icon, 
-    ShieldCheckIcon, LockIcon, BoxIcon, CpuIcon, ActivityIcon, 
-    BoltIcon, UsersIcon, SparklesIcon, CheckCircleIcon, RocketLaunchIcon, 
-    ShieldExclamationIcon, FingerPrintIcon, ClockIcon, DocumentIcon,
-    ExclamationTriangleIcon, ChevronRightIcon, ChevronLeftIcon
-} from '../components/Icons';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
-const ACTION_LABELS: Record<string, { label: string; color: string; icon: any }> = {
-    LOGIN: { label: 'Auth Success', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: ShieldCheckIcon },
-    LOGOUT: { label: 'Session End', color: 'text-slate-300 bg-white/[0.04] border-white/[0.06]', icon: LockIcon },
-    CREAR_ORDEN: { label: 'Mission Created', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: BoxIcon },
-    EDITAR_ORDEN: { label: 'Asset Updated', color: 'text-indigo-400 bg-brand-blue/10 border-brand-blue/20', icon: CpuIcon },
-    CAMBIO_ESTADO: { label: 'Status Shift', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20', icon: ActivityIcon },
-    RETIRO_PROCESADO: { label: 'Dispatch Flux', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: BoltIcon },
-    CREAR_CLIENTE: { label: 'Entity Registered', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', icon: UsersIcon },
-    EDITAR_CLIENTE: { label: 'Entity Modified', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', icon: UsersIcon },
-    CREAR_USUARIO: { label: 'Identity Created', color: 'text-violet-400 bg-purple-500/10 border-purple-500/20', icon: SparklesIcon },
-    EDITAR_USUARIO: { label: 'Identity Updated', color: 'text-violet-400 bg-purple-500/10 border-purple-500/20', icon: SparklesIcon },
-    TOGGLE_USUARIO: { label: 'Access Toggle', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', icon: ShieldCheckIcon },
-    CAMBIO_CONFIG: { label: 'Core Adjustment', color: 'text-rose-400 bg-brand-red/10 border-brand-red/20', icon: CpuIcon },
-    SYNC_CLOUD: { label: 'Neural Sync', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: SparklesIcon },
-    SEED_CATALOGO: { label: 'Matrix Loaded', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: DocumentIcon },
-    EXPORTAR_PDF: { label: 'Artifact Export', color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', icon: DocumentIcon },
-    ENVIAR_WHATSAPP: { label: 'Comms Uplink', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: BoltIcon },
-    ABONO_REGISTRADO: { label: 'Credit Flux', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: BoltIcon },
-    ARTE_APROBADO: { label: 'Visual Approval', color: 'text-pink-400 bg-purple-500/10 border-purple-500/20', icon: SparklesIcon },
-    FOTO_CAPTURADA: { label: 'Optical Scan', color: 'text-indigo-400 bg-brand-blue/10 border-brand-blue/20', icon: SparklesIcon },
-    ACCESO_MODULO: { label: 'Module Access', color: 'text-slate-300 bg-white/[0.04] border-white/[0.06]', icon: ShieldCheckIcon },
-    CREAR_PROVEEDOR: { label: 'Supplier Created', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: UsersIcon },
-    EDITAR_PROVEEDOR: { label: 'Supplier Updated', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: UsersIcon },
-    BORRAR_PROVEEDOR: { label: 'Supplier Removed', color: 'text-brand-red bg-brand-red/10 border-brand-red/20', icon: ExclamationTriangleIcon },
-    AGENDAR_TAREA: { label: 'Task Scheduled', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', icon: ClockIcon },
-    COMPLETAR_TAREA: { label: 'Task Completed', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: CheckCircleIcon },
-    FINALIZADO_DIRECTO: { label: 'Direct Finish', color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', icon: RocketLaunchIcon },
-    INVENTARIO_MODIFICADO: { label: 'Asset Mutation', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20', icon: BoxIcon },
-    ALERTA_STOCK: { label: 'System Alert', color: 'text-rose-400 bg-brand-red/10 border-brand-red/20', icon: ShieldExclamationIcon },
+const ACCION_LABEL: Record<string, string> = {
+    LOGIN: 'Inicio de sesión', LOGOUT: 'Cierre de sesión',
+    CREAR_ORDEN: 'Orden creada', EDITAR_ORDEN: 'Orden editada',
+    CAMBIO_ESTADO: 'Cambio de estado', RETIRO_PROCESADO: 'Entrega procesada',
+    CREAR_CLIENTE: 'Cliente registrado', EDITAR_CLIENTE: 'Cliente editado',
+    CREAR_USUARIO: 'Usuario creado', EDITAR_USUARIO: 'Usuario editado', TOGGLE_USUARIO: 'Acceso de usuario',
+    CAMBIO_CONFIG: 'Ajuste de configuración', CONFIG_MODIFICADA: 'Ajuste de configuración',
+    SYNC_CLOUD: 'Sincronización en la nube', SEED_CATALOGO: 'Catálogo cargado',
+    EXPORTAR_PDF: 'Exportación', ENVIAR_WHATSAPP: 'Aviso por WhatsApp',
+    ABONO_REGISTRADO: 'Abono registrado', ARTE_APROBADO: 'Arte aprobado', FOTO_CAPTURADA: 'Foto capturada',
+    ACCESO_MODULO: 'Acceso a módulo', CREAR_PROVEEDOR: 'Proveedor creado', EDITAR_PROVEEDOR: 'Proveedor editado',
+    BORRAR_PROVEEDOR: 'Proveedor eliminado', GESTION_PROVEEDOR: 'Gestión de proveedor',
+    AGENDAR_TAREA: 'Tarea agendada', COMPLETAR_TAREA: 'Tarea completada', FINALIZADO_DIRECTO: 'Finalización directa',
+    INVENTARIO_MODIFICADO: 'Inventario modificado', ALERTA_STOCK: 'Alerta de stock',
+    FINANZAS_MODIFICADA: 'Movimiento financiero',
 };
-
-const KpiCard: React.FC<{ 
-    label: string, 
-    value: string | number, 
-    icon: any,
-    color?: string 
-}> = ({ label, value, icon: Icon, color = "text-brand-blue" }) => (
-    <motion.div 
-        whileHover={{ y: -4, transition: { duration: 0.3 } }}
-        className="bg-obsidian-card p-8 rounded-3xl border border-white/[0.06] shadow-sm relative overflow-hidden group"
-    >
-        <div className="flex flex-col gap-4 relative z-10">
-            <div className={`w-12 h-12 rounded-2xl ${color.replace('text-', 'bg-').replace('600', '50')} flex items-center justify-center ${color} shadow-sm group-hover:scale-110 transition-transform duration-500`}>
-                <Icon className="w-6 h-6" />
-            </div>
-            <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-                <p className="text-3xl font-black text-white tracking-tight mt-1">{value}</p>
-            </div>
-        </div>
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
-            <Icon className="w-24 h-24" />
-        </div>
-    </motion.div>
-);
+const label = (a: string) => ACCION_LABEL[a] || a.replace(/_/g, ' ').toLowerCase().replace(/^\w/, c => c.toUpperCase());
+const ITEMS_PER_PAGE = 40;
 
 const RegistroActividadPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: any }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
-    const navigate = useNavigate();
     const [log, setLog] = useState<ActivityEntry[]>([]);
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterAction, setFilterAction] = useState<string>('');
-    const [filterUser, setFilterUser] = useState<string>('');
+    const [filterAction, setFilterAction] = useState('');
+    const [filterUser, setFilterUser] = useState('');
     const [page, setPage] = useState(0);
-    const ITEMS_PER_PAGE = 40;
 
-    const refreshData = async () => {
+    const refresh = async () => {
         setLoading(true);
         try {
             await purgeOldEntries();
-            const allLog = await getActivityLog();
-            setLog(allLog);
-            const logStats = await getLogStats();
-            setStats(logStats);
-        } catch (error) {
-            console.error('[RegistroActividad] Error:', error);
-        } finally {
-            setLoading(false);
-        }
+            setLog(await getActivityLog());
+            setStats(await getLogStats());
+        } catch (e) { console.error('[RegistroActividad]', e); }
+        finally { setLoading(false); }
     };
-
-    useEffect(() => { refreshData(); }, []);
+    useEffect(() => { refresh(); }, []);
 
     const uniqueUsers = useMemo(() => [...new Set(log.map(e => e.usuario))].sort(), [log]);
     const uniqueActions = useMemo(() => [...new Set(log.map(e => e.accion))].sort(), [log]);
 
     const filtered = useMemo(() => {
-        let result = log;
+        let r = log;
         if (searchTerm) {
-            const lower = searchTerm.toLowerCase();
-            result = result.filter(e => 
-                e.detalle.toLowerCase().includes(lower) || 
-                e.usuario.toLowerCase().includes(lower) ||
-                e.hash.includes(lower)
-            );
+            const q = searchTerm.toLowerCase();
+            r = r.filter(e => e.detalle.toLowerCase().includes(q) || e.usuario.toLowerCase().includes(q) || e.hash.includes(q));
         }
-        if (filterAction) result = result.filter(e => e.accion === filterAction);
-        if (filterUser) result = result.filter(e => e.usuario === filterUser);
-        return result;
+        if (filterAction) r = r.filter(e => e.accion === filterAction);
+        if (filterUser) r = r.filter(e => e.usuario === filterUser);
+        return r;
     }, [log, searchTerm, filterAction, filterUser]);
 
-    const paginated = useMemo(() => {
-        const start = page * ITEMS_PER_PAGE;
-        return filtered.slice(start, start + ITEMS_PER_PAGE);
-    }, [filtered, page]);
-
+    const paginated = useMemo(() => filtered.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE), [filtered, page]);
     const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
     const handleExportCSV = () => {
         const csv = exportLogAsCSV(log);
-        logActivity(currentUser.nombre, currentUser.rol || 'Administrador', 'EXPORTAR_PDF', 'Exportación de log a CSV realizada', 'Auditoría');
+        logActivity(currentUser.nombre, currentUser.rol || 'Administrador', 'EXPORTAR_PDF', 'Exportación de auditoría a CSV', 'Auditoría');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `ledger_activity_${new Date().toISOString()}.csv`;
+        a.href = URL.createObjectURL(blob);
+        a.download = `auditoria_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    const formatTimestamp = (ts: string) => {
-        const d = new Date(ts);
-        return {
-            date: d.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' }),
-            time: d.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        };
     };
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-12 pb-40 pt-6 px-4">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                <div className="flex items-center gap-6">
-                    <button 
-                        onClick={() => navigate('/dashboard')}
-                        className="w-14 h-14 bg-obsidian-card hover:bg-white/[0.04] border border-white/[0.06] rounded-2xl flex items-center justify-center transition-all shadow-sm group"
-                    >
-                        <HomeIcon className="w-5 h-5 text-slate-400 group-hover:text-brand-blue" />
-                    </button>
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Auditoría del Sistema · Imprenta Córdova" />
+            <div style={S.wrap}>
+
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
                     <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="w-2 h-2 bg-brand-blue rounded-full"></span>
-                            <p className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">Auditoría Operativa</p>
-                        </div>
-                        <h1 className="text-4xl font-black text-white tracking-tight uppercase">Monitor de <span className="text-brand-blue">Actividad</span></h1>
+                        <p style={S.eyebrow}>Sistema</p>
+                        <h1 style={S.h1}>Auditoría del Sistema</h1>
+                        <p style={S.lead}>Cada acción queda firmada. Los registros de más de 3 meses se purgan automáticamente.</p>
                     </div>
+                    <button style={S.outlineBtn} onClick={handleExportCSV}>Exportar CSV</button>
                 </div>
 
-                <button 
-                    onClick={handleExportCSV}
-                    className="h-14 px-8 bg-brand-blue text-white font-bold rounded-2xl shadow-lg shadow-sky-100 flex items-center gap-3 hover:scale-[1.02] active:scale-95 transition-all text-sm"
-                >
-                    <ArrowDownTrayIcon className="w-5 h-5" />
-                    Exportar Datos
-                </button>
-            </div>
-
-            {/* Stats */}
-            {stats && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <KpiCard label="Registros Totales" value={stats.totalEntries} icon={FingerPrintIcon} color="text-slate-600" />
-                    <KpiCard label="Flujo Hoy" value={stats.todayEntries} icon={ActivityIcon} color="text-brand-blue" />
-                    <KpiCard label="Nodos Activos" value={stats.uniqueUsers} icon={UsersIcon} color="text-indigo-600" />
-                    <KpiCard label="Carga de Memoria" value={`${stats.storageUsedKB} KB`} icon={CpuIcon} color="text-emerald-600" />
-                </div>
-            )}
-
-            {/* Filters */}
-            <div className="bg-obsidian-card p-6 rounded-[2.5rem] border border-white/[0.06] shadow-sm space-y-6">
-                <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="relative flex-grow">
-                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                        <input 
-                            type="text" 
-                            placeholder="Buscar en el registro (Hash, Usuario, Detalle)..." 
-                            value={searchTerm} 
-                            onChange={e => setSearchTerm(e.target.value)} 
-                            className="w-full pl-14 pr-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-sm font-bold text-white placeholder:text-slate-300 outline-none focus:bg-obsidian-card focus:border-brand-blue/30 transition-all"
-                        />
-                    </div>
-                    
-                    <div className="flex gap-4">
-                        <select 
-                            value={filterAction} onChange={e => { setFilterAction(e.target.value); setPage(0); }}
-                            className="px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:bg-white/[0.08] transition-all"
-                        >
-                            <option value="">Todas las acciones</option>
-                            {uniqueActions.map(a => (
-                                <option key={a} value={a}>{ACTION_LABELS[a]?.label || a}</option>
-                            ))}
-                        </select>
-
-                        <select 
-                            value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(0); }}
-                            className="px-6 py-4 bg-white/[0.04] border border-white/[0.06] rounded-2xl text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:bg-white/[0.08] transition-all"
-                        >
-                            <option value="">Todos los usuarios</option>
-                            {uniqueUsers.map(u => (
-                                <option key={u} value={u}>{u}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-6 border-t border-white/[0.06]">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            Segmento <span className="text-brand-blue">{page + 1} de {totalPages}</span>
-                        </p>
-                        <div className="flex gap-2">
-                            <button 
-                                disabled={page === 0} 
-                                onClick={() => setPage(p => p - 1)} 
-                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/[0.06] text-slate-400 disabled:opacity-30 hover:bg-white/[0.04] transition-all"
-                            >
-                                <ChevronLeftIcon className="w-5 h-5" />
-                            </button>
-                            <button 
-                                disabled={page >= totalPages - 1} 
-                                onClick={() => setPage(p => p + 1)} 
-                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/[0.06] text-slate-400 disabled:opacity-30 hover:bg-white/[0.04] transition-all"
-                            >
-                                <ChevronRightIcon className="w-5 h-5" />
-                            </button>
-                        </div>
+                {stats && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14 }}>
+                        {[
+                            { l: 'Registros totales', v: stats.totalEntries },
+                            { l: 'Actividad de hoy', v: stats.todayEntries },
+                            { l: 'Usuarios distintos', v: stats.uniqueUsers },
+                            { l: 'Memoria usada', v: `${stats.storageUsedKB} KB` },
+                        ].map(k => (
+                            <div key={k.l} style={{ ...S.card, borderRadius: 14, padding: '16px 18px' }}>
+                                <div style={S.colHead}>{k.l}</div>
+                                <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 600, letterSpacing: '-.04em', color: C.ink, marginTop: 6 }}>{k.v}</div>
+                            </div>
+                        ))}
                     </div>
                 )}
-            </div>
 
-            {/* Timeline */}
-            <div className="space-y-4">
-                <AnimatePresence mode="popLayout">
+                <div style={{ ...S.card, borderRadius: 14, padding: '12px 14px', display: 'flex', gap: 9, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 9 }}>
+                        <span style={{ color: C.faint, fontSize: 13 }}>⌕</span>
+                        <input value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(0); }} placeholder="Buscar por detalle, usuario o firma…"
+                            style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: C.ink, fontFamily: 'inherit' }} />
+                    </div>
+                    <select value={filterAction} onChange={e => { setFilterAction(e.target.value); setPage(0); }} style={{ ...S.input, width: 'auto', padding: '8px 12px', fontSize: 12.5, cursor: 'pointer' }}>
+                        <option value="">Todas las acciones</option>
+                        {uniqueActions.map(a => <option key={a} value={a}>{label(a)}</option>)}
+                    </select>
+                    <select value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(0); }} style={{ ...S.input, width: 'auto', padding: '8px 12px', fontSize: 12.5, cursor: 'pointer' }}>
+                        <option value="">Todos los usuarios</option>
+                        {uniqueUsers.map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                </div>
+
+                <div style={{ ...S.card, overflow: 'hidden' }}>
                     {loading ? (
-                        <div className="py-40 flex flex-col items-center justify-center gap-6 bg-obsidian-card rounded-[3rem] border border-white/[0.06]">
-                            <Loader2Icon className="w-12 h-12 text-brand-blue animate-spin" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Sincronizando Historial...</p>
+                        <div style={{ padding: 48, textAlign: 'center', color: C.faint, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.2em' }}>Sincronizando historial…</div>
+                    ) : paginated.length === 0 ? (
+                        <div style={{ padding: 48, textAlign: 'center' }}>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Registro vacío</p>
+                            <p style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>No hay registros en este segmento.</p>
                         </div>
-                    ) : paginated.length > 0 ? (
-                        paginated.map((entry, idx) => {
-                            const actionMeta = ACTION_LABELS[entry.accion] || { label: entry.accion, color: 'text-slate-300 bg-white/[0.04] border-white/[0.06]', icon: ActivityIcon };
-                            const { date, time } = formatTimestamp(entry.timestamp);
-
-                            return (
-                                <motion.div 
-                                    key={entry.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: (idx % 20) * 0.02 }}
-                                    className="bg-obsidian-card p-6 sm:p-8 rounded-3xl border border-white/[0.06] shadow-sm hover:shadow-md hover:border-brand-blue/10 transition-all group flex flex-col sm:flex-row items-center gap-8"
-                                >
-                                    {/* Time */}
-                                    <div className="flex flex-col items-center sm:items-start shrink-0 min-w-[100px]">
-                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">{date}</span>
-                                        <span className="text-xl font-black text-white tracking-tight">{time}</span>
-                                    </div>
-
-                                    {/* Action Icon */}
-                                    <div className={`w-16 h-16 rounded-2xl shrink-0 border-2 flex items-center justify-center transition-all duration-500 group-hover:scale-110 ${actionMeta.color}`}>
-                                        <actionMeta.icon className="w-8 h-8" />
-                                    </div>
-
-                                    {/* Detail */}
-                                    <div className="flex-1 min-w-0 text-center sm:text-left">
-                                        <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start mb-2">
-                                            <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${actionMeta.color}`}>
-                                                {actionMeta.label}
-                                            </span>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase">
-                                                {entry.usuario} • {entry.modulo}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-lg font-bold text-white leading-tight group-hover:text-brand-blue transition-colors">{entry.detalle}</h3>
-                                    </div>
-
-                                    {/* Integrity Hash */}
-                                    <div className="shrink-0 text-right hidden lg:block">
-                                        <div className="flex items-center justify-end gap-2 mb-1">
-                                            <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Hash de Integridad</span>
-                                            <FingerPrintIcon className="w-3 h-3 text-slate-200" />
-                                        </div>
-                                        <code className="text-[9px] font-mono text-slate-400 px-3 py-1.5 bg-white/[0.04] rounded-lg border border-white/[0.06]">
-                                            #{entry.hash.substring(0, 12).toUpperCase()}
-                                        </code>
-                                    </div>
-                                </motion.div>
-                            );
-                        })
-                    ) : (
-                        <div className="py-40 bg-obsidian-card rounded-[3rem] border border-white/[0.06] text-center">
-                            <ShieldExclamationIcon className="w-20 h-20 text-slate-100 mx-auto mb-6" />
-                            <h3 className="text-xl font-black text-slate-300 uppercase tracking-widest">Registro Vacío</h3>
-                            <p className="text-[10px] font-bold text-slate-200 uppercase mt-2 tracking-widest">No se detectaron registros en este segmento</p>
+                    ) : paginated.map(e => {
+                        const d = new Date(e.timestamp);
+                        return (
+                            <div key={e.id} style={{ padding: '15px 20px', borderBottom: `1px solid ${C.rowLine}`, display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16, alignItems: 'center' }}>
+                                <span style={{ minWidth: 0 }}>
+                                    <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: C.ink }}>{e.detalle}</span>
+                                    <span style={{ display: 'block', fontSize: 11, color: C.ghost, fontFamily: MONO, marginTop: 3 }}>
+                                        {label(e.accion)} · firma {e.hash.substring(0, 10)} · {e.modulo}
+                                    </span>
+                                </span>
+                                <span style={{ fontSize: 12.5, color: C.body }}>{e.usuario}</span>
+                                <span style={{ fontSize: 12, color: C.faint, fontFamily: MONO, textAlign: 'right' }}>
+                                    {d.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })} {d.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            </div>
+                        );
+                    })}
+                    {totalPages > 1 && (
+                        <div style={{ padding: '14px 20px', background: C.surfaceAlt, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 12.5, color: C.muted }}>Segmento {page + 1} de {totalPages}</span>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ ...S.outlineBtn, padding: '8px 15px', fontSize: 12.5, opacity: page === 0 ? 0.4 : 1 }}>Anterior</button>
+                                <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ ...S.outlineBtn, padding: '8px 15px', fontSize: 12.5, opacity: page >= totalPages - 1 ? 0.4 : 1 }}>Siguiente</button>
+                            </div>
                         </div>
                     )}
-                </AnimatePresence>
+                </div>
             </div>
         </div>
     );
