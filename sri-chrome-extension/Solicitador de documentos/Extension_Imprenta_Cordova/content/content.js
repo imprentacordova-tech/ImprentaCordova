@@ -1683,7 +1683,13 @@ function showCordovaSuccessModal(finalData, blocks) {
         <!-- MODELO DE SOLICITUD CARD (EDITABLE INLINE) -->
         <div class="cdv-model-card" style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
           
-          <!-- MODEL CARD HEADER BADGE -->
+        <!-- MODEL CARD HEADER BADGE -->
+        <div style="background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; padding: 7px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; text-align: center; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);">
+          <span>⚡ ORDEN REGISTRADA AUTOMÁTICAMENTE EN LA BASE DE LA WEB</span>
+        </div>
+
+        <div class="cdv-model-card" style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+          
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 10px;">
             <span style="font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">DATOS DE SOLICITUD (CONFIRMAR / EDITAR)</span>
             <span style="font-size: 10px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 10px; border: 1px solid #bfdbfe;">${docName} • ${blocks} Hojas</span>
@@ -1757,8 +1763,8 @@ function showCordovaSuccessModal(finalData, blocks) {
 
         <!-- PRIMARY 1-CLICK ACTION BUTTONS -->
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button class="cordova-btn" id="cdv-btn-web-platform" style="width: 100%; font-size: 13px; font-weight: 800; padding: 13px; background: linear-gradient(135deg, #0f2b48 0%, #1e40af 100%); border: 1.5px solid #3b82f6; color: #ffffff; border-radius: 10px; box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4); cursor: pointer; transition: all 0.25s ease; text-align: center; text-transform: uppercase; letter-spacing: 0.8px;">
-            🌐 ABRIR EN PLATAFORMA WEB (imprentacordova.net)
+          <button class="cordova-btn" id="cdv-btn-web-platform" style="width: 100%; font-size: 12px; font-weight: 800; padding: 13px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border: 1.5px solid #22c55e; color: #ffffff; border-radius: 10px; box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4); cursor: pointer; transition: all 0.25s ease; text-align: center; text-transform: uppercase; letter-spacing: 0.8px;">
+            ✅ VER EN PLATAFORMA WEB (imprentacordova.net)
           </button>
           
           <div style="display: flex; gap: 8px;">
