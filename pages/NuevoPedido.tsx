@@ -5,14 +5,6 @@ import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { Cliente, User, TrabajoEstado } from '../types';
-import { 
-    CheckCircleIcon, Loader2Icon, SolidBoxIcon, 
-    ArrowRightIcon, ShoppingCartIcon, ShieldCheckIcon,
-    SparklesIcon, CreditCardIcon, UserIcon,
-    PrinterIcon, ClockIcon, BoltIcon, RocketLaunchIcon,
-    ExclamationTriangleIcon, LayoutDashboardIcon, BookOpenIcon,
-    ChevronRightIcon, ChevronLeftIcon
-} from '../components/Icons';
 import ClientSelector from '../components/orders/ClientSelector';
 import ServiceSelector from '../components/orders/ServiceSelector';
 import ProductConfigurator from '../components/orders/ProductConfigurator';
@@ -20,34 +12,33 @@ import { CommercialFlow } from '../components/orders/CommercialFlow';
 import SriSolicitudStep from '../components/orders/SriSolicitudStep';
 import OrderSummary from '../components/orders/OrderSummary';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
 const NuevoPedidoPage: React.FC = () => {
     const outletCtx = useOutletContext<{ currentUser?: User }>();
     const { user: authUser } = useAuth();
-    const currentUser = outletCtx?.currentUser || authUser || { nombre: 'Pedro Cordova', rol: 'Administrador' };
+    const currentUser = outletCtx?.currentUser || authUser || ({ nombre: 'Pedro Cordova', rol: 'Administrador' } as unknown as User);
     const { refreshData, addTrabajo, addCliente, clientes } = useData();
     const navigate = useNavigate();
     const location = useLocation();
 
     const [step, setStep] = useState(1);
     const [missionCategory, setMissionCategory] = useState<'SRI' | 'COMERCIAL' | null>(null);
-    const [orderMode, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
+    const [, setOrderMode] = useState<'CATALOG' | 'EXPRESS' | null>(null);
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [tempClient, setTempClient] = useState<any>({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
     const [servicio, setServicio] = useState<any>(null);
-    const [detalle, setDetalle] = useState('');
     const [precio, setPrecio] = useState(0);
     const [abono, setAbono] = useState(0);
-    const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [prioridad] = useState<'Normal' | 'Urgente'>('Normal');
+    const [imageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
     const [items, setItems] = useState<any[]>([]);
     const [isAddingItem, setIsAddingItem] = useState(false);
 
-    // SRI specific states
     const [isSriOrder, setIsSriOrder] = useState(false);
     const [sriMode, setSriMode] = useState<'NUEVO' | 'RENOVACION'>('RENOVACION');
     const [sriClave, setSriClave] = useState('');
@@ -55,88 +46,59 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriEstablecimiento, setSriEstablecimiento] = useState('001');
     const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
     const [imprimirClave, setImprimirClave] = useState(false);
-    const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
     const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
+
+    const applySriPayload = (payload: any) => {
+        if (!payload) return;
+        const ruc = payload.ruc || payload.clientRuc || '';
+        const name = payload.name || payload.clientName || '';
+        const phone = payload.phone || payload.clientPhone || '';
+        const activity = payload.activity || 'Comercio / Servicios General';
+        const docType = payload.docType || '1';
+        const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
+        const docSize = payload.docSize || '1/4 Oficio';
+        const totalVal = parseFloat(payload.total) || 13;
+        const abonoVal = parseFloat(payload.abono) || 0;
+        const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
+
+        setMissionCategory('SRI');
+        setIsSriOrder(true);
+        setOrderMode('CATALOG');
+        setSriActividad(activity);
+        setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
+
+        if (ruc || name) {
+            const cleanRuc = ruc.replace(/\D/g, '');
+            const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
+            if (found) setCliente(found);
+            else setTempClient({ nombre: (name || 'CLIENTE SRI').toUpperCase(), cedula: cleanRuc || '0700000000001', telefono: phone, regimen: docType === '1' ? 'Rimpe Popular' : 'General' });
+        }
+
+        const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+        const docName = docNames[docType] || 'Nota de Venta';
+        setItems([{ nombre: `${docName} (${blocks} Hojas)`, cantidad: 1, precioFinal: totalVal, especificaciones: { tamano: docSize, paginas: blocks, sri: { vencimiento: payload.caducidad || '' } } }]);
+        setPrecio(totalVal);
+        setAbono(abonoVal);
+        setStep(4);
+    };
 
     useEffect(() => {
         document.body.style.overflow = 'auto';
-
-        const applySriPayload = (payload: any) => {
-            if (!payload) return;
-            const ruc = payload.ruc || payload.clientRuc || '';
-            const name = payload.name || payload.clientName || '';
-            const phone = payload.phone || payload.clientPhone || '';
-            const activity = payload.activity || 'Comercio / Servicios General';
-            const docType = payload.docType || '1';
-            const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
-            const docSize = payload.docSize || '1/4 Oficio';
-            const totalVal = parseFloat(payload.total) || 13;
-            const abonoVal = parseFloat(payload.abono) || 0;
-            const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
-
-            setMissionCategory('SRI');
-            setIsSriOrder(true);
-            setOrderMode('CATALOG');
-            setSriActividad(activity);
-            setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
-
-            if (ruc || name) {
-                const cleanRuc = ruc.replace(/\D/g, '');
-                const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
-                if (found) {
-                    setCliente(found);
-                } else {
-                    setTempClient({
-                        nombre: (name || 'CLIENTE SRI').toUpperCase(),
-                        cedula: cleanRuc || '0700000000001',
-                        telefono: phone,
-                        regimen: docType === '1' ? 'Rimpe Popular' : 'General'
-                    });
-                }
-            }
-
-            const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
-            const docName = docNames[docType] || 'Nota de Venta';
-
-            const sriItem = {
-                nombre: `${docName} (${blocks} Hojas)`,
-                cantidad: 1,
-                precioFinal: totalVal,
-                especificaciones: {
-                    tamano: docSize,
-                    paginas: blocks,
-                    sri: { vencimiento: payload.caducidad || '' }
-                }
-            };
-
-            setItems([sriItem]);
-            setPrecio(totalVal);
-            setAbono(abonoVal);
-            setStep(4);
-        };
-
-        // 1. Parse URL Parameters
         const params = new URLSearchParams(location.search);
-        if (params.get('mode') === 'sri') {
-            const payload = Object.fromEntries(params.entries());
-            applySriPayload(payload);
-        }
-
-        // 2. PostMessage listener from Chrome Extension
+        if (params.get('mode') === 'sri') applySriPayload(Object.fromEntries(params.entries()));
         const handleMessage = (e: MessageEvent) => {
-            if (e.data && e.data.type === 'CORDOVA_SRI_ORDER_EVENT') {
-                setSriAutoFillBanner(e.data.payload);
-            }
+            if (e.data && e.data.type === 'CORDOVA_SRI_ORDER_EVENT') setSriAutoFillBanner(e.data.payload);
         };
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search, clientes]);
 
     const canAdvance = () => {
         if (step === 1) return !!missionCategory;
         if (missionCategory === 'SRI') {
             if (step === 2) return !!cliente;
-            if (step === 3) return !!sriActividad; 
+            if (step === 3) return !!sriActividad;
             if (step === 4) return items.length > 0;
             if (step === 5) return true;
         } else if (missionCategory === 'COMERCIAL') {
@@ -148,120 +110,70 @@ const NuevoPedidoPage: React.FC = () => {
     };
 
     const handleCreateOrder = async () => {
-        let finalItems = [...items];
-        if (finalItems.length === 0) {
-            setError("Debe agregar al menos un ítem al pedido.");
-            return;
-        }
-
+        const finalItems = [...items];
+        if (finalItems.length === 0) { setError('Debe agregar al menos un ítem al pedido.'); return; }
         setLoading(true);
         setError(null);
         try {
             const userName = currentUser?.nombre || 'Pedro Córdova';
             const userRol = currentUser?.rol || 'Administrador';
-
             let finalCliente = cliente;
             if (!finalCliente) {
                 if (tempClient?.cedula || tempClient?.nombre) {
                     const cleanCed = (tempClient.cedula || '').replace(/\D/g, '');
-                    const existing = clientes.find(c => c.cedula === cleanCed || c.ruc === cleanCed);
-                    if (existing) {
-                        finalCliente = existing;
-                    } else {
-                        finalCliente = await addCliente({
-                            nombre: (tempClient.nombre || 'CONSUMIDOR FINAL').toUpperCase(),
-                            cedula: cleanCed || '9999999999',
-                            telefono: tempClient.telefono ? [tempClient.telefono] : [],
-                            regimen: tempClient.regimen || 'General',
-                            direccion: 'Local'
-                        });
-                    }
+                    finalCliente = clientes.find(c => c.cedula === cleanCed || c.ruc === cleanCed)
+                        || await addCliente({ nombre: (tempClient.nombre || 'CONSUMIDOR FINAL').toUpperCase(), cedula: cleanCed || '9999999999', telefono: tempClient.telefono ? [tempClient.telefono] : [], regimen: tempClient.regimen || 'General', direccion: 'Local' });
                 } else {
-                    const existingCF = clientes.find(c => c.cedula === '9999999999');
-                    if (existingCF) {
-                        finalCliente = existingCF;
-                    } else {
-                        finalCliente = await addCliente({
-                            nombre: 'CONSUMIDOR FINAL',
-                            cedula: '9999999999',
-                            regimen: 'General',
-                            direccion: 'Local'
-                        });
-                    }
+                    finalCliente = clientes.find(c => c.cedula === '9999999999')
+                        || await addCliente({ nombre: 'CONSUMIDOR FINAL', cedula: '9999999999', regimen: 'General', direccion: 'Local' });
                 }
             }
+            if (!finalCliente) throw new Error('No se pudo establecer un cliente para el pedido.');
 
-            if (!finalCliente) throw new Error("No se pudo establecer un cliente para el pedido.");
+            const results = await Promise.all(finalItems.map(async (item, index) => addTrabajo({
+                titular: finalCliente!.nombre,
+                clienteId: finalCliente!.id ? finalCliente!.id : undefined,
+                servicio: item.nombre || 'Servicio General',
+                detalle: isSriOrder ? `${item.cantidad || 1}x ${item.nombre || 'DOCUMENTO SRI'} (${item.especificaciones?.tamano || 'ESTÁNDAR'})` : `${item.descripcion || ''}`,
+                cantidad: item.cantidad || 1,
+                precio: item.precioFinal || 0,
+                abono: index === 0 ? abono : 0,
+                saldo: (item.precioFinal || 0) - (index === 0 ? abono : 0),
+                prioridad,
+                estado: TrabajoEstado.PENDIENTE,
+                fechaEntrada: new Date().toISOString(),
+                responsable: userName,
+                origen: 'Local',
+                esSRI: isSriOrder,
+                establecimiento: isSriOrder ? sriEstablecimiento : undefined,
+                puntoEmision: isSriOrder ? sriPuntoEmision : undefined,
+                tamano: item.especificaciones?.tamano || undefined,
+                estadoClave: isSriOrder ? (sriClave ? 'LISTA' : 'PENDIENTE') : 'LISTA',
+                claveAcceso: isSriOrder ? sriClave : undefined,
+                esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
+                actividadSeleccionada: isSriOrder ? sriActividad : null,
+                imprimirClave: isSriOrder ? imprimirClave : false,
+                numeracion: item.especificaciones?.numerado,
+                autorizacion_sri: item.especificaciones?.sri?.autorizacion,
+                fechaVencimiento: item.especificaciones?.sri?.vencimiento,
+            } as any, userName, imageFile)));
 
-            const results = await Promise.all(finalItems.map(async (item, index) => {
-                return await addTrabajo({
-                    titular: finalCliente!.nombre,
-                    clienteId: finalCliente!.id ? finalCliente!.id : undefined,
-                    servicio: item.nombre || 'Servicio General',
-                    detalle: isSriOrder 
-                        ? `${item.cantidad || 1}x ${item.nombre || 'DOCUMENTO SRI'} (${item.especificaciones?.tamano || 'ESTÁNDAR'})` 
-                        : `${item.descripcion || ''}`,
-                    cantidad: item.cantidad || 1,
-                    precio: item.precioFinal || 0,
-                    abono: index === 0 ? abono : 0,
-                    saldo: (item.precioFinal || 0) - (index === 0 ? abono : 0),
-                    prioridad,
-                    estado: TrabajoEstado.PENDIENTE,
-                    fechaEntrada: new Date().toISOString(),
-                    responsable: userName,
-                    origen: 'Local',
-                    esSRI: isSriOrder,
-                    establecimiento: isSriOrder ? sriEstablecimiento : undefined,
-                    puntoEmision: isSriOrder ? sriPuntoEmision : undefined,
-                    tamano: item.especificaciones?.tamano || undefined,
-                    estadoClave: isSriOrder ? (sriClave ? 'LISTA' : 'PENDIENTE') : 'LISTA',
-                    claveAcceso: isSriOrder ? sriClave : undefined,
-                    esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
-                    actividadSeleccionada: isSriOrder ? sriActividad : null,
-                    imprimirClave: isSriOrder ? imprimirClave : false,
-                    numeracion: item.especificaciones?.numerado,
-                    autorizacion_sri: item.especificaciones?.sri?.autorizacion,
-                    fechaVencimiento: item.especificaciones?.sri?.vencimiento
-                }, userName, imageFile);
-            }));
-
-            logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido (${finalItems.length} ítems) creado para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
+            logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido (${finalItems.length} ítems) para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
             refreshData().catch(() => {});
             setCreatedTrabajoId(results[0].id);
-            setStep(6); 
-            
-            if (isSriOrder) {
-                setTimeout(() => window.open(`/#/solicitud-impresion/${results[0].id}?format=a5`, '_blank'), 800);
-            } else {
-                setTimeout(() => window.open(`/#/recibo-epson/${results[0].id}`, '_blank'), 800);
-            }
+            setStep(6);
+            setTimeout(() => window.open(isSriOrder ? `/#/solicitud-impresion/${results[0].id}?format=a5` : `/#/recibo-epson/${results[0].id}`, '_blank'), 800);
         } catch (err: any) {
             console.error('[NuevoPedido] Error al crear orden:', err);
-            setError(err.message || 'Error al procesar la orden de producción.');
+            setError(err.message || 'Error al procesar la orden.');
         } finally {
             setLoading(false);
         }
     };
 
-    const getSteps = () => {
-        if (missionCategory === 'SRI') {
-            return [
-                { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-                { id: 2, label: 'Cliente', icon: UserIcon },
-                { id: 3, label: 'Datos SRI', icon: ShieldCheckIcon },
-                { id: 4, label: 'Servicios', icon: BookOpenIcon },
-                { id: 5, label: 'Pago', icon: CreditCardIcon },
-                { id: 6, label: 'Confirmado', icon: RocketLaunchIcon }
-            ];
-        }
-        return [
-            { id: 1, label: 'Categoría', icon: LayoutDashboardIcon },
-            { id: 2, label: 'Catálogo', icon: BookOpenIcon },
-            { id: 3, label: 'Cliente', icon: UserIcon },
-            { id: 4, label: 'Pago', icon: CreditCardIcon },
-            { id: 5, label: 'Confirmado', icon: RocketLaunchIcon }
-        ];
-    };
+    const steps = missionCategory === 'SRI'
+        ? ['Categoría', 'Cliente', 'Datos SRI', 'Servicios', 'Pago', 'Confirmado']
+        : ['Categoría', 'Catálogo', 'Cliente', 'Pago', 'Confirmado'];
 
     const handleSelectCategory = (category: 'SRI' | 'COMERCIAL') => {
         setMissionCategory(category);
@@ -270,293 +182,90 @@ const NuevoPedidoPage: React.FC = () => {
         setStep(2);
     };
 
-    const TelemetrySidebar = () => (
-        <motion.div 
-            initial={{ opacity: 0, x: 20 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            className="lg:col-span-4 sticky top-6 space-y-4"
-        >
-            <div className="bg-obsidian-card p-6 rounded-2xl border border-white/[0.06] shadow-sm space-y-6">
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-brand-blue" />
-                        <h3 className="text-[11px] font-black text-white uppercase tracking-wider">Resumen de Orden</h3>
-                    </div>
-                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        En Línea
-                    </span>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">
-                            Tipo de Solicitud
-                        </span>
-                        <div className="text-xl font-black text-white uppercase">
-                            {missionCategory === 'SRI' ? 'Facturación Fiscal SRI' : (missionCategory === 'COMERCIAL' ? 'Trabajo Comercial' : 'Sin Selección')}
-                        </div>
-                    </div>
-
-                    <div className="p-4 bg-white/[0.04] rounded-xl border border-white/[0.06] space-y-2">
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Monto Total</span>
-                            <span className="text-2xl font-black text-brand-blue">{formatCurrency(precio)}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px] font-medium text-slate-300 pt-2 border-t border-white/[0.06]">
-                            <span>Abono Ingresado:</span>
-                            <span className="font-bold text-emerald-600">{formatCurrency(abono)}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px] font-medium text-slate-300">
-                            <span>Saldo Pendiente:</span>
-                            <span className="font-bold text-red-500">{formatCurrency(precio - abono)}</span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-white/[0.04] rounded-xl border border-white/[0.06]">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase block">Ítems</span>
-                            <span className="text-lg font-black text-white">{items.length}</span>
-                        </div>
-                        <div className="p-3 bg-white/[0.04] rounded-xl border border-white/[0.06]">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase block">Prioridad</span>
-                            <span className={`text-xs font-black uppercase ${prioridad === 'Urgente' ? 'text-red-500' : 'text-white'}`}>
-                                {prioridad}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <button 
-                    onClick={() => setIsSidebarMinimized(true)} 
-                    className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[10px] font-bold text-slate-400 uppercase tracking-wider transition-all"
-                >
-                    Ocultar Resumen
-                </button>
-            </div>
-        </motion.div>
-    );
-
-    const showSidebar = !isSidebarMinimized && missionCategory && step < 5;
+    const showSidebar = missionCategory && step < 5;
 
     return (
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-            <div className="max-w-[1440px] mx-auto space-y-6">
+        <div style={S.page}>
+            <style>{PANEL_KEYFRAMES}</style>
+            <SEO title="Nueva Orden · Imprenta Córdova" />
+            <div style={{ ...S.wrap }}>
 
-                {/* ── SRI AUTO-FILL BANNER (REALTIME EMBED) ──────────────── */}
-                {sriAutoFillBanner && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-r from-blue-900/80 to-slate-900/90 border border-blue-500/40 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4 backdrop-blur-md"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 text-xl font-black">
-                                ⚡
-                            </div>
-                            <div>
-                                <h4 className="text-xs font-black text-blue-300 uppercase tracking-widest">Solicitud SRI Detectada</h4>
-                                <p className="text-sm font-bold text-white">
-                                    RUC {sriAutoFillBanner.ruc || sriAutoFillBanner.clientRuc} • {sriAutoFillBanner.name || sriAutoFillBanner.clientName} ({sriAutoFillBanner.blocks || 100} Comprobantes)
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => {
-                                    const payload = sriAutoFillBanner;
-                                    const ruc = payload.ruc || payload.clientRuc || '';
-                                    const name = payload.name || payload.clientName || '';
-                                    const phone = payload.phone || payload.clientPhone || '';
-                                    const activity = payload.activity || 'Comercio / Servicios General';
-                                    const docType = payload.docType || '1';
-                                    const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
-                                    const docSize = payload.docSize || '1/4 Oficio';
-                                    const totalVal = parseFloat(payload.total) || 13;
-                                    const abonoVal = parseFloat(payload.abono) || 0;
-                                    const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
-
-                                    setMissionCategory('SRI');
-                                    setIsSriOrder(true);
-                                    setOrderMode('CATALOG');
-                                    setSriActividad(activity);
-                                    setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
-
-                                    if (ruc || name) {
-                                        const cleanRuc = ruc.replace(/\D/g, '');
-                                        const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
-                                        if (found) {
-                                            setCliente(found);
-                                        } else {
-                                            setTempClient({
-                                                nombre: (name || 'CLIENTE SRI').toUpperCase(),
-                                                cedula: cleanRuc || '0700000000001',
-                                                telefono: phone,
-                                                regimen: docType === '1' ? 'Rimpe Popular' : 'General'
-                                            });
-                                        }
-                                    }
-
-                                    const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
-                                    const docName = docNames[docType] || 'Nota de Venta';
-
-                                    const sriItem = {
-                                        nombre: `${docName} (${blocks} Hojas)`,
-                                        cantidad: 1,
-                                        precioFinal: totalVal,
-                                        especificaciones: {
-                                            tamano: docSize,
-                                            paginas: blocks,
-                                            sri: { vencimiento: payload.caducidad || '' }
-                                        }
-                                    };
-
-                                    setItems([sriItem]);
-                                    setPrecio(totalVal);
-                                    setAbono(abonoVal);
-                                    setStep(4);
-                                    setSriAutoFillBanner(null);
-                                }}
-                                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md"
-                            >
-                                Importar Datos (1-Clic)
-                            </button>
-                            <button
-                                onClick={() => setSriAutoFillBanner(null)}
-                                className="p-2 text-slate-400 hover:text-white"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* ── STEPPER HEADER ────────────────────────────────────────── */}
-                <div className="bg-obsidian-card border border-white/[0.06] rounded-2xl p-4 shadow-sm flex items-center justify-between overflow-x-auto gap-4">
-                    <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                        {getSteps().map((s, idx) => {
-                            const isActive = step === s.id;
-                            const isPast = step > s.id;
-                            return (
-                                <React.Fragment key={s.id}>
-                                    <button
-                                        type="button"
-                                        disabled={!isPast && !isActive}
-                                        onClick={() => isPast && setStep(s.id)}
-                                        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all shrink-0 ${
-                                            isActive
-                                                ? 'bg-brand-blue text-white shadow-blue-glow-sm font-bold'
-                                                : isPast
-                                                ? 'bg-white/[0.08] text-white hover:bg-white/[0.12] font-bold'
-                                                : 'text-slate-400 opacity-60'
-                                        }`}
-                                    >
-                                        <s.icon className={`w-4 h-4 ${isActive ? 'text-white' : ''}`} />
-                                        <span className="text-[11px] uppercase tracking-wider whitespace-nowrap">
-                                            {s.id}. {s.label}
-                                        </span>
-                                    </button>
-                                    {idx < getSteps().length - 1 && (
-                                        <div className={`h-0.5 w-6 rounded-full shrink-0 ${isPast ? 'bg-brand-blue/30' : 'bg-white/[0.08]'}`} />
-                                    )}
-                                </React.Fragment>
-                            );
-                        })}
-                    </div>
-
-                    {missionCategory && isSidebarMinimized && (
-                        <button
-                            onClick={() => setIsSidebarMinimized(false)}
-                            className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl text-[10px] font-bold uppercase shrink-0 transition-colors"
-                        >
-                            Ver Resumen
-                        </button>
-                    )}
+                <div>
+                    <p style={S.eyebrow}>Operaciones</p>
+                    <h1 style={S.h1}>Nueva Orden</h1>
+                    <p style={S.lead}>Producto primero, cliente al final. La meta son 30 segundos por orden.</p>
                 </div>
 
-                {/* ── CONTENIDO PRINCIPAL Y SIDEBAR ───────────────────────── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className={`space-y-6 ${showSidebar ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+                {sriAutoFillBanner && (
+                    <div style={{ ...S.accentCard, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+                        <div>
+                            <div style={{ ...S.colHead, color: '#93A0C8' }}>Solicitud SRI detectada</div>
+                            <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>
+                                RUC {sriAutoFillBanner.ruc || sriAutoFillBanner.clientRuc} · {sriAutoFillBanner.name || sriAutoFillBanner.clientName} ({sriAutoFillBanner.blocks || 100} comprobantes)
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <button style={{ ...S.primaryBtn, background: '#1B6E3E' }} onClick={() => { applySriPayload(sriAutoFillBanner); setSriAutoFillBanner(null); }}>Importar (1 clic)</button>
+                            <button style={S.softBtn} onClick={() => setSriAutoFillBanner(null)}>Descartar</button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Stepper */}
+                <div style={{ ...S.card, padding: '12px 16px', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {steps.map((label, i) => {
+                        const id = i + 1;
+                        const active = step === id;
+                        const past = step > id;
+                        return (
+                            <button key={label} type="button" disabled={!past} onClick={() => past && setStep(id)}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 12px', borderRadius: 10, border: 'none',
+                                    fontSize: 11.5, fontWeight: 700, cursor: past ? 'pointer' : 'default', fontFamily: 'inherit',
+                                    ...(active ? { background: C.royal, color: '#fff' } : past ? { background: C.chipBlue, color: C.royal } : { background: 'transparent', color: C.faint }),
+                                }}>
+                                <span style={{ fontFamily: MONO }}>{id}</span> {label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: showSidebar ? 'minmax(0,1fr) minmax(0,320px)' : '1fr', gap: 16, alignItems: 'start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
                         <AnimatePresence mode="wait">
 
-                            {/* PASO 1: SELECCIÓN DE CATEGORÍA */}
                             {step === 1 && (
-                                <motion.div
-                                    key="s1"
-                                    initial={{ opacity: 0, y: 16 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -16 }}
-                                    className="bg-obsidian-card p-8 lg:p-12 rounded-2xl border border-white/[0.06] shadow-sm space-y-8 text-center"
-                                >
-                                    <div className="space-y-2 max-w-xl mx-auto">
-                                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em]">RECEPCIÓN DE TRABAJOS</span>
-                                        <h2 className="text-3xl font-black text-white uppercase tracking-tight">
-                                            Selecciona el Tipo de Orden
-                                        </h2>
-                                        <p className="text-[12px] text-slate-500 font-medium">
-                                            Elige el flujo de trabajo correspondiente para configurar los parámetros del pedido.
-                                        </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left">
-                                        {/* Card SRI */}
-                                        <div
-                                            onClick={() => handleSelectCategory('SRI')}
-                                            className="group bg-obsidian-card p-8 rounded-2xl border-2 border-white/[0.06] hover:border-brand-blue transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
-                                        >
-                                            <div className="w-14 h-14 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center group-hover:scale-105 transition-transform">
-                                                <ShieldCheckIcon className="w-8 h-8" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h3 className="text-xl font-black text-white uppercase">Facturación SRI</h3>
-                                                <p className="text-[12px] text-slate-500">
-                                                    Documentos fiscales autorizados (Facturas, Notas de Venta, Retenciones, Guías de Remisión).
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] font-black text-brand-blue uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                                                Iniciar Flujo SRI <ArrowRightIcon className="w-4 h-4" />
-                                            </div>
-                                        </div>
-
-                                        {/* Card Comercial */}
-                                        <div
-                                            onClick={() => handleSelectCategory('COMERCIAL')}
-                                            className="group bg-obsidian-card p-8 rounded-2xl border-2 border-white/[0.06] hover:border-purple-600 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md space-y-6"
-                                        >
-                                            <div className="w-14 h-14 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                                                <BookOpenIcon className="w-8 h-8" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h3 className="text-xl font-black text-white uppercase">Trabajos Comerciales</h3>
-                                                <p className="text-[12px] text-slate-500">
-                                                    Impresión publicitaria, gigantografías, sellos, merchandising, tarjetas y diseño gráfico.
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] font-black text-purple-600 uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                                                Iniciar Flujo Comercial <ArrowRightIcon className="w-4 h-4" />
-                                            </div>
-                                        </div>
+                                <motion.div key="s1" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} style={{ ...S.card, padding: '28px 24px' }}>
+                                    <h2 style={{ ...S.h2, fontSize: 18, textAlign: 'center' }}>Selecciona el tipo de orden</h2>
+                                    <p style={{ ...S.lead, textAlign: 'center' }}>Elige el flujo de trabajo para configurar el pedido.</p>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginTop: 20 }}>
+                                        <button onClick={() => handleSelectCategory('SRI')} style={{ textAlign: 'left', padding: 20, borderRadius: 14, cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${C.border}`, background: '#fff' }}>
+                                            <div style={{ fontFamily: DISPLAY, fontSize: 17, fontWeight: 600, color: C.ink }}>Facturación SRI</div>
+                                            <p style={{ margin: '6px 0 0', fontSize: 12.5, color: C.muted, lineHeight: 1.6 }}>Documentos fiscales autorizados: facturas, notas de venta, retenciones, guías.</p>
+                                            <div style={{ marginTop: 12, fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: C.royal }}>Iniciar flujo SRI →</div>
+                                        </button>
+                                        <button onClick={() => handleSelectCategory('COMERCIAL')} style={{ textAlign: 'left', padding: 20, borderRadius: 14, cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${C.border}`, background: '#fff' }}>
+                                            <div style={{ fontFamily: DISPLAY, fontSize: 17, fontWeight: 600, color: C.ink }}>Trabajos comerciales</div>
+                                            <p style={{ margin: '6px 0 0', fontSize: 12.5, color: C.muted, lineHeight: 1.6 }}>Publicidad, gigantografía, sellos, tarjetas, merchandising y diseño.</p>
+                                            <div style={{ marginTop: 12, fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#6D28D9' }}>Iniciar flujo comercial →</div>
+                                        </button>
                                     </div>
                                 </motion.div>
                             )}
 
-                            {/* PASO 2: CLIENTE (SRI) */}
                             {step === 2 && missionCategory === 'SRI' && (
-                                <motion.div key="s2sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-obsidian-card p-6 lg:p-8 rounded-2xl border border-white/[0.06] shadow-sm space-y-6">
-                                    <div className="space-y-1 border-b border-white/[0.06] pb-4">
-                                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-wider">Paso 2 — Identificación</span>
-                                        <h2 className="text-2xl font-black text-white uppercase">Seleccionar o Registrar Cliente SRI</h2>
-                                    </div>
-                                    <ClientSelector onSelect={c => { setCliente(c); if(c){setSriEstablecimiento(c.establecimientoPredeterminado || '001'); setSriPuntoEmision(c.puntoEmisionPredeterminado || '001'); setSriActividad(c.actividades || ''); setStep(3);} }} onCancel={() => setStep(1)} hideQuickButtons />
+                                <motion.div key="s2sri" initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} style={{ ...S.card, padding: 20 }}>
+                                    <h2 style={{ ...S.h2, fontSize: 16, marginBottom: 14 }}>Seleccionar o registrar cliente SRI</h2>
+                                    <ClientSelector onSelect={c => { setCliente(c); if (c) { setSriEstablecimiento(c.establecimientoPredeterminado || '001'); setSriPuntoEmision(c.puntoEmisionPredeterminado || '001'); setSriActividad(c.actividades || ''); setStep(3); } }} onCancel={() => setStep(1)} hideQuickButtons />
                                 </motion.div>
                             )}
 
-                            {/* PASO 2: COMERCIAL */}
                             {step === 2 && missionCategory === 'COMERCIAL' && (
-                                <motion.div key="s2com" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                                <motion.div key="s2com" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                     <CommercialFlow onComplete={async data => {
                                         setLoading(true);
-                                        const finalCliente = clientes.find(c => c.id === data.clienteId) || (await addCliente({ nombre: data.clienteNombre.toUpperCase(), cedula: '9999999999', regimen: 'General', direccion: 'Local' }));
-                                        setCliente(finalCliente);
+                                        const fc = clientes.find(c => c.id === data.clienteId) || (await addCliente({ nombre: data.clienteNombre.toUpperCase(), cedula: '9999999999', regimen: 'General', direccion: 'Local' }));
+                                        setCliente(fc);
                                         setItems([{ nombre: data.trabajo.tipo, cantidad: data.trabajo.cantidad, precioFinal: data.trabajo.total, especificaciones: { tamano: data.trabajo.tamano } }]);
                                         setPrecio(data.trabajo.total);
                                         setAbono(data.trabajo.abono || 0);
@@ -566,136 +275,103 @@ const NuevoPedidoPage: React.FC = () => {
                                 </motion.div>
                             )}
 
-                            {/* PASO 3: TRÁMITES SRI */}
                             {step === 3 && missionCategory === 'SRI' && cliente && (
-                                <motion.div key="s3sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-obsidian-card p-6 lg:p-8 rounded-2xl border border-white/[0.06] shadow-sm">
-                                    <SriSolicitudStep cliente={cliente} initialData={{ actividad: sriActividad, modo: sriMode, clave: sriClave, establecimiento: sriEstablecimiento, puntoEmision: sriPuntoEmision }} onBack={() => setStep(2)} onComplete={d => { setSriActividad(d.actividad); setSriMode(d.modo); setSriClave(d.clave); setSriEstablecimiento(d.establecimiento); setSriPuntoEmision(d.puntoEmision); setStep(4); }} />
+                                <motion.div key="s3sri" initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} style={{ ...S.card, padding: 20 }}>
+                                    <SriSolicitudStep cliente={cliente} initialData={{ actividad: sriActividad, modo: sriMode, clave: sriClave, establecimiento: sriEstablecimiento, puntoEmision: sriPuntoEmision }}
+                                        onBack={() => setStep(2)} onComplete={d => { setSriActividad(d.actividad); setSriMode(d.modo); setSriClave(d.clave); setSriEstablecimiento(d.establecimiento); setSriPuntoEmision(d.puntoEmision); setStep(4); }} />
                                 </motion.div>
                             )}
 
-                            {/* PASO 4: SERVICIOS Y PRODUCTOS (SRI) */}
                             {step === 4 && missionCategory === 'SRI' && (
-                                <motion.div key="s4sri" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="bg-obsidian-card p-6 lg:p-8 rounded-2xl border border-white/[0.06] shadow-sm space-y-6">
+                                <motion.div key="s4sri" initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} style={{ ...S.card, padding: 20 }}>
                                     {(isAddingItem || items.length === 0) ? (
-                                        !servicio ? <ServiceSelector onSelect={setServicio} regimen={cliente?.regimen} forcedCategory="SRI" /> : 
-                                        <ProductConfigurator product={servicio} regimen={cliente?.regimen} onCancel={() => setServicio(null)} onComplete={c => { setItems(p => [...p, c]); setPrecio(p => p + c.precioFinal); setServicio(null); setIsAddingItem(false); }} />
+                                        !servicio
+                                            ? <ServiceSelector onSelect={setServicio} regimen={cliente?.regimen} forcedCategory="SRI" />
+                                            : <ProductConfigurator product={servicio} regimen={cliente?.regimen} onCancel={() => setServicio(null)} onComplete={c => { setItems(p => [...p, c]); setPrecio(p => p + c.precioFinal); setServicio(null); setIsAddingItem(false); }} />
                                     ) : (
-                                        <div className="space-y-6">
-                                            <div className="space-y-3">
-                                                {items.map((item, idx) => (
-                                                    <div key={idx} className="bg-white/[0.04] p-5 rounded-xl border border-white/[0.06] flex items-center justify-between">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-lg flex items-center justify-center font-black">
-                                                                {idx + 1}
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="text-base font-black text-white uppercase">{item.nombre}</h4>
-                                                                <p className="text-[10px] text-slate-500 font-bold uppercase">{item.cantidad} UNID | {item.especificaciones?.tamano || 'Estándar'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-6">
-                                                            <div className="text-right">
-                                                                <span className="text-[9px] font-bold text-slate-400 uppercase block">Subtotal</span>
-                                                                <span className="text-lg font-black text-white">{formatCurrency(item.precioFinal)}</span>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => { setItems(p => p.filter((_, i) => i !== idx)); setPrecio(p => p - item.precioFinal); }}
-                                                                className="p-2 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                                                            >
-                                                                ✕
-                                                            </button>
-                                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            {items.map((item, idx) => (
+                                                <div key={idx} style={{ ...S.card, background: C.bg, padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                                    <div>
+                                                        <div style={{ fontSize: 13.5, fontWeight: 600, color: C.ink }}>{item.nombre}</div>
+                                                        <div style={{ fontSize: 11.5, color: C.faint, marginTop: 2 }}>{item.cantidad} u. · {item.especificaciones?.tamano || 'Estándar'}</div>
                                                     </div>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={() => setIsAddingItem(true)}
-                                                className="w-full py-4 border-2 border-dashed border-white/[0.06] hover:border-brand-blue rounded-xl text-slate-300 font-bold uppercase text-[11px] tracking-wider hover:bg-brand-blue/5 transition-all flex items-center justify-center gap-2"
-                                            >
-                                                <SparklesIcon className="w-4 h-4 text-brand-blue" /> Agregar Otro Ítem
-                                            </button>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                        <span style={{ fontFamily: MONO, fontWeight: 600, color: C.ink }}>{formatCurrency(item.precioFinal)}</span>
+                                                        <button style={{ ...S.softBtn, padding: '4px 8px', fontSize: 11, background: '#FEF2F2', color: '#B91C1C' }}
+                                                            onClick={() => { setItems(p => p.filter((_, i) => i !== idx)); setPrecio(p => p - item.precioFinal); }}>Quitar</button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <button style={{ ...S.outlineBtn, justifyContent: 'center', borderStyle: 'dashed' }} onClick={() => setIsAddingItem(true)}>Agregar otro ítem</button>
                                         </div>
                                     )}
                                 </motion.div>
                             )}
 
-                            {/* PASO 5: RESUMEN Y PAGO */}
                             {step === 5 && (
-                                <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full space-y-4">
+                                <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                     {error && (
-                                        <div className="p-4 bg-brand-red/10 border border-brand-red/20 rounded-xl text-brand-red text-xs font-bold flex items-center gap-2">
-                                            <ExclamationTriangleIcon className="w-5 h-5 text-rose-500 shrink-0" />
-                                            <span>{error}</span>
-                                        </div>
+                                        <div style={{ padding: 14, background: '#FEF2F2', border: '1px solid #FBD5D5', borderRadius: 12, color: '#B91C1C', fontSize: 12.5, fontWeight: 600 }}>{error}</div>
                                     )}
-                                    <OrderSummary 
-                                        isOpen 
-                                        items={items} 
-                                        total={precio} 
-                                        abono={abono} 
-                                        setAbono={setAbono} 
-                                        client={cliente} 
-                                        tempClient={tempClient}
-                                        setTempClient={setTempClient}
-                                        onDeploy={handleCreateOrder} 
-                                        isLoading={loading} 
-                                        sriData={{ claveAcceso: sriClave, estadoClave: sriClave ? 'LISTA' : 'PENDIENTE' }} 
-                                        setSriData={d => setSriClave(d.claveAcceso)} 
-                                        imprimirClave={imprimirClave} 
-                                        setImprimirClave={setImprimirClave} 
-                                        onClose={() => setStep(step - 1)} 
-                                    />
+                                    <OrderSummary isOpen items={items} total={precio} abono={abono} setAbono={setAbono} client={cliente}
+                                        tempClient={tempClient} setTempClient={setTempClient} onDeploy={handleCreateOrder} isLoading={loading}
+                                        sriData={{ claveAcceso: sriClave, estadoClave: sriClave ? 'LISTA' : 'PENDIENTE' }} setSriData={d => setSriClave(d.claveAcceso)}
+                                        imprimirClave={imprimirClave} setImprimirClave={setImprimirClave} onClose={() => setStep(step - 1)} />
                                 </motion.div>
                             )}
 
-                            {/* PASO 6: ORDEN CONFIRMADA */}
                             {step === 6 && (
-                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-obsidian-card p-8 lg:p-16 rounded-2xl border border-white/[0.06] shadow-sm text-center space-y-8">
-                                    <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
-                                        <CheckCircleIcon className="w-10 h-10" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Orden Creada Correctamente</span>
-                                        <h2 className="text-3xl font-black text-white uppercase">Orden #{createdTrabajoId?.substring(0, 8)}</h2>
-                                    </div>
-
-                                    <div className="flex flex-wrap gap-4 justify-center pt-4">
-                                        <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl text-[11px] font-black uppercase transition-all">
-                                            Ir al Dashboard
-                                        </button>
-                                        <button onClick={() => window.location.reload()} className="px-6 py-3 bg-brand-blue text-white rounded-xl text-[11px] font-black uppercase transition-all shadow-blue-glow-sm">
-                                            Nueva Orden
-                                        </button>
+                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ ...S.card, padding: '40px 24px', textAlign: 'center' }}>
+                                    <div style={{ ...S.colHead, color: C.success }}>Orden creada correctamente</div>
+                                    <h2 style={{ ...S.h1, fontSize: 24, marginTop: 6 }}>Orden #{createdTrabajoId?.substring(0, 8)}</h2>
+                                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 20, flexWrap: 'wrap' }}>
+                                        <button style={S.softBtn} onClick={() => navigate('/dashboard')}>Ir al panel</button>
+                                        <button style={S.primaryBtn} onClick={() => window.location.reload()}>Nueva orden</button>
                                     </div>
                                 </motion.div>
                             )}
-
                         </AnimatePresence>
 
-                        {/* NAVEGACIÓN ENTRE PASOS */}
                         {step < 5 && step > 1 && (
-                            <div className="flex justify-between items-center bg-obsidian-card p-4 rounded-2xl border border-white/[0.06] shadow-sm">
-                                <button
-                                    onClick={() => setStep(p => p - 1)}
-                                    className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-wider hover:text-white transition-colors"
-                                >
-                                    <ChevronLeftIcon className="w-4 h-4" /> Atrás
-                                </button>
-                                {canAdvance() && (
-                                    <button
-                                        onClick={() => setStep(p => p + 1)}
-                                        className="flex items-center gap-2 px-6 py-3 bg-brand-blue text-white rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-brand-blue/90 transition-all shadow-blue-glow-sm"
-                                    >
-                                        Siguiente Paso <ChevronRightIcon className="w-4 h-4" />
-                                    </button>
-                                )}
+                            <div style={{ ...S.card, padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <button style={S.softBtn} onClick={() => setStep(p => p - 1)}>← Atrás</button>
+                                {canAdvance() && <button style={S.primaryBtn} onClick={() => setStep(p => p + 1)}>Siguiente →</button>}
                             </div>
                         )}
                     </div>
 
-                    {showSidebar && <TelemetrySidebar />}
+                    {showSidebar && (
+                        <div style={{ ...S.card, padding: 18, position: 'sticky', top: 88, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <h3 style={{ ...S.h2, fontSize: 15 }}>Resumen de la orden</h3>
+                            <div style={{ fontSize: 12.5, color: C.muted }}>
+                                {missionCategory === 'SRI' ? 'Facturación fiscal SRI' : missionCategory === 'COMERCIAL' ? 'Trabajo comercial' : 'Sin selección'}
+                            </div>
+                            <div style={{ ...S.card, background: C.bg, padding: 14 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                    <span style={S.colHead}>Total</span>
+                                    <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 700, color: C.royal }}>{formatCurrency(precio)}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.rowLine}` }}>
+                                    <span style={{ color: C.muted }}>Abono</span><span style={{ color: C.success, fontFamily: MONO }}>{formatCurrency(abono)}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
+                                    <span style={{ color: C.muted }}>Saldo</span><span style={{ color: C.ink, fontFamily: MONO }}>{formatCurrency(precio - abono)}</span>
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                <div style={{ ...S.card, background: C.bg, padding: 12 }}>
+                                    <div style={S.colHead}>Ítems</div>
+                                    <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 600, color: C.ink, marginTop: 4 }}>{items.length}</div>
+                                </div>
+                                <div style={{ ...S.card, background: C.bg, padding: 12 }}>
+                                    <div style={S.colHead}>Prioridad</div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: prioridad === 'Urgente' ? C.danger : C.ink, marginTop: 4 }}>{prioridad}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-
             </div>
         </div>
     );
