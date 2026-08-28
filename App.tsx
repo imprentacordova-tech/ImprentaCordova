@@ -11,6 +11,7 @@ const VisualLanding = React.lazy(() => import('./pages/VisualLanding'));
 const LoginPage = React.lazy(() => import('./pages/Login'));
 const TrackingPage = React.lazy(() => import('./pages/Tracking'));
 const VitrinaPage = React.lazy(() => import('./pages/Vitrina'));
+const PanelInternoPage = React.lazy(() => import('./pages/PanelInterno'));
 
 // ── Lazy-loaded Printable Documents ──────────────────────────────────────
 const OrdenProduccionPage = React.lazy(() => import('./pages/OrdenProduccion'));
@@ -83,6 +84,9 @@ const App: React.FC = () => {
             user ? <Navigate to="/dashboard" replace /> : <LoginPage />
           } />
           <Route path="/tracking" element={<TrackingPage />} />
+
+          {/* Panel Interno — importado de Claude Design (Panel-Interno.dc.html) */}
+          <Route path="/panel-interno" element={<PanelInternoPage />} />
 
           {/* Internal Print Views (No Layout) */}
           <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
