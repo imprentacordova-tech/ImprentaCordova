@@ -382,16 +382,24 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* DECLARACIÓN LEGAL Y FIRMA */}
-                <div className="grid grid-cols-12 gap-3 text-[7px] text-slate-700 mt-1 items-end">
+                {/* DECLARACIÓN LEGAL, QR Y FIRMA */}
+                <div className="grid grid-cols-12 gap-2 text-[7px] text-slate-700 mt-1 items-center">
                     <div className="col-span-6 leading-tight">
                         <p>Declaro que los datos proporcionados en esta solicitud son exactos y verdaderos, por lo que asumo la responsabilidad sobre su presentación.</p>
-                        <p className="font-bold text-[6.5px] mt-1">Nota: En caso de que el trámite sea realizado por un tercero deberá adjuntar poder especial o general.</p>
+                        <p className="font-bold text-[6.5px] mt-0.5">Nota: En caso de que el trámite sea realizado por un tercero deberá adjuntar poder especial o general.</p>
                     </div>
-                    <div className="col-span-6 text-center">
+                    <div className="col-span-2 flex flex-col items-center justify-center">
+                        <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`https://www.imprentacordova.net/tracking?orden=${trabajo.orden || trabajo.id}`)}`} 
+                            alt="QR Tracking" 
+                            className="w-10 h-10 border border-slate-300 rounded p-[1px] bg-white shadow-xs"
+                        />
+                        <span className="text-[5.5px] font-black text-[#0e3150] mt-0.5 uppercase tracking-tighter">Rastrear Orden</span>
+                    </div>
+                    <div className="col-span-4 text-center">
                         <div className="border-b border-dotted border-slate-500 w-full mb-1"></div>
                         <div className="font-black text-[7.5px] text-[#0e3150] uppercase">Firma del Solicitante</div>
-                        <div className="text-[6.5px] text-slate-500 truncate">Razón social / Apellidos y nombres: {cliente.nombre}</div>
+                        <div className="text-[6.5px] text-slate-500 truncate">Razón social / Nombres: {cliente.nombre}</div>
                         <div className="text-[6.5px] text-slate-500">C.I.: {cliente.ruc || cliente.cedula}</div>
                     </div>
                 </div>

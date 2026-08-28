@@ -1351,6 +1351,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (m2) m2.textContent = monthStr[1];
     if (a1) a1.textContent = yearStr[0];
     if (a2) a2.textContent = yearStr[1];
+
+    // Rellenar QR dinámico de rastreo
+    const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${d.orderNum || ''}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
+    document.querySelectorAll('.prt-qr-img').forEach(el => {
+      el.src = qrUrl;
+    });
   }
 
   // Renderizar la vista previa en vivo

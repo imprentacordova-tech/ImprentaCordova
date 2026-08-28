@@ -1,6 +1,6 @@
 // ==========================================================================
 // CORDOVA ELITE SRI EXTENSION - CONTENT SCRIPT
-// Ultra-subtle, non-intrusive automation & live synchronization with Web
+// Ultra-subtle, non-intrusive automation, robust login & live synchronization
 // ==========================================================================
 
 // Utility: Request background script to execute function in MAIN world (Bypasses CSP)
@@ -26,8 +26,20 @@ function waitForElement(selector, timeout = 10000) {
   });
 }
 
+// Utility: Detect if current page is a login / authentication screen
+function isSRILoginScreen() {
+  const url = window.location.href.toLowerCase();
+  if (url.includes('login') || url.includes('logout') || url.includes('j_security_check')) return true;
+  
+  const hasPasswordInput = !!document.querySelector('input[type="password"], #password, #pass');
+  const hasLoginSubmit = !!document.querySelector('input.boton-ingresar-login, input[name="boton"][value="Ingresar"], input[value="Ingresar"]');
+  const hasLoginForm = !!document.querySelector('form[action*="login"], form[action*="j_security_check"]');
+  
+  return hasPasswordInput || hasLoginSubmit || hasLoginForm;
+}
+
 // Utility: Subtle non-blocking Toast HUD in the corner
-function showCordovaToastHud(message, isSuccess = false) {
+function showCordovaToastHud(message) {
   const existing = document.getElementById('cordova-toast-hud');
   if (existing) existing.remove();
 
@@ -92,9 +104,8 @@ function showCordovaAlert(title, message, isFinal = false, onConfirm = null, aut
     return;
   }
 
-  // Non-autopilot mode
   showCordovaToastHud(`💡 ${title}`);
-  if (onConfirm) setTimeout(() => onConfirm(), 400);
+  if (onConfirm) setTimeout(() => onConfirm(), 350);
 }
 
 // Utility: Briefly highlight element being acted on
@@ -110,6 +121,13 @@ function highlightSRIElement(el) {
 // STEP SUGGESTION FLOATING MINI-HUD (DOCKABLE / NON-INTRUSIVE)
 // -------------------------------------------------------------
 function showStepSuggestionBanner() {
+  // CRÍTICO: Si estamos en la pantalla de Login, NUNCA inyectar el HUD para no tapar el formulario
+  if (isSRILoginScreen()) {
+    const existing = document.querySelector('.cordova-suggestion-banner');
+    if (existing) existing.remove();
+    return;
+  }
+
   chrome.storage.local.get([
     'cordova_suggestion_disabled',
     'cordovaAutoPilot',
@@ -432,13 +450,15 @@ function parseSRIDateToISO(dateStr) {
 }
 
 // -------------------------------------------------------------
-// SUPABASE REAL-TIME CLOUD SYNC
+// SUPABASE REAL-TIME CLOUD SYNC (PUBLIC ANON KEY - SAFE CLIENT)
 // -------------------------------------------------------------
+const SUPABASE_URL = 'https://keilxgrrevfsvyxufecz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNTQyNjUsImV4cCI6MjA5MTkzMDI2NX0.5_Z0qTjY2Rj-a3h6tFw-yW1j79mE0gN4e74C93d84f0';
+
 let currentSyncedTrabajoId = null;
 let currentSyncedClienteId = null;
 
 async function autoSyncToSupabase(orderData) {
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
   const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
   const docName = docNames[orderData.docType] || 'Nota de Venta';
 
@@ -459,12 +479,12 @@ async function autoSyncToSupabase(orderData) {
         actividades: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
       };
 
-      const clientRes = await fetch('https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/clientes', {
+      const clientRes = await fetch(`${SUPABASE_URL}/rest/v1/clientes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Prefer': 'resolution=merge-duplicates,return=representation'
         },
         body: JSON.stringify(clientPayload)
@@ -498,12 +518,12 @@ async function autoSyncToSupabase(orderData) {
       fecha_vencimiento: parseSRIDateToISO(orderData.caducidad)
     };
 
-    const trabajoRes = await fetch('https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos', {
+    const trabajoRes = await fetch(`${SUPABASE_URL}/rest/v1/trabajos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'Prefer': 'return=representation'
       },
       body: JSON.stringify(trabajoPayload)
@@ -521,8 +541,6 @@ async function autoSyncToSupabase(orderData) {
 }
 
 async function updateSupabaseOrderRefinement(orderData) {
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
-  
   const totalVal = parseFloat(orderData.total) || 13.00;
   const abonoVal = parseFloat(orderData.abono) || 0.00;
   const saldoVal = Math.max(0, totalVal - abonoVal);
@@ -536,12 +554,12 @@ async function updateSupabaseOrderRefinement(orderData) {
       };
       
       const filterQuery = currentSyncedClienteId ? `id=eq.${currentSyncedClienteId}` : `ruc=eq.${orderData.clientRuc}`;
-      await fetch(`https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/clientes?${filterQuery}`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/clientes?${filterQuery}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify(clientUpdate)
       });
@@ -557,12 +575,12 @@ async function updateSupabaseOrderRefinement(orderData) {
         actividad_seleccionada: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
       };
 
-      await fetch(`https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos?id=eq.${currentSyncedTrabajoId}`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/trabajos?id=eq.${currentSyncedTrabajoId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify(trabajoUpdate)
       });
@@ -638,7 +656,7 @@ function showCordovaSuccessModal(finalData, blocks) {
 
         <!-- SUCCESS BADGE -->
         <div class="drawer-success-banner">
-          <span>⚡ Sincronizado con Base de Datos Web (imprentacordova.net)</span>
+          <span>⚡ Sincronizado en Vivo con la Plataforma Web (imprentacordova.net)</span>
         </div>
 
         <!-- FORM BOX -->
@@ -938,7 +956,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     chrome.storage.local.set({ current_session_ruc: activeRuc });
     isImprenta = (activeRuc === '0702065319001');
   } else {
-    if (url.includes('login') || url.includes('logout') || document.querySelector('form[action*="login"]')) {
+    if (isSRILoginScreen()) {
       chrome.storage.local.set({ current_session_ruc: null });
       isImprenta = false;
     } else {
@@ -946,13 +964,13 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     }
   }
 
-  // SRI Login Page Assistant
-  const loginSubmitBtn = document.querySelector('input.boton-ingresar-login, input[name="boton"][value="Ingresar"]');
-  if (url.includes('login') || loginSubmitBtn || document.querySelector('form[action*="login"]')) {
+  // SRI Login Page Assistant: Solo la barra superior
+  if (isSRILoginScreen()) {
     injectSRILoginAssistant();
+    return; // NO inyectar el stepper HUD en el login
   }
 
-  // Sugerencia HUD en Facturación
+  // Sugerencia HUD en Facturación solo si no es Login y no es Imprenta propia
   if (!isImprenta && !config.cordova_suggestion_disabled && url.includes('facturacion-internet')) {
     showStepSuggestionBanner();
   }
@@ -1154,7 +1172,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         timestamp: Date.now()
       };
 
-      // Sincronización transparente
+      // Sincronización transparente con clave pública segura
       await autoSyncToSupabase(immediateOrder);
       showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
 
