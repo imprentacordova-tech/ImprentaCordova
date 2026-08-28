@@ -36,6 +36,24 @@ const ITEMS: Item[] = [
 const CATS = ['Todo', 'SRI', 'Comercial', 'Sellos', 'Gran formato'];
 const ETAS = ['Cualquiera', 'Mismo día / 24 h', '48 h o más'];
 
+/* Hover de tarjeta y animación de entrada del diseño, más el corte
+   escritorio/celular: en celular el panel lateral se vuelve una barra
+   compacta (buscador + chips), como en `Publica-B-Movil.dc.html`. */
+const CSS = `
+  @keyframes vc-rise { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+  .vc-rise { animation: vc-rise .7s cubic-bezier(.2,.8,.2,1) both; }
+  .vc-card { transition: all .4s cubic-bezier(.2,.8,.2,1); }
+  .vc-card:hover { transform: translateY(-6px); box-shadow: 0 28px 50px -28px rgba(10,17,64,.3); border-color: #C9D3F0; }
+  .vc-layout { display:grid; grid-template-columns: minmax(0,280px) 1fr; gap:28px; align-items:start; }
+  .vc-aside { position:sticky; top:98px; }
+  .vc-compact { display:none; }
+  @media (max-width: 1023px) {
+    .vc-layout { grid-template-columns: 1fr; gap:20px; }
+    .vc-aside { display:none; }
+    .vc-compact { display:block; }
+  }
+`;
+
 const Vitrina: React.FC = () => {
     const [cat, setCat] = useState('Todo');
     const [eta, setEta] = useState('Cualquiera');
@@ -54,11 +72,12 @@ const Vitrina: React.FC = () => {
 
     return (
         <div style={{ background: '#fff', color: C.ink, fontFamily: "'Inter',system-ui,sans-serif", minHeight: '100vh' }}>
+            <style>{CSS}</style>
             <SEO title="Catálogo de impresión · Imprenta Córdova" description="Facturas, notas de venta, talonarios, sellos, tarjetas y gran formato. Diseño y prueba digital incluidos." />
             <PublicNavbar />
 
             <section style={{ borderBottom: `1px solid ${C.divider}`, background: 'linear-gradient(180deg,#F7F9FF,#fff)' }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(40px,5vw,64px) clamp(16px,3vw,44px) clamp(28px,3vw,40px)' }}>
+                <div className="vc-rise" style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(40px,5vw,64px) clamp(16px,3vw,44px) clamp(28px,3vw,40px)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.faint }}>
                         <a href="/" style={{ color: C.faint, textDecoration: 'none' }}>Inicio</a><span>/</span><span style={{ color: C.body }}>Catálogo</span>
                     </div>
@@ -70,9 +89,9 @@ const Vitrina: React.FC = () => {
             </section>
 
             <section style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(28px,3vw,40px) clamp(16px,3vw,44px) clamp(56px,7vw,96px)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,280px) 1fr', gap: 28, alignItems: 'start' }}>
+                <div className="vc-layout">
 
-                    <aside className="hidden lg:block" style={{ position: 'sticky', top: 98 }}>
+                    <aside className="vc-aside">
                         <div style={{ border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
                             <div style={{ padding: '16px 18px', borderBottom: `1px solid ${C.divider}` }}>
                                 <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>Buscar</div>
@@ -125,15 +144,28 @@ const Vitrina: React.FC = () => {
                     </aside>
 
                     <div style={{ minWidth: 0 }}>
-                        {/* filtros compactos en celular */}
-                        <div className="lg:hidden" style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 12, marginBottom: 4 }}>
-                            {CATS.map(c => (
-                                <button key={c} onClick={() => setCat(c)}
-                                    style={{
-                                        flexShrink: 0, padding: '7px 13px', borderRadius: 99, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                                        ...(cat === c ? { background: C.royal, color: '#fff', border: `1px solid ${C.royal}` } : { background: '#fff', color: C.body, border: `1px solid ${C.borderStrong}` }),
-                                    }}>{c}</button>
-                            ))}
+                        {/* Celular: buscador + chips (Publica-B-Movil, pantalla Catálogo) */}
+                        <div className="vc-compact" style={{ marginBottom: 16 }}>
+                            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="talonario, sello, lona…"
+                                style={{ width: '100%', padding: '12px 14px', background: C.bg, border: `1px solid ${C.borderStrong}`, borderRadius: 11, fontSize: 14, color: C.ink, outline: 'none', fontFamily: 'inherit' }} />
+                            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', marginTop: 11, paddingBottom: 2 }}>
+                                {CATS.map(c => (
+                                    <button key={c} onClick={() => setCat(c)}
+                                        style={{
+                                            flexShrink: 0, padding: '7px 13px', borderRadius: 99, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', minHeight: 34,
+                                            ...(cat === c ? { background: C.royal, color: '#fff', border: `1px solid ${C.royal}` } : { background: '#fff', color: C.body, border: `1px solid ${C.borderStrong}` }),
+                                        }}>{c}</button>
+                                ))}
+                            </div>
+                            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', marginTop: 8, paddingBottom: 2 }}>
+                                {ETAS.map(e => (
+                                    <button key={e} onClick={() => setEta(e)}
+                                        style={{
+                                            flexShrink: 0, padding: '6px 12px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                                            ...(eta === e ? { background: C.chip, color: C.royal, border: `1px solid ${C.royal}` } : { background: '#fff', color: C.faint, border: `1px solid ${C.borderStrong}` }),
+                                        }}>{e}</button>
+                                ))}
+                            </div>
                         </div>
 
                         {matches.length === 0 ? (
@@ -144,7 +176,7 @@ const Vitrina: React.FC = () => {
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,268px),1fr))', gap: 20 }}>
                                 {matches.map(it => (
-                                    <div key={it.label + it.tag} style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                    <div key={it.label + it.tag} className="vc-card" style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                         <div style={{ height: 176, position: 'relative', overflow: 'hidden', background: `#F5F7FD url("${IMG(it.img)}") center/cover no-repeat` }}>
                                             <span style={{ position: 'absolute', top: 12, left: 12, padding: '5px 10px', background: 'rgba(255,255,255,.94)', borderRadius: 7, fontSize: 11, fontWeight: 700, color: C.royal }}>{it.tag}</span>
                                         </div>
@@ -168,6 +200,13 @@ const Vitrina: React.FC = () => {
                                 ))}
                             </div>
                         )}
+
+                        {/* Celular: la tarjeta de ayuda del panel lateral va al final */}
+                        <div className="vc-compact" style={{ marginTop: 20, padding: 18, background: C.ink, borderRadius: 14, color: '#fff' }}>
+                            <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: '#93A0C8' }}>¿No encuentra su formato?</div>
+                            <p style={{ margin: '8px 0 14px', fontSize: 13.5, lineHeight: 1.65, color: '#C9D2EC' }}>Imprimimos casi cualquier documento comercial. Cuéntenos qué necesita.</p>
+                            <a href={WA + 'un%20formato%20a%20medida'} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', padding: 11, background: '#fff', color: C.ink, borderRadius: 9, fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>Escribir por WhatsApp</a>
+                        </div>
                     </div>
                 </div>
             </section>
