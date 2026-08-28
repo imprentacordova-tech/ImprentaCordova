@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { APP_NAME } from '../constants';
 import {
-    AddIcon, LogoutIcon, MenuIcon, CloseIcon,
+    LogoutIcon, MenuIcon, CloseIcon,
     UsersIcon, Cog8ToothIcon,
     DashboardIcon, CalculatorIcon, PaletteIcon, CordovaLogo,
     SparklesIcon, RocketLaunchIcon,
@@ -20,9 +19,23 @@ import { MobileFloatingNav } from './MobileFloatingNav';
 import { SearchOmni } from './SearchOmni';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
+/**
+ * Layout interno — Sistema "Marino & Oro" (tema claro).
+ * Shell fiel a `Panel-Interno.dc.html` (Claude Design): sidebar marino,
+ * header claro, barra móvil. Cableado real: rutas, badges de datos, auth.
+ * Ver design_manifest.md §2.
+ */
+
 interface LayoutProps {
     children: React.ReactNode;
 }
+
+// ── Paleta ──────────────────────────────────────────────────────────────────
+const C = {
+    bg: '#F7F9FF', ink: '#0A1140', royal: '#16309B', royalHover: '#0F2280',
+    gold: '#FFC61A', border: '#E4E8F4', borderStrong: '#D7DDF0',
+    faint: '#8A93AE', muted: '#6B7590', chipBlue: '#EEF1FC',
+};
 
 const buildNavGroups = (isAdmin: boolean) => [
     {
@@ -93,28 +106,39 @@ const PAGE_TITLES: Record<string, string> = {
     '/configuracion': 'Configuración General',
 };
 
-const RoleBadge: React.FC<{ rol: string }> = React.memo(({ rol }) => {
-    const config = {
-        'Admin':     { bg: 'bg-amber-500/10 border-amber-500/20 text-amber-400' },
-        'root':      { bg: 'bg-brand-red/10 border-brand-red/20 text-brand-red' },
-        'Operador':  { bg: 'bg-brand-blue/10 border-brand-blue/20 text-brand-blue' },
-        'Diseñador': { bg: 'bg-purple-500/10 border-purple-500/20 text-purple-400' },
-    }[rol] ?? { bg: 'bg-white/5 border-white/10 text-slate-400' };
+const ROLE_STYLE: Record<string, React.CSSProperties> = {
+    'Admin':     { background: 'rgba(255,198,26,.1)', color: C.gold, borderColor: 'rgba(255,198,26,.3)' },
+    'root':      { background: 'rgba(231,1,1,.1)', color: '#FF6B6B', borderColor: 'rgba(231,1,1,.25)' },
+    'Operador':  { background: 'rgba(43,98,255,.12)', color: '#9DB4FF', borderColor: 'rgba(43,98,255,.25)' },
+    'Diseñador': { background: 'rgba(139,92,246,.14)', color: '#C4B0FF', borderColor: 'rgba(139,92,246,.3)' },
+};
 
-    return (
-        <span className={`text-[7px] font-black uppercase tracking-[0.3em] px-2 py-0.5 rounded-full border ${config.bg}`}>
-            {rol}
-        </span>
-    );
-});
+const RoleBadge: React.FC<{ rol: string }> = React.memo(({ rol }) => (
+    <span
+        style={{
+            display: 'inline-block', marginTop: 3, padding: '2px 7px', borderRadius: 99, border: '1px solid transparent',
+            fontSize: 7.5, fontWeight: 800, letterSpacing: '.24em', textTransform: 'uppercase',
+            ...(ROLE_STYLE[rol] ?? { background: 'rgba(255,255,255,.06)', color: '#9AA6CE', borderColor: 'rgba(255,255,255,.12)' }),
+        }}
+    >
+        {rol}
+    </span>
+));
 
 const NavItem: React.FC<{
     item: { path: string; label: string; icon: any; badge: string | null };
     badges: Record<string, number>;
     onClick?: () => void;
 }> = React.memo(({ item, badges, onClick }) => {
+    const [hover, setHover] = useState(false);
     const badgeCount = item.badge ? (typeof item.badge === 'number' ? item.badge : badges[item.badge]) : 0;
     const isDownload = item.path.endsWith('.zip');
+
+    const rowBase: React.CSSProperties = {
+        width: '100%', display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px',
+        borderRadius: 10, cursor: 'pointer', border: 'none', fontFamily: 'inherit', transition: 'all .25s',
+        textAlign: 'left',
+    };
 
     if (isDownload) {
         return (
@@ -122,11 +146,13 @@ const NavItem: React.FC<{
                 href={item.path}
                 download
                 onClick={onClick}
-                className="group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-300 relative text-left w-full text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 border border-emerald-500/15 my-1"
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+                style={{ ...rowBase, color: '#7FD3A6', background: hover ? 'rgba(27,110,62,.16)' : 'rgba(27,110,62,.08)' }}
             >
-                <item.icon className="w-4 h-4 shrink-0 text-emerald-400" />
-                <span className="text-[11px] font-bold tracking-wide flex-1 truncate">{item.label}</span>
-                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 bg-emerald-500/20 text-emerald-300 uppercase tracking-wider">
+                <PuzzlePieceIcon className="w-[15px] h-[15px] shrink-0" />
+                <span style={{ flex: 1, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                <span style={{ flexShrink: 0, padding: '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800, background: 'rgba(127,211,166,.18)', color: '#7FD3A6' }}>
                     {item.badge || 'ZIP'}
                 </span>
             </a>
@@ -137,21 +163,26 @@ const NavItem: React.FC<{
         <NavLink
             to={item.path}
             onClick={onClick}
-            className={({ isActive }) => `
-                group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-300 relative text-left w-full
-                ${isActive
-                    ? 'bg-liquid-gold/10 text-liquid-gold border-l-2 border-liquid-gold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'}
-            `}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={({ isActive }) => ({
+                ...rowBase,
+                ...(isActive
+                    ? { background: 'rgba(255,198,26,.1)', color: C.gold, boxShadow: 'inset 2px 0 0 #FFC61A' }
+                    : { background: hover ? 'rgba(255,255,255,.04)' : 'transparent', color: '#C2CAE6' }),
+            })}
         >
             {({ isActive }) => (
                 <>
-                    <item.icon className={`w-4 h-4 shrink-0 transition-all duration-300 ${isActive ? 'text-liquid-gold' : ''}`} />
-                    <span className="text-[11px] font-bold tracking-wide flex-1 truncate">{item.label}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', color: isActive ? C.gold : '#8E9AC4' }}>
+                        <item.icon className="w-[15px] h-[15px] shrink-0" />
+                    </span>
+                    <span style={{ flex: 1, fontSize: 12, fontWeight: 600, letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
                     {badgeCount > 0 && (
-                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${
-                            isActive ? 'bg-liquid-gold/20 text-liquid-gold' : 'bg-liquid-gold/10 text-liquid-gold/60'
-                        }`}>
+                        <span style={{
+                            flexShrink: 0, padding: '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800,
+                            ...(isActive ? { background: 'rgba(255,198,26,.22)', color: C.gold } : { background: 'rgba(255,255,255,.08)', color: '#9AA6CE' }),
+                        }}>
                             {badgeCount}
                         </span>
                     )}
@@ -182,17 +213,21 @@ const NavGroup: React.FC<{
     }, [open, group.id]);
 
     return (
-        <div className="space-y-1">
+        <div>
             <button
                 onClick={toggle}
-                className="w-full flex items-center justify-between px-4 py-1.5 group"
+                style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '5px 12px 7px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                }}
             >
-                <span className={`text-[9px] font-black uppercase tracking-[0.4em] transition-colors ${
-                    isGroupActive ? 'text-liquid-gold' : 'text-slate-500 group-hover:text-slate-400'
-                }`}>
+                <span style={{
+                    fontSize: 9, fontWeight: 800, letterSpacing: '.34em', textTransform: 'uppercase',
+                    color: isGroupActive ? C.gold : '#5C6892',
+                }}>
                     {group.title}
                 </span>
-                <ChevronDownIcon className={`w-3 h-3 text-slate-500 transition-transform duration-300 ${open ? '' : '-rotate-90'}`} />
+                <ChevronDownIcon className={`w-3 h-3 transition-transform duration-300 ${open ? '' : '-rotate-90'}`} style={{ color: '#5C6892' }} />
             </button>
 
             <AnimatePresence initial={false}>
@@ -202,7 +237,7 @@ const NavGroup: React.FC<{
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                        className="overflow-hidden space-y-0.5 pl-1"
+                        style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}
                     >
                         {group.items.map(item => (
                             <NavItem key={item.path} item={item} badges={badges} onClick={onNavClick} />
@@ -251,31 +286,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     const userInitials = user.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
+    const [nuevaHover, setNuevaHover] = useState(false);
+    const [logoutHover, setLogoutHover] = useState(false);
+
     const SidebarContent = ({ onNavClick }: { onNavClick?: () => void }) => (
-        <div className="h-full flex flex-col bg-obsidian-mid">
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.ink, color: '#fff' }}>
             {/* Brand */}
-            <div className="px-5 pt-6 pb-4 border-b border-white/[0.06]">
-                <Link to="/" className="flex items-center gap-3 group">
-                    <div className="relative w-9 h-9 shrink-0">
-                        <CordovaLogo className="w-9 h-9 object-contain transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute -inset-1.5 bg-liquid-gold/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <div className="flex flex-col leading-none min-w-0">
-                        <span className="text-base font-black tracking-tighter text-white leading-none">
-                            CÓRDOVA<span className="text-liquid-gold">.</span>
+            <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,.09)' }}>
+                <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
+                    <CordovaLogo className="w-[34px] h-[34px] object-contain" style={{ background: '#fff', borderRadius: 7, padding: 2 }} />
+                    <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, minWidth: 0 }}>
+                        <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: '-.03em', color: '#fff' }}>
+                            CÓRDOVA<span style={{ color: C.gold }}>.</span>
                         </span>
-                        <span className="text-[7px] font-bold text-slate-500 uppercase tracking-[0.45em] mt-0.5">
+                        <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '.3em', textTransform: 'uppercase', color: '#7E8CBE', marginTop: 2 }}>
                             Centro de Producción
                         </span>
-                    </div>
+                    </span>
                 </Link>
             </div>
 
             {/* Quick Action */}
-            <div className="px-4 pt-4 pb-3">
+            <div style={{ padding: '14px 14px 10px' }}>
                 <button
                     onClick={() => { navigate('/nuevo'); onNavClick?.(); }}
-                    className="w-full flex items-center justify-center gap-2.5 py-3 btn-gold rounded-xl"
+                    onMouseEnter={() => setNuevaHover(true)}
+                    onMouseLeave={() => setNuevaHover(false)}
+                    style={{
+                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: 12,
+                        background: nuevaHover ? '#F0B400' : C.gold, color: C.ink, border: 'none', borderRadius: 11,
+                        fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                    }}
                 >
                     <SparklesIcon className="w-3.5 h-3.5" />
                     Nueva Orden
@@ -283,32 +324,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-5 no-scrollbar">
+            <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 10px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {navGroups.map(group => (
-                    <NavGroup
-                        key={group.id}
-                        group={group}
-                        badges={badges}
-                        onNavClick={onNavClick}
-                    />
+                    <NavGroup key={group.id} group={group} badges={badges} onNavClick={onNavClick} />
                 ))}
             </nav>
 
             {/* User Footer */}
-            <div className="px-4 pb-5 pt-3 border-t border-white/[0.06] space-y-3">
-                <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/[0.03] transition-colors cursor-default">
-                    <div className="w-9 h-9 rounded-xl bg-liquid-gold/10 border border-liquid-gold/15 flex items-center justify-center shrink-0">
-                        <span className="text-[11px] font-black text-liquid-gold">{userInitials}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-black text-white truncate">{user.nombre}</div>
+            <div style={{ padding: '12px 14px 16px', borderTop: '1px solid rgba(255,255,255,.09)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: 8 }}>
+                    <span style={{
+                        width: 34, height: 34, borderRadius: 10, background: 'rgba(255,198,26,.14)', border: '1px solid rgba(255,198,26,.32)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 800, color: C.gold,
+                    }}>{userInitials}</span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.nombre}</span>
                         <RoleBadge rol={user.rol} />
-                    </div>
+                    </span>
                 </div>
-
                 <button
                     onClick={authLogout}
-                    className="w-full flex items-center justify-center gap-2.5 py-2.5 text-slate-500 hover:text-brand-red hover:bg-brand-red/5 rounded-xl border border-transparent hover:border-brand-red/10 transition-all text-[10px] font-black uppercase tracking-widest"
+                    onMouseEnter={() => setLogoutHover(true)}
+                    onMouseLeave={() => setLogoutHover(false)}
+                    style={{
+                        width: '100%', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: 10,
+                        borderRadius: 10, fontSize: 10, fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase',
+                        cursor: 'pointer', fontFamily: 'inherit', transition: 'all .3s',
+                        background: logoutHover ? 'rgba(231,1,1,.1)' : 'transparent',
+                        color: logoutHover ? '#FF6B6B' : '#7E8CBE',
+                        border: `1px solid ${logoutHover ? 'rgba(231,1,1,.25)' : 'transparent'}`,
+                    }}
                 >
                     <LogoutIcon className="w-3.5 h-3.5" />
                     Cerrar Sesión
@@ -318,11 +363,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
 
     return (
-        <div className="min-h-screen bg-brand-dark text-slate-200 font-sans flex overflow-hidden">
+        <div style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: "'Inter',system-ui,sans-serif", display: 'flex' }}>
             <SEO title={`${pageTitle} · Imprenta Córdova`} />
 
             {/* SIDEBAR DESKTOP */}
-            <aside className="hidden lg:flex flex-col w-[240px] shrink-0 bg-obsidian-mid border-r border-white/[0.06] h-screen sticky top-0 z-[100]">
+            <aside
+                className="hidden lg:flex"
+                style={{ flexDirection: 'column', width: 248, flexShrink: 0, height: '100vh', position: 'sticky', top: 0, zIndex: 100 }}
+            >
                 <SidebarContent />
             </aside>
 
@@ -334,7 +382,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[140] bg-black/60 backdrop-blur-sm lg:hidden"
+                            className="lg:hidden"
+                            style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }}
                             onClick={() => setSidebarOpen(false)}
                         />
                         <motion.aside
@@ -342,12 +391,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             animate={{ x: 0 }}
                             exit={{ x: -280 }}
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                            className="fixed inset-y-0 left-0 z-[150] w-[260px] bg-obsidian-mid border-r border-white/[0.06] lg:hidden"
+                            className="lg:hidden"
+                            style={{ position: 'fixed', insetBlock: 0, left: 0, zIndex: 150, width: 260, boxShadow: '0 0 60px rgba(10,17,64,.4)' }}
                         >
-                            <div className="absolute top-4 right-4 z-10">
+                            <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 10 }}>
                                 <button
                                     onClick={() => setSidebarOpen(false)}
-                                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+                                    style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,.06)', border: 'none', color: '#C2CAE6', cursor: 'pointer' }}
                                 >
                                     <CloseIcon className="w-4 h-4" />
                                 </button>
@@ -359,41 +409,50 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </AnimatePresence>
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                 {/* TOP HEADER */}
-                <header className="h-[72px] bg-obsidian-mid/90 backdrop-blur-xl border-b border-white/[0.06] px-5 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-[90]">
-                    <div className="flex items-center gap-4 min-w-0">
+                <header
+                    style={{
+                        minHeight: 70, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(16px)',
+                        borderBottom: `1px solid ${C.border}`, padding: '0 clamp(16px,2.4vw,32px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
+                        position: 'sticky', top: 0, zIndex: 90,
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all lg:hidden shrink-0"
+                            className="lg:hidden"
+                            style={{ width: 42, height: 42, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F2F4FA', border: `1px solid ${C.border}`, borderRadius: 11, cursor: 'pointer' }}
                             aria-label="Abrir menú"
                         >
-                            <MenuIcon className="w-5 h-5" />
+                            <MenuIcon className="w-5 h-5" style={{ color: C.ink }} />
                         </button>
 
-                        <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 9.5, fontWeight: 700, letterSpacing: '.28em', textTransform: 'uppercase', color: C.faint }}>
                                 <span>Imprenta Córdova</span>
-                                <ChevronRightIcon className="w-2.5 h-2.5" />
-                                <span className="text-liquid-gold truncate">{pageTitle}</span>
+                                <ChevronRightIcon className="w-2.5 h-2.5" style={{ color: '#C7CEE4' }} />
+                                <span style={{ color: C.royal, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pageTitle}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="text-[8px] font-mono text-slate-500 uppercase tracking-[0.2em]">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4 }}>
+                                <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: 99, background: '#1B8A4B' }} />
+                                <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>
                                     Sistema en línea · {time}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                         {badges.ordenes > 0 && (
                             <button
                                 onClick={() => navigate('/trabajos')}
-                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg hover:bg-amber-500/15 transition-colors"
+                                className="hidden md:flex"
+                                style={{ alignItems: 'center', gap: 8, padding: '7px 13px', background: '#FFFBEB', border: '1px solid #F4E3A8', borderRadius: 9, cursor: 'pointer' }}
                             >
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                                <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider">
+                                <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: 99, background: C.gold }} />
+                                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7A5A00' }}>
                                     {badges.ordenes} activas
                                 </span>
                             </button>
@@ -401,14 +460,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
                         <SearchOmni />
 
-                        <div className="w-9 h-9 rounded-xl bg-liquid-gold/10 border border-liquid-gold/15 flex items-center justify-center cursor-default">
-                            <span className="text-[10px] font-black text-liquid-gold">{userInitials}</span>
-                        </div>
+                        <span style={{ width: 36, height: 36, borderRadius: 10, background: C.chipBlue, border: `1px solid ${C.borderStrong}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: C.royal }}>
+                            {userInitials}
+                        </span>
                     </div>
                 </header>
 
                 {/* PAGE CONTENT */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div style={{ flex: 1, overflowY: 'auto' }}>
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
@@ -416,7 +475,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
                             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                            className="min-h-full"
+                            style={{ minHeight: '100%' }}
                         >
                             {React.cloneElement(children as React.ReactElement, { currentUser: user })}
                         </motion.div>
