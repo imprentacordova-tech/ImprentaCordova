@@ -1044,38 +1044,38 @@ async function runReportadorWorkflow() {
 }
 
 function detectActiveSRIRuc() {
-  const selectors = ['.sri-ruc-cabecera', '#usuario', '.usuario-login', '#lblRuc', '#userRuc', '.ruc-header'];
-  for (let sel of selectors) {
-    const el = document.querySelector(sel);
-    if (el && el.innerText) {
-      const match = el.innerText.match(/\b\d{13}\b/);
-      if (match) return match[0];
+  try {
+    const selectors = ['.sri-ruc-cabecera', '#usuario', '.usuario-login', '#lblRuc', '#userRuc', '.ruc-header'];
+    for (let sel of selectors) {
+      const el = document.querySelector(sel);
+      if (el) {
+        const text = (el.textContent || '').trim();
+        const match = text.match(/\b\d{13}\b/);
+        if (match) return match[0];
+      }
     }
-  }
 
-  const thElements = Array.from(document.querySelectorAll('th, td, span, div'));
-  for (let el of thElements) {
-    if (el.children.length === 0) {
-      const text = el.innerText ? el.innerText.trim() : '';
-      if (text === 'RUC:' || text.startsWith('RUC:')) {
-        const next = el.nextElementSibling;
-        if (next && next.innerText) {
-          const match = next.innerText.match(/\b\d{13}\b/);
-          if (match) return match[0];
-        }
-        if (el.parentElement) {
-          const match = el.parentElement.innerText.match(/\b\d{13}\b/);
-          if (match) return match[0];
+    const thElements = Array.from(document.querySelectorAll('th, td'));
+    for (let el of thElements) {
+      const text = (el.textContent || '').trim();
+      if (text.includes('RUC:')) {
+        const match = text.match(/\b\d{13}\b/);
+        if (match) return match[0];
+        if (el.nextElementSibling) {
+          const nextMatch = (el.nextElementSibling.textContent || '').match(/\b\d{13}\b/);
+          if (nextMatch) return nextMatch[0];
         }
       }
     }
+
+    const bodyText = document.body ? (document.body.textContent || '') : '';
+    if (bodyText.includes('0702065319001')) return '0702065319001';
+
+    const anyRucMatch = bodyText.match(/\b\d{10}001\b/);
+    if (anyRucMatch) return anyRucMatch[0];
+  } catch (err) {
+    console.warn("[Cordova Ext] RUC Detection warn:", err);
   }
-
-  const bodyText = document.body ? document.body.innerText : '';
-  if (bodyText.includes('0702065319001')) return '0702065319001';
-
-  const anyRucMatch = bodyText.match(/\b\d{10}001\b/);
-  if (anyRucMatch) return anyRucMatch[0];
 
   return null;
 }

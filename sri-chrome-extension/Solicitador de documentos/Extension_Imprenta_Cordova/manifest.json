@@ -20,14 +20,14 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://srienlinea.sri.gob.ec/facturacion-internet/*", "https://srienlinea.sri.gob.ec/facturacion-internet"],
+      "matches": ["*://*.sri.gob.ec/*"],
       "js": ["content/overrides.js"],
       "world": "MAIN",
       "run_at": "document_start",
       "all_frames": true
     },
     {
-      "matches": ["https://srienlinea.sri.gob.ec/facturacion-internet/*", "https://srienlinea.sri.gob.ec/facturacion-internet"],
+      "matches": ["*://*.sri.gob.ec/*"],
       "js": ["content/content.js"],
       "css": ["content/inject.css"],
       "world": "ISOLATED",
