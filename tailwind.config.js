@@ -11,8 +11,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-blue':      '#0ea5e9',
-        'brand-blue-dark': '#0369a1',
+        'brand-blue':      '#16309B',
+        'brand-blue-dark': '#0F2280',
+        'royal':           '#16309B',
+        'royal-dark':      '#0F2280',
         'brand-red':       '#E11D48',
         'brand-dark':      '#050810',
         'liquid-gold':     '#D4AF37',
@@ -35,6 +37,8 @@ export default {
         'gold-glow':     '0 0 40px rgba(212, 175, 55, 0.12)',
         'gold-glow-soft':'0 0 20px rgba(212, 175, 55, 0.08)',
         'gold-ultra':    '0 0 80px rgba(212, 175, 55, 0.18), 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(212, 175, 55, 0.2)',
+        'blue-glow-sm':  '0 10px 25px -12px rgba(22, 48, 155, 0.28)',
+        'blue-glow':     '0 18px 40px -18px rgba(22, 48, 155, 0.35)',
       },
       animation: {
         'fade-in':      'fadeIn 0.5s ease-out forwards',
