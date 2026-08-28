@@ -1432,13 +1432,43 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       }
   }
 
-  // 7. PDF Final
+  // 7. PDF Final (Solicitud Finalizada - Auto Inserción de Orden en BD)
   if (url.includes('seleccionar-establecimiento-imprenta.jspa')) {
-    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaVigencia', 'cordovaNombreComercial', 'cordovaDocType'], (finalData) => {
+    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaVigencia', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks'], async (finalData) => {
       chrome.storage.local.remove(['cordova_suggested', 'cordova_est_selected']);
+
+      const blocksVal = finalData.cordovaBlocks || 100;
+      const prices = {
+        "1/4 Oficio": { 25: 9.00, 50: 10.00, 100: 13.00, 200: 20.00, 300: 30.00, 400: 36.00, 500: 40.00, 1000: 65.00 },
+        "1/2 Oficio": { 25: 12.00, 50: 14.00, 100: 18.00, 200: 32.00, 300: 48.00, 400: 60.00, 500: 65.00, 1000: 100.00 }
+      };
+      const totalVal = (prices["1/4 Oficio"] && prices["1/4 Oficio"][blocksVal]) ? prices["1/4 Oficio"][blocksVal] : ((blocksVal / 100) * 13.00);
+
+      const immediateOrder = {
+        clientRuc: finalData.cordovaClientRuc || '',
+        clientName: (finalData.cordovaClientName || 'CLIENTE SRI').toUpperCase(),
+        caducidad: finalData.cordovaCaducidad || '',
+        vigencia: finalData.cordovaVigencia || '',
+        nombreComercial: finalData.cordovaNombreComercial || '',
+        docType: finalData.cordovaDocType || '1',
+        blocks: blocksVal,
+        docSize: '1/4 Oficio',
+        activity: 'Comercio / Servicios General',
+        abono: 0,
+        total: totalVal,
+        saldo: totalVal,
+        timestamp: Date.now()
+      };
+
+      // ⚡ INGESTIÓN AUTOMÁTICA CERO CLICS A SUPABASE CLOUD Y BACKEND API
+      const syncResult = await autoSyncToSupabase(immediateOrder);
+      if (syncResult) {
+        showCordovaApiToast(`⚡ ¡ORDEN INGRESADA EN LA BASE DE LA WEB! • RUC: ${immediateOrder.clientRuc}`);
+      }
+
       setTimeout(() => {
-        showCordovaSuccessModal(finalData, blocks);
-      }, 1500);
+        showCordovaSuccessModal(finalData, blocksVal);
+      }, 1200);
     });
   }
 });
@@ -1542,6 +1572,44 @@ async function autoSyncToSupabase(orderData) {
     console.error('⚠️ [SRI Extension] Error al sincronizar con Supabase Cloud:', e);
   }
   return false;
+}
+
+function showCordovaApiToast(message) {
+  const existing = document.getElementById('cordova-api-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'cordova-api-toast';
+  toast.style.cssText = `
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #0f2b48 0%, #1e40af 100%);
+    border: 1.5px solid #3b82f6;
+    color: #ffffff;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    z-index: 9999999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  `;
+  const logoUrl = chrome.runtime.getURL('icons/icon128.png');
+  toast.innerHTML = `
+    <img src="${logoUrl}" style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #3b82f6;">
+    <span style="letter-spacing: 0.5px;">${message}</span>
+  `;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.4s ease';
+    setTimeout(() => toast.remove(), 400);
+  }, 4500);
 }
 
 // ---------------------------------------------------------
