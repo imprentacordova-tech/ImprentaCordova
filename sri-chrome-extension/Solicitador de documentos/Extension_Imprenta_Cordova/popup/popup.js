@@ -430,27 +430,52 @@ document.addEventListener('DOMContentLoaded', () => {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
         func: () => {
-          const rucEl = document.querySelector('.sri-ruc-cabecera');
-          if (rucEl) return rucEl.innerText.trim();
-          return null;
+          const selectors = ['.sri-ruc-cabecera', '#usuario', '.usuario-login', '#lblRuc', '#userRuc', '.ruc-header'];
+          for (let sel of selectors) {
+            const el = document.querySelector(sel);
+            if (el && el.innerText) {
+              const match = el.innerText.match(/\b\d{13}\b/);
+              if (match) return match[0];
+            }
+          }
+          const ths = Array.from(document.querySelectorAll('th, td, span, div'));
+          for (let el of ths) {
+            if (el.children.length === 0 && el.innerText) {
+              const text = el.innerText.trim();
+              if (text === 'RUC:' || text.startsWith('RUC:')) {
+                const next = el.nextElementSibling;
+                if (next && next.innerText) {
+                  const match = next.innerText.match(/\b\d{13}\b/);
+                  if (match) return match[0];
+                }
+              }
+            }
+          }
+          const bodyText = document.body ? document.body.innerText : '';
+          const match = bodyText.match(/\b\d{10}001\b/);
+          return match ? match[0] : null;
         }
       }, (results) => {
         if (results && results[0] && results[0].result) {
           switchSection(results[0].result);
         } else {
-          // Fallback to last stored RUC
+          // Fallback a almacenamiento si no hay RUC explícito en la pestaña activa
           chrome.storage.local.get(['current_session_ruc'], (result) => {
             if (result.current_session_ruc) {
               switchSection(result.current_session_ruc);
+            } else {
+              switchSection('cliente');
             }
           });
         }
       });
     } else {
-      // If not on SRI pages, use storage fallback
+      // If not on SRI pages, fallback to storage or default to client
       chrome.storage.local.get(['current_session_ruc'], (result) => {
         if (result.current_session_ruc) {
           switchSection(result.current_session_ruc);
+        } else {
+          switchSection('cliente');
         }
       });
     }

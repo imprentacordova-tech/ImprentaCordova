@@ -247,6 +247,66 @@ app.post('/api/v1/ordenes/sincronizar', authenticateApiKey, async (req, res) => 
     }
 });
 
+/**
+ * Enviar Notificación de Orden por Correo Electrónico (Resend API)
+ */
+app.post('/api/v1/notificar-email', async (req, res) => {
+    try {
+        const { clientEmail, clientName, clientRuc, docType, blocks, docSize, total, abono, saldo } = req.body;
+        const resendKey = process.env.RESEND_API_KEY || 're_MKsfBpR5_BwPGdreXmuGEW2MZrJFTdxz8';
+
+        if (!clientEmail) {
+            return res.status(400).json({ error: 'Falta el correo del cliente (clientEmail)' });
+        }
+
+        const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+        const docName = docNames[docType] || 'Comprobantes';
+
+        const emailResponse = await axios.post('https://api.resend.com/emails', {
+            from: 'Imprenta Córdova <onboarding@resend.dev>',
+            to: [clientEmail],
+            subject: `🖨️ Confirmación de Solicitud SRI - ${clientName || 'Cliente'}`,
+            html: `
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
+                    <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 12px; margin-bottom: 16px;">
+                        <h1 style="color: #0f172a; font-size: 20px; margin: 0;">IMPRENTA CÓRDOVA</h1>
+                        <p style="color: #3b82f6; font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 4px 0 0 0;">CÓDIGO DE AUTORIZACIÓN SRI: 8634</p>
+                    </div>
+                    <p style="color: #334155; font-size: 14px;">Estimado/a <strong>${clientName || 'Cliente'}</strong>,</p>
+                    <p style="color: #475569; font-size: 13px;">Su solicitud de impresión ante el SRI ha sido procesada y registrada exitosamente.</p>
+                    
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin: 16px 0;">
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;"><strong>DETALLE DE LA SOLICITUD:</strong></div>
+                        <div style="font-size: 13px; color: #0f172a; margin-bottom: 4px;">• <strong>Documento:</strong> ${docName} (${blocks || 100} Hojas)</div>
+                        <div style="font-size: 13px; color: #0f172a; margin-bottom: 4px;">• <strong>RUC:</strong> ${clientRuc || 'N/A'}</div>
+                        <div style="font-size: 13px; color: #0f172a; margin-bottom: 4px;">• <strong>Tamaño:</strong> ${docSize || '1/4 Oficio'}</div>
+                        <div style="font-size: 13px; color: #0f172a; margin-bottom: 4px;">• <strong>Valor Total:</strong> $${parseFloat(total || 0).toFixed(2)}</div>
+                        <div style="font-size: 13px; color: #16a34a; margin-bottom: 4px;">• <strong>Abono:</strong> $${parseFloat(abono || 0).toFixed(2)}</div>
+                        <div style="font-size: 13px; color: #dc2626;">• <strong>Saldo Pendiente:</strong> $${parseFloat(saldo || 0).toFixed(2)}</div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="https://www.imprentacordova.net/tracking" style="background: linear-gradient(135deg, #0f2b48 0%, #1e40af 100%); color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block;">
+                            Rastrear Estado de Talonario
+                        </a>
+                    </div>
+                </div>
+            `
+        }, {
+            headers: {
+                'Authorization': `Bearer ${resendKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('⚡ [Resend OK] Email enviado a:', clientEmail);
+        res.json({ success: true, messageId: emailResponse.data?.id });
+    } catch(err) {
+        console.error('⚠️ [Resend Error]:', err.response?.data || err.message);
+        res.status(500).json({ error: 'Error enviando correo electrónico via Resend' });
+    }
+});
+
 // ── 404 Handler ──────────────────────────────────────────────────────────
 app.use((req, res) => {
     res.status(404).json({ error: 'Endpoint not found' });

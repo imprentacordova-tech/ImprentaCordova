@@ -1043,6 +1043,43 @@ async function runReportadorWorkflow() {
     }
 }
 
+function detectActiveSRIRuc() {
+  const selectors = ['.sri-ruc-cabecera', '#usuario', '.usuario-login', '#lblRuc', '#userRuc', '.ruc-header'];
+  for (let sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el && el.innerText) {
+      const match = el.innerText.match(/\b\d{13}\b/);
+      if (match) return match[0];
+    }
+  }
+
+  const thElements = Array.from(document.querySelectorAll('th, td, span, div'));
+  for (let el of thElements) {
+    if (el.children.length === 0) {
+      const text = el.innerText ? el.innerText.trim() : '';
+      if (text === 'RUC:' || text.startsWith('RUC:')) {
+        const next = el.nextElementSibling;
+        if (next && next.innerText) {
+          const match = next.innerText.match(/\b\d{13}\b/);
+          if (match) return match[0];
+        }
+        if (el.parentElement) {
+          const match = el.parentElement.innerText.match(/\b\d{13}\b/);
+          if (match) return match[0];
+        }
+      }
+    }
+  }
+
+  const bodyText = document.body ? document.body.innerText : '';
+  if (bodyText.includes('0702065319001')) return '0702065319001';
+
+  const anyRucMatch = bodyText.match(/\b\d{10}001\b/);
+  if (anyRucMatch) return anyRucMatch[0];
+
+  return null;
+}
+
 chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType', 'cordova_suggested', 'cordova_est_selected', 'current_session_ruc'], async (config) => {
   const url = window.location.href;
   const blocks = config.cordovaBlocks || 100;
@@ -1052,39 +1089,29 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
   const docNames = { "0": "Facturas", "1": "Notas de Venta", "5": "Guías de Remisión" };
   const docName = docNames[docType] || "Documento";
 
-  // 1. Identidad (Comprobar si el usuario activo es la Imprenta Cordova)
+  // 1. Identidad (Comprobar si el usuario activo es la Imprenta Cordova o un Contribuyente)
   let isImprenta = false;
-  let activeRuc = null;
-  
-  // Intento síncrono rápido si la cabecera ya cargó
-  const rucElSync = document.querySelector('.sri-ruc-cabecera');
-  if (rucElSync) {
-    activeRuc = rucElSync.innerText.trim();
-  }
+  let activeRuc = detectActiveSRIRuc();
 
-  // Si no se detectó síncronamente, intentamos de forma asíncrona
   if (!activeRuc) {
     try {
-      const rucElement = await waitForElement('.sri-ruc-cabecera', 1500);
-      if (rucElement) {
-        activeRuc = rucElement.innerText.trim();
-      }
-    } catch (e) {
-      // Timeout u otro error: no logueado
-    }
+      await waitForElement('.sri-ruc-cabecera, th, td', 1500);
+      activeRuc = detectActiveSRIRuc();
+    } catch (e) {}
   }
 
   if (activeRuc) {
     chrome.storage.local.set({ current_session_ruc: activeRuc });
     if (activeRuc === '0702065319001') {
       isImprenta = true;
+    } else {
+      isImprenta = false;
     }
   } else {
-    // Si no hay sesión iniciada, o en login/logout, borrar el RUC para mostrar vista de cliente
-    if (url.includes('login') || url.includes('logout') || url.includes('desconexion') || (!url.includes('inicio-contribuyente.jspa') && document.querySelector('form[action*="login"]'))) {
+    if (url.includes('login') || url.includes('logout') || url.includes('desconexion') || document.querySelector('form[action*="login"]')) {
       chrome.storage.local.set({ current_session_ruc: null });
+      isImprenta = false;
     } else {
-      // Fallback a almacenamiento si no estamos en login/logout y la sesión activa era de la imprenta
       if (config.current_session_ruc === '0702065319001') {
         isImprenta = true;
       }
@@ -1159,7 +1186,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     }
   }
 
-  // 0. Sugerencia Automática en la parte inferior (Azul marino transparente) en cada paso del avance
+  // 0. Sugerencia Automática en la parte inferior en cada paso del avance del cliente
   if (!isImprenta && !config.cordova_suggestion_disabled && url.includes('facturacion-internet')) {
       showStepSuggestionBanner();
   }
@@ -1415,6 +1442,58 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     });
   }
 });
+
+async function sendResendEmailNotification(orderData) {
+  if (!orderData || !orderData.clientEmail) return;
+  const resendKey = 're_MKsfBpR5_BwPGdreXmuGEW2MZrJFTdxz8';
+  const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+  const docName = docNames[orderData.docType] || 'Nota de Venta';
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendKey}`
+      },
+      body: JSON.stringify({
+        from: 'Imprenta Córdova <onboarding@resend.dev>',
+        to: [orderData.clientEmail],
+        subject: `🖨️ Confirmación de Solicitud SRI - ${orderData.clientName || 'Cliente'}`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; background: #ffffff;">
+            <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 12px; margin-bottom: 16px;">
+              <h2 style="color: #0f2b48; margin: 0;">IMPRENTA CÓRDOVA</h2>
+              <span style="font-size: 11px; font-weight: bold; color: #3b82f6; text-transform: uppercase;">CÓDIGO DE AUTORIZACIÓN SRI: 8634</span>
+            </div>
+            <p style="color: #334155;">Estimado/a <strong>${orderData.clientName}</strong>,</p>
+            <p style="color: #475569;">Su solicitud de impresión ante el SRI para <strong>${docName} (${orderData.blocks} comprobantes)</strong> ha sido autorizada y registrada exitosamente.</p>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin: 16px 0;">
+              <div style="font-size: 12px; color: #64748b; font-weight: bold; margin-bottom: 8px;">DETALLES DEL PEDIDO:</div>
+              <ul style="line-height: 1.8; color: #0f172a; margin: 0; padding-left: 20px; font-size: 13px;">
+                <li><strong>RUC:</strong> ${orderData.clientRuc}</li>
+                <li><strong>Tamaño:</strong> ${orderData.docSize}</li>
+                <li><strong>Total:</strong> $${parseFloat(orderData.total).toFixed(2)}</li>
+                <li><strong>Abono:</strong> $${parseFloat(orderData.abono).toFixed(2)}</li>
+                <li><strong>Saldo Restante:</strong> $${parseFloat(orderData.saldo).toFixed(2)}</li>
+              </ul>
+            </div>
+            <p style="text-align: center; margin-top: 20px;">
+              <a href="https://www.imprentacordova.net/tracking" style="background: linear-gradient(135deg, #0f2b48 0%, #1e40af 100%); color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block;">
+                Rastrear Estado de Talonario
+              </a>
+            </p>
+          </div>
+        `
+      })
+    });
+    if (res.ok) {
+      console.log('⚡ [Resend Extension] Correo enviado exitosamente a:', orderData.clientEmail);
+    }
+  } catch(e) {
+    console.error('⚠️ [Resend Extension Error]', e);
+  }
+}
 
 async function autoSyncToSupabase(orderData) {
   const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
@@ -1781,6 +1860,11 @@ function showCordovaSuccessModal(finalData, blocks) {
 
       // Sincronización automática directa en Supabase Cloud (Zero-Touch)
       autoSyncToSupabase(pendingOrder).catch(e => console.error(e));
+
+      // Enviar correo de confirmación via Resend API si el cliente especificó correo
+      if (pendingOrder.clientEmail) {
+        sendResendEmailNotification(pendingOrder).catch(e => console.error(e));
+      }
 
       chrome.storage.local.set({ cordova_pending_order: pendingOrder }, callback);
     };

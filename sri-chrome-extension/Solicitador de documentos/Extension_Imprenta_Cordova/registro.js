@@ -890,6 +890,40 @@ document.addEventListener('DOMContentLoaded', () => {
         closePickupModal();
         filterAndRender();
 
+        // Enviar notificación por correo de entrega/cobro via Resend API
+        if (order.clientEmail) {
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer re_MKsfBpR5_BwPGdreXmuGEW2MZrJFTdxz8'
+            },
+            body: JSON.stringify({
+              from: 'Imprenta Córdova <onboarding@resend.dev>',
+              to: [order.clientEmail],
+              subject: `✅ Confirmación de Entrega Orden #${order.orderNum} - Imprenta Córdova`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; background: #ffffff;">
+                  <div style="text-align: center; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 16px;">
+                    <h2 style="color: #0f2b48; margin: 0;">IMPRENTA CÓRDOVA</h2>
+                    <span style="font-size: 11px; font-weight: bold; color: #16a34a; text-transform: uppercase;">ENTREGA Y RECEPCIÓN COMPLETADA</span>
+                  </div>
+                  <p style="color: #334155;">Estimado/a <strong>${order.clientName}</strong>,</p>
+                  <p style="color: #475569;">Confirmamos que su <strong>Orden #${order.orderNum} (${order.docQty} ${order.docName})</strong> ha sido cobrada y retirada satisfactoriamente en nuestra imprenta.</p>
+                  <ul style="line-height: 1.8; color: #0f172a; font-size: 13px;">
+                    <li><strong>Monto Cancelado Hoy:</strong> $${paymentAmount.toFixed(2)} (${payMethod})</li>
+                    <li><strong>Saldo Pendiente Restante:</strong> $${newSaldo.toFixed(2)}</li>
+                    <li><strong>Estado Final:</strong> ${newSaldo === 0 ? 'PAGADO Y RETIRADO ✓' : 'ENTREGADO CON SALDO'}</li>
+                  </ul>
+                  <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #64748b;">
+                    ¡Gracias por su preferencia! Imprenta Córdova &bull; Tel: 0993083943
+                  </p>
+                </div>
+              `
+            })
+          }).catch(err => console.error("Error enviando email de retiro:", err));
+        }
+
         const shouldPrint = modalPrintReceipt ? modalPrintReceipt.checked : false;
 
         if (shouldPrint) {

@@ -17,6 +17,7 @@ import PhotoCapture from '../components/orders/PhotoCapture';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { SEO } from '../components/SEO';
+import { notifyOrderReadyForPickupEmail, notifyOrderDeliveredEmail } from '../services/emailNotificationService';
 
 const RetirosPage: React.FC = () => {
     const auth = useAuth();
@@ -58,6 +59,21 @@ const RetirosPage: React.FC = () => {
 
             await registerRetiro(selectedTrabajo.id, pagoFinal, currentUser.nombre, photoUrl);
             
+            // Enviar notificación automática por correo vía Resend
+            const cliente = clientes.find(c => c.id === selectedTrabajo.clienteId);
+            if (cliente && cliente.email) {
+                notifyOrderDeliveredEmail({
+                    clienteNombre: cliente.nombre,
+                    clienteEmail: cliente.email,
+                    ordenNumero: selectedTrabajo.orden || selectedTrabajo.id,
+                    servicioNombre: selectedTrabajo.subtipo || selectedTrabajo.tipo || 'Impresión de Documentos',
+                    montoTotal: selectedTrabajo.precio || 0,
+                    montoAbono: selectedTrabajo.abono || 0,
+                    montoSaldo: pagoFinal,
+                    fechaRetiro: new Date().toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                }).catch(e => console.error("Error enviando email de retiro:", e));
+            }
+
             setIsSuccess(true);
             setIsProcessing(false);
         } catch (error) {
@@ -69,8 +85,22 @@ const RetirosPage: React.FC = () => {
 
     const notifyClient = (trabajo: Trabajo) => {
         const cliente = clientes.find(c => c.id === trabajo.clienteId);
+        
+        // Enviar notificación por correo si tiene correo registrado
+        if (cliente && cliente.email) {
+            notifyOrderReadyForPickupEmail({
+                clienteNombre: cliente.nombre,
+                clienteEmail: cliente.email,
+                ordenNumero: trabajo.orden || trabajo.id,
+                servicioNombre: trabajo.subtipo || trabajo.tipo || 'Impresión de Documentos',
+                montoTotal: trabajo.precio || 0,
+                montoAbono: trabajo.abono || 0,
+                montoSaldo: trabajo.saldo || 0
+            }).catch(e => console.error("Error enviando email listo para retiro:", e));
+        }
+
         if (!cliente || !cliente.telefono || !cliente.telefono.length) {
-            alert("El cliente no tiene teléfono registrado.");
+            alert("Notificación por correo enviada. El cliente no tiene teléfono registrado para WhatsApp.");
             return;
         }
         
