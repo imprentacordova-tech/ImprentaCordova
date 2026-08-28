@@ -1546,10 +1546,11 @@ function parseSRIDateToISO(dateStr) {
   return null;
 }
 
-async function autoSyncToSupabase(orderData) {
-  const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
+let currentSyncedTrabajoId = null;
+let currentSyncedClienteId = null;
 
+async function autoSyncToSupabase(orderData) {
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
   const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
   const docName = docNames[orderData.docType] || 'Nota de Venta';
 
@@ -1557,27 +1558,59 @@ async function autoSyncToSupabase(orderData) {
   const abonoVal = parseFloat(orderData.abono) || 0.00;
   const saldoVal = Math.max(0, totalVal - abonoVal);
 
-  const payload = {
-    titular: (orderData.clientName || 'CLIENTE SRI').toUpperCase(),
-    tipo: docName,
-    subtipo: `${orderData.blocks || 100} Hojas (${orderData.docSize || '1/4 Oficio'})`,
-    cantidad: 1,
-    total: totalVal,
-    abono: abonoVal,
-    saldo: saldoVal,
-    prioridad: 'Normal',
-    estado: 'Pendiente',
-    fecha_entrada: new Date().toISOString(),
-    origen: 'SRI Extension',
-    establecimiento: '001',
-    punto_emision: '001',
-    tamano: orderData.docSize || '1/4 Oficio',
-    actividad_seleccionada: (orderData.activity || 'Comercio / Servicios General').toUpperCase(),
-    fecha_vencimiento: parseSRIDateToISO(orderData.caducidad)
-  };
-
   try {
-    const res = await fetch(supabaseUrl, {
+    // FASE 1 - PASO A: Crear/Actualizar Cliente en tabla `clientes`
+    let clienteId = null;
+    if (orderData.clientRuc) {
+      const clientPayload = {
+        ruc: orderData.clientRuc,
+        cedula: orderData.clientRuc.length === 13 ? orderData.clientRuc.substring(0, 10) : orderData.clientRuc,
+        nombre: (orderData.clientName || 'CLIENTE SRI').toUpperCase(),
+        telefono: orderData.clientPhone ? [orderData.clientPhone] : [],
+        email: orderData.clientEmail || null,
+        actividades: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
+      };
+
+      const clientRes = await fetch('https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/clientes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Prefer': 'resolution=merge-duplicates,return=representation'
+        },
+        body: JSON.stringify(clientPayload)
+      });
+
+      if (clientRes.ok) {
+        const clientData = await clientRes.json();
+        clienteId = clientData?.[0]?.id || null;
+        currentSyncedClienteId = clienteId;
+      }
+    }
+
+    // FASE 1 - PASO B: Crear registro en tabla `trabajos` vinculado al clienteId
+    const trabajoPayload = {
+      cliente_id: clienteId,
+      titular: (orderData.clientName || 'CLIENTE SRI').toUpperCase(),
+      tipo: docName,
+      subtipo: `${orderData.blocks || 100} Hojas (${orderData.docSize || '1/4 Oficio'})`,
+      cantidad: 1,
+      total: totalVal,
+      abono: abonoVal,
+      saldo: saldoVal,
+      prioridad: 'Normal',
+      estado: 'Pendiente',
+      fecha_entrada: new Date().toISOString(),
+      origen: 'SRI Extension',
+      establecimiento: '001',
+      punto_emision: '001',
+      tamano: orderData.docSize || '1/4 Oficio',
+      actividad_seleccionada: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase(),
+      fecha_vencimiento: parseSRIDateToISO(orderData.caducidad)
+    };
+
+    const trabajoRes = await fetch('https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1585,20 +1618,77 @@ async function autoSyncToSupabase(orderData) {
         'Authorization': `Bearer ${supabaseKey}`,
         'Prefer': 'return=representation'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(trabajoPayload)
     });
-    if (res.ok) {
-      const data = await res.json();
-      console.log('⚡ [SRI Extension OK] Orden ingresada en Supabase Cloud:', data);
+
+    if (trabajoRes.ok) {
+      const trabajoData = await trabajoRes.json();
+      currentSyncedTrabajoId = trabajoData?.[0]?.id || null;
+      console.log('⚡ [Fase 1 OK] Orden y Cliente vinculados exitosamente en Supabase:', trabajoData?.[0]);
       return true;
-    } else {
-      const errText = await res.text();
-      console.error('⚠️ [SRI Extension Bad Request]:', errText);
     }
   } catch(e) {
-    console.error('⚠️ [SRI Extension Error]:', e);
+    console.error('⚠️ [Fase 1 Error]:', e);
   }
   return false;
+}
+
+/**
+ * FASE 2: Refuerzo y actualización de datos cuando el usuario confirma/edita en el modal
+ */
+async function updateSupabaseOrderRefinement(orderData) {
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
+  
+  const totalVal = parseFloat(orderData.total) || 13.00;
+  const abonoVal = parseFloat(orderData.abono) || 0.00;
+  const saldoVal = Math.max(0, totalVal - abonoVal);
+
+  try {
+    // 1. Refuerzo Cliente (Teléfono, Correo, Actividad)
+    if (currentSyncedClienteId || orderData.clientRuc) {
+      const clientUpdate = {
+        telefono: orderData.clientPhone ? [orderData.clientPhone] : [],
+        email: orderData.clientEmail || null,
+        actividades: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
+      };
+      
+      const filterQuery = currentSyncedClienteId ? `id=eq.${currentSyncedClienteId}` : `ruc=eq.${orderData.clientRuc}`;
+      await fetch(`https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/clientes?${filterQuery}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        },
+        body: JSON.stringify(clientUpdate)
+      });
+    }
+
+    // 2. Refuerzo Trabajo (Abono, Saldo, Tamaño, Actividad)
+    if (currentSyncedTrabajoId) {
+      const trabajoUpdate = {
+        total: totalVal,
+        abono: abonoVal,
+        saldo: saldoVal,
+        tamano: orderData.docSize || '1/4 Oficio',
+        subtipo: `${orderData.blocks || 100} Hojas (${orderData.docSize || '1/4 Oficio'})`,
+        actividad_seleccionada: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
+      };
+
+      await fetch(`https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos?id=eq.${currentSyncedTrabajoId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        },
+        body: JSON.stringify(trabajoUpdate)
+      });
+      console.log('⚡ [Fase 2 OK] Datos de la orden actualizados/reforzados correctamente.');
+    }
+  } catch(e) {
+    console.error('⚠️ [Fase 2 Error]:', e);
+  }
 }
 
 function showCordovaApiToast(message) {
@@ -1959,8 +2049,8 @@ function showCordovaSuccessModal(finalData, blocks) {
         renovacion: selectedRenovacionVal
       };
 
-      // Sincronización automática directa en Supabase Cloud (Zero-Touch)
-      autoSyncToSupabase(pendingOrder).catch(e => console.error(e));
+      // FASE 2: Refuerzo y actualización de datos de la orden en Supabase (Teléfono, Correo, Abono, Tamaño)
+      updateSupabaseOrderRefinement(pendingOrder).catch(e => console.error(e));
 
       // Enviar correo de confirmación via Resend API si el cliente especificó correo
       if (pendingOrder.clientEmail) {
