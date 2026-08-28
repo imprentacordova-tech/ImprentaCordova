@@ -1525,6 +1525,27 @@ async function sendResendEmailNotification(orderData) {
   }
 }
 
+function parseSRIDateToISO(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr.includes('T')) return dateStr;
+
+  const months = {
+    'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
+    'mayo': '05', 'juno': '06', 'junio': '06', 'julio': '07', 'agosto': '08',
+    'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+  };
+
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const day = parts[0].padStart(2, '0');
+    const monthRaw = parts[1].toLowerCase().trim();
+    const month = months[monthRaw] || parts[1].padStart(2, '0');
+    const year = parts[2].trim();
+    return `${year}-${month}-${day}T00:00:00.000Z`;
+  }
+  return null;
+}
+
 async function autoSyncToSupabase(orderData) {
   const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
@@ -1532,25 +1553,27 @@ async function autoSyncToSupabase(orderData) {
   const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
   const docName = docNames[orderData.docType] || 'Nota de Venta';
 
+  const totalVal = parseFloat(orderData.total) || 13.00;
+  const abonoVal = parseFloat(orderData.abono) || 0.00;
+  const saldoVal = Math.max(0, totalVal - abonoVal);
+
   const payload = {
     titular: (orderData.clientName || 'CLIENTE SRI').toUpperCase(),
-    servicio: `${docName} (${orderData.blocks} Hojas)`,
-    detalle: `Solicitud SRI Autorizada • RUC: ${orderData.clientRuc} • ${orderData.blocks} comprobantes (${orderData.docSize})`,
+    tipo: docName,
+    subtipo: `${orderData.blocks || 100} Hojas (${orderData.docSize || '1/4 Oficio'})`,
     cantidad: 1,
-    precio: orderData.total || 13,
-    abono: orderData.abono || 0,
-    saldo: Math.max(0, (orderData.total || 13) - (orderData.abono || 0)),
+    total: totalVal,
+    abono: abonoVal,
+    saldo: saldoVal,
     prioridad: 'Normal',
-    estado: 'PENDIENTE',
+    estado: 'Pendiente',
     fecha_entrada: new Date().toISOString(),
-    responsable: 'SRI Extension Auto Sync',
     origen: 'SRI Extension',
-    es_sri: true,
     establecimiento: '001',
     punto_emision: '001',
     tamano: orderData.docSize || '1/4 Oficio',
-    actividad_seleccionada: orderData.activity || 'Comercio / Servicios General',
-    fecha_vencimiento: orderData.caducidad || null
+    actividad_seleccionada: (orderData.activity || 'Comercio / Servicios General').toUpperCase(),
+    fecha_vencimiento: parseSRIDateToISO(orderData.caducidad)
   };
 
   try {
@@ -1565,11 +1588,15 @@ async function autoSyncToSupabase(orderData) {
       body: JSON.stringify(payload)
     });
     if (res.ok) {
-      console.log('⚡ [SRI Extension] Orden sincronizada en Supabase Cloud exitosamente.');
+      const data = await res.json();
+      console.log('⚡ [SRI Extension OK] Orden ingresada en Supabase Cloud:', data);
       return true;
+    } else {
+      const errText = await res.text();
+      console.error('⚠️ [SRI Extension Bad Request]:', errText);
     }
   } catch(e) {
-    console.error('⚠️ [SRI Extension] Error al sincronizar con Supabase Cloud:', e);
+    console.error('⚠️ [SRI Extension Error]:', e);
   }
   return false;
 }
