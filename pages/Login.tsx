@@ -1,8 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { CordovaLogo, UsersIcon, ArrowRightIcon, ShieldCheckIcon, ArrowLeftIcon, Loader2Icon, EyeIcon, EyeSlashIcon, ExclamationTriangleIcon, LockIcon } from '../components/Icons';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
+import {
+  UsersIcon, LockIcon, EyeIcon, EyeSlashIcon, ArrowLeftIcon,
+  Loader2Icon, ExclamationTriangleIcon, ShieldCheckIcon,
+} from '../components/Icons';
+import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+
+/**
+ * Ingreso al panel interno — Sistema "Marino & Oro" (design_manifest.md §2).
+ *
+ * La pantalla es el espejo del shell interno: la franja marino de la izquierda repite
+ * el lockup y el tono del sidebar de `components/Layout.tsx`, y el formulario vive en
+ * superficie clara. Es la única superficie oscura de la vista; el botón de acción va
+ * en azul `royal`, nunca en oro (regla crítica §0.3 del manifiesto).
+ */
+
+const PUNTOS = [
+  { titulo: 'Órdenes de producción', detalle: 'Del pedido al despacho, con la trazabilidad en una sola ficha.' },
+  { titulo: 'Monitor de taller', detalle: 'Diseño, prensa y acabados avanzando en el mismo tablero.' },
+  { titulo: 'Caja y cuentas por cobrar', detalle: 'Abonos, saldos y facturación SRI al día.' },
+];
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -10,224 +29,211 @@ const Login: React.FC = () => {
   const [key, setKey] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [focus, setFocus] = useState<'usuario' | 'clave' | null>(null);
+
+  /* Mismo reloj de la cabecera del panel: se refresca cada 30 s. */
+  const [hora, setHora] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setHora(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const result = await login(key, password);
-
-      if (result.success) {
-        navigate('/dashboard');
-      } else {
-        setError(result.error || 'IDENTIDAD NO RECONOCIDA');
-      }
+      if (result.success) navigate('/dashboard');
+      else setError(result.error || 'No reconocemos ese usuario. Revisa el nombre.');
     } catch (err) {
-      console.error(err);
-      setError("FALLO CRITICO: ERROR DE CONEXION");
+      console.error('[Login] Error de conexión:', err);
+      setError('No se pudo conectar con el servidor. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
+  const campo = (activo: boolean): React.CSSProperties => ({
+    ...S.input,
+    paddingLeft: 42,
+    background: C.surface,
+    borderColor: activo ? C.royal : C.borderStrong,
+  });
+
+  const marca = (sobreMarino: boolean) => (
+    <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
+      <img
+        src="/LOGO.png"
+        alt="Imprenta Córdova"
+        style={{ width: 34, height: 34, objectFit: 'contain', background: C.surface, borderRadius: 7, padding: 2 }}
+      />
+      <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, minWidth: 0 }}>
+        <span style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, letterSpacing: '-.03em', color: sobreMarino ? C.onInk : C.ink }}>
+          CÓRDOVA<span style={{ color: C.gold }}>.</span>
+        </span>
+        <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '.3em', textTransform: 'uppercase', color: sobreMarino ? '#7E8CBE' : C.faint, marginTop: 2 }}>
+          Centro de Producción
+        </span>
+      </span>
+    </Link>
+  );
+
   return (
-    <div className="min-h-screen flex bg-[#020617] text-white relative overflow-hidden font-sans selection:bg-liquid-gold/20 selection:text-liquid-gold">
-        
-        {/* Decorative background elements */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-[#0c1324]/40 backdrop-blur-md skew-x-[-15deg] translate-x-1/4 z-0 border-l border-white/5 hidden lg:block" />
-        
-        {/* LEFT COLUMN: FORM */}
-        <div className="w-full lg:w-[45%] flex flex-col justify-center relative z-10 px-6 md:px-16 lg:px-24">
-            
-            <motion.div 
-                initial={{ opacity: 0, x: -40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="w-full max-w-[480px] mx-auto"
-            >
-                {/* Header Content */}
-                <div className="mb-12 space-y-6">
-                    <motion.div 
-                        whileHover={{ scale: 1.05 }}
-                        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 border border-white/10 mb-2 shadow-luxury relative group"
-                    >
-                        <div className="absolute inset-0 bg-liquid-gold/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <CordovaLogo className="h-8 w-8 relative z-10 invert brightness-0" />
-                    </motion.div>
-                    
-                    <div className="space-y-3">
-                        <h1 className="text-4xl md:text-5xl font-display font-black text-white tracking-[-0.04em] uppercase leading-none">
-                            IMPRENTA<br/>
-                            <span className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] bg-clip-text text-transparent font-black">CORDOVA</span>
-                        </h1>
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-[2px] bg-liquid-gold shadow-gold-glow"></div>
-                            <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">
-                                Precision Management Center
-                            </p>
-                        </div>
-                    </div>
-                </div>
+    <div style={{ minHeight: '100vh', display: 'flex', background: C.bg, color: C.ink, fontFamily: "'Inter',system-ui,sans-serif" }}>
+      <style>{PANEL_KEYFRAMES}</style>
+      <SEO title="Ingresar · Imprenta Córdova" />
 
-                {/* Main Identity Form */}
-                <form onSubmit={handleLogin} className="space-y-8 relative">
-                    <div className="space-y-6">
-                        {/* Operator Input */}
-                        <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 transition-colors group-focus-within:text-liquid-gold">ID de Operador</label>
-                            <div className="relative">
-                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-liquid-gold transition-colors">
-                                    <UsersIcon className="h-5 w-5" />
-                                </div>
-                                <input
-                                    type="text"
-                                    required
-                                    autoFocus
-                                    value={key}
-                                    onChange={(e) => setKey(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 focus:border-liquid-gold/40 rounded-2xl pl-16 pr-6 py-6 text-white font-medium focus:ring-4 focus:ring-liquid-gold/5 transition-all placeholder:text-slate-600 outline-none shadow-luxury"
-                                    placeholder="Ingrese identificador..."
-                                />
-                            </div>
-                        </div>
+      {/* Franja marino — espejo del sidebar del panel */}
+      <aside
+        className="hidden lg:flex"
+        style={{
+          width: '44%', maxWidth: 560, background: C.ink, color: C.onInk,
+          flexDirection: 'column', justifyContent: 'space-between', padding: '28px 40px 32px',
+        }}
+      >
+        {marca(true)}
 
-                        {/* Signature Input */}
-                        <div className="space-y-3 group">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 transition-colors group-focus-within:text-liquid-gold">Firma de Seguridad</label>
-                            <div className="relative">
-                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-liquid-gold transition-colors">
-                                    <LockIcon className="h-5 w-5" />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 focus:border-liquid-gold/40 rounded-2xl pl-16 pr-20 py-6 text-white font-medium focus:ring-4 focus:ring-liquid-gold/5 transition-all placeholder:text-slate-600 outline-none shadow-luxury"
-                                    placeholder="Contrasena..."
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-liquid-gold transition-colors tap-none p-2"
-                                >
-                                    {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+        <div style={{ animation: 'pi-rise .6s cubic-bezier(.2,.8,.2,1) both' }}>
+          <p style={{ ...S.eyebrow, color: C.gold }}>Panel interno</p>
+          <h1 style={{ margin: '10px 0 0', fontFamily: DISPLAY, fontSize: 38, fontWeight: 600, letterSpacing: '-.038em', color: C.onInk, lineHeight: 1.1 }}>
+            El taller, en una sola pantalla
+          </h1>
+          <p style={{ margin: '12px 0 0', fontSize: 14, color: C.onInkMuted, lineHeight: 1.65, maxWidth: 400 }}>
+            Ingresa con tu usuario para retomar las órdenes del día.
+          </p>
 
-                    {/* Error Display */}
-                    <AnimatePresence>
-                        {error && (
-                            <motion.div 
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="bg-brand-red/10 border border-brand-red/20 p-4 rounded-2xl flex items-center gap-4 animate-shake mt-4">
-                                    <div className="w-8 h-8 rounded-lg bg-brand-red/10 flex items-center justify-center flex-shrink-0">
-                                        <ExclamationTriangleIcon className="h-4 w-4 text-red-400" />
-                                    </div>
-                                    <p className="text-[10px] text-red-400 font-black uppercase tracking-widest">{error}</p>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Submit Section */}
-                    <div className="pt-2">
-                        <button
-                            type="submit"
-                            disabled={loading || !key}
-                            className="group relative w-full flex items-center justify-center gap-4 py-6 bg-liquid-gold text-slate-950 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] overflow-hidden transition-all duration-500 hover:bg-white hover:shadow-xl hover:shadow-liquid-gold/10 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed tap-none shadow-gold-glow"
-                        >
-                            {loading ? (
-                                <div className="flex items-center gap-3">
-                                    <Loader2Icon className="w-4 h-4 animate-spin" />
-                                    <span className="relative z-10">Verificando...</span>
-                                </div>
-                            ) : (
-                                <>
-                                    <span className="relative z-10">Iniciar Sesion</span>
-                                    <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                                </>
-                            )}
-                            
-                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                        </button>
-                    </div>
-                </form>
-
-                {/* Footer Navigation */}
-                <div className="mt-10 relative z-10">
-                    <Link 
-                        to="/" 
-                        className="inline-flex items-center gap-3 text-[9px] font-black text-slate-500 hover:text-liquid-gold uppercase tracking-[0.2em] transition-all group"
-                    >
-                        <ArrowLeftIcon className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
-                        <span>Regresar a la Galeria Publica</span>
-                    </Link>
-                </div>
-                
-                {/* System Logs Footer */}
-                <div className="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 opacity-60">
-                    <div className="flex items-center gap-3">
-                        <div className="flex gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-liquid-gold animate-pulse shadow-gold-glow" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-pulse" style={{ animationDelay: '0.4s' }} />
-                        </div>
-                        <span className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.4em]">Nucleo Activo - IMPRENTA CORDOVA</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.4em]">v3.0 Precision Engine</span>
-                        <ShieldCheckIcon className="w-3.5 h-3.5 text-liquid-gold" />
-                    </div>
-                </div>
-
-            </motion.div>
+          <div style={{ marginTop: 30, display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {PUNTOS.map(p => (
+              <div key={p.titulo} style={{ display: 'flex', gap: 12 }}>
+                <span style={{ width: 7, height: 7, borderRadius: 99, background: C.gold, flexShrink: 0, marginTop: 6 }} />
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: C.onInk }}>{p.titulo}</span>
+                  <span style={{ display: 'block', fontSize: 12.5, color: C.onInkFaint, marginTop: 2, lineHeight: 1.55 }}>{p.detalle}</span>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: VISUAL/CINEMATIC AMBIENCE */}
-        <div className="hidden lg:block lg:w-[55%] relative overflow-hidden bg-[#0c1324]/30 border-l border-white/5">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1586075010633-247fe3462947?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-5 grayscale invert"></div>
-            <div className="absolute inset-0 bg-gradient-to-l from-[#020617] via-[#020617]/40 to-transparent"></div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 99, background: C.onInkLayer, border: `1px solid ${C.onInkBorder}` }}>
+            <ShieldCheckIcon className="w-3.5 h-3.5" style={{ color: C.gold }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: C.onInkSoft }}>Establecimiento gráfico autorizado · SRI 001-001</span>
+          </span>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.onInkFaint }}>
+            {hora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+      </aside>
 
-            <div className="absolute inset-0 flex items-center justify-center flex-col text-center p-20 z-10">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-                    className="relative"
-                >
-                    <div className="absolute inset-0 bg-liquid-gold/5 blur-[80px] rounded-full scale-150"></div>
-                    <CordovaLogo className="w-32 h-32 md:w-48 md:h-48 relative z-10 invert brightness-0" />
-                </motion.div>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                    className="mt-12 max-w-lg"
-                >
-                    <h2 className="text-3xl font-display font-black text-white tracking-[-0.04em] uppercase mb-6">
-                        GESTION <span className="text-liquid-gold">PREFERENCIAL</span>
-                    </h2>
-                    <p className="text-slate-400 font-medium leading-relaxed text-sm">
-                        Plataforma de alta fidelidad para la gestion de artes graficas. 
-                        Eficiencia operativa bajo estandares de lujo y precision tecnica.
-                    </p>
-                </motion.div>
+      {/* Formulario */}
+      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(24px,5vw,56px)' }}>
+        <div style={{ width: '100%', maxWidth: 420, margin: '0 auto', animation: 'pi-rise .6s cubic-bezier(.2,.8,.2,1) both' }}>
+
+          {/* En celular la franja marino no se muestra: la marca vive aquí */}
+          <div className="lg:hidden" style={{ marginBottom: 26 }}>{marca(false)}</div>
+
+          <p style={S.eyebrow}>Acceso al sistema</p>
+          <h1 style={S.h1}>Iniciar sesión</h1>
+          <p style={S.lead}>Usa el nombre con el que estás registrado en el taller.</p>
+
+          <form onSubmit={handleLogin} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label htmlFor="usuario" style={S.fieldLabel}>Usuario</label>
+              <div style={{ position: 'relative' }}>
+                <UsersIcon
+                  className="w-4 h-4"
+                  style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: focus === 'usuario' ? C.royal : C.faint, pointerEvents: 'none' }}
+                />
+                <input
+                  id="usuario"
+                  type="text"
+                  required
+                  autoFocus
+                  autoComplete="username"
+                  value={key}
+                  onChange={e => setKey(e.target.value)}
+                  onFocus={() => setFocus('usuario')}
+                  onBlur={() => setFocus(null)}
+                  placeholder="Ej. Pedro"
+                  style={campo(focus === 'usuario')}
+                />
+              </div>
             </div>
 
-            <div className="absolute top-1/4 right-1/4 w-2 h-2 rounded-full bg-liquid-gold/20 animate-ping"></div>
-            <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 rounded-full bg-white/10 animate-pulse"></div>
+            <div>
+              <label htmlFor="clave" style={S.fieldLabel}>Contraseña</label>
+              <div style={{ position: 'relative' }}>
+                <LockIcon
+                  className="w-4 h-4"
+                  style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: focus === 'clave' ? C.royal : C.faint, pointerEvents: 'none' }}
+                />
+                <input
+                  id="clave"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onFocus={() => setFocus('clave')}
+                  onBlur={() => setFocus(null)}
+                  placeholder="Solo si tu usuario la exige"
+                  style={{ ...campo(focus === 'clave'), paddingRight: 44 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', color: C.faint }}
+                >
+                  {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div
+                role="alert"
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: 11 }}
+              >
+                <ExclamationTriangleIcon className="w-4 h-4" style={{ color: C.danger, flexShrink: 0 }} />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.dangerText }}>{error}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !key.trim()}
+              style={{
+                ...S.primaryBtn,
+                width: '100%', justifyContent: 'center', padding: '13px 18px', borderRadius: 11, fontSize: 13.5,
+                marginTop: 4,
+                ...(loading || !key.trim() ? { background: C.softGray, color: C.faint, cursor: 'not-allowed' } : {}),
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader2Icon className="w-4 h-4" style={{ animation: 'spin 1s linear infinite' }} />
+                  Verificando…
+                </>
+              ) : 'Entrar al panel'}
+            </button>
+          </form>
+
+          <div style={{ marginTop: 22, paddingTop: 18, borderTop: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 600, color: C.royal, textDecoration: 'none' }}>
+              <ArrowLeftIcon className="w-3.5 h-3.5" />
+              Volver al sitio público
+            </Link>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+              <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: 99, background: C.successDot }} />
+              <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>Sistema en línea</span>
+            </span>
+          </div>
         </div>
+      </main>
     </div>
   );
 };

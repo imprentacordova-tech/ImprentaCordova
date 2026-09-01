@@ -50,6 +50,12 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve('.'),
         }
       },
+      // El prebundle de dependencias en `dev` usaba el target por defecto (chrome87…),
+      // y `pdfjs-dist` trae top-level await: el servidor de desarrollo moría al arrancar.
+      // Se alinea con `build.target`.
+      optimizeDeps: {
+        esbuildOptions: { target: 'esnext' },
+      },
       build: {
         target: 'esnext', // Soporte para características modernas
         outDir: 'dist',
