@@ -3,9 +3,9 @@ import { C, S, MONO, DISPLAY } from '../panelTheme';
 import { RECARGO_URGENCIA } from '../../services/orderPricing';
 
 /**
- * Paso 2 de Nueva Orden — "Detalles de Fabricación"
- * Concentra todas las especificaciones técnicas del ítem (tamaño, tipo de papel, cantidad,
- * numeración SRI, fecha de entrega y notas de taller) liberando el Paso 1 de ruido visual.
+ * Paso 2 de Nueva Orden — "Especificaciones y Calculadora Dinámica"
+ * Concentra el cálculo técnico de tamaños, copias químicas, tipo de diseño y papel
+ * recalculando el valor unitario y total en tiempo real con total transparencia.
  */
 
 type OpcionEntrega = 'hoy' | 'manana' | 'dos-dias' | 'exacta';
@@ -17,8 +17,33 @@ const OPCIONES_ENTREGA: { id: OpcionEntrega; label: string }[] = [
     { id: 'exacta', label: 'Fecha exacta' },
 ];
 
-const TAMANOS_CORTE = ['1/4 Oficio', '1/2 Oficio', 'Carta / A4', '1/8 Oficio', 'Personalizado'];
-const TIPOS_PAPEL = ['Químico Autocopia (2c)', 'Químico (3c)', 'Bond 75g', 'Couché 300g', 'Adhesivo'];
+export const OPCIONES_TAMANO = [
+    { label: '1/4 Oficio', delta: 0, tag: 'Estándar' },
+    { label: '1/2 Oficio', delta: 4, tag: '+$4.00/u' },
+    { label: 'Carta / A4', delta: 7, tag: '+$7.00/u' },
+    { label: '1/8 Oficio', delta: -2, tag: '-$2.00/u' },
+    { label: 'Personalizado', delta: 0, tag: 'Manual' },
+];
+
+export const OPCIONES_COPIAS = [
+    { label: 'Original (50 hojas)', delta: -1.5, tag: '1 copia (-$1.50)' },
+    { label: 'Original + 1 Copia (Duplicado 100h)', delta: 0, tag: 'Estándar (2c)' },
+    { label: 'Original + 2 Copias (Triplicado 150h)', delta: 3.5, tag: '3 copias (+$3.50)' },
+    { label: 'Original + 3 Copias (Cuadruplicado 200h)', delta: 7, tag: '4 copias (+$7.00)' },
+];
+
+export const OPCIONES_DISENO = [
+    { label: 'Sin Diseño (Arte provisto / Repetición)', delta: 0, tag: 'Incluido' },
+    { label: 'Diagramación Rápida / Muestra Física', delta: 3, tag: '+$3.00' },
+    { label: 'Diseño Creativo & Vectorización', delta: 8, tag: '+$8.00' },
+];
+
+export const OPCIONES_PAPEL = [
+    { label: 'Químico Autocopia', delta: 0 },
+    { label: 'Bond 75g', delta: 0 },
+    { label: 'Couché 300g (Brillante/Mate)', delta: 2 },
+    { label: 'Adhesivo / Vinil', delta: 3 },
+];
 
 const fechaDeOpcion = (id: OpcionEntrega): string => {
     const d = new Date();
@@ -67,13 +92,16 @@ export interface OrderDetailsProps {
 }
 
 const chip = (activo: boolean): React.CSSProperties => ({
-    padding: '8px 12px',
+    padding: '7px 12px',
     borderRadius: 9,
     fontSize: 12,
     fontWeight: 600,
     cursor: 'pointer',
     fontFamily: 'inherit',
     transition: 'all 0.15s ease',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
     ...(activo
         ? { background: C.royal, color: '#FFFFFF', border: `1px solid ${C.royal}` }
         : { background: C.surface, color: C.body, border: `1px solid ${C.borderStrong}` }),
@@ -119,16 +147,28 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
         setFechaEntrega(d.toISOString());
     };
 
-    const updateItemSpec = (index: number, key: string, val: any) => {
+    const updateItemOption = (index: number, key: 'tamano' | 'copias' | 'diseno' | 'papel', val: string) => {
         if (!setItems) return;
         setItems(prev => prev.map((item, i) => {
             if (i !== index) return item;
+            const currentSpecs = item.especificaciones || {};
+            const newSpecs = { ...currentSpecs, [key]: val };
+
+            const base = item.precioBase ?? item.precioUnitario ?? 13;
+            const deltaTam = OPCIONES_TAMANO.find(o => o.label === (newSpecs.tamano || '1/4 Oficio'))?.delta || 0;
+            const deltaCop = item.esSRI ? (OPCIONES_COPIAS.find(o => o.label === (newSpecs.copias || 'Original + 1 Copia (Duplicado 100h)'))?.delta || 0) : 0;
+            const deltaDis = OPCIONES_DISENO.find(o => o.label === (newSpecs.diseno || 'Sin Diseño (Arte provisto / Repetición)'))?.delta || 0;
+            const deltaPap = OPCIONES_PAPEL.find(o => o.label === (newSpecs.papel || (item.esSRI ? 'Químico Autocopia' : 'Bond 75g')) )?.delta || 0;
+
+            const newUnitPrice = Math.max(1, base + deltaTam + deltaCop + deltaDis + deltaPap);
+            const qty = item.cantidad || 1;
+
             return {
                 ...item,
-                especificaciones: {
-                    ...(item.especificaciones || {}),
-                    [key]: val,
-                },
+                precioBase: base,
+                precioUnitario: newUnitPrice,
+                precioFinal: Math.round(newUnitPrice * qty * 100) / 100,
+                especificaciones: newSpecs,
             };
         }));
     };
@@ -139,7 +179,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
             if (i !== index) return item;
             const currentQty = item.cantidad || 1;
             const newQty = Math.max(1, currentQty + delta);
-            const unitPrice = item.precioUnitario || ((item.precioFinal || 0) / currentQty);
+            const unitPrice = item.precioUnitario || 13;
             return {
                 ...item,
                 cantidad: newQty,
@@ -153,11 +193,14 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             
             {/* Header del Paso 2 */}
-            <div style={{ ...S.card, padding: '18px 20px' }}>
+            <div style={{ ...S.card, padding: '16px 20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
                     <div>
-                        <span style={S.eyebrow}>Paso 2 de 4</span>
-                        <h2 style={{ ...S.h2, margin: '2px 0 0' }}>Detalles de Fabricación</h2>
+                        <span style={S.eyebrow}>Paso 2 · Proceso de Fabricación</span>
+                        <h2 style={{ ...S.h2, margin: '2px 0 0', fontSize: 18 }}>Especificaciones & Calculadora Dinámica</h2>
+                        <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.faint }}>
+                            Ajusta el tamaño, número de copias y tipo de diseño. Los valores se calculan automáticamente en tiempo real.
+                        </p>
                     </div>
                     {esSRI && (
                         <span style={{
@@ -169,41 +212,45 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                             fontSize: 11,
                             fontWeight: 700,
                         }}>
-                            Comprobante SRI Autorizado
+                            ⚖️ Comprobante SRI Autorizado
                         </span>
                     )}
                 </div>
             </div>
 
-            {/* Configuración de Ítems Seleccionados */}
+            {/* Configuración Dinámica de Ítems */}
             {items.length > 0 && (
                 <div style={{ ...S.card, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ ...S.colHead, color: C.faint }}>Especificaciones por Ítem</div>
+                    <div style={{ ...S.colHead, color: C.faint }}>Configurador de Producto por Ítem</div>
+                    
                     {items.map((item, idx) => {
                         const tamanoActual = item.especificaciones?.tamano || (item.esSRI ? '1/4 Oficio' : 'Carta / A4');
-                        const papelActual = item.especificaciones?.papel || (item.esSRI ? 'Químico Autocopia (2c)' : 'Bond 75g');
+                        const copiasActual = item.especificaciones?.copias || (item.esSRI ? 'Original + 1 Copia (Duplicado 100h)' : 'Original (50 hojas)');
+                        const disenoActual = item.especificaciones?.diseno || 'Sin Diseño (Arte provisto / Repetición)';
+                        const papelActual = item.especificaciones?.papel || (item.esSRI ? 'Químico Autocopia' : 'Bond 75g');
+
+                        const deltaTam = OPCIONES_TAMANO.find(o => o.label === tamanoActual)?.delta || 0;
+                        const deltaCop = item.esSRI ? (OPCIONES_COPIAS.find(o => o.label === copiasActual)?.delta || 0) : 0;
+                        const deltaDis = OPCIONES_DISENO.find(o => o.label === disenoActual)?.delta || 0;
+                        const deltaPap = OPCIONES_PAPEL.find(o => o.label === papelActual)?.delta || 0;
 
                         return (
                             <div
                                 key={idx}
                                 style={{
-                                    padding: '14px 16px',
+                                    padding: '16px 18px',
                                     background: C.surfaceAlt,
                                     border: `1px solid ${C.border}`,
                                     borderRadius: 14,
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: 12,
+                                    gap: 14,
                                 }}
                             >
+                                {/* Barra Superior del Ítem */}
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <span style={{
-                                            fontFamily: DISPLAY,
-                                            fontSize: 15,
-                                            fontWeight: 700,
-                                            color: C.ink,
-                                        }}>
+                                        <span style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: C.ink }}>
                                             {item.nombre}
                                         </span>
                                         <span style={{
@@ -220,22 +267,22 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
 
                                     {/* Stepper de Cantidad */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 600 }}>Talonarios / Unid:</span>
+                                        <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Talonarios / Cantidad:</span>
                                         <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${C.borderStrong}`, borderRadius: 8, background: '#FFFFFF', overflow: 'hidden' }}>
                                             <button
                                                 type="button"
                                                 onClick={() => updateItemQty(idx, -1)}
-                                                style={{ padding: '4px 9px', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, color: C.ink }}
+                                                style={{ padding: '5px 11px', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, color: C.ink, fontSize: 14 }}
                                             >
                                                 −
                                             </button>
-                                            <span style={{ padding: '0 8px', fontFamily: MONO, fontSize: 13, fontWeight: 700, color: C.royal }}>
+                                            <span style={{ padding: '0 10px', fontFamily: MONO, fontSize: 14, fontWeight: 700, color: C.royal }}>
                                                 {item.cantidad || 1}
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={() => updateItemQty(idx, 1)}
-                                                style={{ padding: '4px 9px', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, color: C.ink }}
+                                                style={{ padding: '5px 11px', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, color: C.ink, fontSize: 14 }}
                                             >
                                                 +
                                             </button>
@@ -243,37 +290,108 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                     </div>
                                 </div>
 
-                                {/* Selector de Tamaño */}
+                                {/* 1. Selector de Tamaño de Corte */}
                                 <div>
-                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>Tamaño de Corte:</span>
+                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>1. Tamaño de Corte / Formato:</span>
                                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        {TAMANOS_CORTE.map((tam) => (
+                                        {OPCIONES_TAMANO.map((tam) => (
                                             <button
-                                                key={tam}
+                                                key={tam.label}
                                                 type="button"
-                                                onClick={() => updateItemSpec(idx, 'tamano', tam)}
-                                                style={chip(tamanoActual === tam)}
+                                                onClick={() => updateItemOption(idx, 'tamano', tam.label)}
+                                                style={chip(tamanoActual === tam.label)}
                                             >
-                                                {tam}
+                                                <span>{tam.label}</span>
+                                                <span style={{ fontSize: 10, opacity: 0.8 }}>({tam.tag})</span>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* Selector de Papel */}
+                                {/* 2. Selector de Copias Químicas (para SRI / Talonarios) */}
+                                {item.esSRI && (
+                                    <div>
+                                        <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>2. Número de Copias Químicas / Hojas por Talonario:</span>
+                                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                            {OPCIONES_COPIAS.map((cop) => (
+                                                <button
+                                                    key={cop.label}
+                                                    type="button"
+                                                    onClick={() => updateItemOption(idx, 'copias', cop.label)}
+                                                    style={chip(copiasActual === cop.label)}
+                                                >
+                                                    <span>{cop.label}</span>
+                                                    <span style={{ fontSize: 10, opacity: 0.8 }}>({cop.tag})</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 3. Diseño & Diagramación */}
                                 <div>
-                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>Sustrato / Papel:</span>
+                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>3. Servicio de Diseño & Preprensa:</span>
                                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        {TIPOS_PAPEL.map((pap) => (
+                                        {OPCIONES_DISENO.map((dis) => (
                                             <button
-                                                key={pap}
+                                                key={dis.label}
                                                 type="button"
-                                                onClick={() => updateItemSpec(idx, 'papel', pap)}
-                                                style={chip(papelActual === pap)}
+                                                onClick={() => updateItemOption(idx, 'diseno', dis.label)}
+                                                style={chip(disenoActual === dis.label)}
                                             >
-                                                {pap}
+                                                <span>{dis.label}</span>
+                                                <span style={{ fontSize: 10, opacity: 0.8 }}>({dis.tag})</span>
                                             </button>
                                         ))}
+                                    </div>
+                                </div>
+
+                                {/* 4. Sustrato / Papel */}
+                                <div>
+                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>4. Sustrato / Papel Base:</span>
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                        {OPCIONES_PAPEL.map((pap) => (
+                                            <button
+                                                key={pap.label}
+                                                type="button"
+                                                onClick={() => updateItemOption(idx, 'papel', pap.label)}
+                                                style={chip(papelActual === pap.label)}
+                                            >
+                                                <span>{pap.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Desglose Dinámico de Valores en Vivo */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '10px 14px',
+                                    background: '#FFFFFF',
+                                    border: `1.5px solid ${C.borderStrong}`,
+                                    borderRadius: 10,
+                                    flexWrap: 'wrap',
+                                    gap: 10,
+                                }}>
+                                    <div style={{ fontSize: 12, color: C.muted }}>
+                                        <span style={{ fontWeight: 700, color: C.ink }}>Cálculo dinámico: </span>
+                                        Base ${item.precioBase || 13}
+                                        {deltaTam !== 0 && ` + Formato (${deltaTam > 0 ? '+' : ''}$${deltaTam})`}
+                                        {deltaCop !== 0 && ` + Copias (${deltaCop > 0 ? '+' : ''}$${deltaCop})`}
+                                        {deltaDis !== 0 && ` + Diseño (+$${deltaDis})`}
+                                        {deltaPap !== 0 && ` + Papel (+$${deltaPap})`}
+                                        {` = `}
+                                        <span style={{ fontFamily: MONO, fontWeight: 700, color: C.royal }}>
+                                            ${(item.precioUnitario || 13).toFixed(2)} c/u
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <span style={{ fontSize: 11, color: C.faint, fontWeight: 600 }}>Subtotal Ítem:</span>
+                                        <span style={{ fontFamily: MONO, fontSize: 15, fontWeight: 800, color: C.royal }}>
+                                            ${(item.precioFinal || item.precioUnitario || 13).toFixed(2)}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -318,35 +436,32 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                         >
                             <span style={{ width: 8, height: 8, borderRadius: 99, flexShrink: 0, background: urgente ? C.danger : C.borderStrong }} />
                             <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, fontWeight: 600 }}>
-                                {urgente ? 'Urgente · Prioridad inmediata' : 'Normal · Cola estándar'}
-                            </span>
-                            <span style={{ fontSize: 11.5, opacity: .75 }}>
-                                {urgente ? `+${Math.round(RECARGO_URGENCIA * 100)}%` : 'sin recargo'}
+                                {urgente ? `Urgente (+${RECARGO_URGENCIA * 100}% express)` : 'Prioridad normal (cola de taller)'}
                             </span>
                         </button>
                     </div>
                 </div>
 
-                {/* Campos SRI si aplica */}
+                {/* Campos SRI */}
                 {esSRI && (
                     <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.divider}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12 }}>
                         <label style={{ display: 'block' }}>
-                            <span style={S.fieldLabel}>Numeración desde</span>
+                            <span style={S.fieldLabel}>Numeración inicial</span>
                             <input
+                                type="text"
                                 value={numeracion}
-                                onChange={e => setNumeracion?.(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                                placeholder="Ej. 0000001"
-                                inputMode="numeric"
+                                onChange={e => setNumeracion && setNumeracion(e.target.value)}
+                                placeholder="Ej. 0000001 - 0000100"
                                 style={{ ...S.input, fontFamily: MONO }}
                             />
                         </label>
                         <label style={{ display: 'block' }}>
-                            <span style={S.fieldLabel}>Autorización SRI</span>
+                            <span style={S.fieldLabel}>Nro. Autorización SRI</span>
                             <input
+                                type="text"
                                 value={autorizacionSri}
-                                onChange={e => setAutorizacionSri?.(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                placeholder="10 dígitos SRI"
-                                inputMode="numeric"
+                                onChange={e => setAutorizacionSri && setAutorizacionSri(e.target.value)}
+                                placeholder="Ej. 1131456789"
                                 style={{ ...S.input, fontFamily: MONO }}
                             />
                         </label>
@@ -356,18 +471,18 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                 {/* Notas de taller */}
                 <div style={{ marginTop: 14 }}>
                     <label style={{ display: 'block' }}>
-                        <span style={S.fieldLabel}>Instrucciones de acabado / Notas</span>
+                        <span style={S.fieldLabel}>Instrucciones de acabado / Notas de taller</span>
                         <textarea
                             value={notas}
                             onChange={e => setNotas(e.target.value)}
                             rows={2}
-                            placeholder="Ej. perforado lateral para archivador, cambiar numeración, tinta azul..."
+                            placeholder="Ej. perforado lateral para archivador, tintas especiales, cambiar numeración..."
                             style={{ ...S.input, resize: 'vertical', lineHeight: 1.5 }}
                         />
                     </label>
                 </div>
 
-                {/* Arte o Foto de Muestra Física */}
+                {/* Arte o Foto de Muestra Física con Cámara */}
                 {setArchivo && (
                     <div style={{
                         marginTop: 14, padding: '14px 16px', border: `1.5px dashed ${C.borderStrong}`, borderRadius: 12,
@@ -377,12 +492,11 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <span style={{ width: 34, height: 34, borderRadius: 8, background: C.chipBlue, color: C.royal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📷</span>
                                 <div>
-                                    <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.ink }}>Foto de Referencia / Muestra Física</span>
-                                    <span style={{ display: 'block', fontSize: 11, color: C.faint }}>Foto del talonario anterior, boceto, sello o archivo de diseño (PDF, CDR, JPG)</span>
+                                    <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.ink }}>Foto de Muestra Física / Archivo del Cliente</span>
+                                    <span style={{ display: 'block', fontSize: 11, color: C.faint }}>Fotografía el talonario viejo con la cámara o sube un archivo (PDF, CDR, JPG)</span>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                                {/* Input para Cámara Móvil */}
                                 <input
                                     id="camera-capture-input"
                                     type="file"
@@ -402,7 +516,6 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                     Tomar Foto (Cámara)
                                 </button>
 
-                                {/* Input para Explorador de Archivos */}
                                 <input
                                     ref={fileRef}
                                     type="file"
@@ -424,7 +537,6 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                             </div>
                         </div>
 
-                        {/* Vista previa si ya hay archivo cargado */}
                         {archivo && (
                             <div style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',

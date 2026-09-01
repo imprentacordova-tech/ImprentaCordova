@@ -21,7 +21,12 @@ import { calcularPedido, round2 } from '../services/orderPricing';
  * 1. Producto / Catálogo -> 2. Detalles (SRI integrado) -> 3. Cliente -> 4. Pago y Resumen
  */
 
-const STEP_LABELS = ['1. Producto', '2. Detalles', '3. Cliente', '4. Pago y Resumen'];
+const STEP_CONFIG = [
+    { id: 1, label: '1 · Producto Base', subtitle: '¿Qué va a imprimir?', icon: '📦' },
+    { id: 2, label: '2 · Medidas & Copias', subtitle: 'Calculadora dinámica', icon: '📏' },
+    { id: 3, label: '3 · Datos de Cliente', subtitle: 'RUC / Razón Social', icon: '👤' },
+    { id: 4, label: '4 · Pago & Despacho', subtitle: 'Anticipo y liquidación', icon: '💳' },
+];
 
 const CATEGORIAS_CATALOGO = ['Todos', 'Comprobantes SRI', 'Papelería Comercial', 'Publicidad & Sellos'] as const;
 
@@ -57,6 +62,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
     const [items, setItems] = useState<any[]>([]);
+    const [busqueda, setBusqueda] = useState('');
 
     // Detalles del pedido
     const [notasTaller, setNotasTaller] = useState('');
@@ -178,12 +184,15 @@ const NuevoPedidoPage: React.FC = () => {
         const newItem = {
             nombre: p.nombre,
             cantidad: 1,
+            precioBase: p.precio,
             precioUnitario: p.precio,
             precioFinal: p.precio,
             esSRI: p.esSRI,
             especificaciones: {
                 tamano: p.esSRI ? '1/4 Oficio' : 'Carta / A4',
-                papel: p.esSRI ? 'Químico Autocopia (2c)' : 'Bond 75g',
+                copias: p.esSRI ? 'Original + 1 Copia (Duplicado 100h)' : 'Original (50 hojas)',
+                diseno: 'Sin Diseño (Arte provisto / Repetición)',
+                papel: p.esSRI ? 'Químico Autocopia' : 'Bond 75g',
                 esSRI: p.esSRI,
             }
         };
@@ -297,56 +306,167 @@ const NuevoPedidoPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Banner de Detección SRI Extension */}
+                {/* Banner de Detección SRI Extension — Tarjeta Inteligente */}
                 {sriAutoFillBanner && (
-                    <div style={{ ...S.accentCard, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
-                        <div>
-                            <div style={{ ...S.colHead, color: '#93A0C8' }}>Solicitud SRI detectada por Extensión</div>
-                            <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>
-                                RUC {sriAutoFillBanner.ruc || sriAutoFillBanner.clientRuc} · {sriAutoFillBanner.name || sriAutoFillBanner.clientName} ({sriAutoFillBanner.blocks || 100} hojas)
+                    <div style={{
+                        background: 'linear-gradient(135deg, #0A1140 0%, #16309B 100%)',
+                        border: '1.5px solid #FFC61A',
+                        borderRadius: 16,
+                        padding: '18px 22px',
+                        color: '#FFFFFF',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 16,
+                        flexWrap: 'wrap',
+                        boxShadow: '0 12px 32px -8px rgba(10,17,64,0.35)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 280 }}>
+                            <div style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 12,
+                                background: '#FFC61A',
+                                color: '#0A1140',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 22,
+                                fontWeight: 900,
+                                flexShrink: 0,
+                                boxShadow: '0 4px 12px rgba(255,198,26,0.3)',
+                            }}>
+                                ⚡
+                            </div>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                    <span style={{
+                                        fontSize: 10,
+                                        fontWeight: 800,
+                                        letterSpacing: '0.08em',
+                                        textTransform: 'uppercase',
+                                        padding: '2px 8px',
+                                        borderRadius: 6,
+                                        background: 'rgba(255,198,26,0.2)',
+                                        color: '#FFC61A',
+                                        border: '1px solid rgba(255,198,26,0.4)',
+                                    }}>
+                                        ● SRI Online Detectado
+                                    </span>
+                                    <span style={{ fontFamily: MONO, fontSize: 13, color: '#FFFFFF', fontWeight: 700 }}>
+                                        RUC {sriAutoFillBanner.ruc || sriAutoFillBanner.clientRuc}
+                                    </span>
+                                </div>
+                                <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: '#FFFFFF', marginTop: 4 }}>
+                                    {sriAutoFillBanner.name || sriAutoFillBanner.clientName || 'Contribuyente SRI'}
+                                </div>
+                                <div style={{ fontSize: 12, color: '#CAD5F5', marginTop: 2 }}>
+                                    Solicitud: <b style={{ color: '#FFFFFF' }}>{sriAutoFillBanner.docType === '0' ? 'Factura' : sriAutoFillBanner.docType === '5' ? 'Guía de Remisión' : 'Nota de Venta'}</b> ({sriAutoFillBanner.blocks || 100} hojas) · Actividad: {sriAutoFillBanner.activity || 'General'}
+                                </div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                            <button style={{ ...S.primaryBtn, background: '#1B6E3E' }} onClick={() => { applySriPayload(sriAutoFillBanner); setSriAutoFillBanner(null); }}>
-                                Importar (1 clic)
+
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            <button
+                                type="button"
+                                onClick={() => { applySriPayload(sriAutoFillBanner); setSriAutoFillBanner(null); }}
+                                style={{
+                                    padding: '10px 18px',
+                                    borderRadius: 11,
+                                    background: '#FFC61A',
+                                    color: '#0A1140',
+                                    border: 'none',
+                                    fontSize: 13,
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    fontFamily: 'inherit',
+                                    boxShadow: '0 4px 14px rgba(255,198,26,0.4)',
+                                    transition: 'transform 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                ⚡ Autollenar Orden (1 Clic)
                             </button>
-                            <button style={S.softBtn} onClick={() => setSriAutoFillBanner(null)}>Descartar</button>
+                            <button
+                                type="button"
+                                onClick={() => setSriAutoFillBanner(null)}
+                                style={{
+                                    padding: '10px 14px',
+                                    borderRadius: 11,
+                                    background: 'rgba(255,255,255,0.12)',
+                                    color: '#FFFFFF',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    fontSize: 12.5,
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    fontFamily: 'inherit',
+                                }}
+                            >
+                                Descartar
+                            </button>
                         </div>
                     </div>
                 )}
 
-                {/* Stepper de 4 Pasos Responsivo */}
-                <div style={{ ...S.card, padding: '10px 14px', display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }}>
-                    {STEP_LABELS.map((label, i) => {
-                        const id = i + 1;
-                        const active = step === id;
-                        const past = step > id;
-                        return (
-                            <button
-                                key={label}
-                                type="button"
-                                disabled={!past && !active}
-                                onClick={() => past && setStep(id)}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 6,
-                                    padding: '7px 12px',
-                                    borderRadius: 9,
-                                    border: 'none',
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    whiteSpace: 'nowrap',
-                                    cursor: past ? 'pointer' : 'default',
-                                    fontFamily: 'inherit',
-                                    transition: 'all 0.2s',
-                                    ...(active ? { background: C.royal, color: '#FFFFFF' } : past ? { background: C.chipBlue, color: C.royal } : { background: 'transparent', color: C.faint }),
-                                }}
-                            >
-                                {label}
-                            </button>
-                        );
-                    })}
+                {/* Camino / Proceso de Solicitud (Stepper Visual con Regla Inmutable) */}
+                <div style={{ ...S.card, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }}>
+                        {STEP_CONFIG.map((cfg) => {
+                            const active = step === cfg.id;
+                            const past = step > cfg.id;
+                            return (
+                                <button
+                                    key={cfg.id}
+                                    type="button"
+                                    disabled={!past && !active}
+                                    onClick={() => past && setStep(cfg.id)}
+                                    style={{
+                                        flex: '1 0 auto',
+                                        minWidth: 145,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                        padding: '8px 12px',
+                                        borderRadius: 10,
+                                        border: `1px solid ${active ? C.royal : past ? C.borderStrong : C.divider}`,
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        whiteSpace: 'nowrap',
+                                        cursor: past ? 'pointer' : 'default',
+                                        fontFamily: 'inherit',
+                                        transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                        ...(active
+                                            ? { background: C.royal, color: '#FFFFFF', boxShadow: '0 4px 12px rgba(22,48,155,0.2)' }
+                                            : past
+                                            ? { background: C.chipBlue, color: C.royal }
+                                            : { background: C.surfaceAlt, color: C.faint }),
+                                    }}
+                                >
+                                    <span style={{ fontSize: 13 }}>{past ? '✓' : cfg.icon}</span>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <div style={{ lineHeight: 1.1 }}>{cfg.label}</div>
+                                        <div style={{ fontSize: 10, opacity: active ? 0.85 : 0.6, fontWeight: 500 }}>{cfg.subtitle}</div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Barra de Progreso del Camino */}
+                    <div style={{ height: 4, background: C.border, borderRadius: 99, overflow: 'hidden' }}>
+                        <div
+                            style={{
+                                height: '100%',
+                                width: `${(step / 4) * 100}%`,
+                                background: `linear-gradient(90deg, ${C.royal} 0%, ${C.gold} 100%)`,
+                                transition: 'width 0.3s ease',
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* Contenido Principal y Sidebar de Resumen Responsivo */}
@@ -361,7 +481,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                                         <div>
                                             <h2 style={S.h2}>1 · ¿Qué va a imprimir?</h2>
-                                            <p style={{ ...S.lead, fontSize: 13 }}>Selecciona el producto base. Los tamaños y especificaciones se configuran en el siguiente paso.</p>
+                                            <p style={{ ...S.lead, fontSize: 13 }}>Selecciona el producto principal o búscalo por nombre. Medidas y copias se configuran en el Paso 2.</p>
                                         </div>
                                         <button
                                             type="button"
@@ -374,6 +494,42 @@ const NuevoPedidoPage: React.FC = () => {
 
                                     {!isAddingCustomItem ? (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                            
+                                            {/* Barra de Búsqueda Inteligente */}
+                                            <div style={{ position: 'relative', width: '100%' }}>
+                                                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: C.faint }}>
+                                                    🔍
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    value={busqueda}
+                                                    onChange={(e) => setBusqueda(e.target.value)}
+                                                    placeholder="Buscar producto (ej: nota de venta, factura, volante, tarjeta, sello, lona...)"
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '11px 14px 11px 40px',
+                                                        borderRadius: 12,
+                                                        border: `1px solid ${busqueda ? C.royal : C.borderStrong}`,
+                                                        background: '#FFFFFF',
+                                                        fontSize: 13,
+                                                        fontFamily: 'inherit',
+                                                        color: C.ink,
+                                                        outline: 'none',
+                                                        transition: 'border-color 0.2s',
+                                                        boxShadow: busqueda ? '0 0 0 3px rgba(22,48,155,0.08)' : 'none',
+                                                    }}
+                                                />
+                                                {busqueda && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setBusqueda('')}
+                                                        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: C.faint, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+                                            </div>
+
                                             {/* Tabs de Filtro de Categoría */}
                                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                                 {CATEGORIAS_CATALOGO.map((cat) => {
@@ -404,7 +560,11 @@ const NuevoPedidoPage: React.FC = () => {
                                             {/* Tarjetas Minimalistas de Producto */}
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
                                                 {CATALOGO_RAPIDO
-                                                    .filter(p => filtroCat === 'Todos' || p.cat === filtroCat)
+                                                    .filter(p => {
+                                                        const matchCat = filtroCat === 'Todos' || p.cat === filtroCat;
+                                                        const matchSearch = !busqueda || p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || p.tag.toLowerCase().includes(busqueda.toLowerCase());
+                                                        return matchCat && matchSearch;
+                                                    })
                                                     .map((p) => (
                                                         <button
                                                             key={p.id}
@@ -457,7 +617,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                                 {p.nombre}
                                                             </div>
                                                             <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, color: C.royal, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                Configurar →
+                                                                Configurar detalles →
                                                             </div>
                                                         </button>
                                                     ))}
@@ -485,7 +645,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     {items.length > 0 && !isAddingCustomItem && (
                                         <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.divider}`, display: 'flex', justifyContent: 'flex-end' }}>
                                             <button style={S.primaryBtn} onClick={() => setStep(2)}>
-                                                Continuar a Detalles con {items.length} ítem(s) →
+                                                Continuar a Medidas con {items.length} ítem(s) →
                                             </button>
                                         </div>
                                     )}

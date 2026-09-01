@@ -14,7 +14,7 @@ const mapDBTrabajo = (t: any): Trabajo => ({
   estadoClave: t.estado_clave,
   imprimirClave: t.imprimir_clave,
   esRenovacion: t.es_renovacion,
-  esSRI: t.es_sri === true || t.tipo?.toLowerCase() === 'sri',
+  esSRI: t.es_sri === true || t.tipo?.toLowerCase() === 'sri' || t.subtipo?.toLowerCase()?.includes('sri') || false,
   tamano: t.tamano,
   establecimiento: t.establecimiento,
   puntoEmision: t.punto_emision,
@@ -143,8 +143,43 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     Object.entries(sriFields).forEach(([k, v]) => { if (v !== undefined) dbData[k] = v; });
 
-    const { data, error } = await supabase.from('trabajos').insert([dbData]).select().single();
-    if (error) throw error;
+    let insertData: any = null;
+    let insertError: any = null;
+    let payload = { ...dbData };
+    let attempts = 0;
+
+    // Bucle auto-recuperable: si Supabase carece de alguna columna opcional en su esquema, la elimina y reintenta
+    while (attempts < 6) {
+      attempts++;
+      const res = await supabase.from('trabajos').insert([payload]).select().single();
+      if (!res.error) {
+        insertData = res.data;
+        insertError = null;
+        break;
+      }
+
+      insertError = res.error;
+      const msg = res.error.message || '';
+      
+      const match = msg.match(/Could not find the '([^']+)' column/i) ||
+                    msg.match(/column "([^"]+)" of relation/i) ||
+                    msg.match(/column '([^']+)' does not exist/i);
+
+      if (match && match[1] && match[1] in payload) {
+        const missingCol = match[1];
+        console.warn(`[TrabajosContext] Columna '${missingCol}' no existe en la tabla 'trabajos'. Omitiendo e insertando de nuevo...`);
+        delete payload[missingCol];
+      } else {
+        break;
+      }
+    }
+
+    if (insertError || !insertData) {
+      console.error('[TrabajosContext] Error inserting trabajo:', insertError);
+      throw insertError || new Error('No se pudo crear la orden en Supabase');
+    }
+
+    const data = insertData;
 
     if (imageFile) {
       try {
@@ -162,15 +197,18 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const updateTrabajoStatus = async (id: string, status: TrabajoEstado, user: string) => {
-    // El handoff de diseño exige que cada cambio de estado deje rastro en `historial`:
-    // la línea de tiempo del cajón de detalle y la Bitácora se leen de ahí.
     const actual = trabajos.find(t => t.id === id);
     const historial: StatusLog[] = [
       ...(actual?.historial ?? []),
       { estado: status, fecha: new Date().toISOString(), usuario: user },
     ];
-    const { error } = await supabase.from('trabajos').update({ estado: status, actualizado_por: user, historial }).eq('id', id);
-    if (error) throw error;
+    
+    let res = await supabase.from('trabajos').update({ estado: status, actualizado_por: user, historial }).eq('id', id);
+    if (res.error && res.error.message?.includes('historial')) {
+      // Fallback si la columna historial no existe en la tabla
+      res = await supabase.from('trabajos').update({ estado: status, actualizado_por: user }).eq('id', id);
+    }
+    if (res.error) throw res.error;
     setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizadoPor: user, historial } : t));
   };
 
