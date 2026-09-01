@@ -1,52 +1,82 @@
 import React from 'react';
+import { C } from '../panelTheme';
 
-type BadgeVariant = 'status' | 'role' | 'count' | 'gold' | 'blue' | 'red' | 'emerald' | 'purple';
+export type BadgeVariant = 'status' | 'role' | 'count' | 'gold' | 'blue' | 'red' | 'emerald' | 'purple' | 'gray';
 
-interface BadgeProps {
+export interface BadgeProps {
   variant?: BadgeVariant;
   children: React.ReactNode;
   pulse?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-const variantClasses: Record<BadgeVariant, string> = {
-  status: 'bg-white/5 border-white/10 text-slate-400',
-  role: 'border-white/10',
-  count: 'bg-liquid-gold/10 border-liquid-gold/20 text-liquid-gold',
-  gold: 'bg-liquid-gold/10 border-liquid-gold/20 text-liquid-gold',
-  blue: 'bg-brand-blue/10 border-brand-blue/20 text-brand-blue',
-  red: 'bg-brand-red/10 border-brand-red/20 text-brand-red',
-  emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-  purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
+const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
+  status: { background: C.softGray, color: C.body, border: `1px solid ${C.border}` },
+  role: { background: C.chipBlue, color: C.royal, border: `1px solid ${C.borderStrong}` },
+  count: { background: C.goldBg, color: C.goldTextStrong, border: `1px solid ${C.goldBorder}` },
+  gold: { background: C.goldBg, color: C.goldTextStrong, border: `1px solid ${C.goldBorder}` },
+  blue: { background: C.chipBlue, color: C.royal, border: `1px solid #D7DDF0` },
+  red: { background: C.dangerBg, color: C.dangerText, border: `1px solid ${C.dangerBorder}` },
+  emerald: { background: C.successBg, color: C.successStrong, border: `1px solid ${C.successBorder}` },
+  purple: { background: C.violetBg, color: C.violet, border: `1px solid #DDD3FE` },
+  gray: { background: C.softGray, color: C.muted, border: `1px solid ${C.border}` },
 };
 
-const statusColors: Record<string, string> = {
-  'Pendiente':           'bg-amber-500/10 border-amber-500/20 text-amber-400',
-  'En Diseño':           'bg-purple-500/10 border-purple-500/20 text-purple-400',
-  'En Proceso':          'bg-brand-blue/10 border-brand-blue/20 text-brand-blue',
-  'Vitrina':             'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-  'Entregado':           'bg-slate-500/10 border-slate-500/20 text-slate-400',
-  'LISTA':               'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-  'PENDIENTE':           'bg-amber-500/10 border-amber-500/20 text-amber-400',
-  'ERROR':               'bg-brand-red/10 border-brand-red/20 text-brand-red',
-  'Admin':               'bg-amber-500/10 border-amber-500/20 text-amber-400',
-  'root':                'bg-brand-red/10 border-brand-red/20 text-brand-red',
-  'Operador':            'bg-brand-blue/10 border-brand-blue/20 text-brand-blue',
-  'Diseñador':           'bg-purple-500/10 border-purple-500/20 text-purple-400',
+const statusMap: Record<string, React.CSSProperties> = {
+  'Pendiente':  { background: C.goldBg, color: C.goldTextStrong, border: `1px solid ${C.goldBorder}` },
+  'En Diseño':  { background: C.violetBg, color: C.violet, border: `1px solid #DDD3FE` },
+  'En Prensa':  { background: C.chipBlue, color: C.royal, border: `1px solid #D7DDF0` },
+  'En Proceso': { background: C.chipBlue, color: C.royal, border: `1px solid #D7DDF0` },
+  'Listo':      { background: C.successBg, color: C.successStrong, border: `1px solid ${C.successBorder}` },
+  'Vitrina':    { background: C.successBg, color: C.successStrong, border: `1px solid ${C.successBorder}` },
+  'Entregado':  { background: C.softGray, color: C.muted, border: `1px solid ${C.border}` },
+  'LISTA':      { background: C.successBg, color: C.successStrong, border: `1px solid ${C.successBorder}` },
+  'ERROR':      { background: C.dangerBg, color: C.dangerText, border: `1px solid ${C.dangerBorder}` },
+  'Admin':      { background: C.goldBg, color: C.goldTextStrong, border: `1px solid ${C.goldBorder}` },
+  'root':       { background: C.dangerBg, color: C.dangerText, border: `1px solid ${C.dangerBorder}` },
+  'Operador':   { background: C.chipBlue, color: C.royal, border: `1px solid #D7DDF0` },
+  'Diseñador':  { background: C.violetBg, color: C.violet, border: `1px solid #DDD3FE` },
 };
 
-export const Badge: React.FC<BadgeProps> = ({ variant = 'status', children, pulse, className = '' }) => {
-  const label = typeof children === 'string' ? children : '';
-  const dynamicColor = statusColors[label] || '';
-  const baseColor = dynamicColor || variantClasses[variant];
+export const Badge: React.FC<BadgeProps> = ({
+  variant = 'status',
+  children,
+  pulse,
+  className = '',
+  style = {},
+}) => {
+  const label = typeof children === 'string' ? children.trim() : '';
+  const resolvedStyle = statusMap[label] || variantStyles[variant];
 
   return (
-    <span className={`
-      inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider
-      px-2 py-0.5 rounded-full border ${baseColor} ${className}
-    `}>
+    <span
+      className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '3px 9px',
+        borderRadius: 99,
+        fontSize: 11,
+        fontWeight: 700,
+        lineHeight: 1.2,
+        fontFamily: 'inherit',
+        ...resolvedStyle,
+        ...style,
+      }}
+    >
       {pulse && (
-        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: 99,
+            background: 'currentColor',
+            animation: 'pi-blink 2s ease-in-out infinite',
+            flexShrink: 0,
+          }}
+        />
       )}
       {children}
     </span>

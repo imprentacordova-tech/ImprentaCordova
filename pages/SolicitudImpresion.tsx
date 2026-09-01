@@ -424,7 +424,7 @@ const SolicitudImpresionPage: React.FC = () => {
     };
 
     return (
-        <div className="bg-[#0a0a0b] min-h-screen py-10 flex flex-col items-center overflow-y-auto font-sans relative">
+        <div className="bg-[#F7F9FF] min-h-screen py-8 flex flex-col items-center overflow-y-auto font-sans relative">
             <style>{`
                 @media print {
                     .no-print { display: none !important; }
@@ -446,31 +446,31 @@ const SolicitudImpresionPage: React.FC = () => {
                     box-sizing: border-box;
                 }
                 .web-shadow {
-                    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
+                    box-shadow: 0 10px 30px -10px rgba(10,17,64,0.15);
                 }
             `}</style>
 
-            {/* BARRA SUPERIOR DE CONTROL */}
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-6 no-print px-8 py-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl relative z-50">
-                <div className="flex gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-white/60 font-bold text-xs uppercase tracking-wider hover:text-white transition-all">
+            {/* BARRA SUPERIOR DE CONTROL CLARA */}
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-6 no-print px-6 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm relative z-50">
+                <div className="flex gap-3">
+                    <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-blue-700 transition-all">
                         <HomeIcon className="w-4 h-4" /> Dashboard
                     </button>
-                    <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/60 font-bold text-xs uppercase tracking-wider hover:text-white transition-all">
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-blue-700 transition-all">
                         <ArrowLeftIcon className="w-4 h-4" /> Volver
                     </button>
                 </div>
                 
-                <div className="flex gap-4 items-center">
-                    <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest mr-2">
+                <div className="flex gap-3 items-center">
+                    <span className="text-[11px] font-bold text-blue-900 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
                         {format === 'a5' ? '📄 Doble Solicitud (2x A5 en Hoja A4)' : '📄 Hoja Única'}
                     </span>
                     
-                    <button onClick={handleDownloadPdf} className="bg-white/10 hover:bg-white/15 border border-white/15 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider text-white transition-all flex items-center gap-2">
-                        <ArrowDownTrayIcon className="w-4 h-4 text-amber-400" /> Exportar PDF
+                    <button onClick={handleDownloadPdf} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-2">
+                        <ArrowDownTrayIcon className="w-4 h-4" /> PDF
                     </button>
                     
-                    <button onClick={() => window.print()} className="bg-amber-500 text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg hover:bg-amber-400 flex items-center gap-2 hover:scale-105 transition-all">
+                    <button onClick={() => window.print()} className="bg-[#16309B] text-white hover:bg-[#0F2280] px-5 py-2 rounded-xl font-bold text-xs shadow-sm flex items-center gap-2 transition-all">
                         <PrinterIcon className="w-4 h-4"/> Imprimir Solicitud
                     </button>
                 </div>

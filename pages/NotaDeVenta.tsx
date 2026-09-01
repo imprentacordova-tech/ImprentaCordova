@@ -280,41 +280,41 @@ const NotaDeVentaPage: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            <div className="w-full max-w-[210mm] flex justify-between items-center mb-10 no-print px-8 py-4 bg-brand-dark/90 backdrop-blur-xl rounded-[2.5rem] border border-white/[0.06] shadow-2xl relative z-50">
-                <div className="flex gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                        <div className="w-8 h-8 rounded-full border border-white/[0.06] flex items-center justify-center group-hover:border-brand-blue transition-all">
-                            <HomeIcon className="w-4 h-4" />
+            <div className="w-full max-w-[210mm] flex justify-between items-center mb-8 no-print px-6 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm relative z-50">
+                <div className="flex gap-3">
+                    <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-blue-700 transition-all">
+                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-700 transition-all">
+                            <HomeIcon className="w-3.5 h-3.5" />
                         </div>
                         Dashboard
                     </button>
-                    <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all">
-                        <div className="w-8 h-8 rounded-full border border-white/[0.06] flex items-center justify-center group-hover:border-brand-blue transition-all">
-                            <ArrowLeftIcon className="w-4 h-4" />
+                    <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-blue-700 transition-all">
+                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-700 transition-all">
+                            <ArrowLeftIcon className="w-3.5 h-3.5" />
                         </div>
                         Atrás
                     </button>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2.5">
                     <button 
                         onClick={generatePDF} 
                         disabled={isGenerating}
-                        className="bg-obsidian-card text-brand-blue px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-white/[0.04] border border-white/[0.06] transition-all flex items-center gap-2 disabled:opacity-70"
+                        className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-4 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-2 disabled:opacity-70"
                     >
-                        {isGenerating ? <Loader2Icon className="w-4 h-4 animate-spin"/> : <ArrowDownTrayIcon className="w-4 h-4"/>}
-                        {isGenerating ? 'Generando...' : 'Descargar PDF'}
+                        {isGenerating ? <Loader2Icon className="w-3.5 h-3.5 animate-spin"/> : <ArrowDownTrayIcon className="w-3.5 h-3.5"/>}
+                        {isGenerating ? 'Generando…' : 'PDF'}
                     </button>
                     <button 
                         onClick={() => window.print()} 
-                        className="bg-brand-blue text-white px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-blue-600 transition-all flex items-center gap-2"
+                        className="bg-[#16309B] text-white hover:bg-[#0F2280] px-5 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-sm"
                     >
-                        <PrinterIcon className="w-4 h-4"/> Imprimir
+                        <PrinterIcon className="w-3.5 h-3.5"/> Imprimir
                     </button>
                     <button 
                         onClick={() => setIsConsumidorFinal(!isConsumidorFinal)} 
-                        className={`px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border ${isConsumidorFinal ? 'bg-brand-blue text-white border-brand-blue' : 'bg-transparent text-slate-400 border-white/[0.06] hover:bg-white/[0.04]'}`}
+                        className={`px-3.5 py-2 rounded-xl font-bold text-[11px] transition-all flex items-center gap-1.5 border ${isConsumidorFinal ? 'bg-[#16309B] text-white border-[#16309B]' : 'bg-transparent text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                     >
-                        {isConsumidorFinal ? 'Restaurar Datos Cliente' : 'Emitir como Consumidor Final'}
+                        {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
                     </button>
                 </div>
             </div>

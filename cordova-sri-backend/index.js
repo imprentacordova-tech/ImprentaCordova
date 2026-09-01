@@ -7,21 +7,31 @@ require('dotenv').config();
 
 const app = express();
 
-// ── CORS: Restrict to known origins ──────────────────────────────────────
+// ── CORS: Restrict to known origins + local development ─────────────────
+const defaultOrigins = [
+  'https://imprentacordova.com',
+  'https://www.imprentacordova.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+];
+
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['https://imprentacordova.com', 'https://www.imprentacordova.com'];
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+  : defaultOrigins;
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
     maxAge: 86400
 }));
 

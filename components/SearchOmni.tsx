@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     SearchIcon, 
@@ -7,18 +6,23 @@ import {
     CommandIcon, 
     ArrowRightIcon, 
     UserIcon, 
-    BriefcaseIcon,
     FileTextIcon,
-    ClockIcon
+    PlusIcon,
+    DashboardIcon,
+    CalculatorIcon,
+    WalletIcon
 } from './Icons';
 import { useData } from '../contexts/DataContext';
 import { useNavigate } from 'react-router-dom';
+import { C, DISPLAY, MONO } from './panelTheme';
 
 export const SearchOmni: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
+    const [selectedIndex, setSelectedIndex] = useState(0);
     const { trabajos, clientes } = useData();
     const navigate = useNavigate();
+    const inputRef = useRef<HTMLInputElement>(null);
 
     // Keyboard shortcut CMD+K or CTRL+K
     useEffect(() => {
@@ -35,23 +39,73 @@ export const SearchOmni: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    const results = useMemo(() => {
-        if (!query.trim()) return { trabajos: [], clientes: [] };
-        const q = query.toLowerCase();
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedIndex(0);
+            setTimeout(() => inputRef.current?.focus(), 50);
+        }
+    }, [isOpen]);
 
-        const filteredClientes = clientes.filter(c => 
-            c.nombre.toLowerCase().includes(q) || 
-            c.email?.toLowerCase().includes(q) ||
-            c.telefono.some(t => t.includes(q))
-        ).slice(0, 5);
+    const accionesRapidas = useMemo(() => [
+        { id: 'act-nueva', titulo: 'Crear Nueva Orden', subtitulo: 'Atajo rápido de mostrador', icono: PlusIcon, path: '/nuevo' },
+        { id: 'act-kds', titulo: 'Monitor de Taller (KDS)', subtitulo: 'Control de prensa y acabados', icono: DashboardIcon, path: '/kds' },
+        { id: 'act-calc', titulo: 'Calculadora de Precios', subtitulo: 'Cotizador de resmas y pliegos', icono: CalculatorIcon, path: '/calculadora' },
+        { id: 'act-caja', titulo: 'Flujo de Caja y Abonos', subtitulo: 'Cuentas por cobrar y finanzas', icono: WalletIcon, path: '/cuentas' },
+    ], []);
+
+    const flatResults = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return accionesRapidas.map(a => ({ ...a, type: 'accion' }));
+
+        const matchedAcciones = accionesRapidas.filter(a =>
+            a.titulo.toLowerCase().includes(q) || a.subtitulo.toLowerCase().includes(q)
+        ).map(a => ({ ...a, type: 'accion' }));
 
         const filteredTrabajos = trabajos.filter(t => 
             t.orden.toString().includes(q) || 
-            t.subtipo.toLowerCase().includes(q)
-        ).slice(0, 5);
+            t.titular.toLowerCase().includes(q) ||
+            t.servicio.toLowerCase().includes(q) ||
+            (t.subtipo && t.subtipo.toLowerCase().includes(q))
+        ).slice(0, 5).map(t => ({
+            id: `trab-${t.id}`,
+            titulo: `Orden #${t.orden} · ${t.titular}`,
+            subtitulo: `${t.servicio} · Saldo: $${t.saldo.toFixed(2)}`,
+            path: `/nota-de-venta/${t.id}`,
+            type: 'trabajo',
+            icono: FileTextIcon
+        }));
 
-        return { trabajos: filteredTrabajos, clientes: filteredClientes };
-    }, [query, trabajos, clientes]);
+        const filteredClientes = clientes.filter(c => 
+            c.nombre.toLowerCase().includes(q) || 
+            (c.ruc && c.ruc.includes(q)) ||
+            (c.cedula && c.cedula.includes(q)) ||
+            c.telefono.some(tel => tel.includes(q))
+        ).slice(0, 4).map(c => ({
+            id: `cli-${c.id}`,
+            titulo: c.nombre,
+            subtitulo: `Cédula/RUC: ${c.ruc || c.cedula || 'S/N'} · ${c.telefono[0] || 'Sin telf.'}`,
+            path: '/clientes',
+            type: 'cliente',
+            icono: UserIcon
+        }));
+
+        return [...matchedAcciones, ...filteredTrabajos, ...filteredClientes];
+    }, [query, trabajos, clientes, accionesRapidas]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev + 1) % (flatResults.length || 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev - 1 + (flatResults.length || 1)) % (flatResults.length || 1));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (flatResults[selectedIndex]) {
+                handleSelect(flatResults[selectedIndex].path);
+            }
+        }
+    };
 
     const handleSelect = (path: string) => {
         navigate(path);
@@ -61,171 +115,241 @@ export const SearchOmni: React.FC = () => {
 
     return (
         <>
-            {/* Trigger Button (Visible on Desktop Header) */}
+            {/* Header Trigger Button */}
             <button 
                 onClick={() => setIsOpen(true)}
-                className="hidden lg:flex items-center gap-4 px-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-200 transition-all group"
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 14px',
+                    background: C.bg,
+                    border: `1px solid ${C.borderStrong}`,
+                    borderRadius: 10,
+                    color: C.muted,
+                    fontSize: 12.5,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = C.royal;
+                    e.currentTarget.style.background = '#FFFFFF';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = C.borderStrong;
+                    e.currentTarget.style.background = C.bg;
+                }}
             >
-                <SearchIcon className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Búsqueda Rápida...</span>
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-200 border border-slate-300 rounded-md text-[9px] font-mono">
-                    <CommandIcon className="w-2 h-2" /> <span>K</span>
-                </div>
-            </button>
-
-            {/* Mobile Trigger (Fab-like in header) */}
-            <button 
-                onClick={() => setIsOpen(true)}
-                className="lg:hidden p-3 bg-brand-blue text-white rounded-full shadow-blue-glow-strong fixed top-4 right-4 z-50 scale-90"
-            >
-                <SearchIcon className="w-5 h-5" />
+                <SearchIcon className="w-4 h-4" style={{ color: C.faint }} />
+                <span className="hidden sm:inline" style={{ color: C.faint }}>Buscar orden, cliente o RUC…</span>
+                <span className="sm:hidden" style={{ color: C.faint }}>Buscar…</span>
+                <span style={{
+                    fontFamily: MONO,
+                    fontSize: 10.5,
+                    padding: '2px 6px',
+                    background: C.chipBlue,
+                    borderRadius: 6,
+                    color: C.royal,
+                    fontWeight: 700,
+                }}>
+                    ⌘K
+                </span>
             </button>
 
             <AnimatePresence>
                 {isOpen && (
-                    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-20 px-4 sm:pt-[15vh]">
-                        {/* Backdrop */}
+                    <div style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 250,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'center',
+                        padding: '16px',
+                        paddingTop: 'clamp(40px, 12vh, 100px)',
+                    }}>
+                        {/* Backdrop Scrim */}
                         <motion.div 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
+                            style={{
+                                position: 'fixed',
+                                inset: 0,
+                                background: C.scrim,
+                                backdropFilter: 'blur(4px)',
+                            }}
                         />
 
                         {/* Modal Container */}
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: -20 }}
+                            initial={{ scale: 0.96, opacity: 0, y: -12 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: -20 }}
-                            className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-[2.2rem] shadow-[0_25px_100px_rgba(0,0,0,0.15)] overflow-hidden"
+                            exit={{ scale: 0.96, opacity: 0, y: -12 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            style={{
+                                position: 'relative',
+                                width: '100%',
+                                maxWidth: 640,
+                                background: C.surface,
+                                border: `1px solid ${C.border}`,
+                                borderRadius: 18,
+                                boxShadow: '0 25px 60px -15px rgba(10, 17, 64, 0.35)',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
                         >
-                            {/* Search Input Area */}
-                            <div className="relative border-b border-slate-100 bg-slate-50 group">
-                                {/* Scanner Beam Effect */}
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-brand-blue/20 animate-scan pointer-events-none" />
-                                
-                                <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                                    <SearchIcon className="w-5 h-5 text-brand-blue animate-pulse" />
-                                    <div className="w-[1px] h-6 bg-slate-200 hidden sm:block"></div>
-                                </div>
-                                
+                            {/* Search Input Bar */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                padding: '14px 18px',
+                                borderBottom: `1px solid ${C.border}`,
+                                background: C.surfaceAlt,
+                            }}>
+                                <SearchIcon className="w-5 h-5" style={{ color: C.royal, flexShrink: 0 }} />
                                 <input 
-                                    autoFocus
-                                    placeholder="BUSCAR PEDIDO #, CLIENTE O SERVICIO..."
+                                    ref={inputRef}
+                                    placeholder="Escribe número de orden, nombre, RUC o servicio…"
                                     value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    className="w-full bg-transparent pl-20 pr-20 py-10 text-lg font-black text-slate-900 uppercase tracking-[0.1em] placeholder:text-slate-300 outline-none"
+                                    onChange={(e) => {
+                                        setQuery(e.target.value);
+                                        setSelectedIndex(0);
+                                    }}
+                                    onKeyDown={handleKeyDown}
+                                    style={{
+                                        flex: 1,
+                                        background: 'transparent',
+                                        border: 'none',
+                                        fontSize: 14.5,
+                                        color: C.ink,
+                                        outline: 'none',
+                                        fontFamily: 'inherit',
+                                    }}
                                 />
-                                
-                                <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-4">
-                                    {query && (
-                                        <button 
-                                            onClick={() => setQuery('')}
-                                            className="p-2 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                                        >
-                                            <XIcon className="w-4 h-4" />
-                                        </button>
-                                    )}
+                                {query && (
                                     <button 
-                                        onClick={() => setIsOpen(false)}
-                                        className="p-3 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-slate-900 transition-all group/close"
+                                        onClick={() => setQuery('')}
+                                        style={{ background: 'transparent', border: 'none', color: C.faint, cursor: 'pointer', padding: 4 }}
                                     >
-                                        <kbd className="text-[10px] font-mono group-hover:text-brand-blue transition-colors">ESC</kbd>
+                                        <XIcon className="w-4 h-4" />
                                     </button>
-                                </div>
+                                )}
+                                <button 
+                                    onClick={() => setIsOpen(false)}
+                                    style={{
+                                        padding: '4px 8px',
+                                        background: C.softGray,
+                                        border: `1px solid ${C.border}`,
+                                        borderRadius: 6,
+                                        fontSize: 11,
+                                        fontFamily: MONO,
+                                        color: C.faint,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    ESC
+                                </button>
                             </div>
 
-                            {/* Results Area */}
-                            <div className="max-h-[60vh] overflow-y-auto p-4 custom-scrollbar">
-                                {!query ? (
-                                    <div className="p-8 text-center">
-                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <CommandIcon className="w-8 h-8 text-slate-300" />
-                                        </div>
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Escribe algo para empezar a buscar...</p>
-                                    </div>
-                                ) : (results.trabajos.length === 0 && results.clientes.length === 0) ? (
-                                    <div className="p-12 text-center">
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">No se encontraron resultados para "{query}"</p>
+                            {/* Results List */}
+                            <div style={{ maxHeight: 360, overflowY: 'auto', padding: '8px' }}>
+                                {flatResults.length === 0 ? (
+                                    <div style={{ padding: '36px 20px', textAlign: 'center', color: C.muted }}>
+                                        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600 }}>
+                                            No se encontraron coincidencias para "{query}"
+                                        </p>
+                                        <p style={{ margin: '6px 0 0', fontSize: 12, color: C.faint }}>
+                                            Prueba buscando por número de orden (#1001), RUC o nombre de cliente.
+                                        </p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-8 p-4">
-                                        {/* Trabajos Results */}
-                                        {results.trabajos.length > 0 && (
-                                            <div>
-                                                <h4 className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Pedidos Encontrados</h4>
-                                                <div className="space-y-2">
-                                                    {results.trabajos.map(t => (
-                                                        <button 
-                                                            key={t.id}
-                                                            onClick={() => handleSelect(`/nota-de-venta/${t.id}`)}
-                                                            className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-brand-blue/30 hover:bg-white hover:shadow-lg transition-all group"
-                                                        >
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                                                                    <FileTextIcon className="w-5 h-5" />
-                                                                </div>
-                                                                <div className="text-left">
-                                                                    <p className="text-xs font-black text-slate-900 uppercase tracking-widest">ORDEN #{t.orden}</p>
-                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase">{t.subtipo}</p>
-                                                                </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                        {flatResults.map((item, idx) => {
+                                            const isSelected = idx === selectedIndex;
+                                            const IconComp = item.icono;
+                                            return (
+                                                <button
+                                                    key={item.id}
+                                                    type="button"
+                                                    onClick={() => handleSelect(item.path)}
+                                                    onMouseEnter={() => setSelectedIndex(idx)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        padding: '10px 14px',
+                                                        borderRadius: 10,
+                                                        border: 'none',
+                                                        background: isSelected ? C.chipBlue : 'transparent',
+                                                        color: isSelected ? C.royal : C.ink,
+                                                        cursor: 'pointer',
+                                                        textAlign: 'left',
+                                                        fontFamily: 'inherit',
+                                                        transition: 'all 0.15s',
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                                                        <div style={{
+                                                            width: 32,
+                                                            height: 32,
+                                                            borderRadius: 8,
+                                                            background: isSelected ? '#FFFFFF' : C.surfaceAlt,
+                                                            border: `1px solid ${isSelected ? C.borderStrong : C.border}`,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: isSelected ? C.royal : C.muted,
+                                                            flexShrink: 0,
+                                                        }}>
+                                                            <IconComp className="w-4 h-4" />
+                                                        </div>
+                                                        <div style={{ minWidth: 0 }}>
+                                                            <div style={{
+                                                                fontSize: 13,
+                                                                fontWeight: 700,
+                                                                color: isSelected ? C.royal : C.ink,
+                                                                whiteSpace: 'nowrap',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                            }}>
+                                                                {item.titulo}
                                                             </div>
-                                                            <ArrowRightIcon className="w-4 h-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Clientes Results */}
-                                        {results.clientes.length > 0 && (
-                                            <div>
-                                                <h4 className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Clientes Registrados</h4>
-                                                <div className="space-y-2">
-                                                    {results.clientes.map(c => (
-                                                        <button 
-                                                            key={c.id}
-                                                            onClick={() => handleSelect(`/clientes`)}
-                                                            className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-brand-blue/30 hover:bg-white hover:shadow-lg transition-all group"
-                                                        >
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                                                                    <UserIcon className="w-5 h-5" />
-                                                                </div>
-                                                                <div className="text-left">
-                                                                    <p className="text-xs font-black text-slate-900 uppercase tracking-widest">{c.nombre}</p>
-                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase">{c.telefono[0]}</p>
-                                                                </div>
+                                                            <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1 }}>
+                                                                {item.subtitulo}
                                                             </div>
-                                                            <ArrowRightIcon className="w-4 h-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
+                                                        </div>
+                                                    </div>
+                                                    <ArrowRightIcon className="w-4 h-4" style={{ color: isSelected ? C.royal : C.faint, flexShrink: 0 }} />
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
 
-                            {/* Footer Help / Telemetry */}
-                            <div className="bg-slate-50 px-8 py-5 flex items-center justify-between border-t border-slate-100 relative overflow-hidden">
-                                <div className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-blue/20 to-transparent"></div>
-                                
-                                <div className="flex items-center gap-8 relative z-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SYSLINK_STABLE</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <kbd className="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-400 font-mono">↵</kbd>
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select</span>
-                                    </div>
+                            {/* Footer Shortcuts */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '10px 16px',
+                                background: C.surfaceAlt,
+                                borderTop: `1px solid ${C.border}`,
+                                fontSize: 11,
+                                color: C.faint,
+                            }}>
+                                <div style={{ display: 'flex', gap: 14 }}>
+                                    <span><kbd style={{ fontFamily: MONO, padding: '2px 5px', background: '#FFFFFF', border: `1px solid ${C.borderStrong}`, borderRadius: 4 }}>↑</kbd> <kbd style={{ fontFamily: MONO, padding: '2px 5px', background: '#FFFFFF', border: `1px solid ${C.borderStrong}`, borderRadius: 4 }}>↓</kbd> Navegar</span>
+                                    <span><kbd style={{ fontFamily: MONO, padding: '2px 5px', background: '#FFFFFF', border: `1px solid ${C.borderStrong}`, borderRadius: 4 }}>↵</kbd> Abrir</span>
                                 </div>
-                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em] flex items-center gap-3">
-                                    <div className="w-4 h-[1px] bg-brand-blue/30"></div>
-                                    CENTRO DE COMANDO <span className="text-brand-blue">CÓRDOVA v3.0</span>
-                                </div>
+                                <span style={{ fontFamily: DISPLAY, fontWeight: 700, color: C.ink }}>
+                                    Imprenta Córdova
+                                </span>
                             </div>
                         </motion.div>
                     </div>

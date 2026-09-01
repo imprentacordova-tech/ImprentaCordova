@@ -12,6 +12,7 @@ import { ClientesProvider, useClientes } from './ClientesContext';
 import { InventarioProvider, useInventario } from './InventarioContext';
 import { ProductosProvider, useProductos } from './ProductosContext';
 import { ConfigProvider, useConfig } from './ConfigContext';
+import { supabase } from '../services/supabase';
 
 export const CATEGORY_EMOJIS: Record<string, string> = {
     'Todas': '✨',
@@ -92,7 +93,6 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
     const uploadFile = async (file: File, bucket: string, path: string): Promise<string> => {
         const ext = file.name.split('.').pop();
         const fileName = `${path}.${ext}`;
-        const { supabase } = await import(/* @vite-ignore */ '../services/supabase');
         const { error } = await supabase.storage.from(bucket).upload(fileName, file);
         if (error) throw error;
         const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
@@ -111,14 +111,12 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
             categoria: p.categoria,
             es_sri: (p as any).esSRI ?? false,
         }));
-        const { supabase } = await import(/* @vite-ignore */ '../services/supabase');
         const { error } = await supabase.from('productos').insert(dbProducts);
         if (error) throw error;
         await fetchProductos();
     };
 
     const bulkAddSriCredentials = async (creds: SriCredential[]) => {
-        const { supabase } = await import(/* @vite-ignore */ '../services/supabase');
         const { error } = await supabase.from('sri_credentials').upsert(creds);
         if (error) throw error;
     };

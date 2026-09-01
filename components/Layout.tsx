@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SEO } from './SEO';
 import { MobileFloatingNav } from './MobileFloatingNav';
 import { SearchOmni } from './SearchOmni';
+import { ModalArqueoCaja } from './dashboard/ModalArqueoCaja';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 /**
@@ -286,6 +287,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     const userInitials = user.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [arqueoModalOpen, setArqueoModalOpen] = useState(false);
     const [nuevaHover, setNuevaHover] = useState(false);
     const [logoutHover, setLogoutHover] = useState(false);
 
@@ -460,11 +463,174 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
                         <SearchOmni />
 
-                        <span style={{ width: 36, height: 36, borderRadius: 10, background: C.chipBlue, border: `1px solid ${C.borderStrong}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: C.royal }}>
-                            {userInitials}
-                        </span>
+                        {/* User Avatar & Session Menu */}
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                type="button"
+                                onClick={() => setUserMenuOpen(v => !v)}
+                                aria-label="Menú de usuario"
+                                style={{
+                                    width: 38,
+                                    height: 38,
+                                    borderRadius: 10,
+                                    background: C.chipBlue,
+                                    border: `1px solid ${userMenuOpen ? C.royal : C.borderStrong}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: 12,
+                                    fontWeight: 800,
+                                    color: C.royal,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                {userInitials}
+                            </button>
+
+                            <AnimatePresence>
+                                {userMenuOpen && (
+                                    <>
+                                        <div
+                                            style={{ position: 'fixed', inset: 0, zIndex: 100 }}
+                                            onClick={() => setUserMenuOpen(false)}
+                                        />
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                                            transition={{ duration: 0.15 }}
+                                            style={{
+                                                position: 'absolute',
+                                                right: 0,
+                                                top: 'calc(100% + 8px)',
+                                                width: 260,
+                                                background: '#FFFFFF',
+                                                border: `1px solid ${C.border}`,
+                                                borderRadius: 14,
+                                                boxShadow: '0 18px 40px -10px rgba(10,17,64,.18)',
+                                                padding: '8px',
+                                                zIndex: 110,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 4,
+                                            }}
+                                        >
+                                            {/* Header de Usuario */}
+                                            <div style={{ padding: '10px 12px 8px', borderBottom: `1px solid ${C.border}` }}>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>
+                                                    {user.nombre}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                                                    <span style={{ fontSize: 10.5, color: C.muted }}>Rol: <b>{user.rol}</b></span>
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#1B6E3E', fontWeight: 600 }}>
+                                                        <span style={{ width: 5, height: 5, borderRadius: 99, background: '#1B8A4B' }} />
+                                                        Turno activo
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Acciones */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setUserMenuOpen(false);
+                                                    setArqueoModalOpen(true);
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 9,
+                                                    padding: '9px 12px',
+                                                    borderRadius: 8,
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    color: C.ink,
+                                                    fontSize: 12.5,
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer',
+                                                    textAlign: 'left',
+                                                    width: '100%',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = C.chipBlue; e.currentTarget.style.color = C.royal; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.ink; }}
+                                            >
+                                                <WalletIcon className="w-4 h-4" style={{ color: C.royal }} />
+                                                Arqueo y Cierre de Caja
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setUserMenuOpen(false);
+                                                    navigate('/configuracion');
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 9,
+                                                    padding: '9px 12px',
+                                                    borderRadius: 8,
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    color: C.ink,
+                                                    fontSize: 12.5,
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer',
+                                                    textAlign: 'left',
+                                                    width: '100%',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = C.chipBlue; e.currentTarget.style.color = C.royal; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.ink; }}
+                                            >
+                                                <Cog8ToothIcon className="w-4 h-4" style={{ color: C.muted }} />
+                                                Mi Cuenta / Ajustes
+                                            </button>
+
+                                            <div style={{ height: 1, background: C.border, margin: '4px 0' }} />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setUserMenuOpen(false);
+                                                    authLogout();
+                                                    navigate('/login');
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 9,
+                                                    padding: '9px 12px',
+                                                    borderRadius: 8,
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    color: '#B91C1C',
+                                                    fontSize: 12.5,
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer',
+                                                    textAlign: 'left',
+                                                    width: '100%',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = '#FDEEEE'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                            >
+                                                <LogoutIcon className="w-4 h-4" />
+                                                Cerrar Sesión
+                                            </button>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
                 </header>
+
+                {/* MODAL DE ARQUEO DE CAJA */}
+                <ModalArqueoCaja
+                    isOpen={arqueoModalOpen}
+                    onClose={() => setArqueoModalOpen(false)}
+                    userName={user.nombre}
+                />
 
                 {/* PAGE CONTENT */}
                 <div style={{ flex: 1, overflowY: 'auto' }}>

@@ -12,6 +12,7 @@ const LoginPage = React.lazy(() => import('./pages/Login'));
 const TrackingPage = React.lazy(() => import('./pages/Tracking'));
 const VitrinaPage = React.lazy(() => import('./pages/Vitrina'));
 const PanelInternoPage = React.lazy(() => import('./pages/PanelInterno'));
+const RecuperarAccesoPage = React.lazy(() => import('./pages/RecuperarAcceso'));
 
 // ── Lazy-loaded Printable Documents ──────────────────────────────────────
 const OrdenProduccionPage = React.lazy(() => import('./pages/OrdenProduccion'));
@@ -80,6 +81,7 @@ const App: React.FC = () => {
           {/* Public Routes */}
           <Route path="/" element={<VisualLanding />} />
           <Route path="/vitrina" element={<VitrinaPage />} />
+          <Route path="/recuperar-acceso" element={<RecuperarAccesoPage />} />
           <Route path="/login" element={
             user ? <Navigate to="/dashboard" replace /> : <LoginPage />
           } />

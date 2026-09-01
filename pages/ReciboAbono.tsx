@@ -63,7 +63,7 @@ const ReciboAbonoPage: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-brand-dark flex flex-col items-center py-8 font-sans">
+        <div className="min-h-screen bg-[#F7F9FF] flex flex-col items-center py-8 font-sans">
             <style>{`
                 @media print {
                     @page { size: ${isThermal ? '80mm auto' : 'A6'}; margin: 0; }
@@ -82,27 +82,27 @@ const ReciboAbonoPage: React.FC = () => {
                 }
             `}</style>
 
-            <div className="no-print mb-6 flex flex-col items-center gap-4">
-                <div className="bg-obsidian-card p-1 rounded-xl shadow-sm flex">
-                    <button onClick={() => setIsThermal(true)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${isThermal ? 'bg-brand-blue text-white shadow-md' : 'text-gray-500'}`}>Ticket 80mm</button>
-                    <button onClick={() => setIsThermal(false)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isThermal ? 'bg-brand-blue text-white shadow-md' : 'text-gray-500'}`}>Estándar A6</button>
+            <div className="no-print mb-6 flex flex-col items-center gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
+                    <button onClick={() => setIsThermal(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isThermal ? 'bg-[#16309B] text-white shadow-sm' : 'text-slate-600'}`}>Ticket 80mm</button>
+                    <button onClick={() => setIsThermal(false)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!isThermal ? 'bg-[#16309B] text-white shadow-sm' : 'text-slate-600'}`}>Estándar A6</button>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2.5 flex-wrap justify-center">
                     <button 
                         onClick={handleWhatsAppShare}
-                        className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-green-600 transition-all hover:-translate-y-0.5"
+                        className="flex items-center gap-2 bg-[#1B6E3E] hover:bg-[#155C33] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all"
                     >
-                        <WhatsAppIcon className="w-5 h-5" /> Enviar Digital
+                        <WhatsAppIcon className="w-4 h-4" /> Enviar WhatsApp
                     </button>
                     <button 
                         onClick={handlePrint}
-                        className="flex items-center gap-2 bg-slate-900 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-slate-800 transition-all hover:-translate-y-0.5"
+                        className="flex items-center gap-2 bg-[#16309B] hover:bg-[#0F2280] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all"
                     >
-                        <PrinterIcon className="w-5 h-5" /> Imprimir
+                        <PrinterIcon className="w-4 h-4" /> Imprimir Recibo
                     </button>
                     <button 
                         onClick={() => setIsConsumidorFinal(!isConsumidorFinal)}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-lg transition-all hover:-translate-y-0.5 border ${isConsumidorFinal ? 'bg-amber-500 border-amber-500 text-white shadow-gold-glow' : 'bg-transparent text-slate-400 border-white/[0.06] hover:bg-white/[0.04]'}`}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${isConsumidorFinal ? 'bg-[#16309B] border-[#16309B] text-white' : 'bg-transparent text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                     >
                         {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
                     </button>
