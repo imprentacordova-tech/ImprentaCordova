@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
@@ -14,6 +14,7 @@ import OrderSummary from '../components/orders/OrderSummary';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+import { calcularPedido, round2 } from '../services/orderPricing';
 
 const NuevoPedidoPage: React.FC = () => {
     const outletCtx = useOutletContext<{ currentUser?: User }>();
@@ -32,7 +33,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [servicio, setServicio] = useState<any>(null);
     const [precio, setPrecio] = useState(0);
     const [abono, setAbono] = useState(0);
-    const [prioridad] = useState<'Normal' | 'Urgente'>('Normal');
+    const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
     const [imageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
@@ -48,64 +49,66 @@ const NuevoPedidoPage: React.FC = () => {
     const [imprimirClave, setImprimirClave] = useState(false);
     const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
 
+    /* Importación de una solicitud del SRI (URL `?mode=sri` o el banner de la extensión).
+       Vive en el ámbito del componente: el botón "Importar (1 clic)" también la invoca. */
+    const applySriPayload = (payload: any) => {
+        if (!payload) return;
+        const ruc = payload.ruc || payload.clientRuc || '';
+        const name = payload.name || payload.clientName || '';
+        const phone = payload.phone || payload.clientPhone || '';
+        const activity = payload.activity || 'Comercio / Servicios General';
+        const docType = payload.docType || '1';
+        const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
+        const docSize = payload.docSize || '1/4 Oficio';
+        const totalVal = parseFloat(payload.total) || 13;
+        const abonoVal = parseFloat(payload.abono) || 0;
+        const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
+
+        setMissionCategory('SRI');
+        setIsSriOrder(true);
+        setOrderMode('CATALOG');
+        setSriActividad(activity);
+        setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
+
+        if (ruc || name) {
+            const cleanRuc = ruc.replace(/\D/g, '');
+            const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
+            if (found) {
+                setCliente(found);
+            } else {
+                setTempClient({
+                    nombre: (name || 'CLIENTE SRI').toUpperCase(),
+                    cedula: cleanRuc || '0700000000001',
+                    telefono: phone,
+                    email: payload.email || undefined,
+                    actividades: activity || undefined,
+                    regimen: docType === '1' ? 'Rimpe Popular' : 'General'
+                });
+            }
+        }
+
+        const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
+        const docName = docNames[docType] || 'Nota de Venta';
+
+        const sriItem = {
+            nombre: `${docName} (${blocks} Hojas)`,
+            cantidad: 1,
+            precioFinal: totalVal,
+            especificaciones: {
+                tamano: docSize,
+                paginas: blocks,
+                sri: { vencimiento: payload.caducidad || '' }
+            }
+        };
+
+        setItems([sriItem]);
+        setPrecio(totalVal);
+        setAbono(abonoVal);
+        setStep(4);
+    };
+
     useEffect(() => {
         document.body.style.overflow = 'auto';
-
-        const applySriPayload = (payload: any) => {
-            if (!payload) return;
-            const ruc = payload.ruc || payload.clientRuc || '';
-            const name = payload.name || payload.clientName || '';
-            const phone = payload.phone || payload.clientPhone || '';
-            const activity = payload.activity || 'Comercio / Servicios General';
-            const docType = payload.docType || '1';
-            const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
-            const docSize = payload.docSize || '1/4 Oficio';
-            const totalVal = parseFloat(payload.total) || 13;
-            const abonoVal = parseFloat(payload.abono) || 0;
-            const renovacion = payload.renovacion === 'SÍ' || payload.esRenovacion === true;
-
-            setMissionCategory('SRI');
-            setIsSriOrder(true);
-            setOrderMode('CATALOG');
-            setSriActividad(activity);
-            setSriMode(renovacion ? 'RENOVACION' : 'NUEVO');
-
-            if (ruc || name) {
-                const cleanRuc = ruc.replace(/\D/g, '');
-                const found = clientes.find(c => (cleanRuc && (c.ruc === cleanRuc || c.cedula === cleanRuc)) || (name && c.nombre.toUpperCase().includes(name.toUpperCase())));
-                if (found) {
-                    setCliente(found);
-                } else {
-                    setTempClient({
-                        nombre: (name || 'CLIENTE SRI').toUpperCase(),
-                        cedula: cleanRuc || '0700000000001',
-                        telefono: phone,
-                        email: payload.email || undefined,
-                        actividades: activity || undefined,
-                        regimen: docType === '1' ? 'Rimpe Popular' : 'General'
-                    });
-                }
-            }
-
-            const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
-            const docName = docNames[docType] || 'Nota de Venta';
-
-            const sriItem = {
-                nombre: `${docName} (${blocks} Hojas)`,
-                cantidad: 1,
-                precioFinal: totalVal,
-                especificaciones: {
-                    tamano: docSize,
-                    paginas: blocks,
-                    sri: { vencimiento: payload.caducidad || '' }
-                }
-            };
-
-            setItems([sriItem]);
-            setPrecio(totalVal);
-            setAbono(abonoVal);
-            setStep(4);
-        };
 
         // 1. Parse URL Parameters
         const params = new URLSearchParams(location.search);
@@ -125,6 +128,25 @@ const NuevoPedidoPage: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search, clientes]);
 
+    /**
+     * Aritmética de la orden en un solo lugar (`services/orderPricing.ts`):
+     * recargo por urgencia, IVA condicional — los preimpresos SRI no gravan — y saldo.
+     * Los precios de línea ya vienen calculados por la calculadora existente.
+     */
+    const desglose = useMemo(
+        () => calcularPedido(
+            items.map(it => ({ precioLinea: it.precioFinal || 0, grava: !isSriOrder })),
+            { urgente: prioridad === 'Urgente', abono },
+        ),
+        [items, isSriOrder, prioridad, abono],
+    );
+
+    /* Un abono nunca puede superar el total vigente: al quitar un ítem o desactivar
+       la urgencia el total baja, y el abono debe bajar con él. */
+    useEffect(() => {
+        if (abono > desglose.total) setAbono(desglose.total);
+    }, [desglose.total, abono]);
+
     const canAdvance = () => {
         if (step === 1) return !!missionCategory;
         if (missionCategory === 'SRI') {
@@ -135,7 +157,7 @@ const NuevoPedidoPage: React.FC = () => {
         } else if (missionCategory === 'COMERCIAL') {
             if (step === 2) return items.length > 0;
             if (step === 3) return !!cliente;
-            if (step === 4) return Math.abs(precio) > 0;
+            if (step === 4) return desglose.total > 0;
         }
         return false;
     };
@@ -143,6 +165,19 @@ const NuevoPedidoPage: React.FC = () => {
     const handleCreateOrder = async () => {
         const finalItems = [...items];
         if (finalItems.length === 0) { setError('Debe agregar al menos un ítem al pedido.'); return; }
+
+        /* Cada ítem se guarda con su total real (recargo por urgencia + IVA si grava) y el
+           abono se reparte en orden hasta agotarse, para que ningún saldo quede negativo. */
+        const desgloseItems = finalItems.map(item => calcularPedido(
+            [{ precioLinea: item.precioFinal || 0, grava: !isSriOrder }],
+            { urgente: prioridad === 'Urgente' },
+        ));
+        let porRepartir = Math.min(Math.max(abono, 0), desglose.total);
+        const abonos = desgloseItems.map(d => {
+            const aplicado = round2(Math.min(porRepartir, d.total));
+            porRepartir = round2(porRepartir - aplicado);
+            return aplicado;
+        });
         setLoading(true);
         setError(null);
         try {
@@ -167,9 +202,9 @@ const NuevoPedidoPage: React.FC = () => {
                 servicio: item.nombre || 'Servicio General',
                 detalle: isSriOrder ? `${item.cantidad || 1}x ${item.nombre || 'DOCUMENTO SRI'} (${item.especificaciones?.tamano || 'ESTÁNDAR'})` : `${item.descripcion || ''}`,
                 cantidad: item.cantidad || 1,
-                precio: item.precioFinal || 0,
-                abono: index === 0 ? abono : 0,
-                saldo: (item.precioFinal || 0) - (index === 0 ? abono : 0),
+                precio: desgloseItems[index].total,
+                abono: abonos[index],
+                saldo: round2(desgloseItems[index].total - abonos[index]),
                 prioridad,
                 estado: TrabajoEstado.PENDIENTE,
                 fechaEntrada: new Date().toISOString(),
@@ -345,7 +380,8 @@ const NuevoPedidoPage: React.FC = () => {
                                     {error && (
                                         <div style={{ padding: 14, background: '#FEF2F2', border: '1px solid #FBD5D5', borderRadius: 12, color: '#B91C1C', fontSize: 12.5, fontWeight: 600 }}>{error}</div>
                                     )}
-                                    <OrderSummary isOpen items={items} total={precio} abono={abono} setAbono={setAbono} client={cliente}
+                                    <OrderSummary isOpen items={items} total={desglose.total} desglose={desglose} abono={abono} setAbono={setAbono} client={cliente}
+                                        prioridad={prioridad} setPrioridad={setPrioridad}
                                         tempClient={tempClient} setTempClient={setTempClient} onDeploy={handleCreateOrder} isLoading={loading}
                                         sriData={{ claveAcceso: sriClave, estadoClave: sriClave ? 'LISTA' : 'PENDIENTE' }} setSriData={d => setSriClave(d.claveAcceso)}
                                         imprimirClave={imprimirClave} setImprimirClave={setImprimirClave} onClose={() => setStep(step - 1)} />

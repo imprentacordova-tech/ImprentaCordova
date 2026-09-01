@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Trabajo, TrabajoEstado } from '../types';
+import { Trabajo, TrabajoEstado, StatusLog } from '../types';
 import { supabase } from '../services/supabase';
 
 const mapDBTrabajo = (t: any): Trabajo => ({
@@ -36,6 +36,7 @@ interface TrabajosContextType {
   updateTrabajoPhoto: (id: string, url: string) => Promise<void>;
   updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
   registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string) => Promise<Trabajo>;
+  registrarAbono: (id: string, monto: number, user: string) => Promise<Trabajo>;
   aprobarArte: (id: string) => Promise<Trabajo>;
   getClientDebt: (clienteId: string) => number;
 }
@@ -161,9 +162,32 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const updateTrabajoStatus = async (id: string, status: TrabajoEstado, user: string) => {
-    const { error } = await supabase.from('trabajos').update({ estado: status, actualizado_por: user }).eq('id', id);
+    // El handoff de diseño exige que cada cambio de estado deje rastro en `historial`:
+    // la línea de tiempo del cajón de detalle y la Bitácora se leen de ahí.
+    const actual = trabajos.find(t => t.id === id);
+    const historial: StatusLog[] = [
+      ...(actual?.historial ?? []),
+      { estado: status, fecha: new Date().toISOString(), usuario: user },
+    ];
+    const { error } = await supabase.from('trabajos').update({ estado: status, actualizado_por: user, historial }).eq('id', id);
     if (error) throw error;
-    setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizado_por: user } : t));
+    setTrabajos(prev => prev.map(t => t.id === id ? { ...t, estado: status, actualizadoPor: user, historial } : t));
+  };
+
+  /** Abono parcial: mueve abono/saldo sin tocar el estado de producción. */
+  const registrarAbono = async (id: string, monto: number, user: string): Promise<Trabajo> => {
+    const actual = trabajos.find(t => t.id === id);
+    if (!actual) throw new Error('Orden no encontrada');
+    const aplicado = Math.min(Math.max(monto, 0), actual.saldo || 0);
+    const abono = (actual.abono || 0) + aplicado;
+    const saldo = Math.max((actual.saldo || 0) - aplicado, 0);
+
+    const { data, error } = await supabase.from('trabajos')
+      .update({ abono, saldo, actualizado_por: user }).eq('id', id).select().single();
+    if (error) throw error;
+    const mapped = mapDBTrabajo(data);
+    setTrabajos(prev => prev.map(t => t.id === id ? mapped : t));
+    return mapped;
   };
 
   const updateTrabajoPhoto = async (id: string, url: string) => {
@@ -207,7 +231,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
   return (
     <TrabajosContext.Provider value={{
       trabajos, loading, fetchTrabajos, addTrabajo, updateTrabajoStatus,
-      updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, aprobarArte, getClientDebt,
+      updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, registrarAbono, aprobarArte, getClientDebt,
     }}>
       {children}
     </TrabajosContext.Provider>

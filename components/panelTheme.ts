@@ -28,6 +28,39 @@ export const C = {
     muted: '#6B7590',
     faint: '#8A93AE',
     ghost: '#A6AFC8',
+
+    /* Familia ámbar (alertas suaves, saldos, notas de taller) */
+    goldBg: '#FFFBEB',
+    goldBorder: '#F4E3A8',
+    goldText: '#7A5A00',
+    goldTextStrong: '#B45309',
+
+    /* Familia verde (confirmación, WhatsApp, ingresos) */
+    successBg: '#F2F7F2',
+    successBorder: '#D8E8DC',
+    successStrong: '#155C33',
+
+    /* Familia roja (errores, egresos) */
+    dangerBg: '#FDEEEE',
+    dangerText: '#B91C1C',
+
+    /* Familia violeta (estado "En Diseño") */
+    violet: '#6D28D9',
+    violetBg: '#F5F3FF',
+
+    /* Texto y superficies SOBRE marino `ink` (cabecera del cajón, franjas SRI) */
+    onInk: '#FFFFFF',
+    onInkSoft: '#C2CAE6',
+    onInkMuted: '#9AA6CE',
+    onInkFaint: '#8E9AC4',
+    onInkSuccess: '#7BE0A6',
+    onInkDanger: '#FF9B9B',
+    onInkLayer: 'rgba(255,255,255,.06)',
+    onInkLayerHover: 'rgba(255,255,255,.14)',
+    onInkBorder: 'rgba(255,255,255,.16)',
+    onInkGoldLayer: 'rgba(255,198,26,.14)',
+    onInkDangerLayer: 'rgba(231,1,1,.18)',
+    scrim: 'rgba(10,17,64,.44)',
 } as const;
 
 export const MONO = "'JetBrains Mono',monospace";
@@ -71,11 +104,14 @@ export const S = {
     accentCard: { background: C.ink, borderRadius: 16, padding: '18px 20px', color: '#fff' } as React.CSSProperties,
 };
 
-/** keyframes usados por las vistas (`pi-rise`, `pi-blink`, `spin`) */
+/** keyframes usados por las vistas (`pi-rise`, `pi-blink`, `spin`, `pi-slide-in`, `pi-fade-in`) */
 export const PANEL_KEYFRAMES =
     '@keyframes pi-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}' +
     '@keyframes pi-blink{0%,100%{opacity:1}50%{opacity:.2}}' +
-    '@keyframes spin{to{transform:rotate(360deg)}}';
+    '@keyframes spin{to{transform:rotate(360deg)}}' +
+    '@keyframes pi-slide-in{from{opacity:.4;transform:translateX(46px)}to{opacity:1;transform:translateX(0)}}' +
+    '@keyframes pi-fade-in{from{opacity:0}to{opacity:1}}' +
+    '@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}';
 
 export const PageLoaderLite: React.FC<{ label?: string }> = ({ label = 'Cargando datos…' }) =>
     React.createElement(

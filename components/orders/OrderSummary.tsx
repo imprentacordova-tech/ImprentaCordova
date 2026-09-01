@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { type CartItem } from '../../hooks/useOrder';
 import { useData } from '../../contexts/DataContext';
 import { sriLookupService } from '../../services/sriLookupService';
+import { atajosAbono, type DesglosePedido } from '../../services/orderPricing';
 
 export interface OrderItem {
     nombre: string;
@@ -27,6 +28,8 @@ interface OrderSummaryProps {
     items?: OrderItem[];
     orderTotal?: number;
     total?: number;
+    /** Desglose calculado en `services/orderPricing.ts` (urgencia, IVA condicional, saldo). */
+    desglose?: DesglosePedido;
     client: Cliente | null;
     tempClient?: { nombre: string, telefono: string, cedula?: string, regimen?: Regimen };
     setTempClient?: (data: { nombre: string, telefono: string, cedula?: string, regimen?: Regimen }) => void;
@@ -51,7 +54,7 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ 
-    cartItems = [], items = [], orderTotal, total, client, tempClient, setTempClient, abono, setAbono, 
+    cartItems = [], items = [], orderTotal, total, desglose, client, tempClient, setTempClient, abono, setAbono, 
     prioridad = 'Normal', setPrioridad,
     tiempoEntrega = '48h', setTiempoEntrega,
     onRemoveItem, onFinalize, onDeploy, isLoading,
@@ -62,8 +65,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     const [isPadronSearching, setIsPadronSearching] = useState(false);
     const [padronMatched, setPadronMatched] = useState<string | null>(null);
 
-    const finalTotal = total ?? orderTotal ?? 0;
-    const saldo = Math.max(0, finalTotal - abono);
+    const finalTotal = desglose?.total ?? total ?? orderTotal ?? 0;
+    const saldo = desglose?.saldo ?? Math.max(0, finalTotal - abono);
 
     // Búsqueda en Bóveda SRI por RUC de cliente
     const clientRucClean = (client?.ruc || client?.cedula || tempClient?.cedula || '').replace(/\D/g, '');
@@ -107,8 +110,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
     const handleFinalize = onDeploy || onFinalize || (() => {});
 
-    const suggestAbono = (percent: number) => {
-        const val = percent === 1 ? finalTotal : Math.ceil(finalTotal * percent);
+    /* Atajos de abono del handoff: sin abono / 50% / total / +$10, siempre topados al total. */
+    const atajos = atajosAbono(finalTotal, abono);
+    const aplicarAbono = (val: number) => {
         setAbono(val);
         if ('vibrate' in navigator) navigator.vibrate(15);
     };
@@ -349,6 +353,32 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
             {/* Footer de Registro de Pago */}
             <div className="p-6 md:p-8 bg-slate-900 text-white border-t border-slate-800 space-y-6">
+                {desglose && (
+                    <div className="space-y-1.5 pb-5 border-b border-slate-800">
+                        <div className="flex items-center justify-between text-[12px]">
+                            <span className="text-slate-400">Subtotal</span>
+                            <span className="font-mono text-slate-200">{formatCurrency(desglose.subtotal)}</span>
+                        </div>
+                        {desglose.diseno > 0 && (
+                            <div className="flex items-center justify-between text-[12px]">
+                                <span className="text-slate-400">Diseño</span>
+                                <span className="font-mono text-slate-200">{formatCurrency(desglose.diseno)}</span>
+                            </div>
+                        )}
+                        {desglose.recargo > 0 && (
+                            <div className="flex items-center justify-between text-[12px]">
+                                <span className="text-amber-300">Recargo por urgencia (15%)</span>
+                                <span className="font-mono text-amber-300">{formatCurrency(desglose.recargo)}</span>
+                            </div>
+                        )}
+                        <div className="flex items-center justify-between text-[12px]">
+                            <span className="text-slate-400">IVA 15%</span>
+                            <span className="font-mono text-slate-200">
+                                {desglose.gravaIva ? formatCurrency(desglose.iva) : 'no grava'}
+                            </span>
+                        </div>
+                    </div>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total de la Orden</span>
@@ -373,8 +403,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xl font-black text-white font-mono outline-none focus:border-brand-blue"
                             />
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                                <button type="button" onClick={() => suggestAbono(0.5)} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-[9px] font-bold uppercase">50%</button>
-                                <button type="button" onClick={() => suggestAbono(1)} className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 rounded text-[9px] font-bold uppercase">100%</button>
+                                <button type="button" onClick={() => aplicarAbono(atajos.ninguno)} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-[9px] font-bold">Sin abono</button>
+                                <button type="button" onClick={() => aplicarAbono(atajos.mitad)} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-[9px] font-bold">50%</button>
+                                <button type="button" onClick={() => aplicarAbono(atajos.masDiez)} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-[9px] font-bold">+$10</button>
+                                <button type="button" onClick={() => aplicarAbono(atajos.total)} className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 rounded text-[9px] font-bold">Total</button>
                             </div>
                         </div>
                     </div>

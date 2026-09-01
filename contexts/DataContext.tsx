@@ -61,6 +61,7 @@ interface DataContextType {
     updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
     uploadFile: (file: File, bucket: string, path: string) => Promise<string>;
     registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string) => Promise<Trabajo>;
+    registrarAbono: (id: string, monto: number, user: string) => Promise<Trabajo>;
     aprobarArte: (id: string) => Promise<Trabajo>;
     createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
     getClientDebt: (clienteId: string) => number;
@@ -76,7 +77,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { trabajos, loading: tLoading, fetchTrabajos, addTrabajo, updateTrabajoStatus, updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, aprobarArte, getClientDebt } = useTrabajos();
+    const { trabajos, loading: tLoading, fetchTrabajos, addTrabajo, updateTrabajoStatus, updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, registrarAbono, aprobarArte, getClientDebt } = useTrabajos();
     const { clientes, loading: cLoading, fetchClientes, addCliente, updateCliente, deleteCliente } = useClientes();
     const { inventario, loading: iLoading, fetchInventario, addItem: addInvItem, updateItem: updateInvItem, deleteItem: deleteInvItem } = useInventario();
     const { productos, loading: pLoading, fetchProductos, addProducto, updateProducto, deleteProducto, seedCatalog } = useProductos();
@@ -153,7 +154,7 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
         addProducto, createProducto, updateProducto, deleteProducto, bulkCreateProductos,
         seedCatalog, addInventoryItem, updateInventoryItem, deleteInventoryItem,
         upsertSriCredential, bulkAddSriCredentials, deleteSriCredential, updateConfig,
-        updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, aprobarArte,
+        updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, registrarAbono, aprobarArte,
         uploadFile,
         createPublicOrder, getClientDebt, syncFromLocalStorage,
         addProveedor, updateProveedor, deleteProveedor,

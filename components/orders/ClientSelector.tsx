@@ -5,7 +5,7 @@ import { useData } from '../../contexts/DataContext';
 import { extractDataFromSriPdf } from '../../services/pdfExtraction';
 import { sriLookupService, SriRucData } from '../../services/sriLookupService';
 import { logActivity } from '../../services/activityLogService';
-import { validarIdentificacionEC } from '../../utils';
+import { formatCurrency, validarIdentificacionEC } from '../../utils';
 import {
     SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon,
     CheckCircleIcon, SparklesIcon, AddIcon, ArrowRightIcon, PhoneIcon,
@@ -65,6 +65,7 @@ export const CreateClientModal: React.FC<{
     const [isScanning, setIsScanning] = useState(false);
     const [highlightFields, setHighlightFields] = useState<string[]>([]);
     const [rucError, setRucError] = useState<string | null>(null);
+    const { addCliente, clientes: clientesRegistrados, trabajos, getClientDebt } = useData();
 
     const [newClienteData, setNewClienteData] = useState({
         nombre: initialName,
@@ -78,6 +79,29 @@ export const CreateClientModal: React.FC<{
         puntoEmisionPredeterminado: '001',
         fiscal_data: {} as any
     });
+
+    /**
+     * Cliente reconocido (paso 3 del handoff): si la cédula/RUC tecleada ya existe en el
+     * padrón local, se ofrece reutilizar la ficha con su historial en vez de duplicarla.
+     */
+    const clienteReconocido = useMemo(() => {
+        const val = (newClienteData.cedulaRuc || '').replace(/\D/g, '');
+        if (val.length < 10) return null;
+        return clientesRegistrados.find(c => c.cedula === val || c.ruc === val) || null;
+    }, [newClienteData.cedulaRuc, clientesRegistrados]);
+
+    const historialReconocido = useMemo(() => {
+        if (!clienteReconocido) return null;
+        const suyos = (trabajos ?? []).filter(t => t.clienteId === clienteReconocido.id);
+        const ultima = suyos
+            .slice()
+            .sort((a, b) => +new Date(b.fechaEntrada) - +new Date(a.fechaEntrada))[0];
+        return {
+            ordenes: suyos.length,
+            ultima: ultima ? `${ultima.tipo || 'Trabajo'} · ${new Date(ultima.fechaEntrada).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'Sin órdenes previas',
+            deuda: getClientDebt(clienteReconocido.id),
+        };
+    }, [clienteReconocido, trabajos, getClientDebt]);
 
     const [telefonos, setTelefonos] = useState<string[]>([]);
     const [currentTelefono, setCurrentTelefono] = useState('');
@@ -110,6 +134,8 @@ export const CreateClientModal: React.FC<{
             }
 
             setRucError(null);
+            /* Si ya es cliente nuestro, la ficha local manda: no se sobrescribe con el padrón. */
+            if (clientesRegistrados.some(c => c.cedula === val || c.ruc === val)) return;
             const rucData = await sriLookupService.lookupByRuc(val);
             if (rucData) {
                 applyExtractedData({
@@ -123,7 +149,7 @@ export const CreateClientModal: React.FC<{
         };
 
         performLookup();
-    }, [newClienteData.cedulaRuc, mode]);
+    }, [newClienteData.cedulaRuc, mode, clientesRegistrados]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -211,7 +237,6 @@ export const CreateClientModal: React.FC<{
         }
     };
 
-    const { addCliente } = useData();
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (mode === 'SRI' && rucError) return;
@@ -328,6 +353,26 @@ export const CreateClientModal: React.FC<{
                                 />
                             )}
                         </div>
+
+                        {clienteReconocido && historialReconocido && (
+                            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">Cliente reconocido</span>
+                                    <p className="text-base font-bold text-slate-900 mt-1 truncate">{clienteReconocido.nombre}</p>
+                                    <p className="text-xs text-emerald-800 mt-1">
+                                        {historialReconocido.ordenes} {historialReconocido.ordenes === 1 ? 'orden' : 'órdenes'} · Última: {historialReconocido.ultima}
+                                        {historialReconocido.deuda > 0 && <> · Saldo pendiente <strong>{formatCurrency(historialReconocido.deuda)}</strong></>}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => onClientCreated(clienteReconocido)}
+                                    className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors"
+                                >
+                                    Usar esta ficha
+                                </button>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField

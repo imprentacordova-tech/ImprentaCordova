@@ -73,6 +73,16 @@ Los colores crudos se **templan** para pantalla. Estos son los valores que se us
 | `chip-blue` | `#EEF1FC` | Fondo de chips/badges azules, hover suave |
 | `soft-gray` | `#F2F4FA` | Fondo de botones "suaves" |
 
+**Familias auxiliares y capa sobre marino** (añadidas en `panelTheme.ts` para el cajón de detalle; usarlas en vez de hex sueltos):
+
+| Grupo | Tokens |
+|---|---|
+| Ámbar | `goldBg #FFFBEB` · `goldBorder #F4E3A8` · `goldText #7A5A00` · `goldTextStrong #B45309` |
+| Verde | `successBg #F2F7F2` · `successBorder #D8E8DC` · `successStrong #155C33` |
+| Rojo | `dangerBg #FDEEEE` · `dangerText #B91C1C` |
+| Violeta | `violet #6D28D9` · `violetBg #F5F3FF` |
+| Sobre marino | `onInk #FFFFFF` · `onInkSoft #C2CAE6` · `onInkMuted #9AA6CE` · `onInkFaint #8E9AC4` · `onInkSuccess #7BE0A6` · `onInkDanger #FF9B9B` · `onInkLayer` · `onInkBorder` · `onInkGoldLayer` · `onInkDangerLayer` · `scrim` |
+
 **Texto:**
 
 | Nivel | HEX |
@@ -176,6 +186,45 @@ Breakpoints del diseño maestro: **1180 / 1024 / 780** (NO usar `xl:` como corte
   - **Identidad Express:** sin `selectedCliente`, capturar `tempClient` `{ nombre, telefono, cedula }`. NUNCA eliminar.
 - **`CartItem`:** `customPrice` + `notas` por ítem. NUNCA sobreescribir en re-renders.
 - **Enrutamiento post-orden:** `TrabajoTipo.SRI` → `/solicitud-impresion`; `TrabajoTipo.GENERAL` → `/recibo-abono`.
+
+### 6.1 Aritmética de la orden — `services/orderPricing.ts` (módulo ÚNICO)
+
+> [!CAUTION]
+> **NUNCA** reimplementar estos cálculos en una página, un componente o una variante móvil.
+> El handoff exige un solo módulo compartido; duplicarlo por dispositivo es el error clásico.
+
+Cadena canónica: `subtotal → diseño → recargo por urgencia → base → IVA condicional → total → abono → saldo`.
+
+| Regla | Valor | Dónde vive |
+|---|---|---|
+| IVA | `15%`, **solo si la línea grava** — los preimpresos SRI (`esSRI`) **no gravan** | `IVA_RATE` |
+| Recargo por urgencia | `+15%` sobre subtotal + diseño (`prioridad: 'Urgente'`) | `RECARGO_URGENCIA` |
+| Escala por volumen | `≥200 → 8%`, `≥500 → 15%` | `escalaVolumen()` |
+| Atajos de abono | sin abono / 50% / total / +$10, topados al total | `atajosAbono()` |
+| Redondeo | a centavos, en cada paso | `round2()` |
+
+**Reparto con la calculadora existente:** el **precio de línea** lo sigue calculando `CalculadoraPrecios` /
+`PriceCalculatorDisplay` sobre `Producto.precio` + `configCalculadora` (materiales, acabados, escalas propias del
+producto). `orderPricing.ts` **no** la reimplementa: recibe el total de línea ya calculado y resuelve solo lo que es
+de la orden. `escalaVolumen()` se usa **únicamente** en flujos rápidos que cotizan directo desde `Producto.precio`
+(express, celular de recepción); en ítems que vienen de la calculadora se pasa `aplicarEscala: false` o no se usa,
+para no descontar dos veces.
+
+Cubierto por `__tests__/services/orderPricing.test.ts` (13 casos). Si cambia una regla, cambia el test.
+
+### 6.2 Cajón de detalle de orden — `components/orders/OrderDrawer.tsx`
+
+Se abre desde cualquier fila de `pages/Trabajos.tsx` (`Esc` o el scrim lo cierran); `pages/TrabajoDetalle.tsx`
+queda como vista profunda a la que lleva el botón "Editar". Cabecera marino, tres métricas
+(Total / Abonado / Saldo — el saldo se tiñe de oro si es > 0), pestañas Resumen · Pagos · Archivos · Bitácora
+y pie fijo con `Pasar a <siguiente estado>` sobre el orden de `FLUJO`.
+
+- **Ningún dato del cajón es literal**: línea de tiempo y bitácora salen de `Trabajo.historial`; archivos, de
+  `fotoOriginalUrl` / `fotoEvidenciaUrl` / `fotoRetiroUrl`; el SRI, de `autorizacion_sri`. Donde no hay dato va
+  un estado vacío honesto, nunca un valor de muestra.
+- `updateTrabajoStatus()` **escribe en `historial`** en cada cambio de estado — de ahí se alimenta el cajón.
+- `registrarAbono(id, monto, user)` (TrabajosContext) mueve abono/saldo **sin** tocar el estado; `registerRetiro()`
+  sigue siendo el que cierra la orden en `ENTREGADO`.
 
 ---
 

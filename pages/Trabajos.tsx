@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { TrabajoEstado } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { TrabajoEstado, User } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, estadoCfg, dot, estadoPill, PANEL_KEYFRAMES } from '../components/panelTheme';
+import OrderDrawer from '../components/orders/OrderDrawer';
 
 const ESTADO_TABS: (TrabajoEstado | 'Todos')[] = [
     'Todos', TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO, TrabajoEstado.PROCESO, TrabajoEstado.VITRINA, TrabajoEstado.ENTREGADO,
@@ -13,6 +15,10 @@ const ESTADO_TABS: (TrabajoEstado | 'Todos')[] = [
 const TrabajosPage: React.FC = () => {
     const { trabajos, clientes, loading } = useData();
     const navigate = useNavigate();
+    const auth = useAuth();
+    const outletContext = useOutletContext<{ currentUser?: User }>() || {};
+    const currentUser = outletContext.currentUser || auth.user;
+    const [openOrderId, setOpenOrderId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [tipoFilter, setTipoFilter] = useState<'Todos' | 'SRI' | 'GENERAL'>('Todos');
     const [estadoFilter, setEstadoFilter] = useState<TrabajoEstado | 'Todos'>('Todos');
@@ -35,6 +41,12 @@ const TrabajosPage: React.FC = () => {
             return searchMatch && tipoMatch && estadoMatch;
         });
     }, [trabajos, clientes, searchTerm, tipoFilter, estadoFilter]);
+
+    /* El cajón lee siempre de la lista viva: al avanzar el estado se refleja en la fila y en el cajón. */
+    const openTrabajo = useMemo(
+        () => (trabajos ?? []).find(t => t.id === openOrderId) || null,
+        [trabajos, openOrderId],
+    );
 
     const gridCols = '.9fr 1.4fr .7fr .9fr .7fr .7fr .8fr';
 
@@ -129,7 +141,7 @@ const TrabajosPage: React.FC = () => {
                                     return (
                                         <div
                                             key={t.id}
-                                            onClick={() => navigate(`/trabajos/${t.id}`)}
+                                            onClick={() => setOpenOrderId(t.id)}
                                             style={{ display: 'grid', gridTemplateColumns: gridCols, alignItems: 'center', padding: '13px 20px', borderBottom: `1px solid ${C.rowLine}`, cursor: 'pointer' }}
                                         >
                                             <span style={{ fontSize: 12.5, fontFamily: MONO, color: C.ink }}>#{String(t.orden).padStart(4, '0')}</span>
@@ -153,6 +165,16 @@ const TrabajosPage: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {openTrabajo && (
+                <OrderDrawer
+                    trabajo={openTrabajo}
+                    cliente={clientes.find(c => c.id === openTrabajo.clienteId) || null}
+                    usuario={currentUser?.nombre || 'Sistema'}
+                    rol={currentUser?.rol || 'Operador'}
+                    onClose={() => setOpenOrderId(null)}
+                />
+            )}
         </div>
     );
 };
