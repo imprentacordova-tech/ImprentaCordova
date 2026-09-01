@@ -11,6 +11,7 @@ import ProductConfigurator from '../components/orders/ProductConfigurator';
 import { CommercialFlow } from '../components/orders/CommercialFlow';
 import SriSolicitudStep from '../components/orders/SriSolicitudStep';
 import OrderSummary from '../components/orders/OrderSummary';
+import OrderDetails from '../components/orders/OrderDetails';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
@@ -34,10 +35,18 @@ const NuevoPedidoPage: React.FC = () => {
     const [precio, setPrecio] = useState(0);
     const [abono, setAbono] = useState(0);
     const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
-    const [imageFile] = useState<File | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
     const [items, setItems] = useState<any[]>([]);
+    /* Paso 2 "Detalles" del handoff: hasta ahora la entrega y las notas de taller no se
+       capturaban en ningún lado y la orden se guardaba sin ellas. */
+    const [notasTaller, setNotasTaller] = useState('');
+    const [fechaEntrega, setFechaEntrega] = useState(() => {
+        const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(17, 0, 0, 0); return d.toISOString();
+    });
+    const [numeracionInicial, setNumeracionInicial] = useState('');
+    const [autorizacionSriInput, setAutorizacionSriInput] = useState('');
     const [isAddingItem, setIsAddingItem] = useState(false);
 
     const [isSriOrder, setIsSriOrder] = useState(false);
@@ -219,8 +228,10 @@ const NuevoPedidoPage: React.FC = () => {
                 esRenovacion: isSriOrder ? (sriMode === 'RENOVACION') : undefined,
                 actividadSeleccionada: isSriOrder ? sriActividad : null,
                 imprimirClave: isSriOrder ? imprimirClave : false,
-                numeracion: item.especificaciones?.numerado,
-                autorizacion_sri: item.especificaciones?.sri?.autorizacion,
+                fechaEntrega,
+                observaciones: notasTaller || undefined,
+                numeracion: numeracionInicial || item.especificaciones?.numerado,
+                autorizacion_sri: autorizacionSriInput || item.especificaciones?.sri?.autorizacion,
                 fechaVencimiento: item.especificaciones?.sri?.vencimiento,
             } as any, userName, imageFile)));
 
@@ -370,6 +381,18 @@ const NuevoPedidoPage: React.FC = () => {
                                                 </div>
                                             ))}
                                             <button style={{ ...S.outlineBtn, justifyContent: 'center', borderStyle: 'dashed' }} onClick={() => setIsAddingItem(true)}>Agregar otro ítem</button>
+
+                                            {items.length > 0 && (
+                                                <OrderDetails
+                                                    notas={notasTaller} setNotas={setNotasTaller}
+                                                    prioridad={prioridad} setPrioridad={setPrioridad}
+                                                    fechaEntrega={fechaEntrega} setFechaEntrega={setFechaEntrega}
+                                                    esSRI={isSriOrder}
+                                                    numeracion={numeracionInicial} setNumeracion={setNumeracionInicial}
+                                                    autorizacionSri={autorizacionSriInput} setAutorizacionSri={setAutorizacionSriInput}
+                                                    archivo={imageFile} setArchivo={setImageFile}
+                                                />
+                                            )}
                                         </div>
                                     )}
                                 </motion.div>

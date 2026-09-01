@@ -79,7 +79,7 @@ Los colores crudos se **templan** para pantalla. Estos son los valores que se us
 |---|---|
 | Ámbar | `goldBg #FFFBEB` · `goldBorder #F4E3A8` · `goldText #7A5A00` · `goldTextStrong #B45309` |
 | Verde | `successBg #F2F7F2` · `successBorder #D8E8DC` · `successStrong #155C33` |
-| Rojo | `dangerBg #FDEEEE` · `dangerText #B91C1C` |
+| Rojo | `dangerBg #FDEEEE` · `dangerBorder #F3C6C6` · `dangerText #B91C1C` |
 | Violeta | `violet #6D28D9` · `violetBg #F5F3FF` |
 | Sobre marino | `onInk #FFFFFF` · `onInkSoft #C2CAE6` · `onInkMuted #9AA6CE` · `onInkFaint #8E9AC4` · `onInkSuccess #7BE0A6` · `onInkDanger #FF9B9B` · `onInkLayer` · `onInkBorder` · `onInkGoldLayer` · `onInkDangerLayer` · `scrim` |
 
@@ -225,6 +225,16 @@ y pie fijo con `Pasar a <siguiente estado>` sobre el orden de `FLUJO`.
 - `updateTrabajoStatus()` **escribe en `historial`** en cada cambio de estado — de ahí se alimenta el cajón.
 - `registrarAbono(id, monto, user)` (TrabajosContext) mueve abono/saldo **sin** tocar el estado; `registerRetiro()`
   sigue siendo el que cierra la orden en `ENTREGADO`.
+
+### 6.3 Paso "Detalles" de Nueva Orden — `components/orders/OrderDetails.tsx`
+
+Tarjeta "2 · Detalles" del handoff, montada en `NuevoPedido.tsx` bajo la lista de ítems: entrega con cuatro
+atajos (Hoy 17:00 / Mañana / En 2 días / Fecha exacta), interruptor **binario** de urgencia y, solo si `esSRI`,
+numeración inicial y autorización. La prioridad es binaria porque `Trabajo.prioridad` es `'Normal' | 'Urgente'`
+y es lo que dispara `RECARGO_URGENCIA` en §6.1 — no usar escalas de tres niveles.
+
+De aquí salen `fechaEntrega` y `observaciones`, que antes **no se capturaban en ninguna parte** y la orden se
+guardaba sin ellas.
 
 ---
 

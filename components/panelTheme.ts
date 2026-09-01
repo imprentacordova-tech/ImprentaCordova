@@ -42,6 +42,7 @@ export const C = {
 
     /* Familia roja (errores, egresos) */
     dangerBg: '#FDEEEE',
+    dangerBorder: '#F3C6C6',
     dangerText: '#B91C1C',
 
     /* Familia violeta (estado "En Diseño") */
