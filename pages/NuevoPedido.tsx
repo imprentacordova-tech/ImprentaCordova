@@ -23,13 +23,19 @@ import { calcularPedido, round2 } from '../services/orderPricing';
 
 const STEP_LABELS = ['1. Producto', '2. Detalles', '3. Cliente', '4. Pago y Resumen'];
 
+const CATEGORIAS_CATALOGO = ['Todos', 'Comprobantes SRI', 'Papelería Comercial', 'Publicidad & Sellos'] as const;
+
 const CATALOGO_RAPIDO = [
-  { id: '1', nombre: '100 Notas de Venta', cat: 'SRI', desc: '1/4 Oficio · 100 hojas', precio: 13, esSRI: true },
-  { id: '2', nombre: '100 Facturas SRI', cat: 'SRI', desc: '1/4 Oficio · 2 copias', precio: 15, esSRI: true },
-  { id: '3', nombre: '1.000 Tarjetas de Presentación', cat: 'Comercial', desc: 'Couche 300g · Mate + UV', precio: 28, esSRI: false },
-  { id: '4', nombre: '1.000 Volantes 1/4 Oficio', cat: 'Comercial', desc: 'Bond 75g · Full color', precio: 22, esSRI: false },
-  { id: '5', nombre: 'Sello Automático Trodat', cat: 'Comercial', desc: 'Texto + logo personalizado', precio: 16, esSRI: false },
-  { id: '6', nombre: 'Talonario de Recibos', cat: 'Comercial', desc: '1/4 Oficio · Numerado', precio: 12, esSRI: false },
+  { id: '1', nombre: 'Nota de Venta', cat: 'Comprobantes SRI', tag: 'SRI', precio: 13, esSRI: true },
+  { id: '2', nombre: 'Factura Autorizada', cat: 'Comprobantes SRI', tag: 'SRI', precio: 15, esSRI: true },
+  { id: '3', nombre: 'Liquidación de Compra', cat: 'Comprobantes SRI', tag: 'SRI', precio: 15, esSRI: true },
+  { id: '4', nombre: 'Guía de Remisión', cat: 'Comprobantes SRI', tag: 'SRI', precio: 16, esSRI: true },
+  { id: '5', nombre: '1.000 Tarjetas de Presentación', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 28, esSRI: false },
+  { id: '6', nombre: '1.000 Volantes Publicitarios', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 22, esSRI: false },
+  { id: '7', nombre: 'Sello Automático Trodat', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 16, esSRI: false },
+  { id: '8', nombre: 'Talonario de Recibos de Caja', cat: 'Papelería Comercial', tag: 'Comercial', precio: 12, esSRI: false },
+  { id: '9', nombre: 'Hojas Membretadas (Millar)', cat: 'Papelería Comercial', tag: 'Comercial', precio: 35, esSRI: false },
+  { id: '10', nombre: 'Gigantografía / Lona Banner', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 12, esSRI: false },
 ];
 
 const NuevoPedidoPage: React.FC = () => {
@@ -68,6 +74,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [imprimirClave, setImprimirClave] = useState(false);
     const [isAddingCustomItem, setIsAddingCustomItem] = useState(false);
     const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
+    const [filtroCat, setFiltroCat] = useState<string>('Todos');
 
     // ¿La orden contiene al menos un producto con requerimientos SRI?
     const hasSriItem = useMemo(() => items.some(i => i.esSRI || i.especificaciones?.sri), [items]);
@@ -107,13 +114,15 @@ const NuevoPedidoPage: React.FC = () => {
         const docName = docNames[docType] || 'Nota de Venta';
 
         const sriItem = {
-            nombre: `${docName} (${blocks} Hojas)`,
+            nombre: docName,
             cantidad: 1,
+            precioUnitario: totalVal,
             precioFinal: totalVal,
             esSRI: true,
             especificaciones: {
                 tamano: docSize,
                 paginas: blocks,
+                papel: 'Químico Autocopia (2c)',
                 sri: { vencimiento: payload.caducidad || '' }
             }
         };
@@ -169,12 +178,16 @@ const NuevoPedidoPage: React.FC = () => {
         const newItem = {
             nombre: p.nombre,
             cantidad: 1,
+            precioUnitario: p.precio,
             precioFinal: p.precio,
             esSRI: p.esSRI,
-            descripcion: p.desc,
-            especificaciones: { tamano: 'Estándar', esSRI: p.esSRI }
+            especificaciones: {
+                tamano: p.esSRI ? '1/4 Oficio' : 'Carta / A4',
+                papel: p.esSRI ? 'Químico Autocopia (2c)' : 'Bond 75g',
+                esSRI: p.esSRI,
+            }
         };
-        setItems(prev => [...prev, newItem]);
+        setItems([newItem]);
         setStep(2);
     };
 
@@ -302,8 +315,8 @@ const NuevoPedidoPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Stepper de 4 Pasos */}
-                <div style={{ ...S.card, padding: '10px 14px', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* Stepper de 4 Pasos Responsivo */}
+                <div style={{ ...S.card, padding: '10px 14px', display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }}>
                     {STEP_LABELS.map((label, i) => {
                         const id = i + 1;
                         const active = step === id;
@@ -323,6 +336,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     border: 'none',
                                     fontSize: 12,
                                     fontWeight: 700,
+                                    whiteSpace: 'nowrap',
                                     cursor: past ? 'pointer' : 'default',
                                     fontFamily: 'inherit',
                                     transition: 'all 0.2s',
@@ -335,8 +349,8 @@ const NuevoPedidoPage: React.FC = () => {
                     })}
                 </div>
 
-                {/* Contenido Principal y Sidebar de Resumen */}
-                <div style={{ display: 'grid', gridTemplateColumns: step < 5 ? 'minmax(0,1fr) minmax(0,340px)' : '1fr', gap: 16, alignItems: 'start' }}>
+                {/* Contenido Principal y Sidebar de Resumen Responsivo */}
+                <div className={`grid gap-4 items-start ${step < 5 ? 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px]' : 'grid-cols-1'}`}>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
                         <AnimatePresence mode="wait">
@@ -347,7 +361,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                                         <div>
                                             <h2 style={S.h2}>1 · ¿Qué va a imprimir?</h2>
-                                            <p style={{ ...S.lead, fontSize: 13 }}>Selecciona de los más solicitados o abre el catálogo general.</p>
+                                            <p style={{ ...S.lead, fontSize: 13 }}>Selecciona el producto base. Los tamaños y especificaciones se configuran en el siguiente paso.</p>
                                         </div>
                                         <button
                                             type="button"
@@ -359,62 +373,95 @@ const NuevoPedidoPage: React.FC = () => {
                                     </div>
 
                                     {!isAddingCustomItem ? (
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-                                            {CATALOGO_RAPIDO.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    type="button"
-                                                    onClick={() => handleSelectQuickProduct(p)}
-                                                    style={{
-                                                        textAlign: 'left',
-                                                        padding: 16,
-                                                        borderRadius: 14,
-                                                        border: `1px solid ${C.border}`,
-                                                        background: C.surface,
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'space-between',
-                                                        transition: 'all 0.2s',
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.borderColor = C.royal;
-                                                        e.currentTarget.style.background = C.surfaceAlt;
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.borderColor = C.border;
-                                                        e.currentTarget.style.background = C.surface;
-                                                    }}
-                                                >
-                                                    <div>
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                                                            <span style={{
-                                                                fontSize: 10,
-                                                                fontWeight: 800,
-                                                                padding: '3px 7px',
-                                                                borderRadius: 6,
-                                                                background: p.esSRI ? C.goldBg : C.chipBlue,
-                                                                color: p.esSRI ? C.goldTextStrong : C.royal,
-                                                                border: `1px solid ${p.esSRI ? C.goldBorder : '#D7DDF0'}`,
-                                                            }}>
-                                                                {p.cat}
-                                                            </span>
-                                                            <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 700, color: C.royal }}>
-                                                                ${p.precio.toFixed(2)}
-                                                            </span>
-                                                        </div>
-                                                        <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: C.ink, marginTop: 10 }}>
-                                                            {p.nombre}
-                                                        </div>
-                                                        <p style={{ margin: '4px 0 0', fontSize: 12, color: C.muted }}>
-                                                            {p.desc}
-                                                        </p>
-                                                    </div>
-                                                    <div style={{ marginTop: 12, fontSize: 11.5, fontWeight: 700, color: C.royal }}>
-                                                        Seleccionar →
-                                                    </div>
-                                                </button>
-                                            ))}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                            {/* Tabs de Filtro de Categoría */}
+                                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                {CATEGORIAS_CATALOGO.map((cat) => {
+                                                    const activo = filtroCat === cat;
+                                                    return (
+                                                        <button
+                                                            key={cat}
+                                                            type="button"
+                                                            onClick={() => setFiltroCat(cat)}
+                                                            style={{
+                                                                padding: '6px 12px',
+                                                                borderRadius: 8,
+                                                                border: `1px solid ${activo ? C.royal : C.borderStrong}`,
+                                                                background: activo ? C.royal : C.surface,
+                                                                color: activo ? '#FFFFFF' : C.body,
+                                                                fontSize: 12,
+                                                                fontWeight: 700,
+                                                                cursor: 'pointer',
+                                                                transition: 'all 0.15s ease',
+                                                            }}
+                                                        >
+                                                            {cat}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Tarjetas Minimalistas de Producto */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                                                {CATALOGO_RAPIDO
+                                                    .filter(p => filtroCat === 'Todos' || p.cat === filtroCat)
+                                                    .map((p) => (
+                                                        <button
+                                                            key={p.id}
+                                                            type="button"
+                                                            onClick={() => handleSelectQuickProduct(p)}
+                                                            style={{
+                                                                textAlign: 'left',
+                                                                padding: '16px 18px',
+                                                                borderRadius: 14,
+                                                                border: `1px solid ${C.border}`,
+                                                                background: C.surface,
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                justifyContent: 'space-between',
+                                                                minHeight: 110,
+                                                                transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                                                boxShadow: '0 2px 4px rgba(10,17,64,0.02)',
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.borderColor = C.royal;
+                                                                e.currentTarget.style.background = C.surfaceAlt;
+                                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                                e.currentTarget.style.boxShadow = '0 8px 20px -6px rgba(10,17,64,0.08)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.borderColor = C.border;
+                                                                e.currentTarget.style.background = C.surface;
+                                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(10,17,64,0.02)';
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                                                <span style={{
+                                                                    fontSize: 10,
+                                                                    fontWeight: 800,
+                                                                    padding: '3px 7px',
+                                                                    borderRadius: 6,
+                                                                    background: p.esSRI ? C.goldBg : C.chipBlue,
+                                                                    color: p.esSRI ? C.goldTextStrong : C.royal,
+                                                                    border: `1px solid ${p.esSRI ? C.goldBorder : '#D7DDF0'}`,
+                                                                }}>
+                                                                    {p.tag}
+                                                                </span>
+                                                                <span style={{ fontFamily: MONO, fontSize: 13.5, fontWeight: 700, color: C.royal }}>
+                                                                    ${p.precio.toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: C.ink, marginTop: 12 }}>
+                                                                {p.nombre}
+                                                            </div>
+                                                            <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, color: C.royal, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                Configurar →
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                            </div>
                                         </div>
                                     ) : (
                                         <div>
@@ -438,7 +485,7 @@ const NuevoPedidoPage: React.FC = () => {
                                     {items.length > 0 && !isAddingCustomItem && (
                                         <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.divider}`, display: 'flex', justifyContent: 'flex-end' }}>
                                             <button style={S.primaryBtn} onClick={() => setStep(2)}>
-                                                Continuar con {items.length} ítem(s) →
+                                                Continuar a Detalles con {items.length} ítem(s) →
                                             </button>
                                         </div>
                                     )}
@@ -449,6 +496,8 @@ const NuevoPedidoPage: React.FC = () => {
                             {step === 2 && (
                                 <motion.div key="s2" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
                                     <OrderDetails
+                                        items={items}
+                                        setItems={setItems}
                                         notas={notasTaller}
                                         setNotas={setNotasTaller}
                                         prioridad={prioridad}
@@ -564,7 +613,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                     {/* Sidebar Resumen de la Orden */}
                     {step < 5 && (
-                        <div style={{ ...S.card, padding: 20, position: 'sticky', top: 88, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <div className="w-full lg:sticky lg:top-[88px]" style={{ ...S.card, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
                             <h3 style={{ ...S.h2, fontSize: 16 }}>Resumen en Vivo</h3>
 
                             {/* Lista de Ítems */}

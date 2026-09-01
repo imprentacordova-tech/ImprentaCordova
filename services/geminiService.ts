@@ -193,6 +193,70 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
     } catch (error) { return null; }
 };
 
+export interface SampleOcrResult {
+    razonSocial: string;
+    ruc: string;
+    direccion: string;
+    telefonos: string;
+    actividadComercial: string;
+    textosDetectados: string[];
+    advertenciaSri: string;
+}
+
+export const extractSampleTextOCR = async (imageInput: string): Promise<SampleOcrResult | null> => {
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+    const modelId = "gemini-3-flash-preview";
+    
+    let base64Data = imageInput;
+    let mimeType = 'image/jpeg';
+    if (imageInput.startsWith('data:')) {
+        const parts = imageInput.split(',');
+        base64Data = parts[1];
+        mimeType = imageInput.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
+    }
+
+    const prompt = `Actúa como asistente OCR de alta precisión para un diseñador gráfico en Imprenta Córdova (Ecuador).
+    Analiza esta imagen de muestra física (talonario, tarjeta, factura, volante o boceto).
+    Extrae todos los datos textuales limpios para que el diseñador los copie y pegue en CorelDRAW o Illustrator:
+    1. razonSocial: Nombre de la empresa o persona.
+    2. ruc: RUC de 13 dígitos o Cédula.
+    3. direccion: Dirección física completa de la matriz o local.
+    4. telefonos: Celulares o teléfonos fijos encontrados.
+    5. actividadComercial: Actividades, servicios o slogan del negocio.
+    6. textosDetectados: Array con frases, columnas o textos secundarios identificados.
+    7. advertenciaSri: Leyendas fiscales detectadas o faltantes (ej. Contribuyente Régimen RIMPE, Agente de Retención, etc.).
+    
+    Responde en JSON estricto.`;
+
+    try {
+        const response = await withTimeout(ai.models.generateContent({
+            model: modelId,
+            contents: { parts: [{ inlineData: { data: base64Data, mimeType } }, { text: prompt }] },
+            config: {
+                temperature: 0.1,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        razonSocial: { type: Type.STRING },
+                        ruc: { type: Type.STRING },
+                        direccion: { type: Type.STRING },
+                        telefonos: { type: Type.STRING },
+                        actividadComercial: { type: Type.STRING },
+                        textosDetectados: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        advertenciaSri: { type: Type.STRING }
+                    },
+                    required: ['razonSocial', 'ruc', 'direccion', 'telefonos']
+                }
+            }
+        }), 25000) as GenerateContentResponse;
+        return JSON.parse(response.text || "{}");
+    } catch (error) {
+        console.error("Error en OCR de muestra:", error);
+        return null;
+    }
+};
+
 export const analyzeDesignWithSupervisor = async (designBase64: string, context: string): Promise<SupervisorAnalysis | null> => {
     const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     const modelId = "gemini-3-flash-preview";

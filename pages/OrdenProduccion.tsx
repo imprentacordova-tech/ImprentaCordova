@@ -163,16 +163,25 @@ const OrdenProduccionPage: React.FC = () => {
 
                     {/* COLUMNA DERECHA: QR Y RETIRO */}
                     <div className="col-span-3 flex flex-col justify-between">
-                         <div className="flex flex-col items-center p-4 bg-white border-2 border-slate-100 rounded-[2rem] shadow-sm">
-                            <img src={qrSource} alt="QR Seguimiento" className="w-24 h-24 mb-2" />
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rastreo Producción</span>
+                         <div className="flex flex-col items-center p-3 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            {trabajo.fotoOriginalUrl ? (
+                                <div className="flex items-center justify-center gap-2 mb-1">
+                                    <img src={trabajo.fotoOriginalUrl} alt="Muestra" className="w-16 h-16 object-contain rounded border border-slate-200 bg-slate-50" />
+                                    <img src={qrSource} alt="QR" className="w-16 h-16" />
+                                </div>
+                            ) : (
+                                <img src={qrSource} alt="QR Seguimiento" className="w-20 h-20 mb-1" />
+                            )}
+                            <span className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest text-center">
+                                {trabajo.fotoOriginalUrl ? 'Muestra + QR Taller' : 'Rastreo Producción'}
+                            </span>
                          </div>
 
                          {/* BLOQUE MARCO ROJO: COMPROMISO DE ENTREGA */}
-                         <div className="border-[4px] border-brand-red rounded-[2rem] p-4 text-center bg-white shadow-lg animate-pulse-slow">
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Listo Para Retiro</span>
-                            <p className="text-xl font-black text-brand-red leading-none uppercase">{fechaRetiroFormateada}</p>
-                            <div className="mt-2 bg-brand-red text-white text-[7px] font-black py-1 px-2 rounded-full uppercase tracking-widest inline-block">
+                         <div className="border-[3px] border-brand-red rounded-2xl p-3 text-center bg-white shadow-sm">
+                            <span className="text-[7.5px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Listo Para Retiro</span>
+                            <p className="text-lg font-black text-brand-red leading-none uppercase">{fechaRetiroFormateada}</p>
+                            <div className="mt-1 bg-brand-red text-white text-[7px] font-black py-0.5 px-2 rounded-full uppercase tracking-widest inline-block">
                                 Compromiso Córdova
                             </div>
                          </div>
