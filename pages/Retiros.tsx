@@ -23,9 +23,45 @@ const RetirosPage: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [expressPin, setExpressPin] = useState('');
+    const [expressError, setExpressError] = useState<string | null>(null);
     const [retiroPhoto, setRetiroPhoto] = useState<File | null>(null);
     const [showCamera, setShowCamera] = useState(false);
     const { width, height } = useWindowSize();
+
+    const handleExpressLookup = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        setExpressError(null);
+        const pin = expressPin.trim().toLowerCase().replace(/^#|^ord-/, '');
+        if (!pin) return;
+
+        // Buscar en trabajos en vitrina
+        const match = (trabajos ?? [])
+            .filter(t => t.estado === TrabajoEstado.VITRINA)
+            .find(t => {
+                const ordStr = String(t.orden);
+                const cli = clientes.find(c => c.id === t.clienteId);
+                return ordStr === pin ||
+                       ordStr.endsWith(pin) ||
+                       t.id.toLowerCase().includes(pin) ||
+                       (cli && (cli.ruc === pin || cli.cedula === pin || cli.telefono.some(tel => tel.endsWith(pin))));
+            });
+
+        if (match) {
+            setSelected(match);
+            setRetiroPhoto(null);
+            setShowCamera(false);
+            setExpressPin('');
+        } else {
+            // ¿Existe en otro estado del flujo?
+            const otroEstado = (trabajos ?? []).find(t => String(t.orden) === pin);
+            if (otroEstado) {
+                setExpressError(`La orden #${otroEstado.orden} existe pero está en '${otroEstado.estado}', no en Vitrina.`);
+            } else {
+                setExpressError(`No se encontró ninguna orden en vitrina con el código '${pin}'.`);
+            }
+        }
+    };
 
     const filtered = useMemo(() => {
         const q = searchTerm.toLowerCase().trim();
@@ -89,7 +125,7 @@ const RetirosPage: React.FC = () => {
             return;
         }
         const saldoMsg = t.saldo > 0 ? `Saldo pendiente: ${formatCurrency(t.saldo)}.` : 'Su pedido se encuentra pagado.';
-        const message = `Hola ${cliente.nombre}, Imprenta Córdova le informa que su pedido #${t.orden} (${t.subtipo || t.tipo}) está listo para retirar. ${saldoMsg}`;
+        const message = `Hola ${cliente.nombre}, Imprenta Córdova le informa que su pedido #${t.orden} (${t.subtipo || t.tipo}) está listo para retirar en nuestro local. ${saldoMsg} Horario: Lunes a Viernes 08:30 a 18:30.`;
         window.open(generateWhatsAppLink(cliente.telefono[0], message), '_blank');
     };
 
@@ -105,6 +141,55 @@ const RetirosPage: React.FC = () => {
                     <h1 style={S.h1}>Despacho y Entregas</h1>
                     <p style={S.lead}>Trabajos listos esperando retiro. Cobre el saldo y marque la entrega.</p>
                 </div>
+
+                {/* Buscador Express PIN / QR */}
+                <form onSubmit={handleExpressLookup} style={{
+                    padding: '16px 20px', borderRadius: 16, background: '#0A1140', color: '#fff',
+                    border: '1px solid rgba(255,198,26,0.3)', boxShadow: '0 10px 25px -5px rgba(10,17,64,.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(255,198,26,0.2)', color: '#FFC61A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                            ⚡
+                        </span>
+                        <div>
+                            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: '#FFC61A' }}>
+                                DESPACHO EXPRESS · ESCÁNER QR / PIN
+                            </div>
+                            <div style={{ fontSize: 13, color: '#CAD5F5', marginTop: 2 }}>
+                                Escanea el código del ticket o escribe el N° de orden para abrir y cobrar al instante
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1, maxWidth: 360, minWidth: 240 }}>
+                        <input
+                            value={expressPin}
+                            onChange={(e) => { setExpressPin(e.target.value); setExpressError(null); }}
+                            placeholder="N° orden (ej: 4821) o RUC/teléfono…"
+                            style={{
+                                flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)',
+                                background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 13, outline: 'none',
+                                fontFamily: MONO
+                            }}
+                        />
+                        <button
+                            type="submit"
+                            style={{
+                                padding: '10px 18px', borderRadius: 10, background: '#FFC61A', color: '#0A1140',
+                                border: 'none', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            Abrir y Cobrar
+                        </button>
+                    </div>
+                </form>
+
+                {expressError && (
+                    <div style={{ padding: '10px 16px', borderRadius: 10, background: C.dangerBg, border: `1px solid ${C.goldBorder}`, color: C.dangerText, fontSize: 12.5 }}>
+                        ⚠️ {expressError}
+                    </div>
+                )}
 
                 {/* Resumen + búsqueda */}
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

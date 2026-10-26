@@ -1,286 +1,1445 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { TrabajoEstado, User } from '../types';
-import { formatCurrency } from '../utils';
+import { Trabajo, TrabajoEstado, User } from '../types';
+import { formatCurrency, generateWhatsAppLink } from '../utils';
+import { C, S, MONO, DISPLAY, estadoCfg, dot, estadoPill } from '../components/panelTheme';
+import { ModalArqueoCaja } from '../components/dashboard/ModalArqueoCaja';
+import { calcularSla, tiempoEnEtapa } from '../services/tallerBoard';
+import {
+    SparklesIcon,
+    WalletIcon,
+    DashboardIcon,
+    CalculatorIcon,
+    RocketLaunchIcon,
+    MonitorIcon,
+    WhatsAppIcon,
+    ArrowRightIcon,
+    CheckCircleIcon,
+    AlertTriangleIcon,
+    ChevronRightIcon,
+    ReceiptIcon,
+    FileTextIcon,
+    DollarIcon,
+    UsersIcon,
+    RefreshCwIcon,
+    PlusIcon,
+    SearchIcon,
+    PrinterIcon,
+    BoxIcon,
+    SlidersIcon,
+} from '../components/Icons';
 
 /**
- * Panel Principal — Sistema "Marino & Oro" (tema claro).
- * Vista fiel a la sección `isPanel` de `Panel-Interno.dc.html` (Claude Design),
- * cableada con datos reales de Supabase. Ver design_manifest.md §2.
+ * Panel de Control Ejecutivo — Sistema "Marino & Oro Imperial"
+ * Optimizado "PEPA" para Móvil y Desktop (Mobile-First Ergonomics):
+ * - KPIs en cuadrícula adaptativa (2 columnas compactas en móvil, 4 en desktop).
+ * - Power Strip con swipe horizontal en celular y auto-grid en escritorio.
+ * - Tarjetas táctiles nativas en móvil (sin scroll horizontal de tabla forzado).
+ * - Pestañas deslizantes de resorte con layoutId y scroll táctil.
+ * - Botones de WhatsApp y Notas de Venta con tamaño táctil optimizado (min 44px).
+ * - Safe Area insets completos para iPhone y Android.
  */
 
-// ── Paleta ──────────────────────────────────────────────────────────────────
-const C = {
-    ink: '#0A1140', royal: '#16309B', royalHover: '#0F2280', gold: '#FFC61A',
-    danger: '#E70101', border: '#E4E8F4', borderStrong: '#D7DDF0',
-    divider: '#EEF0F8', rowLine: '#F2F4FA', surfaceAlt: '#FAFBFF',
-    faint: '#8A93AE', muted: '#6B7590', body: '#3C4763',
-};
-const mono = "'JetBrains Mono',monospace";
-const display = "'Outfit',sans-serif";
-
-type EstadoCfg = { label: string; color: string; bg: string; border: string; dot: string };
-const ESTADO: Record<TrabajoEstado, EstadoCfg> = {
-    [TrabajoEstado.PENDIENTE]: { label: 'Pendiente', color: '#B45309', bg: '#FFFBEB', border: '#F4E3A8', dot: '#FFC61A' },
-    [TrabajoEstado.EN_DISENO]: { label: 'En Diseño', color: '#6D28D9', bg: '#F5F3FF', border: '#DDD3FE', dot: '#8B5CF6' },
-    [TrabajoEstado.PROCESO]:   { label: 'En Prensa', color: '#16309B', bg: '#EEF1FC', border: '#D7DDF0', dot: '#16309B' },
-    [TrabajoEstado.VITRINA]:   { label: 'Listo',     color: '#1B6E3E', bg: '#F2F7F2', border: '#D8E8DC', dot: '#1B8A4B' },
-    [TrabajoEstado.ENTREGADO]: { label: 'Entregado', color: '#5B6480', bg: '#F5F6FA', border: '#E4E8F4', dot: '#A6AFC8' },
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.05,
+            delayChildren: 0.02,
+        },
+    },
 };
 
-const S = {
-    eyebrow: { margin: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: '.32em', textTransform: 'uppercase', color: C.faint } as React.CSSProperties,
-    h1: { margin: '5px 0 0', fontFamily: display, fontSize: 27, fontWeight: 600, letterSpacing: '-.035em', color: C.ink } as React.CSSProperties,
-    h2: { margin: 0, fontFamily: display, fontSize: 17, fontWeight: 600, letterSpacing: '-.03em', color: C.ink } as React.CSSProperties,
-    card: { background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16 } as React.CSSProperties,
-    colHead: { fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint } as React.CSSProperties,
-    primaryBtn: { display: 'flex', alignItems: 'center', gap: 8, padding: '11px 18px', background: C.royal, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties,
-    outlineBtn: { display: 'flex', alignItems: 'center', gap: 8, padding: '11px 18px', background: '#fff', color: C.royal, border: `1px solid ${C.borderStrong}`, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties,
-    softBtn: { padding: '8px 14px', background: '#F2F4FA', color: C.royal, border: 'none', borderRadius: 9, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties,
+const itemVariants = {
+    hidden: { opacity: 0, y: 14 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { type: 'spring', stiffness: 340, damping: 26 },
+    },
 };
 
-const dot = (bg: string, size = 8): React.CSSProperties => ({ width: size, height: size, borderRadius: 99, background: bg, flexShrink: 0, display: 'inline-block' });
-const pill = (e: EstadoCfg): React.CSSProperties => ({
-    display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', borderRadius: 99,
-    fontSize: 11.5, fontWeight: 600, background: e.bg, border: `1px solid ${e.border}`, color: e.color,
-});
-
-const fmtEntrega = (iso?: string): string => {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '—';
-    const hoy = new Date();
-    const sameDay = d.toDateString() === hoy.toDateString();
-    if (sameDay) return `hoy ${d.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}`;
-    return d.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' });
-};
+type FilterTab = 'todas' | 'urgentes' | 'con_saldo' | 'sri' | 'prensa';
 
 const DashboardPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
-    const { trabajos, clientes, loading } = useData();
+    const { trabajos, clientes, loading, realtimeEstado, ultimaSync } = useData();
     const navigate = useNavigate();
 
+    const [activeTab, setActiveTab] = useState<FilterTab>('todas');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [arqueoOpen, setArqueoOpen] = useState(false);
+    const [currentTime, setCurrentTime] = useState(() => new Date());
+
+    // Reloj reactivo para tiempos vivos en taller (cada 30 seg)
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 30000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const ahoraMs = currentTime.getTime();
+
+    // Órdenes activas (no entregadas)
     const activos = useMemo(
         () => (trabajos ?? []).filter(t => t.estado !== TrabajoEstado.ENTREGADO),
         [trabajos],
     );
 
-    const kpis = useMemo(() => {
+    // Mapeo rápido de clientes para O(1) lookups
+    const clientesMap = useMemo(() => {
+        const map = new Map<string, (typeof clientes)[0]>();
+        (clientes ?? []).forEach(c => map.set(c.id, c));
+        return map;
+    }, [clientes]);
+
+    // Métricas del Administrador
+    const metrics = useMemo(() => {
         if (!trabajos || !clientes) return null;
-        const today = new Date().toISOString().slice(0, 10);
-        const entregadosHoy = trabajos.filter(t => t.estado === TrabajoEstado.ENTREGADO && (t.fechaEntrega ?? '').startsWith(today));
-        const porCobrar = activos.filter(t => t.saldo > 0);
-        const enProduccion = activos.filter(t => t.estado === TrabajoEstado.PROCESO || t.estado === TrabajoEstado.EN_DISENO);
+        const todayStr = currentTime.toISOString().slice(0, 10);
+
+        // Órdenes entregadas hoy
+        const entregadosHoy = trabajos.filter(
+            t => t.estado === TrabajoEstado.ENTREGADO && (t.fechaEntrega ?? '').startsWith(todayStr),
+        );
+
+        // Cobranza estimada del día (abonos de hoy en órdenes entregadas o activas)
+        const cobranzaHoy = trabajos.reduce((acc, t) => {
+            const fechaRef = t.fechaEntrada?.slice(0, 10);
+            if (fechaRef === todayStr) {
+                return acc + (t.abono || 0);
+            }
+            return acc;
+        }, 0);
+
+        // Dinero en la calle (cuentas por cobrar)
+        const conSaldo = activos.filter(t => t.saldo > 0);
+        const totalPorCobrar = conSaldo.reduce((acc, t) => acc + t.saldo, 0);
+
+        // Taller & SLA
+        const urgentes = activos.filter(t => {
+            const sla = calcularSla(t, ahoraMs);
+            return sla.status === 'vencido' || sla.status === 'alerta' || t.prioridad === 'Urgente';
+        });
+
+        // Vitrina (pedidos listos para retirar)
+        const enVitrina = activos.filter(t => t.estado === TrabajoEstado.VITRINA);
+
+        // Vitrina con > 48 horas sin retirar
+        const vitrinaEstancada = enVitrina.filter(t => {
+            const entrada = new Date(t.updated_at || t.fechaEntrada).getTime();
+            return (ahoraMs - entrada) / (1000 * 60 * 60 * 24) >= 2;
+        });
+
+        // En producción física (diseño o prensa)
+        const enProduccion = activos.filter(
+            t => t.estado === TrabajoEstado.PROCESO || t.estado === TrabajoEstado.EN_DISENO,
+        );
+
         return {
-            activos: activos.length,
-            enProduccion: enProduccion.length,
-            porCobrar: porCobrar.length,
-            totalCobrar: porCobrar.reduce((s, t) => s + t.saldo, 0),
-            entregadosHoy: entregadosHoy.length,
-            urgentes: activos.filter(t => t.prioridad === 'Urgente').length,
+            activosCount: activos.length,
+            cobranzaHoy,
+            totalPorCobrar,
+            conSaldoCount: conSaldo.length,
+            urgentesCount: urgentes.length,
+            urgentesList: urgentes.slice(0, 4),
+            enVitrinaCount: enVitrina.length,
+            vitrinaEstancada,
+            enProduccionCount: enProduccion.length,
+            entregadosHoyCount: entregadosHoy.length,
             totalClientes: clientes.length,
         };
-    }, [trabajos, clientes, activos]);
+    }, [trabajos, clientes, activos, ahoraMs, currentTime]);
 
-    const recentOrders = useMemo(
-        () => [...activos]
-            .sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime())
-            .slice(0, 8),
-        [activos],
-    );
+    // Pipeline de producción por estados
+    const pipeline = useMemo(() => {
+        const fases = [
+            { estado: TrabajoEstado.PENDIENTE, label: 'Pendiente', color: '#B45309', bg: '#FFFBEB', dot: '#FFC61A' },
+            { estado: TrabajoEstado.EN_DISENO, label: 'En Diseño', color: '#6D28D9', bg: '#F5F3FF', dot: '#8B5CF6' },
+            { estado: TrabajoEstado.PROCESO, label: 'En Prensa', color: '#16309B', bg: '#EEF1FC', dot: '#16309B' },
+            { estado: TrabajoEstado.VITRINA, label: 'En Vitrina', color: '#1B6E3E', bg: '#F2F7F2', dot: '#1B8A4B' },
+        ];
 
-    const carga = useMemo(() => {
-        const order = [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO, TrabajoEstado.PROCESO, TrabajoEstado.VITRINA];
-        const counts = order.map(e => ({ e, n: activos.filter(t => t.estado === e).length }));
-        const max = Math.max(1, ...counts.map(c => c.n));
-        return { counts, max };
+        return fases.map(f => {
+            const count = activos.filter(t => t.estado === f.estado).length;
+            const pct = activos.length > 0 ? Math.round((count / activos.length) * 100) : 0;
+            return { ...f, count, pct };
+        });
     }, [activos]);
 
-    const urgentes = useMemo(
-        () => activos.filter(t => t.prioridad === 'Urgente').slice(0, 3),
-        [activos],
-    );
+    // Filtrado de órdenes en el Bento principal
+    const filteredOrders = useMemo(() => {
+        let list = [...activos];
 
-    if (loading || !kpis) {
+        // Filtro por Tab
+        if (activeTab === 'urgentes') {
+            list = list.filter(t => {
+                const sla = calcularSla(t, ahoraMs);
+                return sla.status === 'vencido' || sla.status === 'alerta' || t.prioridad === 'Urgente';
+            });
+        } else if (activeTab === 'con_saldo') {
+            list = list.filter(t => t.saldo > 0);
+        } else if (activeTab === 'sri') {
+            list = list.filter(t => !!t.esSRI);
+        } else if (activeTab === 'prensa') {
+            list = list.filter(t => t.estado === TrabajoEstado.PROCESO);
+        }
+
+        // Búsqueda en vivo
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase().trim();
+            list = list.filter(t => {
+                const cli = clientesMap.get(t.clienteId);
+                const nombre = (cli ? cli.nombre : t.titular).toLowerCase();
+                const ordStr = String(t.orden);
+                return (
+                    nombre.includes(q) ||
+                    ordStr.includes(q) ||
+                    (t.tipo || '').toLowerCase().includes(q) ||
+                    (t.subtipo || '').toLowerCase().includes(q)
+                );
+            });
+        }
+
+        // Ordenar: primero los más recientes
+        return list.sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime()).slice(0, 10);
+    }, [activos, activeTab, searchQuery, clientesMap, ahoraMs]);
+
+    // Top 3 deudores prioritarios para cobro rápido
+    const topDeudores = useMemo(() => {
+        return [...activos]
+            .filter(t => t.saldo > 0)
+            .sort((a, b) => b.saldo - a.saldo)
+            .slice(0, 3);
+    }, [activos]);
+
+    if (loading || !metrics) {
         return (
-            <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: 40, height: 40, border: '2px solid #D7DDF0', borderTopColor: C.royal, borderRadius: 99, animation: 'spin 1s linear infinite', margin: '0 auto' }} />
-                    <p style={{ marginTop: 14, fontSize: 11, fontWeight: 700, color: C.faint, textTransform: 'uppercase', letterSpacing: '.2em' }}>Cargando datos…</p>
+                    <div
+                        style={{
+                            width: 44,
+                            height: 44,
+                            border: '3px solid #E4E8F4',
+                            borderTopColor: C.royal,
+                            borderRadius: '50%',
+                            animation: 'spin 0.9s linear infinite',
+                            margin: '0 auto',
+                        }}
+                    />
+                    <p
+                        style={{
+                            marginTop: 14,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: C.faint,
+                            textTransform: 'uppercase',
+                            letterSpacing: '.24em',
+                            fontFamily: MONO,
+                        }}
+                    >
+                        Sincronizando Centro de Producción…
+                    </p>
                 </div>
             </div>
         );
     }
 
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
-    const firstName = (currentUser?.nombre ?? 'Marcelo').split(' ')[0];
-
-    const kpiCards = [
-        { label: 'Órdenes activas', value: String(kpis.activos), hint: `${kpis.enProduccion} en producción`, color: C.royal },
-        { label: 'Urgentes', value: String(kpis.urgentes), hint: 'con entrega prioritaria', color: C.danger },
-        { label: 'Con saldo', value: String(kpis.porCobrar), hint: `${formatCurrency(kpis.totalCobrar)} por cobrar`, color: C.gold },
-        { label: 'Entregados hoy', value: String(kpis.entregadosHoy), hint: 'trabajos completados', color: '#1B8A4B' },
-        { label: 'Clientes', value: String(kpis.totalClientes), hint: 'en el directorio', color: '#A6AFC8' },
-    ];
+    const hour = currentTime.getHours();
+    const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const nombreAdmin = (currentUser?.nombre ?? 'Don Pedro').split(' ')[0];
 
     return (
-        <div style={{ padding: 'clamp(18px,2.2vw,30px) clamp(16px,2.4vw,32px) 96px' }}>
-            <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes pi-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}`}</style>
-            <div style={{ maxWidth: 1440, margin: '0 auto', animation: 'pi-rise .6s cubic-bezier(.2,.8,.2,1) both', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ padding: 'clamp(14px, 2.5vw, 28px) clamp(12px, 2vw, 32px) calc(96px + env(safe-area-inset-bottom))' }}>
+            <style>{`
+                @keyframes spin{to{transform:rotate(360deg)}}
+                .bento-hover{transition:transform .22s cubic-bezier(.2,1,.3,1),box-shadow .22s cubic-bezier(.2,1,.3,1),border-color .22s;}
+                .bento-hover:hover{transform:translateY(-3px);box-shadow:0 14px 34px -10px rgba(10,17,64,.12);border-color:#CBD5E1;}
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
 
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-                    <div>
-                        <p style={S.eyebrow}>{greeting}, {firstName}</p>
-                        <h1 style={S.h1}>Panel de Control</h1>
-                    </div>
-                    <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
-                        <button style={S.primaryBtn} onClick={() => navigate('/nuevo')}>Nueva Orden</button>
-                        <button style={S.outlineBtn} onClick={() => navigate('/kds')}>Ver Taller</button>
-                        <button style={S.outlineBtn} onClick={() => navigate('/cuentas')}>Cobrar</button>
-                    </div>
-                </div>
-
-                {/* KPIs — 2 col en celular, auto en pantallas grandes */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 12 }}>
-                    {kpiCards.map(k => (
-                        <div key={k.label} style={{ ...S.card, borderRadius: 14, padding: '17px 19px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>{k.label}</span>
-                                <span style={dot(k.color)} />
-                            </div>
-                            <div style={{ fontFamily: display, fontSize: 30, fontWeight: 600, letterSpacing: '-.04em', color: C.ink, marginTop: 8, lineHeight: 1 }}>{k.value}</div>
-                            <div style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>{k.hint}</div>
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}
+            >
+                {/* ── 1. HEADER EJECUTIVO RESPONSIVE ─────────────────────────────── */}
+                <motion.div
+                    variants={itemVariants}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: 14,
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <p style={S.eyebrow}>Centro de Mando · Zaruma</p>
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                    padding: '2px 8px',
+                                    borderRadius: 99,
+                                    fontSize: 9.5,
+                                    fontWeight: 700,
+                                    background: 'rgba(27,110,62,0.1)',
+                                    color: '#1B6E3E',
+                                    border: '1px solid rgba(27,110,62,0.2)',
+                                }}
+                            >
+                                <span style={{ position: 'relative', display: 'flex', width: 6, height: 6 }}>
+                                    <motion.span
+                                        animate={{ scale: [1, 2.4], opacity: [0.7, 0] }}
+                                        transition={{ repeat: Infinity, duration: 1.8, ease: 'easeOut' }}
+                                        style={{ position: 'absolute', inset: 0, borderRadius: 99, background: '#1B8A4B' }}
+                                    />
+                                    <span style={{ position: 'relative', width: 6, height: 6, borderRadius: 99, background: '#1B8A4B' }} />
+                                </span>
+                                En vivo
+                            </span>
                         </div>
-                    ))}
-                </div>
+                        <h1 style={{ ...S.h1, fontSize: 'clamp(21px, 4.5vw, 28px)', marginTop: 2 }}>
+                            {saludo}, {nombreAdmin}
+                        </h1>
+                        <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.muted }}>
+                            {metrics.activosCount} órdenes en curso · {metrics.urgentesCount > 0 ? (
+                                <span style={{ color: C.danger, fontWeight: 700 }}>
+                                    ⚠️ {metrics.urgentesCount} en riesgo
+                                </span>
+                            ) : (
+                                <span style={{ color: '#1B6E3E', fontWeight: 600 }}>
+                                    ✓ Taller al día
+                                </span>
+                            )}
+                        </p>
+                    </div>
 
-                {/* Main grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 16, alignItems: 'start' }}>
+                    {/* Botones de acción rápida en cabecera */}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', width: 'auto' }}>
+                        <motion.button
+                            whileHover={{ scale: 1.03, y: -2 }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '8px 14px',
+                                background: C.gold,
+                                color: C.ink,
+                                border: 'none',
+                                borderRadius: 10,
+                                fontSize: 12.5,
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                boxShadow: '0 6px 16px -6px rgba(255,198,26,.85)',
+                            }}
+                            onClick={() => navigate('/nuevo')}
+                        >
+                            <SparklesIcon className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Nueva Orden</span>
+                            <span className="sm:hidden">Nueva</span>
+                        </motion.button>
 
-                    {/* Órdenes recientes */}
-                    <div style={{ gridColumn: 'span 2', minWidth: 0, ...S.card, overflow: 'hidden' }}>
-                        <div style={{ padding: '17px 20px 14px', borderBottom: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-                            <div>
-                                <h2 style={S.h2}>Órdenes recientes</h2>
-                                <p style={{ margin: '3px 0 0', fontSize: 12, color: C.faint }}>{kpis.activos} trabajos en curso</p>
+                        <motion.button
+                            whileHover={{ scale: 1.03, y: -2 }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            style={{
+                                ...S.outlineBtn,
+                                padding: '8px 12px',
+                                borderRadius: 10,
+                                background: '#FFFFFF',
+                                fontSize: 12.5,
+                            }}
+                            onClick={() => setArqueoOpen(true)}
+                        >
+                            <WalletIcon className="w-3.5 h-3.5" style={{ color: C.royal }} />
+                            <span className="hidden sm:inline">Arqueo</span>
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.03, y: -2 }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            style={{
+                                ...S.outlineBtn,
+                                padding: '8px 12px',
+                                borderRadius: 10,
+                                background: '#FFFFFF',
+                                fontSize: 12.5,
+                            }}
+                            onClick={() => navigate('/kds')}
+                        >
+                            <MonitorIcon className="w-3.5 h-3.5" style={{ color: C.royal }} />
+                            <span className="hidden sm:inline">KDS</span>
+                        </motion.button>
+                    </div>
+                </motion.div>
+
+                {/* ── 2. HERO BENTO GRID (2 COLUMNAS EN MÓVIL, 4 EN DESKTOP) ─────── */}
+                <motion.div
+                    variants={itemVariants}
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
+                        gap: 10,
+                    }}
+                >
+                    {/* Tarjeta 1: Recaudado Hoy */}
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                        className="bento-hover"
+                        style={{
+                            ...S.card,
+                            padding: 'clamp(12px, 2vw, 18px)',
+                            borderRadius: 14,
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>
+                                Cobrado Hoy
+                            </span>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EEF1FC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <WalletIcon className="w-3.5 h-3.5" style={{ color: C.royal }} />
                             </div>
-                            <button style={S.softBtn} onClick={() => navigate('/trabajos')}>Ver todas →</button>
                         </div>
-                        <div style={{ overflowX: 'auto' }}>
-                            <div style={{ minWidth: 640 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr .9fr .8fr .8fr', padding: '10px 20px', background: C.surfaceAlt, borderBottom: `1px solid ${C.divider}` }}>
-                                    <span style={S.colHead}>Orden</span>
-                                    <span style={S.colHead}>Cliente / trabajo</span>
-                                    <span style={S.colHead}>Estado</span>
-                                    <span style={{ ...S.colHead, textAlign: 'right' }}>Saldo</span>
-                                    <span style={{ ...S.colHead, textAlign: 'right' }}>Entrega</span>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(20px, 4.2vw, 28px)', fontWeight: 700, letterSpacing: '-.03em', color: C.ink, marginTop: 6, lineHeight: 1 }}>
+                            {formatCurrency(metrics.cobranzaHoy)}
+                        </div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <span style={{ color: '#1B6E3E', fontWeight: 700 }}>+{metrics.entregadosHoyCount}</span> entregados
+                        </div>
+                    </motion.div>
+
+                    {/* Tarjeta 2: Cuentas por Cobrar */}
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                        className="bento-hover"
+                        style={{
+                            ...S.card,
+                            padding: 'clamp(12px, 2vw, 18px)',
+                            borderRadius: 14,
+                            borderLeft: `4px solid ${C.gold}`,
+                            cursor: 'pointer',
+                        }}
+                        onClick={() => navigate('/cuentas')}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>
+                                Por Cobrar
+                            </span>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <DollarIcon className="w-3.5 h-3.5" style={{ color: '#B45309' }} />
+                            </div>
+                        </div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(20px, 4.2vw, 28px)', fontWeight: 700, letterSpacing: '-.03em', color: '#B45309', marginTop: 6, lineHeight: 1 }}>
+                            {formatCurrency(metrics.totalPorCobrar)}
+                        </div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            en <b>{metrics.conSaldoCount}</b> órdenes
+                        </div>
+                    </motion.div>
+
+                    {/* Tarjeta 3: Taller & Urgencias con halo aura */}
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                        className="bento-hover"
+                        style={{
+                            ...S.card,
+                            padding: 'clamp(12px, 2vw, 18px)',
+                            borderRadius: 14,
+                            borderLeft: metrics.urgentesCount > 0 ? `4px solid ${C.danger}` : `4px solid ${C.borderStrong}`,
+                            cursor: 'pointer',
+                            position: 'relative',
+                        }}
+                        onClick={() => navigate('/kds')}
+                    >
+                        {metrics.urgentesCount > 0 && (
+                            <motion.div
+                                animate={{
+                                    boxShadow: [
+                                        '0 0 0 0px rgba(231,1,1,0)',
+                                        '0 0 0 3px rgba(231,1,1,0.14)',
+                                        '0 0 0 0px rgba(231,1,1,0)',
+                                    ],
+                                }}
+                                transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
+                                style={{ position: 'absolute', inset: 0, borderRadius: 14, pointerEvents: 'none' }}
+                            />
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>
+                                Taller Activo
+                            </span>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: metrics.urgentesCount > 0 ? '#FDEEEE' : '#EEF1FC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <PrinterIcon className="w-3.5 h-3.5" style={{ color: metrics.urgentesCount > 0 ? C.danger : C.royal }} />
+                            </div>
+                        </div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(20px, 4.2vw, 28px)', fontWeight: 700, letterSpacing: '-.03em', color: C.ink, marginTop: 6, lineHeight: 1 }}>
+                            {metrics.enProduccionCount}
+                        </div>
+                        <div style={{ fontSize: 11, color: metrics.urgentesCount > 0 ? C.danger : C.muted, marginTop: 6, fontWeight: metrics.urgentesCount > 0 ? 700 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {metrics.urgentesCount > 0 ? `⚠️ ${metrics.urgentesCount} urgentes` : 'En plazo'}
+                        </div>
+                    </motion.div>
+
+                    {/* Tarjeta 4: Listos en Vitrina */}
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                        className="bento-hover"
+                        style={{
+                            ...S.card,
+                            padding: 'clamp(12px, 2vw, 18px)',
+                            borderRadius: 14,
+                            borderLeft: `4px solid #1B8A4B`,
+                            cursor: 'pointer',
+                        }}
+                        onClick={() => navigate('/retiros')}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>
+                                En Vitrina
+                            </span>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F2F7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <BoxIcon className="w-3.5 h-3.5" style={{ color: '#1B8A4B' }} />
+                            </div>
+                        </div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(20px, 4.2vw, 28px)', fontWeight: 700, letterSpacing: '-.03em', color: '#1B6E3E', marginTop: 6, lineHeight: 1 }}>
+                            {metrics.enVitrinaCount}
+                        </div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {metrics.vitrinaEstancada.length > 0 ? (
+                                <span style={{ color: '#B45309', fontWeight: 600 }}>
+                                    {metrics.vitrinaEstancada.length} &gt; 48h
+                                </span>
+                            ) : (
+                                'Para retiro'
+                            )}
+                        </div>
+                    </motion.div>
+                </motion.div>
+
+                {/* ── 2.5. POWER STRIP: SWIPE HORIZONTAL EN MÓVIL / GRID EN PC ──── */}
+                <motion.div
+                    variants={itemVariants}
+                    className="hide-scrollbar"
+                    style={{
+                        display: 'flex',
+                        overflowX: 'auto',
+                        scrollSnapType: 'x mandatory',
+                        gap: 10,
+                        paddingBottom: 2,
+                    }}
+                >
+                    {/* 1. Mostrador Directo */}
+                    <motion.button
+                        whileHover={{ y: -2, scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        onClick={() => navigate('/nuevo')}
+                        style={{
+                            flexShrink: 0,
+                            minWidth: 155,
+                            scrollSnapAlign: 'start',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '10px 14px',
+                            borderRadius: 12,
+                            border: '1px solid #F4E3A8',
+                            background: '#FFFDF5',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            boxShadow: '0 3px 10px -4px rgba(255,198,26,.3)',
+                        }}
+                    >
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: C.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink, flexShrink: 0 }}>
+                            <SparklesIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 800, color: C.ink, whiteSpace: 'nowrap' }}>Nueva Orden</div>
+                            <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap' }}>Mostrador</div>
+                        </div>
+                    </motion.button>
+
+                    {/* 2. Solicitud SRI Rápida */}
+                    <motion.button
+                        whileHover={{ y: -2, scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        onClick={() => navigate('/nuevo?es_sri=true')}
+                        style={{
+                            flexShrink: 0,
+                            minWidth: 155,
+                            scrollSnapAlign: 'start',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '10px 14px',
+                            borderRadius: 12,
+                            border: `1px solid ${C.border}`,
+                            background: '#FFFFFF',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                        }}
+                    >
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: '#EEF1FC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.royal, flexShrink: 0 }}>
+                            <FileTextIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap' }}>Solicitud SRI</div>
+                            <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap' }}>Facturas y Notas</div>
+                        </div>
+                    </motion.button>
+
+                    {/* 3. Despacho Vitrina Express */}
+                    <motion.button
+                        whileHover={{ y: -2, scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        onClick={() => navigate('/retiros')}
+                        style={{
+                            flexShrink: 0,
+                            minWidth: 155,
+                            scrollSnapAlign: 'start',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '10px 14px',
+                            borderRadius: 12,
+                            border: `1px solid ${C.border}`,
+                            background: '#FFFFFF',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                        }}
+                    >
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F2F7F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B8A4B', flexShrink: 0 }}>
+                            <BoxIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap' }}>Despacho</div>
+                            <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap' }}>Entrega Express</div>
+                        </div>
+                    </motion.button>
+
+                    {/* 4. Arqueo de Turno */}
+                    <motion.button
+                        whileHover={{ y: -2, scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        onClick={() => setArqueoOpen(true)}
+                        style={{
+                            flexShrink: 0,
+                            minWidth: 155,
+                            scrollSnapAlign: 'start',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '10px 14px',
+                            borderRadius: 12,
+                            border: `1px solid ${C.border}`,
+                            background: '#FFFFFF',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                        }}
+                    >
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B45309', flexShrink: 0 }}>
+                            <WalletIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap' }}>Arqueo Caja</div>
+                            <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap' }}>Cuadre de plata</div>
+                        </div>
+                    </motion.button>
+
+                    {/* 5. Calculadora de Precios */}
+                    <motion.button
+                        whileHover={{ y: -2, scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        onClick={() => navigate('/calculadora')}
+                        style={{
+                            flexShrink: 0,
+                            minWidth: 155,
+                            scrollSnapAlign: 'start',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '10px 14px',
+                            borderRadius: 12,
+                            border: `1px solid ${C.border}`,
+                            background: '#FFFFFF',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                        }}
+                    >
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6D28D9', flexShrink: 0 }}>
+                            <CalculatorIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap' }}>Cotizador</div>
+                            <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap' }}>Pliegos y Resmas</div>
+                        </div>
+                    </motion.button>
+                </motion.div>
+
+                {/* ── 3. BENTO PRINCIPAL (ADAPTATIVO MÓVIL Y ESCRITORIO) ─────────── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 16, alignItems: 'start' }}>
+                    {/* ── COLUMNA IZQUIERDA: ÓRDENES VIVAS ────────────────────────── */}
+                    <motion.div
+                        variants={itemVariants}
+                        style={{
+                            gridColumn: 'span 2',
+                            minWidth: 0,
+                            ...S.card,
+                            borderRadius: 16,
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {/* Cabecera con pestañas y buscador */}
+                        <div style={{ padding: '14px 16px 12px', borderBottom: `1px solid ${C.divider}` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+                                <div>
+                                    <h2 style={{ ...S.h2, fontSize: 17 }}>Órdenes de Producción</h2>
+                                    <p style={{ margin: '1px 0 0', fontSize: 11.5, color: C.faint }}>
+                                        {metrics.activosCount} órdenes en flujo activo
+                                    </p>
                                 </div>
-                                {recentOrders.length === 0 ? (
-                                    <div style={{ padding: '40px 20px', textAlign: 'center', color: C.faint, fontSize: 13 }}>
-                                        Sin órdenes activas.{' '}
-                                        <button style={{ ...S.softBtn, marginLeft: 8 }} onClick={() => navigate('/nuevo')}>Crear primera orden</button>
+                                <motion.button
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    style={{ ...S.softBtn, fontSize: 11.5, padding: '6px 11px', borderRadius: 8 }}
+                                    onClick={() => navigate('/trabajos')}
+                                >
+                                    Ver todas →
+                                </motion.button>
+                            </div>
+
+                            {/* Pestañas de filtrado scrollables en móvil sin scrollbar */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                                <div className="hide-scrollbar" style={{ position: 'relative', display: 'flex', gap: 4, padding: 3, background: '#EEF1F8', borderRadius: 9, overflowX: 'auto', maxWidth: '100%' }}>
+                                    {[
+                                        { id: 'todas', label: `Todas (${activos.length})` },
+                                        { id: 'urgentes', label: `Urgentes (${metrics.urgentesCount})`, alert: metrics.urgentesCount > 0 },
+                                        { id: 'con_saldo', label: `Con Saldo (${metrics.conSaldoCount})` },
+                                        { id: 'sri', label: 'SRI' },
+                                        { id: 'prensa', label: 'En Prensa' },
+                                    ].map(tab => {
+                                        const isSelected = activeTab === tab.id;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id as FilterTab)}
+                                                style={{
+                                                    position: 'relative',
+                                                    zIndex: 1,
+                                                    padding: '5px 10px',
+                                                    borderRadius: 7,
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    color: isSelected ? '#FFFFFF' : C.body,
+                                                    fontSize: 11.5,
+                                                    fontWeight: isSelected ? 700 : 600,
+                                                    cursor: 'pointer',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 5,
+                                                    whiteSpace: 'nowrap',
+                                                    transition: 'color 0.2s',
+                                                }}
+                                            >
+                                                {isSelected && (
+                                                    <motion.div
+                                                        layoutId="dashboardTab"
+                                                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            inset: 0,
+                                                            background: C.royal,
+                                                            borderRadius: 7,
+                                                            zIndex: -1,
+                                                            boxShadow: '0 2px 8px rgba(22,48,155,0.25)',
+                                                        }}
+                                                    />
+                                                )}
+                                                {tab.alert && (
+                                                    <span style={{ width: 5, height: 5, borderRadius: 99, background: isSelected ? C.gold : C.danger }} />
+                                                )}
+                                                {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Buscador rápido */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 6,
+                                        padding: '5px 10px',
+                                        background: C.bg,
+                                        border: `1px solid ${C.borderStrong}`,
+                                        borderRadius: 8,
+                                        width: '100%',
+                                        maxWidth: 200,
+                                    }}
+                                >
+                                    <SearchIcon className="w-3.5 h-3.5" style={{ color: C.faint }} />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar orden…"
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        style={{
+                                            border: 'none',
+                                            background: 'transparent',
+                                            fontSize: 11.5,
+                                            color: C.ink,
+                                            outline: 'none',
+                                            width: '100%',
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── MODO MÓVIL: TARJETAS TÁCTILES PEPA (md:hidden) ─────────── */}
+                        <div className="md:hidden" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {filteredOrders.length === 0 ? (
+                                <div style={{ padding: '30px 10px', textAlign: 'center', color: C.faint, fontSize: 12.5 }}>
+                                    Sin órdenes en este filtro.{' '}
+                                    <button
+                                        style={{ ...S.softBtn, marginTop: 8 }}
+                                        onClick={() => {
+                                            setActiveTab('todas');
+                                            setSearchQuery('');
+                                        }}
+                                    >
+                                        Ver todas
+                                    </button>
+                                </div>
+                            ) : (
+                                <AnimatePresence mode="popLayout">
+                                    {filteredOrders.map((t, idx) => {
+                                        const cfg = estadoCfg(t.estado);
+                                        const sla = calcularSla(t, ahoraMs);
+                                        const cli = clientesMap.get(t.clienteId);
+                                        const telefono = cli?.telefono?.[0] || '';
+                                        const tieneSaldo = t.saldo > 0;
+
+                                        const msgCobro = `Estimado(a) ${cli?.nombre || t.titular}, le saludamos de Imprenta Córdova. Le recordamos que su orden #${String(t.orden).padStart(4, '0')} (${t.tipo}) tiene un saldo pendiente de ${formatCurrency(t.saldo)}. Puede cancelar al retirar o por transferencia. ¡Muchas gracias!`;
+                                        const waCobroUrl = telefono ? generateWhatsAppLink(telefono, msgCobro) : '';
+
+                                        return (
+                                            <motion.div
+                                                key={t.id}
+                                                layout
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                                transition={{ duration: 0.2, delay: idx * 0.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => navigate(`/trabajos/${t.id}`)}
+                                                style={{
+                                                    background: '#FFFFFF',
+                                                    borderRadius: 14,
+                                                    border: `1px solid ${C.border}`,
+                                                    borderLeft: `4px solid ${sla.status === 'vencido' ? C.danger : cfg.dot}`,
+                                                    padding: '13px 14px',
+                                                    boxShadow: '0 2px 8px rgba(10,17,64,0.03)',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                {/* Top row: Orden + Estado + SLA */}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                                                    <span style={{ fontSize: 12.5, fontFamily: MONO, fontWeight: 800, color: C.ink }}>
+                                                        #{String(t.orden).padStart(4, '0')}
+                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        <span style={estadoPill(cfg)}>
+                                                            <span style={dot(cfg.dot, 5)} />
+                                                            {cfg.label}
+                                                        </span>
+                                                        {sla.status !== 'sin_fecha' && (
+                                                            <span style={{ fontSize: 10, fontWeight: 700, color: sla.color, background: sla.bg, padding: '2px 6px', borderRadius: 5, border: `1px solid ${sla.border}` }}>
+                                                                {sla.detalle}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Title & Product */}
+                                                <div style={{ marginTop: 7 }}>
+                                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        {t.titular}
+                                                    </div>
+                                                    <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1 }}>
+                                                        {t.tipo} {t.subtipo ? `· ${t.subtipo}` : ''} {t.cantidad ? `(${t.cantidad} u.)` : ''}
+                                                    </div>
+                                                </div>
+
+                                                {/* Bottom Action Bar */}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 11, paddingTop: 9, borderTop: `1px solid ${C.rowLine}` }}>
+                                                    <div>
+                                                        <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.faint, letterSpacing: '.08em' }}>Saldo: </span>
+                                                        <span style={{ fontSize: 13.5, fontFamily: MONO, fontWeight: 800, color: tieneSaldo ? '#B45309' : '#1B8A4B' }}>
+                                                            {tieneSaldo ? formatCurrency(t.saldo) : 'Pagado'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={e => e.stopPropagation()}>
+                                                        {tieneSaldo && waCobroUrl && (
+                                                            <motion.a
+                                                                whileHover={{ scale: 1.08 }}
+                                                                whileTap={{ scale: 0.9 }}
+                                                                href={waCobroUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                style={{
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 5,
+                                                                    padding: '7px 11px',
+                                                                    borderRadius: 8,
+                                                                    background: '#25D366',
+                                                                    color: '#FFFFFF',
+                                                                    fontSize: 11,
+                                                                    fontWeight: 700,
+                                                                    textDecoration: 'none',
+                                                                    boxShadow: '0 3px 8px -2px rgba(37,211,102,.4)',
+                                                                }}
+                                                            >
+                                                                <WhatsAppIcon className="w-3.5 h-3.5" /> Cobrar
+                                                            </motion.a>
+                                                        )}
+
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.08 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            type="button"
+                                                            title="Ver Nota"
+                                                            onClick={() => window.open(`/#/nota-de-venta/${t.id}`, '_blank')}
+                                                            style={{
+                                                                padding: '7px 9px',
+                                                                borderRadius: 8,
+                                                                background: '#EEF1FC',
+                                                                border: 'none',
+                                                                color: C.royal,
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                            }}
+                                                        >
+                                                            <ReceiptIcon className="w-4 h-4" />
+                                                        </motion.button>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            )}
+                        </div>
+
+                        {/* ── MODO ESCRITORIO: TABLA GRID DE ALTA DENSIDAD (hidden md:block) ── */}
+                        <div className="hidden md:block" style={{ overflowX: 'auto' }}>
+                            <div style={{ minWidth: 680 }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '95px 1.5fr 1fr .85fr 1fr 90px',
+                                        padding: '10px 22px',
+                                        background: C.surfaceAlt,
+                                        borderBottom: `1px solid ${C.divider}`,
+                                        fontSize: 10,
+                                        fontWeight: 800,
+                                        letterSpacing: '.14em',
+                                        textTransform: 'uppercase',
+                                        color: C.faint,
+                                    }}
+                                >
+                                    <span>Orden</span>
+                                    <span>Cliente / Trabajo</span>
+                                    <span>Estado</span>
+                                    <span style={{ textAlign: 'right' }}>Saldo</span>
+                                    <span style={{ textAlign: 'right' }}>Compromiso</span>
+                                    <span style={{ textAlign: 'center' }}>Acción</span>
+                                </div>
+
+                                {filteredOrders.length === 0 ? (
+                                    <div style={{ padding: '48px 20px', textAlign: 'center', color: C.faint, fontSize: 13 }}>
+                                        No hay órdenes para el filtro seleccionado.{' '}
+                                        <button
+                                            style={{ ...S.softBtn, marginLeft: 8 }}
+                                            onClick={() => {
+                                                setActiveTab('todas');
+                                                setSearchQuery('');
+                                            }}
+                                        >
+                                            Restablecer filtros
+                                        </button>
                                     </div>
-                                ) : recentOrders.map(t => {
-                                    const cfg = ESTADO[t.estado] ?? ESTADO[TrabajoEstado.PENDIENTE];
-                                    return (
-                                        <div
-                                            key={t.id}
-                                            onClick={() => navigate(`/trabajos/${t.id}`)}
-                                            style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr .9fr .8fr .8fr', alignItems: 'center', padding: '13px 20px', borderBottom: `1px solid ${C.rowLine}`, cursor: 'pointer' }}
-                                        >
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                                                <span style={dot(t.prioridad === 'Urgente' ? C.danger : C.borderStrong, 6)} />
-                                                <span style={{ fontSize: 12.5, fontFamily: mono, color: C.ink }}>#{String(t.orden).padStart(4, '0')}</span>
+                                ) : (
+                                    <AnimatePresence mode="popLayout">
+                                        {filteredOrders.map((t, idx) => {
+                                            const cfg = estadoCfg(t.estado);
+                                            const sla = calcularSla(t, ahoraMs);
+                                            const cli = clientesMap.get(t.clienteId);
+                                            const telefono = cli?.telefono?.[0] || '';
+                                            const tieneSaldo = t.saldo > 0;
+
+                                            const msgCobro = `Estimado(a) ${cli?.nombre || t.titular}, le saludamos de Imprenta Córdova. Le recordamos que su orden #${String(t.orden).padStart(4, '0')} (${t.tipo}) tiene un saldo pendiente de ${formatCurrency(t.saldo)}. Puede cancelar al retirar o por transferencia. ¡Muchas gracias!`;
+                                            const waCobroUrl = telefono ? generateWhatsAppLink(telefono, msgCobro) : '';
+
+                                            return (
+                                                <motion.div
+                                                    key={t.id}
+                                                    layout
+                                                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.96 }}
+                                                    transition={{ duration: 0.22, delay: idx * 0.025 }}
+                                                    whileHover={{
+                                                        x: 5,
+                                                        backgroundColor: '#F7FAFF',
+                                                        transition: { duration: 0.15 },
+                                                    }}
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '95px 1.5fr 1fr .85fr 1fr 90px',
+                                                        alignItems: 'center',
+                                                        padding: '13px 22px',
+                                                        borderBottom: `1px solid ${C.rowLine}`,
+                                                        cursor: 'pointer',
+                                                    }}
+                                                    onClick={() => navigate(`/trabajos/${t.id}`)}
+                                                >
+                                                    {/* Número de orden con indicador urgente */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                        <span
+                                                            style={{
+                                                                width: 7,
+                                                                height: 7,
+                                                                borderRadius: 99,
+                                                                background: sla.status === 'vencido' ? C.danger : t.prioridad === 'Urgente' ? C.danger : C.borderStrong,
+                                                            }}
+                                                            className={t.prioridad === 'Urgente' ? 'animate-pulse' : ''}
+                                                        />
+                                                        <span style={{ fontSize: 13, fontFamily: MONO, fontWeight: 700, color: C.ink }}>
+                                                            #{String(t.orden).padStart(4, '0')}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Cliente y producto */}
+                                                    <div style={{ minWidth: 0, paddingRight: 10 }}>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            {t.titular}
+                                                        </div>
+                                                        <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            {t.tipo} {t.subtipo ? `· ${t.subtipo}` : ''} {t.cantidad ? `(${t.cantidad} u.)` : ''}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Estado */}
+                                                    <div>
+                                                        <span style={estadoPill(cfg)}>
+                                                            <span style={dot(cfg.dot, 6)} />
+                                                            {cfg.label}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Saldo con color vivo */}
+                                                    <div style={{ textAlign: 'right' }}>
+                                                        <span
+                                                            style={{
+                                                                fontSize: 13,
+                                                                fontFamily: MONO,
+                                                                fontWeight: tieneSaldo ? 700 : 500,
+                                                                color: tieneSaldo ? '#B45309' : '#1B8A4B',
+                                                            }}
+                                                        >
+                                                            {tieneSaldo ? formatCurrency(t.saldo) : 'Pagado'}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Compromiso / SLA */}
+                                                    <div style={{ textAlign: 'right' }}>
+                                                        {sla.status !== 'sin_fecha' ? (
+                                                            <span
+                                                                style={{
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 4,
+                                                                    padding: '2px 8px',
+                                                                    borderRadius: 6,
+                                                                    fontSize: 10.5,
+                                                                    fontWeight: 700,
+                                                                    background: sla.bg,
+                                                                    color: sla.color,
+                                                                    border: `1px solid ${sla.border}`,
+                                                                }}
+                                                            >
+                                                                <span style={{ width: 5, height: 5, borderRadius: 99, background: sla.dot }} />
+                                                                {sla.detalle}
+                                                            </span>
+                                                        ) : (
+                                                            <span style={{ fontSize: 11.5, color: C.faint }}>
+                                                                {tiempoEnEtapa(t, ahoraMs)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Acciones directas (WhatsApp con resorte o Recibo) */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
+                                                        {tieneSaldo && waCobroUrl ? (
+                                                            <motion.a
+                                                                whileHover={{ scale: 1.25, rotate: [0, -10, 10, 0] }}
+                                                                whileTap={{ scale: 0.88 }}
+                                                                href={waCobroUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                title="Cobrar saldo por WhatsApp"
+                                                                style={{
+                                                                    width: 32,
+                                                                    height: 32,
+                                                                    borderRadius: 9,
+                                                                    background: '#25D366',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    color: '#FFFFFF',
+                                                                    textDecoration: 'none',
+                                                                    boxShadow: '0 4px 10px -2px rgba(37,211,102,.4)',
+                                                                }}
+                                                            >
+                                                                <WhatsAppIcon className="w-4 h-4" />
+                                                            </motion.a>
+                                                        ) : null}
+
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.2 }}
+                                                            whileTap={{ scale: 0.88 }}
+                                                            type="button"
+                                                            title="Ver Nota de Venta"
+                                                            onClick={() => window.open(`/#/nota-de-venta/${t.id}`, '_blank')}
+                                                            style={{
+                                                                width: 32,
+                                                                height: 32,
+                                                                borderRadius: 9,
+                                                                background: '#EEF1FC',
+                                                                border: 'none',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: C.royal,
+                                                                cursor: 'pointer',
+                                                            }}
+                                                        >
+                                                            <ReceiptIcon className="w-4 h-4" />
+                                                        </motion.button>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </AnimatePresence>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* ── COLUMNA DERECHA: PIPELINE & COBRANZA ─────────────────────── */}
+                    <motion.div
+                        variants={itemVariants}
+                        style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}
+                    >
+                        {/* 1. Embudo de Producción (Pipeline KDS) */}
+                        <motion.div
+                            whileHover={{ y: -3 }}
+                            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                            style={{ ...S.card, padding: '16px 18px', borderRadius: 16 }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <h2 style={{ ...S.h2, fontSize: 15 }}>Embudo de Taller</h2>
+                                <span style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, color: C.royal }}>
+                                    {activos.length} activas
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {pipeline.map(f => (
+                                    <motion.div
+                                        key={f.estado}
+                                        whileHover={{ x: 3 }}
+                                        transition={{ duration: 0.15 }}
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => {
+                                            if (f.estado === TrabajoEstado.VITRINA) navigate('/retiros');
+                                            else navigate('/kds');
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 600, color: C.body }}>
+                                                <span style={dot(f.dot, 6)} />
+                                                {f.label}
                                             </span>
-                                            <span style={{ minWidth: 0 }}>
-                                                <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.titular}</span>
-                                                <span style={{ display: 'block', fontSize: 11.5, color: C.faint, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.tipo}{t.subtipo ? ` · ${t.subtipo}` : ''}</span>
+                                            <span style={{ fontSize: 11.5, fontFamily: MONO, fontWeight: 700, color: C.ink }}>
+                                                {f.count}
                                             </span>
-                                            <span><span style={pill(cfg)}><span style={dot(cfg.dot, 6)} />{cfg.label}</span></span>
-                                            <span style={{ textAlign: 'right', fontSize: 12.5, fontFamily: mono, color: t.saldo > 0 ? C.ink : C.faint }}>{formatCurrency(t.saldo)}</span>
-                                            <span style={{ textAlign: 'right', fontSize: 12, color: C.muted }}>{fmtEntrega(t.fechaEntrega)}</span>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Columna derecha */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
-
-                        {/* Carga por estado */}
-                        <div style={{ ...S.card, padding: '18px 20px' }}>
-                            <h2 style={{ ...S.h2, fontSize: 16, marginBottom: 14 }}>Carga por estado</h2>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-                                {carga.counts.map(({ e, n }) => {
-                                    const cfg = ESTADO[e];
-                                    return (
-                                        <div key={e}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 5 }}>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 600, color: C.body }}>
-                                                    <span style={dot(cfg.dot)} />{cfg.label}
-                                                </span>
-                                                <span style={{ fontSize: 12, fontFamily: mono, color: C.ink }}>{n}</span>
-                                            </div>
-                                            <div style={{ height: 6, background: '#F2F4FA', borderRadius: 99, overflow: 'hidden' }}>
-                                                <div style={{ height: '100%', borderRadius: 99, background: cfg.dot, width: `${Math.round((n / carga.max) * 100)}%` }} />
-                                            </div>
+                                        <div style={{ height: 6, background: '#EEF1F8', borderRadius: 99, overflow: 'hidden' }}>
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${f.pct}%` }}
+                                                transition={{ type: 'spring', damping: 18, stiffness: 85 }}
+                                                style={{ height: '100%', borderRadius: 99, background: f.dot }}
+                                            />
                                         </div>
-                                    );
-                                })}
+                                    </motion.div>
+                                ))}
                             </div>
-                        </div>
+                        </motion.div>
 
-                        {/* Urgentes hoy */}
-                        <div style={{ background: C.ink, borderRadius: 16, padding: '18px 20px', color: '#fff' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span className="animate-pulse" style={dot(C.danger, 7)} />
-                                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: '#93A0C8' }}>Urgentes hoy</span>
+                        {/* 2. Top Deudores Prioritarios (WhatsApp 1-clic) */}
+                        <motion.div
+                            whileHover={{ y: -3 }}
+                            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                            style={{ ...S.card, padding: '16px 18px', borderRadius: 16 }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
+                                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>
+                                    Cobro Prioritario
+                                </div>
+                                <button
+                                    style={{ border: 'none', background: 'transparent', color: C.royal, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                                    onClick={() => navigate('/cuentas')}
+                                >
+                                    Ver todos →
+                                </button>
                             </div>
-                            <div style={{ fontFamily: display, fontSize: 30, fontWeight: 600, letterSpacing: '-.04em', marginTop: 8, lineHeight: 1 }}>{kpis.urgentes}</div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 14 }}>
-                                {urgentes.length === 0 ? (
-                                    <div style={{ paddingTop: 9, borderTop: '1px solid rgba(255,255,255,.12)', fontSize: 12, color: '#93A0C8' }}>Sin urgencias pendientes.</div>
-                                ) : urgentes.map(t => {
-                                    const cfg = ESTADO[t.estado] ?? ESTADO[TrabajoEstado.PENDIENTE];
-                                    return (
-                                        <div
-                                            key={t.id}
-                                            onClick={() => navigate(`/trabajos/${t.id}`)}
-                                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 9, borderTop: '1px solid rgba(255,255,255,.12)', cursor: 'pointer' }}
-                                        >
-                                            <span style={{ minWidth: 0 }}>
-                                                <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.titular}</span>
-                                                <span style={{ display: 'block', fontSize: 11, color: '#93A0C8', fontFamily: mono, marginTop: 1 }}>#{String(t.orden).padStart(4, '0')} · {fmtEntrega(t.fechaEntrega)}</span>
-                                            </span>
-                                            <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: C.gold }}>{cfg.label}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
 
-                        {/* Por cobrar */}
-                        <div style={{ ...S.card, padding: '18px 20px' }}>
-                            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: C.faint }}>Por cobrar</div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                                <span style={{ fontFamily: display, fontSize: 28, fontWeight: 600, letterSpacing: '-.04em', color: C.royal }}>{formatCurrency(kpis.totalCobrar)}</span>
-                                <span style={{ fontSize: 12, color: C.faint }}>en {kpis.porCobrar} órdenes</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                                {topDeudores.length === 0 ? (
+                                    <div style={{ fontSize: 11.5, color: C.muted, padding: '6px 0' }}>
+                                        Sin saldos pendientes en este momento.
+                                    </div>
+                                ) : (
+                                    topDeudores.map(t => {
+                                        const cli = clientesMap.get(t.clienteId);
+                                        const telefono = cli?.telefono?.[0] || '';
+                                        const msgCobro = `Estimado(a) ${cli?.nombre || t.titular}, le saludamos de Imprenta Córdova. Su trabajo #${String(t.orden).padStart(4, '0')} tiene un saldo pendiente de ${formatCurrency(t.saldo)}. ¿Desea coordinar el pago y retiro? Muchas gracias.`;
+                                        const waCobroUrl = telefono ? generateWhatsAppLink(telefono, msgCobro) : '';
+
+                                        return (
+                                            <motion.div
+                                                key={t.id}
+                                                whileHover={{ x: 3 }}
+                                                transition={{ duration: 0.15 }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    gap: 8,
+                                                    padding: '8px 10px',
+                                                    background: C.surfaceAlt,
+                                                    borderRadius: 10,
+                                                    border: `1px solid ${C.border}`,
+                                                }}
+                                            >
+                                                <div style={{ minWidth: 0, flex: 1 }}>
+                                                    <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        {t.titular}
+                                                    </div>
+                                                    <div style={{ fontSize: 10.5, color: C.faint, fontFamily: MONO }}>
+                                                        #{String(t.orden).padStart(4, '0')} · {t.tipo}
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                                    <div style={{ fontSize: 12.5, fontFamily: MONO, fontWeight: 800, color: '#B45309' }}>
+                                                        {formatCurrency(t.saldo)}
+                                                    </div>
+                                                </div>
+
+                                                {waCobroUrl && (
+                                                    <motion.a
+                                                        whileHover={{ scale: 1.25, rotate: [0, -10, 10, 0] }}
+                                                        whileTap={{ scale: 0.88 }}
+                                                        href={waCobroUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        title="Cobrar por WhatsApp"
+                                                        style={{
+                                                            width: 28,
+                                                            height: 28,
+                                                            borderRadius: 7,
+                                                            background: '#25D366',
+                                                            color: '#fff',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            textDecoration: 'none',
+                                                            flexShrink: 0,
+                                                            boxShadow: '0 3px 8px -1px rgba(37,211,102,.4)',
+                                                        }}
+                                                    >
+                                                        <WhatsAppIcon className="w-3.5 h-3.5" />
+                                                    </motion.a>
+                                                )}
+                                            </motion.div>
+                                        );
+                                    })
+                                )}
                             </div>
-                            <button style={{ ...S.softBtn, width: '100%', marginTop: 14, padding: 11, borderRadius: 10, fontSize: 13 }} onClick={() => navigate('/cuentas')}>
-                                Ir a cuentas por cobrar
-                            </button>
-                        </div>
-                    </div>
+                        </motion.div>
+
+                        {/* 3. Vitrina Estancada (> 48 horas listas) con borde reactivo */}
+                        {metrics.vitrinaEstancada.length > 0 && (
+                            <motion.div
+                                animate={{
+                                    borderColor: [
+                                        'rgba(255,198,26,0.3)',
+                                        'rgba(255,198,26,0.7)',
+                                        'rgba(255,198,26,0.3)',
+                                    ],
+                                }}
+                                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                                style={{
+                                    background: C.ink,
+                                    borderRadius: 16,
+                                    padding: '16px 18px',
+                                    color: '#FFFFFF',
+                                    border: '1px solid rgba(255,198,26,0.3)',
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: 99, background: C.gold }} className="animate-pulse" />
+                                        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: C.gold }}>
+                                            Vitrina por Despachar
+                                        </span>
+                                    </div>
+                                    <span style={{ fontSize: 10.5, fontFamily: MONO, color: '#C2CAE6' }}>
+                                        {metrics.vitrinaEstancada.length} listos
+                                    </span>
+                                </div>
+
+                                <p style={{ margin: '6px 0 10px', fontSize: 11.5, color: '#C2CAE6', lineHeight: 1.4 }}>
+                                    Hay pedidos listos ocupando vitrina. Avisar por WhatsApp:
+                                </p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                    {metrics.vitrinaEstancada.slice(0, 3).map(t => {
+                                        const cli = clientesMap.get(t.clienteId);
+                                        const telefono = cli?.telefono?.[0] || '';
+                                        const msgRetiro = `Estimado(a) ${cli?.nombre || t.titular}, le saludamos de Imprenta Córdova para informarle que su orden #${String(t.orden).padStart(4, '0')} (${t.tipo}) ya está LISTA en vitrina para retiro en nuestro local. ¡Le esperamos!`;
+                                        const waUrl = telefono ? generateWhatsAppLink(telefono, msgRetiro) : '';
+
+                                        return (
+                                            <motion.div
+                                                key={t.id}
+                                                whileHover={{ x: 3 }}
+                                                transition={{ duration: 0.15 }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    padding: '7px 9px',
+                                                    borderRadius: 8,
+                                                    background: 'rgba(255,255,255,0.07)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                }}
+                                            >
+                                                <div style={{ minWidth: 0, flex: 1 }}>
+                                                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        {t.titular}
+                                                    </div>
+                                                    <div style={{ fontSize: 10, color: '#9AA6CE', fontFamily: MONO }}>
+                                                        #{String(t.orden).padStart(4, '0')}
+                                                    </div>
+                                                </div>
+
+                                                {waUrl && (
+                                                    <motion.a
+                                                        whileHover={{ scale: 1.15, x: 2 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        href={waUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            fontSize: 10.5,
+                                                            fontWeight: 700,
+                                                            color: C.gold,
+                                                            textDecoration: 'none',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 3,
+                                                        }}
+                                                    >
+                                                        Avisar <ArrowRightIcon className="w-3 h-3" />
+                                                    </motion.a>
+                                                )}
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    style={{
+                                        width: '100%',
+                                        marginTop: 10,
+                                        padding: '8px',
+                                        borderRadius: 8,
+                                        border: '1px solid rgba(255,198,26,0.4)',
+                                        background: 'rgba(255,198,26,0.15)',
+                                        color: C.gold,
+                                        fontSize: 11.5,
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                    }}
+                                    onClick={() => navigate('/retiros')}
+                                >
+                                    Ir a Módulo de Despacho
+                                </motion.button>
+                            </motion.div>
+                        )}
+                    </motion.div>
                 </div>
-            </div>
+            </motion.div>
+
+            {/* Modal de Arqueo de Caja flotante */}
+            <ModalArqueoCaja
+                isOpen={arqueoOpen}
+                onClose={() => setArqueoOpen(false)}
+                userName={currentUser?.nombre || 'Don Pedro'}
+            />
         </div>
     );
 };

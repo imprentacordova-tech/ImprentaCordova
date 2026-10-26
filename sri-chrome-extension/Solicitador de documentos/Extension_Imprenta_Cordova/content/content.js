@@ -450,10 +450,13 @@ function parseSRIDateToISO(dateStr) {
 }
 
 // -------------------------------------------------------------
-// SUPABASE REAL-TIME CLOUD SYNC (PUBLIC ANON KEY - SAFE CLIENT)
+// SINCRONIZACIÓN EN LA NUBE — vía backend (Render)
 // -------------------------------------------------------------
-const SUPABASE_URL = 'https://keilxgrrevfsvyxufecz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNTQyNjUsImV4cCI6MjA5MTkzMDI2NX0.5_Z0qTjY2Rj-a3h6tFw-yW1j79mE0gN4e74C93d84f0';
+// Antes esto escribía directo en Supabase con la anon key. Pero TODAS las políticas
+// RLS exigen `get_user_role()`, que lee `auth.uid()`: para una petición `anon` eso es
+// NULL, así que ninguna política se cumplía y las escrituras fallaban en silencio.
+// Ahora pasan por el backend (cordovaApi.js), que sí puede escribir con la service_role
+// sin exponerla dentro del paquete de la extensión.
 
 let currentSyncedTrabajoId = null;
 let currentSyncedClienteId = null;
@@ -479,20 +482,10 @@ async function autoSyncToSupabase(orderData) {
         actividades: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
       };
 
-      const clientRes = await fetch(`${SUPABASE_URL}/rest/v1/clientes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Prefer': 'resolution=merge-duplicates,return=representation'
-        },
-        body: JSON.stringify(clientPayload)
-      });
+      const clientRes = await CordovaApi.post('/api/v1/clientes/upsert', clientPayload);
 
-      if (clientRes.ok) {
-        const clientData = await clientRes.json();
-        clienteId = clientData?.[0]?.id || null;
+      if (clientRes && clientRes.cliente) {
+        clienteId = clientRes.cliente.id || null;
         currentSyncedClienteId = clienteId;
       }
     }
@@ -518,20 +511,10 @@ async function autoSyncToSupabase(orderData) {
       fecha_vencimiento: parseSRIDateToISO(orderData.caducidad)
     };
 
-    const trabajoRes = await fetch(`${SUPABASE_URL}/rest/v1/trabajos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify(trabajoPayload)
-    });
+    const trabajoRes = await CordovaApi.post('/api/v1/trabajos/crear', trabajoPayload);
 
-    if (trabajoRes.ok) {
-      const trabajoData = await trabajoRes.json();
-      currentSyncedTrabajoId = trabajoData?.[0]?.id || null;
+    if (trabajoRes && trabajoRes.trabajo) {
+      currentSyncedTrabajoId = trabajoRes.trabajo.id || null;
       return true;
     }
   } catch(e) {
@@ -553,15 +536,9 @@ async function updateSupabaseOrderRefinement(orderData) {
         actividades: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
       };
       
-      const filterQuery = currentSyncedClienteId ? `id=eq.${currentSyncedClienteId}` : `ruc=eq.${orderData.clientRuc}`;
-      await fetch(`${SUPABASE_URL}/rest/v1/clientes?${filterQuery}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(clientUpdate)
+      await CordovaApi.post('/api/v1/clientes/actualizar', {
+        ...(currentSyncedClienteId ? { id: currentSyncedClienteId } : { ruc: orderData.clientRuc }),
+        cambios: clientUpdate
       });
     }
 
@@ -575,14 +552,9 @@ async function updateSupabaseOrderRefinement(orderData) {
         actividad_seleccionada: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase()
       };
 
-      await fetch(`${SUPABASE_URL}/rest/v1/trabajos?id=eq.${currentSyncedTrabajoId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(trabajoUpdate)
+      await CordovaApi.post('/api/v1/trabajos/actualizar', {
+        id: currentSyncedTrabajoId,
+        cambios: trabajoUpdate
       });
     }
   } catch(e) {
@@ -594,8 +566,9 @@ async function updateSupabaseOrderRefinement(orderData) {
 // COMPLETION DRAWER (RIGHT-SIDE SMART PANEL)
 // -------------------------------------------------------------
 function showCordovaSuccessModal(finalData, blocks) {
-  chrome.storage.local.get(['cordova_orders'], (result) => {
+  chrome.storage.local.get(['cordova_orders', 'cordova_preferred_print_model'], (result) => {
     const orders = result.cordova_orders || [];
+    let selectedModel = result.cordova_preferred_print_model || 'sri-sobre-preimpreso';
     const clientRuc = finalData.cordovaClientRuc || '';
     const clientOrders = orders.filter(o => o.clientRuc === clientRuc);
     const lastOrder = clientOrders.length > 0 ? clientOrders[clientOrders.length - 1] : null;
@@ -725,6 +698,26 @@ function showCordovaSuccessModal(finalData, blocks) {
               </div>
               <input type="number" id="cdv-drawer-abono-manual" value="${customAbonoVal}" placeholder="$" style="width: 55px; display: ${selectedAbonoVal === 'custom' ? 'inline-block' : 'none'}; padding: 4px 6px; font-size: 11px; border-radius: 6px; border: 1.5px solid #2563eb; text-align: center;" min="1" step="0.01">
             </div>
+          <!-- MODELO DE SOLICITUD SRI (LAS 3 VERSIONES) -->
+          <div style="margin-top: 10px; margin-bottom: 8px;">
+            <div class="drawer-field-lbl" style="font-weight: 800; color: #0f172a; display: flex; justify-content: space-between; align-items: center;">
+              <span>Formato de Solicitud SRI:</span>
+              <span style="font-size: 8.5px; color: #b45309; background: #fef3c7; padding: 1px 5px; border-radius: 4px; font-weight: 700;">10 Blocks en stock</span>
+            </div>
+            <div class="drawer-segment-group" id="cdv-drawer-model" style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+              <button class="drawer-segment-btn ${selectedModel === 'sri-sobre-preimpreso' ? 'active' : ''}" data-val="sri-sobre-preimpreso" style="text-align: left; padding: 5px 8px; font-size: 10.5px; border-radius: 6px; display: flex; justify-content: space-between;">
+                <strong>📦 1. Sobre Preimpreso</strong>
+                <span style="font-size: 9px; opacity: 0.8;">(Gasta 10 Blocks)</span>
+              </button>
+              <button class="drawer-segment-btn ${selectedModel === 'sri-arte-completo' ? 'active' : ''}" data-val="sri-arte-completo" style="text-align: left; padding: 5px 8px; font-size: 10.5px; border-radius: 6px; display: flex; justify-content: space-between;">
+                <strong>📄 2. Clásico Completo</strong>
+                <span style="font-size: 9px; opacity: 0.8;">(Hoja en Blanco)</span>
+              </button>
+              <button class="drawer-segment-btn ${selectedModel === 'sri-moderno' ? 'active' : ''}" data-val="sri-moderno" style="text-align: left; padding: 5px 8px; font-size: 10.5px; border-radius: 6px; display: flex; justify-content: space-between;">
+                <strong>✨ 3. Evolución Moderna</strong>
+                <span style="font-size: 9px; opacity: 0.8;">(Full Pro con QR)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -808,6 +801,16 @@ function showCordovaSuccessModal(finalData, blocks) {
       });
     });
 
+    // Model selection buttons
+    document.querySelectorAll('#cdv-drawer-model .drawer-segment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#cdv-drawer-model .drawer-segment-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedModel = btn.dataset.val;
+        chrome.storage.local.set({ cordova_preferred_print_model: selectedModel });
+      });
+    });
+
     if (inputAbonoManual) {
       inputAbonoManual.addEventListener('input', updateFinancials);
     }
@@ -837,6 +840,7 @@ function showCordovaSuccessModal(finalData, blocks) {
         docType: finalData.cordovaDocType || '1',
         blocks: blocks,
         docSize: selectedSize,
+        model: selectedModel,
         activity: editedActivity || "Comercio / Servicios General",
         clientPhone: editedPhone || "Dictado / Sin teléfono",
         clientEmail: editedEmail,
@@ -864,7 +868,7 @@ function showCordovaSuccessModal(finalData, blocks) {
           let finalAbono = selectedAbonoVal === 'custom' && inputAbonoManual ? (parseFloat(inputAbonoManual.value) || 0) : (parseFloat(selectedAbonoVal) || 0);
 
           const params = new URLSearchParams({
-            mode: 'sri',
+            mode: selectedModel || 'sri-sobre-preimpreso',
             ruc: ruc,
             name: editedName,
             activity: editedActivity,
@@ -878,7 +882,7 @@ function showCordovaSuccessModal(finalData, blocks) {
             caducidad: finalData.cordovaCaducidad || ''
           });
 
-          const webUrl = `https://www.imprentacordova.net/nuevo-pedido?${params.toString()}`;
+          const webUrl = `https://www.imprentacordova.net/#/nuevo?${params.toString()}`;
           window.open(webUrl, '_blank');
         });
       });
@@ -887,7 +891,32 @@ function showCordovaSuccessModal(finalData, blocks) {
     if (btnPrint) {
       btnPrint.addEventListener('click', () => {
         savePending(true, () => {
-          chrome.runtime.sendMessage({ action: "openRegistry" });
+          const ruc = finalData.cordovaClientRuc || '';
+          const editedName = inputEditName ? inputEditName.value.trim().toUpperCase() : (finalData.cordovaClientName || '');
+          const editedActivity = inputEditActivity ? inputEditActivity.value.trim() : selectedActivity;
+          const editedPhone = inputEditPhone ? inputEditPhone.value.trim() : selectedPhoneVal;
+          const editedEmail = inputEditEmail ? inputEditEmail.value.trim() : selectedEmailVal;
+          let finalAbono = selectedAbonoVal === 'custom' && inputAbonoManual ? (parseFloat(inputAbonoManual.value) || 0) : (parseFloat(selectedAbonoVal) || 0);
+
+          const params = new URLSearchParams({
+            mode: selectedModel || 'sri-sobre-preimpreso',
+            ruc: ruc,
+            name: editedName,
+            activity: editedActivity,
+            phone: editedPhone,
+            email: editedEmail,
+            docType: finalData.cordovaDocType || '1',
+            doc: docName,
+            blocks: String(blocks),
+            docSize: selectedSize,
+            abono: String(finalAbono),
+            total: String(currentTotal),
+            caducidad: finalData.cordovaCaducidad || ''
+          });
+
+          const targetTrabajoId = currentSyncedTrabajoId || 'directo';
+          const printUrl = `https://www.imprentacordova.net/#/solicitud-impresion/${targetTrabajoId}?${params.toString()}`;
+          window.open(printUrl, '_blank');
         });
       });
     }

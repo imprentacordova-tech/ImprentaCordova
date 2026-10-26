@@ -64,12 +64,12 @@ export const SearchOmni: React.FC = () => {
         const filteredTrabajos = trabajos.filter(t => 
             t.orden.toString().includes(q) || 
             t.titular.toLowerCase().includes(q) ||
-            t.servicio.toLowerCase().includes(q) ||
+            (t.tipo || '').toLowerCase().includes(q) ||
             (t.subtipo && t.subtipo.toLowerCase().includes(q))
         ).slice(0, 5).map(t => ({
             id: `trab-${t.id}`,
             titulo: `Orden #${t.orden} · ${t.titular}`,
-            subtitulo: `${t.servicio} · Saldo: $${t.saldo.toFixed(2)}`,
+            subtitulo: `${t.tipo || 'Trabajo general'} · Saldo: $${(t.saldo || 0).toFixed(2)}`,
             path: `/nota-de-venta/${t.id}`,
             type: 'trabajo',
             icono: FileTextIcon

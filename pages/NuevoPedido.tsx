@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { formatCurrency } from '../utils';
 import { useData } from '../contexts/DataContext';
@@ -14,6 +14,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 import { calcularPedido, round2 } from '../services/orderPricing';
+import { establecimientosAbiertos } from '../services/establecimientos';
+import { MODELOS, modeloPorDefecto, modelosDe, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
+import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
 
 /**
  * Nueva Orden Unificada — Sistema "Marino & Oro"
@@ -27,6 +30,22 @@ const STEP_CONFIG = [
     { id: 3, label: '3 · Datos de Cliente', subtitle: 'RUC / Razón Social', icon: '👤' },
     { id: 4, label: '4 · Pago & Despacho', subtitle: 'Anticipo y liquidación', icon: '💳' },
 ];
+
+/** Pasos reales del asistente. El paso 5 es la pantalla de confirmación, no un paso más. */
+const TOTAL_PASOS = STEP_CONFIG.length;
+
+/**
+ * Transición del contenido según la dirección del viaje: al avanzar el paso entra desde
+ * la derecha, al retroceder entra desde la izquierda. Con una animación simétrica el
+ * operador no percibe si fue adelante o atrás, y en un flujo de mostrador esa pérdida de
+ * orientación se siente como desorden.
+ */
+const animPaso = (dir: 'adelante' | 'atras') => ({
+    initial: { opacity: 0, x: dir === 'adelante' ? 26 : -26 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: dir === 'adelante' ? -26 : 26 },
+    transition: { duration: 0.28, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] },
+});
 
 const CATEGORIAS_CATALOGO = ['Todos', 'Comprobantes SRI', 'Papelería Comercial', 'Publicidad & Sellos'] as const;
 
@@ -47,11 +66,13 @@ const NuevoPedidoPage: React.FC = () => {
     const outletCtx = useOutletContext<{ currentUser?: User }>();
     const { user: authUser } = useAuth();
     const currentUser = outletCtx?.currentUser || authUser || ({ nombre: 'Pedro Cordova', rol: 'Administrador' } as unknown as User);
-    const { refreshData, addTrabajo, addCliente, clientes } = useData();
+    const { refreshData, addTrabajo, addCliente, clientes, trabajos } = useData();
     const navigate = useNavigate();
     const location = useLocation();
 
     const [step, setStep] = useState(1);
+    /** Dirección del último movimiento, para que la transición del paso tenga sentido. */
+    const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante');
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
     const [tempClient, setTempClient] = useState<any>({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
@@ -77,6 +98,16 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
     const [sriClave, setSriClave] = useState('');
     const [sriActividad, setSriActividad] = useState('');
+    /**
+     * Marcado del trámite para la solicitud del SRI. Arranca en MISMO, que es lo que el
+     * documento imprimía siempre por el hardcodeo: ninguna orden cambia de comportamiento.
+     */
+    const [tramiteSri, setTramiteSri] = useState<TramiteSri>(TRAMITE_POR_DEFECTO);
+    /**
+     * Variante con la que se produce el talonario. Arranca en el default de la familia SRI,
+     * que es `sri-sobre-preimpreso` porque hay stock de formularios ya impresos.
+     */
+    const [modeloImpresionSri, setModeloImpresionSri] = useState<ModeloImpresion>(() => modeloPorDefecto(true));
     const [imprimirClave, setImprimirClave] = useState(false);
     const [isAddingCustomItem, setIsAddingCustomItem] = useState(false);
     const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
@@ -85,6 +116,57 @@ const NuevoPedidoPage: React.FC = () => {
     // ¿La orden contiene al menos un producto con requerimientos SRI?
     const hasSriItem = useMemo(() => items.some(i => i.esSRI || i.especificaciones?.sri), [items]);
 
+    // Detección de última orden del cliente para Renovación Express
+    const ultimoTrabajoCliente = useMemo(() => {
+        if (!cliente?.id) return null;
+        return (trabajos ?? [])
+            .filter(t => t.clienteId === cliente.id)
+            .sort((a, b) => new Date(b.fechaEntrada || 0).getTime() - new Date(a.fechaEntrada || 0).getTime())[0] || null;
+    }, [cliente, trabajos]);
+
+    const renovacionSugerida = useMemo(() => {
+        if (!ultimoTrabajoCliente) return null;
+        const num = sugerirSiguienteNumeracion(ultimoTrabajoCliente.numeracion, ultimoTrabajoCliente.cantidad || 100);
+        return {
+            trabajo: ultimoTrabajoCliente,
+            nuevaNumeracion: num.textoSugerido,
+        };
+    }, [ultimoTrabajoCliente]);
+
+    const aplicarRenovacionExpress = () => {
+        if (!renovacionSugerida) return;
+        const t = renovacionSugerida.trabajo;
+        const reorderItem = {
+            id: `item-${Date.now()}`,
+            nombre: t.subtipo || t.tipo,
+            precioBase: t.total || 13,
+            esSRI: !!t.esSRI,
+            cantidad: t.cantidad || 100,
+            subtotal: t.total || 13,
+            especificaciones: {
+                tamano: t.tamano || '1/4 Oficio',
+                acabados: t.detalle || '',
+                sri: !!t.esSRI,
+                establecimiento: t.establecimiento || '001',
+                puntoEmision: t.puntoEmision || '001',
+                numeracion: renovacionSugerida.nuevaNumeracion,
+            }
+        };
+
+        setItems([reorderItem]);
+        setServicio({ nombre: t.subtipo || t.tipo, precio: t.total || 13, esSRI: !!t.esSRI });
+        setNumeracionInicial(renovacionSugerida.nuevaNumeracion);
+        if (t.establecimiento) setSriEstablecimiento(t.establecimiento);
+        if (t.puntoEmision) setSriPuntoEmision(t.puntoEmision);
+        if (t.actividadSeleccionada) setSriActividad(t.actividadSeleccionada);
+        if (t.autorizacion_sri) setAutorizacionSriInput(t.autorizacion_sri);
+        if (t.tramiteSri) setTramiteSri(t.tramiteSri as any);
+        if (t.modeloImpresion) setModeloImpresionSri(t.modeloImpresion as any);
+        setAbono(t.total ? Math.round(t.total * 0.5) : 0);
+        setDireccion('adelante');
+        setStep(4);
+    };
+
     const applySriPayload = (payload: any) => {
         if (!payload) return;
         const ruc = payload.ruc || payload.clientRuc || '';
@@ -92,12 +174,24 @@ const NuevoPedidoPage: React.FC = () => {
         const phone = payload.phone || payload.clientPhone || '';
         const activity = payload.activity || 'Comercio / Servicios General';
         const docType = payload.docType || '1';
-        const blocks = parseInt(payload.blocks || payload.comprobantes || '100', 10) || 100;
-        const docSize = payload.docSize || '1/4 Oficio';
+        const blocks = parseInt(payload.blocks || payload.comprobantes || payload.qty || '100', 10) || 100;
+        const docSize = payload.docSize || payload.tamano || '1/4 Oficio';
         const totalVal = parseFloat(payload.total) || 13;
         const abonoVal = parseFloat(payload.abono) || 0;
+        const estVal = payload.est || '001';
+        const ptoVal = payload.pto || '001';
+        const caducidadVal = payload.caducidad || '';
+        const modeVal = payload.mode || 'sri-sobre-preimpreso';
+        const tramiteVal = payload.tramite || 'MISMO';
 
         setSriActividad(activity);
+        setSriEstablecimiento(estVal);
+        setSriPuntoEmision(ptoVal);
+        if (caducidadVal) setAutorizacionSriInput(caducidadVal);
+        if (modeVal && (modeVal.startsWith('sri') || modeVal.startsWith('comercial') || modeVal.startsWith('nota'))) {
+            setModeloImpresionSri(modeVal as any);
+        }
+        if (tramiteVal) setTramiteSri(tramiteVal as any);
 
         if (ruc || name) {
             const cleanRuc = ruc.replace(/\D/g, '');
@@ -117,32 +211,47 @@ const NuevoPedidoPage: React.FC = () => {
         }
 
         const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
-        const docName = docNames[docType] || 'Nota de Venta';
+        const docName = docNames[docType] || payload.doc || 'Nota de Venta';
 
         const sriItem = {
+            id: `item-sri-${Date.now()}`,
             nombre: docName,
             cantidad: 1,
             precioUnitario: totalVal,
             precioFinal: totalVal,
+            subtotal: totalVal,
             esSRI: true,
             especificaciones: {
                 tamano: docSize,
                 paginas: blocks,
                 papel: 'Químico Autocopia (2c)',
-                sri: { vencimiento: payload.caducidad || '' }
+                sri: { 
+                    vencimiento: caducidadVal,
+                    establecimiento: estVal,
+                    puntoEmision: ptoVal,
+                }
             }
         };
 
         setItems([sriItem]);
+        setServicio({ nombre: docName, precio: totalVal, esSRI: true });
         setAbono(abonoVal);
-        setStep(2);
+        setSriAutoFillBanner({
+            title: `📥 Datos precargados desde el SRI: ${name || ruc}`,
+            desc: `${docName} (${blocks} comp.) · Est: ${estVal}-${ptoVal} · Total: $${totalVal.toFixed(2)} · Revise y confirme para registrar.`
+        });
+        setDireccion('adelante');
+        setStep(4);
     };
 
     useEffect(() => {
         document.body.style.overflow = 'auto';
 
         const params = new URLSearchParams(location.search);
-        if (params.get('mode') === 'sri') applySriPayload(Object.fromEntries(params.entries()));
+        const hasSriData = params.get('mode') === 'sri' || params.get('mode')?.startsWith('sri') || params.get('ruc') || params.get('name');
+        if (hasSriData) {
+            applySriPayload(Object.fromEntries(params.entries()));
+        }
 
         const handleMessage = (e: MessageEvent) => {
             if (e.origin && e.origin !== window.location.origin && !e.origin.includes('sri.gob.ec')) {
@@ -172,13 +281,85 @@ const NuevoPedidoPage: React.FC = () => {
         if (abono > desglose.total) setAbono(desglose.total);
     }, [desglose.total, abono]);
 
+    /*
+     * Establecimientos ABIERTOS que el cliente tiene registrados en su RUC. Los carga
+     * ClientSelector al leer el certificado (foto o PDF) y quedan en su ficha.
+     *
+     * Se ofrecen como atajo en el paso 3, pero NO reemplazan al input de texto: hay clientes
+     * que piden un local que todavía no está en el certificado, y algunos certificados
+     * (hoy los que se leen mecánicamente del PDF) no traen la lista.
+     */
+    const establecimientosCliente = useMemo(
+        () => establecimientosAbiertos(cliente?.fiscal_data?.establecimientos),
+        [cliente],
+    );
+
     const canAdvance = () => {
         if (step === 1) return items.length > 0;
         if (step === 2) return true;
-        if (step === 3) return !!cliente || !!(tempClient?.nombre || tempClient?.cedula);
+        if (step === 3) {
+            if (!cliente && !(tempClient?.nombre || tempClient?.cedula)) return false;
+            /*
+             * Con comprobantes SRI el establecimiento, el punto de emisión y la actividad
+             * van IMPRESOS en la solicitud de autorización, así que no se puede avanzar sin
+             * ellos. CONTINUITY_RULES.md §6: "se deben registrar estrictamente los
+             * establecimientos abiertos, puntos de emisión, actividades y los números de
+             * secuencia". En un trabajo comercial no aplica.
+             */
+            if (hasSriItem) {
+                return !!(sriEstablecimiento.trim() && sriPuntoEmision.trim() && sriActividad.trim());
+            }
+            return true;
+        }
         if (step === 4) return desglose.total > 0;
         return false;
     };
+
+    /*
+     * Dirección del viaje + scroll al inicio en cada cambio de paso.
+     * Se deriva del propio `step`, así no hay que tocar ninguno de los setStep() del
+     * archivo y ninguna ruta nueva puede olvidarse de avisar la dirección.
+     */
+    const pasoPrevio = useRef(step);
+    useEffect(() => {
+        if (step === pasoPrevio.current) return;
+        setDireccion(step > pasoPrevio.current ? 'adelante' : 'atras');
+        pasoPrevio.current = step;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [step]);
+
+    /*
+     * Atajos de teclado del mostrador (agent_instructions.md: "en operaciones de
+     * mostrador, el ratón es lento").
+     *   Alt + →   avanza si el paso actual está completo
+     *   Alt + ←   retrocede
+     *   Alt + 1..4 salta a un paso ya habilitado (nunca hacia adelante: la regla del
+     *              camino es que no se saltean pasos)
+     * Nada se intercepta sin Alt, para no pelear con los campos de texto (RUC, precios).
+     */
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (!e.altKey || e.ctrlKey || e.metaKey) return;
+
+            if (e.key === 'ArrowRight') {
+                if (step < TOTAL_PASOS && canAdvance()) { e.preventDefault(); setStep(s => s + 1); }
+                return;
+            }
+            if (e.key === 'ArrowLeft') {
+                if (step > 1) { e.preventDefault(); setStep(s => s - 1); }
+                return;
+            }
+
+            const destino = Number(e.key);
+            if (Number.isInteger(destino) && destino >= 1 && destino <= TOTAL_PASOS && destino < step) {
+                e.preventDefault();
+                setStep(destino);
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+        // Las dependencias cubren todo lo que lee canAdvance().
+    }, [step, cliente, tempClient, items.length, desglose.total, hasSriItem, sriEstablecimiento, sriPuntoEmision, sriActividad]);
 
     const handleSelectQuickProduct = (p: typeof CATALOGO_RAPIDO[0]) => {
         const newItem = {
@@ -251,7 +432,9 @@ const NuevoPedidoPage: React.FC = () => {
                 estado: TrabajoEstado.PENDIENTE,
                 fechaEntrada: new Date().toISOString(),
                 responsable: userName,
-                origen: 'Local',
+                // 'Interno' = pedido tomado en el mostrador. Antes decía 'Local', que
+                // no existe en el tipo `'Web' | 'Interno'` y ensuciaba la columna.
+                origen: 'Interno',
                 esSRI: !!item.esSRI,
                 establecimiento: item.esSRI ? sriEstablecimiento : undefined,
                 puntoEmision: item.esSRI ? sriPuntoEmision : undefined,
@@ -265,6 +448,15 @@ const NuevoPedidoPage: React.FC = () => {
                 numeracion: numeracionInicial || item.especificaciones?.numerado,
                 autorizacion_sri: autorizacionSriInput || item.especificaciones?.sri?.autorizacion,
                 fechaVencimiento: item.especificaciones?.sri?.vencimiento,
+                // El modelo se persiste con la orden (no viaja en la URL) para que la
+                // extensión de Chrome y el documento de impresión hablen de la misma variante.
+                // OJO: el default de SRI es hoy `sri-pc` porque es la única implementada; cuando
+                // `sri-sobre-preimpreso` esté lista, el default debe pasar a ESA, porque lo que
+                // corresponde mientras haya stock de preimpresos es imprimir solo los datos.
+                // El modelo elegido para SRI; para un comercial, el default de su familia.
+                modeloImpresion: item.esSRI ? modeloImpresionSri : modeloPorDefecto(false),
+                // Marcado del trámite que va impreso en la solicitud del SRI.
+                tramiteSri: item.esSRI ? tramiteSri : undefined,
             } as any, userName, imageFile)));
 
             logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido unificado (${items.length} ítems) para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
@@ -412,58 +604,100 @@ const NuevoPedidoPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Camino / Proceso de Solicitud (Stepper Visual con Regla Inmutable) */}
-                <div style={{ ...S.card, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }}>
-                        {STEP_CONFIG.map((cfg) => {
-                            const active = step === cfg.id;
-                            const past = step > cfg.id;
+                {/* Camino de la orden — recorrido visible con nodos y conectores */}
+                <div style={{ ...S.card, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                        <div>
+                            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.28em', textTransform: 'uppercase', color: C.faint }}>Camino de la orden</div>
+                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3 }}>
+                                {step > TOTAL_PASOS
+                                    ? 'Orden registrada correctamente'
+                                    : <>Paso <strong style={{ color: C.ink }}>{step}</strong> de {TOTAL_PASOS} · {STEP_CONFIG[step - 1]?.subtitle}</>}
+                            </div>
+                            {/*
+                              * Las dos ramas del camino producen documentos DISTINTOS: una orden con
+                              * comprobantes SRI termina en una solicitud de autorización A5, y una
+                              * comercial en un recibo. Que se vea desde el arranque evita que el
+                              * operador descubra al final que no era el comprobante que esperaba.
+                              */}
+                            <div style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 8, padding: '4px 10px',
+                                borderRadius: 99, fontSize: 11, fontWeight: 700,
+                                ...(hasSriItem
+                                    ? { background: C.goldBg, color: C.goldText, border: `1px solid ${C.goldBorder}` }
+                                    : { background: C.chipBlue, color: C.royal, border: `1px solid ${C.borderStrong}` }),
+                            }}>
+                                <span style={{ width: 6, height: 6, borderRadius: 99, flexShrink: 0, background: hasSriItem ? C.gold : C.royal }} />
+                                {hasSriItem ? 'Comprobantes SRI → Solicitud de Impresión (A5)' : 'Trabajo comercial → Recibo de caja'}
+                            </div>
+                        </div>
+                        <span style={{ fontSize: 11, color: C.faint }}>
+                            <strong style={{ fontFamily: MONO, color: C.muted }}>Alt + ← →</strong> para moverte sin ratón
+                        </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'flex-start', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 }}>
+                        {STEP_CONFIG.map((cfg, i) => {
+                            const activo = step === cfg.id;
+                            const hecho = step > cfg.id;
+                            const esUltimo = i === STEP_CONFIG.length - 1;
                             return (
-                                <button
-                                    key={cfg.id}
-                                    type="button"
-                                    disabled={!past && !active}
-                                    onClick={() => past && setStep(cfg.id)}
-                                    style={{
-                                        flex: '1 0 auto',
-                                        minWidth: 145,
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: 8,
-                                        padding: '8px 12px',
-                                        borderRadius: 10,
-                                        border: `1px solid ${active ? C.royal : past ? C.borderStrong : C.divider}`,
-                                        fontSize: 12,
-                                        fontWeight: 700,
-                                        whiteSpace: 'nowrap',
-                                        cursor: past ? 'pointer' : 'default',
-                                        fontFamily: 'inherit',
-                                        transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                                        ...(active
-                                            ? { background: C.royal, color: '#FFFFFF', boxShadow: '0 4px 12px rgba(22,48,155,0.2)' }
-                                            : past
-                                            ? { background: C.chipBlue, color: C.royal }
-                                            : { background: C.surfaceAlt, color: C.faint }),
-                                    }}
-                                >
-                                    <span style={{ fontSize: 13 }}>{past ? '✓' : cfg.icon}</span>
-                                    <div style={{ textAlign: 'left' }}>
-                                        <div style={{ lineHeight: 1.1 }}>{cfg.label}</div>
-                                        <div style={{ fontSize: 10, opacity: active ? 0.85 : 0.6, fontWeight: 500 }}>{cfg.subtitle}</div>
-                                    </div>
-                                </button>
+                                <React.Fragment key={cfg.id}>
+                                    <button
+                                        type="button"
+                                        disabled={!hecho}
+                                        onClick={() => hecho && setStep(cfg.id)}
+                                        title={hecho || activo ? cfg.subtitle : `Completá el paso ${step} para llegar acá`}
+                                        style={{
+                                            flex: '0 0 auto', width: 128, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7,
+                                            background: 'transparent', border: 'none', padding: 0, fontFamily: 'inherit',
+                                            cursor: hecho ? 'pointer' : 'default',
+                                        }}
+                                    >
+                                        <span style={{
+                                            width: 34, height: 34, borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 13, fontWeight: 800, fontFamily: MONO,
+                                            transition: 'all .3s cubic-bezier(.2,.8,.2,1)',
+                                            ...(activo
+                                                ? { background: C.royal, color: '#fff', boxShadow: '0 0 0 5px rgba(22,48,155,.12)' }
+                                                : hecho
+                                                    ? { background: C.chipBlue, color: C.royal, border: `1px solid ${C.borderStrong}` }
+                                                    : { background: C.surfaceAlt, color: C.ghost, border: `1px solid ${C.border}` }),
+                                        }}>{hecho ? '✓' : cfg.icon}</span>
+                                        <span style={{ textAlign: 'center', minWidth: 0 }}>
+                                            {/* El label ya trae el número ("1 · Producto Base"); el nodo lo muestra. */}
+                                            <span style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: activo ? C.ink : hecho ? C.body : C.faint, whiteSpace: 'nowrap' }}>
+                                                {cfg.label.replace(/^\d+\s*·\s*/, '')}
+                                            </span>
+                                            <span style={{ display: 'block', fontSize: 10, color: C.ghost, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cfg.subtitle}</span>
+                                        </span>
+                                    </button>
+
+                                    {!esUltimo && (
+                                        <div style={{ flex: '1 1 22px', minWidth: 22, height: 34, display: 'flex', alignItems: 'center', padding: '0 6px' }}>
+                                            <div style={{ position: 'relative', height: 2, width: '100%', background: C.border, borderRadius: 99, overflow: 'hidden' }}>
+                                                <div style={{
+                                                    position: 'absolute', inset: 0, transformOrigin: 'left',
+                                                    transform: `scaleX(${hecho ? 1 : 0})`,
+                                                    background: `linear-gradient(90deg, ${C.royal}, ${C.gold})`,
+                                                    transition: 'transform .45s cubic-bezier(.2,.8,.2,1)',
+                                                }} />
+                                            </div>
+                                        </div>
+                                    )}
+                                </React.Fragment>
                             );
                         })}
                     </div>
 
-                    {/* Barra de Progreso del Camino */}
+                    {/* Progreso global. Antes era (step / 4) con 5 pasos reales: llegaba a 125 %. */}
                     <div style={{ height: 4, background: C.border, borderRadius: 99, overflow: 'hidden' }}>
                         <div
                             style={{
                                 height: '100%',
-                                width: `${(step / 4) * 100}%`,
+                                width: `${Math.min(100, (step / TOTAL_PASOS) * 100)}%`,
                                 background: `linear-gradient(90deg, ${C.royal} 0%, ${C.gold} 100%)`,
-                                transition: 'width 0.3s ease',
+                                transition: 'width .45s cubic-bezier(.2,.8,.2,1)',
                             }}
                         />
                     </div>
@@ -477,7 +711,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 1: Catálogo y Productos */}
                             {step === 1 && (
-                                <motion.div key="s1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ ...S.card, padding: 22 }}>
+                                <motion.div key="s1" {...animPaso(direccion)} style={{ ...S.card, padding: 22 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                                         <div>
                                             <h2 style={S.h2}>1 · ¿Qué va a imprimir?</h2>
@@ -494,6 +728,79 @@ const NuevoPedidoPage: React.FC = () => {
 
                                     {!isAddingCustomItem ? (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                            
+                                            {/* Barra de Renovación Express de Mostrador */}
+                                            <div style={{ padding: '12px 16px', borderRadius: 12, background: C.surfaceAlt, border: `1px solid ${C.borderStrong}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                                                    <span style={{ fontSize: 18 }}>⚡</span>
+                                                    <div>
+                                                        <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>Renovación Express de Mostrador</span>
+                                                        <span style={{ display: 'block', fontSize: 11, color: C.faint }}>¿El cliente ya ha impreso antes? Selecciónalo para auto-configurar en 1 clic.</span>
+                                                    </div>
+                                                </div>
+                                                <select
+                                                    value={cliente?.id || ''}
+                                                    onChange={(e) => {
+                                                        const found = clientes.find(c => c.id === e.target.value);
+                                                        setCliente(found || null);
+                                                        if (found) {
+                                                            setSriEstablecimiento(found.establecimientoPredeterminado || '001');
+                                                            setSriPuntoEmision(found.puntoEmisionPredeterminado || '001');
+                                                            setSriActividad(found.actividades || '');
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        padding: '7px 12px', borderRadius: 8, border: `1px solid ${C.borderStrong}`,
+                                                        background: '#fff', fontSize: 12, color: C.ink, fontFamily: 'inherit', maxWidth: 260
+                                                    }}
+                                                >
+                                                    <option value="">-- Seleccionar cliente habitual --</option>
+                                                    {clientes.map(c => (
+                                                        <option key={c.id} value={c.id}>{c.nombre} ({c.ruc || c.cedula})</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Banner de Renovación Rápida si hay pedido previo */}
+                                            {renovacionSugerida && (
+                                                <div style={{
+                                                    padding: '16px 20px', borderRadius: 14, background: '#0A1140', color: '#fff',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
+                                                    border: '1px solid rgba(255,198,26,0.3)', boxShadow: '0 8px 24px -6px rgba(10,17,64,0.4)',
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                                        <span style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,198,26,0.2)', color: '#FFC61A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+                                                            ⚡
+                                                        </span>
+                                                        <div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: '#FFC61A' }}>
+                                                                    RENOVACIÓN DETECTADA
+                                                                </span>
+                                                                <span style={{ fontSize: 11, color: '#CAD5F5' }}>· Última orden #{renovacionSugerida.trabajo.orden}</span>
+                                                            </div>
+                                                            <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: '#fff', marginTop: 3 }}>
+                                                                {cliente?.nombre} · {renovacionSugerida.trabajo.tipo} {renovacionSugerida.trabajo.subtipo || ''}
+                                                            </div>
+                                                            <div style={{ fontSize: 12, color: '#CAD5F5', marginTop: 3 }}>
+                                                                Tiraje: <strong>{renovacionSugerida.trabajo.cantidad} u.</strong> · Secuencia sugerida: <strong style={{ color: '#FFC61A' }}>{renovacionSugerida.nuevaNumeracion}</strong> · Total: <strong>{formatCurrency(renovacionSugerida.trabajo.total)}</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={aplicarRenovacionExpress}
+                                                        style={{
+                                                            padding: '11px 20px', borderRadius: 11, background: '#FFC61A', color: '#0A1140',
+                                                            border: 'none', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                                                            display: 'inline-flex', alignItems: 'center', gap: 7, boxShadow: '0 4px 14px rgba(255,198,26,0.4)',
+                                                            whiteSpace: 'nowrap'
+                                                        }}
+                                                    >
+                                                        ⚡ Reordenar con 1 Clic (Ir a Pago)
+                                                    </button>
+                                                </div>
+                                            )}
                                             
                                             {/* Barra de Búsqueda Inteligente */}
                                             <div style={{ position: 'relative', width: '100%' }}>
@@ -654,7 +961,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 2: Detalles de la Orden */}
                             {step === 2 && (
-                                <motion.div key="s2" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                                <motion.div key="s2" {...animPaso(direccion)}>
                                     <OrderDetails
                                         items={items}
                                         setItems={setItems}
@@ -677,7 +984,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 3: Selección / Registro de Cliente */}
                             {step === 3 && (
-                                <motion.div key="s3" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} style={{ ...S.card, padding: 20 }}>
+                                <motion.div key="s3" {...animPaso(direccion)} style={{ ...S.card, padding: 20 }}>
                                     <h2 style={{ ...S.h2, marginBottom: 14 }}>3 · Cliente</h2>
                                     <ClientSelector
                                         onSelect={(c) => {
@@ -686,17 +993,252 @@ const NuevoPedidoPage: React.FC = () => {
                                                 setSriEstablecimiento(c.establecimientoPredeterminado || '001');
                                                 setSriPuntoEmision(c.puntoEmisionPredeterminado || '001');
                                                 setSriActividad(c.actividades || '');
-                                                setStep(4);
+                                                /*
+                                                 * Con comprobantes SRI el camino se detiene acá a propósito:
+                                                 * los datos del talonario se autocompletan desde la ficha del
+                                                 * cliente, pero el operador tiene que poder corregirlos para ESTA
+                                                 * orden antes de que salgan impresos en la solicitud.
+                                                 * En un trabajo comercial se avanza directo, como siempre.
+                                                 */
+                                                if (!hasSriItem) setStep(4);
                                             }
                                         }}
                                         onCancel={() => setStep(2)}
                                     />
+
+                                    {renovacionSugerida && (
+                                        <div style={{
+                                            marginTop: 14, padding: '14px 18px', borderRadius: 12, background: '#0A1140', color: '#fff',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap',
+                                            border: '1px solid rgba(255,198,26,0.3)',
+                                        }}>
+                                            <div>
+                                                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: '#FFC61A' }}>
+                                                    ⚡ Renovación Express disponible
+                                                </div>
+                                                <div style={{ fontSize: 13, color: '#CAD5F5', marginTop: 2 }}>
+                                                    Último pedido: #{renovacionSugerida.trabajo.orden} ({renovacionSugerida.trabajo.tipo}) · Siguiente secuencia: <strong style={{ color: '#FFC61A' }}>{renovacionSugerida.nuevaNumeracion}</strong>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={aplicarRenovacionExpress}
+                                                style={{
+                                                    padding: '9px 16px', borderRadius: 10, background: '#FFC61A', color: '#0A1140',
+                                                    border: 'none', fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                                }}
+                                            >
+                                                ⚡ Reordenar con 1 Clic
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {hasSriItem && cliente && (
+                                        <div style={{ marginTop: 18, padding: '16px 18px', background: C.goldBg, border: `1px solid ${C.goldBorder}`, borderRadius: 14 }}>
+                                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                                                <div>
+                                                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.26em', textTransform: 'uppercase', color: C.goldText }}>Datos del talonario SRI</div>
+                                                    <p style={{ margin: '5px 0 0', fontSize: 12.5, color: C.goldText, lineHeight: 1.5 }}>
+                                                        Van impresos en la <strong>solicitud de autorización</strong>. Se cargaron desde la ficha de {cliente.nombre}; corregilos si esta orden va distinta.
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSriEstablecimiento(cliente.establecimientoPredeterminado || '001');
+                                                        setSriPuntoEmision(cliente.puntoEmisionPredeterminado || '001');
+                                                        setSriActividad(cliente.actividades || '');
+                                                    }}
+                                                    style={{ ...S.softBtn, background: '#FFFFFF', flexShrink: 0 }}
+                                                >
+                                                    ↺ Restaurar del cliente
+                                                </button>
+                                            </div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, marginTop: 14 }}>
+                                                <div>
+                                                    <label style={{ display: 'block' }}>
+                                                        <span style={S.fieldLabel}>Establecimiento</span>
+                                                        <input
+                                                            value={sriEstablecimiento}
+                                                            onChange={e => setSriEstablecimiento(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                                            placeholder="001"
+                                                            maxLength={3}
+                                                            style={{ ...S.input, padding: '9px 11px', fontFamily: MONO, letterSpacing: '.08em' }}
+                                                        />
+                                                    </label>
+
+                                                    {/*
+                                                      * Atajo: los establecimientos ABIERTOS del RUC del cliente.
+                                                      * Sólo ABIERTOS a propósito: un código cerrado impreso en la
+                                                      * solicitud de autorización es un documento rechazado en ventanilla.
+                                                      * El input de arriba sigue libre para el local que no esté acá.
+                                                      */}
+                                                    {establecimientosCliente.length > 0 && (
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 7, alignItems: 'center' }}>
+                                                            <span style={{ fontSize: 10.5, color: C.goldText, fontWeight: 700 }}>Abiertos del RUC:</span>
+                                                            {establecimientosCliente.map(est => {
+                                                                const activo = sriEstablecimiento === est.codigo;
+                                                                return (
+                                                                    <button
+                                                                        key={est.codigo}
+                                                                        type="button"
+                                                                        onClick={() => setSriEstablecimiento(est.codigo)}
+                                                                        title={[est.nombre, est.direccion].filter(Boolean).join(' · ')}
+                                                                        style={{
+                                                                            ...S.softBtn, padding: '5px 10px', fontSize: 11, fontFamily: MONO,
+                                                                            background: activo ? C.royal : '#FFFFFF',
+                                                                            color: activo ? '#FFFFFF' : C.royal,
+                                                                        }}
+                                                                    >
+                                                                        {est.codigo} · {est.tipo}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <label>
+                                                    <span style={S.fieldLabel}>Punto de emisión</span>
+                                                    <input
+                                                        value={sriPuntoEmision}
+                                                        onChange={e => setSriPuntoEmision(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                                        placeholder="001"
+                                                        maxLength={3}
+                                                        style={{ ...S.input, padding: '9px 11px', fontFamily: MONO, letterSpacing: '.08em' }}
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            <label style={{ display: 'block', marginTop: 12 }}>
+                                                <span style={S.fieldLabel}>Actividad económica</span>
+                                                <input
+                                                    value={sriActividad}
+                                                    onChange={e => setSriActividad(e.target.value)}
+                                                    placeholder="Comercio / Servicios General"
+                                                    style={{ ...S.input, padding: '9px 11px' }}
+                                                />
+                                            </label>
+
+                                            {/* Las actividades ya se leyeron del certificado de RUC del cliente
+                                                (ClientSelector las guarda en fiscal_data.actividades). Ofrecerlas
+                                                evita retipear un texto largo que además es legal. */}
+                                            {(cliente.fiscal_data?.actividades?.length || 0) > 0 && (
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8, alignItems: 'center' }}>
+                                                    <span style={{ fontSize: 10.5, color: C.goldText, fontWeight: 700 }}>Del RUC:</span>
+                                                    {cliente.fiscal_data!.actividades!.slice(0, 4).map((a, i) => {
+                                                        const activa = sriActividad === a.descripcion;
+                                                        return (
+                                                            <button
+                                                                key={i}
+                                                                type="button"
+                                                                onClick={() => setSriActividad(a.descripcion)}
+                                                                title={a.descripcion}
+                                                                style={{
+                                                                    ...S.softBtn, padding: '5px 10px', fontSize: 11,
+                                                                    background: activa ? C.royal : '#FFFFFF',
+                                                                    color: activa ? '#FFFFFF' : C.royal,
+                                                                }}
+                                                            >
+                                                                {a.descripcion.length > 44 ? `${a.descripcion.slice(0, 44)}…` : a.descripcion}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/*
+                                              * Marcado del trámite: va IMPRESO en la solicitud de autorización
+                                              * y lo declara el operador. No se deduce de si la orden es una
+                                              * renovación: una renovación puede ser "Mismo" o "Aument." según la
+                                              * cantidad pedida, y "Cambiar" si el cliente modificó un dato.
+                                              * Ver services/printModels.ts → marcadoTramite().
+                                              */}
+                                            <div style={{ marginTop: 14 }}>
+                                                <span style={S.fieldLabel}>Trámite ante el SRI</span>
+                                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                    {TRAMITES_SRI.map(t => {
+                                                        const activo = tramiteSri === t.id;
+                                                        return (
+                                                            <button
+                                                                key={t.id}
+                                                                type="button"
+                                                                onClick={() => setTramiteSri(t.id)}
+                                                                title={t.descripcion}
+                                                                style={{
+                                                                    ...S.softBtn, padding: '7px 13px', fontSize: 12,
+                                                                    background: activo ? C.royal : '#FFFFFF',
+                                                                    color: activo ? '#FFFFFF' : C.royal,
+                                                                    border: `1px solid ${activo ? C.royal : C.borderStrong}`,
+                                                                }}
+                                                            >
+                                                                {t.label}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                                <p style={{ margin: '6px 0 0', fontSize: 11, color: C.goldText }}>
+                                                    {TRAMITES_SRI.find(t => t.id === tramiteSri)?.descripcion}
+                                                </p>
+                                            </div>
+
+                                            {/*
+                                              * Variante de producción del talonario. Las tres terminan en el
+                                              * mismo formulario, pero se imprimen distinto: sólo los datos
+                                              * sobre el preimpreso, el arte completo sobre hoja en blanco, o la
+                                              * versión A4 para gestionar desde la computadora.
+                                              * Ver services/printModels.ts.
+                                              */}
+                                            <div style={{ marginTop: 14 }}>
+                                                <span style={S.fieldLabel}>Cómo se imprime</span>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                    {modelosDe('SRI').map(m => {
+                                                        const activo = modeloImpresionSri === m.id;
+                                                        return (
+                                                            <button
+                                                                key={m.id}
+                                                                type="button"
+                                                                onClick={() => setModeloImpresionSri(m.id)}
+                                                                title={m.descripcion}
+                                                                style={{
+                                                                    display: 'block', textAlign: 'left', width: '100%',
+                                                                    padding: '8px 12px', borderRadius: 9, cursor: 'pointer', fontFamily: 'inherit',
+                                                                    background: activo ? C.chipBlue : '#FFFFFF',
+                                                                    border: `1px solid ${activo ? C.royal : C.borderStrong}`,
+                                                                }}
+                                                            >
+                                                                <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700, color: activo ? C.royal : C.ink }}>
+                                                                    {m.label}
+                                                                    {m.id === modeloPorDefecto(true) && (
+                                                                        <span style={{ marginLeft: 6, fontSize: 9.5, fontWeight: 800, letterSpacing: '.08em', color: C.goldText }}>SUGERIDO</span>
+                                                                    )}
+                                                                </span>
+                                                                <span style={{ display: 'block', fontSize: 11, color: C.muted, marginTop: 2, lineHeight: 1.45 }}>
+                                                                    {m.descripcion}
+                                                                </span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                                <p style={{ margin: '6px 0 0', fontSize: 11, color: C.goldText }}>
+                                                    Se imprime como <strong>{MODELOS[modeloImpresionSri].label}</strong> en {MODELOS[modeloImpresionSri].papel.nombre.toLowerCase()} ({MODELOS[modeloImpresionSri].papel.anchoMm} × {MODELOS[modeloImpresionSri].papel.altoMm} mm).
+                                                </p>
+                                            </div>
+
+                                            <p style={{ margin: '10px 0 0', fontSize: 11.5, color: C.goldTextStrong }}>
+                                                {sriEstablecimiento.trim() && sriPuntoEmision.trim() && sriActividad.trim()
+                                                    ? '✓ Listo para continuar'
+                                                    : 'Completá los tres datos para continuar: van impresos en el documento.'}
+                                            </p>
+                                        </div>
+                                    )}
                                 </motion.div>
                             )}
 
                             {/* PASO 4: Pago y Confirmación */}
                             {step === 4 && (
-                                <motion.div key="s4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                                <motion.div key="s4" {...animPaso(direccion)}>
                                     {error && (
                                         <div style={{ padding: 14, background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, borderRadius: 12, color: C.dangerText, fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
                                             {error}
@@ -819,10 +1361,10 @@ const NuevoPedidoPage: React.FC = () => {
                                         {formatCurrency(desglose.subtotal)}
                                     </span>
                                 </div>
-                                {desglose.recargoUrgencia > 0 && (
+                                {desglose.recargo > 0 && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
                                         <span style={{ color: C.dangerText }}>Urgencia (+15%)</span>
-                                        <span style={{ color: C.dangerText, fontFamily: MONO }}>+{formatCurrency(desglose.recargoUrgencia)}</span>
+                                        <span style={{ color: C.dangerText, fontFamily: MONO }}>+{formatCurrency(desglose.recargo)}</span>
                                     </div>
                                 )}
                                 {desglose.iva > 0 && (

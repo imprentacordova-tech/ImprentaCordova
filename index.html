@@ -58,6 +58,15 @@
     </style>
 
     <script>
+        // Normalizador de rutas: Si la URL viene sin '#' (ej: desde la extensión o enlaces directos),
+        // redirige al HashRouter preservando los parámetros de búsqueda antes de montar la app.
+        (function() {
+            var path = window.location.pathname;
+            if (path && path !== '/' && !window.location.hash) {
+                window.location.replace('/#' + path + window.location.search);
+            }
+        })();
+
         // Capturador de errores globales para depurar pantalla blanca en Vercel
         window.onerror = function(msg, url, line, col, error) {
             var root = document.getElementById('root');

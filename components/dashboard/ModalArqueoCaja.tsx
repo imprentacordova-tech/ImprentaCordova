@@ -27,7 +27,7 @@ export const ModalArqueoCaja: React.FC<ModalArqueoCajaProps> = ({
   const resumenTurno = useMemo(() => {
     const ordenesHoy = (trabajos || []).filter(t => (t.fechaEntrada || '').startsWith(hoyStr));
     const totalAbonado = ordenesHoy.reduce((acc, t) => acc + (t.abono || 0), 0);
-    const totalFacturado = ordenesHoy.reduce((acc, t) => acc + (t.precio || 0), 0);
+    const totalFacturado = ordenesHoy.reduce((acc, t) => acc + (t.total || 0), 0);
     const totalSaldo = ordenesHoy.reduce((acc, t) => acc + (t.saldo || 0), 0);
 
     return {

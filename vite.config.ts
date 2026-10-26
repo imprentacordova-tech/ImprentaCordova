@@ -41,8 +41,13 @@ export default defineConfig(({ mode }) => {
         })
       ],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.VITE_CLAVE_API_DE_GOOGLE || env.GEMINI_API_KEY || env.VITE_GOOGLE_API_KEY || ""),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_CLAVE_API_DE_GOOGLE || env.GEMINI_API_KEY || env.VITE_GOOGLE_API_KEY || ""),
+        // ⚠️ SEGURIDAD: aquí se inyectaban `process.env.API_KEY` y `process.env.GEMINI_API_KEY`
+        // con la clave de Google. `define` reemplaza el texto en TODOS los módulos del cliente,
+        // así que la clave terminaba literalmente dentro del bundle público de Vercel.
+        //
+        // La IA ahora pasa por el backend (`/api/v1/ai/generate`, ver services/backendApi.ts):
+        // la clave vive solo en el servidor. No volver a agregar secretos en `define` ni con
+        // prefijo `VITE_` — cualquiera puede leer el bundle con Ctrl+U.
         'process.env.VITE_URL_SCRIPT_DE_GOOGLE': JSON.stringify(env.VITE_URL_SCRIPT_DE_GOOGLE || "https://script.google.com/macros/s/AKfycbz9BrIG8s1h5spiy3H2OQVInN4lODW6VJ50-SmGBajjIQ2jbgzBl-65-_6XF7IYRluM/exec"),
       },
       resolve: {

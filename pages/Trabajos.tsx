@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
+import { logActivity } from '../services/activityLogService';
 import { TrabajoEstado, User } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { SEO } from '../components/SEO';
@@ -13,7 +14,7 @@ const ESTADO_TABS: (TrabajoEstado | 'Todos')[] = [
 ];
 
 const TrabajosPage: React.FC = () => {
-    const { trabajos, clientes, loading } = useData();
+    const { trabajos, clientes, loading, updateTrabajoStatus } = useData();
     const navigate = useNavigate();
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
@@ -22,6 +23,36 @@ const TrabajosPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [tipoFilter, setTipoFilter] = useState<'Todos' | 'SRI' | 'GENERAL'>('Todos');
     const [estadoFilter, setEstadoFilter] = useState<TrabajoEstado | 'Todos'>('Todos');
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const searchRef = useRef<HTMLInputElement>(null);
+
+    // Atajos de teclado para operaciones ultra-rápidas en mostrador
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            const isInput = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+            
+            if (!isInput) {
+                if (e.key === 'n' || e.key === 'N') {
+                    e.preventDefault();
+                    navigate('/nuevo');
+                } else if (e.key === '/') {
+                    e.preventDefault();
+                    searchRef.current?.focus();
+                } else if (e.key === 'Escape') {
+                    setSelectedIds(new Set());
+                    setOpenOrderId(null);
+                }
+            } else if (e.key === 'Escape') {
+                searchRef.current?.blur();
+                setSelectedIds(new Set());
+                setOpenOrderId(null);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [navigate]);
 
     const counts = useMemo(() => {
         const c: Record<string, number> = { Todos: (trabajos ?? []).length };
@@ -48,7 +79,46 @@ const TrabajosPage: React.FC = () => {
         [trabajos, openOrderId],
     );
 
-    const gridCols = '.9fr 1.4fr .7fr .9fr .7fr .7fr .8fr';
+    const allSelected = filtered.length > 0 && filtered.every(t => selectedIds.has(t.id));
+
+    const toggleSelectAll = () => {
+        if (allSelected) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filtered.map(t => t.id)));
+        }
+    };
+
+    const toggleSelectOne = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
+    const handleBatchStatus = async (newStatus: TrabajoEstado) => {
+        if (selectedIds.size === 0) return;
+        const ids = Array.from(selectedIds);
+        try {
+            for (const id of ids) {
+                await updateTrabajoStatus(id, newStatus, currentUser?.nombre || 'Operador');
+            }
+            await logActivity(currentUser?.nombre || 'Operador', currentUser?.rol || 'Operador', 'LOTE_ESTADO', `${ids.length} órdenes pasadas a ${newStatus}`, 'Órdenes');
+            setSelectedIds(new Set());
+        } catch (err) {
+            console.error('Error al actualizar lote:', err);
+        }
+    };
+
+    const handleBatchPrint = () => {
+        const ids = Array.from(selectedIds);
+        ids.forEach(id => {
+            window.open(`/#/orden-produccion/${id}`, '_blank');
+        });
+    };
+
+    const gridCols = '36px .9fr 1.4fr .7fr .9fr .7fr .7fr .8fr';
 
     return (
         <div style={S.page}>
@@ -62,7 +132,14 @@ const TrabajosPage: React.FC = () => {
                         <p style={S.eyebrow}>Operaciones</p>
                         <h1 style={S.h1}>Órdenes de Producción</h1>
                     </div>
-                    <button style={S.primaryBtn} onClick={() => navigate('/nuevo')}>Nueva Orden</button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ fontSize: 11, color: C.faint, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <kbd style={{ padding: '2px 6px', borderRadius: 4, background: C.softGray, border: `1px solid ${C.borderStrong}`, fontFamily: MONO, fontSize: 10 }}>N</kbd> Nueva
+                            <kbd style={{ padding: '2px 6px', borderRadius: 4, background: C.softGray, border: `1px solid ${C.borderStrong}`, fontFamily: MONO, fontSize: 10 }}>/</kbd> Buscar
+                            <kbd style={{ padding: '2px 6px', borderRadius: 4, background: C.softGray, border: `1px solid ${C.borderStrong}`, fontFamily: MONO, fontSize: 10 }}>Esc</kbd> Limpiar
+                        </span>
+                        <button style={S.primaryBtn} onClick={() => navigate('/nuevo')}>Nueva Orden</button>
+                    </div>
                 </div>
 
                 {/* Búsqueda + tipo */}
@@ -70,9 +147,10 @@ const TrabajosPage: React.FC = () => {
                     <div style={{ flex: 1, minWidth: 240, display: 'flex', alignItems: 'center', gap: 9, padding: '10px 13px', background: C.bg, border: `1px solid ${C.borderStrong}`, borderRadius: 10 }}>
                         <span style={{ color: C.faint, fontSize: 13 }}>⌕</span>
                         <input
+                            ref={searchRef}
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            placeholder="Buscar por cliente, N° orden, producto o tipo…"
+                            placeholder="Buscar por cliente, N° orden, producto o tipo… (Presiona /)"
                             style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: C.ink, fontFamily: 'inherit' }}
                         />
                     </div>
@@ -125,8 +203,15 @@ const TrabajosPage: React.FC = () => {
                         </div>
                     ) : (
                         <div style={{ overflowX: 'auto' }}>
-                            <div style={{ minWidth: 820 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: gridCols, padding: '11px 20px', background: C.surfaceAlt, borderBottom: `1px solid ${C.divider}` }}>
+                            <div style={{ minWidth: 860 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: gridCols, padding: '11px 20px', background: C.surfaceAlt, borderBottom: `1px solid ${C.divider}`, alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={allSelected}
+                                        onChange={toggleSelectAll}
+                                        aria-label="Seleccionar todas las órdenes"
+                                        style={{ width: 16, height: 16, accentColor: C.royal, cursor: 'pointer' }}
+                                    />
                                     <span style={S.colHead}>N° orden</span>
                                     <span style={S.colHead}>Cliente / producto</span>
                                     <span style={S.colHead}>Tipo</span>
@@ -138,12 +223,27 @@ const TrabajosPage: React.FC = () => {
                                 {filtered.map(t => {
                                     const cli = clientes.find(c => c.id === t.clienteId);
                                     const cfg = estadoCfg(t.estado);
+                                    const isSelected = selectedIds.has(t.id);
                                     return (
                                         <div
                                             key={t.id}
                                             onClick={() => setOpenOrderId(t.id)}
-                                            style={{ display: 'grid', gridTemplateColumns: gridCols, alignItems: 'center', padding: '13px 20px', borderBottom: `1px solid ${C.rowLine}`, cursor: 'pointer' }}
+                                            style={{
+                                                display: 'grid', gridTemplateColumns: gridCols, alignItems: 'center', padding: '13px 20px',
+                                                borderBottom: `1px solid ${C.rowLine}`, cursor: 'pointer',
+                                                background: isSelected ? 'rgba(22, 48, 155, 0.04)' : 'transparent',
+                                                transition: 'background 0.15s ease'
+                                            }}
                                         >
+                                            <div onClick={(e) => toggleSelectOne(t.id, e)} style={{ display: 'flex', alignItems: 'center' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => {}}
+                                                    aria-label={`Seleccionar orden #${t.orden}`}
+                                                    style={{ width: 16, height: 16, accentColor: C.royal, cursor: 'pointer' }}
+                                                />
+                                            </div>
                                             <span style={{ fontSize: 12.5, fontFamily: MONO, color: C.ink }}>#{String(t.orden).padStart(4, '0')}</span>
                                             <span style={{ minWidth: 0 }}>
                                                 <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cli ? cli.nombre : t.titular}</span>
@@ -158,13 +258,56 @@ const TrabajosPage: React.FC = () => {
                                     );
                                 })}
                                 <div style={{ padding: '14px 20px', background: C.surfaceAlt, fontSize: 12.5, color: C.muted }}>
-                                    Mostrando {filtered.length} de {(trabajos ?? []).length} órdenes
+                                    Mostrando {filtered.length} de {(trabajos ?? []).length} órdenes {selectedIds.size > 0 && `(${selectedIds.size} seleccionadas)`}
                                 </div>
                             </div>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Barra flotante de acciones en lote */}
+            {selectedIds.size > 0 && (
+                <div style={{
+                    position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+                    background: '#0A1140', color: '#fff', padding: '12px 22px', borderRadius: 16,
+                    display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 20px 45px -10px rgba(10,17,64,.5)',
+                    zIndex: 50, border: '1px solid rgba(255,198,26,0.3)', flexWrap: 'wrap'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                        <span style={{ width: 24, height: 24, borderRadius: 99, background: C.gold, color: C.ink, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>
+                            {selectedIds.size}
+                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>órdenes seleccionadas</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button
+                            onClick={() => handleBatchStatus(TrabajoEstado.PROCESO)}
+                            style={{ ...S.softBtn, background: '#16309B', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: 12 }}
+                        >
+                            → Pasar a En Prensa
+                        </button>
+                        <button
+                            onClick={() => handleBatchStatus(TrabajoEstado.VITRINA)}
+                            style={{ ...S.softBtn, background: '#16A34A', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: 12 }}
+                        >
+                            → Pasar a Vitrina (Listo)
+                        </button>
+                        <button
+                            onClick={handleBatchPrint}
+                            style={{ ...S.softBtn, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: 12 }}
+                        >
+                            🖨️ Fichas de Taller
+                        </button>
+                        <button
+                            onClick={() => setSelectedIds(new Set())}
+                            style={{ ...S.softBtn, background: 'transparent', color: '#CAD5F5', fontSize: 12 }}
+                        >
+                            ✕ Deseleccionar
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {openTrabajo && (
                 <OrderDrawer

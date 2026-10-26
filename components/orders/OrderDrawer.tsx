@@ -6,6 +6,7 @@ import { logActivity } from '../../services/activityLogService';
 import { Cliente, StatusLog, Trabajo, TrabajoEstado } from '../../types';
 import { formatCurrency, generateWhatsAppLink } from '../../utils';
 import { C, S, MONO, DISPLAY, estadoCfg, PANEL_KEYFRAMES } from '../panelTheme';
+import RenovarOrdenModal from './RenovarOrdenModal';
 
 /**
  * Cajón lateral de detalle de orden — `Panel-Interno.dc.html` del handoff de diseño.
@@ -104,6 +105,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
     const [metodo, setMetodo] = useState(METODOS_PAGO[0]);
     const [ocupado, setOcupado] = useState<string | null>(null);
     const [aviso, setAviso] = useState<string | null>(null);
+    const [renovarAbierto, setRenovarAbierto] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
 
     const cfg = estadoCfg(trabajo.estado);
@@ -218,6 +220,19 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
         window.open(generateWhatsAppLink(telefono, `Hola ${nombreCliente}, le escribimos de Imprenta Córdova sobre su orden ${orden}.`), '_blank');
     };
 
+    const enviarAvisoVitrina = () => {
+        if (!telefono) return;
+        const msg = `Hola ${nombreCliente}, le saludamos de Imprenta Córdova. ¡Su trabajo ${orden} (${trabajo.tipo}) ya está LISTO para retirar en nuestro local! ${trabajo.saldo > 0 ? `Saldo a cancelar al retirar: ${formatCurrency(trabajo.saldo)}.` : 'Su pedido se encuentra totalmente pagado.'} Horario de atención: Lunes a Viernes 08:30 a 18:30. ¡Le esperamos!`;
+        window.open(generateWhatsAppLink(telefono, msg), '_blank');
+    };
+
+    const enviarPruebaArte = () => {
+        if (!telefono) return;
+        const link = trabajo.fotoOriginalUrl || trabajo.fotoEvidenciaUrl ? ` Puede ver el arte aquí: ${trabajo.fotoOriginalUrl || trabajo.fotoEvidenciaUrl}` : '';
+        const msg = `Hola ${nombreCliente}, le compartimos la prueba digital de su orden ${orden} (${trabajo.tipo}) de Imprenta Córdova para su revisión.${link} Por favor confírmenos si el diseño está aprobado o si requiere alguna corrección antes de imprimir.`;
+        window.open(generateWhatsAppLink(telefono, msg), '_blank');
+    };
+
     const imprimirNota = () =>
         navigate(trabajo.esSRI ? `/solicitud-impresion/${trabajo.id}` : `/orden-produccion/${trabajo.id}`);
 
@@ -296,6 +311,44 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
 
                     {tab === 'resumen' && (
                         <>
+                            {trabajo.estado === TrabajoEstado.VITRINA && (
+                                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <span style={{ fontSize: 22 }}>📦</span>
+                                        <div>
+                                            <div style={{ fontSize: 13, fontWeight: 700, color: '#166534' }}>¡Trabajo Listo en Vitrina!</div>
+                                            <div style={{ fontSize: 11.5, color: '#15803D' }}>{telefono ? `Teléfono: ${telefono}` : 'Sin teléfono registrado'}</div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={enviarAvisoVitrina}
+                                        disabled={!telefono}
+                                        style={{ ...S.primaryBtn, background: '#16A34A', fontSize: 12, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6, opacity: telefono ? 1 : 0.5, cursor: telefono ? 'pointer' : 'not-allowed' }}
+                                    >
+                                        📱 Avisar Retiro WhatsApp
+                                    </button>
+                                </div>
+                            )}
+
+                            {trabajo.estado === TrabajoEstado.EN_DISENO && (
+                                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#FAF5FF', border: '1px solid #E9D5FF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <span style={{ fontSize: 22 }}>🎨</span>
+                                        <div>
+                                            <div style={{ fontSize: 13, fontWeight: 700, color: '#6B21A8' }}>Fase de Diseño Gráfico</div>
+                                            <div style={{ fontSize: 11.5, color: '#7E22CE' }}>Envía la prueba de arte al cliente para aprobación</div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={enviarPruebaArte}
+                                        disabled={!telefono}
+                                        style={{ ...S.primaryBtn, background: '#7C3AED', fontSize: 12, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6, opacity: telefono ? 1 : 0.5, cursor: telefono ? 'pointer' : 'not-allowed' }}
+                                    >
+                                        📱 Enviar Prueba WhatsApp
+                                    </button>
+                                </div>
+                            )}
+
                             <Bloque titulo="Avance de producción">
                                 {timeline.map((s, i) => {
                                     const c = estadoCfg(s.estado);
@@ -518,10 +571,40 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
                     >
                         {ocupado === 'estado' ? 'Actualizando…' : siguiente ? `Pasar a ${estadoCfg(siguiente).label}` : 'Orden cerrada'}
                     </button>
-                    <button onClick={imprimirNota} style={{ padding: '13px 16px', background: C.softGray, color: C.royal, border: 'none', borderRadius: 11, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Imprimir nota</button>
+                    <button 
+                        onClick={() => window.open(trabajo.esSRI ? `/#/solicitud-impresion/${trabajo.id}` : `/#/recibo-epson/${trabajo.id}`, '_blank')} 
+                        title={trabajo.esSRI ? 'Imprimir Solicitud SRI (Medio Oficio)' : 'Imprimir Recibo Comercial (1/4 Oficio)'}
+                        style={{ padding: '13px 16px', background: C.softGray, color: C.royal, border: 'none', borderRadius: 11, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                        {trabajo.esSRI ? '📄 Solicitud SRI' : '🧾 Recibo (1/4 Oficio)'}
+                    </button>
+                    <button 
+                        onClick={() => window.open(`/#/nota-de-venta/${trabajo.id}`, '_blank')} 
+                        title="Emitir Nota de Venta RIMPE (Medio Oficio 160×220 mm)"
+                        style={{ padding: '13px 16px', background: '#0f2b48', color: '#fff', border: 'none', borderRadius: 11, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                        📑 Nota de Venta
+                    </button>
                     <button onClick={() => navigate(`/trabajos/${trabajo.id}`)} style={{ padding: '13px 16px', background: C.surface, color: C.body, border: `1px solid ${C.borderStrong}`, borderRadius: 11, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Editar</button>
+                    {/* Prioridad #1 del negocio: la mitad de las ventas son renovaciones.
+                        Clona esta orden en una nueva y la manda a imprimir en un paso. */}
+                    <button
+                        onClick={() => setRenovarAbierto(true)}
+                        title="Clonar esta orden como una nueva y mandarla a imprimir"
+                        style={{ padding: '13px 16px', background: C.gold, color: C.ink, border: 'none', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >Renovar</button>
                 </div>
             </aside>
+
+            {renovarAbierto && (
+                <RenovarOrdenModal
+                    trabajo={trabajo}
+                    cliente={cliente}
+                    usuario={usuario}
+                    rol={rol}
+                    onClose={() => setRenovarAbierto(false)}
+                />
+            )}
         </div>
     );
 };

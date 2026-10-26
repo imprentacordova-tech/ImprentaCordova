@@ -1,6 +1,34 @@
+/**
+ * Servicio de IA — Imprenta Córdova
+ * =================================
+ *
+ * SEGURIDAD: la GEMINI_API_KEY ya NO vive en el navegador. Todas las llamadas pasan
+ * por `/api/v1/ai/generate` en el backend (Render), que es el único que conoce la clave.
+ *
+ * Antes este archivo instanciaba el SDK de Google con una clave leída del entorno del
+ * cliente (la variable VITE_GEMINI_API_KEY) en 9 lugares. Todo lo que empieza con VITE_
+ * se incrusta en el bundle público, así que la clave quedaba publicada junto al sitio.
+ * Ahora el SDK de Google tampoco se empaqueta: el bundle de este servicio baja de ~90 KB
+ * porque ya no arrastra `@google/genai`.
+ */
 
-import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
+import { backendFetch } from './backendApi';
 import { AIContentRequest, DailySales, FinancialProjection, SupervisorAnalysis, ChatMessage } from "../types";
+
+/**
+ * Valores de tipo de esquema, idénticos al enum `Type` de @google/genai y aceptados
+ * tal cual por la REST API de Google. Definidos localmente para no empaquetar el SDK.
+ */
+const Type = {
+    STRING: 'STRING',
+    NUMBER: 'NUMBER',
+    INTEGER: 'INTEGER',
+    BOOLEAN: 'BOOLEAN',
+    ARRAY: 'ARRAY',
+    OBJECT: 'OBJECT',
+} as const;
+
+const MODELO = 'gemini-3-flash-preview';
 
 const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
     return Promise.race([
@@ -9,12 +37,28 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
     ]);
 };
 
+interface PeticionIA {
+    contents: unknown;
+    config?: Record<string, unknown>;
+    timeoutMs?: number;
+}
+
+/**
+ * Único punto de salida hacia la IA. Devuelve `{ text }`.
+ * @throws si el backend no responde o el modelo falla.
+ */
+const pedirIA = async ({ contents, config, timeoutMs = 30000 }: PeticionIA): Promise<{ text: string }> => {
+    return backendFetch<{ text: string }>(
+        '/api/v1/ai/generate',
+        { model: MODELO, contents, config },
+        { timeoutMs, etiqueta: 'IA' }
+    );
+};
+
 /**
  * Identifica un producto de imprenta a partir de una foto.
  */
 export const matchProductFromImage = async (base64Image: string): Promise<any | null> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const dataPart = base64Image.split(',')[1];
     const mimeType = base64Image.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
 
@@ -27,11 +71,10 @@ export const matchProductFromImage = async (base64Image: string): Promise<any | 
     Responde en JSON.`;
 
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
+        const response = await withTimeout(pedirIA({
             contents: { parts: [{ inlineData: { data: dataPart, mimeType: mimeType } }, { text: prompt }] },
-            config: { 
-                temperature: 0.2, 
+            config: {
+                temperature: 0.2,
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
@@ -45,7 +88,7 @@ export const matchProductFromImage = async (base64Image: string): Promise<any | 
                     required: ['tipo', 'recomendacion']
                 }
             }
-        }), 25000) as GenerateContentResponse;
+        }), 25000);
         return JSON.parse(response.text || "{}");
     } catch (error) {
         return null;
@@ -57,12 +100,10 @@ export const matchProductFromImage = async (base64Image: string): Promise<any | 
  * ACTUALIZACIÓN MAESTRA: Extracción precisa de establecimientos y teléfonos.
  */
 export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const mimeMatch = base64Image.match(/^data:(.*);base64,/);
     const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
     const dataPart = base64Image.split(',')[1];
-    
+
     const prompt = `Analiza este documento del SRI Ecuador (Certificado de RUC). Extrae con precisión quirúrgica:
     1. NOMBRE: La "Razón Social" o "Apellidos y Nombres".
     2. RUC: El número de 13 dígitos.
@@ -73,16 +114,22 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
        - Busca la sección "ESTABLECIMIENTOS REGISTRADOS".
        - Cuenta cuántos dicen estado "ABIERTO". Ese es 'numEstablecimientos'.
        - Identifica el código del establecimiento principal (generalmente 001, pero verifica).
+       - Devuelve ADEMÁS el arreglo 'establecimientos' con TODAS las filas de esa tabla,
+         incluidas las de estado "CERRADO" (que quede dicho cuáles están cerradas es parte
+         del dato, no algo para esconder). Una entrada por fila, con:
+         codigo (3 dígitos, ej. "001"), nombre (como figura en el certificado),
+         direccion (la de esa fila, no la de la matriz), tipo (MATRIZ / SUCURSAL / OTROS)
+         y estado (ABIERTO o CERRADO, textual como aparece).
+         No inventes filas: si la tabla está cortada o no se lee, devuelve sólo lo legible.
     7. ACTIVIDADES: Las actividades económicas principales.
     
     Responde en JSON limpio.`;
 
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
+        const response = await withTimeout(pedirIA({
             contents: { parts: [{ inlineData: { data: dataPart, mimeType: mimeType } }, { text: prompt }] },
-            config: { 
-                temperature: 0.1, 
+            config: {
+                temperature: 0.1,
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
@@ -95,16 +142,37 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
                         telefono: { type: Type.STRING, description: "Lista de teléfonos encontrados separados por coma" },
                         actividades: { type: Type.STRING },
                         numEstablecimientos: { type: Type.NUMBER, description: "Cantidad de locales ABIERTOS" },
-                        establecimientoPrincipal: { type: Type.STRING, description: "Código del local (ej: 001)" }
+                        establecimientoPrincipal: { type: Type.STRING, description: "Código del local (ej: 001)" },
+                        /*
+                         * Lista completa de "ESTABLECIMIENTOS REGISTRADOS". Es la única fuente
+                         * que devuelve las filas: el parser mecánico del PDF sólo cuenta
+                         * cuántos hay. Se guarda en `fiscal_data.establecimientos`
+                         * (ver services/establecimientos.ts).
+                         */
+                        establecimientos: {
+                            type: Type.ARRAY,
+                            description: "Todas las filas de la tabla ESTABLECIMIENTOS REGISTRADOS, abiertas y cerradas",
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    codigo: { type: Type.STRING, description: "Código de 3 dígitos, ej. 001" },
+                                    nombre: { type: Type.STRING, description: "Nombre del local como figura en el certificado" },
+                                    direccion: { type: Type.STRING, description: "Dirección de esa fila" },
+                                    tipo: { type: Type.STRING, description: "MATRIZ, SUCURSAL u OTROS" },
+                                    estado: { type: Type.STRING, description: "ABIERTO o CERRADO" }
+                                },
+                                required: ['codigo', 'estado']
+                            }
+                        }
                     },
                     required: ['nombre', 'ruc', 'numEstablecimientos']
                 }
             }
-        }), 35000) as GenerateContentResponse;
-        
+        }), 35000);
+
         return JSON.parse(response.text || "{}");
-    } catch (error) { 
-        return null; 
+    } catch (error) {
+        return null;
     }
 };
 
@@ -112,8 +180,6 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
  * Maestro Feature: Analiza si una imagen sirve para impresión profesional.
  */
 export const analyzeImageQualityForPrint = async (base64Image: string): Promise<any | null> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const dataPart = base64Image.split(',')[1];
     const mimeType = base64Image.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
 
@@ -122,11 +188,10 @@ export const analyzeImageQualityForPrint = async (base64Image: string): Promise<
     Responde en JSON con campos: 'calidad', 'advertencias', 'veredicto', 'porcentaje_exito'.`;
 
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
+        const response = await withTimeout(pedirIA({
             contents: { parts: [{ inlineData: { data: dataPart, mimeType: mimeType } }, { text: prompt }] },
-            config: { 
-                temperature: 0.2, 
+            config: {
+                temperature: 0.2,
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
@@ -138,7 +203,7 @@ export const analyzeImageQualityForPrint = async (base64Image: string): Promise<
                     }
                 }
             }
-        }), 25000) as GenerateContentResponse;
+        }), 25000);
         return JSON.parse(response.text || "{}");
     } catch (error) {
         return null;
@@ -146,37 +211,41 @@ export const analyzeImageQualityForPrint = async (base64Image: string): Promise<
 };
 
 export const generateMarketingPromotion = async (clientName: string, lastProducts: string[]): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const prompt = `Redacta un mensaje de WhatsApp amigable para "${clientName}" de Imprenta Córdova (Pasaje). Ofrece 10% en su próxima impresión de: ${lastProducts.join(", ")}. Usa emojis.`;
     try {
-        const response = await withTimeout(ai.models.generateContent({ model: modelId, contents: prompt }), 10000) as GenerateContentResponse;
+        const response = await withTimeout(pedirIA({ contents: prompt, timeoutMs: 10000 }), 10000);
         return response.text || "¡Hola! Tenemos promos para ti.";
     } catch (error) { return "¡Hola! Escríbenos para una oferta especial."; }
 };
 
+/**
+ * Conversación con el cliente. Envía el historial completo con sus roles
+ * ('user' / 'model'), que es lo que el parámetro `history` siempre pretendió hacer.
+ */
 export const chatWithCustomer = async (history: ChatMessage[], productsContext: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const systemInstruction = `Eres Córdova AI. Ayuda al cliente en Pasaje sobre: ${productsContext}`;
     try {
-        const chat = ai.chats.create({ model: modelId, config: { systemInstruction, temperature: 0.7 } });
-        const lastMsg = history[history.length - 1];
-        const response = await withTimeout(chat.sendMessage({ message: lastMsg.text }), 15000) as GenerateContentResponse;
+        const contents = history
+            .filter(m => m && typeof m.text === 'string' && m.text.trim().length > 0)
+            .map(m => ({ role: m.role === 'model' ? 'model' : 'user', parts: [{ text: m.text }] }));
+
+        if (contents.length === 0) return "¿En qué te puedo ayudar?";
+
+        const response = await withTimeout(pedirIA({
+            contents,
+            config: { systemInstruction, temperature: 0.7 }
+        }), 15000);
         return response.text || "Error.";
     } catch (error) { return "IA no disponible."; }
 };
 
 export const generateFinancialProjection = async (history: DailySales[]): Promise<FinancialProjection | null> => {
     if (!history.length) return null;
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const prompt = `Analiza ventas y proyecta 30 días: ${JSON.stringify(history)}`;
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
+        const response = await withTimeout(pedirIA({
             contents: prompt,
-            config: { 
+            config: {
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
@@ -188,7 +257,7 @@ export const generateFinancialProjection = async (history: DailySales[]): Promis
                     required: ['forecast', 'lowTrafficDays', 'suggestion']
                 }
             }
-        }), 20000) as GenerateContentResponse;
+        }), 20000);
         return JSON.parse(response.text);
     } catch (error) { return null; }
 };
@@ -204,9 +273,6 @@ export interface SampleOcrResult {
 }
 
 export const extractSampleTextOCR = async (imageInput: string): Promise<SampleOcrResult | null> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
-    
     let base64Data = imageInput;
     let mimeType = 'image/jpeg';
     if (imageInput.startsWith('data:')) {
@@ -229,8 +295,7 @@ export const extractSampleTextOCR = async (imageInput: string): Promise<SampleOc
     Responde en JSON estricto.`;
 
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
+        const response = await withTimeout(pedirIA({
             contents: { parts: [{ inlineData: { data: base64Data, mimeType } }, { text: prompt }] },
             config: {
                 temperature: 0.1,
@@ -249,7 +314,7 @@ export const extractSampleTextOCR = async (imageInput: string): Promise<SampleOc
                     required: ['razonSocial', 'ruc', 'direccion', 'telefonos']
                 }
             }
-        }), 25000) as GenerateContentResponse;
+        }), 25000);
         return JSON.parse(response.text || "{}");
     } catch (error) {
         console.error("Error en OCR de muestra:", error);
@@ -258,16 +323,13 @@ export const extractSampleTextOCR = async (imageInput: string): Promise<SampleOc
 };
 
 export const analyzeDesignWithSupervisor = async (designBase64: string, context: string): Promise<SupervisorAnalysis | null> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-    const modelId = "gemini-3-flash-preview";
     const prompt = `Actúa como un diseñador gráfico pro élite de la costa ecuatoriana (Pasaje, Ecuador), con estilo realista, premium y siempre al gusto de la costa ecuatoriana (sin salirte de lo lógico/sobrenatural).
     Eres el Supervisor de Calidad de Imprenta Córdova.
     Analiza este diseño para impresión profesional. Si consideras que necesitas una API de visión más avanzada (de pago) para dar un mejor diagnóstico, indícalo, pero por ahora dame el mejor análisis técnico posible usando esta herramienta gratuita.
     Contexto de la orden: ${context}
     Responde en JSON con: estado (VERDE, AMARILLO, ROJO), resumen (tu veredicto profesional con tu estilo costeño), y detalles (array con tipo, descripcion, sugerencia).`;
     try {
-        const response = await withTimeout(ai.models.generateContent({
-            model: modelId,
+        const response = await withTimeout(pedirIA({
             contents: { parts: [{ inlineData: { data: designBase64.split(',')[1], mimeType: 'image/jpeg' } }, { text: prompt }] },
             config: {
                 responseMimeType: "application/json",
@@ -281,17 +343,15 @@ export const analyzeDesignWithSupervisor = async (designBase64: string, context:
                     required: ['estado', 'resumen', 'detalles']
                 }
             }
-        }), 25000) as GenerateContentResponse;
+        }), 25000);
         return JSON.parse(response.text);
     } catch (error) { return null; }
 };
 
 export const generateMarketingCopy = async (request: AIContentRequest): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-  const modelId = "gemini-3-flash-preview";
   const prompt = `Copy para: ${request.businessName}, Producto: ${request.productType}, Tono: ${request.tone}.`;
   try {
-    const response = await withTimeout(ai.models.generateContent({ model: modelId, contents: prompt }), 10000) as GenerateContentResponse;
+    const response = await withTimeout(pedirIA({ contents: prompt, timeoutMs: 10000 }), 10000);
     return response.text || "Error.";
   } catch (error) { return "Error."; }
 };

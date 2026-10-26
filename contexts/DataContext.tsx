@@ -7,7 +7,7 @@
  */
 import React, { createContext, useContext, ReactNode } from 'react';
 import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, TrabajoEstado } from '../types';
-import { TrabajosProvider, useTrabajos } from './TrabajosContext';
+import { TrabajosProvider, useTrabajos, RealtimeEstado } from './TrabajosContext';
 import { ClientesProvider, useClientes } from './ClientesContext';
 import { InventarioProvider, useInventario } from './InventarioContext';
 import { ProductosProvider, useProductos } from './ProductosContext';
@@ -66,6 +66,9 @@ interface DataContextType {
     aprobarArte: (id: string) => Promise<Trabajo>;
     createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
     getClientDebt: (clienteId: string) => number;
+    /** Salud del canal en vivo (Supabase Realtime) y momento del último dato recibido. */
+    realtimeEstado: RealtimeEstado;
+    ultimaSync: number | null;
     syncFromLocalStorage: () => Promise<void>;
     addProveedor: (p: any) => Promise<void>;
     updateProveedor: (id: string, p: any) => Promise<void>;
@@ -78,7 +81,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { trabajos, loading: tLoading, fetchTrabajos, addTrabajo, updateTrabajoStatus, updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, registrarAbono, aprobarArte, getClientDebt } = useTrabajos();
+    const { trabajos, loading: tLoading, fetchTrabajos, addTrabajo, updateTrabajoStatus, updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, registrarAbono, aprobarArte, getClientDebt, realtimeEstado, ultimaSync } = useTrabajos();
     const { clientes, loading: cLoading, fetchClientes, addCliente, updateCliente, deleteCliente } = useClientes();
     const { inventario, loading: iLoading, fetchInventario, addItem: addInvItem, updateItem: updateInvItem, deleteItem: deleteInvItem } = useInventario();
     const { productos, loading: pLoading, fetchProductos, addProducto, updateProducto, deleteProducto, seedCatalog } = useProductos();
@@ -154,7 +157,7 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
         upsertSriCredential, bulkAddSriCredentials, deleteSriCredential, updateConfig,
         updateTrabajoPhoto, updateTrabajoEvidencia, registerRetiro, registrarAbono, aprobarArte,
         uploadFile,
-        createPublicOrder, getClientDebt, syncFromLocalStorage,
+        createPublicOrder, getClientDebt, realtimeEstado, ultimaSync, syncFromLocalStorage,
         addProveedor, updateProveedor, deleteProveedor,
         createTareaProveedor: createTarea, updateTareaProveedor: updateTarea, deleteTareaProveedor: deleteTarea,
     };

@@ -6,10 +6,14 @@
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "alarms"
   ],
   "host_permissions": [
-    "*://*.sri.gob.ec/*"
+    "*://*.sri.gob.ec/*",
+    "https://cordova-sri-api.onrender.com/*",
+    "https://www.imprentacordova.net/*",
+    "https://imprentacordova.net/*"
   ],
   "action": {
     "default_popup": "popup/popup.html",
@@ -28,7 +32,7 @@
     },
     {
       "matches": ["*://*.sri.gob.ec/*"],
-      "js": ["content/content.js"],
+      "js": ["cordovaApi.js", "content/content.js"],
       "css": ["content/inject.css"],
       "world": "ISOLATED",
       "run_at": "document_idle",

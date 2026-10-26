@@ -389,47 +389,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------------------------------------------
   function syncOrderToBackend(order) {
     if (!order) return;
-    const backendUrl = 'http://localhost:3000/api/v1/ordenes/sincronizar';
-    const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
 
     console.log('[Sync Auto] Enviando orden a imprentacordova.com...', order.orderNum);
 
-    // 1. Intentar microservicio backend primero
-    fetch(backendUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(order)
-    }).then(res => res.json()).then(data => {
-      console.log('✅ [Sync Backend OK]', data);
-    }).catch(err => {
-      console.warn('⚠️ Microservicio backend sin respuesta local, conectando directo a Supabase:', err.message);
-      // 2. Fallback directo a la base de datos de Supabase de imprentacordova.com
-      fetch(supabaseUrl, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({
-          titular: order.clientName || 'CONSUMIDOR FINAL',
-          tipo: order.docType || 'Nota de Venta',
-          subtipo: order.paperType || 'Químico',
-          cantidad: parseInt(order.qty) || 1,
-          tamano: order.paperSize || '1/4 Oficio',
-          total: parseFloat(order.total) || 0,
-          abono: parseFloat(order.abono) || 0,
-          saldo: parseFloat(order.saldo) || 0,
-          estado: parseFloat(order.saldo) > 0 ? 'En Proceso' : 'Completado',
-          establecimiento: order.est || '001',
-          punto_emision: order.pto || '001',
-          origen: 'Extension_Chrome_SRI'
-        })
-      }).then(r => r.json()).then(d => console.log('✅ [Sync Supabase Directo OK]', d))
-        .catch(e => console.error('❌ Error de red sincronizando con Supabase:', e));
-    });
+    // SEGURIDAD: antes esto apuntaba a http://localhost:3000 (roto en producción) y, si
+    // fallaba, escribía directo en Supabase con la service_role hardcodeada — una clave
+    // que saltea toda la Row Level Security y que quedaba publicada dentro del .crx.
+    // Ahora todo pasa por el backend, único que conoce la clave maestra.
+    CordovaApi.post('/api/v1/ordenes/sincronizar', order)
+      .then(data => {
+        console.log('✅ [Sync Backend OK]', data);
+      })
+      .catch(err => {
+        console.error('❌ [Sync Backend] No se pudo sincronizar la orden #' + order.orderNum + ':', err.message);
+      });
   }
 
   function loadOrdersFromStorage() {
@@ -438,18 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
       allOrders = localOrders;
       filterAndRender();
 
-      // Sincronización Bidireccional en Tiempo Real con imprentacordova.net (Supabase)
-      const supabaseUrl = 'https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/trabajos';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
-
-      fetch(`${supabaseUrl}?select=*&order=fecha_entrada.desc`, {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      })
-      .then(res => res.json())
-      .then(data => {
+      // Sincronización Bidireccional en Tiempo Real con imprentacordova.net
+      // (vía backend: la service_role ya no vive dentro de la extensión)
+      CordovaApi.get('/api/v1/trabajos/listar?limite=300')
+      .then(resp => {
+        const data = resp && resp.trabajos;
         if (Array.isArray(data) && data.length > 0) {
           const remoteMapped = data.map(t => ({
             orderNum: String(t.orden || t.id).padStart(4, '0'),
@@ -473,7 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
             caducidad: t.fecha_vencimiento || '',
             vigencia: '12 meses',
             notes: t.observaciones || '',
-            renovacion: t.es_renovacion ? 'SÍ' : 'NO'
+            renovacion: t.es_renovacion ? 'SÍ' : 'NO',
+            // Marcado del trámite declarado por el operador en el sistema (AUMENTO|CAMBIO|MISMO).
+            // Viaja con la orden: la extensión y el documento tienen que imprimir lo mismo.
+            tramiteSri: t.tramite_sri || null
           }));
 
           const orderMap = new Map();
@@ -489,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
           filterAndRender();
         }
       })
-      .catch(err => console.warn('⚠️ [Sync Cloud] No se pudo cargar desde Supabase:', err.message));
+      .catch(err => console.warn('⚠️ [Sync Cloud] No se pudo cargar desde el backend:', err.message));
     });
   }
 
@@ -890,19 +859,14 @@ document.addEventListener('DOMContentLoaded', () => {
         closePickupModal();
         filterAndRender();
 
-        // Enviar notificación por correo de entrega/cobro via Resend API
+        // Notificación de entrega/cobro.
+        // El envío lo hace el backend: la API key de Resend estaba hardcodeada aquí
+        // y la extensión se distribuye empaquetada, así que cualquiera podía extraerla.
         if (order.clientEmail) {
-          fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer re_MKsfBpR5_BwPGdreXmuGEW2MZrJFTdxz8'
-            },
-            body: JSON.stringify({
-              from: 'Imprenta Córdova <onboarding@resend.dev>',
-              to: [order.clientEmail],
-              subject: `✅ Confirmación de Entrega Orden #${order.orderNum} - Imprenta Córdova`,
-              html: `
+          CordovaApi.post('/api/v1/emails/enviar', {
+            to: order.clientEmail,
+            subject: `✅ Confirmación de Entrega Orden #${order.orderNum} - Imprenta Córdova`,
+            html: `
                 <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; background: #ffffff;">
                   <div style="text-align: center; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 16px;">
                     <h2 style="color: #0f2b48; margin: 0;">IMPRENTA CÓRDOVA</h2>
@@ -920,8 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </p>
                 </div>
               `
-            })
-          }).catch(err => console.error("Error enviando email de retiro:", err));
+          }).catch(err => console.error("Error enviando email de retiro:", err.message));
         }
 
         const shouldPrint = modalPrintReceipt ? modalPrintReceipt.checked : false;
@@ -1265,6 +1228,75 @@ document.addEventListener('DOMContentLoaded', () => {
   if (printCloseX) printCloseX.addEventListener('click', closePrintSelectorModal);
   if (printCancelBtn) printCancelBtn.addEventListener('click', closePrintSelectorModal);
 
+  const printOpenWebBtn = document.getElementById('print-modal-open-web-btn');
+  if (printOpenWebBtn) {
+    printOpenWebBtn.addEventListener('click', () => {
+      if (!currentPrintData) return;
+      const params = new URLSearchParams({
+        mode: 'sri-moderno',
+        orderNum: currentPrintData.orderNum || '',
+        ruc: currentPrintData.clientRuc || '',
+        name: currentPrintData.clientName || '',
+        doc: currentPrintData.docType || '',
+        blocks: String(currentPrintData.qty || '100'),
+        docSize: currentPrintData.paperSize || '1/4 Oficio',
+        est: currentPrintData.est || '001',
+        pto: currentPrintData.pto || '001',
+        total: String(currentPrintData.total || 0),
+        abono: String(currentPrintData.abono || 0),
+        saldo: String(currentPrintData.saldo || 0),
+        phone: currentPrintData.clientPhone || '',
+        actividad: currentPrintData.clientActivity || ''
+      });
+      window.open(`https://www.imprentacordova.net/#/solicitud-impresion/directo?${params.toString()}`, '_blank');
+    });
+  }
+
+  const printOpenReciboBtn = document.getElementById('print-modal-open-recibo-btn');
+  if (printOpenReciboBtn) {
+    printOpenReciboBtn.addEventListener('click', () => {
+      if (!currentPrintData) return;
+      const params = new URLSearchParams({
+        mode: 'comercial-moderno',
+        orderNum: currentPrintData.orderNum || '',
+        ruc: currentPrintData.clientRuc || '',
+        name: currentPrintData.clientName || '',
+        doc: currentPrintData.docType || 'Recibo Comercial',
+        blocks: String(currentPrintData.qty || '1'),
+        docSize: currentPrintData.paperSize || '1/4 Oficio',
+        est: currentPrintData.est || '001',
+        pto: currentPrintData.pto || '001',
+        total: String(currentPrintData.total || 0),
+        abono: String(currentPrintData.abono || 0),
+        saldo: String(currentPrintData.saldo || 0),
+        phone: currentPrintData.clientPhone || '',
+        actividad: currentPrintData.clientActivity || ''
+      });
+      window.open(`https://www.imprentacordova.net/#/recibo-epson/directo?${params.toString()}`, '_blank');
+    });
+  }
+
+  const printOpenNotaBtn = document.getElementById('print-modal-open-nota-btn');
+  if (printOpenNotaBtn) {
+    printOpenNotaBtn.addEventListener('click', () => {
+      if (!currentPrintData) return;
+      const params = new URLSearchParams({
+        mode: 'nota-sobre-preimpreso',
+        orderNum: currentPrintData.orderNum || '',
+        ruc: currentPrintData.clientRuc || '',
+        name: currentPrintData.clientName || '',
+        doc: currentPrintData.docType || 'Trabajo de Imprenta',
+        qty: String(currentPrintData.qty || '1'),
+        total: String(currentPrintData.total || 0),
+        abono: String(currentPrintData.total || 0),
+        saldo: '0.00',
+        phone: currentPrintData.clientPhone || '',
+        address: currentPrintData.clientAddress || 'Pasaje, El Oro'
+      });
+      window.open(`https://www.imprentacordova.net/#/nota-de-venta/directo?${params.toString()}`, '_blank');
+    });
+  }
+
   // Selector de opciones (chips)
   optionCards.forEach(card => {
     card.addEventListener('click', () => {
@@ -1323,6 +1355,31 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.prt-val-hora').forEach(el => el.textContent = formattedHora);
     document.querySelectorAll('.prt-val-entrega').forEach(el => el.textContent = '24h Tarde');
     document.querySelectorAll('.prt-val-detalles').forEach(el => el.textContent = d.detalles || 'Ninguno');
+
+    /*
+     * Marcado del trámite: Aument. / Cambiar. / Mismo.
+     *
+     * Antes estaba HARDCODEADO en el HTML, así que SIEMPRE salía "Mismo[✓]", incluso en un
+     * talonario nuevo. En la solicitud de autorización ante el SRI ese tilde es lo que declara
+     * qué se está pidiendo, así que no puede ser fijo.
+     *
+     * Ahora el valor viene de la ORDEN: el operador lo declara en el sistema (Nuevo Pedido) y
+     * viaja en `tramite_sri`, así que la extensión y el documento imprimen lo mismo.
+     *
+     * Espejo de `marcadoTramite()` en services/printModels.ts — si cambia uno, cambia el otro.
+     * Sin dato → MISMO, que es exactamente lo que el formulario imprimía por el hardcodeo.
+     */
+    const TRAMITES = [
+      { id: 'AUMENTO', label: 'Aument.' },
+      { id: 'CAMBIO',  label: 'Cambiar.' },
+      { id: 'MISMO',   label: 'Mismo' },
+    ];
+    const tramiteElegido = TRAMITES.some(t => t.id === d.tramiteSri) ? d.tramiteSri : 'MISMO';
+    document.querySelectorAll('.prt-check-tramite').forEach(el => {
+      el.textContent = TRAMITES
+        .map(t => t.label + (t.id === tramiteElegido ? '[✓]' : '[ ]'))
+        .join(' ');
+    });
 
     // Rellenar 13 casillas de RUC
     const rucStr = (d.clientRuc || '0000000000001').padStart(13, '0');

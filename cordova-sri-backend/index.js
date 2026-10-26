@@ -11,6 +11,10 @@ const app = express();
 const defaultOrigins = [
   'https://imprentacordova.com',
   'https://www.imprentacordova.com',
+  // Dominios del SRI: la extensión de Chrome hace fetch desde el content script,
+  // así que la petición llega con el Origin de la propia página del SRI.
+  'https://srienlinea.sri.gob.ec',
+  'https://sri.gob.ec',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:4173',
@@ -22,9 +26,24 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
   : defaultOrigins;
 
+// Orígenes de la extensión de Chrome (`chrome-extension://<id>`).
+// Si ALLOWED_EXTENSION_ORIGINS está definido se exige coincidencia exacta;
+// si no, se acepta cualquier extensión (la barrera real es la API key, no CORS).
+const ALLOWED_EXTENSION_ORIGINS = (process.env.ALLOWED_EXTENSION_ORIGINS || '')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
+const esOrigenExtensionPermitido = (origin) => {
+  if (!origin.startsWith('chrome-extension://')) return false;
+  if (ALLOWED_EXTENSION_ORIGINS.length === 0) return true;
+  return ALLOWED_EXTENSION_ORIGINS.includes(origin);
+};
+
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+        if (!origin
+            || ALLOWED_ORIGINS.includes(origin)
+            || origin.endsWith('.vercel.app')
+            || esOrigenExtensionPermitido(origin)) {
             callback(null, true);
         } else {
             callback(new Error(`Not allowed by CORS: ${origin}`));
@@ -35,6 +54,9 @@ app.use(cors({
     maxAge: 86400
 }));
 
+// El proxy de IA recibe imágenes en base64 (hasta ~12 MB). El resto del API se mantiene
+// en 1 MB para no ampliar la superficie de memoria del servidor.
+app.use('/api/v1/ai', express.json({ limit: '12mb' }));
 app.use(express.json({ limit: '1mb' }));
 
 const PORT = process.env.PORT || 3000;
@@ -52,6 +74,42 @@ const authenticateApiKey = (req, res, next) => {
         return next();
     }
     return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
+};
+
+/**
+ * Strict variant — FAILS CLOSED.
+ *
+ * Used by every endpoint that reaches a privileged resource (service_role writes,
+ * outbound email, paid AI). If API_KEY is not configured these endpoints refuse to
+ * serve instead of silently running open to the internet.
+ *
+ * NOTE: this does NOT make API_KEY a secret — the browser sends it, so it is public
+ * by definition. It is an abuse gate (paired with rate limiting + CORS), not a
+ * credential. Real secrets (SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, GEMINI_API_KEY)
+ * must never leave this server.
+ */
+const requireApiKey = (req, res, next) => {
+    if (!API_KEY) {
+        console.error('[Auth] BLOCKED: API_KEY is not configured on the server. Privileged endpoint refused.');
+        return res.status(503).json({
+            error: 'Server authentication is not configured. Set API_KEY before using this endpoint.'
+        });
+    }
+    const providedKey = req.headers['x-api-key'] || req.query.api_key;
+    if (providedKey === API_KEY) {
+        return next();
+    }
+    return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
+};
+
+/** Shared Supabase REST helper (service_role — server-side only). */
+const supabaseAdminHeaders = () => {
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    return {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json'
+    };
 };
 
 // ── Rate Limiting (simple in-memory) ─────────────────────────────────────
@@ -195,25 +253,41 @@ app.post('/api/v1/ordenes/sincronizar', authenticateApiKey, async (req, res) => 
 
         console.log(`[SRI Sync] Recibida orden #${orderNum} para cliente: ${clientRuc || 'N/A'}`);
 
+        let clienteId = null;
         if (clientRuc && clientName) {
-            await axios.post(`${SUPABASE_URL}/rest/v1/clientes`, {
-                ruc: clientRuc,
-                cedula: clientRuc.length === 13 ? clientRuc.substring(0, 10) : clientRuc,
-                nombre: clientName,
-                email: clientEmail || null,
-                telefono: clientPhone ? [clientPhone] : [],
-                actividades: actividad || null
-            }, {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
-                }
-            }).catch(e => console.log('[Sync Cliente Soft Warn]', e.message));
+            try {
+                const cliRes = await axios.post(`${SUPABASE_URL}/rest/v1/clientes`, {
+                    ruc: clientRuc,
+                    cedula: clientRuc.length === 13 ? clientRuc.substring(0, 10) : clientRuc,
+                    nombre: clientName,
+                    email: clientEmail || null,
+                    telefono: clientPhone ? [clientPhone] : [],
+                    actividades: actividad || null
+                }, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates,return=representation'
+                    }
+                });
+                clienteId = cliRes.data?.[0]?.id || null;
+            } catch (e) {
+                console.log('[Sync Cliente Soft Warn]', e.message);
+                try {
+                    const lookup = await axios.get(`${SUPABASE_URL}/rest/v1/clientes?ruc=eq.${encodeURIComponent(clientRuc)}&select=id`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    });
+                    clienteId = lookup.data?.[0]?.id || null;
+                } catch (e2) {}
+            }
         }
 
         const trabajoData = {
+            cliente_id: clienteId,
             titular: clientName,
             tipo: docType || 'Nota de Venta',
             subtipo: paperType || 'Quimico',
@@ -260,10 +334,15 @@ app.post('/api/v1/ordenes/sincronizar', authenticateApiKey, async (req, res) => 
 /**
  * Enviar Notificación de Orden por Correo Electrónico (Resend API)
  */
-app.post('/api/v1/notificar-email', async (req, res) => {
+app.post('/api/v1/notificar-email', requireApiKey, async (req, res) => {
     try {
         const { clientEmail, clientName, clientRuc, docType, blocks, docSize, total, abono, saldo } = req.body;
-        const resendKey = process.env.RESEND_API_KEY || 're_MKsfBpR5_BwPGdreXmuGEW2MZrJFTdxz8';
+        const resendKey = process.env.RESEND_API_KEY;
+
+        if (!resendKey) {
+            console.error('[Resend] BLOCKED: RESEND_API_KEY is not configured on the server.');
+            return res.status(503).json({ error: 'Servicio de correo no configurado.' });
+        }
 
         if (!clientEmail) {
             return res.status(400).json({ error: 'Falta el correo del cliente (clientEmail)' });
@@ -314,6 +393,335 @@ app.post('/api/v1/notificar-email', async (req, res) => {
     } catch(err) {
         console.error('⚠️ [Resend Error]:', err.response?.data || err.message);
         res.status(500).json({ error: 'Error enviando correo electrónico via Resend' });
+    }
+});
+
+/**
+ * Importar Padrón SRI (CSV masivo) — reemplaza el uso de service_role en el navegador.
+ *
+ * El cliente parsea el CSV (papaparse, streaming con progreso) y envía lotes aquí.
+ * La service_role vive SOLO en este servidor.
+ */
+const PADRON_TABLE = 'sri_padron_el_oro';
+const PADRON_MAX_LOTE = 1000;
+
+app.post('/api/v1/padron/importar', requireApiKey, async (req, res) => {
+    try {
+        const SUPABASE_URL = process.env.SUPABASE_URL;
+        const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!SUPABASE_URL || !SUPABASE_KEY) {
+            return res.status(503).json({ error: 'Base de datos no configurada en el servidor.' });
+        }
+
+        const { registros } = req.body;
+
+        if (!Array.isArray(registros) || registros.length === 0) {
+            return res.status(400).json({ error: 'Se requiere un arreglo "registros" no vacío.' });
+        }
+        if (registros.length > PADRON_MAX_LOTE) {
+            return res.status(413).json({ error: `Lote demasiado grande. Máximo ${PADRON_MAX_LOTE} registros.` });
+        }
+
+        // Normalización defensiva: solo columnas conocidas, RUC numérico de 13 dígitos.
+        const limpios = registros
+            .map(r => ({
+                ruc: String(r?.ruc ?? '').trim(),
+                razon_social: String(r?.razon_social ?? '').trim(),
+                provincia: r?.provincia ? String(r.provincia).trim() : null,
+                estado_contribuyente: r?.estado_contribuyente ? String(r.estado_contribuyente).trim() : null,
+                tipo_persona: r?.tipo_persona ? String(r.tipo_persona).trim() : null,
+                canton: r?.canton ? String(r.canton).trim() : null,
+                parroquia: r?.parroquia ? String(r.parroquia).trim() : null,
+                actividad_economica: r?.actividad_economica ? String(r.actividad_economica).trim() : null,
+            }))
+            .filter(r => /^\d{13}$/.test(r.ruc) && r.razon_social.length > 0);
+
+        if (limpios.length === 0) {
+            return res.status(400).json({ error: 'Ningún registro válido (se espera RUC de 13 dígitos + razón social).' });
+        }
+
+        await axios.post(`${SUPABASE_URL}/rest/v1/${PADRON_TABLE}?on_conflict=ruc`, limpios, {
+            headers: {
+                ...supabaseAdminHeaders(),
+                'Prefer': 'resolution=merge-duplicates,return=minimal'
+            }
+        });
+
+        res.json({ success: true, insertados: limpios.length, descartados: registros.length - limpios.length });
+    } catch (error) {
+        console.error('[Padron Import Error]', error.response?.data || error.message);
+        res.status(500).json({ success: false, error: 'Error al importar el padrón SRI.' });
+    }
+});
+
+/**
+ * Envío de correo genérico (HTML ya construido en el cliente).
+ * La RESEND_API_KEY vive SOLO en este servidor.
+ */
+app.post('/api/v1/emails/enviar', requireApiKey, async (req, res) => {
+    try {
+        const { to, subject, html } = req.body;
+        const resendKey = process.env.RESEND_API_KEY;
+
+        if (!resendKey) {
+            console.error('[Resend] BLOCKED: RESEND_API_KEY is not configured on the server.');
+            return res.status(503).json({ error: 'Servicio de correo no configurado.' });
+        }
+        if (!to || typeof to !== 'string' || !to.includes('@')) {
+            return res.status(400).json({ error: 'Destinatario inválido.' });
+        }
+        if (!subject || !html) {
+            return res.status(400).json({ error: 'Faltan "subject" o "html".' });
+        }
+
+        const emailResponse = await axios.post('https://api.resend.com/emails', {
+            from: process.env.RESEND_FROM || 'Imprenta Córdova <onboarding@resend.dev>',
+            to: [to],
+            subject: String(subject).slice(0, 300),
+            html: String(html)
+        }, {
+            headers: {
+                'Authorization': `Bearer ${resendKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        res.json({ success: true, messageId: emailResponse.data?.id });
+    } catch (err) {
+        console.error('[Resend Error]', err.response?.data || err.message);
+        res.status(500).json({ success: false, error: 'Error enviando correo electrónico.' });
+    }
+});
+
+/**
+ * Proxy de IA (Google Gemini) — la GEMINI_API_KEY vive SOLO en este servidor.
+ *
+ * El cliente envía { model, contents, config }; este endpoint traduce a la REST API
+ * de Google y devuelve { text } para que el cliente no necesite el SDK ni la clave.
+ */
+const GEMINI_MODELOS_PERMITIDOS = (process.env.GEMINI_MODELOS_PERMITIDOS
+    || 'gemini-3-flash-preview,gemini-2.5-flash,gemini-2.0-flash')
+    .split(',').map(s => s.trim()).filter(Boolean);
+
+app.post('/api/v1/ai/generate', requireApiKey, async (req, res) => {
+    try {
+        const geminiKey = process.env.GEMINI_API_KEY;
+        if (!geminiKey) {
+            console.error('[Gemini] BLOCKED: GEMINI_API_KEY is not configured on the server.');
+            return res.status(503).json({ error: 'Servicio de IA no configurado.' });
+        }
+
+        const { model, contents, config } = req.body || {};
+        const modelo = String(model || '').trim();
+
+        if (!GEMINI_MODELOS_PERMITIDOS.includes(modelo)) {
+            return res.status(400).json({
+                error: `Modelo no permitido. Permitidos: ${GEMINI_MODELOS_PERMITIDOS.join(', ')}`
+            });
+        }
+        if (!contents) {
+            return res.status(400).json({ error: 'Falta "contents".' });
+        }
+
+        // Traducción al formato REST de Google.
+        // El SDK del navegador aceptaba un string suelto en `contents` y se encargaba
+        // de convertirlo a Content[]; la REST API exige la forma completa.
+        const normalizarContents = (c) => {
+            if (typeof c === 'string') return [{ role: 'user', parts: [{ text: c }] }];
+            if (Array.isArray(c)) return c;
+            if (c && typeof c === 'object') {
+                if (c.parts) return [{ role: c.role || 'user', parts: c.parts }];
+                if (c.text) return [{ role: 'user', parts: [{ text: c.text }] }];
+            }
+            return null;
+        };
+
+        const normalizarSystemInstruction = (si) => {
+            if (!si) return undefined;
+            if (typeof si === 'string') return { parts: [{ text: si }] };
+            if (si.parts) return si;
+            if (si.text) return { parts: [{ text: si.text }] };
+            return undefined;
+        };
+
+        const { systemInstruction, ...generationConfig } = config || {};
+        const contentsNormalizados = normalizarContents(contents);
+
+        if (!contentsNormalizados) {
+            return res.status(400).json({ error: 'Formato de "contents" no reconocido.' });
+        }
+
+        const payload = { contents: contentsNormalizados };
+        if (Object.keys(generationConfig).length > 0) payload.generationConfig = generationConfig;
+        const si = normalizarSystemInstruction(systemInstruction);
+        if (si) payload.systemInstruction = si;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
+        const r = await axios.post(url, payload, {
+            headers: { 'x-goog-api-key': geminiKey, 'Content-Type': 'application/json' },
+            timeout: 60000
+        });
+
+        const texto = (r.data?.candidates?.[0]?.content?.parts || [])
+            .map(p => p?.text || '')
+            .join('');
+
+        res.json({ text: texto, finishReason: r.data?.candidates?.[0]?.finishReason || null });
+    } catch (error) {
+        const detalle = error.response?.data?.error?.message || error.message;
+        console.error('[Gemini Proxy Error]', detalle);
+        res.status(502).json({ success: false, error: 'Error consultando el servicio de IA.', detalle });
+    }
+});
+
+/**
+ * Operaciones de datos de la extensión de Chrome (clientes / trabajos).
+ *
+ * La extensión se distribuye empaquetada, así que TODO su código es público.
+ * Antes llevaba la service_role embebida para escribir directo en Supabase;
+ * ahora esas escrituras pasan por aquí y la clave maestra no sale del servidor.
+ *
+ * Nota: la tabla `clientes`/`trabajos` tiene RLS por rol y una petición `anon`
+ * no satisface ninguna política (`auth.uid()` es NULL), así que estas rutas son
+ * la única vía legítima de escritura desde la extensión.
+ */
+const supabaseRest = async (method, path, body) => {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+        const err = new Error('Base de datos no configurada en el servidor.');
+        err.statusCode = 503;
+        throw err;
+    }
+
+    return axios({
+        method,
+        url: `${SUPABASE_URL}/rest/v1/${path}`,
+        data: body,
+        headers: {
+            ...supabaseAdminHeaders(),
+            'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation'
+        }
+    });
+};
+
+const soloColumnas = (obj, permitidas) => {
+    const out = {};
+    for (const k of permitidas) {
+        if (obj && obj[k] !== undefined) out[k] = obj[k];
+    }
+    return out;
+};
+
+const responderErrorDatos = (res, error, contexto) => {
+    const status = error.statusCode || 500;
+    console.error(`[${contexto}]`, error.response?.data || error.message);
+    res.status(status).json({ success: false, error: error.message || `Error en ${contexto}.` });
+};
+
+/** Alta/actualización de cliente desde la extensión (por RUC). */
+app.post('/api/v1/clientes/upsert', requireApiKey, async (req, res) => {
+    try {
+        const payload = soloColumnas(req.body, [
+            'ruc', 'cedula', 'nombre', 'telefono', 'email', 'actividades'
+        ]);
+
+        if (!payload.ruc || !payload.nombre) {
+            return res.status(400).json({ error: 'Se requieren "ruc" y "nombre".' });
+        }
+
+        const r = await supabaseRest('POST', 'clientes?on_conflict=ruc', payload);
+        res.json({ success: true, cliente: r.data?.[0] || null });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Clientes Upsert');
+    }
+});
+
+/** Actualización parcial de un cliente por id o por RUC. */
+app.post('/api/v1/clientes/actualizar', requireApiKey, async (req, res) => {
+    try {
+        const { id, ruc, cambios } = req.body || {};
+        if (!id && !ruc) {
+            return res.status(400).json({ error: 'Se requiere "id" o "ruc".' });
+        }
+
+        const payload = soloColumnas(cambios, ['telefono', 'email', 'actividades', 'nombre', 'cedula']);
+        if (Object.keys(payload).length === 0) {
+            return res.status(400).json({ error: 'Sin campos válidos para actualizar.' });
+        }
+
+        const filtro = id ? `id=eq.${encodeURIComponent(id)}` : `ruc=eq.${encodeURIComponent(ruc)}`;
+        const r = await supabaseRest('PATCH', `clientes?${filtro}`, payload);
+        res.json({ success: true, cliente: r.data?.[0] || null });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Clientes Actualizar');
+    }
+});
+
+/** Alta de trabajo desde la extensión. */
+app.post('/api/v1/trabajos/crear', requireApiKey, async (req, res) => {
+    try {
+        const payload = soloColumnas(req.body, [
+            'cliente_id', 'titular', 'tipo', 'subtipo', 'cantidad', 'total', 'abono', 'saldo',
+            'prioridad', 'estado', 'fecha_entrada', 'origen', 'establecimiento', 'punto_emision',
+            'tamano', 'actividad_seleccionada', 'fecha_vencimiento', 'cedula_ruc', 'telefono'
+        ]);
+
+        if (!payload.titular) {
+            return res.status(400).json({ error: 'Se requiere "titular".' });
+        }
+
+        const r = await supabaseRest('POST', 'trabajos', payload);
+        res.json({ success: true, trabajo: r.data?.[0] || null });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Trabajos Crear');
+    }
+});
+
+/** Actualización parcial de un trabajo por id. */
+app.post('/api/v1/trabajos/actualizar', requireApiKey, async (req, res) => {
+    try {
+        const { id, cambios } = req.body || {};
+        if (!id) {
+            return res.status(400).json({ error: 'Se requiere "id".' });
+        }
+
+        const payload = soloColumnas(cambios, [
+            'total', 'abono', 'saldo', 'tamano', 'subtipo', 'actividad_seleccionada',
+            'estado', 'prioridad', 'telefono', 'cedula_ruc'
+        ]);
+        if (Object.keys(payload).length === 0) {
+            return res.status(400).json({ error: 'Sin campos válidos para actualizar.' });
+        }
+
+        const r = await supabaseRest('PATCH', `trabajos?id=eq.${encodeURIComponent(id)}`, payload);
+        res.json({ success: true, trabajo: r.data?.[0] || null });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Trabajos Actualizar');
+    }
+});
+
+/** Listado de trabajos para el panel de la extensión. */
+app.get('/api/v1/trabajos/listar', requireApiKey, async (req, res) => {
+    try {
+        const limite = Math.min(parseInt(req.query.limite, 10) || 300, 1000);
+        const r = await supabaseRest('GET', `trabajos?select=*&order=fecha_entrada.desc&limit=${limite}`);
+        res.json({ success: true, trabajos: r.data || [] });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Trabajos Listar');
+    }
+});
+
+/** Conteo de trabajos listos en Vitrina para el badge de la extensión (100% GRATIS - CERO TOKENS) */
+app.get('/api/v1/trabajos/vitrina-count', requireApiKey, async (req, res) => {
+    try {
+        const r = await supabaseRest('GET', 'trabajos?estado=in.(Vitrina,Terminado)&select=id');
+        const count = Array.isArray(r.data) ? r.data.length : 0;
+        res.json({ success: true, count, timestamp: new Date().toISOString() });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Trabajos Vitrina Count');
     }
 });
 

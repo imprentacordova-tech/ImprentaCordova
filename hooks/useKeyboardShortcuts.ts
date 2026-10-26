@@ -42,6 +42,16 @@ export const useKeyboardShortcuts = () => {
                 e.preventDefault();
                 navigate('/trabajos');
             }
+            // Alt + K: Monitor de Taller (KDS) — el supervisor camina con la tablet
+            else if (e.altKey && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                navigate('/kds');
+            }
+            // Alt + F: Facturación SRI
+            else if (e.altKey && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                navigate('/facturacion');
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);

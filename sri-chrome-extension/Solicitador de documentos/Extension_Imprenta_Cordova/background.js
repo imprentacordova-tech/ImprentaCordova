@@ -1,18 +1,56 @@
+// Consulta de trabajos listos en Vitrina (100% GRATIS - CERO TOKENS DE IA)
+async function actualizarBadgeRetiros() {
+  try {
+    const res = await fetch('https://cordova-sri-api.onrender.com/api/v1/trabajos/vitrina-count');
+    const data = await res.json();
+    if (data && typeof data.count === 'number') {
+      if (data.count > 0) {
+        chrome.action.setBadgeText({ text: String(data.count) });
+        chrome.action.setBadgeBackgroundColor({ color: '#16a34a' });
+        chrome.action.setTitle({ title: `Imprenta Córdova: ${data.count} trabajo(s) listos para retiro en Vitrina` });
+      } else {
+        chrome.action.setBadgeText({ text: '' });
+        chrome.action.setTitle({ title: 'Imprenta Córdova Solicitador SRI' });
+      }
+    }
+  } catch (e) {
+    // Modo offline silencioso
+  }
+}
+
 chrome.runtime.onInstalled.addListener(() => {
-  // Initialize default block quantity
+  // Inicializar cantidad predeterminada
   chrome.storage.local.get(['cordovaBlocks'], (result) => {
     if (!result.cordovaBlocks) {
       chrome.storage.local.set({ cordovaBlocks: 100 });
     }
   });
+
+  // Alarma periódica cada 5 minutos (100% gratuito, cero consumo de tokens)
+  chrome.alarms.create('checkVitrina', { periodInMinutes: 5 });
+  actualizarBadgeRetiros();
   console.log("Extension Imprenta Cordova Solicitador iniciada.");
 });
 
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'checkVitrina') {
+    actualizarBadgeRetiros();
+  }
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  actualizarBadgeRetiros();
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "refreshVitrinaBadge") {
+    actualizarBadgeRetiros();
+    return;
+  }
   if (request.action === "openRegistry") {
     chrome.storage.local.get(['cordovaOpenWebDirect'], (res) => {
       if (res.cordovaOpenWebDirect) {
-        chrome.tabs.create({ url: 'https://www.imprentacordova.net/nuevo-pedido' });
+        chrome.tabs.create({ url: 'https://www.imprentacordova.net/#/nuevo' });
       } else {
         chrome.tabs.create({ url: chrome.runtime.getURL('registro.html') });
       }

@@ -74,9 +74,22 @@
           <div class="qty-chip" data-val="200">200</div>
         </div>
         
-        <div class="input-group" style="margin-top: 10px;">
-          <label class="section-lbl">Otro valor:</label>
-          <input type="number" id="blocks" value="100" min="1" max="10000" style="font-size: 18px; border-bottom: 1px solid #3498db; width: 80px;">
+        <div class="divider"></div>
+
+        <label class="section-lbl">Formato Solicitud SRI:</label>
+        <div class="model-chips" id="model-chips" style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+          <div class="doc-chip active model-chip" data-model="sri-sobre-preimpreso" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 10.5px;">
+            <span>📦 1. Sobre Preimpreso</span>
+            <span style="font-size: 8.5px; opacity: 0.8; font-weight: normal;">(Gasta 10 Blocks)</span>
+          </div>
+          <div class="doc-chip model-chip" data-model="sri-arte-completo" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 10.5px;">
+            <span>📄 2. Clásico Completo</span>
+            <span style="font-size: 8.5px; opacity: 0.8; font-weight: normal;">(Hoja en Blanco)</span>
+          </div>
+          <div class="doc-chip model-chip" data-model="sri-moderno" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 10.5px;">
+            <span>✨ 3. Evolución Moderna</span>
+            <span style="font-size: 8.5px; opacity: 0.8; font-weight: normal;">(Full Pro con QR)</span>
+          </div>
         </div>
       </div>
 
@@ -86,7 +99,10 @@
       </div>
 
       <button id="btn-start" class="btn-start">INICIAR AUTOMATIZACIÓN</button>
-      <button id="btn-registry" class="btn-registry">REGISTRO DE RETIROS</button>
+      <button id="btn-open-solicitud" class="btn-registry" style="border-color: #3b82f6; color: #60a5fa; margin-top: 6px;">🖨️ ABRIR SOLICITUD DE IMPRESIÓN (SRI)</button>
+      <button id="btn-open-recibo" class="btn-registry" style="border-color: #10b981; color: #34d399; margin-top: 6px;">🧾 ABRIR RECIBO COMERCIAL (NO SRI)</button>
+      <button id="btn-open-nota" class="btn-registry" style="border-color: #f59e0b; color: #fbbf24; margin-top: 6px;">📑 ABRIR NOTA DE VENTA (MEDIO OFICIO)</button>
+      <button id="btn-registry" class="btn-registry" style="margin-top: 6px;">BANDEJA DE RETIROS</button>
     </div>
 
     <!-- ========================================== -->
@@ -195,6 +211,7 @@
     </div>
   </div>
   
+  <script src="../cordovaApi.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

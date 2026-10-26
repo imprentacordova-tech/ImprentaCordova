@@ -796,9 +796,18 @@
         </div>
       </div>
 
-      <div class="modal-footer" style="border-top: 1.5px solid #e2e8f0; padding: 12px 20px; background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" id="print-modal-cancel-btn" class="btn btn-secondary" style="padding: 9px 18px; border-radius: 8px;">Cerrar</button>
-        <button type="button" id="print-modal-trigger-btn" class="btn btn-primary" style="padding: 10px 24px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border: none; color: #fff; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,0.35); font-size: 13px;">🖨️ Imprimir / Guardar PDF</button>
+      <div class="modal-footer" style="border-top: 1.5px solid #e2e8f0; padding: 12px 20px; background: #f8fafc; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <button type="button" id="print-modal-open-web-btn" class="btn btn-secondary" style="padding: 10px 14px; border-radius: 8px; background: #0f2b48; color: #fff; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px;">
+          🌐 Solicitud SRI (Medio Oficio)
+        </button>
+        <button type="button" id="print-modal-open-recibo-btn" class="btn btn-secondary" style="padding: 10px 14px; border-radius: 8px; background: #16a34a; color: #fff; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px;">
+          🧾 Recibo Comercial (1/4 Oficio)
+        </button>
+        <button type="button" id="print-modal-open-nota-btn" class="btn btn-secondary" style="padding: 10px 14px; border-radius: 8px; background: #b45309; color: #fff; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px;">
+          📑 Nota de Venta (Medio Oficio)
+        </button>
+        <button type="button" id="print-modal-cancel-btn" class="btn btn-secondary" style="padding: 9px 16px; border-radius: 8px;">Cerrar</button>
+        <button type="button" id="print-modal-trigger-btn" class="btn btn-primary" style="padding: 10px 20px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; color: #fff; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.35); font-size: 12px;">🖨️ Imprimir / PDF</button>
       </div>
     </div>
   </div>
@@ -968,7 +977,7 @@
 
           <div class="solic-row inline-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
             <span class="lbl" style="font-weight: bold;">Telef:</span>
-            <span style="font-size: 7px; color: #475569; margin: 0 4px;">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
+            <span class="prt-check-tramite" style="font-size: 7px; color: #475569; margin: 0 4px;">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
             <span class="val dotted prt-val-client-phone" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; font-weight: bold; padding: 0 6px;"></span>
             <span class="lbl" style="font-weight: bold; margin-left: 10px;">Email:</span>
             <span class="val dotted prt-val-client-email" style="flex: 1; border-bottom: 1px dotted #94a3b8; color: #475569; padding-left: 4px;"></span>
@@ -1166,7 +1175,7 @@
 
           <div class="solic-row inline-row" style="display: flex; align-items: baseline; margin-bottom: 2px;">
             <span class="lbl" style="font-weight: bold;">Telef:</span>
-            <span style="font-size: 7px; color: #475569; margin: 0 4px;">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
+            <span class="prt-check-tramite" style="font-size: 7px; color: #475569; margin: 0 4px;">Aument.[ ] Cambiar[ ] Mismo[✓]</span>
             <span class="val dotted prt-val-client-phone" style="border-bottom: 1px dotted #94a3b8; font-family: monospace; font-weight: bold; padding: 0 6px;"></span>
             <span class="lbl" style="font-weight: bold; margin-left: 10px;">Email:</span>
             <span class="val dotted prt-val-client-email" style="flex: 1; border-bottom: 1px dotted #94a3b8; color: #475569; padding-left: 4px;"></span>
@@ -1317,6 +1326,7 @@
     </div>
   </div>
 
+  <script src="cordovaApi.js"></script>
   <script src="registro.js"></script>
 </body>
 </html>

@@ -2,9 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const blocksInput = document.getElementById('blocks');
   const autoPilotSwitch = document.getElementById('auto-pilot');
   const autoSuggestSwitch = document.getElementById('auto-suggest');
-  const docChips = document.querySelectorAll('.doc-chip');
+  const docChips = document.querySelectorAll('.doc-chips .doc-chip');
   const qtyChips = document.querySelectorAll('.qty-chip');
+  const modelChips = document.querySelectorAll('.model-chip');
   const btnStart = document.getElementById('btn-start');
+  const btnOpenSolicitud = document.getElementById('btn-open-solicitud');
   const btnRegistry = document.getElementById('btn-registry');
 
   // Imprenta Elements
@@ -33,31 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const backendChip = document.getElementById('backend-status-chip');
   const backendText = document.getElementById('backend-status-text');
 
-  // Comprobar estado de conexión con el backend
+  // Comprobar estado de conexión con el backend (Render)
   function checkBackendHealth() {
-    fetch('http://localhost:3000/ping')
-      .then(res => res.json())
-      .then(data => {
+    CordovaApi.ping()
+      .then(() => {
         if (backendChip && backendText) {
           backendChip.classList.remove('offline');
-          backendText.textContent = 'Backend Online (Local)';
+          backendText.textContent = 'Backend Online';
         }
       })
       .catch(() => {
-        // Fallback a Supabase REST
-        fetch('https://keilxgrrevfsvyxufecz.supabase.co/rest/v1/', { method: 'HEAD' })
-          .then(() => {
-            if (backendChip && backendText) {
-              backendChip.classList.remove('offline');
-              backendText.textContent = 'imprentacordova.com Cloud';
-            }
-          })
-          .catch(() => {
-            if (backendChip && backendText) {
-              backendChip.classList.add('offline');
-              backendText.textContent = 'Modo Offline';
-            }
-          });
+        if (backendChip && backendText) {
+          backendChip.classList.add('offline');
+          backendText.textContent = 'Modo Offline';
+        }
       });
   }
 
@@ -123,7 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       } else {
         chrome.storage.local.set({ cordovaDocType: "1" }); 
-      }
+      // Preferred SRI Print Model
+      const preferredModel = result.cordova_preferred_print_model || 'sri-sobre-preimpreso';
+      modelChips.forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.model === preferredModel);
+      });
     });
   }
 
@@ -145,6 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
         blocksInput.value = val;
         updateQtyChips(val);
         saveBlocks(parseInt(val, 10));
+    });
+  });
+
+  modelChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      modelChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      chrome.storage.local.set({ cordova_preferred_print_model: chip.dataset.model });
     });
   });
 
@@ -192,6 +195,90 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { window.close(); }, 500);
           }
         });
+      });
+    });
+  }
+
+  if (btnOpenSolicitud) {
+    btnOpenSolicitud.addEventListener('click', () => {
+      chrome.storage.local.get(['cordova_preferred_print_model', 'cordova_pending_order', 'current_session_ruc', 'cordovaDocType', 'cordovaBlocks'], (res) => {
+        const preferredModel = res.cordova_preferred_print_model || 'sri-sobre-preimpreso';
+        const pending = res.cordova_pending_order || {};
+        const ruc = pending.clientRuc || res.current_session_ruc || '0702065319001';
+        const docNames = { "0": "Facturas", "1": "Notas de Venta", "5": "Guías de Remisión" };
+        const docTypeVal = pending.docType || res.cordovaDocType || "1";
+        const docName = docNames[docTypeVal] || "Nota de Venta";
+        const blocksVal = pending.blocks || res.cordovaBlocks || 100;
+
+        const params = new URLSearchParams({
+          mode: preferredModel,
+          ruc: ruc,
+          name: pending.clientName || 'CONTRIBUYENTE SRI',
+          doc: docName,
+          blocks: String(blocksVal),
+          docSize: pending.docSize || '1/4 Oficio',
+          total: String(pending.total || 13.00),
+          abono: String(pending.abono || 0.00),
+          phone: pending.clientPhone || '',
+          activity: pending.activity || ''
+        });
+        const url = `https://www.imprentacordova.net/#/solicitud-impresion/directo?${params.toString()}`;
+        chrome.tabs.create({ url });
+        window.close();
+      });
+    });
+  }
+
+  const btnOpenRecibo = document.getElementById('btn-open-recibo');
+  if (btnOpenRecibo) {
+    btnOpenRecibo.addEventListener('click', () => {
+      chrome.storage.local.get(['cordova_preferred_comercial_model', 'cordova_pending_order', 'current_session_ruc'], (res) => {
+        const preferredModel = res.cordova_preferred_comercial_model || 'comercial-sobre-preimpreso';
+        const pending = res.cordova_pending_order || {};
+        const ruc = pending.clientRuc || res.current_session_ruc || '0702065319001';
+
+        const params = new URLSearchParams({
+          mode: preferredModel,
+          ruc: ruc,
+          name: pending.clientName || 'CLIENTE COMERCIAL',
+          doc: pending.docName || 'Trabajo Comercial General',
+          qty: String(pending.blocks || 100),
+          tamano: pending.docSize || '1/4 Oficio',
+          total: String(pending.total || 25.00),
+          abono: String(pending.abono || 10.00),
+          saldo: String(pending.saldo || 15.00),
+          phone: pending.clientPhone || '',
+          detalle: pending.activity || ''
+        });
+        const url = `https://www.imprentacordova.net/#/recibo-epson/directo?${params.toString()}`;
+        chrome.tabs.create({ url });
+        window.close();
+      });
+    });
+  }
+
+  const btnOpenNota = document.getElementById('btn-open-nota');
+  if (btnOpenNota) {
+    btnOpenNota.addEventListener('click', () => {
+      chrome.storage.local.get(['cordova_pending_order', 'current_session_ruc'], (res) => {
+        const pending = res.cordova_pending_order || {};
+        const ruc = pending.clientRuc || res.current_session_ruc || '0702065319001';
+
+        const params = new URLSearchParams({
+          mode: 'nota-sobre-preimpreso',
+          ruc: ruc,
+          name: pending.clientName || 'CLIENTE MOSTRADOR',
+          doc: pending.docName || 'Trabajo de Imprenta',
+          qty: String(pending.blocks || 1),
+          total: String(pending.total || 25.00),
+          abono: String(pending.total || 25.00),
+          saldo: '0.00',
+          phone: pending.clientPhone || '',
+          address: pending.clientAddress || 'Pasaje, El Oro'
+        });
+        const url = `https://www.imprentacordova.net/#/nota-de-venta/directo?${params.toString()}`;
+        chrome.tabs.create({ url });
+        window.close();
       });
     });
   }

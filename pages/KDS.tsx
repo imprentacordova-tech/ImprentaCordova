@@ -1,47 +1,37 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Cliente, Trabajo, TrabajoEstado, User } from '../types';
 import { KANBAN_COLUMNS } from '../constants';
-import { formatCurrency, formatDate } from '../utils';
+import { formatCurrency, formatDate, generateWhatsAppLink } from '../utils';
 import { logActivity } from '../services/activityLogService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BottomSheet } from '../components/BottomSheet';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, ESTADO, estadoCfg, dot, estadoPill, PANEL_KEYFRAMES } from '../components/panelTheme';
+/**
+ * La lógica del tablero (urgencia, tiempo en etapa, frescura y orden de columnas) vive en
+ * `services/tallerBoard.ts`: son funciones puras y ahí sí se pueden testear.
+ * Todas reciben `ahora` como parámetro, así el reloj de React mantiene los tiempos vivos.
+ */
+import { compararParaTaller, esUrgente, hace, tiempoEnEtapa, calcularSla, CHECKLIST_POR_FASE, type ChecklistItem } from '../services/tallerBoard';
 
 const COLS = KANBAN_COLUMNS.filter(s => s !== TrabajoEstado.ENTREGADO);
 const FLOW: TrabajoEstado[] = [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO, TrabajoEstado.PROCESO, TrabajoEstado.VITRINA, TrabajoEstado.ENTREGADO];
 
-const esUrgente = (t: Trabajo): boolean => {
-    if (t.prioridad === 'Urgente') return true;
-    const target = t.fechaEntrega || t.fechaVencimiento;
-    if (!target) return false;
-    const diff = (new Date(target).getTime() - Date.now()) / 86400000;
-    return diff < 1;
-};
-
-const tiempoEnEtapa = (t: Trabajo): string => {
-    const base = t.updated_at || t.fechaEntrada;
-    if (!base) return '—';
-    const diff = Date.now() - new Date(base).getTime();
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    return h > 0 ? `${h} h ${m} m` : `${m} m`;
-};
-
-const FILTROS = ['Vista general', 'Prioridad crítica', 'En diseño', 'Producción activa'] as const;
+const FILTROS = ['Vista general', 'Prioridad crítica', '⚠️ En riesgo / Vencidos', 'En diseño', 'Producción activa'] as const;
 
 // ── Tarjeta ─────────────────────────────────────────────────────────────────
 const Card: React.FC<{
     t: Trabajo;
     cliente?: Cliente;
+    ahora: number;
     onOpen: () => void;
     onAdvance: () => void;
-}> = ({ t, cliente, onOpen, onAdvance }) => {
+}> = ({ t, cliente, ahora, onOpen, onAdvance }) => {
     const cfg = estadoCfg(t.estado);
-    const urg = esUrgente(t);
+    const sla = calcularSla(t, ahora);
     const next = FLOW[FLOW.indexOf(t.estado) + 1];
     const [hover, setHover] = useState(false);
     return (
@@ -56,15 +46,30 @@ const Card: React.FC<{
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             style={{
-                border: `1px solid ${C.border}`, borderLeft: `3px solid ${cfg.dot}`, borderRadius: 11,
-                padding: '12px 13px', cursor: 'pointer', background: C.surface, transition: 'all .2s',
+                border: `1px solid ${sla.status === 'vencido' ? sla.border : C.border}`,
+                borderLeft: `4px solid ${sla.status === 'vencido' ? sla.dot : cfg.dot}`,
+                borderRadius: 11,
+                padding: '12px 13px', cursor: 'pointer',
+                background: sla.status === 'vencido' ? '#FFF5F5' : C.surface,
+                transition: 'all .2s',
                 boxShadow: hover ? '0 12px 22px -18px rgba(10,17,64,.5)' : 'none',
                 transform: hover ? 'translateY(-2px)' : 'none',
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11.5, fontFamily: MONO, color: C.faint }}>ORD-{String(t.orden).padStart(4, '0')}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: urg ? C.danger : C.faint }}>{urg ? 'urgente' : tiempoEnEtapa(t)}</span>
+                {sla.status !== 'sin_fecha' ? (
+                    <span style={{
+                        padding: '2px 7px', borderRadius: 6, fontSize: 10, fontWeight: 700,
+                        color: sla.color, background: sla.bg, border: `1px solid ${sla.border}`,
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}>
+                        <span style={dot(sla.dot, 5)} />
+                        {sla.label} · {sla.detalle}
+                    </span>
+                ) : (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: C.faint }}>{tiempoEnEtapa(t, ahora)}</span>
+                )}
             </div>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: C.ink, marginTop: 6 }}>{cliente?.nombre || 'Consumidor Final'}</div>
             <div style={{ fontSize: 12, color: C.muted, marginTop: 3, lineHeight: 1.5 }}>
@@ -91,14 +96,42 @@ const KDSPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
-    const { trabajos, clientes, updateTrabajoStatus } = useData();
+    const { trabajos, clientes, updateTrabajoStatus, realtimeEstado, ultimaSync } = useData();
     const navigate = useNavigate();
+
+    /* Reloj vivo: mantiene los "tiempo en etapa" honestos aunque no llegue ningún evento. */
+    const [ahora, setAhora] = useState(() => Date.now());
+    useEffect(() => {
+        const id = setInterval(() => setAhora(Date.now()), 30000);
+        return () => clearInterval(id);
+    }, []);
 
     const [filterTerm, setFilterTerm] = useState('');
     const [activeTag, setActiveTag] = useState<string>('Vista general');
     const [draggedOver, setDraggedOver] = useState<TrabajoEstado | null>(null);
     const [mobileTab, setMobileTab] = useState<TrabajoEstado>(TrabajoEstado.PENDIENTE);
     const [selected, setSelected] = useState<Trabajo | null>(null);
+    const [whatsappPrompt, setWhatsappPrompt] = useState<{ trabajo: Trabajo; cliente?: Cliente } | null>(null);
+    const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
+
+    // Cargar checklist de la orden seleccionada desde localStorage
+    useEffect(() => {
+        if (!selected) return;
+        try {
+            const raw = localStorage.getItem(`kds_chk_${selected.id}`);
+            if (raw) setChecklistState(JSON.parse(raw));
+            else setChecklistState({});
+        } catch { setChecklistState({}); }
+    }, [selected?.id]);
+
+    const toggleCheckItem = (itemId: string) => {
+        if (!selected) return;
+        const next = { ...checklistState, [itemId]: !checklistState[itemId] };
+        setChecklistState(next);
+        try {
+            localStorage.setItem(`kds_chk_${selected.id}`, JSON.stringify(next));
+        } catch {}
+    };
 
     const filtered = useMemo(() => {
         let f = (trabajos ?? []).filter(t => t.estado !== TrabajoEstado.ENTREGADO);
@@ -110,25 +143,47 @@ const KDSPage: React.FC = () => {
                 (clientes.find(c => c.id === t.clienteId)?.nombre || '').toLowerCase().includes(q),
             );
         }
-        if (activeTag === 'Prioridad crítica') f = f.filter(esUrgente);
+        if (activeTag === 'Prioridad crítica') f = f.filter(t => esUrgente(t, ahora));
+        else if (activeTag === '⚠️ En riesgo / Vencidos') f = f.filter(t => ['vencido', 'alerta'].includes(calcularSla(t, ahora).status));
         else if (activeTag === 'En diseño') f = f.filter(t => [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO].includes(t.estado));
         else if (activeTag === 'Producción activa') f = f.filter(t => [TrabajoEstado.PROCESO, TrabajoEstado.VITRINA].includes(t.estado));
         return f;
-    }, [trabajos, filterTerm, activeTag, clientes]);
+    }, [trabajos, filterTerm, activeTag, clientes, ahora]);
 
+    /**
+     * Orden dentro de cada columna: primero lo urgente, después lo más atascado.
+     *
+     * Sin esto las tarjetas salían en el orden crudo de la tabla (fecha de entrada desc),
+     * así que una orden urgente podía quedar enterrada debajo de veinte normales y una
+     * orden frenada tres días no se distinguía de una recién creada. Eso es exactamente
+     * el "atasco" que el taller no debe tener.
+     */
     const columns = useMemo(() => {
         const cols = {} as Record<TrabajoEstado, Trabajo[]>;
-        COLS.forEach(c => { cols[c] = filtered.filter(t => t.estado === c); });
+        COLS.forEach(c => {
+            cols[c] = filtered
+                .filter(t => t.estado === c)
+                .sort((a, b) => compararParaTaller(a, b, ahora));
+        });
         return cols;
-    }, [filtered]);
+    }, [filtered, ahora]);
 
     const advance = useCallback(async (id: string, newStatus: TrabajoEstado) => {
         if (!currentUser) return;
         try {
             await updateTrabajoStatus(id, newStatus, currentUser.nombre);
             logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Orden ${id} → ${newStatus}`, 'Producción');
+
+            // Disparador de notificación por WhatsApp si pasa a Vitrina
+            if (newStatus === TrabajoEstado.VITRINA) {
+                const target = (trabajos ?? []).find(t => t.id === id);
+                const cli = target ? clientes.find(c => c.id === target.clienteId) : undefined;
+                if (target && cli?.telefono?.length) {
+                    setWhatsappPrompt({ trabajo: { ...target, estado: TrabajoEstado.VITRINA }, cliente: cli });
+                }
+            }
         } catch (err) { console.error('Error al cambiar estado:', err); }
-    }, [updateTrabajoStatus, currentUser]);
+    }, [updateTrabajoStatus, currentUser, trabajos, clientes]);
 
     const onDrop = useCallback(async (e: React.DragEvent, newStatus: TrabajoEstado) => {
         e.preventDefault();
@@ -139,9 +194,22 @@ const KDSPage: React.FC = () => {
 
     const stats = [
         { label: 'Órdenes en taller', value: String(filtered.length), color: C.royal },
-        { label: 'Prioridad crítica', value: String(filtered.filter(esUrgente).length), color: C.danger },
+        { label: 'Prioridad crítica', value: String(filtered.filter(t => esUrgente(t, ahora)).length), color: C.danger },
         { label: 'Valor en taller', value: formatCurrency(filtered.reduce((a, t) => a + t.total, 0)), color: C.ink },
     ];
+
+    /* Indicador real de frescura. Antes había un punto verde parpadeando siempre, sin
+       relación con el estado del canal: si Realtime se caía, el taller seguía viendo
+       "en vivo" sobre datos congelados. */
+    const vivo = realtimeEstado === 'conectado';
+    const caido = realtimeEstado === 'error';
+    const estadoLive = {
+        color: caido ? C.danger : vivo ? C.successDot : C.gold,
+        texto: caido ? 'Sin tiempo real' : vivo ? 'En vivo' : 'Conectando…',
+        nota: caido
+            ? 'El tablero puede estar desactualizado. Recargá la página.'
+            : `Datos ${hace(ultimaSync, ahora)}`,
+    };
 
     return (
         <div style={S.page}>
@@ -155,9 +223,22 @@ const KDSPage: React.FC = () => {
                         <p style={S.eyebrow}>Taller</p>
                         <h1 style={S.h1}>Monitor de Taller</h1>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 15px', ...S.card, borderRadius: 10 }}>
-                        <span style={{ ...dot(C.successDot, 7), animation: 'pi-blink 2s ease-in-out infinite' }} />
-                        <span style={{ fontSize: 12, color: C.body }}>Toque una tarjeta para ver el detalle · arrástrela para cambiar de estado</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                        <div
+                            title={estadoLive.nota}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', ...S.card, borderRadius: 10,
+                                borderColor: caido ? C.dangerBorder : C.border,
+                                background: caido ? C.dangerBg : C.surface,
+                            }}
+                        >
+                            <span style={{ ...dot(estadoLive.color, 7), animation: vivo ? 'pi-blink 2s ease-in-out infinite' : 'none' }} />
+                            <span style={{ fontSize: 12, fontWeight: 700, color: caido ? C.dangerText : C.body }}>{estadoLive.texto}</span>
+                            <span style={{ fontSize: 11.5, color: caido ? C.dangerText : C.faint }}>· {estadoLive.nota}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 15px', ...S.card, borderRadius: 10 }}>
+                            <span style={{ fontSize: 12, color: C.body }}>Toque una tarjeta para ver el detalle · arrástrela para cambiar de estado</span>
+                        </div>
                     </div>
                 </div>
 
@@ -246,6 +327,7 @@ const KDSPage: React.FC = () => {
                                                     key={t.id}
                                                     t={t}
                                                     cliente={clientes.find(c => c.id === t.clienteId)}
+                                                    ahora={ahora}
                                                     onOpen={() => setSelected(t)}
                                                     onAdvance={() => { const n = FLOW[FLOW.indexOf(t.estado) + 1]; if (n) advance(t.id, n); }}
                                                 />
@@ -321,6 +403,30 @@ const KDSPage: React.FC = () => {
                                 </div>
                             </div>
 
+                            {CHECKLIST_POR_FASE[selected.estado] && (
+                                <div>
+                                    <div style={{ ...S.fieldLabel, marginBottom: 8 }}>Control Operativo ({selected.estado})</div>
+                                    <div style={{ ...S.card, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 9 }}>
+                                        {CHECKLIST_POR_FASE[selected.estado].map(chk => {
+                                            const checked = !!checklistState[chk.id];
+                                            return (
+                                                <label key={chk.id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: checked ? C.success : C.ink }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        onChange={() => toggleCheckItem(chk.id)}
+                                                        style={{ width: 16, height: 16, accentColor: C.royal, cursor: 'pointer' }}
+                                                    />
+                                                    <span style={{ textDecoration: checked ? 'line-through' : 'none', opacity: checked ? 0.75 : 1 }}>
+                                                        {chk.label}
+                                                    </span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
                                 {selected.esSRI && (
                                     <button style={S.outlineBtn} onClick={() => { const id = selected.id; setSelected(null); navigate(`/solicitud-impresion/${id}`); }}>
@@ -333,7 +439,7 @@ const KDSPage: React.FC = () => {
                                         onClick={() => {
                                             const tel = cli.telefono[0];
                                             const msg = `Hola ${cli.nombre}, le escribimos de Imprenta Córdova sobre su orden ORD-${String(selected.orden).padStart(4, '0')}.`;
-                                            window.open(`https://wa.me/593${tel.slice(-9)}?text=${encodeURIComponent(msg)}`, '_blank');
+                                            window.open(generateWhatsAppLink(tel, msg), '_blank');
                                         }}
                                     >
                                         Avisar por WhatsApp
@@ -345,6 +451,45 @@ const KDSPage: React.FC = () => {
                     );
                 })()}
             </BottomSheet>
+
+            {/* Prompt modal para notificación inmediata de WhatsApp al pasar a Vitrina */}
+            {whatsappPrompt && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                    <div onClick={() => setWhatsappPrompt(null)} style={{ position: 'absolute', inset: 0, background: C.scrim, backdropFilter: 'blur(2px)' }} />
+                    <div style={{ position: 'relative', width: 'min(480px, 100%)', background: '#fff', borderRadius: 16, padding: '24px 26px', boxShadow: '0 25px 50px -12px rgba(10,17,64,.3)', zIndex: 1, border: `1px solid ${C.border}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <span style={{ width: 44, height: 44, borderRadius: 12, background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
+                                📱
+                            </span>
+                            <div>
+                                <h3 style={{ ...S.h2, fontSize: 18 }}>¡Orden #{String(whatsappPrompt.trabajo.orden).padStart(4, '0')} en Vitrina!</h3>
+                                <p style={{ margin: 0, fontSize: 12, color: C.faint }}>Listo para entrega · Notificación directa</p>
+                            </div>
+                        </div>
+                        <p style={{ fontSize: 13, color: C.body, marginTop: 14, lineHeight: 1.5 }}>
+                            ¿Deseas enviar un WhatsApp a <strong>{whatsappPrompt.cliente?.nombre || whatsappPrompt.trabajo.titular}</strong> avisando que su pedido ya está listo para retirar?
+                        </p>
+                        <div style={{ padding: '10px 14px', borderRadius: 10, background: C.surfaceAlt, border: `1px solid ${C.divider}`, fontSize: 12, color: C.muted, marginTop: 10, fontStyle: 'italic' }}>
+                            "Hola {whatsappPrompt.cliente?.nombre || whatsappPrompt.trabajo.titular}, Imprenta Córdova le informa que su pedido #{whatsappPrompt.trabajo.orden} está listo para retirar. {whatsappPrompt.trabajo.saldo > 0 ? `Saldo pendiente: ${formatCurrency(whatsappPrompt.trabajo.saldo)}.` : 'Su pedido se encuentra pagado.'}"
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 18 }}>
+                            <button style={S.softBtn} onClick={() => setWhatsappPrompt(null)}>Omitir</button>
+                            <button
+                                style={{ ...S.primaryBtn, background: '#16A34A', display: 'flex', alignItems: 'center', gap: 6 }}
+                                onClick={() => {
+                                    const tel = whatsappPrompt.cliente?.telefono?.[0] || '';
+                                    const nom = whatsappPrompt.cliente?.nombre || whatsappPrompt.trabajo.titular;
+                                    const msg = `Hola ${nom}, Imprenta Córdova le informa que su pedido #${whatsappPrompt.trabajo.orden} (${whatsappPrompt.trabajo.subtipo || whatsappPrompt.trabajo.tipo}) está listo para retirar en nuestro local. ${whatsappPrompt.trabajo.saldo > 0 ? `Saldo pendiente al retirar: ${formatCurrency(whatsappPrompt.trabajo.saldo)}.` : 'Su pedido se encuentra cancelado.'} Horario: Lunes a Viernes 08:30 a 18:30.`;
+                                    window.open(generateWhatsAppLink(tel, msg), '_blank');
+                                    setWhatsappPrompt(null);
+                                }}
+                            >
+                                Enviar WhatsApp ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

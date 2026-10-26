@@ -1,8 +1,14 @@
 /**
- * Servicio de Notificaciones por Correo Electrónico — Imprenta Córdova (Resend API)
+ * Servicio de Notificaciones por Correo Electrónico — Imprenta Córdova
+ * ====================================================================
+ *
+ * El HTML de cada plantilla se arma acá (no es secreto y así el diseño vive
+ * junto a la UI). El ENVÍO lo hace el backend en Render, porque la
+ * RESEND_API_KEY no puede estar en el navegador: cualquier variable `VITE_`
+ * termina incrustada en el bundle público.
  */
 
-const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY || 're_MKsfBpR5_BwPGdreXmuGEW2MZrJFTdxz8';
+import { backendFetch, BackendError } from './backendApi';
 
 export interface EmailOrderDetails {
   clienteNombre: string;
@@ -17,36 +23,24 @@ export interface EmailOrderDetails {
 }
 
 /**
- * Función genérica de envío con Resend
+ * Función genérica de envío. Devuelve `false` en vez de lanzar para no romper
+ * el flujo del operador: una notificación fallida no debe bloquear una venta.
  */
 export async function sendResendEmail(to: string, subject: string, htmlContent: string): Promise<boolean> {
   if (!to || !to.includes('@')) return false;
 
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`
-      },
-      body: JSON.stringify({
-        from: 'Imprenta Córdova <onboarding@resend.dev>',
-        to: [to],
-        subject: subject,
-        html: htmlContent
-      })
-    });
-
-    if (res.ok) {
-      console.log(`⚡ [Resend OK] Correo enviado exitosamente a ${to}`);
-      return true;
-    } else {
-      const errData = await res.json().catch(() => ({}));
-      console.warn('⚠️ [Resend Warn]', errData);
-      return false;
-    }
+    await backendFetch(
+      '/api/v1/emails/enviar',
+      { to, subject, html: htmlContent },
+      { etiqueta: 'Correo' }
+    );
+    console.log(`⚡ [Correo OK] Enviado a ${to}`);
+    return true;
   } catch (err) {
-    console.error('❌ [Resend Error]', err);
+    if (err instanceof BackendError && err.status === 503) {
+      console.warn('⚠️ [Correo] El servidor no tiene configurada la clave de Resend.');
+    }
     return false;
   }
 }

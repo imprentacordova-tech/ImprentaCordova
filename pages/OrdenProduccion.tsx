@@ -42,9 +42,18 @@ const OrdenProduccionPage: React.FC = () => {
     const trackingUrl = `${window.location.origin}/#/tracking?q=${trabajo.id}`;
     const qrSource = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(trackingUrl)}`;
 
-    const dtRetiro = new Date(trabajo.fechaEntrada);
-    const hoursToAdd = trabajo.tiempoEntregaEstimado === '24h' ? 24 : 48;
-    dtRetiro.setHours(dtRetiro.getHours() + hoursToAdd);
+    // Fecha de retiro: manda `fechaEntrega`, que se calculó al tomar el pedido con el
+    // plazo realmente elegido (24 h / 48 h). Antes se ignoraba y siempre se reconstruía
+    // como fechaEntrada + estimado, así que la ficha de taller mostraba una fecha
+    // distinta a la que se le prometió al cliente. El heurístico queda solo como
+    // respaldo para órdenes antiguas sin `fechaEntrega` guardada.
+    let dtRetiro: Date;
+    if (trabajo.fechaEntrega) {
+        dtRetiro = new Date(trabajo.fechaEntrega);
+    } else {
+        dtRetiro = new Date(trabajo.fechaEntrada);
+        dtRetiro.setHours(dtRetiro.getHours() + (trabajo.tiempoEntregaEstimado === '24h' ? 24 : 48));
+    }
     
     const diaSemana = dtRetiro.toLocaleDateString('es-EC', { weekday: 'long' });
     const diaMes = dtRetiro.getDate();

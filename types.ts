@@ -18,6 +18,21 @@ export enum Regimen {
   GENERAL = 'General'
 }
 
+/**
+ * Una fila de la sección "ESTABLECIMIENTOS REGISTRADOS" del certificado de RUC del SRI.
+ *
+ * `codigo` es el que va impreso en el talonario (3 dígitos: 001, 002...) y `estado` es
+ * "ABIERTO" / "CERRADO" tal como lo publica el SRI. Ver `services/establecimientos.ts`
+ * para la normalización de lo que llega desde el PDF o desde la lectura con IA.
+ */
+export interface EstablecimientoFiscal {
+  codigo: string;
+  nombre: string;
+  direccion: string;
+  tipo: string;
+  estado: string;
+}
+
 export interface Cliente {
   id: string;
   cedula: string;
@@ -42,13 +57,7 @@ export interface Cliente {
     tipo_contribuyente?: string;
     obligado_contabilidad?: boolean;
     actividades?: Array<{ codigo: string; descripcion: string }>;
-    establecimientos?: Array<{
-      codigo: string;
-      nombre: string;
-      direccion: string;
-      tipo: string;
-      estado: string;
-    }>;
+    establecimientos?: EstablecimientoFiscal[];
     ultima_sincronizacion?: string;
   };
 }
@@ -93,6 +102,25 @@ export interface Trabajo {
   observaciones?: string;
   numeracion?: string;
   autorizacion_sri?: string;
+  /**
+   * Modelo de impresión con el que se produce esta orden (ver `services/printModels.ts`).
+   *
+   * Se guarda como texto libre a propósito: el valor puede venir de una fila vieja o de la
+   * extensión de Chrome, así que `resolverModelo()` lo valida y cae al default si no sirve.
+   * Persistirlo es lo que hace que la variante sea un dato de la ORDEN y no de la pantalla:
+   * la extensión y el documento de impresión hablan del mismo modo.
+   */
+  modeloImpresion?: string;
+  /**
+   * Marcado del trámite en la solicitud de autorización del SRI: `AUMENTO` | `CAMBIO` | `MISMO`
+   * (ver `services/printModels.ts` → `marcadoTramite`).
+   *
+   * Lo declara el operador al tomar el pedido: NO se deduce de `esRenovacion`, porque una
+   * renovación puede ser "Mismo" o "Aumento" según la cantidad pedida, y "Cambiar" si el
+   * cliente modificó un dato. Texto libre a propósito, igual que `modeloImpresion`: puede
+   * venir de una fila vieja o de la extensión, y `resolverTramite()` cae al default si no sirve.
+   */
+  tramiteSri?: string;
   created_at?: string;
   updated_at?: string;
 }

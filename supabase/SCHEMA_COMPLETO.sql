@@ -90,7 +90,12 @@ CREATE TABLE IF NOT EXISTS trabajos (
     actividad_seleccionada TEXT,
     arte_aprobado BOOLEAN DEFAULT false,
     autorizacion_sri TEXT,
-    numeracion TEXT
+    numeracion TEXT,
+    -- Variante de producción de la orden (ver services/printModels.ts).
+    -- NULL = default de la familia: 'sri-sobre-preimpreso' para SRI, 'comercial-recibo' si no.
+    modelo_impresion TEXT,
+    -- Casilla marcada en la solicitud SRI: 'AUMENTO' | 'CAMBIO' | 'MISMO'. NULL = MISMO.
+    tramite_sri TEXT
 );
 
 -- 6. Tabla: inventario (Materia Prima)

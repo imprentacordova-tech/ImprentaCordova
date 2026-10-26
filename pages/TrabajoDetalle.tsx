@@ -53,11 +53,9 @@ const TrabajoDetallePage: React.FC = () => {
                             ? <button style={S.primaryBtn} onClick={() => navigate(`/solicitud-impresion/${trabajo.id}`)}>Solicitud SRI</button>
                             : <button style={S.primaryBtn} onClick={() => navigate(`/orden-produccion/${trabajo.id}`)}>Orden de taller</button>}
                         <button style={S.outlineBtn} onClick={() => window.open(`/#/recibo-abono/${trabajo.id}`, '_blank')}>Ticket 80mm</button>
-                        <button style={S.outlineBtn} onClick={() => window.open(`/#/recibo-epson/${trabajo.id}`, '_blank')}>Recibo Epson</button>
+                        <button style={S.outlineBtn} onClick={() => window.open(`/#/recibo-epson/${trabajo.id}`, '_blank')}>🧾 Recibo Comercial (1/4 Oficio)</button>
                         <button style={{ ...S.primaryBtn, background: '#1B6E3E' }} onClick={() => navigate('/facturacion')}>Factura SRI</button>
-                        {(trabajo.estado === TrabajoEstado.VITRINA || trabajo.estado === TrabajoEstado.ENTREGADO) && (
-                            <button style={{ ...S.primaryBtn, background: C.danger }} onClick={() => navigate(`/nota-de-venta/${trabajo.id}`)}>Nota de retiro</button>
-                        )}
+                        <button style={{ ...S.primaryBtn, background: '#0f2b48' }} onClick={() => window.open(`/#/nota-de-venta/${trabajo.id}`, '_blank')}>📑 Nota de Venta (Medio Oficio)</button>
                     </div>
                 </div>
 

@@ -96,11 +96,13 @@ const App: React.FC = () => {
           <Route path="/orden-produccion/:trabajoId" element={<OrdenProduccionPage />} />
           <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
           <Route path="/recibo-epson/:trabajoId" element={<ReciboEpsonPage />} />
+          <Route path="/recibo-comercial/:trabajoId" element={<ReciboEpsonPage />} />
 
           {/* Protected Administration Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/nuevo" element={<NuevoPedidoPage />} />
+            <Route path="/nuevo-pedido" element={<NuevoPedidoPage />} />
             <Route path="/diseno" element={<DisenoPage />} />
             <Route path="/produccion" element={<ProduccionPage />} />
             <Route path="/kds" element={<KDSPage />} />

@@ -38,6 +38,33 @@ const C = {
     faint: '#8A93AE', muted: '#6B7590', chipBlue: '#EEF1FC',
 };
 
+const MONO = "'JetBrains Mono',monospace";
+
+/**
+ * Atajos globales, espejo de `hooks/useKeyboardShortcuts.ts`.
+ *
+ * El sistema YA tenía atajos (Alt+D, Alt+N, Alt+C…) pero eran completamente invisibles:
+ * nadie los descubre. Mostrarlos en el menú es lo que los convierte en una herramienta.
+ * Si agregás un atajo en el hook, agregalo acá.
+ */
+const ATAJOS: Record<string, string> = {
+    '/dashboard':   'D',
+    '/trabajos':    'T',
+    '/nuevo':       'N',
+    '/retiros':     'R',
+    '/kds':         'K',
+    '/inventario':  'I',
+    '/clientes':    'C',
+    '/facturacion': 'F',
+};
+
+/**
+ * La acción más frecuente del negocio (tomar un pedido en el mostrador) se destaca como
+ * botón principal, no como una fila más del menú: es lo que Pedro hace decenas de veces
+ * por día y tenía el mismo peso visual que "Descargar Extensión".
+ */
+const RUTA_CTA = '/nuevo';
+
 const buildNavGroups = (isAdmin: boolean) => [
     {
         id: 'operaciones',
@@ -160,6 +187,9 @@ const NavItem: React.FC<{
         );
     }
 
+    const atajo = ATAJOS[item.path];
+    const esCTA = item.path === RUTA_CTA;
+
     return (
         <NavLink
             to={item.path}
@@ -168,24 +198,58 @@ const NavItem: React.FC<{
             onMouseLeave={() => setHover(false)}
             style={({ isActive }) => ({
                 ...rowBase,
-                ...(isActive
-                    ? { background: 'rgba(255,198,26,.1)', color: C.gold, boxShadow: 'inset 2px 0 0 #FFC61A' }
-                    : { background: hover ? 'rgba(255,255,255,.04)' : 'transparent', color: '#C2CAE6' }),
+                position: 'relative',
+                overflow: 'hidden',
+                ...(esCTA
+                    ? {
+                        background: C.gold, color: C.ink, fontWeight: 700,
+                        boxShadow: isActive ? '0 0 0 2px rgba(255,198,26,.45)' : '0 6px 16px -10px rgba(255,198,26,.9)',
+                    }
+                    : { background: hover ? 'rgba(255,255,255,.05)' : 'transparent', color: isActive ? C.gold : '#C2CAE6' }),
             })}
         >
             {({ isActive }) => (
                 <>
-                    <span style={{ display: 'flex', alignItems: 'center', color: isActive ? C.gold : '#8E9AC4' }}>
+                    {isActive && !esCTA && (
+                        <motion.div
+                            layoutId="sidebarActivePill"
+                            transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                            style={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'rgba(255,198,26,.12)',
+                                borderLeft: '3px solid #FFC61A',
+                                borderRadius: 10,
+                                zIndex: 0,
+                            }}
+                        />
+                    )}
+                    <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', color: esCTA ? C.ink : isActive ? C.gold : '#8E9AC4' }}>
                         <item.icon className="w-[15px] h-[15px] shrink-0" />
                     </span>
-                    <span style={{ flex: 1, fontSize: 12, fontWeight: 600, letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                    <span style={{ position: 'relative', zIndex: 1, flex: 1, fontSize: 12, fontWeight: esCTA ? 800 : (isActive ? 700 : 600), letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
                     {badgeCount > 0 && (
                         <span style={{
-                            flexShrink: 0, padding: '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800,
-                            ...(isActive ? { background: 'rgba(255,198,26,.22)', color: C.gold } : { background: 'rgba(255,255,255,.08)', color: '#9AA6CE' }),
+                            position: 'relative', zIndex: 1, flexShrink: 0, padding: '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800,
+                            ...(esCTA
+                                ? { background: 'rgba(10,17,64,.16)', color: C.ink }
+                                : isActive ? { background: 'rgba(255,198,26,.22)', color: C.gold } : { background: 'rgba(255,255,255,.08)', color: '#9AA6CE' }),
                         }}>
                             {badgeCount}
                         </span>
+                    )}
+                    {/* Atajo a la vista: el sistema ya los tenía, pero invisibles. */}
+                    {atajo && (
+                        <span
+                            title={`Atajo: Alt + ${atajo}`}
+                            style={{
+                                position: 'relative', zIndex: 1, flexShrink: 0, padding: '1px 5px', borderRadius: 5, fontFamily: MONO, fontSize: 9,
+                                fontWeight: 700, letterSpacing: '.04em',
+                                border: `1px solid ${esCTA ? 'rgba(10,17,64,.22)' : 'rgba(255,255,255,.14)'}`,
+                                background: esCTA ? 'rgba(255,255,255,.28)' : 'transparent',
+                                color: esCTA ? 'rgba(10,17,64,.75)' : isActive ? C.gold : '#6E7A9E',
+                            }}
+                        >⌥{atajo}</span>
                     )}
                 </>
             )}
@@ -439,7 +503,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 <span style={{ color: C.royal, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pageTitle}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4 }}>
-                                <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: 99, background: '#1B8A4B' }} />
+                                <span style={{ position: 'relative', display: 'flex', width: 7, height: 7, alignItems: 'center', justifyContent: 'center' }}>
+                                    <motion.span
+                                        animate={{ scale: [1, 2.3], opacity: [0.7, 0] }}
+                                        transition={{ repeat: Infinity, duration: 2, ease: 'easeOut' }}
+                                        style={{ position: 'absolute', inset: 0, borderRadius: 99, background: '#1B8A4B' }}
+                                    />
+                                    <span style={{ position: 'relative', width: 6, height: 6, borderRadius: 99, background: '#1B8A4B' }} />
+                                </span>
                                 <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>
                                     Sistema en línea · {time}
                                 </span>
@@ -449,16 +520,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                         {badges.ordenes > 0 && (
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate('/trabajos')}
                                 className="hidden md:flex"
                                 style={{ alignItems: 'center', gap: 8, padding: '7px 13px', background: '#FFFBEB', border: '1px solid #F4E3A8', borderRadius: 9, cursor: 'pointer' }}
                             >
-                                <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: 99, background: C.gold }} />
+                                <motion.span
+                                    animate={{ scale: [1, 1.4, 1] }}
+                                    transition={{ repeat: Infinity, duration: 1.8 }}
+                                    style={{ width: 6, height: 6, borderRadius: 99, background: C.gold }}
+                                />
                                 <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7A5A00' }}>
                                     {badges.ordenes} activas
                                 </span>
-                            </button>
+                            </motion.button>
                         )}
 
                         <SearchOmni />

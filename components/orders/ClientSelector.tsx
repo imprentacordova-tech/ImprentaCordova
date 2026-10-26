@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
-import { extractDataFromSriPdf } from '../../services/pdfExtraction';
+import { useAuth } from '../../contexts/AuthContext';
+import { extractDataFromSriPdf, fileToBase64 } from '../../services/pdfExtraction';
+import { extractClientFromImage } from '../../services/geminiService';
+import {
+    establecimientoSugerido,
+    establecimientosAbiertos,
+    normalizarEstablecimientos,
+} from '../../services/establecimientos';
 import { sriLookupService, SriRucData } from '../../services/sriLookupService';
 import { logActivity } from '../../services/activityLogService';
 import { formatCurrency, validarIdentificacionEC } from '../../utils';
@@ -66,6 +73,7 @@ export const CreateClientModal: React.FC<{
     const [highlightFields, setHighlightFields] = useState<string[]>([]);
     const [rucError, setRucError] = useState<string | null>(null);
     const { addCliente, clientes: clientesRegistrados, trabajos, getClientDebt } = useData();
+    const { user } = useAuth();
 
     const [newClienteData, setNewClienteData] = useState({
         nombre: initialName,
@@ -156,6 +164,38 @@ export const CreateClientModal: React.FC<{
         if (!file) return;
         setIsScanning(true);
         try {
+            /*
+             * El input acepta "image/*,.pdf" desde siempre, pero acá se llamaba SIEMPRE al
+             * parser de PDF: subir la FOTO del RUC (lo más común desde el celular) moría con
+             * "Error al procesar PDF", porque pdfjs no puede abrir un JPEG.
+             *
+             * Para imágenes va la lectura con IA. Además de arreglar ese caso, es la única
+             * fuente que devuelve la LISTA de establecimientos: el parser mecánico sólo
+             * cuenta cuántos hay, así que sin este camino `fiscal_data.establecimientos`
+             * nunca se llenaba.
+             */
+            if (file.type.startsWith('image/')) {
+                const data = await extractClientFromImage(await fileToBase64(file));
+                if (!data) {
+                    setRucError('No se pudo leer la imagen del RUC. Probá con el PDF del SRI o completá la ficha a mano.');
+                    return;
+                }
+                applyExtractedData({
+                    nombre: data.nombre,
+                    ruc: data.ruc,
+                    direccion: data.direccion,
+                    regimen: data.regimen,
+                    email: data.email,
+                    telefono: data.telefono,
+                    numEstablecimientos: data.numEstablecimientos,
+                    establecimientoPrincipal: data.establecimientoPrincipal,
+                    establecimientos: data.establecimientos,
+                    actividades: data.actividades,
+                });
+                setMode('SRI');
+                return;
+            }
+
             const result = await extractDataFromSriPdf(file);
             if (result) {
                 applyExtractedData({
@@ -172,8 +212,8 @@ export const CreateClientModal: React.FC<{
                 setMode('SRI');
             }
         } catch (error) {
-            console.error("Error al leer el PDF del SRI:", error);
-            setRucError("Error al procesar PDF. Asegúrese de que sea un certificado del SRI.");
+            console.error("Error al leer el certificado del SRI:", error);
+            setRucError("Error al procesar el archivo. Asegúrese de que sea un certificado del SRI.");
         } finally {
             setIsScanning(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -193,6 +233,18 @@ export const CreateClientModal: React.FC<{
             else regimenFinal = data.regimen as Regimen;
         }
 
+        /*
+         * CONTINUITY_RULES.md §6: los establecimientos ABIERTOS son un dato fiscal, no un
+         * detalle de pantalla. Se normalizan y se guardan en la ficha para que el talonario
+         * pueda elegirlos después sin depender de que alguien los recuerde.
+         *
+         * Cuando la fuente no trae la lista (hoy: el parser mecánico del PDF, que sólo
+         * devuelve un conteo) se conserva el comportamiento anterior en vez de inventar
+         * filas: `fiscal_data.establecimientos` queda vacío y la ficha sigue siendo válida.
+         */
+        const establecimientos = normalizarEstablecimientos(data.establecimientos);
+        const abiertos = establecimientosAbiertos(establecimientos);
+
         setNewClienteData({
             nombre: data.nombre || '',
             nombreComercial: data.nombreComercial || '',
@@ -200,8 +252,16 @@ export const CreateClientModal: React.FC<{
             email: data.email || '',
             direccion: data.direccion || 'Pasaje, El Oro',
             regimen: regimenFinal,
-            numEstablecimientosOpen: data.numEstablecimientos || 1,
-            establecimientoPredeterminado: data.establecimientoPrincipal || '001',
+            /*
+             * Con lista manda la lista (y sólo cuentan los ABIERTOS); sin lista se usa el
+             * conteo que ya traía la extracción.
+             */
+            numEstablecimientosOpen: establecimientos.length > 0
+                ? abiertos.length
+                : (data.numEstablecimientos || 1),
+            establecimientoPredeterminado: establecimientoSugerido(establecimientos)
+                || data.establecimientoPrincipal
+                || '001',
             puntoEmisionPredeterminado: data.puntoEmisionPrincipal || '001',
             fiscal_data: {
                 razon_social: data.nombre,
@@ -210,6 +270,7 @@ export const CreateClientModal: React.FC<{
                 tipo_contribuyente: data.tipoPersona || 'PERSONA NATURAL',
                 obligado_contabilidad: data.obligadoContabilidad || false,
                 actividades: data.actividades ? data.actividades.split('|').map((a: string) => ({ descripcion: a.trim() })) : [],
+                establecimientos,
                 ultima_sincronizacion: new Date().toISOString()
             }
         });
@@ -261,6 +322,25 @@ export const CreateClientModal: React.FC<{
                 } : undefined
             });
             setSaveSuccess(true);
+
+            /*
+             * Auditoría obligatoria (CONTINUITY_RULES.md). De paso deja constancia de cuántos
+             * establecimientos abiertos se registraron: si más adelante un talonario sale con
+             * un código equivocado, acá está el dato con el que se dio de alta la ficha.
+             */
+            const registrados = establecimientosAbiertos(
+                (newClienteData.fiscal_data as any)?.establecimientos,
+            );
+            logActivity(
+                user?.nombre || 'Sistema',
+                user?.rol || 'Operador',
+                'CREAR_CLIENTE',
+                registrados.length > 0
+                    ? `Registrado: ${newCliente.nombre} · RUC con ${registrados.length} establecimiento(s) abierto(s)`
+                    : `Registrado: ${newCliente.nombre}`,
+                'Entidades',
+            ).catch(() => {});
+
             setTimeout(() => onClientCreated(newCliente), 400);
         } catch (err: any) {
             console.error("Error al registrar cliente:", err);
@@ -324,7 +404,7 @@ export const CreateClientModal: React.FC<{
                         >
                             <UploadIcon className="w-5 h-5 text-brand-blue mx-auto" />
                             <span className="text-[11px] font-bold text-slate-800 uppercase block">
-                                {isScanning ? 'Analizando PDF del SRI...' : 'Auto-completar subiendo PDF de RUC SRI'}
+                                {isScanning ? 'Analizando el certificado del SRI...' : 'Auto-completar subiendo PDF o foto del RUC SRI'}
                             </span>
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
                         </div>

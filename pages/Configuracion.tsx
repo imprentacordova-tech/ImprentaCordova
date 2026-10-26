@@ -5,7 +5,7 @@ import { useOutletContext } from 'react-router-dom';
 import { logActivity } from '../services/activityLogService';
 import { User, SriCredential } from '../types';
 import Papa from 'papaparse';
-import { createClient } from '@supabase/supabase-js';
+import { backendFetch } from '../services/backendApi';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
@@ -105,13 +105,31 @@ const ConfiguracionPage: React.FC = () => {
         setIsImportingSri(true);
         setSriImportProgress(0);
 
-        // NOTA DE SEGURIDAD: esta clave service_role está embebida en el bundle del cliente.
-        // Debería moverse a una Edge Function / variable de entorno del servidor. Ver design_manifest.md.
-        const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaWx4Z3JyZXZmc3Z5eHVmZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM1NDI2NSwiZXhwIjoyMDkxOTMwMjY1fQ._-lyaAeKlLAh701R2h-KUbu3gxcSdcOIjATo8traqEQ';
-        const supaAdmin = createClient(import.meta.env.VITE_SUPABASE_URL, SERVICE_ROLE_KEY);
-
+        // SEGURIDAD: la service_role vive SOLO en el backend (Render).
+        // El cliente parsea el CSV en streaming para dar progreso y envía lotes;
+        // nunca ve la clave. Antes esta función instanciaba createClient() con la
+        // service_role hardcodeada, que terminaba publicada en el bundle de Vercel.
+        const TAMANO_LOTE = 500;
         let batch: any[] = [];
         let totalProcessed = 0;
+        let totalImportados = 0;
+        let lotesFallidos = 0;
+
+        const enviarLote = async (lote: any[]) => {
+            if (lote.length === 0) return;
+            try {
+                const r = await backendFetch<{ insertados: number }>(
+                    '/api/v1/padron/importar',
+                    { registros: lote },
+                    { timeoutMs: 60000, etiqueta: 'Padrón' }
+                );
+                totalImportados += r.insertados ?? 0;
+            } catch (err) {
+                lotesFallidos++;
+                console.error('Error importando lote del padrón:', err);
+            }
+        };
+
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             step: async (row, parser) => {
@@ -131,17 +149,21 @@ const ConfiguracionPage: React.FC = () => {
                     });
                 }
                 totalProcessed++;
-                if (batch.length >= 1000) {
-                    const { error } = await supaAdmin.from('sri_padron_el_oro').upsert(batch, { onConflict: 'ruc' });
-                    if (error) console.error('Error upsert padrón:', error);
+                if (batch.length >= TAMANO_LOTE) {
+                    const lote = batch;
                     batch = [];
+                    await enviarLote(lote);
                     setSriImportProgress(totalProcessed);
                 }
                 parser.resume();
             },
             complete: async () => {
-                if (batch.length > 0) await supaAdmin.from('sri_padron_el_oro').upsert(batch, { onConflict: 'ruc' });
-                logActivity(currentUser.nombre, currentUser.rol, 'SRI_PADRON_IMPORT', `Importó padrón SRI (${totalProcessed} registros)`, 'Sistema');
+                await enviarLote(batch);
+                await logActivity(
+                    currentUser.nombre, currentUser.rol, 'SRI_PADRON_IMPORT',
+                    `Importó padrón SRI (${totalImportados} registros${lotesFallidos ? `, ${lotesFallidos} lote(s) fallidos` : ''})`,
+                    'Sistema'
+                );
                 setIsImportingSri(false);
                 flash();
                 if (e.target) e.target.value = '';
