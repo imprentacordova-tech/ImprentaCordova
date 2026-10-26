@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, NavLink } from 'react-router-dom';
-
-/**
- * Cabecera pública — fiel a los diseños `Publica-B-*` (Claude Design).
- * Misma paleta azul/blanco del panel interno "Marino & Oro".
- */
-
-const C = { ink: '#0A1140', royal: '#16309B', royalHover: '#0F2280', border: '#E9ECF5', body: '#3C4763', soft: '#F2F4FA', chip: '#EEF1FC' };
-const WA = 'https://wa.me/593993083943?text=Hola%2C+me+gustar%C3%ADa+cotizar+un+trabajo.';
+import { motion, AnimatePresence } from 'framer-motion';
+import { WhatsAppIcon, Sparkles, Phone, Menu, X, ArrowRight } from './Icons';
 
 const LINKS = [
-    { name: 'Catálogo', to: '/vitrina' },
-    { name: 'Documentos SRI', to: '/' },
-    { name: 'Rastrear', to: '/tracking' },
+    { name: 'Inicio', to: '/' },
+    { name: 'Catálogo & Precios', to: '/vitrina' },
+    { name: 'Rastrear Pedido', to: '/tracking' },
 ];
 
 function isBusinessHoursNow(): boolean {
@@ -37,61 +31,159 @@ const PublicNavbar: React.FC = () => {
         const t = setInterval(() => setAbierto(isBusinessHoursNow()), 60000);
         return () => clearInterval(t);
     }, []);
-    useEffect(() => { setOpen(false); }, [location.pathname]);
+
+    useEffect(() => {
+        setOpen(false);
+    }, [location.pathname]);
 
     return (
-        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px,3vw,44px)', minHeight: 74, display: 'flex', alignItems: 'center', gap: 'clamp(12px,2vw,36px)', flexWrap: 'wrap' }}>
-                <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-                    <img src="/LOGO.png" alt="Imprenta Córdova" style={{ height: 32, width: 'auto' }} />
-                    <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16.5, fontWeight: 700, letterSpacing: '-.02em', color: C.ink }}>Imprenta Córdova</span>
+        <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 transition-all">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+                
+                {/* Brand Logo */}
+                <Link to="/" className="flex items-center gap-3.5 group">
+                    <div className="relative">
+                        <img
+                            src="/LOGO.png"
+                            alt="Imprenta Córdova"
+                            className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="font-heading font-extrabold text-lg sm:text-xl text-slate-950 tracking-tight leading-none">
+                            Imprenta <span className="text-brand-blue">Córdova</span>
+                        </span>
+                        <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-amber-600 mt-1">
+                            SRI Autorizado · Machala
+                        </span>
+                    </div>
                 </Link>
 
-                <nav className="hidden md:flex" style={{ alignItems: 'center', gap: 2, flex: 1, flexWrap: 'wrap' }}>
-                    {LINKS.map(l => (
-                        <NavLink key={l.to} to={l.to} end={l.to === '/'}
-                            style={({ isActive }) => ({
-                                padding: '9px 14px', fontSize: 14, borderRadius: 8, textDecoration: 'none',
-                                fontWeight: isActive ? 600 : 500,
-                                color: isActive ? C.royal : C.body,
-                                background: isActive ? C.chip : 'transparent',
-                            })}>
-                            {l.name}
-                        </NavLink>
-                    ))}
+                {/* Desktop Navigation Links */}
+                <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/80 p-1.5 rounded-full border border-slate-200/70">
+                    {LINKS.map(l => {
+                        const isActive = location.pathname === l.to;
+                        return (
+                            <NavLink
+                                key={l.to}
+                                to={l.to}
+                                end={l.to === '/'}
+                                className={`relative px-4 py-2 rounded-full text-xs font-bold transition-colors ${
+                                    isActive ? 'text-white' : 'text-slate-600 hover:text-slate-950'
+                                }`}
+                            >
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="publicNavActivePill"
+                                        className="absolute inset-0 bg-brand-blue rounded-full shadow-md shadow-brand-blue/25"
+                                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-10">{l.name}</span>
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
-                <div className="hidden md:flex" style={{ alignItems: 'center', gap: 10 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 12px', background: abierto ? '#F2F7F2' : C.soft, border: `1px solid ${abierto ? '#D8E8DC' : C.border}`, borderRadius: 99 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: 99, background: abierto ? '#1B8A4B' : '#A6AFC8', animation: abierto ? 'pn-blink 2.4s ease-in-out infinite' : 'none' }} />
-                        <span style={{ fontSize: 11.5, fontWeight: 600, color: abierto ? '#1B6E3E' : '#6B7590' }}>{abierto ? 'Taller abierto' : 'Taller cerrado'}</span>
-                    </span>
-                    <a href={WA} target="_blank" rel="noopener noreferrer" style={{ padding: '11px 19px', background: C.royal, color: '#fff', borderRadius: 10, fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>Cotizar</a>
+                {/* Right Quick Actions */}
+                <div className="hidden md:flex items-center gap-3">
+                    {/* Live Taller Status */}
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
+                        abierto
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                            : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>
+                        <span className="relative flex h-2 w-2">
+                            {abierto && (
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            )}
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                                abierto ? 'bg-emerald-500' : 'bg-slate-400'
+                            }`} />
+                        </span>
+                        <span>{abierto ? 'Taller en Línea' : 'Cerrado ahora'}</span>
+                    </div>
+
+                    {/* WhatsApp Action Button */}
+                    <motion.a
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        href="https://wa.me/593993083943?text=Hola%20Imprenta%20C%C3%B3rdova%2C%20quisiera%20cotizar%20un%20trabajo%20de%20impresi%C3%B3n."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-blue to-blue-700 hover:from-blue-800 hover:to-blue-900 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-md shadow-brand-blue/20 transition-all"
+                    >
+                        <WhatsAppIcon className="w-4 h-4 text-emerald-300" />
+                        <span>Cotizar Ahora</span>
+                    </motion.a>
                 </div>
 
-                <button className="md:hidden" onClick={() => setOpen(o => !o)}
-                    style={{ marginLeft: 'auto', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.soft, border: `1px solid ${C.border}`, borderRadius: 10, cursor: 'pointer' }}
-                    aria-label="Menú">
-                    <span style={{ display: 'flex', flexDirection: 'column', gap: 3.5, width: 16 }}>
-                        <span style={{ height: 2, background: C.ink, borderRadius: 2 }} />
-                        <span style={{ height: 2, background: C.ink, borderRadius: 2 }} />
-                        <span style={{ height: 2, background: C.ink, borderRadius: 2 }} />
-                    </span>
-                </button>
+                {/* Mobile Menu Button */}
+                <div className="flex md:hidden items-center gap-2">
+                    <button
+                        onClick={() => setOpen(!open)}
+                        className="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-100 border border-slate-200 text-slate-800 active:scale-95 transition-all"
+                        aria-label="Menú principal"
+                    >
+                        {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
+                </div>
             </div>
 
-            {open && (
-                <div className="md:hidden" style={{ borderTop: `1px solid ${C.border}`, padding: '10px 16px 16px', display: 'flex', flexDirection: 'column', gap: 4, background: '#fff' }}>
-                    {LINKS.map(l => (
-                        <NavLink key={l.to} to={l.to} end={l.to === '/'}
-                            style={({ isActive }) => ({ padding: '11px 12px', borderRadius: 9, fontSize: 14.5, fontWeight: 600, textDecoration: 'none', color: isActive ? C.royal : C.body, background: isActive ? C.chip : 'transparent' })}>
-                            {l.name}
-                        </NavLink>
-                    ))}
-                    <a href={WA} target="_blank" rel="noopener noreferrer" style={{ marginTop: 6, padding: 13, textAlign: 'center', background: C.royal, color: '#fff', borderRadius: 11, fontSize: 14.5, fontWeight: 600, textDecoration: 'none' }}>Cotizar por WhatsApp</a>
-                </div>
-            )}
-            <style>{'@keyframes pn-blink{0%,100%{opacity:1}50%{opacity:.2}}'}</style>
+            {/* Mobile Dropdown with Framer Motion */}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-2xl px-5 py-5 space-y-2 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Navegación
+                            </span>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                abierto ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                                <span className={`w-2 h-2 rounded-full ${abierto ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                {abierto ? 'Abierto en Machala' : 'Cerrado temporalmente'}
+                            </span>
+                        </div>
+
+                        {LINKS.map(l => {
+                            const isActive = location.pathname === l.to;
+                            return (
+                                <Link
+                                    key={l.to}
+                                    to={l.to}
+                                    className={`flex items-center justify-between p-3.5 rounded-2xl font-bold text-sm transition-all ${
+                                        isActive
+                                            ? 'bg-brand-blue text-white shadow-md shadow-brand-blue/20'
+                                            : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    <span>{l.name}</span>
+                                    <ArrowRight className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
+                                </Link>
+                            );
+                        })}
+
+                        <div className="pt-3">
+                            <a
+                                href="https://wa.me/593993083943?text=Hola%20Imprenta%20C%C3%B3rdova%2C%20quisiera%20cotizar%20un%20trabajo%20de%20impresi%C3%B3n."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all"
+                            >
+                                <WhatsAppIcon className="w-5 h-5" />
+                                <span>Escribir al Taller por WhatsApp</span>
+                            </a>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </header>
     );
 };

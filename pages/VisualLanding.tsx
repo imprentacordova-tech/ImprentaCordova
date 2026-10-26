@@ -1,87 +1,195 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
 import { RucValidatorWidget } from '../components/public/RucValidatorWidget';
-
-/**
- * Home pública — fiel a `Publica-B-Vitrina.dc.html` (Claude Design),
- * con el layout de celular de `Publica-B-Movil.dc.html` (barra de acción
- * inferior, tarjetas apiladas, cifras en 2 columnas).
- * Mismo sistema azul/blanco del panel interno.
- */
+import { CotizadorRapido } from '../components/public/CotizadorRapido';
+import {
+    WhatsAppIcon, Sparkles, Check, ArrowRight, ShieldCheck, Clock,
+    Package, Truck, Phone, Search, FileText, ChevronRight, Layers,
+    CheckCircle, Printer, Star
+} from '../components/Icons';
 
 const C = {
-    ink: '#0A1140', royal: '#16309B', royalHover: '#0F2280', border: '#E4E8F4', borderStrong: '#D7DDF0',
-    divider: '#EEF0F8', body: '#3C4763', muted: '#5B6480', faint: '#8A93AE', bg: '#F7F9FF',
-    chip: '#EEF1FC', soft: '#F2F4FA', gold: '#FFC61A',
+    ink: '#0A1140',
+    royal: '#16309B',
+    royalHover: '#0F2280',
+    gold: '#FFC61A',
+    goldDark: '#D97706',
 };
-const DISPLAY = "'Outfit',sans-serif";
-const MONO = "'JetBrains Mono',monospace";
+
 const WA = (msg: string) => generateWhatsAppLink('593993083943', msg);
 const IMG = (n: string) => `/images/landing/${n}`;
 
 const TICKER = [
-    'SRI autorizado 001-001', 'Diseño incluido', 'Entrega en 24 horas',
-    'Envíos a todo El Oro', 'Machala desde 2009',
+    '⭐ SRI Establecimiento Gráfico N° 001-001',
+    '⚡ Entrega Estándar en 24 Horas',
+    '🎨 Diseño & Diagramación Incluidos',
+    '🚚 Envíos a todo El Oro (Pasaje, Santa Rosa, Huaquillas)',
+    '📍 Taller en Machala: Av. Las Palmeras y Calle 4ta',
 ];
 
 const FACTS = [
-    { value: '2 400+', label: 'Trabajos entregados' },
-    { value: '24 h', label: 'Entrega estándar' },
-    { value: '800+', label: 'Empresas atendidas' },
-    { value: '99 %', label: 'Entrega a tiempo' },
+    { value: '2 400+', label: 'Trabajos Entregados', desc: 'Comprobantes y papelería' },
+    { value: '24 h', label: 'Entrega Estándar', desc: 'Récord en trabajos SRI' },
+    { value: '800+', label: 'Empresas Atendidas', desc: 'Pymes y profesionales' },
+    { value: '99 %', label: 'Entregas a Tiempo', desc: 'Compromiso de puntualidad' },
 ];
 
-type Item = { cat: string; img: string; tag: string; label: string; desc: string; eta: string };
+type Item = {
+    cat: string;
+    img: string;
+    tag: string;
+    label: string;
+    desc: string;
+    eta: string;
+    highlight?: boolean;
+    specs: string[];
+};
+
 const ITEMS: Item[] = [
-    { cat: 'SRI', img: 'talonarios.png', tag: 'SRI', label: 'Facturas impresas', desc: 'Régimen General y RIMPE-Emprendedor, numeración secuencial en papel químico.', eta: '24 h' },
-    { cat: 'SRI', img: 'talonarios.png', tag: 'SRI', label: 'Notas de venta', desc: 'Formato simplificado aprobado para RIMPE Negocio Popular.', eta: '24 h' },
-    { cat: 'SRI', img: 'printer_gold.png', tag: 'Autocopiativo', label: 'Talonarios y recibos', desc: 'Guías de remisión, retenciones, vales y recibos de caja con copias.', eta: '24–48 h' },
-    { cat: 'Comercial', img: 'business_cards.png', tag: 'Offset', label: 'Tarjetas de presentación', desc: 'Couché 300 g con laminado soft touch o brillo UV selectivo.', eta: '48 h' },
-    { cat: 'Comercial', img: 'branding.png', tag: 'Papelería', label: 'Branding impreso', desc: 'Carpetas corporativas, hojas membretadas, sobres y afiches.', eta: '48–72 h' },
-    { cat: 'Gran formato', img: 'gigantografia.png', tag: '1440 dpi', label: 'Gigantografía HD', desc: 'Lona eco-solvente para rótulos, banners y vallas de exterior.', eta: '24 h' },
+    {
+        cat: 'SRI',
+        img: 'talonarios.png',
+        tag: 'SRI Autorizado',
+        label: 'Facturas Impresas Autocopiativas',
+        desc: 'Para Régimen General y RIMPE Emprendedor. Numeración secuencial exacta en papel químico autocopiativo sin papel carbón.',
+        eta: '24 h',
+        highlight: true,
+        specs: ['100 juegos por block', 'Original + 1 o 2 copias', 'Validación previa SRI']
+    },
+    {
+        cat: 'SRI',
+        img: 'talonarios.png',
+        tag: 'RIMPE Popular',
+        label: 'Notas de Venta Simplificadas',
+        desc: 'Formato reglamentario aprobado para contribuyentes RIMPE Negocio Popular sin desglose de IVA.',
+        eta: '24 h',
+        highlight: true,
+        specs: ['100 notas por block', 'Papel químico o bond', 'Entrega exprés']
+    },
+    {
+        cat: 'SRI',
+        img: 'printer_gold.png',
+        tag: 'Autocopiativo',
+        label: 'Guías de Remisión & Retenciones',
+        desc: 'Comprobantes para traslado de mercaderías y retenciones autorizadas bajo estricta normativa del SRI.',
+        eta: '24–48 h',
+        specs: ['Secuencia garantizada', 'Copias personalizadas', 'Encuadernación cosida']
+    },
+    {
+        cat: 'Comercial',
+        img: 'business_cards.png',
+        tag: 'Offset Pro',
+        label: 'Tarjetas de Presentación Ejecutivas',
+        desc: 'Cartulina couché 300g con laminado Soft Touch aterciopelado o brillo UV selectivo para causar una primera impresión imborrable.',
+        eta: '48 h',
+        specs: ['Couché pesado 300g', 'Laminado mate o brillante', 'Corte de precisión']
+    },
+    {
+        cat: 'Comercial',
+        img: 'branding.png',
+        tag: 'Identidad Corporativa',
+        label: 'Carpetas & Hojas Membretadas',
+        desc: 'Papelería corporativa institucional: carpetas con bolsillo troquelado, sobres membretados y hojas bond 90g con impresión nítida.',
+        eta: '48–72 h',
+        specs: ['Bolsillo porta tarjetas', 'Colores pantone fieles', 'Acabado institucional']
+    },
+    {
+        cat: 'Gran formato',
+        img: 'gigantografia.png',
+        tag: '1440 DPI',
+        label: 'Gigantografía & Lonas Exteriores',
+        desc: 'Impresión eco-solvente resistente a la intemperie y rayos UV para letreros, vallas, rótulos comerciales y banners tipo araña.',
+        eta: '24 h',
+        specs: ['Lona front 13oz', 'Ojalillos metálicos reforzados', 'Colores de alto impacto']
+    },
+    {
+        cat: 'Sellos',
+        img: 'printer_gold.png',
+        tag: 'Mismo Día',
+        label: 'Sellos Automáticos Láser',
+        desc: 'Aparatos Trodat y Shiny con caucho polímero grabado en láser de alta definición para médicos, abogados, contadores y comercios.',
+        eta: 'Mismo día (2h)',
+        specs: ['Tinta recargable', 'Miles de impresiones limpias', 'Entrega ultra rápida']
+    }
 ];
-const CATS = ['Todo', 'SRI', 'Comercial', 'Gran formato'];
+
+const CATS = ['Todo', 'SRI', 'Comercial', 'Sellos', 'Gran formato'];
 
 const FINISHES = [
-    { id: 'quimico', name: 'Papel químico autocopiativo', tag: 'Especialidad SRI', desc: 'Copia instantánea sin papel carbón. Original blanco, copia amarilla y copia rosa con trazo nítido.', swatch: 'linear-gradient(135deg,#FFFDF2 0%,#FFF3C4 48%,#FFE0E6 100%)' },
-    { id: 'seda', name: 'Laminado soft touch', tag: 'Textura velvet', desc: 'Acabado suave antirrayaduras que da presencia ejecutiva a tarjetas y carpetas corporativas.', swatch: 'linear-gradient(135deg,#111A52 0%,#0A1140 60%,#1B2A70 100%)' },
-    { id: 'uv', name: 'Brillo UV selectivo', tag: 'Contraste alto', desc: 'Realce brillante sobre logotipos y detalles, en contraste con la base mate del papel.', swatch: 'linear-gradient(135deg,#E9EEFB 0%,#C9D3F0 55%,#16309B 100%)' },
-    { id: 'sello', name: 'Caucho polímero láser', tag: 'Nitidez micrométrica', desc: 'Grabado micro-definido para sellos con textos pequeños, logos y firmas escaneadas.', swatch: 'linear-gradient(135deg,#2A2F45 0%,#4A5470 55%,#E70101 100%)' },
+    {
+        id: 'quimico',
+        name: 'Papel Químico Autocopiativo',
+        tag: 'Especialidad SRI',
+        desc: 'Transferencia instantánea del trazo sin papel carbón sucio. Original blanco para el cliente, copia amarilla para contabilidad y copia rosa para emisor.',
+        layers: ['Original Blanco (Emisor)', 'Copia 1 Amarilla (Cliente)', 'Copia 2 Rosa (Archivo)'],
+        swatch: 'linear-gradient(135deg, #FFFDF2 0%, #FFF3C4 50%, #FFE0E6 100%)',
+        accent: '#D97706'
+    },
+    {
+        id: 'seda',
+        name: 'Laminado Soft Touch Velvet',
+        tag: 'Textura Sedosa',
+        desc: 'Recubrimiento mate con acabado de piel de melocotón antirrayaduras. Confiere máxima elegancia y distinción a tarjetas corporativas y carpetas ejecutivas.',
+        layers: ['Base Couché 300g', 'Polímero Soft Touch Mate', 'Refuerzo Antirrayaduras'],
+        swatch: 'linear-gradient(135deg, #111A52 0%, #0A1140 60%, #1B2A70 100%)',
+        accent: '#3B82F6'
+    },
+    {
+        id: 'uv',
+        name: 'Brillo UV Sectorizado',
+        tag: 'Contraste Alto',
+        desc: 'Barniz brillante de alto relieve aplicado estratégicamente sobre tu logotipo, nombre o isotipo, destacando sobre un fondo mate sobrio.',
+        layers: ['Base Mate Fondo', 'Barniz UV Brillante Localizado', 'Relieve Táctil'],
+        swatch: 'linear-gradient(135deg, #E9EEFB 0%, #C9D3F0 55%, #16309B 100%)',
+        accent: '#8B5CF6'
+    },
+    {
+        id: 'sello',
+        name: 'Grabado Láser Micrométrico',
+        tag: 'Nitidez Absoluta',
+        desc: 'Fabricación de sellos mediante haz láser concentrado que esculpe trazos diminutos, líneas legales, firmas escaneadas y logotipos corporativos sin deformación.',
+        layers: ['Caucho Polímero Láser', 'Almohadilla de Alta Densidad', 'Mecanismo Retráctil'],
+        swatch: 'linear-gradient(135deg, #2A2F45 0%, #4A5470 55%, #DC2626 100%)',
+        accent: '#EF4444'
+    },
 ];
 
 const SRI_POINTS = [
-    { label: 'Régimen y estado verificados', detail: 'Consulta directa al padrón antes de diagramar.' },
-    { label: 'Secuencia correlativa garantizada', detail: 'Sin saltos ni duplicados en la numeración.' },
-    { label: 'Prueba digital antes de prensa', detail: 'La aprueba usted por WhatsApp, no nosotros.' },
-    { label: 'Archivo del arte para renovaciones', detail: 'Su próximo talonario se reimprime en minutos.' },
+    {
+        title: 'Validación en el Padrón SRI Oficial',
+        detail: 'Revisamos estado del contribuyente, régimen tributario (RIMPE o General) y puntos de emisión autorizados antes de mandar a prensa.'
+    },
+    {
+        title: 'Secuencia Correlativa Blindada',
+        detail: 'Cero saltos de numeración ni duplicados. Tu pie de imprenta cumple estrictamente la Resolución del SRI vigente.'
+    },
+    {
+        title: 'Prueba Digital Previa por WhatsApp',
+        detail: 'Te enviamos el arte diagramado a tu teléfono para que revises y apruebes cada detalle con tranquilidad antes de imprimir.'
+    },
+    {
+        title: 'Archivo Seguro para Reordenes Inmediatas',
+        detail: 'Guardamos tus artes y numeraciones en nuestro sistema interno para que tu próxima reimpresión salga en minutos con un mensaje.'
+    },
 ];
 
-const TRACK = [
-    { label: 'Orden recibida', time: '08:12', done: true },
-    { label: 'RUC validado en el SRI', time: '08:20', done: true },
-    { label: 'Prueba digital aprobada', time: '09:05', done: true },
-    { label: 'En prensa · numeración 4801–4900', time: 'ahora', current: true },
-    { label: 'Guillotinado y empaque', time: '—' },
-    { label: 'Listo para retiro', time: '—' },
+const TRACK_STEPS = [
+    { label: 'Orden registrada en sistema', time: 'Paso 1', done: true },
+    { label: 'RUC & numeración validada en SRI', time: 'Paso 2', done: true },
+    { label: 'Prueba digital aprobada por WhatsApp', time: 'Paso 3', done: true },
+    { label: 'En Prensa Offset & Tipográfica', time: 'Paso 4 (Ahora)', current: true },
+    { label: 'Guillotinado & empaque protector', time: 'Paso 5' },
+    { label: 'Listo para retiro en taller o despacho', time: 'Paso 6' },
 ];
 
-const KEYFRAMES = `
-  @keyframes vl-rise { from { opacity:0; transform:translateY(26px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes vl-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-12px); } }
-  @keyframes vl-marquee { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
-  @keyframes vl-ink { 0% { transform:scale(.4); opacity:0; } 100% { transform:scale(1); opacity:1; } }
-`;
-
-const eyebrow: React.CSSProperties = { fontSize: 11.5, letterSpacing: '.2em', textTransform: 'uppercase', color: C.royal, fontWeight: 700 };
-const h2: React.CSSProperties = { margin: '12px 0 0', fontFamily: DISPLAY, fontSize: 'clamp(28px,3.4vw,40px)', fontWeight: 600, letterSpacing: '-.035em', color: C.ink };
-
-const VisualLanding: React.FC = () => {
+export const VisualLanding: React.FC = () => {
     const [filter, setFilter] = useState('Todo');
     const [finishId, setFinishId] = useState('quimico');
-    const [orden, setOrden] = useState('');
+    const [trackingInput, setTrackingInput] = useState('');
     const navigate = useNavigate();
 
     const items = useMemo(() => ITEMS.filter(i => filter === 'Todo' || i.cat === filter), [filter]);
@@ -89,323 +197,657 @@ const VisualLanding: React.FC = () => {
 
     const buscarOrden = (e: React.FormEvent) => {
         e.preventDefault();
-        const q = orden.trim();
+        const q = trackingInput.trim();
         navigate(q ? `/tracking?q=${encodeURIComponent(q)}` : '/tracking');
     };
 
     return (
-        <div style={{ background: '#fff', color: C.ink, fontFamily: "'Inter',system-ui,sans-serif", overflowX: 'hidden' }}>
-            <style>{KEYFRAMES}</style>
+        <div className="bg-white text-slate-900 font-sans selection:bg-amber-400 selection:text-slate-950 overflow-x-hidden">
             <SEO
-                title="Imprenta Córdova · Impresión SRI autorizada en Machala"
-                description="Facturas, notas de venta, talonarios y sellos con validez legal. Diseño incluido, prueba digital por WhatsApp y entrega en 24 horas."
+                title="Imprenta Córdova · Impresión SRI Autorizada en Machala"
+                description="Establecimiento gráfico autorizado por el SRI N° 001-001 en Machala. Facturas, notas de venta, talonarios autocopiativos, sellos y tarjetas. Entrega en 24h."
             />
 
-            {/* ── Ticker ─────────────────────────────────────────────── */}
-            <div style={{ background: C.ink, color: '#fff', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', whiteSpace: 'nowrap', animation: 'vl-marquee 38s linear infinite', padding: '9px 0' }}>
-                    {[...TICKER, ...TICKER].map((t, i) => (
-                        <span key={i} style={{ flexShrink: 0, padding: '0 24px', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: '#A9B5DC' }}>{t}</span>
+            {/* ── Marquee Ticker Superior ─────────────────────────────── */}
+            <div className="bg-slate-950 text-slate-200 overflow-hidden py-2.5 border-b border-slate-800">
+                <div className="flex whitespace-nowrap animate-marquee">
+                    {[...TICKER, ...TICKER].map((t, idx) => (
+                        <span key={idx} className="flex-shrink-0 px-6 text-xs font-semibold tracking-wider uppercase text-slate-300">
+                            {t}
+                        </span>
                     ))}
                 </div>
             </div>
 
             <PublicNavbar />
 
-            {/* ── Hero ───────────────────────────────────────────────── */}
-            <section style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(180deg,#F7F9FF 0%,#fff 100%)', borderBottom: `1px solid #E9ECF5` }}>
-                <div style={{ position: 'absolute', top: -160, left: '50%', width: 900, height: 900, marginLeft: -450, borderRadius: 99, background: 'radial-gradient(circle, rgba(22,48,155,.07) 0%, transparent 62%)', animation: 'vl-ink 2.6s cubic-bezier(.2,.8,.2,1) both', pointerEvents: 'none' }} />
-                <div style={{ position: 'relative', maxWidth: 1320, margin: '0 auto', padding: 'clamp(44px,6vw,76px) clamp(16px,3vw,44px) 34px', textAlign: 'center' }}>
-                    <div style={{ animation: 'vl-rise .75s cubic-bezier(.2,.8,.2,1) both' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '7px 15px', background: '#fff', border: `1px solid ${C.borderStrong}`, borderRadius: 99, fontSize: 12.5, color: C.body }}>
-                            <span style={{ fontFamily: MONO, fontSize: 11, color: C.royal, fontWeight: 700 }}>SRI 001-001</span>
-                            <span style={{ width: 1, height: 12, background: '#DDE2F0' }} />
-                            Establecimiento gráfico autorizado en Machala
+            {/* ── Hero Bento 3D Section con Framer Motion ─────────────── */}
+            <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/50 via-slate-50 to-white pt-10 sm:pt-16 pb-20 border-b border-slate-200">
+                {/* Auras de luz ambiental */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-blue-200/25 via-amber-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Header Central con Framer Motion */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: "spring", stiffness: 280, damping: 24 }}
+                        className="text-center max-w-4xl mx-auto"
+                    >
+                        {/* Badge Oficial */}
+                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white border border-blue-200/80 rounded-full shadow-sm text-xs font-bold text-slate-800 mb-6">
+                            <span className="font-mono text-brand-blue font-extrabold">SRI 001-001</span>
+                            <span className="w-1 h-3 bg-slate-300 rounded-full" />
+                            <span>Establecimiento Gráfico Autorizado en Machala</span>
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                            </span>
                         </div>
-                        <h1 style={{ margin: '26px auto 0', maxWidth: '20ch', fontFamily: DISPLAY, fontSize: 'clamp(34px,4.8vw,66px)', fontWeight: 600, lineHeight: 1.02, letterSpacing: '-.038em', color: C.ink }}>
-                            Impresión seria para negocios que <span style={{ color: C.royal }}>no improvisan.</span>
+
+                        {/* Titular Impactante */}
+                        <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-950 leading-[1.05]">
+                            Impresión seria para negocios que{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue via-blue-700 to-amber-600">
+                                no improvisan.
+                            </span>
                         </h1>
-                        <p style={{ margin: '22px auto 0', maxWidth: '44ch', fontSize: 17.5, lineHeight: 1.65, color: '#4A5470' }}>
-                            Facturas, notas de venta, talonarios y sellos con validez legal. Diseño incluido, prueba digital por WhatsApp y entrega en 24 horas.
+
+                        <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                            Facturas, notas de venta, talonarios autocopiativos y sellos con validez legal. Diseño incluido, prueba digital por WhatsApp y entrega garantizada en 24 horas.
                         </p>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-                            <a href={WA('Hola, quiero cotizar la impresión de mis documentos. Mi RUC es:')} target="_blank" rel="noreferrer"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '15px 28px', background: C.royal, color: '#fff', borderRadius: 12, fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 8px 22px -8px rgba(22,48,155,.55)' }}>
-                                Enviar mi RUC por WhatsApp <span>→</span>
-                            </a>
-                            <Link to="/vitrina"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '15px 24px', background: '#fff', color: C.royal, border: `1px solid ${C.borderStrong}`, borderRadius: 12, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
-                                Ver el catálogo
-                            </Link>
-                        </div>
-                    </div>
 
-                    {/* Tres piezas destacadas */}
-                    <div style={{ marginTop: 60, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: 18, alignItems: 'end', animation: 'vl-rise .75s cubic-bezier(.2,.8,.2,1) both' }}>
-                        <div style={{ borderRadius: '16px 16px 0 0', overflow: 'hidden', border: '1px solid #E1E6F5', borderBottom: 'none', background: '#fff', boxShadow: '0 30px 60px -34px rgba(10,17,64,.3)', animation: 'vl-float 7s ease-in-out infinite' }}>
-                            <img src={IMG('business_cards.png')} alt="Tarjetas de presentación" style={{ width: '100%', height: 230, objectFit: 'cover', display: 'block' }} />
-                            <div style={{ padding: '16px 18px', textAlign: 'left' }}>
-                                <div style={{ fontFamily: DISPLAY, fontSize: 15.5, fontWeight: 600, color: C.ink }}>Tarjetas de presentación</div>
-                                <div style={{ fontSize: 12, color: '#6B7590', marginTop: 3 }}>Couché 300 g · soft touch</div>
+                        {/* Botones de Acción */}
+                        <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+                            <motion.a
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                href={WA('Hola Imprenta Córdova, quiero cotizar la impresión de mis documentos autorizados. Mi RUC es:')}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-brand-blue hover:bg-blue-900 text-white font-bold text-sm rounded-2xl shadow-xl shadow-brand-blue/30 transition-colors"
+                            >
+                                <WhatsAppIcon className="w-5 h-5 text-emerald-400" />
+                                <span>Enviar mi RUC por WhatsApp</span>
+                                <ArrowRight className="w-4 h-4" />
+                            </motion.a>
+
+                            <motion.a
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                href="#cotizador"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm rounded-2xl border border-slate-300/80 shadow-sm transition-colors"
+                            >
+                                <Sparkles className="w-4 h-4 text-amber-500" />
+                                <span>Calcular Presupuesto en Vivo</span>
+                            </motion.a>
+                        </div>
+                    </motion.div>
+
+                    {/* Bento Showcase 3D con Micro-Interacciones */}
+                    <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                        {/* Tarjeta Izquierda: Tarjetas Ejecutivas */}
+                        <motion.div
+                            whileHover={{ y: -8, scale: 1.01 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden group cursor-pointer"
+                        >
+                            <div className="h-56 relative overflow-hidden bg-slate-100">
+                                <img
+                                    src={IMG('business_cards.png')}
+                                    alt="Tarjetas de presentación"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                <span className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md text-amber-400 font-mono text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border border-slate-700">
+                                    Couché 300g Soft Touch
+                                </span>
                             </div>
-                        </div>
+                            <div className="p-5">
+                                <h3 className="font-heading font-bold text-lg text-slate-900">
+                                    Tarjetas de Presentación
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Laminado mate aterciopelado o brillo UV selectivo para causar una presencia impecable.
+                                </p>
+                            </div>
+                        </motion.div>
 
-                        <div style={{ borderRadius: '18px 18px 0 0', overflow: 'hidden', border: `1px solid ${C.borderStrong}`, borderBottom: 'none', background: '#fff', boxShadow: '0 44px 80px -40px rgba(10,17,64,.4)' }}>
-                            <img src={IMG('talonarios.png')} alt="Talonarios autocopiativos" style={{ width: '100%', height: 320, objectFit: 'cover', display: 'block' }} />
-                            <div style={{ padding: '20px 22px', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                                <div>
-                                    <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 600, color: C.ink }}>Talonarios autocopiativos</div>
-                                    <div style={{ fontSize: 12.5, color: '#6B7590', marginTop: 3 }}>Original + 2 copias · numeración secuencial</div>
+                        {/* Tarjeta Central Elevada: Talonarios SRI (Hero Card) */}
+                        <motion.div
+                            whileHover={{ y: -10, scale: 1.02 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            className="bg-gradient-to-b from-white to-blue-50/50 rounded-3xl border-2 border-brand-blue shadow-2xl overflow-hidden relative group cursor-pointer"
+                        >
+                            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1 bg-amber-400 text-slate-950 rounded-full font-black text-xs uppercase tracking-wider shadow-md">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>Más Pedido</span>
+                            </div>
+
+                            <div className="h-72 relative overflow-hidden bg-blue-50">
+                                <img
+                                    src={IMG('talonarios.png')}
+                                    alt="Talonarios autocopiativos"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                            </div>
+
+                            <div className="p-6">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-mono text-xs uppercase font-bold text-brand-blue bg-blue-100/70 px-2.5 py-0.5 rounded-md">
+                                        SRI 001-001
+                                    </span>
+                                    <span className="text-xs text-slate-500">Entrega en 24h</span>
                                 </div>
-                                <span style={{ flexShrink: 0, padding: '6px 11px', background: C.chip, color: C.royal, borderRadius: 8, fontSize: 11.5, fontWeight: 700 }}>Más pedido</span>
+                                <h3 className="font-heading font-extrabold text-2xl text-slate-950">
+                                    Talonarios Autocopiativos
+                                </h3>
+                                <p className="text-sm text-slate-600 mt-1.5">
+                                    Facturas y notas de venta en papel químico de copia nítida (original + copias). Numeración exacta aprobada por el SRI.
+                                </p>
                             </div>
-                        </div>
+                        </motion.div>
 
-                        <div style={{ borderRadius: '16px 16px 0 0', overflow: 'hidden', border: '1px solid #E1E6F5', borderBottom: 'none', background: '#fff', boxShadow: '0 30px 60px -34px rgba(10,17,64,.3)', animation: 'vl-float 8.5s ease-in-out .8s infinite' }}>
-                            <img src={IMG('gigantografia.png')} alt="Gigantografía HD" style={{ width: '100%', height: 230, objectFit: 'cover', display: 'block' }} />
-                            <div style={{ padding: '16px 18px', textAlign: 'left' }}>
-                                <div style={{ fontFamily: DISPLAY, fontSize: 15.5, fontWeight: 600, color: C.ink }}>Gigantografía HD</div>
-                                <div style={{ fontSize: 12, color: '#6B7590', marginTop: 3 }}>Lona eco-solvente · 1440 dpi</div>
+                        {/* Tarjeta Derecha: Gigantografía HD */}
+                        <motion.div
+                            whileHover={{ y: -8, scale: 1.01 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden group cursor-pointer"
+                        >
+                            <div className="h-56 relative overflow-hidden bg-slate-100">
+                                <img
+                                    src={IMG('gigantografia.png')}
+                                    alt="Gigantografía HD"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                <span className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md text-emerald-400 font-mono text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border border-slate-700">
+                                    1440 DPI Exterior
+                                </span>
                             </div>
-                        </div>
+                            <div className="p-5">
+                                <h3 className="font-heading font-bold text-lg text-slate-900">
+                                    Gigantografía & Lonas HD
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Lona pesada eco-solvente de 13oz con ojalillos perimetrales para rótulos y letreros duraderos.
+                                </p>
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
 
-            {/* ── Cifras ─────────────────────────────────────────────── */}
-            <section style={{ borderBottom: `1px solid #E9ECF5`, background: '#fff' }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px,3vw,44px)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(50%,150px),1fr))' }}>
+            {/* ── Cifras & Credenciales ───────────────────────────────── */}
+            <section className="bg-white border-b border-slate-200 py-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
                         {FACTS.map((f, i) => (
-                            <div key={f.label} style={{ padding: '34px 0', borderRight: i === FACTS.length - 1 ? 'none' : `1px solid ${C.divider}` }}>
-                                <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(24px,3vw,32px)', fontWeight: 600, letterSpacing: '-.035em', color: C.royal }}>{f.value}</div>
-                                <div style={{ fontSize: 13, color: '#6B7590', marginTop: 4 }}>{f.label}</div>
-                            </div>
+                            <motion.div
+                                key={f.label}
+                                initial={{ opacity: 0, y: 15 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="text-center sm:text-left border-l-2 border-brand-blue/30 pl-4"
+                            >
+                                <span className="font-heading font-black text-3xl sm:text-4xl text-brand-blue tracking-tight">
+                                    {f.value}
+                                </span>
+                                <h4 className="font-bold text-sm text-slate-900 mt-1">
+                                    {f.label}
+                                </h4>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    {f.desc}
+                                </p>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* ── Catálogo ───────────────────────────────────────────── */}
-            <section id="catalogo" style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(48px,7vw,96px) clamp(16px,3vw,44px)' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 36, flexWrap: 'wrap' }}>
-                    <div>
-                        <div style={eyebrow}>Catálogo</div>
-                        <h2 style={h2}>Lo que imprimimos.</h2>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {CATS.map(c => {
-                            const on = filter === c;
-                            return (
-                                <button key={c} onClick={() => setFilter(c)}
-                                    style={{
-                                        padding: '9px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                                        ...(on ? { background: C.royal, color: '#fff', border: `1px solid ${C.royal}` } : { background: '#fff', color: C.body, border: `1px solid ${C.borderStrong}` }),
-                                    }}>{c}</button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 22 }}>
-                    {items.map(it => (
-                        <div key={it.label} style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
-                            <div style={{ height: 184, position: 'relative', overflow: 'hidden', background: `#F5F7FD url("${IMG(it.img)}") center/cover no-repeat` }}>
-                                <span style={{ position: 'absolute', top: 12, left: 12, padding: '5px 10px', background: 'rgba(255,255,255,.94)', borderRadius: 7, fontSize: 11, fontWeight: 700, color: C.royal }}>{it.tag}</span>
-                            </div>
-                            <div style={{ padding: '20px 22px 22px' }}>
-                                <div style={{ fontFamily: DISPLAY, fontSize: 19, fontWeight: 600, letterSpacing: '-.025em', color: C.ink }}>{it.label}</div>
-                                <p style={{ margin: '8px 0 0', fontSize: 13.5, lineHeight: 1.65, color: C.muted }}>{it.desc}</p>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.divider}` }}>
-                                    <span style={{ fontSize: 12.5, color: '#6B7590' }}>Entrega {it.eta}</span>
-                                    <a href={WA(`Hola, quiero cotizar: ${it.label}.`)} target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 600, color: C.royal, textDecoration: 'none' }}>Cotizar →</a>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+            {/* ── Cotizador en Vivo (NUEVO) ───────────────────────────── */}
+            <section id="cotizador" className="py-16 sm:py-24 bg-slate-50/70 border-b border-slate-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <CotizadorRapido />
                 </div>
             </section>
 
-            {/* ── Documentos SRI ─────────────────────────────────────── */}
-            <section id="sri" style={{ background: C.ink, color: '#fff', padding: 'clamp(56px,7vw,96px) 0' }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px,3vw,44px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,330px),1fr))', gap: 'clamp(32px,5vw,72px)', alignItems: 'center' }}>
+            {/* ── Catálogo con Filtros Animados con Framer Motion ──────── */}
+            <section id="catalogo" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
-                        <div style={{ ...eyebrow, color: '#7E8CBE' }}>Documentos SRI</div>
-                        <h2 style={{ margin: '14px 0 18px', fontFamily: DISPLAY, fontSize: 'clamp(28px,3.4vw,40px)', fontWeight: 600, letterSpacing: '-.035em', lineHeight: 1.1 }}>
-                            Su numeración, revisada antes de entrar a prensa.
+                        <span className="text-xs uppercase font-extrabold tracking-widest text-brand-blue">
+                            Catálogo Completo
+                        </span>
+                        <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-2">
+                            Todo lo que imprimimos en nuestro taller.
                         </h2>
-                        <p style={{ margin: '0 0 30px', fontSize: 16.5, lineHeight: 1.7, color: '#C9D2EC', maxWidth: '32rem' }}>
-                            Validamos régimen, estado del contribuyente y secuencia autorizada en el padrón del SRI. Si algo no cuadra, se lo avisamos antes de imprimir.
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            {SRI_POINTS.map(p => (
-                                <div key={p.label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                                    <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 99, background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: C.gold }}>✓</span>
-                                    <span>
-                                        <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{p.label}</span>
-                                        <span style={{ display: 'block', fontSize: 13.5, color: '#A9B5DC', marginTop: 2 }}>{p.detail}</span>
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
                     </div>
 
-                    <RucValidatorWidget />
-                </div>
-            </section>
-
-            {/* ── Acabados ───────────────────────────────────────────── */}
-            <section id="acabados" style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(48px,7vw,96px) clamp(16px,3vw,44px)' }}>
-                <div style={{ maxWidth: '34rem', marginBottom: 40 }}>
-                    <div style={eyebrow}>Acabados</div>
-                    <h2 style={h2}>Papel y tacto, elegidos a mano.</h2>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 28, alignItems: 'start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {FINISHES.map(f => {
-                            const on = finishId === f.id;
+                    {/* Chips de Categorías con Pill Deslizante Framer Motion */}
+                    <div className="flex gap-2 flex-wrap bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                        {CATS.map(c => {
+                            const isSelected = filter === c;
                             return (
-                                <button key={f.id} onClick={() => setFinishId(f.id)}
-                                    style={{
-                                        width: '100%', padding: '15px 18px', borderRadius: 12, textAlign: 'left',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                                        cursor: 'pointer', color: C.ink, fontFamily: 'inherit', transition: 'all .3s',
-                                        background: on ? C.chip : '#fff', border: `1px solid ${on ? C.royal : C.border}`,
-                                    }}>
-                                    <span>
-                                        <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600 }}>{f.name}</span>
-                                        <span style={{ display: 'block', fontSize: 12, color: '#6B7590', marginTop: 2 }}>{f.tag}</span>
-                                    </span>
-                                    <span style={{ fontSize: 15, color: C.royal }}>→</span>
+                                <button
+                                    key={c}
+                                    onClick={() => setFilter(c)}
+                                    className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                                        isSelected ? 'text-white' : 'text-slate-600 hover:text-slate-950'
+                                    }`}
+                                >
+                                    {isSelected && (
+                                        <motion.div
+                                            layoutId="catalogFilterPill"
+                                            className="absolute inset-0 bg-brand-blue rounded-xl shadow-md shadow-brand-blue/30"
+                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10">{c}</span>
                                 </button>
                             );
                         })}
                     </div>
-                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', background: '#fff' }}>
-                        <div style={{ height: 280, background: fin.swatch }} />
-                        <div style={{ padding: '28px 32px 32px' }}>
-                            <div style={{ fontSize: 11.5, letterSpacing: '.18em', textTransform: 'uppercase', color: C.faint }}>{fin.tag}</div>
-                            <h3 style={{ margin: '10px 0 12px', fontFamily: DISPLAY, fontSize: 26, fontWeight: 600, letterSpacing: '-.03em', color: C.ink }}>{fin.name}</h3>
-                            <p style={{ margin: '0 0 22px', fontSize: 15, lineHeight: 1.7, color: '#4A5470', maxWidth: '44rem' }}>{fin.desc}</p>
-                            <a href={WA(`Hola, quiero pedir una muestra física de: ${fin.name}.`)} target="_blank" rel="noreferrer"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '12px 20px', background: C.soft, color: C.royal, borderRadius: 11, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-                                Pedir muestra física en el taller →
-                            </a>
-                        </div>
-                    </div>
                 </div>
-            </section>
 
-            {/* ── Rastreo ────────────────────────────────────────────── */}
-            <section id="rastreo" style={{ background: C.bg, borderTop: `1px solid #E9ECF5`, borderBottom: `1px solid #E9ECF5`, padding: 'clamp(48px,6vw,80px) 0' }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px,3vw,44px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', gap: 'clamp(28px,4vw,56px)', alignItems: 'center' }}>
-                    <div>
-                        <h2 style={{ margin: '0 0 12px', fontFamily: DISPLAY, fontSize: 'clamp(26px,3vw,32px)', fontWeight: 600, letterSpacing: '-.03em', color: C.ink }}>Rastree su pedido</h2>
-                        <p style={{ margin: '0 0 22px', fontSize: 15.5, lineHeight: 1.7, color: '#4A5470' }}>
-                            Con el número de orden que recibió por WhatsApp puede ver en qué etapa está su trabajo.
-                        </p>
-                        <form onSubmit={buscarOrden} style={{ display: 'flex', gap: 10, maxWidth: '26rem' }}>
-                            <input value={orden} onChange={e => setOrden(e.target.value)} placeholder="ORD-4821"
-                                style={{ flex: 1, minWidth: 0, padding: '14px 16px', background: '#fff', border: `1px solid ${C.borderStrong}`, borderRadius: 11, fontSize: 14.5, outline: 'none', fontFamily: MONO, color: C.ink }} />
-                            <button type="submit" style={{ padding: '14px 22px', background: C.royal, color: '#fff', border: 'none', borderRadius: 11, fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Buscar</button>
-                        </form>
-                    </div>
-                    <div style={{ background: '#fff', border: '1px solid #E1E6F5', borderRadius: 16, padding: '26px 28px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                            <span style={{ fontFamily: MONO, fontSize: 13, color: C.ink }}>ORD-4821</span>
-                            <span style={{ padding: '5px 11px', background: C.chip, color: C.royal, borderRadius: 7, fontSize: 11.5, fontWeight: 700 }}>En prensa</span>
-                        </div>
-                        <div>
-                            {TRACK.map(t => (
-                                <div key={t.label} style={{ display: 'grid', gridTemplateColumns: '20px 1fr auto', gap: 14, alignItems: 'center', padding: '11px 0', borderBottom: `1px solid ${C.soft}` }}>
-                                    <span style={{
-                                        width: 11, height: 11, borderRadius: 99, justifySelf: 'center',
-                                        ...(t.done ? { background: C.royal } : t.current ? { background: C.gold, boxShadow: '0 0 0 4px rgba(255,198,26,.25)' } : { background: '#fff', border: `1.5px solid ${C.borderStrong}` }),
-                                    }} />
-                                    <span style={{ fontSize: 14, color: t.done ? C.ink : t.current ? C.royal : C.faint }}>{t.label}</span>
-                                    <span style={{ fontSize: 12, color: C.faint, fontFamily: MONO }}>{t.time}</span>
+                {/* Grid de Productos con AnimatePresence */}
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence>
+                        {items.map(it => (
+                            <motion.div
+                                layout
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                key={it.label}
+                                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col justify-between group"
+                            >
+                                <div>
+                                    <div className="h-52 relative overflow-hidden bg-slate-100">
+                                        <img
+                                            src={IMG(it.img)}
+                                            alt={it.label}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <span className="absolute top-3 left-3 px-3 py-1 bg-white/95 backdrop-blur-md rounded-full font-bold text-xs text-brand-blue shadow-sm">
+                                            {it.tag}
+                                        </span>
+                                    </div>
+
+                                    <div className="p-6">
+                                        <h3 className="font-heading font-bold text-xl text-slate-950">
+                                            {it.label}
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                            {it.desc}
+                                        </p>
+
+                                        {/* Specs rápidas */}
+                                        <div className="mt-4 flex flex-col gap-1.5">
+                                            {it.specs.map((sp, idx) => (
+                                                <div key={idx} className="flex items-center gap-2 text-[11px] text-slate-600">
+                                                    <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                                                    <span>{sp}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
-                            ))}
+
+                                <div className="p-6 pt-0 mt-2">
+                                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                                            <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                            Entrega: {it.eta}
+                                        </span>
+                                        <a
+                                            href={WA(`Hola Imprenta Córdova, quiero cotizar: ${it.label}.`)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:text-blue-800 transition-colors"
+                                        >
+                                            <span>Cotizar</span>
+                                            <ArrowRight className="w-3.5 h-3.5" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </motion.div>
+            </section>
+
+            {/* ── Documentos SRI & Validador RUC Oficial ──────────────── */}
+            <section id="sri" className="bg-slate-950 text-white py-20 relative overflow-hidden">
+                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                        {/* Explicación de Garantías SRI */}
+                        <div>
+                            <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+                                Garantía Gráfica SRI N° 001-001
+                            </span>
+                            <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-4 leading-tight">
+                                Tu numeración autorizada, revisada antes de prensa.
+                            </h2>
+                            <p className="mt-4 text-base text-slate-300 leading-relaxed">
+                                Validamos régimen, estado del contribuyente y secuencia autorizada en el padrón del SRI. Si algo no cuadra con el reglamento, te avisamos de inmediato antes de imprimir para evitar multas.
+                            </p>
+
+                            <div className="mt-8 space-y-4">
+                                {SRI_POINTS.map((p, idx) => (
+                                    <div key={idx} className="flex gap-3.5 items-start">
+                                        <div className="w-6 h-6 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 flex-shrink-0 mt-0.5">
+                                            ✓
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-white">{p.title}</h4>
+                                            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{p.detail}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Widget de Validación con Framer Motion */}
+                        <div>
+                            <RucValidatorWidget />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ── CTA ────────────────────────────────────────────────── */}
-            <section style={{ position: 'relative', overflow: 'hidden', background: C.royal, color: '#fff', padding: 'clamp(56px,6vw,88px) 0' }}>
-                <div style={{ position: 'absolute', left: -140, bottom: -200, width: 560, height: 560, borderRadius: 99, background: 'radial-gradient(circle, rgba(255,255,255,.14) 0%, transparent 62%)' }} />
-                <div style={{ position: 'relative', maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px,3vw,44px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
-                    <div>
-                        <h2 style={{ margin: 0, fontFamily: DISPLAY, fontSize: 'clamp(28px,3.6vw,42px)', fontWeight: 600, letterSpacing: '-.035em', lineHeight: 1.08 }}>Su talonario puede estar listo mañana.</h2>
-                        <p style={{ margin: '14px 0 0', fontSize: 16.5, color: '#C9D2EC' }}>Av. Las Palmeras y Calle 4ta · Machala · Lun–Vie 8–18h · Sáb 8–14h</p>
+            {/* ── Muestrario Háptico de Acabados ─────────────────────── */}
+            <section id="acabados" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-xl mb-12">
+                    <span className="text-xs uppercase font-extrabold tracking-widest text-brand-blue">
+                        Muestrario Háptico
+                    </span>
+                    <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-2">
+                        Papel, gramaje y tacto elegidos a mano.
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Botones de Selección */}
+                    <div className="lg:col-span-5 space-y-2.5">
+                        {FINISHES.map(f => {
+                            const isSelected = finishId === f.id;
+                            return (
+                                <button
+                                    key={f.id}
+                                    onClick={() => setFinishId(f.id)}
+                                    className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between border ${
+                                        isSelected
+                                            ? 'bg-blue-50/80 border-brand-blue shadow-md'
+                                            : 'bg-white hover:bg-slate-50 border-slate-200'
+                                    }`}
+                                >
+                                    <div>
+                                        <span className="font-heading font-bold text-sm text-slate-900 block">
+                                            {f.name}
+                                        </span>
+                                        <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
+                                            {f.tag}
+                                        </span>
+                                    </div>
+                                    <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-brand-blue' : 'text-slate-400'}`} />
+                                </button>
+                            );
+                        })}
                     </div>
-                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                        <a href={WA('Hola, quiero encargar un trabajo de impresión.')} target="_blank" rel="noreferrer"
-                            style={{ padding: '17px 28px', background: '#fff', color: C.ink, borderRadius: 12, fontSize: 15.5, fontWeight: 600, textDecoration: 'none' }}>Escribir por WhatsApp</a>
-                        <a href="tel:+593993083943"
-                            style={{ padding: '17px 26px', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.3)', color: '#fff', borderRadius: 12, fontSize: 15.5, fontWeight: 600, textDecoration: 'none' }}>Llamar al taller</a>
+
+                    {/* Visor de Acabado con Framer Motion */}
+                    <div className="lg:col-span-7">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={fin.id}
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -15 }}
+                                transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl"
+                            >
+                                <div
+                                    className="h-64 relative flex items-center justify-center p-6"
+                                    style={{ background: fin.swatch }}
+                                >
+                                    <div className="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-white max-w-sm text-center shadow-2xl">
+                                        <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold block mb-1">
+                                            Capas del Material
+                                        </span>
+                                        <div className="flex flex-col gap-1 text-xs font-semibold">
+                                            {fin.layers.map((l, i) => (
+                                                <div key={i} className="flex items-center justify-center gap-1.5">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                                    <span>{l}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-8">
+                                    <span className="text-xs uppercase font-mono font-bold tracking-wider text-brand-blue">
+                                        {fin.tag}
+                                    </span>
+                                    <h3 className="font-heading font-extrabold text-2xl text-slate-950 mt-1">
+                                        {fin.name}
+                                    </h3>
+                                    <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
+                                        {fin.desc}
+                                    </p>
+
+                                    <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-4">
+                                        <a
+                                            href={WA(`Hola Imprenta Córdova, deseo solicitar una muestra física en el taller de: ${fin.name}.`)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md transition-all"
+                                        >
+                                            <span>Pedir Muestra Física en Taller</span>
+                                            <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+                                        </a>
+                                        <span className="text-xs text-slate-400">
+                                            📍 Av. Las Palmeras y Calle 4ta
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
             </section>
 
-            {/* ── Footer ─────────────────────────────────────────────── */}
-            <footer style={{ background: '#fff' }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: '52px clamp(16px,3vw,44px) 36px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: 40 }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <img src="/LOGO.png" alt="" style={{ height: 30, width: 'auto' }} />
-                            <span style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: C.ink }}>Imprenta Córdova</span>
+            {/* ── Rastreo de Pedidos Interactivo ──────────────────────── */}
+            <section id="rastreo" className="py-20 bg-slate-50 border-y border-slate-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                        <div className="lg:col-span-5">
+                            <span className="text-xs uppercase font-extrabold tracking-widest text-brand-blue">
+                                Transparencia Total
+                            </span>
+                            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-2">
+                                Rastrea tu trabajo en tiempo real.
+                            </h2>
+                            <p className="mt-3 text-sm text-slate-600 leading-relaxed">
+                                Ingresa el número de orden que te enviamos por WhatsApp (ej: ORD-4821) para verificar en qué máquina o fase de acabado se encuentra tu pedido.
+                            </p>
+
+                            <form onSubmit={buscarOrden} className="mt-6 flex gap-2">
+                                <input
+                                    value={trackingInput}
+                                    onChange={e => setTrackingInput(e.target.value)}
+                                    placeholder="Ej: ORD-4821"
+                                    className="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl font-mono text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                />
+                                <button
+                                    type="submit"
+                                    className="px-6 py-3 bg-brand-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all"
+                                >
+                                    Buscar
+                                </button>
+                            </form>
                         </div>
-                        <p style={{ margin: '16px 0 0', fontSize: 13.5, lineHeight: 1.7, color: '#6B7590', maxWidth: '22rem' }}>
-                            Establecimiento gráfico autorizado por el SRI N° 001-001. Machala, El Oro — Ecuador.
+
+                        {/* Stepper de Demostración */}
+                        <div className="lg:col-span-7 bg-white p-7 rounded-3xl border border-slate-200 shadow-xl">
+                            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-mono font-bold text-sm text-slate-900">ORD-4821</span>
+                                    <span className="text-xs text-slate-400">· 5 Talonarios SRI</span>
+                                </div>
+                                <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-bold flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                    En Prensa
+                                </span>
+                            </div>
+
+                            <div className="space-y-3">
+                                {TRACK_STEPS.map((st, i) => (
+                                    <div key={i} className="flex items-center justify-between text-xs py-1.5">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                                st.done
+                                                    ? 'bg-emerald-500 text-white'
+                                                    : st.current
+                                                    ? 'bg-amber-400 text-slate-950 ring-4 ring-amber-400/20'
+                                                    : 'bg-slate-100 text-slate-400 border border-slate-300'
+                                            }`}>
+                                                {st.done ? '✓' : i + 1}
+                                            </span>
+                                            <span className={st.done ? 'text-slate-800 font-semibold' : st.current ? 'text-slate-950 font-bold' : 'text-slate-400'}>
+                                                {st.label}
+                                            </span>
+                                        </div>
+                                        <span className="font-mono text-slate-400 text-[11px]">{st.time}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Gran CTA Final ─────────────────────────────────────── */}
+            <section className="bg-gradient-to-r from-brand-blue via-blue-900 to-slate-950 text-white py-20 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/20 border border-amber-400/30 rounded-full text-xs font-mono text-amber-300 font-bold uppercase tracking-wider mb-4">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Puntualidad Absoluta
+                    </span>
+                    <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white tracking-tight max-w-3xl mx-auto">
+                        Tu talonario o papelería puede estar listo mañana mismo.
+                    </h2>
+                    <p className="mt-4 text-base text-blue-100 max-w-xl mx-auto">
+                        Visítanos en Av. Las Palmeras y Calle 4ta (Machala) o envíanos tu RUC por WhatsApp para comenzar de inmediato con tu prueba digital.
+                    </p>
+
+                    <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <motion.a
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            href={WA('Hola Imprenta Córdova, quiero encargar un trabajo de impresión ahora.')}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-xl shadow-emerald-500/30 transition-all flex items-center justify-center gap-2.5"
+                        >
+                            <WhatsAppIcon className="w-5 h-5" />
+                            <span>Escribir por WhatsApp</span>
+                        </motion.a>
+                        <a
+                            href="tel:+593993083943"
+                            className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-sm rounded-2xl transition-all flex items-center justify-center gap-2"
+                        >
+                            <Phone className="w-4 h-4" />
+                            <span>Llamar al Taller: +593 99 308 3943</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Footer Institucional ────────────────────────────────── */}
+            <footer className="bg-white border-t border-slate-200 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <img src="/LOGO.png" alt="Imprenta Córdova" className="h-9 w-auto" />
+                            <span className="font-heading font-extrabold text-slate-950 text-base">
+                                Imprenta Córdova
+                            </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+                            Establecimiento gráfico autorizado por el Servicio de Rentas Internas N° 001-001. Machala, El Oro — Ecuador.
                         </p>
                     </div>
+
                     <div>
-                        <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint, marginBottom: 14 }}>Catálogo</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                            <Link to="/vitrina" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Facturas SRI</Link>
-                            <Link to="/vitrina" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Talonarios</Link>
-                            <Link to="/vitrina" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Sellos</Link>
-                            <Link to="/vitrina" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Gigantografía</Link>
+                        <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+                            Productos
+                        </h4>
+                        <div className="flex flex-col gap-2 text-xs font-semibold text-slate-600">
+                            <Link to="/vitrina" className="hover:text-brand-blue">Facturas Autorizadas SRI</Link>
+                            <Link to="/vitrina" className="hover:text-brand-blue">Notas de Venta RIMPE</Link>
+                            <Link to="/vitrina" className="hover:text-brand-blue">Tarjetas de Presentación</Link>
+                            <Link to="/vitrina" className="hover:text-brand-blue">Sellos Automáticos</Link>
+                            <Link to="/vitrina" className="hover:text-brand-blue">Gigantografías</Link>
                         </div>
                     </div>
+
                     <div>
-                        <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint, marginBottom: 14 }}>Servicio</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                            <Link to="/tracking" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Rastrear pedido</Link>
-                            <a href="#sri" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Validar RUC</a>
-                            <Link to="/login" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Acceso operador</Link>
+                        <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+                            Servicios
+                        </h4>
+                        <div className="flex flex-col gap-2 text-xs font-semibold text-slate-600">
+                            <Link to="/tracking" className="hover:text-brand-blue">Rastrear Mi Pedido</Link>
+                            <a href="#sri" className="hover:text-brand-blue">Consulta de RUC en Padrón</a>
+                            <a href="#cotizador" className="hover:text-brand-blue">Cotizador en Vivo</a>
+                            <Link to="/login" className="hover:text-brand-blue">Acceso Sistema Operador</Link>
                         </div>
                     </div>
+
                     <div>
-                        <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint, marginBottom: 14 }}>Contacto</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 9, fontSize: 13.5, color: C.body }}>
-                            <a href="tel:+593993083943" style={{ color: C.body, textDecoration: 'none' }}>+593 99 308 3943</a>
+                        <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+                            Ubicación & Contacto
+                        </h4>
+                        <div className="flex flex-col gap-2 text-xs text-slate-600">
                             <span>Av. Las Palmeras y Calle 4ta</span>
+                            <span>Machala, El Oro</span>
+                            <a href="tel:+593993083943" className="font-bold text-slate-800 hover:text-brand-blue">
+                                +593 99 308 3943
+                            </a>
+                            <span className="text-slate-400 mt-1">Lun–Vie 8:00–18:00 · Sáb 8:00–14:00</span>
                         </div>
                     </div>
                 </div>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: '18px clamp(16px,3vw,44px) 40px', borderTop: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 12, color: C.faint }}>© 2026 Imprenta Córdova.</span>
-                    <span style={{ fontSize: 12, color: C.faint, fontFamily: MONO }}>SRI 001-001</span>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+                    <span>© 2026 Imprenta Córdova. Todos los derechos reservados.</span>
+                    <span className="font-mono">SRI Autorización 001-001</span>
                 </div>
             </footer>
 
-            {/* ── Barra de acción en celular (Publica-B-Movil) ───────── */}
-            <div className="md:hidden" style={{ height: 78 }} />
-            <div className="md:hidden" style={{
-                position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 90,
-                padding: '12px 16px calc(16px + env(safe-area-inset-bottom))',
-                background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(14px)', borderTop: `1px solid ${C.divider}`,
-                display: 'flex', gap: 10,
-            }}>
-                <a href={WA('Hola, quiero cotizar la impresión de mis documentos. Mi RUC es:')} target="_blank" rel="noreferrer"
-                    style={{ flex: 1, textAlign: 'center', padding: 15, background: C.royal, color: '#fff', borderRadius: 13, fontSize: 14.5, fontWeight: 600, textDecoration: 'none', minHeight: 48 }}>
-                    Enviar mi RUC
+            {/* ── Barra Móvil Fija de Conversión ("PEPA para el móvil") ─── */}
+            <div className="md:hidden h-20" />
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 shadow-2xl flex items-center gap-2">
+                <a
+                    href={WA('Hola Imprenta Córdova, quiero cotizar la impresión de mis documentos. Mi RUC es:')}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 bg-brand-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-brand-blue/30 active:scale-95 transition-transform"
+                >
+                    <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
+                    <span>Enviar RUC / Cotizar</span>
                 </a>
-                <a href="tel:+593993083943"
-                    style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, minHeight: 48, background: C.soft, color: C.royal, borderRadius: 13, fontSize: 19, textDecoration: 'none' }}
-                    aria-label="Llamar">☎</a>
+
+                <a
+                    href="tel:+593993083943"
+                    className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 active:scale-95 transition-transform flex-shrink-0"
+                    aria-label="Llamar al taller"
+                >
+                    <Phone className="w-5 h-5" />
+                </a>
             </div>
         </div>
     );

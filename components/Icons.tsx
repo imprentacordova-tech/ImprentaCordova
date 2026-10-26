@@ -308,5 +308,5 @@ export const BuildingStorefrontIcon = Store;
 export const SettingsIcon        = Settings;
 export const Cog8ToothIcon        = Settings;
 export const HeartIconSolid       = Heart;
-export const FileDigitIcon        = FileDigit;
-export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles };
+export { FileText, Search, ShoppingCart, CheckCircle, Star, Filter, Menu, X, ArrowDown, Box, Receipt, Plus, Check, Printer, Sparkles, ShieldCheck, Clock, Layers, Building2, FileCheck2, AlertTriangle, Phone, Package, Truck, Calculator, ArrowRight, ChevronRight };
+
