@@ -196,18 +196,21 @@ const CuentasPage: React.FC = () => {
                     ) : paginated.map(e => {
                         const ing = e.tipo === 'INGRESO';
                         return (
-                            <div key={e.id} style={{ padding: '14px 20px', borderBottom: `1px solid ${C.rowLine}`, display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: 14, alignItems: 'center' }}>
-                                <span style={{ padding: '3px 9px', borderRadius: 7, fontSize: 10.5, fontWeight: 800, letterSpacing: '.1em', ...(ing ? { background: '#F2F7F2', color: C.success } : { background: '#FEF2F2', color: '#B91C1C' }) }}>
+                            <div key={e.id} className="grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_auto_auto] gap-3 md:gap-4 items-center" style={{ padding: '14px 16px', borderBottom: `1px solid ${C.rowLine}` }}>
+                                <span style={{ padding: '3px 8px', borderRadius: 7, fontSize: 10, fontWeight: 800, letterSpacing: '.08em', ...(ing ? { background: '#F2F7F2', color: C.success } : { background: '#FEF2F2', color: '#B91C1C' }) }}>
                                     {ing ? 'INGRESO' : 'EGRESO'}
                                 </span>
                                 <span style={{ minWidth: 0 }}>
-                                    <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.detalle}</span>
-                                    <span style={{ display: 'block', fontSize: 11, color: C.ghost, fontFamily: MONO, marginTop: 2 }}>firma {e.hash} · {e.usuario.split(' ')[0]}</span>
+                                    <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.detalle}</span>
+                                    <span style={{ display: 'block', fontSize: 10.5, color: C.ghost, fontFamily: MONO, marginTop: 2 }}>
+                                        firma {e.hash} · {e.usuario.split(' ')[0]}
+                                        <span className="md:hidden"> · {formatDate(e.timestamp)}</span>
+                                    </span>
                                 </span>
-                                <span style={{ fontSize: 12, color: C.faint, fontFamily: MONO }}>
+                                <span className="hidden md:inline" style={{ fontSize: 12, color: C.faint, fontFamily: MONO }}>
                                     {formatDate(e.timestamp)} {new Date(e.timestamp).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
-                                <span style={{ fontSize: 14, fontFamily: MONO, fontWeight: 600, color: ing ? C.success : '#B91C1C', whiteSpace: 'nowrap' }}>
+                                <span style={{ fontSize: 13.5, fontFamily: MONO, fontWeight: 700, color: ing ? C.success : '#B91C1C', whiteSpace: 'nowrap', textAlign: 'right' }}>
                                     {ing ? '+ ' : '− '}{formatCurrency(e.monto)}
                                 </span>
                             </div>

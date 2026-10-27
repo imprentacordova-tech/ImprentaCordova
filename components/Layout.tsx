@@ -9,7 +9,7 @@ import {
     ActivityIcon, WalletIcon, CircleStackIcon, ShieldCheckIcon,
     MonitorIcon,
     GlobeIcon, ChevronDownIcon, ChevronRightIcon,
-    ReceiptIcon, HistoryIcon, PuzzlePieceIcon
+    ReceiptIcon, HistoryIcon, PuzzlePieceIcon, FileTextIcon
 } from './Icons';
 import { TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
@@ -164,9 +164,12 @@ const NavItem: React.FC<{
     const isDownload = item.path.endsWith('.zip');
 
     const rowBase: React.CSSProperties = {
-        width: '100%', display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px',
-        borderRadius: 10, cursor: 'pointer', border: 'none', fontFamily: 'inherit', transition: 'all .25s',
+        width: '100%', display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 11,
+        padding: isMobile ? '10px 12px' : '9px 12px',
+        minHeight: isMobile ? 48 : 38,
+        borderRadius: 11, cursor: 'pointer', border: 'none', fontFamily: 'inherit', transition: 'all .2s',
         textAlign: 'left',
+        WebkitTapHighlightColor: 'transparent',
     };
 
     if (isDownload) {
@@ -179,9 +182,15 @@ const NavItem: React.FC<{
                 onMouseLeave={() => setHover(false)}
                 style={{ ...rowBase, color: '#7FD3A6', background: hover ? 'rgba(27,110,62,.16)' : 'rgba(27,110,62,.08)' }}
             >
-                <PuzzlePieceIcon className="w-[15px] h-[15px] shrink-0" />
-                <span style={{ flex: 1, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-                <span style={{ flexShrink: 0, padding: '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800, background: 'rgba(127,211,166,.18)', color: '#7FD3A6' }}>
+                <div style={{
+                    width: isMobile ? 32 : 24, height: isMobile ? 32 : 24,
+                    borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(27,110,62,.2)', flexShrink: 0
+                }}>
+                    <PuzzlePieceIcon className={isMobile ? "w-4 h-4" : "w-[15px] h-[15px]"} />
+                </div>
+                <span style={{ flex: 1, fontSize: isMobile ? 13 : 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                <span style={{ flexShrink: 0, padding: isMobile ? '2px 8px' : '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800, background: 'rgba(127,211,166,.18)', color: '#7FD3A6' }}>
                     {item.badge || 'ZIP'}
                 </span>
             </a>
@@ -206,7 +215,7 @@ const NavItem: React.FC<{
                         background: C.gold, color: C.ink, fontWeight: 700,
                         boxShadow: isActive ? '0 0 0 2px rgba(255,198,26,.45)' : '0 6px 16px -10px rgba(255,198,26,.9)',
                     }
-                    : { background: hover ? 'rgba(255,255,255,.05)' : 'transparent', color: isActive ? C.gold : '#C2CAE6' }),
+                    : { background: isActive ? (isMobile ? 'rgba(255,198,26,.14)' : 'rgba(255,198,26,.12)') : (hover ? 'rgba(255,255,255,.05)' : 'transparent'), color: isActive ? C.gold : '#C2CAE6' }),
             })}
         >
             {({ isActive }) => (
@@ -218,29 +227,56 @@ const NavItem: React.FC<{
                             style={{
                                 position: 'absolute',
                                 inset: 0,
-                                background: 'rgba(255,198,26,.12)',
+                                background: isMobile ? 'rgba(255,198,26,.14)' : 'rgba(255,198,26,.12)',
                                 borderLeft: '3px solid #FFC61A',
                                 borderRadius: 10,
                                 zIndex: 0,
                             }}
                         />
                     )}
-                    <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', color: esCTA ? C.ink : isActive ? C.gold : '#8E9AC4' }}>
-                        <item.icon className="w-[15px] h-[15px] shrink-0" />
+                    {/* Contenedor de ícono nítido y ergonómico */}
+                    <span style={{
+                        position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: isMobile ? 32 : 22, height: isMobile ? 32 : 22,
+                        borderRadius: isMobile ? 8 : 6,
+                        background: esCTA ? 'transparent' : (isActive ? 'rgba(255,198,26,.18)' : (isMobile ? 'rgba(255,255,255,.05)' : 'transparent')),
+                        color: esCTA ? C.ink : isActive ? C.gold : (isMobile ? '#A8B3D8' : '#8E9AC4'),
+                        flexShrink: 0
+                    }}>
+                        <item.icon className={isMobile ? "w-[17px] h-[17px] shrink-0" : "w-[15px] h-[15px] shrink-0"} />
                     </span>
-                    <span style={{ position: 'relative', zIndex: 1, flex: 1, fontSize: 12, fontWeight: esCTA ? 800 : (isActive ? 700 : 600), letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-                    {badgeCount > 0 && (
+                    <span style={{
+                        position: 'relative', zIndex: 1, flex: 1,
+                        fontSize: isMobile ? 13 : 12,
+                        fontWeight: esCTA ? 800 : (isActive ? 700 : 600),
+                        letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                    }}>
+                        {item.label}
+                    </span>
+                    {badgeCount > 0 ? (
                         <span style={{
-                            position: 'relative', zIndex: 1, flexShrink: 0, padding: '1px 7px', borderRadius: 99, fontSize: 9.5, fontWeight: 800,
+                            position: 'relative', zIndex: 1, flexShrink: 0, padding: isMobile ? '2px 8px' : '1px 7px', borderRadius: 99,
+                            fontSize: isMobile ? 10.5 : 9.5, fontWeight: 800,
                             ...(esCTA
                                 ? { background: 'rgba(10,17,64,.16)', color: C.ink }
-                                : isActive ? { background: 'rgba(255,198,26,.22)', color: C.gold } : { background: 'rgba(255,255,255,.08)', color: '#9AA6CE' }),
+                                : isActive ? { background: 'rgba(255,198,26,.26)', color: C.gold } : { background: 'rgba(255,255,255,.1)', color: '#CBD5E1' }),
                         }}>
                             {badgeCount}
                         </span>
+                    ) : (
+                        isMobile && !esCTA && (
+                            <ChevronRightIcon
+                                className="w-3.5 h-3.5 shrink-0"
+                                style={{
+                                    position: 'relative', zIndex: 1,
+                                    color: isActive ? C.gold : 'rgba(255,255,255,.2)',
+                                    opacity: isActive ? 1 : 0.6
+                                }}
+                            />
+                        )
                     )}
-                    {/* Atajo a la vista: el sistema ya los tenía, pero invisibles. */}
-                    {atajo && (
+                    {/* Atajo de teclado sólo en computadoras de escritorio */}
+                    {!isMobile && atajo && (
                         <span
                             title={`Atajo: Alt + ${atajo}`}
                             style={{
@@ -280,21 +316,35 @@ const NavGroup: React.FC<{
     }, [open, group.id]);
 
     return (
-        <div>
+        <div style={isMobile ? {
+            background: 'rgba(255,255,255,.025)',
+            border: '1px solid rgba(255,255,255,.05)',
+            borderRadius: 14,
+            padding: '5px 6px 7px',
+        } : undefined}>
             <button
                 onClick={toggle}
                 style={{
                     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '5px 12px 7px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                    padding: isMobile ? '7px 10px 8px' : '5px 12px 7px',
+                    minHeight: isMobile ? 36 : undefined,
+                    background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                 }}
             >
-                <span style={{
-                    fontSize: 9, fontWeight: 800, letterSpacing: '.34em', textTransform: 'uppercase',
-                    color: isGroupActive ? C.gold : '#5C6892',
-                }}>
-                    {group.title}
-                </span>
-                <ChevronDownIcon className={`w-3 h-3 transition-transform duration-300 ${open ? '' : '-rotate-90'}`} style={{ color: '#5C6892' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{
+                        width: 5, height: 5, borderRadius: '50%',
+                        background: isGroupActive ? C.gold : '#5C6892',
+                        transition: 'background 0.2s',
+                    }} />
+                    <span style={{
+                        fontSize: isMobile ? 10 : 9, fontWeight: 800, letterSpacing: '.28em', textTransform: 'uppercase',
+                        color: isGroupActive ? C.gold : '#7B88B2',
+                    }}>
+                        {group.title}
+                    </span>
+                </div>
+                <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-300 ${open ? '' : '-rotate-90'}`} style={{ color: isGroupActive ? C.gold : '#5C6892' }} />
             </button>
 
             <AnimatePresence initial={false}>
@@ -304,7 +354,7 @@ const NavGroup: React.FC<{
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                        style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}
+                        style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: isMobile ? 4 : 2 }}
                     >
                         {group.items.map(item => (
                             <NavItem key={item.path} item={item} badges={badges} onClick={onNavClick} isMobile={isMobile} />
@@ -371,40 +421,105 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [logoutHover, setLogoutHover] = useState(false);
 
     const SidebarContent = ({ onNavClick, isMobile }: { onNavClick?: () => void; isMobile?: boolean }) => (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.ink, color: '#fff' }}>
-            {/* Brand */}
-            <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,.09)' }}>
-                <Link to="/" onClick={() => onNavClick?.()} style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
-                    <CordovaLogo className="w-[34px] h-[34px] object-contain" style={{ background: '#fff', borderRadius: 7, padding: 2 }} />
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.ink, color: '#fff', position: 'relative' }}>
+            {/* Header de Marca */}
+            <div style={{
+                padding: isMobile ? '16px 16px 14px' : '20px 18px 16px',
+                borderBottom: '1px solid rgba(255,255,255,.09)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+            }}>
+                <Link to="/" onClick={() => onNavClick?.()} style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none', minWidth: 0 }}>
+                    <CordovaLogo className="w-[34px] h-[34px] object-contain shrink-0" style={{ background: '#fff', borderRadius: 8, padding: 2 }} />
                     <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, minWidth: 0 }}>
                         <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: '-.03em', color: '#fff' }}>
                             CÓRDOVA<span style={{ color: C.gold }}>.</span>
                         </span>
-                        <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '.3em', textTransform: 'uppercase', color: '#7E8CBE', marginTop: 2 }}>
-                            Centro de Producción
+                        <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '.24em', textTransform: 'uppercase', color: '#8A99C7', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ width: 5, height: 5, borderRadius: 99, background: '#10B981', display: 'inline-block' }} />
+                            {isMobile ? 'Gestión Interna · Zaruma' : 'Centro de Producción'}
                         </span>
                     </span>
                 </Link>
+
+                {/* Botón cerrar integrado y táctil para celulares */}
+                {isMobile && (
+                    <button
+                        type="button"
+                        onClick={() => onNavClick?.()}
+                        style={{
+                            width: 38,
+                            height: 38,
+                            borderRadius: 10,
+                            background: 'rgba(255,255,255,.08)',
+                            border: '1px solid rgba(255,255,255,.14)',
+                            color: '#E2E8F0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            WebkitTapHighlightColor: 'transparent',
+                        }}
+                        aria-label="Cerrar menú de gestión"
+                    >
+                        <CloseIcon className="w-4 h-4" />
+                    </button>
+                )}
             </div>
 
-            {/* Quick Action */}
-            <div style={{ padding: '14px 14px 10px' }}>
-                <button
-                    onClick={() => { navigate('/nuevo'); onNavClick?.(); }}
-                    onMouseEnter={() => setNuevaHover(true)}
-                    onMouseLeave={() => setNuevaHover(false)}
-                    style={{
-                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: 12,
-                        background: nuevaHover ? '#F0B400' : C.gold, color: C.ink, border: 'none', borderRadius: 11,
-                        fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                >
-                    <SparklesIcon className="w-3.5 h-3.5" />
-                    Nueva Orden
-                </button>
+            {/* Accesos rápidos táctiles */}
+            <div style={{ padding: isMobile ? '12px 14px 10px' : '14px 14px 10px' }}>
+                {isMobile ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
+                        <button
+                            type="button"
+                            onClick={() => { navigate('/nuevo'); onNavClick?.(); }}
+                            style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px 8px',
+                                background: C.gold, color: C.ink, border: 'none', borderRadius: 11,
+                                fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                                boxShadow: '0 4px 14px -3px rgba(255,198,26,.65)',
+                                WebkitTapHighlightColor: 'transparent',
+                            }}
+                        >
+                            <SparklesIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>Nueva Orden</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { navigate('/nuevo?cat=sri&es_sri=true'); onNavClick?.(); }}
+                            style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px 8px',
+                                background: 'rgba(255,198,26,.12)', color: C.gold, border: '1px solid rgba(255,198,26,.35)',
+                                borderRadius: 11, fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                                WebkitTapHighlightColor: 'transparent',
+                            }}
+                        >
+                            <FileTextIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>SRI Fiscal</span>
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => { navigate('/nuevo'); onNavClick?.(); }}
+                        onMouseEnter={() => setNuevaHover(true)}
+                        onMouseLeave={() => setNuevaHover(false)}
+                        style={{
+                            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: 12,
+                            background: nuevaHover ? '#F0B400' : C.gold, color: C.ink, border: 'none', borderRadius: 11,
+                            fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                    >
+                        <SparklesIcon className="w-3.5 h-3.5" />
+                        Nueva Orden
+                    </button>
+                )}
             </div>
 
-            {/* Navigation */}
+            {/* Lista navegable de módulos internos */}
             <nav
                 style={{
                     flex: 1,
@@ -412,10 +527,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     WebkitOverflowScrolling: 'touch',
                     overscrollBehavior: 'contain',
                     touchAction: 'pan-y',
-                    padding: '4px 10px 16px',
+                    padding: isMobile ? '4px 12px 16px' : '4px 10px 16px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 16
+                    gap: isMobile ? 12 : 16
                 }}
             >
                 {navGroups.map(group => (
@@ -423,34 +538,82 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 ))}
             </nav>
 
-            {/* User Footer */}
-            <div style={{ padding: '12px 14px 16px', borderTop: '1px solid rgba(255,255,255,.09)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: 8 }}>
+            {/* Footer de Usuario & Turno Activo */}
+            <div style={{
+                padding: isMobile ? '12px 14px calc(14px + env(safe-area-inset-bottom, 12px))' : '12px 14px 16px',
+                borderTop: '1px solid rgba(255,255,255,.09)',
+                background: isMobile ? 'rgba(7,11,38,.98)' : 'transparent',
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '6px 4px' }}>
                     <span style={{
-                        width: 34, height: 34, borderRadius: 10, background: 'rgba(255,198,26,.14)', border: '1px solid rgba(255,198,26,.32)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 800, color: C.gold,
+                        width: 36, height: 36, borderRadius: 10, background: 'rgba(255,198,26,.14)', border: '1px solid rgba(255,198,26,.32)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11.5, fontWeight: 800, color: C.gold,
                     }}>{userInitials}</span>
                     <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.nombre}</span>
+                        <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.nombre}</span>
                         <RoleBadge rol={user.rol} />
                     </span>
                 </div>
-                <button
-                    onClick={authLogout}
-                    onMouseEnter={() => setLogoutHover(true)}
-                    onMouseLeave={() => setLogoutHover(false)}
-                    style={{
-                        width: '100%', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: 10,
-                        borderRadius: 10, fontSize: 10, fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase',
-                        cursor: 'pointer', fontFamily: 'inherit', transition: 'all .3s',
-                        background: logoutHover ? 'rgba(231,1,1,.1)' : 'transparent',
-                        color: logoutHover ? '#FF6B6B' : '#7E8CBE',
-                        border: `1px solid ${logoutHover ? 'rgba(231,1,1,.25)' : 'transparent'}`,
-                    }}
-                >
-                    <LogoutIcon className="w-3.5 h-3.5" />
-                    Cerrar Sesión
-                </button>
+
+                {isMobile ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setArqueoModalOpen(true);
+                                onNavClick?.();
+                            }}
+                            style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 8px',
+                                borderRadius: 10, fontSize: 11, fontWeight: 700,
+                                cursor: 'pointer', fontFamily: 'inherit',
+                                background: 'rgba(255,255,255,.07)',
+                                color: '#E0E7FF',
+                                border: '1px solid rgba(255,255,255,.12)',
+                                WebkitTapHighlightColor: 'transparent',
+                            }}
+                        >
+                            <WalletIcon className="w-3.5 h-3.5 shrink-0" style={{ color: C.gold }} />
+                            <span>Arqueo</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                authLogout();
+                                onNavClick?.();
+                            }}
+                            style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 8px',
+                                borderRadius: 10, fontSize: 11, fontWeight: 700,
+                                cursor: 'pointer', fontFamily: 'inherit',
+                                background: 'rgba(231,1,1,.12)',
+                                color: '#FF8080',
+                                border: '1px solid rgba(231,1,1,.28)',
+                                WebkitTapHighlightColor: 'transparent',
+                            }}
+                        >
+                            <LogoutIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>Salir</span>
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={authLogout}
+                        onMouseEnter={() => setLogoutHover(true)}
+                        onMouseLeave={() => setLogoutHover(false)}
+                        style={{
+                            width: '100%', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: 10,
+                            borderRadius: 10, fontSize: 10, fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase',
+                            cursor: 'pointer', fontFamily: 'inherit', transition: 'all .3s',
+                            background: logoutHover ? 'rgba(231,1,1,.1)' : 'transparent',
+                            color: logoutHover ? '#FF6B6B' : '#7E8CBE',
+                            border: `1px solid ${logoutHover ? 'rgba(231,1,1,.25)' : 'transparent'}`,
+                        }}
+                    >
+                        <LogoutIcon className="w-3.5 h-3.5" />
+                        Cerrar Sesión
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -467,7 +630,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <SidebarContent />
             </aside>
 
-            {/* SIDEBAR MOBILE */}
+            {/* SIDEBAR MOBILE CON DISEÑO TÁCTIL ERGONÓMICO */}
             <AnimatePresence>
                 {sidebarOpen && (
                     <>
@@ -476,27 +639,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="lg:hidden"
-                            style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(10,17,64,.55)', backdropFilter: 'blur(3px)', touchAction: 'none' }}
+                            style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(10,17,64,.6)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', touchAction: 'none' }}
                             onClick={() => setSidebarOpen(false)}
                             onTouchEnd={() => setSidebarOpen(false)}
                         />
                         <motion.aside
-                            initial={{ x: -290 }}
+                            initial={{ x: -340 }}
                             animate={{ x: 0 }}
-                            exit={{ x: -290 }}
+                            exit={{ x: -340 }}
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                             className="lg:hidden"
-                            style={{ position: 'fixed', insetBlock: 0, left: 0, zIndex: 150, width: 270, maxWidth: '85vw', boxShadow: '0 0 60px rgba(10,17,64,.5)', touchAction: 'pan-y' }}
+                            style={{
+                                position: 'fixed',
+                                insetBlock: 0,
+                                left: 0,
+                                zIndex: 150,
+                                width: 'min(330px, 88vw)',
+                                maxWidth: '88vw',
+                                boxShadow: '0 0 60px rgba(10,17,64,.65)',
+                                touchAction: 'pan-y',
+                            }}
                         >
-                            <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 10 }}>
-                                <button
-                                    onClick={() => setSidebarOpen(false)}
-                                    style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,.06)', border: 'none', color: '#C2CAE6', cursor: 'pointer' }}
-                                    aria-label="Cerrar barra lateral"
-                                >
-                                    <CloseIcon className="w-4 h-4" />
-                                </button>
-                            </div>
                             <SidebarContent onNavClick={() => setSidebarOpen(false)} isMobile />
                         </motion.aside>
                     </>
@@ -610,6 +773,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                                 right: 0,
                                                 top: 'calc(100% + 8px)',
                                                 width: 260,
+                                                maxWidth: 'calc(100vw - 32px)',
                                                 background: '#FFFFFF',
                                                 border: `1px solid ${C.border}`,
                                                 borderRadius: 14,
@@ -754,7 +918,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
             </main>
 
-            <MobileFloatingNav />
+            <MobileFloatingNav onOpenMenu={() => setSidebarOpen(true)} />
         </div>
     );
 };

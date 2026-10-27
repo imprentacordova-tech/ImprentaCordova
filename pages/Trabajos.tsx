@@ -133,7 +133,7 @@ const TrabajosPage: React.FC = () => {
                         <h1 style={S.h1}>Órdenes de Producción</h1>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 11, color: C.faint, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span className="hidden md:inline-flex" style={{ fontSize: 11, color: C.faint, alignItems: 'center', gap: 6 }}>
                             <kbd style={{ padding: '2px 6px', borderRadius: 4, background: C.softGray, border: `1px solid ${C.borderStrong}`, fontFamily: MONO, fontSize: 10 }}>N</kbd> Nueva
                             <kbd style={{ padding: '2px 6px', borderRadius: 4, background: C.softGray, border: `1px solid ${C.borderStrong}`, fontFamily: MONO, fontSize: 10 }}>/</kbd> Buscar
                             <kbd style={{ padding: '2px 6px', borderRadius: 4, background: C.softGray, border: `1px solid ${C.borderStrong}`, fontFamily: MONO, fontSize: 10 }}>Esc</kbd> Limpiar
@@ -168,8 +168,8 @@ const TrabajosPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Tabs de estado */}
-                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+                {/* Tabs de estado táctiles (con swipe horizontal en celulares) */}
+                <div style={{ display: 'flex', gap: 7, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4, scrollbarWidth: 'none' }}>
                     {ESTADO_TABS.map(tab => {
                         const on = estadoFilter === tab;
                         const label = tab === 'Todos' ? 'Todas' : estadoCfg(tab as TrabajoEstado).label;
@@ -180,7 +180,7 @@ const TrabajosPage: React.FC = () => {
                                 onClick={() => setEstadoFilter(tab)}
                                 style={{
                                     display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 99,
-                                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, whiteSpace: 'nowrap',
                                     ...(on ? { background: C.royal, color: '#fff', border: `1px solid ${C.royal}` } : { background: '#fff', color: C.body, border: `1px solid ${C.borderStrong}` }),
                                 }}
                             >

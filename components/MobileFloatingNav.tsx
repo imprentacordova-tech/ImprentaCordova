@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { DashboardIcon, SparklesIcon, MonitorIcon, WalletIcon, ActivityIcon } from './Icons';
+import { DashboardIcon, SparklesIcon, MonitorIcon, ActivityIcon, MenuIcon } from './Icons';
 import { useData } from '../contexts/DataContext';
 import { TrabajoEstado } from '../types';
 
@@ -10,6 +10,7 @@ import { TrabajoEstado } from '../types';
  * Barra de navegación inferior nativa para celulares (Mobile-First de lujo):
  * - Frosted glassmorphism ultra translúcido (blur de 20px).
  * - Botón central flotante 'Nueva Orden' elevado en oro imperial con físicas spring.
+ * - Pestaña 'Gestión' que activa el cajón completo de módulos administrativos.
  * - Indicador de tab activo con Framer Motion (layoutId="mobileActiveTabPill").
  * - Badges reactivos de órdenes vivas y cuentas por cobrar.
  * - Soporte total para Safe Area de iPhone (Home Indicator bar).
@@ -25,7 +26,11 @@ const C = {
     danger: '#E70101',
 };
 
-export const MobileFloatingNav: React.FC = () => {
+interface MobileFloatingNavProps {
+    onOpenMenu?: () => void;
+}
+
+export const MobileFloatingNav: React.FC<MobileFloatingNavProps> = ({ onOpenMenu }) => {
     const location = useLocation();
     const { trabajos } = useData();
 
@@ -35,12 +40,19 @@ export const MobileFloatingNav: React.FC = () => {
     const conSaldoCount = activos.filter(t => t.saldo > 0).length;
     const urgentesCount = activos.filter(t => t.prioridad === 'Urgente').length;
 
+    // Detectar si el usuario está en cualquiera de los módulos de gestión interna
+    const isGestionRoute = [
+        '/cuentas', '/retiros', '/clientes', '/inventario', '/diseno',
+        '/facturacion', '/finanzas', '/usuarios', '/proveedores',
+        '/configuracion', '/calculadora', '/registro', '/productos'
+    ].some(p => location.pathname.startsWith(p));
+
     const navItems = [
         { path: '/dashboard', label: 'Panel', icon: DashboardIcon, badge: null },
         { path: '/trabajos', label: 'Órdenes', icon: ActivityIcon, badge: ordenesCount > 0 ? ordenesCount : null },
         { path: '/nuevo', label: 'Nueva', icon: SparklesIcon, isCenterHero: true },
         { path: '/kds', label: 'Taller', icon: MonitorIcon, hasAlert: urgentesCount > 0 },
-        { path: '/cuentas', label: 'Cobrar', icon: WalletIcon, badge: conSaldoCount > 0 ? conSaldoCount : null },
+        { path: '#gestion', label: 'Gestión', icon: MenuIcon, isMenuTrigger: true, badge: conSaldoCount > 0 ? conSaldoCount : null },
     ];
 
     return (
@@ -113,6 +125,114 @@ export const MobileFloatingNav: React.FC = () => {
                                 {item.label}
                             </span>
                         </NavLink>
+                    );
+                }
+
+                // Pestaña de Gestión Interna (Abre el Cajón de Módulos)
+                if (item.isMenuTrigger) {
+                    const isActive = isGestionRoute;
+                    return (
+                        <button
+                            key="btn-gestion-menu"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onOpenMenu?.();
+                            }}
+                            aria-label="Abrir menú de gestión interna"
+                            style={{
+                                flex: 1,
+                                minWidth: 0,
+                                minHeight: 46,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 3,
+                                position: 'relative',
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: 0,
+                                fontFamily: 'inherit',
+                            }}
+                        >
+                            <motion.div
+                                whileTap={{ scale: 0.88 }}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '100%',
+                                }}
+                            >
+                                {/* Píldora animada de tab activo */}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="mobileActiveTabPill"
+                                        transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                                        style={{
+                                            position: 'absolute',
+                                            width: 42,
+                                            height: 32,
+                                            borderRadius: 10,
+                                            background: C.chip,
+                                            zIndex: 0,
+                                        }}
+                                    />
+                                )}
+
+                                {/* Ícono + Badge */}
+                                <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <item.icon
+                                        className="w-[18px] h-[18px]"
+                                        style={{ color: isActive ? C.royal : C.faint, transition: 'color 0.2s' }}
+                                    />
+
+                                    {/* Badge numérico */}
+                                    {item.badge !== null && (
+                                        <span
+                                            style={{
+                                                position: 'absolute',
+                                                top: -4,
+                                                right: -9,
+                                                minWidth: 14,
+                                                height: 14,
+                                                padding: '0 3px',
+                                                borderRadius: 99,
+                                                background: isActive ? C.royal : '#5C6892',
+                                                color: '#FFFFFF',
+                                                fontSize: 8.5,
+                                                fontWeight: 800,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                lineHeight: 1,
+                                            }}
+                                        >
+                                            {item.badge}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Texto de la pestaña */}
+                                <span
+                                    style={{
+                                        position: 'relative',
+                                        zIndex: 1,
+                                        fontSize: 9.5,
+                                        fontWeight: isActive ? 800 : 600,
+                                        letterSpacing: '.02em',
+                                        color: isActive ? C.royal : C.faint,
+                                        transition: 'color 0.2s',
+                                        marginTop: 2,
+                                    }}
+                                >
+                                    {item.label}
+                                </span>
+                            </motion.div>
+                        </button>
                     );
                 }
 
