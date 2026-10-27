@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Modal } from '../ui/Modal';
 import { useData } from '../../contexts/DataContext';
+import { TrabajoEstado } from '../../types';
 import { C, DISPLAY, MONO, S } from '../panelTheme';
 import { formatCurrency } from '../../utils';
-import { DollarIcon, CheckCircleIcon } from '../Icons';
+import { DollarIcon, CheckCircleIcon, BoxIcon } from '../Icons';
 
 interface ModalArqueoCajaProps {
   isOpen: boolean;
@@ -21,25 +22,50 @@ export const ModalArqueoCaja: React.FC<ModalArqueoCajaProps> = ({
   const [observaciones, setObservaciones] = useState<string>('');
   const [guardado, setGuardado] = useState(false);
 
-  // Calcular cobros del día / turno actual
-  const hoyStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  // Fecha local para evitar desfase de huso horario en Ecuador (UTC-5)
+  const hoyStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
 
   const resumenTurno = useMemo(() => {
-    const ordenesHoy = (trabajos || []).filter(t => (t.fechaEntrada || '').startsWith(hoyStr));
+    // 1. Órdenes ingresadas hoy
+    const ordenesHoy = (trabajos || []).filter(t => (t.fechaEntrada || t.created_at || '').startsWith(hoyStr));
     const totalAbonado = ordenesHoy.reduce((acc, t) => acc + (t.abono || 0), 0);
     const totalFacturado = ordenesHoy.reduce((acc, t) => acc + (t.total || 0), 0);
     const totalSaldo = ordenesHoy.reduce((acc, t) => acc + (t.saldo || 0), 0);
+
+    // 2. Órdenes entregadas/retiradas hoy (liquidación en mostrador)
+    const entregadosHoy = (trabajos || []).filter(t => {
+      if (t.estado !== TrabajoEstado.ENTREGADO) return false;
+      const fEntrega = (t.fechaEntrega || t.updated_at || '').slice(0, 10);
+      return fEntrega === hoyStr;
+    });
+
+    const totalLiquidadoRetiros = entregadosHoy.reduce((acc, t) => {
+      const liquidado = (t.total || 0) - (t.abono || 0);
+      return acc + (liquidado > 0 ? liquidado : 0);
+    }, 0);
+
+    // Total efectivo físico esperado en caja = abonos de hoy + cobros al retirar
+    const totalEfectivoEsperado = totalAbonado + totalLiquidadoRetiros;
 
     return {
       cantidadOrdenes: ordenesHoy.length,
       totalAbonado,
       totalFacturado,
       totalSaldo,
+      entregadosHoyCount: entregadosHoy.length,
+      totalLiquidadoRetiros,
+      totalEfectivoEsperado,
     };
   }, [trabajos, hoyStr]);
 
   const valorContado = parseFloat(efectivoContado) || 0;
-  const diferencia = valorContado - resumenTurno.totalAbonado;
+  const diferencia = valorContado - resumenTurno.totalEfectivoEsperado;
 
   const handleCerrarCaja = () => {
     setGuardado(true);
@@ -93,22 +119,30 @@ export const ModalArqueoCaja: React.FC<ModalArqueoCajaProps> = ({
           </span>
         </div>
 
-        {/* Métricas del Turno */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div style={{ padding: 14, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12 }}>
-            <span style={S.colHead}>Abonos Recibidos</span>
-            <div style={{ fontFamily: MONO, fontSize: 18, fontWeight: 700, color: C.royal, marginTop: 4 }}>
+        {/* Métricas del Turno: Abonos + Retiros = Total Esperado */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+          <div style={{ padding: 12, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12 }}>
+            <span style={S.colHead}>Abonos Nuevos</span>
+            <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: C.royal, marginTop: 4 }}>
               {formatCurrency(resumenTurno.totalAbonado)}
             </div>
-            <span style={{ fontSize: 11, color: C.faint }}>{resumenTurno.cantidadOrdenes} órdenes hoy</span>
+            <span style={{ fontSize: 10.5, color: C.faint }}>{resumenTurno.cantidadOrdenes} órdenes hoy</span>
           </div>
 
-          <div style={{ padding: 14, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12 }}>
-            <span style={S.colHead}>Total Facturado</span>
-            <div style={{ fontFamily: MONO, fontSize: 18, fontWeight: 700, color: C.ink, marginTop: 4 }}>
-              {formatCurrency(resumenTurno.totalFacturado)}
+          <div style={{ padding: 12, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12 }}>
+            <span style={S.colHead}>Cobrado en Retiros</span>
+            <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: '#1B8A4B', marginTop: 4 }}>
+              +{formatCurrency(resumenTurno.totalLiquidadoRetiros)}
             </div>
-            <span style={{ fontSize: 11, color: C.faint }}>Saldo por cobrar: {formatCurrency(resumenTurno.totalSaldo)}</span>
+            <span style={{ fontSize: 10.5, color: C.faint }}>{resumenTurno.entregadosHoyCount} retirados hoy</span>
+          </div>
+
+          <div style={{ padding: 12, background: '#FFFDF5', border: '1px solid #F4E3A8', borderRadius: 12 }}>
+            <span style={{ ...S.colHead, color: '#B45309' }}>Caja Esperada</span>
+            <div style={{ fontFamily: MONO, fontSize: 17, fontWeight: 800, color: C.ink, marginTop: 4 }}>
+              {formatCurrency(resumenTurno.totalEfectivoEsperado)}
+            </div>
+            <span style={{ fontSize: 10.5, color: '#B45309', fontWeight: 600 }}>Total físico hoy</span>
           </div>
         </div>
 

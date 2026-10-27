@@ -252,6 +252,9 @@ const NuevoPedidoPage: React.FC = () => {
         document.body.style.overflow = 'auto';
 
         const params = new URLSearchParams(location.search);
+        if (params.get('es_sri') === 'true' || params.get('cat') === 'sri' || params.get('categoria') === 'sri') {
+            setFiltroCat('Comprobantes SRI');
+        }
         const hasSriData = params.get('mode') === 'sri' || params.get('mode')?.startsWith('sri') || params.get('ruc') || params.get('name');
         if (hasSriData) {
             applySriPayload(Object.fromEntries(params.entries()));

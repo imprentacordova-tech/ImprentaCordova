@@ -44,25 +44,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const localUser = deserializeSession(localStorage.getItem(SESSION_KEY));
-          if (localUser && localUser.id === session.user.id) {
-            setUser(localUser);
-          }
+        const localUser = deserializeSession(localStorage.getItem(SESSION_KEY));
+        if (localUser) {
+          setUser(localUser);
         }
-      } catch {
-        // Session invalid, continue with local
+        // Intentar leer sesión Supabase si existe, pero no bloquear
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && localUser && localUser.id === session.user.id) {
+          setUser(localUser);
+        }
+      } catch (err) {
+        console.warn('[Auth] Error restaurando sesión:', err);
       } finally {
         setLoading(false);
       }
     };
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+    // Solo escuchar desconexión explícita si se inició sesión por Supabase Auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' && !localStorage.getItem(SESSION_KEY)) {
         setUser(null);
-        localStorage.removeItem(SESSION_KEY);
       }
     });
 
@@ -163,7 +165,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       login,
       logout,
       isAuthenticated: !!user,
-      isAdmin: user?.rol === 'Admin' || (user?.rol as string) === 'root',
+      isAdmin: user?.rol === 'Admin' || user?.rol === 'Administrador' || (user?.rol as string) === 'root',
     }}>
       {children}
     </AuthContext.Provider>

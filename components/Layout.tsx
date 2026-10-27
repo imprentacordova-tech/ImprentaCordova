@@ -157,7 +157,8 @@ const NavItem: React.FC<{
     item: { path: string; label: string; icon: any; badge: string | null };
     badges: Record<string, number>;
     onClick?: () => void;
-}> = React.memo(({ item, badges, onClick }) => {
+    isMobile?: boolean;
+}> = React.memo(({ item, badges, onClick, isMobile }) => {
     const [hover, setHover] = useState(false);
     const badgeCount = item.badge ? (typeof item.badge === 'number' ? item.badge : badges[item.badge]) : 0;
     const isDownload = item.path.endsWith('.zip');
@@ -212,7 +213,7 @@ const NavItem: React.FC<{
                 <>
                     {isActive && !esCTA && (
                         <motion.div
-                            layoutId="sidebarActivePill"
+                            layoutId={isMobile ? "sidebarMobileActivePill" : "sidebarActivePill"}
                             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                             style={{
                                 position: 'absolute',
@@ -261,7 +262,8 @@ const NavGroup: React.FC<{
     group: ReturnType<typeof buildNavGroups>[number];
     badges: Record<string, number>;
     onNavClick?: () => void;
-}> = React.memo(({ group, badges, onNavClick }) => {
+    isMobile?: boolean;
+}> = React.memo(({ group, badges, onNavClick, isMobile }) => {
     const location = useLocation();
     const isGroupActive = group.items.some(i => location.pathname === i.path);
     const [open, setOpen] = useState(true);
@@ -305,7 +307,7 @@ const NavGroup: React.FC<{
                         style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}
                     >
                         {group.items.map(item => (
-                            <NavItem key={item.path} item={item} badges={badges} onClick={onNavClick} />
+                            <NavItem key={item.path} item={item} badges={badges} onClick={onNavClick} isMobile={isMobile} />
                         ))}
                     </motion.div>
                 )}
@@ -324,7 +326,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     if (!user) return null;
 
-    const isAdmin = user.rol === 'Admin' || (user.rol as string) === 'root';
+    const isAdmin = user.rol === 'Admin' || user.rol === 'Administrador' || (user.rol as string) === 'root';
     const navGroups = useMemo(() => buildNavGroups(isAdmin), [isAdmin]);
 
     const badges = useMemo<Record<string, number>>(() => {
@@ -339,7 +341,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     const pageTitle = useMemo(() => PAGE_TITLES[location.pathname] || 'Sistema', [location.pathname]);
 
+    // Cerrar sidebar al navegar
     useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
+
+    // Bloquear scroll de la página de fondo cuando el drawer móvil está abierto
+    useEffect(() => {
+        if (sidebarOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [sidebarOpen]);
 
     const [time, setTime] = useState(() => new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }));
     useEffect(() => {
@@ -356,11 +370,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [nuevaHover, setNuevaHover] = useState(false);
     const [logoutHover, setLogoutHover] = useState(false);
 
-    const SidebarContent = ({ onNavClick }: { onNavClick?: () => void }) => (
+    const SidebarContent = ({ onNavClick, isMobile }: { onNavClick?: () => void; isMobile?: boolean }) => (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.ink, color: '#fff' }}>
             {/* Brand */}
             <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,.09)' }}>
-                <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
+                <Link to="/" onClick={() => onNavClick?.()} style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
                     <CordovaLogo className="w-[34px] h-[34px] object-contain" style={{ background: '#fff', borderRadius: 7, padding: 2 }} />
                     <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, minWidth: 0 }}>
                         <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: '-.03em', color: '#fff' }}>
@@ -391,9 +405,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Navigation */}
-            <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 10px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <nav
+                style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    overscrollBehavior: 'contain',
+                    touchAction: 'pan-y',
+                    padding: '4px 10px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 16
+                }}
+            >
                 {navGroups.map(group => (
-                    <NavGroup key={group.id} group={group} badges={badges} onNavClick={onNavClick} />
+                    <NavGroup key={group.id} group={group} badges={badges} onNavClick={onNavClick} isMobile={isMobile} />
                 ))}
             </nav>
 
@@ -450,26 +476,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="lg:hidden"
-                            style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }}
+                            style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(10,17,64,.55)', backdropFilter: 'blur(3px)', touchAction: 'none' }}
                             onClick={() => setSidebarOpen(false)}
+                            onTouchEnd={() => setSidebarOpen(false)}
                         />
                         <motion.aside
-                            initial={{ x: -280 }}
+                            initial={{ x: -290 }}
                             animate={{ x: 0 }}
-                            exit={{ x: -280 }}
+                            exit={{ x: -290 }}
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                             className="lg:hidden"
-                            style={{ position: 'fixed', insetBlock: 0, left: 0, zIndex: 150, width: 260, boxShadow: '0 0 60px rgba(10,17,64,.4)' }}
+                            style={{ position: 'fixed', insetBlock: 0, left: 0, zIndex: 150, width: 270, maxWidth: '85vw', boxShadow: '0 0 60px rgba(10,17,64,.5)', touchAction: 'pan-y' }}
                         >
                             <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 10 }}>
                                 <button
                                     onClick={() => setSidebarOpen(false)}
                                     style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,.06)', border: 'none', color: '#C2CAE6', cursor: 'pointer' }}
+                                    aria-label="Cerrar barra lateral"
                                 >
                                     <CloseIcon className="w-4 h-4" />
                                 </button>
                             </div>
-                            <SidebarContent onNavClick={() => setSidebarOpen(false)} />
+                            <SidebarContent onNavClick={() => setSidebarOpen(false)} isMobile />
                         </motion.aside>
                     </>
                 )}

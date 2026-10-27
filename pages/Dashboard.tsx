@@ -69,6 +69,7 @@ const DashboardPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
+    const isAdmin = auth.isAdmin || currentUser?.rol === 'Admin' || currentUser?.rol === 'Administrador' || (currentUser?.rol as string) === 'root';
     const { trabajos, clientes, loading, realtimeEstado, ultimaSync } = useData();
     const navigate = useNavigate();
 
@@ -101,21 +102,36 @@ const DashboardPage: React.FC = () => {
     // Métricas del Administrador
     const metrics = useMemo(() => {
         if (!trabajos || !clientes) return null;
-        const todayStr = currentTime.toISOString().slice(0, 10);
+        // Fecha local YYYY-MM-DD para evitar desfase de huso horario en Ecuador (UTC-5)
+        const year = currentTime.getFullYear();
+        const month = String(currentTime.getMonth() + 1).padStart(2, '0');
+        const day = String(currentTime.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
 
-        // Órdenes entregadas hoy
-        const entregadosHoy = trabajos.filter(
-            t => t.estado === TrabajoEstado.ENTREGADO && (t.fechaEntrega ?? '').startsWith(todayStr),
-        );
+        // Órdenes entregadas/retiradas hoy
+        const entregadosHoy = (trabajos || []).filter(t => {
+            if (t.estado !== TrabajoEstado.ENTREGADO) return false;
+            const fEntrega = (t.fechaEntrega || t.updated_at || '')?.slice(0, 10);
+            return fEntrega === todayStr;
+        });
 
-        // Cobranza estimada del día (abonos de hoy en órdenes entregadas o activas)
-        const cobranzaHoy = trabajos.reduce((acc, t) => {
-            const fechaRef = t.fechaEntrada?.slice(0, 10);
-            if (fechaRef === todayStr) {
-                return acc + (t.abono || 0);
-            }
-            return acc;
+        // Cobranza por liquidaciones de saldo cobradas al momento de retirar hoy
+        const cobradoPorRetirosHoy = entregadosHoy.reduce((acc, t) => {
+            const liquidado = (t.total || 0) - (t.abono || 0);
+            return acc + (liquidado > 0 ? liquidado : 0);
         }, 0);
+
+        // Órdenes que ingresaron hoy al taller
+        const ordenesEntradasHoy = (trabajos || []).filter(t => {
+            const fEntrada = (t.fechaEntrada || t.created_at || '')?.slice(0, 10);
+            return fEntrada === todayStr;
+        });
+
+        // Abonos cobrados hoy al ingresar pedidos nuevos
+        const abonosHoy = ordenesEntradasHoy.reduce((acc, t) => acc + (t.abono || 0), 0);
+
+        // Dinero total en caja hoy: Abonos de nuevas órdenes + Cobros en mostrador al retirar
+        const cajaActualHoy = abonosHoy + cobradoPorRetirosHoy;
 
         // Dinero en la calle (cuentas por cobrar)
         const conSaldo = activos.filter(t => t.saldo > 0);
@@ -143,7 +159,13 @@ const DashboardPage: React.FC = () => {
 
         return {
             activosCount: activos.length,
-            cobranzaHoy,
+            cajaActualHoy,
+            abonosHoy,
+            cobradoPorRetirosHoy,
+            entregadosHoy,
+            entregadosHoyCount: entregadosHoy.length,
+            ordenesEntradasHoyCount: ordenesEntradasHoy.length,
+            cobranzaHoy: cajaActualHoy,
             totalPorCobrar,
             conSaldoCount: conSaldo.length,
             urgentesCount: urgentes.length,
@@ -151,7 +173,6 @@ const DashboardPage: React.FC = () => {
             enVitrinaCount: enVitrina.length,
             vitrinaEstancada,
             enProduccionCount: enProduccion.length,
-            entregadosHoyCount: entregadosHoy.length,
             totalClientes: clientes.length,
         };
     }, [trabajos, clientes, activos, ahoraMs, currentTime]);
@@ -358,6 +379,30 @@ const DashboardPage: React.FC = () => {
                             whileTap={{ scale: 0.96 }}
                             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                             style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '8px 12px',
+                                background: '#EEF1FC',
+                                color: C.royal,
+                                border: '1px solid rgba(22,48,155,0.25)',
+                                borderRadius: 10,
+                                fontSize: 12.5,
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                            }}
+                            onClick={() => navigate('/nuevo?cat=sri&es_sri=true')}
+                        >
+                            <FileTextIcon className="w-3.5 h-3.5" style={{ color: C.royal }} />
+                            <span className="hidden sm:inline">Solicitud SRI</span>
+                            <span className="sm:hidden">SRI</span>
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.03, y: -2 }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            style={{
                                 ...S.outlineBtn,
                                 padding: '8px 12px',
                                 borderRadius: 10,
@@ -389,6 +434,185 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </motion.div>
 
+                {/* ── 1.5. BANNER EXCLUSIVO ADMINISTRADOR: CAJA ACTUAL & CONTROL DE RETIROS HOY ── */}
+                {isAdmin && (
+                    <motion.div
+                        variants={itemVariants}
+                        style={{
+                            background: 'linear-gradient(135deg, #0A1140 0%, #101E66 55%, #16309B 100%)',
+                            border: '1px solid rgba(255, 198, 26, 0.45)',
+                            borderRadius: 16,
+                            padding: 'clamp(14px, 2vw, 20px)',
+                            color: '#FFFFFF',
+                            boxShadow: '0 12px 30px -8px rgba(10, 17, 64, 0.35)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {/* Glow de fondo */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: -30,
+                                right: -30,
+                                width: 140,
+                                height: 140,
+                                borderRadius: '50%',
+                                background: 'radial-gradient(circle, rgba(255,198,26,0.2) 0%, rgba(255,198,26,0) 70%)',
+                                pointerEvents: 'none',
+                            }}
+                        />
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                <span
+                                    style={{
+                                        padding: '3px 9px',
+                                        borderRadius: 99,
+                                        fontSize: 10,
+                                        fontWeight: 800,
+                                        letterSpacing: '.12em',
+                                        textTransform: 'uppercase',
+                                        background: 'rgba(255, 198, 26, 0.2)',
+                                        color: C.gold,
+                                        border: '1px solid rgba(255, 198, 26, 0.5)',
+                                    }}
+                                >
+                                    👑 Control Administrador · Corte en Vivo
+                                </span>
+                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>
+                                    Flujo de caja hoy (Abonos nuevos + Retiros liquidados)
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => setArqueoOpen(true)}
+                                    style={{
+                                        padding: '6px 14px',
+                                        background: C.gold,
+                                        color: C.ink,
+                                        border: 'none',
+                                        borderRadius: 8,
+                                        fontSize: 11.5,
+                                        fontWeight: 800,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 5,
+                                        boxShadow: '0 4px 12px -2px rgba(255,198,26,0.5)',
+                                    }}
+                                >
+                                    <WalletIcon className="w-3.5 h-3.5" />
+                                    <span>Cuadrar Caja (Arqueo)</span>
+                                </motion.button>
+
+                                <motion.button
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => navigate('/retiros')}
+                                    style={{
+                                        padding: '6px 14px',
+                                        background: 'rgba(255,255,255,0.12)',
+                                        color: '#FFFFFF',
+                                        border: '1px solid rgba(255,255,255,0.25)',
+                                        borderRadius: 8,
+                                        fontSize: 11.5,
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 5,
+                                    }}
+                                >
+                                    <BoxIcon className="w-3.5 h-3.5" />
+                                    <span>Ver Retiros</span>
+                                </motion.button>
+                            </div>
+                        </div>
+
+                        {/* Indicadores en cuadrícula */}
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))',
+                                gap: 10,
+                            }}
+                        >
+                            {/* 1. Caja Total Actual Hoy */}
+                            <div
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.14)',
+                                    borderRadius: 12,
+                                    padding: '12px 14px',
+                                    cursor: 'pointer',
+                                }}
+                                onClick={() => setArqueoOpen(true)}
+                            >
+                                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: C.gold }}>
+                                    💵 Caja Actual en Mostrador
+                                </div>
+                                <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, color: '#FFFFFF', marginTop: 4, letterSpacing: '-.02em', lineHeight: 1.1 }}>
+                                    {formatCurrency(metrics.cajaActualHoy)}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>
+                                    Efectivo total recaudado hoy
+                                </div>
+                            </div>
+
+                            {/* 2. Cobrado por Retiros Hoy */}
+                            <div
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.14)',
+                                    borderRadius: 12,
+                                    padding: '12px 14px',
+                                    cursor: 'pointer',
+                                }}
+                                onClick={() => navigate('/retiros')}
+                            >
+                                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#6EE7B7' }}>
+                                    📦 Retirados Hoy
+                                </div>
+                                <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, color: '#FFFFFF', marginTop: 4, letterSpacing: '-.02em', lineHeight: 1.1 }}>
+                                    {metrics.entregadosHoyCount} <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>entregados</span>
+                                </div>
+                                <div style={{ fontSize: 11, color: '#6EE7B7', marginTop: 4, fontWeight: 600 }}>
+                                    +{formatCurrency(metrics.cobradoPorRetirosHoy)} liquidado al retirar
+                                </div>
+                            </div>
+
+                            {/* 3. Abonos de Pedidos Nuevos Hoy */}
+                            <div
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.14)',
+                                    borderRadius: 12,
+                                    padding: '12px 14px',
+                                    cursor: 'pointer',
+                                }}
+                                onClick={() => navigate('/nuevo')}
+                            >
+                                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#93C5FD' }}>
+                                    ⚡ Abonos Pedidos Nuevos
+                                </div>
+                                <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, color: '#FFFFFF', marginTop: 4, letterSpacing: '-.02em', lineHeight: 1.1 }}>
+                                    {formatCurrency(metrics.abonosHoy)}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>
+                                    de {metrics.ordenesEntradasHoyCount} órdenes tomadas hoy
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* ── 2. HERO BENTO GRID (2 COLUMNAS EN MÓVIL, 4 EN DESKTOP) ─────── */}
                 <motion.div
                     variants={itemVariants}
@@ -398,7 +622,7 @@ const DashboardPage: React.FC = () => {
                         gap: 10,
                     }}
                 >
-                    {/* Tarjeta 1: Recaudado Hoy */}
+                    {/* Tarjeta 1: Caja Actual Hoy */}
                     <motion.div
                         whileHover={{ y: -4, scale: 1.015 }}
                         whileTap={{ scale: 0.98 }}
@@ -410,21 +634,23 @@ const DashboardPage: React.FC = () => {
                             borderRadius: 14,
                             position: 'relative',
                             overflow: 'hidden',
+                            cursor: 'pointer',
                         }}
+                        onClick={() => setArqueoOpen(true)}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                             <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>
-                                Cobrado Hoy
+                                Caja Actual Hoy
                             </span>
                             <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EEF1FC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <WalletIcon className="w-3.5 h-3.5" style={{ color: C.royal }} />
                             </div>
                         </div>
                         <div style={{ fontFamily: DISPLAY, fontSize: 'clamp(20px, 4.2vw, 28px)', fontWeight: 700, letterSpacing: '-.03em', color: C.ink, marginTop: 6, lineHeight: 1 }}>
-                            {formatCurrency(metrics.cobranzaHoy)}
+                            {formatCurrency(metrics.cajaActualHoy)}
                         </div>
                         <div style={{ fontSize: 11, color: C.muted, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            <span style={{ color: '#1B6E3E', fontWeight: 700 }}>+{metrics.entregadosHoyCount}</span> entregados
+                            <span style={{ color: '#1B6E3E', fontWeight: 700 }}>+{formatCurrency(metrics.cobradoPorRetirosHoy)}</span> en {metrics.entregadosHoyCount} retiros
                         </div>
                     </motion.div>
 
@@ -532,7 +758,11 @@ const DashboardPage: React.FC = () => {
                             {metrics.enVitrinaCount}
                         </div>
                         <div style={{ fontSize: 11, color: C.muted, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {metrics.vitrinaEstancada.length > 0 ? (
+                            {metrics.entregadosHoyCount > 0 ? (
+                                <span style={{ color: '#1B6E3E', fontWeight: 600 }}>
+                                    ✓ {metrics.entregadosHoyCount} retirados hoy
+                                </span>
+                            ) : metrics.vitrinaEstancada.length > 0 ? (
                                 <span style={{ color: '#B45309', fontWeight: 600 }}>
                                     {metrics.vitrinaEstancada.length} &gt; 48h
                                 </span>
@@ -586,33 +816,38 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </motion.button>
 
-                    {/* 2. Solicitud SRI Rápida */}
+                    {/* 2. Solicitud SRI Rápida Destacada */}
                     <motion.button
                         whileHover={{ y: -2, scale: 1.02 }}
                         whileTap={{ scale: 0.96 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                        onClick={() => navigate('/nuevo?es_sri=true')}
+                        onClick={() => navigate('/nuevo?cat=sri&es_sri=true')}
                         style={{
                             flexShrink: 0,
-                            minWidth: 155,
+                            minWidth: 175,
                             scrollSnapAlign: 'start',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
                             padding: '10px 14px',
                             borderRadius: 12,
-                            border: `1px solid ${C.border}`,
-                            background: '#FFFFFF',
+                            border: '1.5px solid rgba(22, 48, 155, 0.35)',
+                            background: 'linear-gradient(135deg, #F0F4FE 0%, #EEF2FC 100%)',
                             cursor: 'pointer',
                             textAlign: 'left',
+                            position: 'relative',
+                            boxShadow: '0 4px 14px -3px rgba(22, 48, 155, 0.2)',
                         }}
                     >
-                        <div style={{ width: 32, height: 32, borderRadius: 8, background: '#EEF1FC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.royal, flexShrink: 0 }}>
-                            <FileTextIcon className="w-3.5 h-3.5" />
+                        <div style={{ width: 34, height: 34, borderRadius: 8, background: C.royal, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', flexShrink: 0, boxShadow: '0 4px 10px -2px rgba(22,48,155,0.4)' }}>
+                            <FileTextIcon className="w-4 h-4" />
                         </div>
-                        <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap' }}>Solicitud SRI</div>
-                            <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap' }}>Facturas y Notas</div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                <div style={{ fontSize: 12, fontWeight: 800, color: C.ink, whiteSpace: 'nowrap' }}>Solicitud SRI</div>
+                                <span style={{ fontSize: 9, fontWeight: 900, background: C.gold, color: C.ink, padding: '1px 5px', borderRadius: 4, letterSpacing: '.05em' }}>TAX</span>
+                            </div>
+                            <div style={{ fontSize: 10, color: C.royal, fontWeight: 600, whiteSpace: 'nowrap', marginTop: 1 }}>Comprobantes & Talonarios</div>
                         </div>
                     </motion.button>
 
