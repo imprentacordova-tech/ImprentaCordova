@@ -100,6 +100,13 @@ const ReciboEpson: React.FC = () => {
         return queryParams.get('mode') === 'epson-continuo';
     });
 
+    // Sub-modo de continuo: 'matricial' (alto contraste / cinta) o 'ecotank' (color / láser)
+    const [subModoContinuo, setSubModoContinuo] = useState<'matricial' | 'ecotank'>('matricial');
+    // Tipo de copias en continuo: 'doble' (Cliente + Taller) | 'cliente' (2x Cliente) | 'taller' (2x Taller)
+    const [copiasContinuo, setCopiasContinuo] = useState<'doble' | 'cliente' | 'taller'>('doble');
+    // Tractor feed perforaciones laterales visuales
+    const [mostrarTractorFeed, setMostrarTractorFeed] = useState<boolean>(true);
+
     const { calibracion, mover: moverRegistro, restablecer: restablecerRegistro, transform: transformCalibracionValue } = useCalibracion(modelo);
 
     // Control de guía visual de fondo (marca de agua del talonario preimpreso)
@@ -461,6 +468,104 @@ const ReciboEpson: React.FC = () => {
                         <span className="text-[10px] font-medium text-slate-700 bg-slate-200/70 px-2 py-0.5 rounded-full">Matricial • Doble A5 (216×165)</span>
                     </button>
                 </div>
+
+                {/* SUB-BARRA DE CONTROL ESPECIALIZADO PARA PAPEL CONTINUO EPSON */}
+                {esModoContinuo && (
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center justify-between gap-3 flex-wrap">
+                        {/* Selector de Tecnología de Impresión */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                Tecnología:
+                            </span>
+                            <div className="bg-white border border-slate-200 p-0.5 rounded-lg flex gap-1 shadow-2xs">
+                                <button
+                                    type="button"
+                                    onClick={() => setSubModoContinuo('matricial')}
+                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                        subModoContinuo === 'matricial' 
+                                            ? 'bg-slate-900 text-white shadow-xs font-black' 
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                    }`}
+                                    title="Modo Matricial (Epson LX-300 / FX-890): trazos negros de alto contraste, sin fondos que desgasten la cinta"
+                                >
+                                    <span>📠 Matricial (Cinta)</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSubModoContinuo('ecotank')}
+                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                        subModoContinuo === 'ecotank' 
+                                            ? 'bg-[#0f2b48] text-white shadow-xs font-black' 
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                    }`}
+                                    title="Modo Tinta Continua (EcoTank / Láser / Pro): diseño gráfico a color"
+                                >
+                                    <span>🎨 Color (EcoTank)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Selector de Copias 2-Up */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                Copias:
+                            </span>
+                            <div className="bg-white border border-slate-200 p-0.5 rounded-lg flex gap-1 shadow-2xs">
+                                <button
+                                    type="button"
+                                    onClick={() => setCopiasContinuo('doble')}
+                                    className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
+                                        copiasContinuo === 'doble' 
+                                            ? 'bg-blue-600 text-white shadow-xs' 
+                                            : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                    title="Imprime Original para el cliente (arriba) y Copia de producción para taller (abajo)"
+                                >
+                                    ✂️ 2-Up (Cliente + Taller)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCopiasContinuo('cliente')}
+                                    className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
+                                        copiasContinuo === 'cliente' 
+                                            ? 'bg-blue-600 text-white shadow-xs' 
+                                            : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                    title="2 copias para el cliente / archivo de entrega"
+                                >
+                                    👤 2x Cliente
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCopiasContinuo('taller')}
+                                    className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
+                                        copiasContinuo === 'taller' 
+                                            ? 'bg-blue-600 text-white shadow-xs' 
+                                            : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                    title="2 copias internas para taller y prensas"
+                                >
+                                    🏭 2x Taller
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Visualizador de Agujeros de Arrastre Tractor Feed */}
+                        <button
+                            type="button"
+                            onClick={() => setMostrarTractorFeed(prev => !prev)}
+                            className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                                mostrarTractorFeed
+                                    ? 'bg-amber-50 border-amber-300 text-amber-900'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                            }`}
+                            title="Muestra en pantalla los orificios perforados laterales del papel continuo de arrastre"
+                        >
+                            <span>⚙️ Tractor Feed:</span>
+                            <strong className="text-[10px]">{mostrarTractorFeed ? 'ON' : 'OFF'}</strong>
+                        </button>
+                    </div>
+                )}
             </header>
 
             {/* PANEL DE CALIBRACIÓN DE REGISTRO MECÁNICO (no se imprime) */}
@@ -474,7 +579,21 @@ const ReciboEpson: React.FC = () => {
             />
 
             {/* LIENZO DE IMPRESIÓN (CANVAS) */}
-            <main className="flex justify-center w-full overflow-auto py-2">
+            <main className="flex justify-center items-start w-full overflow-auto py-2">
+                {/* TRACTOR FEED VISUAL IZQUIERDO (Papel Continuo Matricial de Arrastre) */}
+                {esModoContinuo && mostrarTractorFeed && (
+                    <div 
+                        className="hidden md:flex flex-col justify-around items-center w-[12.5mm] h-[165mm] bg-[#f8fafc] border-y border-l border-slate-300 border-dashed py-2 select-none pointer-events-none no-print shadow-xs"
+                        title="Perforaciones de arrastre tractor feed (papel continuo de 9.5 pulgadas)"
+                    >
+                        {Array.from({ length: 13 }).map((_, i) => (
+                            <div key={`tl-${i}`} className="w-[4.2mm] h-[4.2mm] rounded-full border border-slate-400 bg-white shadow-inner flex items-center justify-center text-[5px] text-slate-400">
+                                •
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <div 
                     id="comercial-print-canvas"
                     className="bg-white shadow-2xl relative"
@@ -486,7 +605,7 @@ const ReciboEpson: React.FC = () => {
                     }}
                 >
                     {esModoContinuo ? (
-                        /* MODO 4: EPSON CONTINUO (2-UP A5) */
+                        /* MODO 4: EPSON CONTINUO POTENCIADO (2-UP A5 / DOBLE 216 × 165 mm) */
                         <RenderContinuoEpson 
                             trabajo={trabajo} 
                             cliente={cliente} 
@@ -495,8 +614,13 @@ const ReciboEpson: React.FC = () => {
                             fecha={fecha} 
                             qrSrc={qrSrc} 
                             isConsumidorFinal={isConsumidorFinal} 
+                            titularFinal={titularFinal}
+                            rucFinal={rucFinal}
+                            sumaEnLetras={sumaEnLetras}
                             cleanDetail={cleanDetail} 
                             specs={specs} 
+                            subModo={subModoContinuo}
+                            copias={copiasContinuo}
                         />
                     ) : modelo === 'comercial-sobre-preimpreso' ? (
                         /* MODO 1: SOBRE PREIMPRESO (1/4 OFICIO - 160 × 110 mm) */
@@ -539,6 +663,20 @@ const ReciboEpson: React.FC = () => {
                         />
                     )}
                 </div>
+
+                {/* TRACTOR FEED VISUAL DERECHO (Papel Continuo Matricial de Arrastre) */}
+                {esModoContinuo && mostrarTractorFeed && (
+                    <div 
+                        className="hidden md:flex flex-col justify-around items-center w-[12.5mm] h-[165mm] bg-[#f8fafc] border-y border-r border-slate-300 border-dashed py-2 select-none pointer-events-none no-print shadow-xs"
+                        title="Perforaciones de arrastre tractor feed (papel continuo de 9.5 pulgadas)"
+                    >
+                        {Array.from({ length: 13 }).map((_, i) => (
+                            <div key={`tr-${i}`} className="w-[4.2mm] h-[4.2mm] rounded-full border border-slate-400 bg-white shadow-inner flex items-center justify-center text-[5px] text-slate-400">
+                                •
+                            </div>
+                        ))}
+                    </div>
+                )}
             </main>
         </div>
     );
@@ -1033,8 +1171,13 @@ interface ContinuoProps {
     fecha: Date;
     qrSrc: string;
     isConsumidorFinal: boolean;
+    titularFinal: string;
+    rucFinal: string;
+    sumaEnLetras: string;
     cleanDetail: string;
     specs: any;
+    subModo: 'matricial' | 'ecotank';
+    copias: 'doble' | 'cliente' | 'taller';
 }
 
 const RenderContinuoEpson: React.FC<ContinuoProps> = ({
@@ -1045,38 +1188,83 @@ const RenderContinuoEpson: React.FC<ContinuoProps> = ({
     fecha,
     qrSrc,
     isConsumidorFinal,
+    titularFinal,
+    rucFinal,
+    sumaEnLetras,
     cleanDetail,
     specs,
+    subModo,
+    copias,
 }) => {
+    let dtRetiro: Date;
+    if (trabajo.fechaEntrega) {
+        dtRetiro = new Date(trabajo.fechaEntrega);
+    } else {
+        dtRetiro = new Date(trabajo.fechaEntrada);
+        dtRetiro.setHours(dtRetiro.getHours() + (trabajo.tiempoEntregaEstimado === '24h' ? 24 : 48));
+    }
+    const fechaEntregaStr = `${dtRetiro.toLocaleDateString('es-EC', { 
+        weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' 
+    })} (${trabajo.tiempoEntregaEstimado === '24h' ? '24h Express' : 'Tarde'})`;
+
+    let topType: 'CLIENTE' | 'OPERADOR' = 'CLIENTE';
+    let bottomType: 'CLIENTE' | 'OPERADOR' | 'DUPLICADO_CLIENTE' | 'ARCHIVO' = 'OPERADOR';
+
+    if (copias === 'cliente') {
+        topType = 'CLIENTE';
+        bottomType = 'DUPLICADO_CLIENTE';
+    } else if (copias === 'taller') {
+        topType = 'OPERADOR';
+        bottomType = 'ARCHIVO';
+    }
+
     return (
-        <div className="w-[216mm] h-[165mm] flex flex-col justify-between p-0 bg-white">
-            <div className="flex-1 flex flex-col p-[5mm]">
+        <div className="w-[216mm] h-[165mm] flex flex-col justify-between p-0 bg-white box-border select-text">
+            {/* BLOQUE SUPERIOR (Mitad 1 de 2: 78mm) */}
+            <div className="w-[216mm] h-[79mm] flex flex-col p-[3mm] box-border overflow-hidden">
                 <ReceiptBlockContinuo 
-                    type="CLIENTE" 
+                    type={topType}
+                    subModo={subModo}
                     trabajo={trabajo} 
                     cliente={cliente} 
                     config={config} 
                     ordenStr={ordenStr} 
                     fecha={fecha} 
+                    fechaEntregaStr={fechaEntregaStr}
                     qrSrc={qrSrc} 
                     isConsumidorFinal={isConsumidorFinal} 
+                    titularFinal={titularFinal}
+                    rucFinal={rucFinal}
+                    sumaEnLetras={sumaEnLetras}
                     cleanDetail={cleanDetail} 
                     specs={specs} 
                 />
             </div>
             
-            <div className="perforation-line"></div>
+            {/* LÍNEA DE PERFORACIÓN CENTRAL DE CORTE / DESPRENDIMIENTO (3mm) */}
+            <div className="perforation-line w-[216mm] h-[3mm] flex items-center justify-center relative overflow-hidden select-none">
+                <div className="w-full border-t border-dashed border-slate-600 print:border-black"></div>
+                <span className="no-print absolute bg-white px-2.5 py-0 text-[6.5px] font-black text-slate-600 uppercase tracking-widest border border-slate-300 rounded-full shadow-2xs">
+                    ✂️ DESPRENDER AQUÍ &bull; COPIA TALLER / CAJA
+                </span>
+            </div>
             
-            <div className="flex-1 flex flex-col p-[5mm]">
+            {/* BLOQUE INFERIOR (Mitad 2 de 2: 78mm) */}
+            <div className="w-[216mm] h-[79mm] flex flex-col p-[3mm] box-border overflow-hidden">
                 <ReceiptBlockContinuo 
-                    type="OPERADOR" 
+                    type={bottomType}
+                    subModo={subModo}
                     trabajo={trabajo} 
                     cliente={cliente} 
                     config={config} 
                     ordenStr={ordenStr} 
                     fecha={fecha} 
+                    fechaEntregaStr={fechaEntregaStr}
                     qrSrc={qrSrc} 
                     isConsumidorFinal={isConsumidorFinal} 
+                    titularFinal={titularFinal}
+                    rucFinal={rucFinal}
+                    sumaEnLetras={sumaEnLetras}
                     cleanDetail={cleanDetail} 
                     specs={specs} 
                 />
@@ -1085,100 +1273,301 @@ const RenderContinuoEpson: React.FC<ContinuoProps> = ({
     );
 };
 
-const ReceiptBlockContinuo = ({ type, trabajo, cliente, config, ordenStr, fecha, qrSrc, isConsumidorFinal, cleanDetail, specs }: any) => {
-    const isOperator = type === 'OPERADOR';
+interface ReceiptBlockProps {
+    type: 'CLIENTE' | 'OPERADOR' | 'DUPLICADO_CLIENTE' | 'ARCHIVO';
+    subModo: 'matricial' | 'ecotank';
+    trabajo: Trabajo;
+    cliente: Cliente;
+    config: any;
+    ordenStr: string;
+    fecha: Date;
+    fechaEntregaStr: string;
+    qrSrc: string;
+    isConsumidorFinal: boolean;
+    titularFinal: string;
+    rucFinal: string;
+    sumaEnLetras: string;
+    cleanDetail: string;
+    specs: any;
+}
 
-    return (
-        <div className={`flex-1 flex flex-col gap-1.5 relative ${isOperator ? 'bg-slate-50/50' : 'bg-white'} border border-slate-200 rounded-2xl p-3 shadow-sm`}>
-            {/* Watermark Copy Indicator */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] font-black text-[70px] -rotate-12 select-none pointer-events-none uppercase tracking-[0.2em] text-slate-900">
-                {isOperator ? 'PRODUCCIÓN' : 'CLIENTE'}
+const ReceiptBlockContinuo: React.FC<ReceiptBlockProps> = ({ 
+    type, 
+    subModo,
+    trabajo, 
+    cliente, 
+    config, 
+    ordenStr, 
+    fecha, 
+    fechaEntregaStr,
+    qrSrc, 
+    isConsumidorFinal, 
+    titularFinal,
+    rucFinal,
+    sumaEnLetras,
+    cleanDetail, 
+    specs 
+}) => {
+    const isOperator = type === 'OPERADOR' || type === 'ARCHIVO';
+
+    let badgeText = 'ORIGINAL CLIENTE • COMPROBANTE DE RETIRO';
+    if (type === 'DUPLICADO_CLIENTE') badgeText = 'DUPLICADO CLIENTE • ARCHIVO';
+    else if (type === 'OPERADOR') badgeText = 'COPIA TALLER • ORDEN DE PRODUCCIÓN';
+    else if (type === 'ARCHIVO') badgeText = 'COPIA CAJA • ARCHIVO CONTABLE';
+
+    // ────────────────────────────────────────────────────────────────────────
+    // SUB-MODO 1: MATRICIAL (Epson LX-300 / FX-890 / Cinta de Impacto)
+    // 100% fondos blancos puros, trazos negros nítidos, sin consumo innecesario de cinta
+    // ────────────────────────────────────────────────────────────────────────
+    if (subModo === 'matricial') {
+        return (
+            <div className="w-full h-full p-2 bg-white text-black recibo-font-mono flex flex-col justify-between border border-black box-border select-text">
+                {/* FILA 1: CABECERA MATRICIAL (ESC/P COMPACTA) */}
+                <div className="flex justify-between items-start border-b border-black pb-1">
+                    <div className="flex-1 pr-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[11px] font-black tracking-tight uppercase leading-none font-mono">
+                                {config.nombre || 'IMPRENTA CÓRDOVA'}
+                            </span>
+                            <span className="text-[7px] border border-black px-1 font-bold">RUC: {config.ruc}</span>
+                            <span className="text-[7px] border border-black px-1 font-bold">AUT. SRI: {config.autorizacionSri}</span>
+                        </div>
+                        <div className="text-[6.5px] uppercase font-bold text-black mt-0.5">
+                            {config.direccion} &bull; TEL: {config.telefono}
+                        </div>
+                    </div>
+
+                    <div className="text-right flex flex-col items-end">
+                        <div className="border-2 border-black px-2 py-0.5 bg-white text-black font-mono font-black text-[13px] tracking-widest leading-none">
+                            ORDEN: #{ordenStr}
+                        </div>
+                        <span className="text-[6.5px] font-black uppercase tracking-wider block mt-0.5 border border-black px-1">
+                            *** {badgeText} ***
+                        </span>
+                    </div>
+                </div>
+
+                {/* FILA 2: DATOS DE CLIENTE, FECHAS Y RESPONSABLE */}
+                <div className="grid grid-cols-12 gap-1 border-b border-black py-1 text-[7.5px] font-mono leading-tight">
+                    <div className="col-span-7 border-r border-black pr-1.5 flex flex-col justify-between">
+                        <div>
+                            <span className="font-bold">CLIENTE:</span> <strong className="text-[8.5px] uppercase">{titularFinal}</strong>
+                        </div>
+                        <div className="flex gap-3 mt-0.5">
+                            <span><span className="font-bold">RUC/CI:</span> {rucFinal}</span>
+                            <span><span className="font-bold">TEL:</span> {cliente.telefono?.[0] || 'S/N'}</span>
+                        </div>
+                        <div className="truncate mt-0.5">
+                            <span className="font-bold">DIR:</span> {cliente.direccion || 'Pasaje, El Oro'}
+                        </div>
+                    </div>
+
+                    <div className="col-span-5 pl-1.5 flex flex-col justify-between">
+                        <div className="flex justify-between items-center">
+                            <span><span className="font-bold">INGRESO:</span> {fecha.toLocaleDateString('es-EC')}</span>
+                            <span className="border border-black px-1 text-[6.5px] font-black">
+                                [{trabajo.prioridad?.toUpperCase() || 'NORMAL'}]
+                            </span>
+                        </div>
+                        <div className="border border-black p-0.5 mt-0.5 flex justify-between items-center bg-white">
+                            <span className="font-black text-[6.5px] uppercase">ENTREGA:</span>
+                            <strong className="font-black text-[7.5px] uppercase">{fechaEntregaStr}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {/* FILA 3: ESPECIFICACIONES TÉCNICAS Y MANUFACTURA */}
+                <div className="border-b border-black py-1 flex flex-col justify-between text-[7.5px] font-mono flex-1">
+                    <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1">
+                            <span className="font-bold">TRABAJO:</span>{' '}
+                            <strong className="text-[9px] uppercase font-black">{trabajo.cantidad} {trabajo.tipo}</strong>
+                        </div>
+                        <div className="flex gap-2">
+                            <span className="border border-black px-1 text-[7px]"><span className="font-bold">MED:</span> {trabajo.tamano || '1/4 Oficio'}</span>
+                            <span className="border border-black px-1 text-[7px]"><span className="font-bold">PAPEL:</span> {trabajo.subtipo || specs?.tipoPapel || 'Estándar'}</span>
+                        </div>
+                    </div>
+                    <div className="text-[7px] mt-0.5 truncate">
+                        <span className="font-bold">DETALLES / ACABADOS:</span> {cleanDetail || 'Trabajo comercial realizado según orden aprobada.'}
+                    </div>
+                </div>
+
+                {/* FILA 4: DESGLOSE FINANCIERO TIPO REGISTRO CAJA */}
+                <div className="grid grid-cols-12 gap-1 items-center border-b border-black py-1 font-mono">
+                    <div className="col-span-7 flex flex-col justify-center pr-1">
+                        <div className="text-[6.5px] uppercase leading-tight font-bold">
+                            SON: <span>{sumaEnLetras}</span>
+                        </div>
+                    </div>
+
+                    <div className="col-span-5 grid grid-cols-3 gap-1 text-center">
+                        <div className="border border-black p-0.5">
+                            <span className="text-[5.5px] block font-bold">TOTAL</span>
+                            <strong className="text-[9px]">${(trabajo.total || 0).toFixed(2)}</strong>
+                        </div>
+                        <div className="border border-black p-0.5">
+                            <span className="text-[5.5px] block font-bold">ABONO</span>
+                            <strong className="text-[9px]">${(trabajo.abono || 0).toFixed(2)}</strong>
+                        </div>
+                        <div className="border-2 border-black p-0.5 bg-white font-black">
+                            <span className="text-[5.5px] block font-black">SALDO</span>
+                            <strong className="text-[10px]">${(trabajo.saldo || 0).toFixed(2)}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {/* FILA 5: PIE CON RASTREO QR, TÉRMINOS Y FIRMAS */}
+                <div className="flex justify-between items-end pt-1 text-[6.5px] font-mono leading-tight">
+                    <div className="flex items-center gap-1.5 max-w-[105mm]">
+                        <img src={qrSrc} alt="QR" className="w-[7.5mm] h-[7.5mm] border border-black p-[0.5mm]" />
+                        <div>
+                            <span className="font-bold">Rastreo: imprentacordova.net</span><br />
+                            <span className="text-[5.5px]">* Conserve este comprobante para retirar. Reclamos máx. 48h.</span>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 text-center">
+                        <div className="w-[30mm]">
+                            <div className="border-b border-black w-full mb-0.5"></div>
+                            <span className="text-[6px] uppercase font-bold">{isOperator ? 'TALLER / PRENSA' : 'EMISOR AUTORIZADO'}</span>
+                        </div>
+                        <div className="w-[30mm]">
+                            <div className="border-b border-black w-full mb-0.5"></div>
+                            <span className="text-[6px] uppercase font-bold">RECIBÍ CONFORME</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+        );
+    }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // SUB-MODO 2: COLOR PRO (Epson EcoTank / Tinta Continua / Láser)
+    // Alta calidad visual, azul Córdova, tarjetas KPI y logo en vector
+    // ────────────────────────────────────────────────────────────────────────
+    return (
+        <div className={`w-full h-full p-2.5 rounded-xl border ${isOperator ? 'bg-slate-50/70 border-slate-300' : 'bg-white border-slate-200'} shadow-xs flex flex-col justify-between box-border select-text font-sans`}>
             {/* Header section */}
-            <div className="flex justify-between items-start border-b border-slate-100 pb-1.5 mb-1">
+            <div className="flex justify-between items-start border-b border-slate-200 pb-1 mb-1">
                 <div className="flex items-center gap-2">
                     <CordovaLogo className="w-8 h-8" />
                     <div>
-                        <h1 className="text-[12px] font-black text-slate-900 tracking-tighter uppercase leading-none">{config.nombre}</h1>
-                        <p className="text-[6.5px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{config.ruc} &bull; {config.direccion}</p>
+                        <div className="flex items-center gap-1.5">
+                            <h1 className="text-[12px] font-black text-slate-900 tracking-tight uppercase leading-none">{config.nombre}</h1>
+                            <span className="text-[6.5px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200 font-bold uppercase">
+                                PRO 2-UP
+                            </span>
+                        </div>
+                        <p className="text-[6.5px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                            RUC {config.ruc} &bull; AUT. SRI {config.autorizacionSri} &bull; {config.direccion}
+                        </p>
                     </div>
                 </div>
-                <div className="text-right">
-                    <div className={`px-3 py-1 rounded-lg flex flex-col items-end ${isOperator ? 'bg-slate-800' : 'bg-black'} text-white`}>
-                        <span className="text-[5.5px] font-black uppercase tracking-[0.3em] opacity-50">ORDEN_CONTROL</span>
-                        <span className="text-[14px] font-black tracking-tighter leading-none">#{ordenStr}</span>
+
+                <div className="text-right flex flex-col items-end">
+                    <div className={`px-2.5 py-0.5 rounded-md flex items-center gap-1.5 ${isOperator ? 'bg-slate-800' : 'bg-[#0f2b48]'} text-white shadow-xs`}>
+                        <span className="text-[6px] font-black uppercase tracking-wider text-slate-300">ORDEN</span>
+                        <span className="text-[13px] font-mono font-black text-amber-300 leading-none">#{ordenStr}</span>
                     </div>
-                    <p className="text-[5.5px] font-black text-slate-400 mt-0.5 uppercase tracking-widest">{isOperator ? 'COPIA TALLER' : 'ORIGINAL CLIENTE'}</p>
+                    <span className="text-[6px] font-black text-slate-500 uppercase tracking-widest mt-0.5">
+                        {badgeText}
+                    </span>
                 </div>
             </div>
 
             {/* Main Data Grid */}
-            <div className="grid grid-cols-12 gap-2">
-                <div className="col-span-4 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                    <span className="text-[5.5px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Cliente</span>
-                    <p className="text-[9px] font-black text-slate-900 uppercase leading-tight truncate">{isConsumidorFinal ? 'CONSUMIDOR FINAL' : cliente.nombre}</p>
-                    <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block mt-1">Cédula / RUC</span>
-                    <p className="text-[8px] font-mono font-bold text-slate-700">{isConsumidorFinal ? '9999999999999' : (cliente.cedula || cliente.ruc || 'S/N')}</p>
+            <div className="grid grid-cols-12 gap-2 bg-slate-50 border border-slate-200/80 rounded-lg p-1.5 text-[8px]">
+                <div className="col-span-7 flex flex-col justify-between">
+                    <div>
+                        <span className="text-[5.5px] font-black text-slate-400 uppercase tracking-widest block mb-0.2">Cliente / Titular</span>
+                        <p className="text-[9px] font-black text-slate-900 uppercase leading-tight truncate">{titularFinal}</p>
+                    </div>
+                    <div className="flex gap-3 text-[7px] font-mono text-slate-600 mt-0.5">
+                        <span>RUC/CI: <strong>{rucFinal}</strong></span>
+                        <span>TEL: <strong>{cliente.telefono?.[0] || 'S/N'}</strong></span>
+                    </div>
                 </div>
 
-                <div className="col-span-8 grid grid-cols-4 gap-1.5">
-                    <div className="bg-white p-1.5 rounded-lg border border-slate-100 col-span-2">
-                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TRABAJO</span>
-                        <p className="text-[8.5px] font-black text-slate-900 uppercase truncate">{trabajo.tipo}</p>
+                <div className="col-span-5 flex flex-col justify-between">
+                    <div className="flex justify-between items-center text-[7px]">
+                        <span className="text-slate-500">Ingreso: <strong>{fecha.toLocaleDateString('es-EC')}</strong></span>
+                        <span className="bg-slate-200/80 px-1 py-0.2 rounded text-[6px] font-black uppercase text-slate-700">
+                            {trabajo.prioridad}
+                        </span>
                     </div>
-                    <div className="bg-white p-1.5 rounded-lg border border-slate-100">
-                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">CANTIDAD</span>
-                        <p className="text-[9px] font-black text-slate-900 uppercase">{trabajo.cantidad} u.</p>
-                    </div>
-                    <div className="bg-white p-1.5 rounded-lg border border-slate-100">
-                        <span className="text-[5px] font-black text-slate-400 uppercase tracking-widest block">TAMAÑO</span>
-                        <p className="text-[8px] font-black text-slate-900 uppercase truncate">{trabajo.tamano || '1/4 Oficio'}</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5 mt-0.5 flex justify-between items-center">
+                        <span className="text-[6px] font-black text-blue-900 uppercase">Entrega:</span>
+                        <strong className="text-[7.5px] text-blue-900 font-black">{fechaEntregaStr}</strong>
                     </div>
                 </div>
             </div>
 
             {/* Industrial Detail & Mechanicals */}
-            <div className="flex-1 grid grid-cols-12 gap-2 mt-0.5">
-                <div className="col-span-8 bg-white p-2 rounded-xl border border-slate-100 flex flex-col justify-between">
-                    <div>
-                        <span className="text-[6px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-0.5">ESPECIFICACIONES</span>
-                        <p className="text-[8.5px] font-bold text-slate-800 leading-tight">
-                            {cleanDetail || 'Trabajo comercial realizado según arte aprobado por el cliente.'}
+            <div className="flex-1 border border-slate-200 rounded-lg p-1.5 flex flex-col justify-between my-0.5">
+                <div className="flex justify-between items-start">
+                    <div className="flex-1 mr-2">
+                        <span className="text-[6px] font-black uppercase tracking-widest text-slate-400 block">TRABAJO Y ACABADOS</span>
+                        <p className="text-[9px] font-black text-slate-900 uppercase truncate leading-tight">
+                            {trabajo.cantidad} {trabajo.tipo}
+                        </p>
+                        <p className="text-[7px] text-slate-600 mt-0.5 leading-snug truncate">
+                            {cleanDetail || 'Trabajo comercial realizado según requerimientos técnicos.'}
                         </p>
                     </div>
-                    <div className="text-[6px] text-slate-400 font-mono">
-                        Material: {trabajo.subtipo || 'Estándar'} &bull; Prioridad: {trabajo.prioridad}
+
+                    <div className="flex gap-1 flex-wrap">
+                        <span className="bg-slate-100 px-1.5 py-0.2 rounded text-[6.5px] font-bold text-slate-700">
+                            Tam: {trabajo.tamano || '1/4 Oficio'}
+                        </span>
+                        <span className="bg-slate-100 px-1.5 py-0.2 rounded text-[6.5px] font-bold text-slate-700">
+                            Papel: {trabajo.subtipo || specs?.tipoPapel || 'Estándar'}
+                        </span>
                     </div>
                 </div>
 
-                <div className={`col-span-4 rounded-xl p-2.5 text-white flex flex-col justify-between ${isOperator ? 'bg-slate-800' : 'bg-slate-950'}`}>
-                    <div className="space-y-0.5 text-[8px]">
-                        <div className="flex justify-between items-center opacity-70">
-                            <span>TOTAL:</span>
-                            <span className="font-mono font-bold">${(trabajo.total || 0).toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-emerald-400">
-                            <span>ABONO:</span>
-                            <span className="font-mono font-bold">-${(trabajo.abono || 0).toFixed(2)}</span>
-                        </div>
-                        <div className="border-t border-white/10 pt-0.5 flex justify-between items-baseline font-black">
-                            <span className="text-[6.5px] text-amber-300">SALDO:</span>
-                            <span className="text-[13px] font-mono text-white leading-none">${(trabajo.saldo || 0).toFixed(2)}</span>
-                        </div>
+                {/* Financial KPIs */}
+                <div className="grid grid-cols-12 gap-1.5 items-center mt-1 pt-1 border-t border-slate-100">
+                    <div className="col-span-6 text-[6px] text-slate-600 leading-tight">
+                        <span className="font-bold">SON:</span> {sumaEnLetras}
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1">
-                        <img src={qrSrc} alt="QR" className="w-6 h-6 bg-white p-0.5 rounded" />
-                        <span className="text-[5px] font-mono opacity-50 uppercase">Rastreo Web</span>
+
+                    <div className="col-span-6 grid grid-cols-3 gap-1 text-center">
+                        <div className="bg-slate-50 border border-slate-200 rounded p-0.5">
+                            <span className="text-[5px] font-black uppercase text-slate-500 block">TOTAL</span>
+                            <span className="text-[9.5px] font-mono font-black text-slate-900">${(trabajo.total || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="bg-emerald-50 border border-emerald-200 rounded p-0.5">
+                            <span className="text-[5px] font-black uppercase text-emerald-700 block">ABONO</span>
+                            <span className="text-[9.5px] font-mono font-black text-emerald-800">${(trabajo.abono || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-300 rounded p-0.5">
+                            <span className="text-[5px] font-black uppercase text-amber-800 block">SALDO</span>
+                            <span className="text-[10px] font-mono font-black text-amber-950">${(trabajo.saldo || 0).toFixed(2)}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Signatures */}
-            <div className="flex justify-between items-end px-1 mt-0.5 text-[5.5px] text-slate-400 uppercase font-black">
-                <span>Responsable: {trabajo.responsable || 'Taller'}</span>
-                <span>{fecha.toLocaleDateString()}</span>
-                <span>Recibí Conforme: {titularFinal}</span>
+            {/* Signatures & Footer */}
+            <div className="flex justify-between items-end pt-0.5 text-[6px] text-slate-500">
+                <div className="flex items-center gap-1.5 max-w-[105mm]">
+                    <img src={qrSrc} alt="QR" className="w-[6.5mm] h-[6.5mm] rounded bg-white p-0.2 border border-slate-200" />
+                    <span className="text-[5.5px] leading-tight">
+                        * Conserve este comprobante para retirar. Reclamos máx. 48h. Rastreo: imprentacordova.net
+                    </span>
+                </div>
+
+                <div className="flex gap-3 text-center">
+                    <div className="w-[28mm]">
+                        <div className="border-b border-slate-300 w-full mb-0.5"></div>
+                        <span className="text-[5.5px] font-black uppercase text-slate-500">{isOperator ? 'Taller / Prensa' : 'Emisor / Taller'}</span>
+                    </div>
+                    <div className="w-[28mm]">
+                        <div className="border-b border-slate-400 w-full mb-0.5"></div>
+                        <span className="text-[5.5px] font-black uppercase text-slate-700">Recibí Conforme</span>
+                    </div>
+                </div>
             </div>
         </div>
     );
