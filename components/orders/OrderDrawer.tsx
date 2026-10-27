@@ -7,6 +7,7 @@ import { Cliente, StatusLog, Trabajo, TrabajoEstado } from '../../types';
 import { formatCurrency, generateWhatsAppLink } from '../../utils';
 import { C, S, MONO, DISPLAY, estadoCfg, PANEL_KEYFRAMES } from '../panelTheme';
 import RenovarOrdenModal from './RenovarOrdenModal';
+import ModalDespachoEntrega from './ModalDespachoEntrega';
 
 /**
  * Cajón lateral de detalle de orden — `Panel-Interno.dc.html` del handoff de diseño.
@@ -106,6 +107,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
     const [ocupado, setOcupado] = useState<string | null>(null);
     const [aviso, setAviso] = useState<string | null>(null);
     const [renovarAbierto, setRenovarAbierto] = useState(false);
+    const [despachoAbierto, setDespachoAbierto] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
 
     const cfg = estadoCfg(trabajo.estado);
@@ -312,21 +314,32 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
                     {tab === 'resumen' && (
                         <>
                             {trabajo.estado === TrabajoEstado.VITRINA && (
-                                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                         <span style={{ fontSize: 22 }}>📦</span>
                                         <div>
                                             <div style={{ fontSize: 13, fontWeight: 700, color: '#166534' }}>¡Trabajo Listo en Vitrina!</div>
-                                            <div style={{ fontSize: 11.5, color: '#15803D' }}>{telefono ? `Teléfono: ${telefono}` : 'Sin teléfono registrado'}</div>
+                                            <div style={{ fontSize: 11.5, color: '#15803D' }}>
+                                                {trabajo.saldo > 0 ? `Saldo por cobrar: ${formatCurrency(trabajo.saldo)}` : 'Totalmente pagado'}
+                                                {telefono ? ` · Tel: ${telefono}` : ''}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={enviarAvisoVitrina}
-                                        disabled={!telefono}
-                                        style={{ ...S.primaryBtn, background: '#16A34A', fontSize: 12, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6, opacity: telefono ? 1 : 0.5, cursor: telefono ? 'pointer' : 'not-allowed' }}
-                                    >
-                                        📱 Avisar Retiro WhatsApp
-                                    </button>
+                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                        <button
+                                            onClick={enviarAvisoVitrina}
+                                            disabled={!telefono}
+                                            style={{ ...S.softBtn, background: '#DCFCE7', color: '#166534', fontSize: 12, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6, opacity: telefono ? 1 : 0.5, cursor: telefono ? 'pointer' : 'not-allowed' }}
+                                        >
+                                            📱 Avisar WhatsApp
+                                        </button>
+                                        <button
+                                            onClick={() => setDespachoAbierto(true)}
+                                            style={{ ...S.primaryBtn, background: '#0A1140', color: '#FFC61A', fontSize: 12, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+                                        >
+                                            🚀 Entregar Ahora
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
@@ -561,16 +574,44 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
 
                 {/* Pie fijo */}
                 <div style={{ padding: '14px 22px', background: C.surface, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 9, flexWrap: 'wrap' }}>
-                    <button
-                        onClick={avanzar}
-                        disabled={!siguiente || ocupado === 'estado'}
-                        style={{
-                            flex: 1, minWidth: 180, padding: 13, background: siguiente ? C.royal : C.softGray, color: siguiente ? C.onInk : C.faint,
-                            border: 'none', borderRadius: 11, fontSize: 13.5, fontWeight: 600, cursor: siguiente ? 'pointer' : 'default', fontFamily: 'inherit',
-                        }}
-                    >
-                        {ocupado === 'estado' ? 'Actualizando…' : siguiente ? `Pasar a ${estadoCfg(siguiente).label}` : 'Orden cerrada'}
-                    </button>
+                    {siguiente === TrabajoEstado.ENTREGADO ? (
+                        <button
+                            onClick={() => setDespachoAbierto(true)}
+                            disabled={ocupado === 'estado'}
+                            style={{
+                                flex: 1, minWidth: 200, padding: 13,
+                                background: trabajo.saldo > 0 ? '#16A34A' : C.royal,
+                                color: '#FFFFFF',
+                                border: 'none', borderRadius: 11, fontSize: 13.5, fontWeight: 700,
+                                cursor: 'pointer', fontFamily: 'inherit',
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                                boxShadow: trabajo.saldo > 0 ? '0 4px 14px rgba(22,163,74,0.35)' : 'none',
+                            }}
+                        >
+                            <span>🚀</span>
+                            <span>{trabajo.saldo > 0 ? `Entregar y Cobrar (${formatCurrency(trabajo.saldo)})` : 'Entregar y Despachar'}</span>
+                        </button>
+                    ) : siguiente ? (
+                        <button
+                            onClick={avanzar}
+                            disabled={ocupado === 'estado'}
+                            style={{
+                                flex: 1, minWidth: 180, padding: 13, background: C.royal, color: C.onInk,
+                                border: 'none', borderRadius: 11, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                            }}
+                        >
+                            {ocupado === 'estado' ? 'Actualizando…' : `Pasar a ${estadoCfg(siguiente).label}`}
+                        </button>
+                    ) : (
+                        <div style={{
+                            flex: 1, minWidth: 180, padding: 13, background: '#F2F7F2', color: '#166534',
+                            border: '1px solid #BBF7D0', borderRadius: 11, fontSize: 13, fontWeight: 700,
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6
+                        }}>
+                            <span>✓</span>
+                            <span>Orden Entregada y Despachada</span>
+                        </div>
+                    )}
                     <button 
                         onClick={() => window.open(trabajo.esSRI ? `/#/solicitud-impresion/${trabajo.id}` : `/#/recibo-epson/${trabajo.id}`, '_blank')} 
                         title={trabajo.esSRI ? 'Imprimir Solicitud SRI (Medio Oficio)' : 'Imprimir Recibo Comercial (1/4 Oficio)'}
@@ -603,6 +644,19 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
                     usuario={usuario}
                     rol={rol}
                     onClose={() => setRenovarAbierto(false)}
+                />
+            )}
+
+            {despachoAbierto && (
+                <ModalDespachoEntrega
+                    isOpen={despachoAbierto}
+                    onClose={() => setDespachoAbierto(false)}
+                    trabajo={trabajo}
+                    cliente={cliente}
+                    currentUser={{ nombre: usuario, rol }}
+                    onEntregaExitosa={() => {
+                        setDespachoAbierto(false);
+                    }}
                 />
             )}
         </div>

@@ -67,7 +67,7 @@ interface TrabajosContextType {
   updateTrabajoStatus: (id: string, status: TrabajoEstado, user: string) => Promise<void>;
   updateTrabajoPhoto: (id: string, url: string) => Promise<void>;
   updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
-  registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string) => Promise<Trabajo>;
+  registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string) => Promise<Trabajo>;
   registrarAbono: (id: string, monto: number, user: string) => Promise<Trabajo>;
   aprobarArte: (id: string) => Promise<Trabajo>;
   getClientDebt: (clienteId: string) => number;
@@ -307,13 +307,19 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (error) throw error;
   };
 
-  const registerRetiro = async (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string): Promise<Trabajo> => {
+  const registerRetiro = async (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string): Promise<Trabajo> => {
+    const actual = trabajos.find(t => t.id === id);
     const updateData: Record<string, any> = {
       saldo: 0,
       estado: TrabajoEstado.ENTREGADO,
       actualizado_por: user,
+      fecha_entrega: new Date().toISOString(),
     };
     if (fotoRetiroUrl) updateData.foto_retiro_url = fotoRetiroUrl;
+    if (notasEntrega && actual) {
+      const prevObs = actual.observaciones ? `${actual.observaciones}\n` : '';
+      updateData.observaciones = `${prevObs}[Despacho ${new Date().toLocaleDateString('es-EC')}]: ${notasEntrega}`.slice(0, 1000);
+    }
 
     const { data, error } = await supabase.from('trabajos').update(updateData).eq('id', id).select().single();
     if (error) throw error;

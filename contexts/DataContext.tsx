@@ -61,7 +61,7 @@ interface DataContextType {
     updateTrabajoPhoto: (id: string, url: string) => Promise<void>;
     updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
     uploadFile: (file: File, bucket: string, path: string) => Promise<string>;
-    registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string) => Promise<Trabajo>;
+    registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string) => Promise<Trabajo>;
     registrarAbono: (id: string, monto: number, user: string) => Promise<Trabajo>;
     aprobarArte: (id: string) => Promise<Trabajo>;
     createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
