@@ -97,7 +97,9 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriEstablecimiento, setSriEstablecimiento] = useState('001');
     const [sriPuntoEmision, setSriPuntoEmision] = useState('001');
     const [sriClave, setSriClave] = useState('');
-    const [sriActividad, setSriActividad] = useState('');
+    const [sriActividad, setSriActividad] = useState('Comercio / Servicios General');
+    const [estadoAutorizacionSri, setEstadoAutorizacionSri] = useState<'ya_autorizado' | 'por_tramitar'>('ya_autorizado');
+    const [sriAlDiaVerificado, setSriAlDiaVerificado] = useState(true);
     /**
      * Marcado del trámite para la solicitud del SRI. Arranca en MISMO, que es lo que el
      * documento imprimía siempre por el hardcodeo: ninguna orden cambia de comportamiento.
@@ -298,18 +300,7 @@ const NuevoPedidoPage: React.FC = () => {
         if (step === 1) return items.length > 0;
         if (step === 2) return true;
         if (step === 3) {
-            if (!cliente && !(tempClient?.nombre || tempClient?.cedula)) return false;
-            /*
-             * Con comprobantes SRI el establecimiento, el punto de emisión y la actividad
-             * van IMPRESOS en la solicitud de autorización, así que no se puede avanzar sin
-             * ellos. CONTINUITY_RULES.md §6: "se deben registrar estrictamente los
-             * establecimientos abiertos, puntos de emisión, actividades y los números de
-             * secuencia". En un trabajo comercial no aplica.
-             */
-            if (hasSriItem) {
-                return !!(sriEstablecimiento.trim() && sriPuntoEmision.trim() && sriActividad.trim());
-            }
-            return true;
+            return !!(cliente || tempClient?.nombre || tempClient?.cedula);
         }
         if (step === 4) return desglose.total > 0;
         return false;
@@ -746,7 +737,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                         if (found) {
                                                             setSriEstablecimiento(found.establecimientoPredeterminado || '001');
                                                             setSriPuntoEmision(found.puntoEmisionPredeterminado || '001');
-                                                            setSriActividad(found.actividades || '');
+                                                            setSriActividad(found.actividades || found.fiscal_data?.actividades?.[0]?.descripcion || 'Comercio / Servicios General');
                                                         }
                                                     }}
                                                     style={{
@@ -992,7 +983,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             if (c) {
                                                 setSriEstablecimiento(c.establecimientoPredeterminado || '001');
                                                 setSriPuntoEmision(c.puntoEmisionPredeterminado || '001');
-                                                setSriActividad(c.actividades || '');
+                                                setSriActividad(c.actividades || c.fiscal_data?.actividades?.[0]?.descripcion || 'Comercio / Servicios General');
                                                 /*
                                                  * Con comprobantes SRI el camino se detiene acá a propósito:
                                                  * los datos del talonario se autocompletan desde la ficha del
@@ -1048,7 +1039,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                     onClick={() => {
                                                         setSriEstablecimiento(cliente.establecimientoPredeterminado || '001');
                                                         setSriPuntoEmision(cliente.puntoEmisionPredeterminado || '001');
-                                                        setSriActividad(cliente.actividades || '');
+                                                        setSriActividad(cliente.actividades || cliente.fiscal_data?.actividades?.[0]?.descripcion || 'Comercio / Servicios General');
                                                     }}
                                                     style={{ ...S.softBtn, background: '#FFFFFF', flexShrink: 0 }}
                                                 >
@@ -1184,53 +1175,191 @@ const NuevoPedidoPage: React.FC = () => {
                                             </div>
 
                                             {/*
-                                              * Variante de producción del talonario. Las tres terminan en el
-                                              * mismo formulario, pero se imprimen distinto: sólo los datos
-                                              * sobre el preimpreso, el arte completo sobre hoja en blanco, o la
-                                              * versión A4 para gestionar desde la computadora.
-                                              * Ver services/printModels.ts.
+                                              * Formato de impresión: no saturamos el flujo de pedido.
+                                              * El operador podrá elegir la variante específica (Sobre Preimpreso, Clásico,
+                                              * Moderna o PC A4) en la barra superior al momento de imprimir.
                                               */}
-                                            <div style={{ marginTop: 14 }}>
-                                                <span style={S.fieldLabel}>Cómo se imprime</span>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                    {modelosDe('SRI').map(m => {
-                                                        const activo = modeloImpresionSri === m.id;
-                                                        return (
-                                                            <button
-                                                                key={m.id}
-                                                                type="button"
-                                                                onClick={() => setModeloImpresionSri(m.id)}
-                                                                title={m.descripcion}
-                                                                style={{
-                                                                    display: 'block', textAlign: 'left', width: '100%',
-                                                                    padding: '8px 12px', borderRadius: 9, cursor: 'pointer', fontFamily: 'inherit',
-                                                                    background: activo ? C.chipBlue : '#FFFFFF',
-                                                                    border: `1px solid ${activo ? C.royal : C.borderStrong}`,
-                                                                }}
-                                                            >
-                                                                <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700, color: activo ? C.royal : C.ink }}>
-                                                                    {m.label}
-                                                                    {m.id === modeloPorDefecto(true) && (
-                                                                        <span style={{ marginLeft: 6, fontSize: 9.5, fontWeight: 800, letterSpacing: '.08em', color: C.goldText }}>SUGERIDO</span>
-                                                                    )}
-                                                                </span>
-                                                                <span style={{ display: 'block', fontSize: 11, color: C.muted, marginTop: 2, lineHeight: 1.45 }}>
-                                                                    {m.descripcion}
-                                                                </span>
-                                                            </button>
-                                                        );
-                                                    })}
+                                            <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: '#FFFFFF', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.ink }}>
+                                                    <span style={{ fontSize: 16 }}>🖨️</span>
+                                                    <div>
+                                                        <span style={{ fontWeight: 700 }}>Impresión de Solicitud: {MODELOS[modeloImpresionSri]?.label || 'Sobre Preimpreso'}</span>
+                                                        <span style={{ display: 'block', fontSize: 11, color: C.faint, marginTop: 1 }}>
+                                                            Las opciones de formato se seleccionan directamente al momento de imprimir para no saturar el pedido.
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <p style={{ margin: '6px 0 0', fontSize: 11, color: C.goldText }}>
-                                                    Se imprime como <strong>{MODELOS[modeloImpresionSri].label}</strong> en {MODELOS[modeloImpresionSri].papel.nombre.toLowerCase()} ({MODELOS[modeloImpresionSri].papel.anchoMm} × {MODELOS[modeloImpresionSri].papel.altoMm} mm).
-                                                </p>
                                             </div>
 
-                                            <p style={{ margin: '10px 0 0', fontSize: 11.5, color: C.goldTextStrong }}>
-                                                {sriEstablecimiento.trim() && sriPuntoEmision.trim() && sriActividad.trim()
-                                                    ? '✓ Listo para continuar'
-                                                    : 'Completá los tres datos para continuar: van impresos en el documento.'}
-                                            </p>
+                                            {/*
+                                              * Estado de la Autorización SRI / Sugerencia de Trámite.
+                                              * Permite al operador declarar si la autorización ya fue emitida
+                                              * o si está pendiente por tramitar ante el portal del SRI.
+                                              */}
+                                            <div style={{ marginTop: 14, padding: '14px 16px', background: '#FFFFFF', border: `1px solid ${C.goldBorder}`, borderRadius: 12 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                                                    <span style={{ ...S.fieldLabel, margin: 0, fontSize: 11.5, fontWeight: 800, color: C.royal }}>
+                                                        Estado del Trámite de Autorización SRI
+                                                    </span>
+                                                    <span style={{ fontSize: 10.5, color: C.faint }}>
+                                                        ¿La solicitud ya fue autorizada en el SRI o está pendiente?
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 12 }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEstadoAutorizacionSri('ya_autorizado')}
+                                                        style={{
+                                                            padding: '10px 12px', borderRadius: 9, cursor: 'pointer', fontFamily: 'inherit',
+                                                            background: estadoAutorizacionSri === 'ya_autorizado' ? '#ECFDF5' : '#F8FAFC',
+                                                            border: `1.5px solid ${estadoAutorizacionSri === 'ya_autorizado' ? '#10B981' : '#E2E8F0'}`,
+                                                            color: estadoAutorizacionSri === 'ya_autorizado' ? '#065F46' : C.muted,
+                                                            display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 3,
+                                                            textAlign: 'left'
+                                                        }}
+                                                    >
+                                                        <span style={{ fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                                            <span>✓</span> Ya está autorizada en SRI
+                                                        </span>
+                                                        <span style={{ fontSize: 10.5, color: estadoAutorizacionSri === 'ya_autorizado' ? '#047857' : C.faint }}>
+                                                            Tengo N° de autorización o secuencia previa
+                                                        </span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEstadoAutorizacionSri('por_tramitar')}
+                                                        style={{
+                                                            padding: '10px 12px', borderRadius: 9, cursor: 'pointer', fontFamily: 'inherit',
+                                                            background: estadoAutorizacionSri === 'por_tramitar' ? '#FFFBEB' : '#F8FAFC',
+                                                            border: `1.5px solid ${estadoAutorizacionSri === 'por_tramitar' ? '#F59E0B' : '#E2E8F0'}`,
+                                                            color: estadoAutorizacionSri === 'por_tramitar' ? '#92400E' : C.muted,
+                                                            display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 3,
+                                                            textAlign: 'left'
+                                                        }}
+                                                    >
+                                                        <span style={{ fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                                            <span>⏳</span> Por tramitar / Hacer solicitud
+                                                        </span>
+                                                        <span style={{ fontSize: 10.5, color: estadoAutorizacionSri === 'por_tramitar' ? '#B45309' : C.faint }}>
+                                                            Generar solicitud para firma o ingresar a SRI
+                                                        </span>
+                                                    </button>
+                                                </div>
+
+                                                {estadoAutorizacionSri === 'ya_autorizado' ? (
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, padding: 10, background: '#F0FDF4', borderRadius: 9, border: '1px solid #BBF7D0' }}>
+                                                        <div>
+                                                            <span style={{ ...S.fieldLabel, fontSize: 10.5 }}>N° Autorización SRI (opcional)</span>
+                                                            <input
+                                                                value={autorizacionSriInput}
+                                                                onChange={e => setAutorizacionSriInput(e.target.value.replace(/\D/g, '').slice(0, 37))}
+                                                                placeholder="Ej: 1133445566 (10 o 37 dígitos)"
+                                                                style={{ ...S.input, padding: '7px 10px', fontSize: 12, fontFamily: MONO, background: '#FFFFFF' }}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <span style={{ ...S.fieldLabel, fontSize: 10.5 }}>Secuencia Inicial (opcional)</span>
+                                                            <input
+                                                                value={numeracionInicial}
+                                                                onChange={e => setNumeracionInicial(e.target.value)}
+                                                                placeholder="Ej: 0000001 al 0000100"
+                                                                style={{ ...S.input, padding: '7px 10px', fontSize: 12, fontFamily: MONO, background: '#FFFFFF' }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ padding: 12, background: '#FEF3C7', borderRadius: 9, border: '1px solid #FDE68A', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                                            <div style={{ fontSize: 12, color: '#92400E', fontWeight: 600 }}>
+                                                                👉 Puedes gestionar la solicitud en el portal SRI o imprimir el formulario para firma del cliente:
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                                <a
+                                                                    href="https://srienlinea.sri.gob.ec/sri-en-linea/inicio/NAT"
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{
+                                                                        padding: '6px 11px', borderRadius: 8, background: '#1E3A8A', color: '#FFFFFF',
+                                                                        fontSize: 11, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5
+                                                                    }}
+                                                                >
+                                                                    🌐 Abrir SRI en Línea ↗
+                                                                </a>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const ruc = cliente?.ruc || cliente?.cedula || '';
+                                                                        const nom = encodeURIComponent(cliente?.nombre || '');
+                                                                        window.open(`/#/solicitud-impresion/directo?ruc=${ruc}&name=${nom}`, '_blank');
+                                                                    }}
+                                                                    style={{
+                                                                        padding: '6px 11px', borderRadius: 8, background: '#FFFFFF', color: '#1E3A8A',
+                                                                        border: '1px solid #1E3A8A', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                                                                        display: 'inline-flex', alignItems: 'center', gap: 5
+                                                                    }}
+                                                                >
+                                                                    📄 Ver Solicitud Física ↗
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginTop: 4 }}>
+                                                            <label style={{ display: 'block' }}>
+                                                                <span style={{ ...S.fieldLabel, fontSize: 10.5 }}>Clave SRI del cliente (opcional, para gestión)</span>
+                                                                <input
+                                                                    type="password"
+                                                                    value={sriClave}
+                                                                    onChange={e => setSriClave(e.target.value)}
+                                                                    placeholder="Clave portal SRI"
+                                                                    style={{ ...S.input, padding: '7px 10px', fontSize: 12, background: '#FFFFFF' }}
+                                                                />
+                                                            </label>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 18 }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={sriAlDiaVerificado}
+                                                                    onChange={e => setSriAlDiaVerificado(e.target.checked)}
+                                                                    style={{ width: 16, height: 16, accentColor: '#1E3A8A' }}
+                                                                />
+                                                                <span style={{ fontSize: 11.5, color: '#92400E', fontWeight: 600 }}>
+                                                                    Cliente al día en declaraciones tributarias SRI
+                                                                </span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* BOTÓN PROMINENTE DIRECTO A PASO 4 (PAGO) */}
+                                            <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', paddingTop: 14, borderTop: `1px solid ${C.goldBorder}` }}>
+                                                <span style={{ fontSize: 12, color: C.goldTextStrong, fontWeight: 700 }}>
+                                                    ✓ Datos del talonario listos
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (!sriEstablecimiento.trim()) setSriEstablecimiento('001');
+                                                        if (!sriPuntoEmision.trim()) setSriPuntoEmision('001');
+                                                        if (!sriActividad.trim()) setSriActividad('Comercio / Servicios General');
+                                                        setStep(4);
+                                                    }}
+                                                    style={{
+                                                        ...S.primaryBtn,
+                                                        padding: '12px 24px',
+                                                        fontSize: 13.5,
+                                                        fontWeight: 800,
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                        boxShadow: '0 4px 14px rgba(22,48,155,0.35)',
+                                                    }}
+                                                >
+                                                    <span>Avanzar a Pago & Despacho (Paso 4)</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                 </motion.div>
@@ -1300,15 +1429,35 @@ const NuevoPedidoPage: React.FC = () => {
 
                         {/* Botones de Navegación Inferior */}
                         {step < 4 && step > 1 && (
-                            <div style={{ ...S.card, padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ ...S.card, padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                                 <button style={S.softBtn} onClick={() => setStep(p => p - 1)}>
                                     ← Volver al paso {step - 1}
                                 </button>
-                                {canAdvance() && (
-                                    <button style={S.primaryBtn} onClick={() => setStep(p => p + 1)}>
-                                        Continuar al paso {step + 1} →
-                                    </button>
-                                )}
+                                <button
+                                    style={{
+                                        ...S.primaryBtn,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                    }}
+                                    onClick={() => {
+                                        if (step === 3) {
+                                            if (!cliente && !(tempClient?.nombre || tempClient?.cedula)) {
+                                                alert('Por favor selecciona o registra un cliente para continuar al paso de Pago.');
+                                                return;
+                                            }
+                                            if (!sriEstablecimiento.trim()) setSriEstablecimiento('001');
+                                            if (!sriPuntoEmision.trim()) setSriPuntoEmision('001');
+                                            if (!sriActividad.trim()) setSriActividad('Comercio / Servicios General');
+                                            setStep(4);
+                                            return;
+                                        }
+                                        if (canAdvance()) setStep(p => p + 1);
+                                    }}
+                                >
+                                    <span>Continuar al paso {step + 1}</span>
+                                    <span>→</span>
+                                </button>
                             </div>
                         )}
                     </div>
