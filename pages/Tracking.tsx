@@ -1,50 +1,75 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Trabajo, TrabajoEstado } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { supabase } from '../services/supabase';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
-
-/**
- * Rastreo público de pedidos — fiel a `Publica-B-Tracking.dc.html` (Claude Design).
- * Tema azul/blanco. Conserva la búsqueda real en Supabase (orden / RUC / id),
- * aprobación de arte y enlace de liquidación por WhatsApp.
- */
+import {
+    WhatsAppIcon, Sparkles, Check, ArrowRight, Clock, Search,
+    ShieldCheck, CheckCircle, AlertTriangle, Phone, MapPin,
+    Package, RefreshCw, FileText
+} from '../components/Icons';
 
 const C = {
-    ink: '#0A1140', royal: '#16309B', royalHover: '#0F2280', border: '#E4E8F4', borderStrong: '#D7DDF0',
-    divider: '#EEF0F8', rowLine: '#F2F4FA', body: '#3C4763', muted: '#5B6480', faint: '#8A93AE',
-    bg: '#F7F9FF', chip: '#EEF1FC', soft: '#F2F4FA', success: '#1B6E3E', gold: '#FFC61A',
+    ink: '#0A1140',
+    royal: '#16309B',
+    royalHover: '#0F2280',
+    gold: '#FFC61A',
 };
-const DISPLAY = "'Outfit',sans-serif";
-const MONO = "'JetBrains Mono',monospace";
 const WA_NUM = '593993083943';
 
-const ESTADO_LABEL: Record<TrabajoEstado, string> = {
-    [TrabajoEstado.PENDIENTE]: 'Pendiente',
-    [TrabajoEstado.EN_DISENO]: 'En diseño',
-    [TrabajoEstado.PROCESO]: 'En prensa',
-    [TrabajoEstado.VITRINA]: 'Listo para retiro',
-    [TrabajoEstado.ENTREGADO]: 'Entregado',
+const ESTADO_CONFIG: Record<TrabajoEstado, { label: string; badge: string; aura: string; desc: string }> = {
+    [TrabajoEstado.PENDIENTE]: {
+        label: 'Orden Recibida',
+        badge: 'bg-amber-100 text-amber-800 border-amber-300',
+        aura: 'from-amber-400/20',
+        desc: 'Tu trabajo está registrado y en cola para verificación técnica.'
+    },
+    [TrabajoEstado.EN_DISENO]: {
+        label: 'En Diseño & Diagramación',
+        badge: 'bg-blue-100 text-blue-800 border-blue-300',
+        aura: 'from-blue-500/20',
+        desc: 'El diseñador está preparando el arte y la prueba digital.'
+    },
+    [TrabajoEstado.PROCESO]: {
+        label: 'En Prensa Offset / Producción',
+        badge: 'bg-indigo-100 text-indigo-800 border-indigo-300',
+        aura: 'from-indigo-500/20',
+        desc: 'En máquinas de impresión, numeración correlativa y secado.'
+    },
+    [TrabajoEstado.VITRINA]: {
+        label: 'Listo para Retiro en Taller',
+        badge: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        aura: 'from-emerald-500/20',
+        desc: '¡Tu pedido está terminado, empaquetado y listo para entregar!'
+    },
+    [TrabajoEstado.ENTREGADO]: {
+        label: 'Entregado con Éxito',
+        badge: 'bg-slate-100 text-slate-700 border-slate-300',
+        aura: 'from-slate-400/20',
+        desc: 'Trabajo retirado y saldo liquidado a satisfacción.'
+    },
 };
 
 const STAGES: { estado: TrabajoEstado; label: string; detail: string }[] = [
-    { estado: TrabajoEstado.PENDIENTE, label: 'Orden recibida', detail: 'Registrada y validada en el taller' },
-    { estado: TrabajoEstado.EN_DISENO, label: 'Diseño y prueba', detail: 'Diagramación y prueba digital para su aprobación' },
-    { estado: TrabajoEstado.PROCESO, label: 'En prensa', detail: 'Impresión, numeración y control de color' },
-    { estado: TrabajoEstado.VITRINA, label: 'Listo para retiro', detail: 'Guillotinado, empaque y aviso por WhatsApp' },
-    { estado: TrabajoEstado.ENTREGADO, label: 'Entregado', detail: 'Trabajo retirado y saldo liquidado' },
+    { estado: TrabajoEstado.PENDIENTE, label: 'Orden registrada', detail: 'Ingreso al sistema e inspección de especificaciones.' },
+    { estado: TrabajoEstado.EN_DISENO, label: 'Diseño & Prueba Digital', detail: 'Diagramación de artes y validación en padrón SRI.' },
+    { estado: TrabajoEstado.PROCESO, label: 'En Prensa & Numeración', detail: 'Impresión offset / digital, foliado y encuadernación.' },
+    { estado: TrabajoEstado.VITRINA, label: 'Guillotinado & Listo', detail: 'Corte de precisión, empaque protector y aviso al cliente.' },
+    { estado: TrabajoEstado.ENTREGADO, label: 'Retirado / Despachado', detail: 'Entrega final y comprobante de liquidación.' },
 ];
 const ORDER = STAGES.map(s => s.estado);
 
-const TrackingPage: React.FC = () => {
+export const TrackingPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
     const [foundJobs, setFoundJobs] = useState<Trabajo[]>([]);
     const [searching, setSearching] = useState(false);
     const [error, setError] = useState('');
     const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+    const [aprobando, setAprobando] = useState(false);
 
     const currentJob = useMemo(() => foundJobs.find(j => j.id === selectedJobId) || foundJobs[0], [foundJobs, selectedJobId]);
 
@@ -76,13 +101,13 @@ const TrackingPage: React.FC = () => {
                 const ids = clients.map(c => c.id);
                 const { data: jobs } = await supabase.from('trabajos').select('*').in('cliente_id', ids).order('orden', { ascending: false });
                 if (jobs?.length) { setFoundJobs(jobs as any); setSelectedJobId(jobs[0].id); }
-                else setError('No encontramos trabajos con esa identificación.');
+                else setError('No encontramos órdenes activas asociadas a esa identificación.');
             } else {
-                setError('No reconocemos ese número de orden ni identificación.');
+                setError('No encontramos ninguna orden con ese número o RUC. Revisa tu mensaje de WhatsApp.');
             }
         } catch (err) {
             console.error(err);
-            setError('No pudimos conectar. Intente de nuevo en un momento.');
+            setError('Hubo una intermitencia de conexión. Inténtalo de nuevo en unos momentos.');
         } finally {
             setSearching(false);
         }
@@ -95,177 +120,362 @@ const TrackingPage: React.FC = () => {
     }, [searchParams]);
 
     const handleAprobarArte = async (trabajoId: string) => {
-        if (!window.confirm('¿Confirma que el diseño está correcto para impresión?')) return;
+        if (!window.confirm('¿Confirmas que el diseño y la numeración están aprobados para entrar a prensa?')) return;
+        setAprobando(true);
         try {
-            const { error } = await supabase.from('trabajos').update({ arte_aprobado: true }).eq('id', trabajoId);
-            if (error) throw error;
-            setFoundJobs(prev => prev.map(j => j.id === trabajoId ? { ...j, arteAprobado: true } : j));
-        } catch { alert('No se pudo registrar la aprobación.'); }
+            const { error: dbError } = await supabase.from('trabajos').update({ arte_aprobado: true }).eq('id', trabajoId);
+            if (dbError) throw dbError;
+            setFoundJobs(prev => prev.map(j => j.id === trabajoId ? { ...j, arteAprobado: true, arte_aprobado: true } : j));
+        } catch {
+            alert('No se pudo registrar la aprobación en este momento.');
+        } finally {
+            setAprobando(false);
+        }
     };
 
     const waLink = (msg: string) => `https://wa.me/${WA_NUM}?text=${encodeURIComponent(msg)}`;
-
-    const idx = currentJob ? ORDER.indexOf(currentJob.estado) : -1;
+    const stageIndex = currentJob ? ORDER.indexOf(currentJob.estado) : -1;
+    const config = currentJob ? (ESTADO_CONFIG[currentJob.estado] || ESTADO_CONFIG[TrabajoEstado.PENDIENTE]) : null;
 
     return (
-        <div style={{ background: '#fff', color: C.ink, fontFamily: "'Inter',system-ui,sans-serif", minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <SEO title="Rastrear pedido · Imprenta Córdova" description="Consulte el estado de su trabajo con el número de orden o su RUC." />
+        <div className="bg-slate-50/70 min-h-screen text-slate-900 font-sans selection:bg-amber-400 selection:text-slate-950 flex flex-col justify-between">
+            <SEO
+                title="Rastrear Pedido en Tiempo Real · Imprenta Córdova"
+                description="Consulta el estado de avance de tu orden de impresión con tu número de pedido o RUC. Actualización en tiempo real desde el taller."
+            />
             <PublicNavbar />
 
-            <section style={{ borderBottom: `1px solid ${C.divider}`, background: 'linear-gradient(180deg,#F7F9FF,#fff)' }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(40px,5vw,64px) clamp(16px,3vw,44px) clamp(32px,4vw,48px)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.faint }}>
-                        <a href="/" style={{ color: C.faint, textDecoration: 'none' }}>Inicio</a><span>/</span><span style={{ color: C.body }}>Rastrear pedido</span>
+            {/* Cabecera & Buscador */}
+            <section className="bg-gradient-to-b from-blue-50/50 via-white to-slate-50/70 border-b border-slate-200/80 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Breadcrumbs */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-2 text-xs text-slate-400 font-semibold mb-3"
+                    >
+                        <a href="/" className="hover:text-brand-blue">Inicio</a>
+                        <span>/</span>
+                        <span className="text-slate-700">Rastrear Pedido</span>
+                    </motion.div>
+
+                    <div className="text-center sm:text-left">
+                        <span className="text-xs font-mono font-bold uppercase tracking-widest text-brand-blue bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200/70">
+                            Transparencia de Producción
+                        </span>
+                        <h1 className="font-heading text-3xl sm:text-5xl font-extrabold text-slate-950 tracking-tight mt-3">
+                            ¿En qué fase se encuentra tu trabajo?
+                        </h1>
+                        <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-xl">
+                            Ingresa el número de orden que te enviamos por WhatsApp (ej: ORD-4821) o tu RUC para conocer el estado exacto en prensa.
+                        </p>
+
+                        {/* Formulario de Búsqueda con Framer Motion */}
+                        <form
+                            onSubmit={e => { e.preventDefault(); doSearch(searchQuery); }}
+                            className="mt-6 flex flex-col sm:flex-row gap-2 max-w-xl"
+                        >
+                            <div className="relative flex-1">
+                                <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                                <input
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    placeholder="Ej: ORD-4821 o 0701234567001"
+                                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-300 rounded-2xl font-mono text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue shadow-sm"
+                                />
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                disabled={searching}
+                                className="px-7 py-3.5 bg-brand-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-brand-blue/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {searching ? (
+                                    <>
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                        <span>Consultando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Consultar Estado</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </>
+                                )}
+                            </motion.button>
+                        </form>
+
+                        {error && (
+                            <motion.p
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-3 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-3 rounded-xl max-w-xl flex items-center gap-2"
+                            >
+                                <AlertTriangle className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                                <span>{error}</span>
+                            </motion.p>
+                        )}
                     </div>
-                    <h1 style={{ margin: '14px 0 0', fontFamily: DISPLAY, fontSize: 'clamp(32px,3.6vw,46px)', fontWeight: 600, letterSpacing: '-.035em', lineHeight: 1.08, color: C.ink }}>¿En qué va su trabajo?</h1>
-                    <p style={{ margin: '12px 0 24px', maxWidth: '54ch', fontSize: 16.5, lineHeight: 1.65, color: '#4A5470' }}>
-                        Ingrese el número de orden que recibió por WhatsApp, o su RUC si es una renovación.
-                    </p>
-                    <form onSubmit={e => { e.preventDefault(); doSearch(searchQuery); }} style={{ display: 'flex', gap: 10, maxWidth: '30rem', flexWrap: 'wrap' }}>
-                        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="ORD-4821 o 0701234567001"
-                            style={{ flex: 1, minWidth: 220, padding: '15px 17px', background: '#fff', border: `1px solid ${C.borderStrong}`, borderRadius: 12, fontSize: 15, color: C.ink, outline: 'none', fontFamily: MONO }} />
-                        <button type="submit" disabled={searching}
-                            style={{ padding: '15px 26px', background: C.royal, color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: searching ? 0.6 : 1 }}>
-                            {searching ? 'Buscando…' : 'Consultar'}
-                        </button>
-                    </form>
-                    {error && <p style={{ margin: '14px 0 0', fontSize: 14, color: '#B91C1C', fontWeight: 600 }}>{error}</p>}
                 </div>
             </section>
 
-            <section style={{ flex: 1, maxWidth: 1320, margin: '0 auto', width: '100%', padding: 'clamp(32px,4vw,52px) clamp(16px,3vw,44px) clamp(56px,7vw,88px)' }}>
+            {/* Contenido Principal de Resultados */}
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex-1 w-full">
                 {!currentJob ? (
-                    <div style={{ padding: '56px 24px', textAlign: 'center', border: `1px dashed ${C.borderStrong}`, borderRadius: 18, color: C.muted }}>
-                        <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 600, color: C.ink }}>Consulte una orden</div>
-                        <p style={{ margin: '8px 0 0', fontSize: 14.5 }}>Escriba arriba su número de orden o RUC para ver el avance.</p>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-3xl border border-slate-200/90 p-12 text-center max-w-2xl mx-auto shadow-sm"
+                    >
+                        <div className="w-16 h-16 rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center text-brand-blue mx-auto mb-4">
+                            <Package className="w-8 h-8" />
+                        </div>
+                        <h3 className="font-heading font-bold text-xl text-slate-900">
+                            Consulta tu Orden de Trabajo
+                        </h3>
+                        <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
+                            Escribe en el buscador tu número de orden (como figura en tu recibo de abono) o tu identificación para ver el progreso en vivo.
+                        </p>
+                    </motion.div>
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', gap: 24, alignItems: 'start' }}>
-
-                        {/* Timeline */}
-                        <div style={{ border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
-                            <div style={{ padding: '22px 26px', borderBottom: `1px solid ${C.divider}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
-                                <div>
-                                    <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>Orden</div>
-                                    <div style={{ fontFamily: MONO, fontSize: 20, color: C.ink, marginTop: 5 }}>ORD-{String(currentJob.orden).padStart(4, '0')}</div>
-                                    <div style={{ fontSize: 13.5, color: C.muted, marginTop: 5 }}>{currentJob.titular} · recibida {formatDate(currentJob.fechaEntrada)}</div>
-                                </div>
-                                <span style={{ padding: '8px 14px', background: C.chip, color: C.royal, borderRadius: 99, fontSize: 13, fontWeight: 700 }}>{ESTADO_LABEL[currentJob.estado]}</span>
-                            </div>
-
-                            <div style={{ padding: '24px 26px 8px' }}>
-                                {STAGES.map((s, i) => {
-                                    const done = i < idx;
-                                    const current = i === idx;
-                                    const last = i === STAGES.length - 1;
-                                    return (
-                                        <div key={s.estado} style={{ display: 'grid', gridTemplateColumns: '22px 1fr auto', gap: 16, alignItems: 'start' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-                                                <span style={{
-                                                    width: 12, height: 12, borderRadius: 99, flexShrink: 0, marginTop: 4,
-                                                    ...(done ? { background: C.royal } : current ? { background: C.gold, boxShadow: '0 0 0 4px rgba(255,198,26,.28)' } : { background: '#fff', border: `1.5px solid ${C.borderStrong}` }),
-                                                }} />
-                                                {!last && <span style={{ flex: 1, width: 2, background: done ? C.royal : C.border, margin: '4px 0' }} />}
-                                            </div>
-                                            <div style={{ paddingBottom: 22 }}>
-                                                <div style={{ fontSize: 15, fontWeight: 600, color: done ? C.ink : current ? C.royal : C.faint }}>{s.label}</div>
-                                                <div style={{ fontSize: 13, lineHeight: 1.6, color: C.muted, marginTop: 3 }}>{s.detail}</div>
-                                            </div>
-                                            <div style={{ fontSize: 12, color: C.faint, fontFamily: MONO, paddingTop: 2 }}>{current ? 'ahora' : done ? '✓' : '—'}</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arteAprobado && (
-                                <div style={{ padding: '16px 26px', background: '#FFFBEB', borderTop: `1px solid #F4E3A8`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
-                                    <span style={{ fontSize: 13.5, color: '#7A5A00' }}>Su prueba digital está lista. Apruébela para que entre a prensa.</span>
-                                    <button onClick={() => handleAprobarArte(currentJob.id)} style={{ padding: '10px 16px', background: C.royal, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Aprobar diseño</button>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentJob.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="space-y-8"
+                        >
+                            {/* Selector de pedidos si hay varios */}
+                            {foundJobs.length > 1 && (
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 overflow-x-auto">
+                                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap pl-1">
+                                        Tus pedidos ({foundJobs.length}):
+                                    </span>
+                                    {foundJobs.map(j => {
+                                        const isSelected = j.id === currentJob.id;
+                                        return (
+                                            <button
+                                                key={j.id}
+                                                onClick={() => setSelectedJobId(j.id)}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                                                    isSelected
+                                                        ? 'bg-brand-blue text-white shadow-sm'
+                                                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                                }`}
+                                            >
+                                                <span>ORD-{String(j.orden).padStart(4, '0')}</span>
+                                                <span className="text-[10px] opacity-75">· {j.tipo}</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             )}
 
-                            <div style={{ padding: '18px 26px', background: C.bg, borderTop: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: 13.5, color: '#4A5470' }}>Le avisamos por WhatsApp cuando esté listo para retirar.</span>
-                                <a href={waLink(`Hola, quiero preguntar por la orden ORD-${String(currentJob.orden).padStart(4, '0')}.`)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13.5, fontWeight: 600, color: C.royal, textDecoration: 'none' }}>Preguntar por esta orden →</a>
-                            </div>
-                        </div>
+                            {/* Hero Card del Pedido Actual */}
+                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+                                {/* Cabecera de la Orden */}
+                                <div className="p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="font-mono text-amber-400 font-extrabold text-lg sm:text-xl">
+                                                ORD-{String(currentJob.orden).padStart(4, '0')}
+                                            </span>
+                                            <span className="text-xs text-slate-400">· Recibido el {formatDate(currentJob.fechaEntrada)}</span>
+                                        </div>
+                                        <h2 className="font-heading font-extrabold text-2xl text-white mt-1">
+                                            {currentJob.titular}
+                                        </h2>
+                                        <p className="text-xs text-blue-200 mt-1">
+                                            {currentJob.tipo} {currentJob.subtipo ? `· ${currentJob.subtipo}` : ''} ({currentJob.cantidad} unidades/juegos)
+                                        </p>
+                                    </div>
 
-                        {/* Columna derecha */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                            <div style={{ border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
-                                <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.divider}` }}>
-                                    <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>Detalle del trabajo</div>
+                                    {/* Badge de Estado */}
+                                    {config && (
+                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
+                                            <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border shadow-sm ${config.badge}`}>
+                                                {config.label}
+                                            </span>
+                                            <span className="text-[11px] text-slate-400">
+                                                {config.desc}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
-                                <div style={{ padding: '15px 24px', borderBottom: `1px solid ${C.rowLine}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-                                    <span>
-                                        <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600, color: C.ink }}>{currentJob.tipo}</span>
-                                        <span style={{ display: 'block', fontSize: 12.5, color: C.muted, marginTop: 3 }}>{currentJob.subtipo || `${currentJob.cantidad} unidades`}</span>
-                                    </span>
-                                    <span style={{ fontSize: 14, fontFamily: MONO, color: C.ink, whiteSpace: 'nowrap' }}>{formatCurrency(currentJob.total)}</span>
-                                </div>
-                                <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.bg }}>
-                                    <span style={{ fontSize: 11.5, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>Abono recibido</span>
-                                    <span style={{ fontSize: 14, fontFamily: MONO, color: C.success }}>{formatCurrency(currentJob.abono)}</span>
-                                </div>
-                                <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px solid ${C.divider}` }}>
-                                    <span style={{ fontSize: 11.5, letterSpacing: '.14em', textTransform: 'uppercase', color: C.faint }}>Saldo al retirar</span>
-                                    <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 700, color: C.royal }}>{formatCurrency(currentJob.saldo)}</span>
-                                </div>
-                                {currentJob.saldo > 0 && (
-                                    <div style={{ padding: '14px 24px', borderTop: `1px solid ${C.divider}` }}>
-                                        <a href={waLink(`*ORDEN ORD-${String(currentJob.orden).padStart(4, '0')}*\nSaldo por liquidar: ${formatCurrency(currentJob.saldo)}`)} target="_blank" rel="noopener noreferrer"
-                                            style={{ display: 'block', textAlign: 'center', padding: 12, background: C.soft, color: C.royal, borderRadius: 10, fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>
-                                            Coordinar pago por WhatsApp
-                                        </a>
+
+                                {/* Alerta de Aprobación de Arte si aplica */}
+                                {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arte_aprobado && !currentJob.arteAprobado && (
+                                    <div className="p-5 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                                            <div>
+                                                <h4 className="font-bold text-xs sm:text-sm text-amber-900">
+                                                    Tu prueba digital está lista para aprobación
+                                                </h4>
+                                                <p className="text-xs text-amber-700 mt-0.5">
+                                                    Revisa que los textos, numeraciones y RUC estén correctos para enviar a prensa.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <motion.button
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                            onClick={() => handleAprobarArte(currentJob.id)}
+                                            disabled={aprobando}
+                                            className="w-full sm:w-auto px-5 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                                        >
+                                            <Check className="w-4 h-4 text-emerald-400" />
+                                            <span>{aprobando ? 'Aprobando...' : 'Aprobar Diseño para Impresión'}</span>
+                                        </motion.button>
                                     </div>
                                 )}
-                            </div>
 
-                            <div style={{ border: `1px solid ${C.border}`, borderRadius: 18, padding: '22px 24px' }}>
-                                <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>Retiro en el taller</div>
-                                <div style={{ fontSize: 14.5, lineHeight: 1.7, color: C.body, marginTop: 10 }}>Av. Las Palmeras y Calle 4ta<br />Machala · El Oro</div>
-                                <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.rowLine}`, display: 'flex', flexDirection: 'column', gap: 7, fontSize: 13.5, color: C.muted }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Lun – Vie</span><span style={{ color: C.ink, fontWeight: 600 }}>8:00 – 18:00</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Sábado</span><span style={{ color: C.ink, fontWeight: 600 }}>8:00 – 14:00</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Domingo</span><span>Cerrado</span></div>
-                                </div>
-                                <div style={{ display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' }}>
-                                    <a href={waLink('Hola, quiero coordinar el retiro de mi pedido.')} target="_blank" rel="noopener noreferrer" style={{ flex: 1, minWidth: 130, textAlign: 'center', padding: 12, background: C.royal, color: '#fff', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>WhatsApp</a>
-                                    <a href={`tel:+${WA_NUM}`} style={{ flex: 1, minWidth: 130, textAlign: 'center', padding: 12, background: C.soft, color: C.royal, borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Llamar</a>
-                                </div>
-                            </div>
+                                {(currentJob.arte_aprobado || currentJob.arteAprobado) && (
+                                    <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-100 flex items-center gap-2 text-xs font-bold text-emerald-800">
+                                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                        <span>Arte digital verificado y aprobado por el cliente.</span>
+                                    </div>
+                                )}
 
-                            {foundJobs.length > 1 && (
-                                <div style={{ border: `1px solid ${C.border}`, borderRadius: 18, padding: '22px 24px' }}>
-                                    <div style={{ fontSize: 11.5, letterSpacing: '.16em', textTransform: 'uppercase', color: C.faint }}>Sus pedidos</div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: 12 }}>
-                                        {foundJobs.map(j => (
-                                            <button key={j.id} onClick={() => setSelectedJobId(j.id)}
-                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, padding: '12px 0', borderTop: `1px solid ${C.rowLine}`, background: 'transparent', border: 'none', borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: C.rowLine, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', width: '100%' }}>
-                                                <span>
-                                                    <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: j.id === currentJob.id ? C.royal : C.ink }}>{j.subtipo || j.tipo}</span>
-                                                    <span style={{ display: 'block', fontSize: 12, color: C.faint, fontFamily: MONO, marginTop: 2 }}>ORD-{String(j.orden).padStart(4, '0')} · {ESTADO_LABEL[j.estado]}</span>
-                                                </span>
-                                                <span style={{ flexShrink: 0, fontSize: 12.5, color: C.royal, fontWeight: 600 }}>Ver →</span>
-                                            </button>
-                                        ))}
+                                {/* Stepper de Etapas con Framer Motion */}
+                                <div className="p-6 sm:p-8">
+                                    <h3 className="font-mono text-xs uppercase tracking-widest font-bold text-slate-400 mb-6">
+                                        Línea de Producción en Vivo
+                                    </h3>
+
+                                    <div className="space-y-6">
+                                        {STAGES.map((s, idx) => {
+                                            const isDone = idx < stageIndex;
+                                            const isCurrent = idx === stageIndex;
+                                            const isPending = idx > stageIndex;
+
+                                            return (
+                                                <div key={s.estado} className="flex items-start gap-4 sm:gap-6 relative">
+                                                    {/* Línea conectora */}
+                                                    {idx < STAGES.length - 1 && (
+                                                        <div className={`absolute left-4 top-8 -bottom-6 w-0.5 ${
+                                                            isDone ? 'bg-brand-blue' : 'bg-slate-200'
+                                                        }`} />
+                                                    )}
+
+                                                    {/* Punto indicador */}
+                                                    <div className="relative z-10 flex-shrink-0">
+                                                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                                                            isDone
+                                                                ? 'bg-brand-blue text-white shadow-md shadow-brand-blue/30'
+                                                                : isCurrent
+                                                                ? 'bg-amber-400 text-slate-950 ring-4 ring-amber-400/30 font-extrabold'
+                                                                : 'bg-white border-2 border-slate-300 text-slate-400'
+                                                        }`}>
+                                                            {isDone ? '✓' : idx + 1}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Detalles de la etapa */}
+                                                    <div className="flex-1 pb-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className={`text-sm sm:text-base font-bold ${
+                                                                isDone ? 'text-slate-900' : isCurrent ? 'text-brand-blue font-extrabold' : 'text-slate-400'
+                                                            }`}>
+                                                                {s.label}
+                                                            </h4>
+                                                            <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md ${
+                                                                isCurrent ? 'bg-amber-100 text-amber-800' : isDone ? 'text-emerald-700' : 'text-slate-400'
+                                                            }`}>
+                                                                {isCurrent ? 'En Proceso' : isDone ? 'Completado' : 'Pendiente'}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                                            {s.detail}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </section>
 
-            <footer style={{ background: '#fff', borderTop: `1px solid #E9ECF5` }}>
-                <div style={{ maxWidth: 1320, margin: '0 auto', padding: '32px clamp(16px,3vw,44px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <img src="/LOGO.png" alt="" style={{ height: 28, width: 'auto' }} />
-                        <span style={{ fontSize: 13.5, color: C.muted }}>© 2026 Imprenta Córdova · SRI 001-001 · Machala</span>
+                                {/* Bento Financiero & Resumen de Liquidación */}
+                                <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-200">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        {/* Total */}
+                                        <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                                            <span className="text-[11px] font-mono uppercase font-bold text-slate-400 block">Total del Trabajo</span>
+                                            <span className="font-heading font-extrabold text-xl text-slate-900 mt-1 block">
+                                                {formatCurrency(currentJob.total)}
+                                            </span>
+                                        </div>
+
+                                        {/* Abono Recibido */}
+                                        <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                                            <span className="text-[11px] font-mono uppercase font-bold text-slate-400 block">Abono Recibido</span>
+                                            <span className="font-heading font-extrabold text-xl text-emerald-600 mt-1 block">
+                                                {formatCurrency(currentJob.abono)}
+                                            </span>
+                                        </div>
+
+                                        {/* Saldo Pendiente */}
+                                        <div className={`p-4 rounded-2xl border ${
+                                            currentJob.saldo > 0
+                                                ? 'bg-amber-500/10 border-amber-500/30'
+                                                : 'bg-emerald-500/10 border-emerald-500/30'
+                                        }`}>
+                                            <span className="text-[11px] font-mono uppercase font-bold text-slate-600 block">Saldo al Retirar</span>
+                                            <span className={`font-heading font-extrabold text-2xl mt-1 block ${
+                                                currentJob.saldo > 0 ? 'text-brand-blue' : 'text-emerald-700'
+                                            }`}>
+                                                {formatCurrency(currentJob.saldo)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Acciones de WhatsApp y Retiro */}
+                                    <div className="mt-6 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <Clock className="w-4 h-4 text-slate-400" />
+                                            <span>Te avisamos por WhatsApp cuando el trabajo esté empaquetado.</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                                            <a
+                                                href={waLink(`Hola Imprenta Córdova, deseo consultar sobre mi orden ORD-${String(currentJob.orden).padStart(4, '0')} (${currentJob.titular}).`)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all"
+                                            >
+                                                <WhatsAppIcon className="w-4 h-4" />
+                                                <span>Consultar por WhatsApp</span>
+                                            </a>
+                                            <a
+                                                href="tel:+593993083943"
+                                                className="inline-flex items-center justify-center p-2.5 bg-white border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-100 transition-all"
+                                                aria-label="Llamar"
+                                            >
+                                                <Phone className="w-4 h-4" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                )}
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-slate-200 py-8">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+                    <div className="flex items-center gap-3">
+                        <img src="/LOGO.png" alt="Imprenta Córdova" className="h-7 w-auto" />
+                        <span>© 2026 Imprenta Córdova · SRI 001-001 · Machala</span>
                     </div>
-                    <div style={{ display: 'flex', gap: 20 }}>
-                        <a href="/" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Inicio</a>
-                        <a href="/vitrina" style={{ fontSize: 13.5, color: C.body, textDecoration: 'none' }}>Catálogo</a>
+                    <div className="flex gap-4 font-semibold">
+                        <a href="/" className="hover:text-brand-blue">Inicio</a>
+                        <a href="/vitrina" className="hover:text-brand-blue">Catálogo</a>
+                        <a href="tel:+593993083943" className="hover:text-brand-blue">+593 99 308 3943</a>
                     </div>
                 </div>
             </footer>
