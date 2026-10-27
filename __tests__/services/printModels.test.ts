@@ -129,7 +129,15 @@ describe('papel físico y preimpreso', () => {
 
   it('se imprimen SIN preimpreso los modelos para hoja en blanco', () => {
     const sinPreimpreso = TODOS.filter(id => !vaSobrePreimpreso(id));
-    expect(sinPreimpreso.sort()).toEqual(['comercial-arte-completo', 'comercial-moderno', 'sri-arte-completo', 'sri-moderno', 'sri-pc'].sort());
+    expect(sinPreimpreso.sort()).toEqual([
+      'comercial-arte-completo',
+      'comercial-moderno',
+      'nota-arte-completo',
+      'nota-moderna',
+      'sri-arte-completo',
+      'sri-moderno',
+      'sri-pc'
+    ].sort());
   });
 
   it('los modelos sobre preimpreso NO deben redibujar el arte (se duplicaría sobre el papel)', () => {
