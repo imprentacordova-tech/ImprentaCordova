@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
-import { MapPinIcon, PhoneIcon, PrinterIcon, CordovaLogo, ClockIcon, ReceiptIcon, WhatsAppIcon, QrCodeIcon } from '../components/Icons';
+import { MapPinIcon, PhoneIcon, PrinterIcon, CordovaLogo, ClockIcon, ReceiptIcon, WhatsAppIcon, QrCodeIcon, CloseIcon, ArrowLeftIcon } from '../components/Icons';
 
 const ReciboAbonoPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
+    const navigate = useNavigate();
     const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
@@ -23,6 +24,26 @@ const ReciboAbonoPage: React.FC = () => {
             setCliente(clientes.find(c => c.id === currentTrabajo.clienteId) || null);
         }
     }, [trabajoId, trabajos, clientes, dataLoading]);
+
+    const handleCerrar = () => {
+        if (window.opener && window.history.length <= 1) {
+            window.close();
+        } else if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleCerrar();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Mapeo de config para los campos que la plantilla necesita
     const config = {
@@ -54,7 +75,14 @@ const ReciboAbonoPage: React.FC = () => {
     }
 
     if (!trabajo || !cliente) {
-        return <div className="text-center p-10 font-sans text-red-500">No se encontró el trabajo o el cliente.</div>;
+        return (
+            <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-4 text-white">
+                <div className="text-xl font-black">404_RECIBO_NO_ENCONTRADO</div>
+                <button onClick={handleCerrar} className="px-5 py-2 rounded-xl bg-slate-800 text-xs font-bold hover:bg-slate-700">
+                    ← Regresar
+                </button>
+            </div>
+        );
     }
     
     const emissionDate = new Date(trabajo.fechaEntrada);
@@ -82,15 +110,67 @@ const ReciboAbonoPage: React.FC = () => {
                 }
             `}</style>
 
-            <div className="no-print mb-6 flex flex-col items-center gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
-                    <button onClick={() => setIsThermal(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isThermal ? 'bg-[#16309B] text-white shadow-sm' : 'text-slate-600'}`}>Ticket 80mm</button>
-                    <button onClick={() => setIsThermal(false)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!isThermal ? 'bg-[#16309B] text-white shadow-sm' : 'text-slate-600'}`}>Estándar A6</button>
+            {/* Botón flotante accesible de cierre rápido */}
+            <button
+                onClick={handleCerrar}
+                className="no-print fixed top-4 right-4 z-[999] flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xl shadow-red-500/30 transition-all active:scale-95 border border-red-500 cursor-pointer"
+                title="Cerrar vista de recibo (Esc)"
+            >
+                <CloseIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Cerrar (Esc)</span>
+            </button>
+
+            <div className="no-print mb-6 flex flex-col gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm w-full max-w-xl">
+                {/* Cabecera con navegación y botón de cerrar */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={handleCerrar} 
+                            className="p-1.5 hover:bg-slate-100 rounded-xl transition-all text-slate-600"
+                            title="Regresar"
+                        >
+                            <ArrowLeftIcon className="w-4 h-4"/>
+                        </button>
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Recibo de Caja / Abono</span>
+                            <span className="text-xs font-bold text-slate-800">Orden #{String(trabajo.orden).padStart(6, '0')}</span>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={handleCerrar} 
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition-all"
+                        title="Cerrar vista (Esc)"
+                    >
+                        <CloseIcon className="w-3.5 h-3.5" /> Cerrar
+                    </button>
                 </div>
-                <div className="flex gap-2.5 flex-wrap justify-center">
+
+                {/* Selector de formato con etiquetas claras */}
+                <div className="bg-slate-100 p-1 rounded-xl flex gap-1.5 border border-slate-200">
+                    <button 
+                        onClick={() => setIsThermal(true)} 
+                        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            isThermal ? 'bg-white text-[#16309B] shadow-sm font-black' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                    >
+                        <span>🧾 Ticket 80mm</span>
+                        <span className="text-[10px] font-medium text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">Térmica POS • Rápido</span>
+                    </button>
+                    <button 
+                        onClick={() => setIsThermal(false)} 
+                        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            !isThermal ? 'bg-white text-[#16309B] shadow-sm font-black' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                    >
+                        <span>📄 Estándar A6</span>
+                        <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">Media Hoja • Papel Bond</span>
+                    </button>
+                </div>
+
+                <div className="flex gap-2 flex-wrap justify-center pt-1">
                     <button 
                         onClick={handleWhatsAppShare}
-                        className="flex items-center gap-2 bg-[#1B6E3E] hover:bg-[#155C33] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all"
+                        className="flex items-center gap-2 bg-[#1B6E3E] hover:bg-[#155C33] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all"
                     >
                         <WhatsAppIcon className="w-4 h-4" /> Enviar WhatsApp
                     </button>
@@ -102,7 +182,7 @@ const ReciboAbonoPage: React.FC = () => {
                     </button>
                     <button 
                         onClick={() => setIsConsumidorFinal(!isConsumidorFinal)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${isConsumidorFinal ? 'bg-[#16309B] border-[#16309B] text-white' : 'bg-transparent text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${isConsumidorFinal ? 'bg-[#16309B] border-[#16309B] text-white' : 'bg-transparent text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                     >
                         {isConsumidorFinal ? 'Restaurar Cliente' : 'Consumidor Final'}
                     </button>

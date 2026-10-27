@@ -5,7 +5,7 @@ import { Trabajo, Cliente } from '../types';
 import { 
     PrinterIcon, ArrowLeftIcon, ArrowDownTrayIcon, 
     WhatsAppIcon, Loader2Icon, FileTextIcon,
-    CordovaLogo
+    CordovaLogo, CloseIcon
 } from '../components/Icons';
 import html2pdf from 'html2pdf.js';
 import { 
@@ -178,6 +178,26 @@ const ReciboEpson: React.FC = () => {
         email: cloudConfig?.imprentaEmail || 'imprentacordova@gmail.com',
     };
 
+    const handleCerrar = () => {
+        if (window.opener && window.history.length <= 1) {
+            window.close();
+        } else if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleCerrar();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     const handlePrint = () => window.print();
 
     const handleDownloadPDF = async () => {
@@ -303,12 +323,22 @@ const ReciboEpson: React.FC = () => {
                 }
             `}</style>
 
-            {/* BARRA SUPERIOR DE HERRAMIENTAS Y SELECTOR DE LOS 3 MODELOS */}
+            {/* Botón flotante accesible de cierre rápido */}
+            <button
+                onClick={handleCerrar}
+                className="no-print fixed top-4 right-4 z-[999] flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xl shadow-red-500/30 transition-all active:scale-95 border border-red-500 cursor-pointer"
+                title="Cerrar vista de impresión (Esc)"
+            >
+                <CloseIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Cerrar (Esc)</span>
+            </button>
+
+            {/* BARRA SUPERIOR DE HERRAMIENTAS Y SELECTOR DE LOS 4 MODELOS */}
             <header className="no-print w-full max-w-5xl mb-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                         <button 
-                            onClick={() => navigate(-1)} 
+                            onClick={handleCerrar} 
                             className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-600"
                             title="Regresar"
                         >
@@ -370,57 +400,65 @@ const ReciboEpson: React.FC = () => {
                         >
                             <PrinterIcon className="w-4 h-4"/> Imprimir
                         </button>
+
+                        <button 
+                            onClick={handleCerrar} 
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition-all"
+                            title="Cerrar comprobante (Esc)"
+                        >
+                            <CloseIcon className="w-3.5 h-3.5" /> Cerrar
+                        </button>
                     </div>
                 </div>
 
-                {/* SEGMENTED TABS: SELECTOR DE LOS 3 MODELOS COMERCIALES EN 1/4 OFICIO (160 × 110 mm) */}
-                <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 overflow-x-auto">
+                {/* SEGMENTED TABS: SELECTOR DE LOS 4 MODELOS COMERCIALES */}
+                <div className="bg-slate-100 p-1.5 rounded-xl flex items-center gap-1.5 overflow-x-auto border border-slate-200">
                     <button
                         onClick={() => { setModelo('comercial-sobre-preimpreso'); setEsModoContinuo(false); }}
-                        className={`flex-1 min-w-[180px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 min-w-[200px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
                             modelo === 'comercial-sobre-preimpreso' && !esModoContinuo
                                 ? 'bg-white text-[#0f2b48] shadow-sm font-black' 
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                     >
-                        <span>📦 1. Sobre Preimpreso</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">1/4 Oficio</span>
+                        <span className="flex items-center gap-1.5">📦 1. Sobre Preimpreso</span>
+                        <span className="text-[10px] font-medium text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">Solo datos • Talonario 160×110</span>
                     </button>
 
                     <button
                         onClick={() => { setModelo('comercial-arte-completo'); setEsModoContinuo(false); }}
-                        className={`flex-1 min-w-[170px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 min-w-[200px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
                             modelo === 'comercial-arte-completo' && !esModoContinuo
                                 ? 'bg-white text-[#0f2b48] shadow-sm font-black' 
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                     >
-                        <span>📄 2. Clásico Completo</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">Oficial</span>
+                        <span className="flex items-center gap-1.5">📄 2. Clásico Completo</span>
+                        <span className="text-[10px] font-medium text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">Hoja blanca • Arte 1/4 Oficio</span>
                     </button>
 
                     <button
                         onClick={() => { setModelo('comercial-moderno'); setEsModoContinuo(false); }}
-                        className={`flex-1 min-w-[180px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 min-w-[200px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
                             modelo === 'comercial-moderno' && !esModoContinuo
                                 ? 'bg-white text-[#0f2b48] shadow-sm font-black' 
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                     >
-                        <span>✨ 3. Evolución Moderna</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Full Pro</span>
+                        <span className="flex items-center gap-1.5">✨ 3. Evolución Moderna</span>
+                        <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">Con QR • Talonario Pro</span>
                     </button>
 
                     <button
                         onClick={() => { setEsModoContinuo(true); }}
-                        className={`flex-1 min-w-[170px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 min-w-[200px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
                             esModoContinuo
                                 ? 'bg-white text-[#0f2b48] shadow-sm font-black' 
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                     >
-                        <span>🖨️ Continuo Epson</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Doble A5</span>
+                        <span className="flex items-center gap-1.5">🖨️ 4. Continuo Epson</span>
+                        <span className="text-[10px] font-medium text-slate-700 bg-slate-200/70 px-2 py-0.5 rounded-full">Matricial • Doble A5 (216×165)</span>
                     </button>
                 </div>
             </header>

@@ -8,7 +8,8 @@ import {
     Loader2Icon, BoxIcon, ClockIcon, 
     LayersIcon, ShieldCheckIcon, MapPinIcon, PhoneIcon,
     WhatsAppIcon, ReceiptIcon, CheckBadgeIcon,
-    UsersIcon, CalendarDaysIcon, SparklesIcon
+    UsersIcon, CalendarDaysIcon, SparklesIcon,
+    CloseIcon
 } from '../components/Icons';
 import { formatDate, formatCurrency } from '../utils';
 
@@ -18,6 +19,26 @@ const OrdenProduccionPage: React.FC = () => {
     const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
+
+    const handleCerrar = () => {
+        if (window.opener && window.history.length <= 1) {
+            window.close();
+        } else if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleCerrar();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     useEffect(() => {
         if (!trabajoId || dataLoading) return;
@@ -76,12 +97,32 @@ const OrdenProduccionPage: React.FC = () => {
                 }
             `}</style>
 
+            {/* Botón flotante accesible de cierre rápido */}
+            <button
+                onClick={handleCerrar}
+                className="no-print fixed top-4 right-4 z-[999] flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xl shadow-red-500/30 transition-all active:scale-95 border border-red-500 cursor-pointer"
+                title="Cerrar ficha de taller (Esc)"
+            >
+                <CloseIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Cerrar (Esc)</span>
+            </button>
+
             <div className="w-full max-w-[210mm] flex justify-between items-center mb-6 no-print px-6 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-blue-700 transition-colors">
-                    <ArrowLeftIcon className="w-4 h-4"/> Volver
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={handleCerrar} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-blue-700 transition-colors">
+                        <ArrowLeftIcon className="w-4 h-4"/> Volver
+                    </button>
+                    <span className="text-slate-300 mx-1">|</span>
+                    <button 
+                        onClick={handleCerrar} 
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition-all"
+                        title="Cerrar vista (Esc)"
+                    >
+                        <CloseIcon className="w-3.5 h-3.5" /> Cerrar
+                    </button>
+                </div>
                 <button onClick={() => window.print()} className="bg-[#16309B] text-white hover:bg-[#0F2280] px-6 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center gap-2 transition-all">
-                    <PrinterIcon className="w-4 h-4"/> Imprimir Ficha de Taller
+                    <PrinterIcon className="w-4 h-4"/> Imprimir Ficha de Taller (A5)
                 </button>
             </div>
 

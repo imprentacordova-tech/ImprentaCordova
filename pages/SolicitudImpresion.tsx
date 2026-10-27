@@ -4,7 +4,7 @@ import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
-    Loader2Icon, HomeIcon, AlertTriangleIcon
+    Loader2Icon, HomeIcon, AlertTriangleIcon, CloseIcon
 } from '../components/Icons';
 import { supabase } from '../services/supabase';
 import html2pdf from 'html2pdf.js';
@@ -331,6 +331,26 @@ const SolicitudImpresionPage: React.FC = () => {
     );
     const [mostrarGuiaVisual, setMostrarGuiaVisual] = useState<boolean>(true);
     const descriptorModelo = MODELOS[modelo] || MODELOS['sri-sobre-preimpreso'];
+
+    const handleCerrar = () => {
+        if (window.opener && window.history.length <= 1) {
+            window.close();
+        } else if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleCerrar();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     useEffect(() => {
         if (trabajo?.modeloImpresion && !queryParams.get('mode')) {
@@ -1928,15 +1948,34 @@ const SolicitudImpresionPage: React.FC = () => {
                 inyecta sólo cuando la variante NO es la versión PC, que va en A4. */}
             {modelo !== 'sri-pc' && <style>{`@page { size: 160mm 220mm; margin: 0; }`}</style>}
 
+            {/* BOTÓN FLOTANTE RÁPIDO PARA CERRAR VISTA (SIEMPRE ACCESIBLE AL HACER SCROLL) */}
+            <div className="fixed top-4 right-4 z-[999] no-print">
+                <button
+                    onClick={handleCerrar}
+                    className="px-3.5 py-2 rounded-xl bg-[#0A1140]/90 hover:bg-red-600 text-white font-bold text-xs shadow-xl backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Cerrar vista de impresión (Esc)"
+                    aria-label="Cerrar vista de impresión"
+                >
+                    <CloseIcon className="w-3.5 h-3.5" />
+                    <span>Cerrar</span>
+                    <kbd className="hidden sm:inline-block px-1 py-0.5 text-[9px] bg-white/20 rounded font-mono">Esc</kbd>
+                </button>
+            </div>
+
             {/* BARRA SUPERIOR DE CONTROL PREMIUM CON SELECTOR DE FORMATOS */}
             <div className={`w-full ${modelo === 'sri-pc' ? 'max-w-[210mm]' : 'max-w-[175mm]'} flex flex-col gap-3 mb-6 no-print px-5 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm relative z-50`}>
                 <div className="flex justify-between items-center flex-wrap gap-4">
-                    <div className="flex gap-3 items-center">
-                        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-[#16309B] transition-all">
-                            <HomeIcon className="w-4 h-4" /> Dashboard
+                    <div className="flex gap-2.5 items-center">
+                        <button
+                            onClick={handleCerrar}
+                            className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            title="Cerrar vista de impresión (Esc)"
+                        >
+                            <CloseIcon className="w-4 h-4" />
+                            <span>Cerrar</span>
                         </button>
-                        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-[#16309B] transition-all">
-                            <ArrowLeftIcon className="w-4 h-4" /> Volver
+                        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-[#16309B] transition-all px-2.5 py-2 rounded-lg hover:bg-slate-100">
+                            <HomeIcon className="w-4 h-4" /> Dashboard
                         </button>
                     </div>
                     
@@ -1958,69 +1997,77 @@ const SolicitudImpresionPage: React.FC = () => {
                         
                         <button 
                             onClick={() => window.print()} 
-                            className="bg-[#16309B] text-white hover:bg-[#0F2280] px-5 py-2 rounded-xl font-bold text-xs shadow-sm flex items-center gap-2 transition-all"
+                            className="bg-[#16309B] text-white hover:bg-[#0F2280] px-5 py-2 rounded-xl font-bold text-xs shadow-sm flex items-center gap-2 transition-all cursor-pointer"
                         >
                             <PrinterIcon className="w-4 h-4"/> Imprimir Solicitud
                         </button>
                     </div>
                 </div>
 
-                {/* SELECTOR DE LAS 3 VERSIONES SRI Y VERSIÓN PC */}
+                {/* SELECTOR DE LAS 4 VERSIONES CON GUÍAS Y BADGES CLAROS */}
                 <div className="w-full flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 flex-wrap">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mr-1">
-                            Versión SRI:
+                        <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+                            <PrinterIcon className="w-3.5 h-3.5" /> Modo:
                         </span>
+                        
                         <button
                             type="button"
                             onClick={() => setModelo('sri-sobre-preimpreso')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                                 modelo === 'sri-sobre-preimpreso'
                                     ? 'bg-[#0A1A46] text-white shadow-sm ring-2 ring-[#0A1A46]/20'
                                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                             }`}
                             title="Gasta los 10 blocks preimpresos (1000 hojas). Imprime SOLO datos alineados al offset."
                         >
-                            <span>📦</span> 1. Sobre Preimpreso (10 Blocks)
+                            <span>📦</span>
+                            <span>1. Sobre Preimpreso</span>
+                            <span className="text-[10px] font-normal opacity-80 bg-white/20 px-1.5 py-0.2 rounded-full">Solo datos</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setModelo('sri-arte-completo')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                                 modelo === 'sri-arte-completo'
                                     ? 'bg-[#16309B] text-white shadow-sm ring-2 ring-[#16309B]/20'
                                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                             }`}
                             title="Formato clásico oficial idéntico al block para hoja medio oficio en blanco."
                         >
-                            <span>📄</span> 2. Clásico Completo
+                            <span>📄</span>
+                            <span>2. Clásico Completo</span>
+                            <span className="text-[10px] font-normal opacity-80 bg-white/20 px-1.5 py-0.2 rounded-full">Hoja blanca</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setModelo('sri-moderno')}
-                            className={`px-3.5 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                                 modelo === 'sri-moderno'
                                     ? 'bg-gradient-to-r from-[#0A1A46] via-[#10255c] to-[#0A1A46] text-[#FFC61A] border border-[#FFC61A]/50 shadow-md ring-2 ring-[#FFC61A]/30'
                                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                             }`}
                             title="Evolución moderna minimalista elegante full pro con código QR y diseño editorial."
                         >
-                            <span>✨</span> 3. Evolución Moderna (Full Pro)
+                            <span>✨</span>
+                            <span>3. Evolución Moderna</span>
+                            <span className="text-[10px] font-extrabold text-[#FFC61A] bg-black/30 px-1.5 py-0.2 rounded-full">Con QR</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setModelo('sri-pc')}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 cursor-pointer ${
                                 modelo === 'sri-pc'
                                     ? 'bg-slate-800 text-white shadow-sm'
                                     : 'bg-slate-100 hover:bg-slate-200 text-slate-500'
                             }`}
                             title="Versión PC A4 de 2 tickets (Cliente + Taller)"
                         >
-                            <span>💻</span> PC (A4)
+                            <span>💻</span>
+                            <span>PC (A4)</span>
                         </button>
                     </div>
 
@@ -2029,7 +2076,7 @@ const SolicitudImpresionPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setMostrarGuiaVisual(!mostrarGuiaVisual)}
-                                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 border ${
+                                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
                                     mostrarGuiaVisual 
                                         ? 'bg-amber-50 border-amber-300 text-amber-800 shadow-2xs' 
                                         : 'bg-slate-50 border-slate-300 text-slate-500'

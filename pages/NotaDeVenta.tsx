@@ -5,7 +5,8 @@ import { Trabajo, Cliente, TrabajoEstado } from '../types';
 import { formatCurrency, numeroALetras } from '../utils';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, Loader2Icon, 
-    HomeIcon, AlertTriangleIcon, CheckCircleIcon, SparklesIcon, TrophyIcon, ArrowRightIcon
+    HomeIcon, AlertTriangleIcon, CheckCircleIcon, SparklesIcon, TrophyIcon, ArrowRightIcon,
+    CloseIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
@@ -47,6 +48,26 @@ const NotaDeVentaPage: React.FC = () => {
 
     const { width, height } = useWindowSize();
     const [isCelebrationVisible, setIsCelebrationVisible] = useState(false);
+
+    const handleCerrar = () => {
+        if (window.opener && window.history.length <= 1) {
+            window.close();
+        } else if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleCerrar();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Update model if URL changes
     useEffect(() => {
@@ -354,57 +375,78 @@ const NotaDeVentaPage: React.FC = () => {
                 )}
             </AnimatePresence>
 
+            {/* BOTÓN FLOTANTE RÁPIDO PARA CERRAR VISTA (SIEMPRE ACCESIBLE AL HACER SCROLL) */}
+            <div className="fixed top-4 right-4 z-[999] no-print">
+                <button
+                    onClick={handleCerrar}
+                    className="px-3.5 py-2 rounded-xl bg-[#0A1140]/90 hover:bg-red-600 text-white font-bold text-xs shadow-xl backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Cerrar vista de comprobante (Esc)"
+                    aria-label="Cerrar vista de comprobante"
+                >
+                    <CloseIcon className="w-3.5 h-3.5" />
+                    <span>Cerrar</span>
+                    <kbd className="hidden sm:inline-block px-1 py-0.5 text-[9px] bg-white/20 rounded font-mono">Esc</kbd>
+                </button>
+            </div>
+
             {/* TOP BAR / CONTROLES */}
             <div className="w-full max-w-[210mm] flex flex-wrap justify-between items-center mb-6 no-print px-6 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-md gap-3">
                 <div className="flex items-center gap-2">
+                    <button 
+                        onClick={handleCerrar} 
+                        className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                        title="Cerrar comprobante (Esc)"
+                    >
+                        <CloseIcon className="w-3.5 h-3.5" /> Cerrar
+                    </button>
                     <button 
                         onClick={() => navigate('/dashboard')} 
                         className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all"
                     >
                         <HomeIcon className="w-3.5 h-3.5" /> Dashboard
                     </button>
-                    <button 
-                        onClick={() => navigate(-1)} 
-                        className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all"
-                    >
-                        <ArrowLeftIcon className="w-3.5 h-3.5" /> Volver
-                    </button>
                 </div>
 
                 {/* TABS DE LAS 3 VERSIONES */}
-                <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1">
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 flex-wrap">
                     <button
                         onClick={() => setModelo('nota-sobre-preimpreso')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                             modelo === 'nota-sobre-preimpreso'
                                 ? 'bg-[#0f2b48] text-white shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                         title="Para imprimir sobre los blocks físicos ya existentes de la imprenta"
                     >
-                        📄 1. Sobre Preimpreso
+                        <span>📄</span>
+                        <span>1. Sobre Preimpreso</span>
+                        <span className="text-[10px] font-normal opacity-80 bg-white/20 px-1.5 py-0.2 rounded-full">Solo datos</span>
                     </button>
                     <button
                         onClick={() => setModelo('nota-arte-completo')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                             modelo === 'nota-arte-completo'
                                 ? 'bg-[#0f2b48] text-white shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                         title="Formato clásico completo idéntico al offset para hoja en blanco"
                     >
-                        🏛️ 2. Clásico Completo
+                        <span>🏛️</span>
+                        <span>2. Clásico Completo</span>
+                        <span className="text-[10px] font-normal opacity-80 bg-white/20 px-1.5 py-0.2 rounded-full">Hoja blanca</span>
                     </button>
                     <button
                         onClick={() => setModelo('nota-moderna')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                             modelo === 'nota-moderna'
-                                ? 'bg-[#0f2b48] text-white shadow-sm'
+                                ? 'bg-gradient-to-r from-[#0f2b48] to-[#1e3a8a] text-[#FFC61A] shadow-sm border border-[#FFC61A]/40'
                                 : 'text-slate-600 hover:text-slate-900'
                         }`}
                         title="Evolución moderna ejecutiva con QR dinámico y estilo suizo"
                     >
-                        💎 3. Evolución Moderna
+                        <span>💎</span>
+                        <span>3. Evolución Moderna</span>
+                        <span className="text-[10px] font-extrabold text-[#FFC61A] bg-black/30 px-1.5 py-0.2 rounded-full">Con QR</span>
                     </button>
                 </div>
 
