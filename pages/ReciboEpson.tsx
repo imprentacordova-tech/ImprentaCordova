@@ -14,6 +14,7 @@ import {
     resolverModelo, 
     type ModeloImpresion 
 } from '../services/printModels';
+import { CalibradorRegistro, useCalibracion } from '../components/print/CalibradorRegistro';
 
 // ── UTILERÍAS MONETARIAS Y NÚMEROS A LETRAS (ECUADOR) ────────────────────────
 const formatCurrency = (val: number) => 
@@ -98,6 +99,8 @@ const ReciboEpson: React.FC = () => {
     const [esModoContinuo, setEsModoContinuo] = useState<boolean>(() => {
         return queryParams.get('mode') === 'epson-continuo';
     });
+
+    const { calibracion, mover: moverRegistro, restablecer: restablecerRegistro, transform: transformCalibracionValue } = useCalibracion(modelo);
 
     // Control de guía visual de fondo (marca de agua del talonario preimpreso)
     const [mostrarGuiaVisual, setMostrarGuiaVisual] = useState<boolean>(true);
@@ -422,6 +425,16 @@ const ReciboEpson: React.FC = () => {
                 </div>
             </header>
 
+            {/* PANEL DE CALIBRACIÓN DE REGISTRO MECÁNICO (no se imprime) */}
+            <CalibradorRegistro
+                modelo={modelo}
+                nombreModelo={esModoContinuo ? 'Continuo Epson (Doble A5)' : (MODELOS[modelo]?.label || 'Recibo Comercial')}
+                calibracion={calibracion}
+                onMover={moverRegistro}
+                onRestablecer={restablecerRegistro}
+                maxWidth={esModoContinuo ? '216mm' : '160mm'}
+            />
+
             {/* LIENZO DE IMPRESIÓN (CANVAS) */}
             <main className="flex justify-center w-full overflow-auto py-2">
                 <div 
@@ -431,6 +444,7 @@ const ReciboEpson: React.FC = () => {
                         width: esModoContinuo ? '216mm' : '160mm',
                         height: esModoContinuo ? '165mm' : '110mm',
                         boxSizing: 'border-box',
+                        transform: transformCalibracionValue,
                     }}
                 >
                     {esModoContinuo ? (

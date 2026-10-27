@@ -23,6 +23,7 @@ import {
     transformCalibracion,
     type Calibracion,
 } from '../services/registroImpresion';
+import { CalibradorRegistro } from '../components/print/CalibradorRegistro';
 
 /* ============================================================================
  * MEDIO OFICIO 160 × 220 mm — geometría MEDIDA del formulario SRI
@@ -2050,48 +2051,15 @@ const SolicitudImpresionPage: React.FC = () => {
               * sistema. Acá se corre el contenido en milímetros mirando una hoja de prueba
               * hasta que los datos caigan en las casillas. El valor queda guardado por modelo.
               */}
-            <div className="no-print" style={{
-                width: '100%', maxWidth: modelo === 'sri-pc' ? '210mm' : '175mm', margin: '0 auto 14px', padding: '12px 16px',
-                background: esCalibracionCero(calibracion) ? '#FFFFFF' : '#FFFBEB',
-                border: `1px solid ${esCalibracionCero(calibracion) ? '#E4E8F4' : '#F4E3A8'}`,
-                borderRadius: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-            }}>
-                <div style={{ minWidth: 148 }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: '#8A93AE' }}>Registro</div>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0A1140', marginTop: 2, fontFamily: "'JetBrains Mono',monospace" }}>
-                        {describirCalibracion(calibracion)}
-                    </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: '#6B7590' }}>Horizontal</span>
-                    <button type="button" onClick={() => moverRegistro(-PASO_MM, 0)} title={`Mover ${PASO_MM} mm a la izquierda`} style={BTN_REGISTRO}>←</button>
-                    <button type="button" onClick={() => moverRegistro(PASO_MM, 0)} title={`Mover ${PASO_MM} mm a la derecha`} style={BTN_REGISTRO}>→</button>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: '#6B7590' }}>Vertical</span>
-                    <button type="button" onClick={() => moverRegistro(0, -PASO_MM)} title={`Mover ${PASO_MM} mm hacia arriba`} style={BTN_REGISTRO}>↑</button>
-                    <button type="button" onClick={() => moverRegistro(0, PASO_MM)} title={`Mover ${PASO_MM} mm hacia abajo`} style={BTN_REGISTRO}>↓</button>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={restablecerRegistro}
-                    disabled={esCalibracionCero(calibracion)}
-                    style={{
-                        padding: '7px 13px', borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
-                        background: '#FFFFFF', border: '1px solid #D7DDF0',
-                        color: esCalibracionCero(calibracion) ? '#A6AFC8' : '#16309B',
-                        cursor: esCalibracionCero(calibracion) ? 'default' : 'pointer',
-                    }}
-                >Restablecer</button>
-
-                <span style={{ fontSize: 11, color: '#6B7590', flex: 1, minWidth: 220 }}>
-                    Calibración de ajuste fino de a {PASO_MM} mm.
-                    {' '}Guardado para <strong style={{ color: '#0A1140' }}>{descriptorModelo.label}</strong>.
-                </span>
-            </div>
+            {/* CALIBRACIÓN DE REGISTRO (no se imprime) */}
+            <CalibradorRegistro
+                modelo={modelo}
+                nombreModelo={descriptorModelo.label}
+                calibracion={calibracion}
+                onMover={moverRegistro}
+                onRestablecer={restablecerRegistro}
+                maxWidth={modelo === 'sri-pc' ? '210mm' : '175mm'}
+            />
 
             {/* CONTENEDOR EXACTO A4 (2x A5 CON CORTE INDUSTRIAL) */}
             {modelo === 'sri-pc' ? (

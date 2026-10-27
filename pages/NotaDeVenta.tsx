@@ -22,6 +22,7 @@ import {
     vaSobrePreimpreso, 
     type ModeloImpresion 
 } from '../services/printModels';
+import { CalibradorRegistro, useCalibracion } from '../components/print/CalibradorRegistro';
 
 const NotaDeVentaPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
@@ -34,6 +35,7 @@ const NotaDeVentaPage: React.FC = () => {
     const [modelo, setModelo] = useState<ModeloImpresion>(() => 
         modeloDesdeQuery(modeParam, false, true)
     );
+    const { calibracion, mover: moverRegistro, restablecer: restablecerRegistro, transform: transformCalibracionValue } = useCalibracion(modelo);
     const [mostrarGuiaFondo, setMostrarGuiaFondo] = useState(true);
 
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
@@ -459,6 +461,16 @@ const NotaDeVentaPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* PANEL DE CALIBRACIÓN DE REGISTRO MECÁNICO (no se imprime) */}
+            <CalibradorRegistro
+                modelo={modelo}
+                nombreModelo={MODELOS[modelo]?.label || 'Nota de Venta'}
+                calibracion={calibracion}
+                onMover={moverRegistro}
+                onRestablecer={restablecerRegistro}
+                maxWidth="160mm"
+            />
+
             {/* HOJA DE DOCUMENTO — MEDIO OFICIO (160 × 220 mm) */}
             <div
                 id="nota-venta-sheet"
@@ -472,7 +484,8 @@ const NotaDeVentaPage: React.FC = () => {
                     maxWidth: '160mm',
                     maxHeight: '220mm',
                     margin: '0 auto',
-                    position: 'relative'
+                    position: 'relative',
+                    transform: transformCalibracionValue,
                 }}
             >
                 {/* ESTILOS DE IMPRESIÓN EMBEBIDOS */}
