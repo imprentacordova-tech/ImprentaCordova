@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
-import { formatCurrency } from '../utils';
+import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
@@ -82,6 +82,8 @@ const NuevoPedidoPage: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
+    const [createdOrderSummary, setCreatedOrderSummary] = useState<any>(null);
+    const [whatsAppCopied, setWhatsAppCopied] = useState(false);
     const [items, setItems] = useState<any[]>([]);
     const [busqueda, setBusqueda] = useState('');
 
@@ -452,16 +454,80 @@ const NuevoPedidoPage: React.FC = () => {
 
             logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido unificado (${items.length} ítems) para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
             refreshData().catch(() => {});
+            
+            const orderMeta = {
+                id: results[0].id,
+                orden: results[0].orden || results[0].id,
+                clienteNombre: finalCliente.nombre,
+                clienteRuc: finalCliente.ruc || finalCliente.cedula || '9999999999',
+                clienteTelefono: finalCliente.telefono?.[0] || tempClient?.telefono || '',
+                total: desglose.total,
+                abono,
+                saldo: desglose.saldo,
+                esSRI: hasSriItem,
+                items: [...items],
+                fechaEntrega,
+                prioridad,
+                tramiteSri,
+                sriEstablecimiento,
+                sriPuntoEmision,
+                sriActividad,
+            };
+            setCreatedOrderSummary(orderMeta);
             setCreatedTrabajoId(results[0].id);
             setStep(5);
             setTimeout(() => {
-                window.open(hasSriItem ? `/#/solicitud-impresion/${results[0].id}?format=a5` : `/#/recibo-epson/${results[0].id}`, '_blank');
+                try {
+                    window.open(hasSriItem ? `/#/solicitud-impresion/${results[0].id}?format=a5` : `/#/recibo-epson/${results[0].id}`, '_blank');
+                } catch {
+                    // Si el navegador bloquea la ventana emergente, el operador tiene los botones grandes en el paso 5
+                }
             }, 800);
         } catch (err: any) {
             console.error('[NuevoPedido] Error al crear orden:', err);
             setError(err.message || 'Error al procesar la orden.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSendWhatsAppConfirmation = () => {
+        if (!createdOrderSummary) return;
+        const phone = (createdOrderSummary.clienteTelefono || '').replace(/\D/g, '');
+        const idDisplay = createdOrderSummary.orden || createdOrderSummary.id?.substring(0, 8) || 'ORD';
+        const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${idDisplay}`;
+        
+        let msg = '';
+        if (createdOrderSummary.esSRI) {
+            msg = `*IMPRENTA CÓRDOVA · SOLICITUD SRI CONFIRMADA*\n\n` +
+                `Estimado/a *${createdOrderSummary.clienteNombre}*,\n` +
+                `Se ha registrado con éxito su solicitud de autorización de comprobantes SRI:\n` +
+                `📄 *Comprobante:* ${createdOrderSummary.items?.[0]?.nombre || 'Talonarios SRI'}\n` +
+                `🔢 *Orden N°:* ${idDisplay}\n` +
+                `🏢 *Establ.:* ${createdOrderSummary.sriEstablecimiento || '001'} · *Pto. Emisión:* ${createdOrderSummary.sriPuntoEmision || '001'}\n` +
+                `💵 *Total:* ${formatCurrency(createdOrderSummary.total)} | *Abono:* ${formatCurrency(createdOrderSummary.abono)} | *Saldo:* ${formatCurrency(createdOrderSummary.saldo)}\n` +
+                `📅 *Entrega estimada:* ${new Date(createdOrderSummary.fechaEntrega).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })}\n\n` +
+                `🔍 *Rastree su orden en vivo:*\n${trackingUrl}\n\n` +
+                `📍 Imprenta Córdova · Colón e/. Sucre y Av. Rocafuerte · Machala, El Oro`;
+        } else {
+            msg = `*IMPRENTA CÓRDOVA · RECIBO DE ORDEN DE TRABAJO*\n\n` +
+                `Estimado/a *${createdOrderSummary.clienteNombre}*,\n` +
+                `Su orden de trabajo comercial ha sido ingresada a producción:\n` +
+                `📦 *Trabajo:* ${createdOrderSummary.items?.map((it: any) => `${it.cantidad || 1}x ${it.nombre}`).join(', ') || 'Trabajo General'}\n` +
+                `🔢 *Orden N°:* ${idDisplay}\n` +
+                `💵 *Total:* ${formatCurrency(createdOrderSummary.total)} | *Abono:* ${formatCurrency(createdOrderSummary.abono)} | *Saldo:* ${formatCurrency(createdOrderSummary.saldo)}\n` +
+                `📅 *Entrega estimada:* ${new Date(createdOrderSummary.fechaEntrega).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })}\n\n` +
+                `🔍 *Rastree su orden en vivo:*\n${trackingUrl}\n\n` +
+                `📍 Imprenta Córdova · Machala, El Oro`;
+        }
+
+        if (phone && phone.length >= 7) {
+            const url = generateWhatsAppLink(phone, msg);
+            window.open(url, '_blank');
+        } else {
+            navigator.clipboard.writeText(msg);
+            setWhatsAppCopied(true);
+            setTimeout(() => setWhatsAppCopied(false), 3000);
         }
     };
 
@@ -1582,31 +1648,380 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 5: Confirmación de Éxito */}
                             {step === 5 && (
-                                <motion.div key="s5" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={{ ...S.card, padding: '44px 28px', textAlign: 'center' }}>
-                                    <div style={{ width: 52, height: 52, borderRadius: 99, background: C.successBg, border: `1px solid ${C.successBorder}`, color: C.success, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, margin: '0 auto' }}>
-                                        ✓
-                                    </div>
-                                    <div style={{ ...S.colHead, color: C.success, marginTop: 14 }}>Orden guardada en taller</div>
-                                    <h2 style={{ ...S.h1, fontSize: 26, marginTop: 6 }}>Orden #{createdTrabajoId?.substring(0, 8)}</h2>
-                                    <p style={{ ...S.lead, fontSize: 14, maxWidth: 500, margin: '10px auto 0' }}>
-                                        {hasSriItem
-                                            ? 'Se ha generado la solicitud de autorización SRI en formato A5.'
-                                            : 'Se ha enviado la orden de producción a taller y generado el recibo.'}
-                                    </p>
-                                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
-                                        <button style={S.softBtn} onClick={() => navigate('/dashboard')}>
-                                            Ir al Panel Principal
-                                        </button>
-                                        <button style={S.primaryBtn} onClick={() => {
-                                            setStep(1);
-                                            setItems([]);
-                                            setCliente(null);
-                                            setAbono(0);
-                                            setCreatedTrabajoId(null);
+                                <motion.div key="s5" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 900, margin: '0 auto', width: '100%' }}>
+                                    
+                                    {/* Cabecera de Confirmación */}
+                                    <div style={{
+                                        ...S.card,
+                                        padding: '32px 24px',
+                                        textAlign: 'center',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        ...(hasSriItem
+                                            ? { background: 'linear-gradient(135deg, #0A1140 0%, #16309B 100%)', color: '#FFFFFF', border: '2px solid #FFC61A' }
+                                            : { background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', border: `1px solid ${C.borderStrong}` }),
+                                    }}>
+                                        <div style={{
+                                            width: 58,
+                                            height: 58,
+                                            borderRadius: 99,
+                                            background: hasSriItem ? '#FFC61A' : '#10B981',
+                                            color: hasSriItem ? '#0A1140' : '#FFFFFF',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: 28,
+                                            fontWeight: 900,
+                                            margin: '0 auto',
+                                            boxShadow: hasSriItem ? '0 0 24px rgba(255,198,26,0.5)' : '0 0 24px rgba(16,185,129,0.5)',
                                         }}>
-                                            Crear Otra Orden
+                                            ✓
+                                        </div>
+
+                                        <div style={{ marginTop: 14 }}>
+                                            <span style={{
+                                                fontSize: 11,
+                                                fontWeight: 800,
+                                                letterSpacing: '0.08em',
+                                                textTransform: 'uppercase',
+                                                padding: '4px 12px',
+                                                borderRadius: 99,
+                                                background: hasSriItem ? 'rgba(255,198,26,0.2)' : 'rgba(16,185,129,0.2)',
+                                                color: hasSriItem ? '#FFC61A' : '#34D399',
+                                                border: `1px solid ${hasSriItem ? 'rgba(255,198,26,0.5)' : 'rgba(16,185,129,0.5)'}`,
+                                                display: 'inline-block',
+                                            }}>
+                                                {hasSriItem ? '🏛️ SOLICITUD DE AUTORIZACIÓN SRI REGISTRADA' : '💼 ORDEN DE TALLER REGISTRADA'}
+                                            </span>
+                                        </div>
+
+                                        <h2 style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: '#FFFFFF', marginTop: 10, marginBottom: 4 }}>
+                                            Orden #{createdOrderSummary?.orden || createdTrabajoId?.substring(0, 8).toUpperCase()}
+                                        </h2>
+
+                                        <p style={{ fontSize: 13.5, color: hasSriItem ? '#CAD5F5' : '#94A3B8', maxWidth: 560, margin: '6px auto 0', lineHeight: 1.5 }}>
+                                            {hasSriItem
+                                                ? 'La solicitud de autorización tributaria ha sido guardada en base de datos. Utilice los accesos rápidos para imprimir el documento oficial A5 o gestionar el trámite en el portal del SRI.'
+                                                : 'La orden ha sido enviada al taller de impresión y acabado. Utilice los accesos rápidos para imprimir el recibo de caja Epson o la hoja de ruta técnica.'}
+                                        </p>
+                                    </div>
+
+                                    {/* Panel de 2 Columnas: Datos del Pedido & Liquidación */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 16 }}>
+                                        
+                                        {/* Columna Izquierda: Datos del Cliente / Contribuyente */}
+                                        <div style={{ ...S.card, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.rowLine}`, paddingBottom: 8 }}>
+                                                <span style={{ ...S.colHead, fontSize: 11 }}>
+                                                    {hasSriItem ? '🏛️ CONTRIBUYENTE SRI' : '👤 CLIENTE'}
+                                                </span>
+                                                <span style={{ fontSize: 11, fontFamily: MONO, color: C.faint }}>
+                                                    Prioridad: <b style={{ color: createdOrderSummary?.prioridad === 'Urgente' ? C.danger : C.ink }}>{createdOrderSummary?.prioridad || 'Normal'}</b>
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <div style={{ fontSize: 14.5, fontWeight: 800, color: C.ink }}>
+                                                    {createdOrderSummary?.clienteNombre || cliente?.nombre || 'CONSUMIDOR FINAL'}
+                                                </div>
+                                                <div style={{ fontFamily: MONO, fontSize: 12, color: C.royal, fontWeight: 700, marginTop: 2 }}>
+                                                    RUC/CI: {createdOrderSummary?.clienteRuc || cliente?.ruc || cliente?.cedula || '9999999999'}
+                                                </div>
+                                                {createdOrderSummary?.clienteTelefono && (
+                                                    <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>
+                                                        📞 {createdOrderSummary.clienteTelefono}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Ítems del Pedido */}
+                                            <div style={{ marginTop: 2, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                <span style={{ fontSize: 10.5, fontWeight: 700, color: C.faint, textTransform: 'uppercase' }}>Ítems a Producir:</span>
+                                                {(createdOrderSummary?.items || items).map((it: any, idx: number) => (
+                                                    <div key={idx} style={{ padding: '6px 10px', background: C.surfaceAlt, borderRadius: 8, fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${C.border}` }}>
+                                                        <span style={{ fontWeight: 600, color: C.ink }}>
+                                                            {it.esSRI ? '🏛️ ' : '💼 '}{it.cantidad || 1}x {it.nombre}
+                                                        </span>
+                                                        <span style={{ fontFamily: MONO, fontWeight: 700, color: C.royal }}>
+                                                            ${(it.precioFinal || 0).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Si es SRI, mostrar datos de emisión */}
+                                            {hasSriItem && (
+                                                <div style={{ padding: '8px 12px', background: '#FFFDF0', border: `1px solid ${C.goldBorder}`, borderRadius: 10, fontSize: 11.5, color: C.ink, marginTop: 2 }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span>Establecimiento: <b>{createdOrderSummary?.sriEstablecimiento || sriEstablecimiento || '001'}</b></span>
+                                                        <span>Pto. Emisión: <b>{createdOrderSummary?.sriPuntoEmision || sriPuntoEmision || '001'}</b></span>
+                                                    </div>
+                                                    <div style={{ marginTop: 4 }}>
+                                                        <span>Actividad: <b>{createdOrderSummary?.sriActividad || sriActividad || 'General'}</b></span>
+                                                    </div>
+                                                    <div style={{ marginTop: 4, color: C.goldTextStrong, fontWeight: 700 }}>
+                                                        <span>Trámite: {createdOrderSummary?.tramiteSri || tramiteSri}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Columna Derecha: Liquidación Financiera */}
+                                        <div style={{ ...S.card, padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 12 }}>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.rowLine}`, paddingBottom: 8 }}>
+                                                    <span style={{ ...S.colHead, fontSize: 11 }}>💳 LIQUIDACIÓN DE PAGO</span>
+                                                    <span style={{
+                                                        fontSize: 10,
+                                                        fontWeight: 800,
+                                                        padding: '2px 8px',
+                                                        borderRadius: 6,
+                                                        ...((createdOrderSummary?.saldo ?? desglose.saldo) <= 0
+                                                            ? { background: C.successBg, color: C.success, border: `1px solid ${C.successBorder}` }
+                                                            : { background: C.dangerBg, color: C.dangerText, border: `1px solid ${C.dangerBorder}` }),
+                                                    }}>
+                                                        {(createdOrderSummary?.saldo ?? desglose.saldo) <= 0 ? '✓ TOTALMENTE CANCELADO' : '⏳ CON SALDO PENDIENTE'}
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}>
+                                                        <span style={{ color: C.muted }}>Total Orden:</span>
+                                                        <span style={{ fontFamily: DISPLAY, fontSize: 17, fontWeight: 800, color: C.ink }}>
+                                                            {formatCurrency(createdOrderSummary?.total || desglose.total)}
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}>
+                                                        <span style={{ color: C.muted }}>Anticipo / Abono Recibido:</span>
+                                                        <span style={{ fontFamily: MONO, fontSize: 14.5, fontWeight: 700, color: C.successStrong }}>
+                                                            {formatCurrency(createdOrderSummary?.abono || abono)}
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, paddingTop: 7, borderTop: `1px solid ${C.rowLine}` }}>
+                                                        <span style={{ fontWeight: 700, color: C.ink }}>Saldo por Cobrar:</span>
+                                                        <span style={{
+                                                            fontFamily: DISPLAY,
+                                                            fontSize: 21,
+                                                            fontWeight: 900,
+                                                            color: (createdOrderSummary?.saldo ?? desglose.saldo) > 0 ? C.danger : C.successStrong,
+                                                        }}>
+                                                            {formatCurrency(createdOrderSummary?.saldo ?? desglose.saldo)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Fecha prometida de entrega */}
+                                            <div style={{ padding: '8px 12px', background: C.surfaceAlt, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5 }}>
+                                                <span style={{ color: C.muted }}>Promesa de Entrega:</span>
+                                                <span style={{ fontWeight: 700, color: C.ink }}>
+                                                    📅 {new Date(createdOrderSummary?.fechaEntrega || fechaEntrega).toLocaleDateString('es-EC', { weekday: 'short', day: '2-digit', month: 'short' })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Centro de Acciones Inmediatas (Impresión & WhatsApp) */}
+                                    <div style={{ ...S.card, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                            <h3 style={{ ...S.h2, fontSize: 15, margin: 0 }}>Acciones Inmediatas de Mostrador</h3>
+                                            <span style={{ fontSize: 11, color: C.muted }}>Haga clic para abrir o notificar</span>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
+                                            {/* Acción Primaria: Impresión Oficial */}
+                                            {hasSriItem ? (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?format=a5`, '_blank')}
+                                                        style={{
+                                                            padding: '12px 16px',
+                                                            borderRadius: 12,
+                                                            background: 'linear-gradient(135deg, #0A1140 0%, #16309B 100%)',
+                                                            color: '#FFFFFF',
+                                                            border: '1.5px solid #FFC61A',
+                                                            cursor: 'pointer',
+                                                            textAlign: 'left',
+                                                            boxShadow: '0 4px 14px rgba(10,17,64,0.25)',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 3,
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, fontWeight: 800, color: '#FFC61A' }}>
+                                                            <span>🖨️</span> Imprimir Solicitud SRI (A5)
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: '#CAD5F5' }}>
+                                                            Formato oficial reglamentario A5 / Medio Oficio con casillas oficiales.
+                                                        </div>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => window.open(`/#/solicitud-impresion/${createdTrabajoId}?mode=sri-pc`, '_blank')}
+                                                        style={{
+                                                            padding: '12px 16px',
+                                                            borderRadius: 12,
+                                                            background: C.surfaceAlt,
+                                                            color: C.ink,
+                                                            border: `1px solid ${C.borderStrong}`,
+                                                            cursor: 'pointer',
+                                                            textAlign: 'left',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 3,
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: C.royal }}>
+                                                            <span>💻</span> Formato PC (Hoja A4 Doble)
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: C.muted }}>
+                                                            Imprime 2 tickets en una hoja A4 (Copia Cliente + Copia Taller) con corte.
+                                                        </div>
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => window.open(`/#/recibo-epson/${createdTrabajoId}`, '_blank')}
+                                                        style={{
+                                                            padding: '12px 16px',
+                                                            borderRadius: 12,
+                                                            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+                                                            color: '#FFFFFF',
+                                                            border: '1.5px solid #38BDF8',
+                                                            cursor: 'pointer',
+                                                            textAlign: 'left',
+                                                            boxShadow: '0 4px 14px rgba(15,23,42,0.25)',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 3,
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, fontWeight: 800, color: '#38BDF8' }}>
+                                                            <span>🧾</span> Imprimir Recibo Epson / Ticket
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: '#94A3B8' }}>
+                                                            Ticket térmico de 80mm con desglose, abono y saldo pendiente.
+                                                        </div>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => window.open(`/#/orden-produccion/${createdTrabajoId}`, '_blank')}
+                                                        style={{
+                                                            padding: '12px 16px',
+                                                            borderRadius: 12,
+                                                            background: C.surfaceAlt,
+                                                            color: C.ink,
+                                                            border: `1px solid ${C.borderStrong}`,
+                                                            cursor: 'pointer',
+                                                            textAlign: 'left',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 3,
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: C.royal }}>
+                                                            <span>📋</span> Orden de Taller / Producción
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: C.muted }}>
+                                                            Hoja técnica de trabajo para prensistas, guillotinado y empaque.
+                                                        </div>
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {/* Notificación WhatsApp */}
+                                            <button
+                                                type="button"
+                                                onClick={handleSendWhatsAppConfirmation}
+                                                style={{
+                                                    padding: '12px 16px',
+                                                    borderRadius: 12,
+                                                    background: '#F0FDF4',
+                                                    color: '#15803D',
+                                                    border: '1.5px solid #86EFAC',
+                                                    cursor: 'pointer',
+                                                    textAlign: 'left',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 3,
+                                                    position: 'relative',
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#166534' }}>
+                                                    <span>📱</span> {whatsAppCopied ? '¡Texto Copiado!' : 'Notificar por WhatsApp'}
+                                                </div>
+                                                <div style={{ fontSize: 11, color: '#16A34A' }}>
+                                                    {whatsAppCopied ? 'Pegalo en el chat con tu cliente.' : 'Envía mensaje con número de orden, saldo y rastreo en vivo.'}
+                                                </div>
+                                            </button>
+
+                                            {/* Si es SRI: Abrir Portal SRI */}
+                                            {hasSriItem && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => window.open('https://srienlinea.sri.gob.ec/sri-en-linea/inicio/NAT', '_blank')}
+                                                    style={{
+                                                        padding: '12px 16px',
+                                                        borderRadius: 12,
+                                                        background: '#EFF6FF',
+                                                        color: '#1E40AF',
+                                                        border: '1.5px solid #93C5FD',
+                                                        cursor: 'pointer',
+                                                        textAlign: 'left',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: 3,
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#1D4ED8' }}>
+                                                        <span>🌐</span> Abrir Portal SRI en Línea ↗
+                                                    </div>
+                                                    <div style={{ fontSize: 11, color: '#3B82F6' }}>
+                                                        Acceso directo para autorizar preimpresos o consultar vigencias.
+                                                    </div>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Botones de Navegación del Sistema */}
+                                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setStep(1);
+                                                setItems([]);
+                                                setCliente(null);
+                                                setTempClient({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
+                                                setAbono(0);
+                                                setCreatedTrabajoId(null);
+                                                setCreatedOrderSummary(null);
+                                            }}
+                                            style={{ ...S.primaryBtn, padding: '11px 22px', fontSize: 13.5 }}
+                                        >
+                                            ➕ Crear Otra Orden
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/trabajos')}
+                                            style={{ ...S.outlineBtn, padding: '11px 22px', fontSize: 13.5 }}
+                                        >
+                                            📋 Ver en Cola de Trabajos →
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/dashboard')}
+                                            style={{ ...S.softBtn, padding: '11px 22px', fontSize: 13.5 }}
+                                        >
+                                            🏠 Ir al Panel Principal
                                         </button>
                                     </div>
+
                                 </motion.div>
                             )}
                         </AnimatePresence>

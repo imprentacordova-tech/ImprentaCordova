@@ -93,9 +93,11 @@ const App: React.FC = () => {
           {/* Internal Print Views (No Layout) */}
           <Route path="/nota-de-venta/:trabajoId" element={<NotaDeVentaPage />} />
           <Route path="/solicitud-impresion/:trabajoId" element={<SolicitudImpresionPage />} />
+          <Route path="/solicitud-impresion" element={<SolicitudImpresionPage />} />
           <Route path="/orden-produccion/:trabajoId" element={<OrdenProduccionPage />} />
           <Route path="/recibo-abono/:trabajoId" element={<ReciboAbonoPage />} />
           <Route path="/recibo-epson/:trabajoId" element={<ReciboEpsonPage />} />
+          <Route path="/recibo-epson" element={<ReciboEpsonPage />} />
           <Route path="/recibo-comercial/:trabajoId" element={<ReciboEpsonPage />} />
 
           {/* Protected Administration Routes */}
