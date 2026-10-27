@@ -606,20 +606,51 @@ const NuevoPedidoPage: React.FC = () => {
                                     : <>Paso <strong style={{ color: C.ink }}>{step}</strong> de {TOTAL_PASOS} · {STEP_CONFIG[step - 1]?.subtitle}</>}
                             </div>
                             {/*
-                              * Las dos ramas del camino producen documentos DISTINTOS: una orden con
-                              * comprobantes SRI termina en una solicitud de autorización A5, y una
-                              * comercial en un recibo. Que se vea desde el arranque evita que el
-                              * operador descubra al final que no era el comprobante que esperaba.
+                              * Enmarcado explícito: Diferenciación legal entre Comprobantes SRI (Tax)
+                              * y Trabajos Comerciales de imprenta.
                               */}
                             <div style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 8, padding: '4px 10px',
-                                borderRadius: 99, fontSize: 11, fontWeight: 700,
+                                display: 'inline-flex', alignItems: 'center', gap: 10, marginTop: 10, padding: '7px 14px',
+                                borderRadius: 12, flexWrap: 'wrap',
                                 ...(hasSriItem
-                                    ? { background: C.goldBg, color: C.goldText, border: `1px solid ${C.goldBorder}` }
-                                    : { background: C.chipBlue, color: C.royal, border: `1px solid ${C.borderStrong}` }),
+                                    ? {
+                                        background: 'linear-gradient(135deg, #0A1140 0%, #16309B 100%)',
+                                        color: '#FFFFFF',
+                                        border: '1.5px solid #FFC61A',
+                                        boxShadow: '0 4px 14px -3px rgba(255,198,26,0.35)',
+                                    }
+                                    : {
+                                        background: '#F0F4FF',
+                                        color: C.ink,
+                                        border: `1.5px solid ${C.borderStrong}`,
+                                    }),
                             }}>
-                                <span style={{ width: 6, height: 6, borderRadius: 99, flexShrink: 0, background: hasSriItem ? C.gold : C.royal }} />
-                                {hasSriItem ? 'Comprobantes SRI → Solicitud de Impresión (A5)' : 'Trabajo comercial → Recibo de caja'}
+                                <span style={{
+                                    fontSize: 16, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: hasSriItem ? 'rgba(255,198,26,0.25)' : '#FFFFFF',
+                                    border: hasSriItem ? '1px solid rgba(255,198,26,0.5)' : `1px solid ${C.border}`,
+                                }}>
+                                    {hasSriItem ? '🏛️' : '💼'}
+                                </span>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                        <strong style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: hasSriItem ? '#FFC61A' : C.royal }}>
+                                            {hasSriItem ? 'Trámite Fiscal: Comprobante Autorizado SRI (Tax)' : 'Trabajo Comercial / Publicitario General'}
+                                        </strong>
+                                        <span style={{
+                                            fontSize: 9.5, fontWeight: 800, padding: '1px 6px', borderRadius: 4,
+                                            background: hasSriItem ? '#FFC61A' : C.royal,
+                                            color: hasSriItem ? '#0A1140' : '#FFFFFF',
+                                        }}>
+                                            {hasSriItem ? 'EXENTO IVA SRI' : '+15% IVA'}
+                                        </span>
+                                    </div>
+                                    <span style={{ fontSize: 11, color: hasSriItem ? '#CAD5F5' : C.muted, display: 'block', marginTop: 1 }}>
+                                        {hasSriItem
+                                            ? 'Emite: Solicitud Oficial de Autorización SRI (A5 / Medio Oficio) · Requiere RUC y secuencia legal'
+                                            : 'Emite: Recibo de Caja y Ticket de Taller · Sin requerimientos fiscales'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <span style={{ fontSize: 11, color: C.faint }}>
@@ -793,6 +824,119 @@ const NuevoPedidoPage: React.FC = () => {
                                                 </div>
                                             )}
                                             
+                                            {/* Selector / Enmarcado Dual de Entrada: Comprobantes SRI (Tax) vs. Trabajos Comerciales */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+                                                {/* Rama 1: Documentos Autorizados por el SRI */}
+                                                <div
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onClick={() => setFiltroCat(filtroCat === 'Comprobantes SRI' ? 'Todos' : 'Comprobantes SRI')}
+                                                    style={{
+                                                        padding: '16px 18px',
+                                                        borderRadius: 14,
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                                        background: filtroCat === 'Comprobantes SRI'
+                                                            ? 'linear-gradient(135deg, #0A1140 0%, #16309B 100%)'
+                                                            : '#FFFFFF',
+                                                        border: `2px solid ${filtroCat === 'Comprobantes SRI' ? '#FFC61A' : '#E2E8F0'}`,
+                                                        color: filtroCat === 'Comprobantes SRI' ? '#FFFFFF' : C.ink,
+                                                        boxShadow: filtroCat === 'Comprobantes SRI' ? '0 8px 24px -6px rgba(10,17,64,0.35)' : '0 2px 8px rgba(10,17,64,0.03)',
+                                                        position: 'relative',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                        <span style={{ fontSize: 24 }}>🏛️</span>
+                                                        <span style={{
+                                                            fontSize: 10,
+                                                            fontWeight: 900,
+                                                            letterSpacing: '.12em',
+                                                            textTransform: 'uppercase',
+                                                            padding: '3px 8px',
+                                                            borderRadius: 6,
+                                                            background: filtroCat === 'Comprobantes SRI' ? '#FFC61A' : C.goldBg,
+                                                            color: filtroCat === 'Comprobantes SRI' ? '#0A1140' : C.goldTextStrong,
+                                                            border: `1px solid ${C.goldBorder}`,
+                                                        }}>
+                                                            DOCUMENTO TRIBUTARIO SRI (TAX)
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 800 }}>
+                                                        Comprobantes Autorizados SRI
+                                                    </div>
+                                                    <div style={{ fontSize: 12, marginTop: 4, lineHeight: 1.45, color: filtroCat === 'Comprobantes SRI' ? '#CAD5F5' : C.muted }}>
+                                                        Facturas, Notas de Venta RIMPE, Liquidaciones y Guías. Requieren RUC y emiten <strong>Solicitud de Autorización de Impresión</strong> oficial (Sin IVA).
+                                                    </div>
+                                                    <div style={{ marginTop: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 7px', borderRadius: 5, background: filtroCat === 'Comprobantes SRI' ? 'rgba(255,255,255,0.18)' : '#F1F5F9' }}>
+                                                            ✓ RUC 13 dígitos
+                                                        </span>
+                                                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 7px', borderRadius: 5, background: filtroCat === 'Comprobantes SRI' ? 'rgba(255,255,255,0.18)' : '#F1F5F9' }}>
+                                                            ✓ Secuencia Auditada
+                                                        </span>
+                                                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 7px', borderRadius: 5, background: filtroCat === 'Comprobantes SRI' ? 'rgba(255,255,255,0.18)' : '#F1F5F9' }}>
+                                                            ✓ Solicitud A5
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Rama 2: Trabajos Comerciales y Publicitarios */}
+                                                <div
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onClick={() => setFiltroCat(filtroCat === 'Papelería Comercial' ? 'Todos' : 'Papelería Comercial')}
+                                                    style={{
+                                                        padding: '16px 18px',
+                                                        borderRadius: 14,
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                                        background: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos'
+                                                            ? 'linear-gradient(135deg, #1E293B 0%, #334155 100%)'
+                                                            : '#FFFFFF',
+                                                        border: `2px solid ${filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? C.royal : '#E2E8F0'}`,
+                                                        color: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? '#FFFFFF' : C.ink,
+                                                        boxShadow: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? '0 8px 24px -6px rgba(30,41,59,0.35)' : '0 2px 8px rgba(10,17,64,0.03)',
+                                                        position: 'relative',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                        <span style={{ fontSize: 24 }}>💼</span>
+                                                        <span style={{
+                                                            fontSize: 10,
+                                                            fontWeight: 900,
+                                                            letterSpacing: '.12em',
+                                                            textTransform: 'uppercase',
+                                                            padding: '3px 8px',
+                                                            borderRadius: 6,
+                                                            background: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? '#60A5FA' : C.chipBlue,
+                                                            color: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? '#0F172A' : C.royal,
+                                                            border: `1px solid ${C.borderStrong}`,
+                                                        }}>
+                                                            USO COMERCIAL Y PUBLICITARIO
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 800 }}>
+                                                        Papelería Comercial & Publicidad
+                                                    </div>
+                                                    <div style={{ fontSize: 12, marginTop: 4, lineHeight: 1.45, color: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? '#E2E8F0' : C.muted }}>
+                                                        Recibos de cobro, notas de pedido, comandas, volantes, tarjetas, lonas y sellos. No requieren trámite ante el SRI y emiten <strong>Recibo de Taller</strong> (+15% IVA).
+                                                    </div>
+                                                    <div style={{ marginTop: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 7px', borderRadius: 5, background: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? 'rgba(255,255,255,0.18)' : '#F1F5F9' }}>
+                                                            ✓ Consumidor Final o Cédula
+                                                        </span>
+                                                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 7px', borderRadius: 5, background: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? 'rgba(255,255,255,0.18)' : '#F1F5F9' }}>
+                                                            ✓ Sin Trámite Fiscal
+                                                        </span>
+                                                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 7px', borderRadius: 5, background: filtroCat === 'Papelería Comercial' || filtroCat === 'Publicidad & Sellos' ? 'rgba(255,255,255,0.18)' : '#F1F5F9' }}>
+                                                            ✓ Recibo de Caja
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             {/* Barra de Búsqueda Inteligente */}
                                             <div style={{ position: 'relative', width: '100%' }}>
                                                 <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: C.faint }}>
@@ -872,25 +1016,27 @@ const NuevoPedidoPage: React.FC = () => {
                                                                 textAlign: 'left',
                                                                 padding: '16px 18px',
                                                                 borderRadius: 14,
-                                                                border: `1px solid ${C.border}`,
-                                                                background: C.surface,
+                                                                border: `1.5px solid ${p.esSRI ? C.goldBorder : C.border}`,
+                                                                borderLeft: p.esSRI ? `5px solid ${C.gold}` : `5px solid ${C.royal}`,
+                                                                background: p.esSRI ? '#FFFCF2' : C.surface,
                                                                 cursor: 'pointer',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
                                                                 justifyContent: 'space-between',
-                                                                minHeight: 110,
+                                                                minHeight: 120,
                                                                 transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
                                                                 boxShadow: '0 2px 4px rgba(10,17,64,0.02)',
                                                             }}
                                                             onMouseEnter={(e) => {
-                                                                e.currentTarget.style.borderColor = C.royal;
-                                                                e.currentTarget.style.background = C.surfaceAlt;
+                                                                e.currentTarget.style.borderColor = p.esSRI ? C.gold : C.royal;
+                                                                e.currentTarget.style.background = p.esSRI ? '#FFF9E6' : C.surfaceAlt;
                                                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                                                 e.currentTarget.style.boxShadow = '0 8px 20px -6px rgba(10,17,64,0.08)';
                                                             }}
                                                             onMouseLeave={(e) => {
-                                                                e.currentTarget.style.borderColor = C.border;
-                                                                e.currentTarget.style.background = C.surface;
+                                                                e.currentTarget.style.borderColor = p.esSRI ? C.goldBorder : C.border;
+                                                                e.currentTarget.style.borderLeft = p.esSRI ? `5px solid ${C.gold}` : `5px solid ${C.royal}`;
+                                                                e.currentTarget.style.background = p.esSRI ? '#FFFCF2' : C.surface;
                                                                 e.currentTarget.style.transform = 'translateY(0)';
                                                                 e.currentTarget.style.boxShadow = '0 2px 4px rgba(10,17,64,0.02)';
                                                             }}
@@ -899,22 +1045,34 @@ const NuevoPedidoPage: React.FC = () => {
                                                                 <span style={{
                                                                     fontSize: 10,
                                                                     fontWeight: 800,
-                                                                    padding: '3px 7px',
+                                                                    padding: '3px 8px',
                                                                     borderRadius: 6,
                                                                     background: p.esSRI ? C.goldBg : C.chipBlue,
                                                                     color: p.esSRI ? C.goldTextStrong : C.royal,
                                                                     border: `1px solid ${p.esSRI ? C.goldBorder : '#D7DDF0'}`,
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 4
                                                                 }}>
-                                                                    {p.tag}
+                                                                    <span>{p.esSRI ? '🏛️' : '💼'}</span>
+                                                                    <span>{p.esSRI ? 'AUTORIZADO SRI / TAX' : 'COMERCIAL'}</span>
                                                                 </span>
-                                                                <span style={{ fontFamily: MONO, fontSize: 13.5, fontWeight: 700, color: C.royal }}>
-                                                                    ${p.precio.toFixed(2)}
-                                                                </span>
+                                                                <div style={{ textAlign: 'right' }}>
+                                                                    <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 800, color: C.royal }}>
+                                                                        ${p.precio.toFixed(2)}
+                                                                    </span>
+                                                                    <span style={{ display: 'block', fontSize: 9.5, color: C.faint, fontWeight: 600 }}>
+                                                                        {p.esSRI ? 'Sin IVA' : '+15% IVA'}
+                                                                    </span>
+                                                                </div>
                                                             </div>
-                                                            <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: C.ink, marginTop: 12 }}>
+                                                            <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: C.ink, marginTop: 10 }}>
                                                                 {p.nombre}
                                                             </div>
-                                                            <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, color: C.royal, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                            <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
+                                                                {p.esSRI ? 'Emite Solicitud SRI · Requiere RUC' : 'Uso interno · Recibo de Taller'}
+                                                            </div>
+                                                            <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, color: p.esSRI ? C.goldTextStrong : C.royal, display: 'flex', alignItems: 'center', gap: 4 }}>
                                                                 Configurar detalles →
                                                             </div>
                                                         </button>
@@ -976,7 +1134,33 @@ const NuevoPedidoPage: React.FC = () => {
                             {/* PASO 3: Selección / Registro de Cliente */}
                             {step === 3 && (
                                 <motion.div key="s3" {...animPaso(direccion)} style={{ ...S.card, padding: 20 }}>
-                                    <h2 style={{ ...S.h2, marginBottom: 14 }}>3 · Cliente</h2>
+                                    <div style={{ marginBottom: 16 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                                            <h2 style={{ ...S.h2, margin: 0 }}>
+                                                {hasSriItem ? '3 · Datos del Contribuyente para Solicitud SRI' : '3 · Datos del Cliente para Recibo y Despacho'}
+                                            </h2>
+                                            <span style={{
+                                                fontSize: 10.5,
+                                                fontWeight: 800,
+                                                padding: '3px 8px',
+                                                borderRadius: 6,
+                                                background: hasSriItem ? C.goldBg : C.chipBlue,
+                                                color: hasSriItem ? C.goldTextStrong : C.royal,
+                                                border: `1px solid ${hasSriItem ? C.goldBorder : C.borderStrong}`,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 4
+                                            }}>
+                                                <span>{hasSriItem ? '🏛️' : '💼'}</span>
+                                                <span>{hasSriItem ? 'COMPROBANTE TRIBUTARIO SRI (TAX)' : 'TRABAJO COMERCIAL'}</span>
+                                            </span>
+                                        </div>
+                                        <p style={{ margin: '4px 0 0', fontSize: 12.5, color: C.muted, lineHeight: 1.45 }}>
+                                            {hasSriItem
+                                                ? 'Los datos de RUC, razón social, establecimiento y actividad van impresos en la Solicitud Oficial de Autorización del SRI. Deben coincidir con el certificado vigente del contribuyente.'
+                                                : 'Registro del cliente para orden de taller, notificación por WhatsApp y recibo de caja de mostrador.'}
+                                        </p>
+                                    </div>
                                     <ClientSelector
                                         onSelect={(c) => {
                                             setCliente(c);
@@ -1465,7 +1649,42 @@ const NuevoPedidoPage: React.FC = () => {
                     {/* Sidebar Resumen de la Orden */}
                     {step < 5 && (
                         <div className="w-full lg:sticky lg:top-[88px]" style={{ ...S.card, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            <h3 style={{ ...S.h2, fontSize: 16 }}>Resumen en Vivo</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                                <h3 style={{ ...S.h2, fontSize: 16, margin: 0 }}>Resumen en Vivo</h3>
+                                <span style={{
+                                    fontSize: 9.5,
+                                    fontWeight: 800,
+                                    padding: '2px 7px',
+                                    borderRadius: 6,
+                                    background: hasSriItem ? C.goldBg : C.chipBlue,
+                                    color: hasSriItem ? C.goldTextStrong : C.royal,
+                                    border: `1px solid ${hasSriItem ? C.goldBorder : C.borderStrong}`,
+                                }}>
+                                    {hasSriItem ? '🏛️ SRI / TAX' : '💼 COMERCIAL'}
+                                </span>
+                            </div>
+
+                            {/* Badge de Tipo de Trámite en Sidebar */}
+                            <div style={{
+                                padding: '8px 12px',
+                                borderRadius: 10,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                ...(hasSriItem
+                                    ? { background: 'linear-gradient(135deg, #0A1140 0%, #16309B 100%)', color: '#FFFFFF', border: '1px solid #FFC61A' }
+                                    : { background: C.surfaceAlt, color: C.ink, border: `1px solid ${C.borderStrong}` }),
+                            }}>
+                                <span style={{ fontSize: 16 }}>{hasSriItem ? '🏛️' : '💼'}</span>
+                                <div style={{ fontSize: 11 }}>
+                                    <strong style={{ display: 'block', color: hasSriItem ? '#FFC61A' : C.royal }}>
+                                        {hasSriItem ? 'Comprobante Fiscal SRI' : 'Trabajo Comercial General'}
+                                    </strong>
+                                    <span style={{ fontSize: 10.5, color: hasSriItem ? '#CAD5F5' : C.muted }}>
+                                        {hasSriItem ? 'Requiere RUC · Exento IVA' : 'Sin trámite fiscal · +15% IVA'}
+                                    </span>
+                                </div>
+                            </div>
 
                             {/* Lista de Ítems */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 220, overflowY: 'auto' }}>
@@ -1475,13 +1694,13 @@ const NuevoPedidoPage: React.FC = () => {
                                     </p>
                                 ) : (
                                     items.map((item, idx) => (
-                                        <div key={idx} style={{ padding: '8px 10px', background: C.surfaceAlt, border: `1px solid ${C.border}`, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div key={idx} style={{ padding: '8px 10px', background: C.surfaceAlt, border: `1px solid ${item.esSRI ? C.goldBorder : C.border}`, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ minWidth: 0 }}>
                                                 <div style={{ fontSize: 12.5, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                    {item.nombre}
+                                                    {item.esSRI ? '🏛️ ' : '💼 '}{item.nombre}
                                                 </div>
-                                                <div style={{ fontSize: 11, color: C.faint }}>
-                                                    {item.cantidad || 1} u. {item.esSRI ? '· (Sin IVA SRI)' : '· (+15% IVA)'}
+                                                <div style={{ fontSize: 10.5, color: item.esSRI ? C.goldTextStrong : C.faint, fontWeight: item.esSRI ? 700 : 500, marginTop: 1 }}>
+                                                    {item.cantidad || 1} u. {item.esSRI ? '· (Exento IVA SRI)' : '· (+15% IVA)'}
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1538,6 +1757,20 @@ const NuevoPedidoPage: React.FC = () => {
                                         {formatCurrency(desglose.saldo)}
                                     </span>
                                 </div>
+                            </div>
+
+                            {/* Badge de Documento de Salida */}
+                            <div style={{
+                                padding: '9px 12px',
+                                borderRadius: 9,
+                                background: hasSriItem ? '#FFFDF0' : '#F8FAFC',
+                                border: `1px solid ${hasSriItem ? C.goldBorder : C.borderStrong}`,
+                                textAlign: 'center',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: hasSriItem ? C.goldTextStrong : C.royal,
+                            }}>
+                                <span>{hasSriItem ? '📄 Documento Oficial: Solicitud SRI (A5 / Medio Oficio)' : '🧾 Documento Oficial: Recibo de Caja & Taller'}</span>
                             </div>
 
                             {/* Atajo rápido de entrega */}

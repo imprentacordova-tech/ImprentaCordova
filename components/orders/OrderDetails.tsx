@@ -192,29 +192,73 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             
-            {/* Header del Paso 2 */}
-            <div style={{ ...S.card, padding: '16px 20px' }}>
+            {/* Header del Paso 2 con Enmarcado Contextual SRI / Tax vs Comercial */}
+            <div style={{ ...S.card, padding: '18px 20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
                     <div>
                         <span style={S.eyebrow}>Paso 2 · Proceso de Fabricación</span>
-                        <h2 style={{ ...S.h2, margin: '2px 0 0', fontSize: 18 }}>Especificaciones & Calculadora Dinámica</h2>
+                        <h2 style={{ ...S.h2, margin: '2px 0 0', fontSize: 18 }}>
+                            {esSRI ? 'Especificaciones del Comprobante Fiscal SRI' : 'Especificaciones de Impresión Comercial'}
+                        </h2>
                         <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.faint }}>
-                            Ajusta el tamaño, número de copias y tipo de diseño. Los valores se calculan automáticamente en tiempo real.
+                            {esSRI
+                                ? 'Ajusta tamaño oficial, copias químicas reglamentarias y acabados. Exento de IVA legal para comprobantes SRI.'
+                                : 'Configura formato, tipo de papel, diseño y sustrato para taller. Aplica +15% IVA comercial.'}
                         </p>
                     </div>
-                    {esSRI && (
-                        <span style={{
-                            padding: '4px 10px',
-                            background: C.goldBg,
-                            color: C.goldTextStrong,
-                            border: `1px solid ${C.goldBorder}`,
-                            borderRadius: 7,
-                            fontSize: 11,
-                            fontWeight: 700,
-                        }}>
-                            ⚖️ Comprobante SRI Autorizado
-                        </span>
-                    )}
+                    <span style={{
+                        padding: '5px 12px',
+                        background: esSRI ? C.goldBg : C.chipBlue,
+                        color: esSRI ? C.goldTextStrong : C.royal,
+                        border: `1.5px solid ${esSRI ? C.goldBorder : C.borderStrong}`,
+                        borderRadius: 8,
+                        fontSize: 11.5,
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                    }}>
+                        <span>{esSRI ? '🏛️' : '💼'}</span>
+                        <span>{esSRI ? 'AUTORIZADO SRI / TAX' : 'PRODUCCIÓN COMERCIAL'}</span>
+                    </span>
+                </div>
+
+                {/* Banner de Enmarcado Explicativo */}
+                <div style={{
+                    marginTop: 12,
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    background: esSRI ? 'linear-gradient(135deg, rgba(10,17,64,0.03) 0%, rgba(255,198,26,0.12) 100%)' : '#F8FAFC',
+                    border: `1px solid ${esSRI ? C.goldBorder : C.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    flexWrap: 'wrap',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 18 }}>{esSRI ? '⚖️' : '📐'}</span>
+                        <div style={{ fontSize: 11.5 }}>
+                            <strong style={{ color: esSRI ? C.goldTextStrong : C.royal }}>
+                                {esSRI ? 'Normativa Legal del SRI Aplicable:' : 'Parámetros Libres de Taller:'}
+                            </strong>
+                            <span style={{ display: 'block', color: esSRI ? C.goldText : C.muted, marginTop: 1 }}>
+                                {esSRI
+                                    ? 'Se emitirá la Solicitud Oficial de Autorización A5/Medio Oficio. Los formatos 1/4 y 1/2 oficio usan copias químicas autocopia.'
+                                    : 'No requiere validación del SRI. Puedes definir cualquier formato y papel para recibos, volantes o tarjetas.'}
+                            </span>
+                        </div>
+                    </div>
+                    <span style={{
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        padding: '3px 8px',
+                        borderRadius: 6,
+                        background: esSRI ? '#FFC61A' : C.royal,
+                        color: esSRI ? '#0A1140' : '#FFFFFF',
+                    }}>
+                        {esSRI ? 'EXENTO IVA' : '+15% IVA'}
+                    </span>
                 </div>
             </div>
 
