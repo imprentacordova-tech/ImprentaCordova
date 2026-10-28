@@ -17,6 +17,7 @@ import { calcularPedido, round2 } from '../services/orderPricing';
 import { establecimientosAbiertos } from '../services/establecimientos';
 import { MODELOS, modeloPorDefecto, modelosDe, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
+import { ProductVisual, esProductoTalonario } from '../components/ProductVisual';
 
 /**
  * Nueva Orden Unificada — Sistema "Marino & Oro"
@@ -1110,6 +1111,11 @@ const NuevoPedidoPage: React.FC = () => {
                                                                 e.currentTarget.style.boxShadow = '0 2px 4px rgba(10,17,64,0.02)';
                                                             }}
                                                         >
+                                                            {esProductoTalonario(p.nombre) && (
+                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: '#F7F3EC', padding: '8px 0', marginBottom: 12 }}>
+                                                                    <ProductVisual nombre={p.nombre} esSRI={p.esSRI} width={110} />
+                                                                </div>
+                                                            )}
                                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                                                                 <span style={{
                                                                     fontSize: 10,

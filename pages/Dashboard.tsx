@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Trabajo, TrabajoEstado, User } from '../types';
@@ -24,7 +24,6 @@ import {
     FileTextIcon,
     DollarIcon,
     UsersIcon,
-    RefreshCwIcon,
     PlusIcon,
     SearchIcon,
     PrinterIcon,
@@ -43,7 +42,7 @@ import {
  * - Safe Area insets completos para iPhone y Android.
  */
 
-const containerVariants = {
+const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
@@ -54,7 +53,7 @@ const containerVariants = {
     },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
     hidden: { opacity: 0, y: 14 },
     visible: {
         opacity: 1,
@@ -69,7 +68,7 @@ const DashboardPage: React.FC = () => {
     const auth = useAuth();
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
-    const isAdmin = auth.isAdmin || currentUser?.rol === 'Admin' || currentUser?.rol === 'Administrador' || (currentUser?.rol as string) === 'root';
+    const isAdmin = auth.isAdmin || currentUser?.rol === 'Admin' || (currentUser?.rol as string) === 'root';
     const { trabajos, clientes, loading, realtimeEstado, ultimaSync } = useData();
     const navigate = useNavigate();
 

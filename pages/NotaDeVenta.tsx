@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, Cliente, TrabajoEstado } from '../types';
+import { Trabajo, Cliente, TrabajoEstado, Regimen } from '../types';
 import { formatCurrency, numeroALetras } from '../utils';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, Loader2Icon, 
@@ -95,29 +95,32 @@ const NotaDeVentaPage: React.FC = () => {
                 nombre: name,
                 ruc: ruc,
                 cedula: ruc,
-                telefono: phone,
+                telefono: phone ? [phone] : [],
                 direccion: address,
                 email: searchParams.get('email') || '',
-                totalPedidos: 1,
-                gastoTotal: total,
-                trabajosIds: ['directo'],
-                creadoEn: new Date().toISOString()
+                creadoEn: new Date().toISOString(),
+                regimen: Regimen.GENERAL,
             };
 
             const dummyTrabajo: Trabajo = {
                 id: 'directo',
                 orden: orderNum,
                 clienteId: 'cli-directo',
+                titular: name,
                 tipo: doc,
                 subtipo: searchParams.get('subtipo') || 'Confección gráfica',
                 cantidad: qty,
+                tamano: '1/4 Oficio',
                 total: total,
                 abono: abono,
                 saldo: Math.max(0, total - abono),
                 estado: TrabajoEstado.ENTREGADO,
-                fechaCreacion: new Date().toISOString(),
+                fechaEntrada: new Date().toISOString(),
                 fechaEntrega: new Date().toISOString(),
-                detalles: searchParams.get('detalles') || 'Nota de Venta oficial para liquidación de orden.'
+                detalle: searchParams.get('detalles') || 'Nota de Venta oficial para liquidación de orden.',
+                caduco: false,
+                estadoClave: 'LISTA',
+                imprimirClave: false,
             };
 
             setCliente(dummyCliente);
@@ -230,7 +233,7 @@ const NotaDeVentaPage: React.FC = () => {
             },
             jsPDF: { 
                 unit: 'mm', 
-                format: [160, 220], 
+                format: [160, 220] as [number, number], 
                 orientation: 'portrait' as const,
                 compress: true
             }
@@ -250,7 +253,7 @@ const NotaDeVentaPage: React.FC = () => {
 
     const handleShareWhatsApp = () => {
         if (!trabajo || !cliente) return;
-        const phone = cliente.telefono ? cliente.telefono.replace(/\D/g, '') : '';
+        const phone = cliente.telefono?.[0] ? cliente.telefono[0].replace(/\D/g, '') : '';
         const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${trabajo.orden}`;
         const mensaje = encodeURIComponent(
             `*IMPRENTA CÓRDOVA — NOTA DE VENTA FISCAL*\n\n` +

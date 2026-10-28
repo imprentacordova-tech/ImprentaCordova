@@ -376,7 +376,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     if (!user) return null;
 
-    const isAdmin = user.rol === 'Admin' || user.rol === 'Administrador' || (user.rol as string) === 'root';
+    const isAdmin = user.rol === 'Admin' || (user.rol as string) === 'root';
     const navGroups = useMemo(() => buildNavGroups(isAdmin), [isAdmin]);
 
     const badges = useMemo<Record<string, number>>(() => {

@@ -165,7 +165,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       login,
       logout,
       isAuthenticated: !!user,
-      isAdmin: user?.rol === 'Admin' || user?.rol === 'Administrador' || (user?.rol as string) === 'root',
+      isAdmin: user?.rol === 'Admin' || (user?.rol as string) === 'root',
     }}>
       {children}
     </AuthContext.Provider>

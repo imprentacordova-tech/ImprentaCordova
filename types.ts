@@ -101,6 +101,9 @@ export interface Trabajo {
   detalle?: string;
   observaciones?: string;
   numeracion?: string;
+  /** Inicio/fin del rango de secuencia numérica para comprobantes SRI (solo URL/fallback). */
+  secuenciaInicio?: string;
+  secuenciaFin?: string;
   autorizacion_sri?: string;
   /**
    * Modelo de impresión con el que se produce esta orden (ver `services/printModels.ts`).

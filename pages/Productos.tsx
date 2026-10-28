@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { useData } from '../contexts/DataContext';
 import { ProductManagementModal } from '../components/ProductManagementModal';
+import { ProductVisual } from '../components/ProductVisual';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
@@ -123,7 +124,7 @@ const ProductosPage: React.FC = () => {
                                         <div onClick={() => setViewing(prod)} style={{ height: 140, background: C.softGray, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden' }}>
                                             {prod.imagenUrl
                                                 ? <img src={prod.imagenUrl} alt={prod.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                : <span style={{ color: C.ghost, fontSize: 12 }}>Sin imagen</span>}
+                                                : <ProductVisual nombre={prod.nombre} categoria={prod.categoria} esSRI={prod.esSRI} width={150} />}
                                         </div>
                                         <div style={{ padding: '14px 16px' }}>
                                             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.royal }}>{prod.categoria}</div>
@@ -148,7 +149,7 @@ const ProductosPage: React.FC = () => {
                     <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,17,64,.45)', backdropFilter: 'blur(2px)' }} onClick={() => setViewing(null)} />
                     <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 640, ...S.card, overflow: 'hidden' }}>
                         <div style={{ height: 200, background: C.softGray, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                            {viewing.imagenUrl ? <img src={viewing.imagenUrl} alt={viewing.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: C.ghost }}>Sin imagen</span>}
+                            {viewing.imagenUrl ? <img src={viewing.imagenUrl} alt={viewing.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ProductVisual nombre={viewing.nombre} categoria={viewing.categoria} esSRI={viewing.esSRI} width={200} />}
                         </div>
                         <div style={{ padding: 22 }}>
                             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: C.royal }}>{viewing.categoria}</div>

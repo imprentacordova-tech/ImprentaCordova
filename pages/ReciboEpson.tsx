@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Trabajo, Cliente } from '../types';
+import { Trabajo, Cliente, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowLeftIcon, ArrowDownTrayIcon, 
     WhatsAppIcon, Loader2Icon, FileTextIcon,
@@ -146,6 +146,10 @@ const ReciboEpson: React.FC = () => {
                 observaciones: queryParams.get('detalle') || queryParams.get('notes') || '',
                 creadoPor: 'Operador Taller',
                 responsable: 'Imprenta Córdova',
+                titular: (queryParams.get('name') || queryParams.get('titular') || 'CONSUMIDOR FINAL').toUpperCase(),
+                caduco: false,
+                estadoClave: 'LISTA',
+                imprimirClave: false,
             };
 
             const mockCliente: Cliente = {
@@ -156,7 +160,8 @@ const ReciboEpson: React.FC = () => {
                 telefono: [queryParams.get('phone') || queryParams.get('telefono') || '0993083943'],
                 email: queryParams.get('email') || '',
                 direccion: queryParams.get('direccion') || 'Pasaje, El Oro',
-                fechaRegistro: new Date().toISOString(),
+                creadoEn: new Date().toISOString(),
+                regimen: Regimen.GENERAL,
             };
 
             setTrabajo(mockTrabajo);
@@ -171,7 +176,7 @@ const ReciboEpson: React.FC = () => {
             setTrabajo(current);
             setCliente(clientes.find(c => c.id === current.clienteId) || null);
             if (current.modeloImpresion && !queryParams.get('mode')) {
-                setModelo(current.modeloImpresion);
+                setModelo(resolverModelo(current.modeloImpresion, null, false));
             }
         }
     }, [trabajoId, trabajos, clientes, dataLoading, queryParams]);
@@ -213,7 +218,7 @@ const ReciboEpson: React.FC = () => {
         setIsGenerating(true);
         try {
             const isContinuo = esModoContinuo;
-            const pdfFormat = isContinuo ? [216, 165] : [160, 110];
+            const pdfFormat: [number, number] = isContinuo ? [216, 165] : [160, 110];
             await html2pdf().set({
                 margin: 0,
                 filename: `Recibo-Comercial-${String(trabajo.orden).padStart(6, '0')}.pdf`,

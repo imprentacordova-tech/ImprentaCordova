@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Cliente, Trabajo } from '../types';
+import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
 import { 
     PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
     Loader2Icon, HomeIcon, AlertTriangleIcon, CloseIcon
 } from '../components/Icons';
 import { supabase } from '../services/supabase';
 import html2pdf from 'html2pdf.js';
-import { MODELOS, TRAMITES_SRI, marcadoTramite, resolverModelo, resolverTramite, type TramiteSri } from '../services/printModels';
+import { MODELOS, TRAMITES_SRI, marcadoTramite, resolverModelo, resolverTramite, type TramiteSri, type ModeloImpresion } from '../services/printModels';
 // El mapeo de la fila vive en UN solo lugar (contexts/TrabajosContext.tsx). Antes había una
 // copia local acá que se desincronizaba en silencio.
 import { mapDBTrabajo } from '../contexts/TrabajosContext';
@@ -400,7 +400,7 @@ const SolicitudImpresionPage: React.FC = () => {
 
             setTrabajo({
                 id: 'directo',
-                orden: queryParams.get('orden') || 'SRI-' + Math.floor(100000 + Math.random() * 900000),
+                orden: parseInt(queryParams.get('orden') || '', 10) || Math.floor(100000 + Math.random() * 900000),
                 clienteId: 'directo',
                 titular: (nameParam || 'CONTRIBUYENTE SRI').toUpperCase(),
                 tipo: fallbackDoc,
@@ -418,7 +418,10 @@ const SolicitudImpresionPage: React.FC = () => {
                 actividadSeleccionada: fallbackActividad,
                 fechaEntrada: new Date().toISOString(),
                 fechaEntrega: new Date(Date.now() + 86400000).toISOString(),
-                estado: 'ENTREGADO',
+                estado: TrabajoEstado.ENTREGADO,
+                caduco: false,
+                estadoClave: 'LISTA',
+                imprimirClave: false,
             });
 
             setCliente({
@@ -430,6 +433,8 @@ const SolicitudImpresionPage: React.FC = () => {
                 telefono: queryParams.get('phone') ? [queryParams.get('phone')!] : ['0993083943'],
                 email: queryParams.get('email') || '',
                 actividades: fallbackActividad,
+                creadoEn: new Date().toISOString(),
+                regimen: Regimen.GENERAL,
             });
             setIsRetrying(false);
             return;

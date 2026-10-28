@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       } else {
         chrome.storage.local.set({ cordovaDocType: "1" }); 
+      }
       // Preferred SRI Print Model
       const preferredModel = result.cordova_preferred_print_model || 'sri-sobre-preimpreso';
       modelChips.forEach(chip => {

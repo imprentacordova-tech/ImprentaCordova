@@ -306,7 +306,7 @@ export const TrackingPage: React.FC = () => {
                                 </div>
 
                                 {/* Alerta de Aprobación de Arte si aplica */}
-                                {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arte_aprobado && !currentJob.arteAprobado && (
+                                {currentJob.estado === TrabajoEstado.EN_DISENO && !currentJob.arteAprobado && (
                                     <div className="p-5 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
@@ -333,7 +333,7 @@ export const TrackingPage: React.FC = () => {
                                     </div>
                                 )}
 
-                                {(currentJob.arte_aprobado || currentJob.arteAprobado) && (
+                                {currentJob.arteAprobado && (
                                     <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-100 flex items-center gap-2 text-xs font-bold text-emerald-800">
                                         <CheckCircle className="w-4 h-4 text-emerald-600" />
                                         <span>Arte digital verificado y aprobado por el cliente.</span>
