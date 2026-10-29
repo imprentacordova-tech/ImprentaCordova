@@ -11,7 +11,7 @@ function reglasDeRegimen(regimenStr?: string) {
             nombre: 'RIMPE Negocio Popular',
             comprobante: 'Nota de Venta Simplificada',
             producto: 'Talonario de Notas de Venta (100 juegos)',
-            badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+            badgeColor: 'bg-success-dot/20 text-onink-success border-success-dot/30',
             desc: 'Autorizado a emitir notas de venta sin desglose de IVA.'
         };
     }
@@ -20,7 +20,7 @@ function reglasDeRegimen(regimenStr?: string) {
             nombre: 'RIMPE Emprendedor',
             comprobante: 'Facturas Físicas & Retenciones',
             producto: 'Talonario de Facturas Autorizadas (Original + Copias)',
-            badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+            badgeColor: 'bg-royal/25 text-onink border-white/15',
             desc: 'Emite facturas con tarifa IVA correspondiente.'
         };
     }
@@ -28,7 +28,7 @@ function reglasDeRegimen(regimenStr?: string) {
         nombre: 'Régimen General',
         comprobante: 'Facturas Físicas Autorizadas',
         producto: 'Talonario de Facturas con Copia Autocopiativa',
-        badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+        badgeColor: 'bg-gold/10 text-gold border-gold/30',
         desc: 'Sujeto pasivo con obligación de facturación y retención.'
     };
 }
@@ -73,25 +73,25 @@ export const RucValidatorWidget: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 text-white shadow-2xl relative overflow-hidden"
+            className="bg-ink border border-white/10 rounded-3xl p-6 md:p-8 text-white shadow-2xl relative overflow-hidden"
         >
             {/* Iluminación de fondo */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/20 rounded-full blur-3xl pointer-events-none" />
 
             {/* Cabecera */}
-            <div className="flex items-center justify-between pb-5 border-b border-slate-800 relative z-10">
+            <div className="flex items-center justify-between pb-5 border-b border-white/10 relative z-10">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
+                    <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
                         <ShieldCheck className="w-4 h-4" />
                     </div>
                     <div>
                         <h4 className="font-heading font-bold text-base text-white">
                             Consulta Rápida de RUC
                         </h4>
-                        <p className="text-[11px] text-slate-400">Padrón de Contribuyentes SRI · El Oro</p>
+                        <p className="text-[11px] text-onink-muted">Padrón de Contribuyentes SRI · El Oro</p>
                     </div>
                 </div>
-                <span className="font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/5 text-onink-muted border border-white/15">
                     SRI 001-001
                 </span>
             </div>
@@ -104,13 +104,13 @@ export const RucValidatorWidget: React.FC = () => {
                         onChange={e => setRuc(e.target.value.replace(/\D/g, '').slice(0, 13))}
                         placeholder="Ej: 0701234567001 o cédula"
                         inputMode="numeric"
-                        className="w-full pl-4 pr-10 py-3.5 bg-slate-800/80 border border-slate-700 rounded-xl font-mono text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all"
+                        className="w-full pl-4 pr-10 py-3.5 bg-white/5 border border-white/15 rounded-xl font-mono text-sm text-white placeholder-onink-muted focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold transition-all"
                     />
                     {ruc && (
                         <button
                             type="button"
                             onClick={() => setRuc('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-onink-muted hover:text-white text-xs"
                         >
                             ✕
                         </button>
@@ -121,11 +121,11 @@ export const RucValidatorWidget: React.FC = () => {
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={loading}
-                    className="px-5 py-3.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-amber-400/20 flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-3.5 bg-gold hover:bg-gold-hover text-ink font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-gold/25 flex items-center gap-1.5 disabled:opacity-50"
                 >
                     {loading ? (
                         <>
-                            <span className="w-3.5 h-3.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                            <span className="w-3.5 h-3.5 border-2 border-ink border-t-transparent rounded-full animate-spin" />
                             <span>Buscando...</span>
                         </>
                     ) : (
@@ -144,9 +144,9 @@ export const RucValidatorWidget: React.FC = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5"
+                        className="mt-4 p-4 rounded-xl bg-gold/10 border border-gold/30 text-gold text-xs flex items-start gap-2.5"
                     >
-                        <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                        <AlertTriangle className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
                         <div>{error}</div>
                     </motion.div>
                 )}
@@ -160,23 +160,23 @@ export const RucValidatorWidget: React.FC = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                        className="mt-5 pt-5 border-t border-slate-800 space-y-3.5"
+                        className="mt-5 pt-5 border-t border-white/10 space-y-3.5"
                     >
                         <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                            <span className="text-[11px] font-mono uppercase tracking-wider text-onink-muted">
                                 RUC: <strong className="text-white">{result.ruc}</strong>
                             </span>
                             <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
-                                activo ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                                activo ? 'bg-success-dot/20 text-onink-success border-success-dot/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
                             }`}>
                                 {activo ? '✓ Contribuyente Activo' : '⚠ Inactivo'}
                             </span>
                         </div>
 
                         {/* Razón Social */}
-                        <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700/80">
-                            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Razón Social / Nombre</span>
-                            <span className="font-heading font-bold text-sm text-amber-300 block leading-tight">
+                        <div className="bg-white/5 p-3.5 rounded-xl border border-white/15">
+                            <span className="text-[10px] uppercase font-bold text-onink-muted block mb-1">Razón Social / Nombre</span>
+                            <span className="font-heading font-bold text-sm text-gold block leading-tight">
                                 {result.razon_social}
                             </span>
                         </div>
@@ -185,12 +185,12 @@ export const RucValidatorWidget: React.FC = () => {
                         <div className={`p-3.5 rounded-xl border ${reglas.badgeColor} bg-opacity-20`}>
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                    <Sparkles className="w-3.5 h-3.5 text-gold" />
                                     {reglas.nombre}
                                 </span>
-                                <span className="text-[10px] font-mono text-slate-300">Recomendado</span>
+                                <span className="text-[10px] font-mono text-onink">Recomendado</span>
                             </div>
-                            <p className="text-[11px] text-slate-300 mt-1">
+                            <p className="text-[11px] text-onink mt-1">
                                 Comprobante Legal: <strong className="text-white">{reglas.comprobante}</strong>
                             </p>
                         </div>
@@ -202,7 +202,7 @@ export const RucValidatorWidget: React.FC = () => {
                             href={generateWhatsAppLink('593993083943', `Hola Imprenta Córdova, acabo de validar mi RUC ${result.ruc} (${result.razon_social}) bajo el régimen ${reglas.nombre}. Deseo encargar la impresión de mis documentos autorizados.`)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 transition-all"
+                            className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 bg-success-dot hover:bg-success text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-success-dot/30 transition-all"
                         >
                             <WhatsAppIcon className="w-4 h-4" />
                             <span>Imprimir Talonario para mi RUC</span>
@@ -212,7 +212,7 @@ export const RucValidatorWidget: React.FC = () => {
             </AnimatePresence>
 
             {!result && !error && (
-                <div className="mt-4 text-center py-2 text-[11px] text-slate-500">
+                <div className="mt-4 text-center py-2 text-[11px] text-onink-muted">
                     💡 La consulta no consume saldo ni genera obligaciones tributarias.
                 </div>
             )}

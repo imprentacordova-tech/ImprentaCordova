@@ -1,3 +1,6 @@
+// @vitest-environment jsdom
+// Este archivo usa `renderHook` y `localStorage`, así que necesita DOM. El default del
+// proyecto es `node` (ver vitest.config.ts); el docblock de la línea 1 lo cambia sólo acá.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCalibracion } from '../../components/print/CalibradorRegistro';

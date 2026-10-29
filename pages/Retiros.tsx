@@ -6,8 +6,13 @@ import { Trabajo, TrabajoEstado, User } from '../types';
 import { formatCurrency, formatDate, generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
 import { notifyOrderReadyForPickupEmail } from '../services/emailNotificationService';
+// La definición de "rezagado" y el texto del recordatorio viven en services/recordatorios.ts
+// porque el backend manda el mismo mensaje por correo, solo, cada día. Antes el 48 estaba
+// escrito acá a mano y el texto se armaba en línea: dos copias que se podían separar.
+import { esRezagadoDeRetiro, diasEnVitrina, mensajeRecordatorio } from '../services/recordatorios';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 import ModalDespachoEntrega from '../components/orders/ModalDespachoEntrega';
+import QrScannerModal from '../components/orders/QrScannerModal';
 
 const horasEn = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 3600000));
 const diasEn = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
@@ -29,14 +34,15 @@ const RetirosPage: React.FC = () => {
     const [expressPin, setExpressPin] = useState('');
     const [expressError, setExpressError] = useState<string | null>(null);
     const [foundNonVitrina, setFoundNonVitrina] = useState<Trabajo | null>(null);
+    const [scannerOpen, setScannerOpen] = useState(false);
 
     // Búsqueda express por PIN / QR / Orden / Cédula / Teléfono
-    const handleExpressLookup = (e?: React.FormEvent) => {
+    const handleExpressLookup = (e?: React.FormEvent, pinOverride?: string) => {
         if (e) e.preventDefault();
         setExpressError(null);
         setFoundNonVitrina(null);
 
-        const pin = expressPin.trim().toLowerCase().replace(/^#|^ord-/, '');
+        const pin = (pinOverride ?? expressPin).trim().toLowerCase().replace(/^#|^ord-/, '');
         if (!pin) return;
 
         // 1. Buscar primero en vitrina
@@ -76,6 +82,26 @@ const RetirosPage: React.FC = () => {
         }
     };
 
+    // Extrae el identificador de orden desde el texto de un QR (URL, "orden=X", o el propio N°).
+    const extraerOrden = (texto: string): string => {
+        const limpio = (texto || '').trim();
+        const mUrl = limpio.match(/[?&]orden=([^&\s]+)/i);
+        if (mUrl) return mUrl[1];
+        const mOrden = limpio.match(/orden[=:]\s*([0-9a-zA-Z-]+)/i);
+        if (mOrden) return mOrden[1];
+        const mPin = limpio.match(/(\d{3,})/);
+        if (mPin) return mPin[1];
+        return limpio;
+    };
+
+    // Detectado por la cámara: cierra el escáner y ejecuta la búsqueda express.
+    const handleQrDetect = (texto: string) => {
+        const pin = extraerOrden(texto);
+        setScannerOpen(false);
+        setExpressPin(pin);
+        handleExpressLookup(undefined, pin);
+    };
+
     // Adelantar orden de Proceso a Vitrina para entrega express en mostrador
     const handleAdelantarYEntregar = async (t: Trabajo) => {
         try {
@@ -111,7 +137,7 @@ const RetirosPage: React.FC = () => {
             // Filtro por pestañas
             if (filtro === 'CON_SALDO') return (t.saldo || 0) > 0;
             if (filtro === 'PAGADOS') return (t.saldo || 0) <= 0;
-            if (filtro === 'REZAGADOS') return horasEn(t.fechaEntrada) >= 48;
+            if (filtro === 'REZAGADOS') return esRezagadoDeRetiro(t, Date.now());
 
             return true;
         });
@@ -127,7 +153,7 @@ const RetirosPage: React.FC = () => {
         });
 
         const totalPorCobrar = vitrinaList.reduce((acc, t) => acc + (t.saldo || 0), 0);
-        const rezagados = vitrinaList.filter(t => horasEn(t.fechaEntrada) >= 48).length;
+        const rezagados = vitrinaList.filter(t => esRezagadoDeRetiro(t, Date.now())).length;
         const totalCobradoRetirosHoy = entregadosHoy.reduce((acc, t) => {
             const liquidado = (t.total || 0) - (t.abono || 0);
             return acc + (liquidado > 0 ? liquidado : 0);
@@ -162,11 +188,15 @@ const RetirosPage: React.FC = () => {
             return;
         }
 
-        const saldoMsg = t.saldo > 0
-            ? `Saldo pendiente al retirar: ${formatCurrency(t.saldo)}.`
-            : 'Su pedido se encuentra totalmente pagado.';
-
-        const message = `¡Hola ${cliente.nombre}! 👋 Le saludamos de Imprenta Córdova.\n\nLe informamos que su pedido #${t.orden} (${t.subtipo || t.tipo}) ya está LISTO para retirar en nuestro local.\n\n📍 ${saldoMsg}\n⏰ Horario: Lunes a Viernes 08:30 a 18:30.\n\n¡Le esperamos!`;
+        const message = mensajeRecordatorio(
+            {
+                clienteNombre: cliente.nombre,
+                orden: t.orden,
+                servicio: t.subtipo || t.tipo || 'Impresión de Documentos',
+                saldo: t.saldo || 0,
+            },
+            diasEnVitrina(t, Date.now())
+        );
         window.open(generateWhatsAppLink(cliente.telefono[0], message), '_blank');
     };
 
@@ -221,6 +251,18 @@ const RetirosPage: React.FC = () => {
                                 fontFamily: MONO
                             }}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setScannerOpen(true)}
+                            title="Escanear QR con la cámara"
+                            style={{
+                                padding: '11px 13px', borderRadius: 10, background: 'rgba(255,255,255,0.14)',
+                                border: '1px solid rgba(255,255,255,0.25)', color: '#fff', fontSize: 16, cursor: 'pointer',
+                                fontFamily: 'inherit', flexShrink: 0,
+                            }}
+                        >
+                            📷
+                        </button>
                         <button
                             type="submit"
                             style={{
@@ -323,6 +365,12 @@ const RetirosPage: React.FC = () => {
                         <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 700, letterSpacing: '-.03em', color: metrics.rezagados > 0 ? '#B45309' : C.ink, marginTop: 4 }}>
                             {metrics.rezagados} <span style={{ fontSize: 13, fontWeight: 500, color: C.muted }}>requieren llamada</span>
                         </div>
+                        {/* El aviso automático lo manda el backend por correo a las 48 h y
+                            después insiste cada 7 días. Se dice acá para que el operador
+                            sepa que esos pedidos ya no dependen de que él abra la pantalla. */}
+                        <div style={{ fontSize: 10.5, color: C.faint, marginTop: 5, fontWeight: 600 }}>
+                            El sistema ya les recuerda por correo
+                        </div>
                     </div>
 
                     <div style={{ ...S.card, borderRadius: 14, padding: '14px 18px', borderLeft: `4px solid #0F2B48` }}>
@@ -396,7 +444,7 @@ const RetirosPage: React.FC = () => {
                             const horas = horasEn(t.fechaEntrada);
                             const dias = diasEn(t.fechaEntrada);
                             const pagado = (t.saldo || 0) <= 0;
-                            const esRezagado = horas >= 48;
+                            const esRezagado = esRezagadoDeRetiro(t, Date.now());
 
                             return (
                                 <div
@@ -508,6 +556,13 @@ const RetirosPage: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Escáner QR por cámara */}
+            <QrScannerModal
+                isOpen={scannerOpen}
+                onClose={() => setScannerOpen(false)}
+                onDetect={handleQrDetect}
+            />
 
             {/* Modal de Despacho & Entrega Pro */}
             {selected && (

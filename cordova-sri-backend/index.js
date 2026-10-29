@@ -725,6 +725,266 @@ app.get('/api/v1/trabajos/vitrina-count', requireApiKey, async (req, res) => {
     }
 });
 
+/* ════════════════════════════════════════════════════════════════════════════
+ * RECORDATORIO AUTOMÁTICO DE REZAGADOS
+ *
+ * Un rezagado es un trabajo LISTO (estado "Vitrina") que el cliente no vino a
+ * retirar. Pasadas 48 h se le manda un correo pidiendo el retiro, y no se le
+ * vuelve a escribir hasta que pase una semana.
+ *
+ * Corre acá y no en el navegador porque un recordatorio tiene que salir aunque
+ * nadie tenga el sistema abierto. La pantalla (pages/Retiros.tsx) sigue teniendo
+ * el botón manual de WhatsApp para el caso "el cliente sí contesta el teléfono".
+ *
+ * El umbral NO se reinventa: estos dos números son el espejo de
+ * `services/recordatorios.ts` (UMBRAL_REZAGO_HORAS / HORAS_ENTRE_RECORDATORIOS) y
+ * `__tests__/services/recordatorios.test.ts` falla si dejan de coincidir.
+ * ════════════════════════════════════════════════════════════════════════════ */
+const UMBRAL_REZAGO_HORAS = parseInt(process.env.REZAGO_UMBRAL_HORAS, 10) || 48;
+const HORAS_ENTRE_RECORDATORIOS = parseInt(process.env.REZAGO_INSISTENCIA_HORAS, 10) || 168;
+
+/** Valor de `trabajos.estado` que significa "listo para retirar". */
+const ESTADO_LISTO = 'Vitrina';
+
+const MS_HORA = 3600000;
+
+/** Horas transcurridas desde una fecha ISO. Inválida o nula ⇒ 0. */
+const horasDesde = (iso, ahora = Date.now()) => {
+    const ts = new Date(iso).getTime();
+    if (Number.isNaN(ts)) return 0;
+    return Math.max(0, Math.floor((ahora - ts) / MS_HORA));
+};
+
+/** ¿El cliente ya fue avisado hace tan poco que conviene dejarlo en paz? */
+const yaSeLeAvisoHacePoco = (trabajo, ahora) => {
+    if (!trabajo.recordatorio_enviado_at) return false;
+    const ts = new Date(trabajo.recordatorio_enviado_at).getTime();
+    if (Number.isNaN(ts)) return false;
+    return (ahora - ts) / MS_HORA < HORAS_ENTRE_RECORDATORIOS;
+};
+
+/**
+ * Junta los rezagados con el contacto de su cliente.
+ *
+ * Usa `select=*` a propósito: si la migración `recordatorio_enviado_at` todavía no
+ * corrió, pedir esa columna por nombre devolvería 400 y el recordatorio no saldría
+ * nunca. Con `select=*` el campo simplemente llega `undefined` y se trata como
+ * "nunca avisado".
+ */
+const calcularRezagados = async (ahora = Date.now()) => {
+    const [trabajosRes, clientesRes] = await Promise.all([
+        supabaseRest('GET', `trabajos?estado=eq.${ESTADO_LISTO}&select=*&order=fecha_entrada.asc&limit=500`),
+        supabaseRest('GET', 'clientes?select=id,nombre,email,telefono'),
+    ]);
+
+    const clientesPorId = new Map();
+    for (const c of clientesRes.data || []) clientesPorId.set(c.id, c);
+
+    const filas = [];
+    for (const t of trabajosRes.data || []) {
+        const horas = horasDesde(t.fecha_entrada, ahora);
+        if (horas < UMBRAL_REZAGO_HORAS) continue;
+
+        const cli = clientesPorId.get(t.cliente_id) || null;
+        const email = (cli && cli.email ? String(cli.email) : '').trim();
+        const telefono = Array.isArray(cli?.telefono) && cli.telefono.length > 0 ? cli.telefono[0] : null;
+
+        filas.push({
+            id: t.id,
+            orden: t.orden,
+            cliente: cli?.nombre || t.titular || 'Cliente',
+            email: email || null,
+            telefono,
+            servicio: t.subtipo || t.tipo || 'Impresión de documentos',
+            saldo: Number(t.saldo || 0),
+            horas,
+            dias: Math.floor(horas / 24),
+            ultimoAviso: t.recordatorio_enviado_at || null,
+            // Sin correo no hay automatismo posible: ese caso se resuelve a mano por
+            // WhatsApp, y la pantalla lo muestra aparte.
+            tocaRecordar: Boolean(email) && !yaSeLeAvisoHacePoco(t, ahora),
+            sinContacto: !email && !telefono,
+        });
+    }
+
+    return filas;
+};
+
+const escaparHtml = (texto) =>
+    String(texto == null ? '' : texto)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const dinero = (n) => `$${Number(n || 0).toFixed(2)}`;
+
+/** Cuerpo del correo de recordatorio (mismo texto que el WhatsApp manual). */
+const correoRecordatorio = (fila) => {
+    const saldo = fila.saldo > 0
+        ? `Saldo pendiente al retirar: ${dinero(fila.saldo)}.`
+        : 'Su pedido se encuentra totalmente pagado.';
+
+    const insistencia = fila.dias >= 2
+        ? `<p style="margin:0 0 14px;font-size:14px;color:#3C4763">Ya lleva <strong>${fila.dias} días</strong> esperándole en nuestro estante y no queremos que se quede sin su trabajo.</p>`
+        : '';
+
+    const html = `
+        <div style="font-family:Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:28px;background:#F7F9FF">
+            <div style="background:#0A1140;border-radius:14px 14px 0 0;padding:20px 24px">
+                <p style="margin:0;color:#FFC61A;font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase">Imprenta Córdova</p>
+                <p style="margin:6px 0 0;color:#fff;font-size:19px;font-weight:700">Su pedido está listo para retirar</p>
+            </div>
+            <div style="background:#ffffff;border:1px solid #E4E8F4;border-top:none;border-radius:0 0 14px 14px;padding:24px">
+                <p style="margin:0 0 14px;font-size:15px;color:#0A1140">¡Hola ${escaparHtml(fila.cliente)}!</p>
+                <p style="margin:0 0 14px;font-size:14px;color:#3C4763">
+                    Le recordamos que su pedido <strong>#${escaparHtml(fila.orden)}</strong>
+                    (${escaparHtml(fila.servicio)}) está <strong>LISTO</strong> para retirar en nuestro local.
+                </p>
+                ${insistencia}
+                <p style="margin:0 0 6px;font-size:14px;color:#3C4763">📍 ${escaparHtml(saldo)}</p>
+                <p style="margin:0 0 18px;font-size:14px;color:#3C4763">⏰ Horario: Lunes a Viernes 08:30 a 18:30.</p>
+                <p style="margin:0;font-size:13px;color:#6B7590">Colón entre Sucre y Rocafuerte · Pasaje, El Oro</p>
+            </div>
+        </div>`;
+
+    return {
+        subject: `Su pedido #${fila.orden} está listo para retirar · Imprenta Córdova`,
+        html,
+    };
+};
+
+/** Envía el recordatorio a UN rezagado. Devuelve true si el correo salió. */
+const enviarRecordatorio = async (fila, resendKey, from) => {
+    const { subject, html } = correoRecordatorio(fila);
+
+    await axios.post('https://api.resend.com/emails', {
+        from,
+        to: [fila.email],
+        subject,
+        html,
+    }, {
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        timeout: 15000,
+    });
+
+    // Se marca DESPUÉS de que Resend aceptó el envío: si se marcara antes y el envío
+    // fallara, el cliente quedaría como "avisado" sin haber recibido nada.
+    await supabaseRest('PATCH', `trabajos?id=eq.${encodeURIComponent(fila.id)}`, {
+        recordatorio_enviado_at: new Date().toISOString(),
+    });
+
+    return true;
+};
+
+/** Lista de rezagados para la pantalla (no envía nada). */
+app.get('/api/v1/recordatorios/rezagados', requireApiKey, async (req, res) => {
+    try {
+        const filas = await calcularRezagados();
+        res.json({
+            success: true,
+            umbralHoras: UMBRAL_REZAGO_HORAS,
+            insistenciaHoras: HORAS_ENTRE_RECORDATORIOS,
+            total: filas.length,
+            pendientes: filas.filter(f => f.tocaRecordar).length,
+            rezagados: filas,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Recordatorios Rezagados');
+    }
+});
+
+/** Dispara los recordatorios ahora (botón "recordar a todos" o prueba manual). */
+app.post('/api/v1/recordatorios/rezagados/enviar', requireApiKey, async (req, res) => {
+    try {
+        const resendKey = process.env.RESEND_API_KEY;
+        if (!resendKey) {
+            return res.status(503).json({
+                success: false,
+                error: 'RESEND_API_KEY no está configurada en el servidor: no se puede enviar el recordatorio.',
+            });
+        }
+
+        const from = process.env.RESEND_FROM || 'Imprenta Córdova <onboarding@resend.dev>';
+        const filas = (await calcularRezagados()).filter(f => f.tocaRecordar);
+
+        const enviados = [];
+        const fallidos = [];
+
+        for (const fila of filas) {
+            try {
+                await enviarRecordatorio(fila, resendKey, from);
+                enviados.push({ orden: fila.orden, cliente: fila.cliente, email: fila.email });
+            } catch (e) {
+                console.error('[Recordatorio] falló', fila.orden, e.response?.data || e.message);
+                fallidos.push({ orden: fila.orden, error: e.message });
+            }
+        }
+
+        res.json({
+            success: true,
+            enviados: enviados.length,
+            fallidos: fallidos.length,
+            detalle: enviados,
+            errores: fallidos,
+        });
+    } catch (error) {
+        responderErrorDatos(res, error, 'Recordatorios Enviar');
+    }
+});
+
+/**
+ * Pasada automática.
+ *
+ * Sólo escribe en horario de oficina (08:00–19:00, hora de Ecuador): un correo a las
+ * 3 de la mañana se lee como spam y quema el dominio para todos los envíos.
+ * `REZAGO_CRON_HABILITADO=false` apaga el automatismo sin tocar código.
+ */
+const pasadaDeRecordatorios = async () => {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+
+    const horaEcuador = Number(new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Guayaquil',
+        hour: '2-digit',
+        hour12: false,
+    }).format(new Date()));
+
+    if (horaEcuador < 8 || horaEcuador >= 19) return;
+
+    try {
+        const from = process.env.RESEND_FROM || 'Imprenta Córdova <onboarding@resend.dev>';
+        const filas = (await calcularRezagados()).filter(f => f.tocaRecordar);
+
+        if (filas.length === 0) return;
+
+        let enviados = 0;
+        for (const fila of filas) {
+            try {
+                await enviarRecordatorio(fila, resendKey, from);
+                enviados += 1;
+            } catch (e) {
+                console.error('[Recordatorio automático] falló', fila.orden, e.response?.data || e.message);
+            }
+        }
+        console.log(`[Recordatorio automático] ${enviados}/${filas.length} enviados`);
+    } catch (e) {
+        console.error('[Recordatorio automático] error general', e.response?.data || e.message);
+    }
+};
+
+// Una pasada cada 6 h: suficiente para el ritmo de un taller y barato para el plan
+// gratuito de Resend. La ventana de oficina evita mandar de madrugada.
+let cronRecordatorios = null;
+if (process.env.REZAGO_CRON_HABILITADO !== 'false') {
+    cronRecordatorios = setInterval(pasadaDeRecordatorios, 6 * MS_HORA);
+    // `.unref()` para que el proceso pueda terminar solo en pruebas y despliegues.
+    if (typeof cronRecordatorios.unref === 'function') cronRecordatorios.unref();
+    setTimeout(pasadaDeRecordatorios, 90 * 1000).unref?.();
+}
+
 // ── 404 Handler ──────────────────────────────────────────────────────────
 app.use((req, res) => {
     res.status(404).json({ error: 'Endpoint not found' });

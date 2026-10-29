@@ -188,20 +188,20 @@ Las animaciones ya existen y son correctas (`framer-motion`, `rise`, `blink`, pr
 
 ### P0 — Antes de salir a producción
 1. ✅ Build en verde (ya está).
-2. ✅ Tests en verde (ya está, 144).
+2. ✅ Tests en verde (ya está, 171 en 13 archivos).
 3. Quitar `VITE_GEMINI_API_KEY` de `.env.example` (deriva de seguridad/documentación).
 4. Verificar que en Vercel **no** existan secretos viejos con prefijo `VITE_` (Resend / service_role / Gemini). La `GUIA_DESPLIEGUE` ya lo documenta: rotar lo que se filtró.
 
 ### P1 — Calidad y coherencia (alta prioridad)
 5. Corregir los ~25 errores de tipos de `Dashboard`, `NotaDeVenta`, `ReciboEpson`, `SolicitudImpresion`, `Tracking`.
-6. Migrar `ServiceSelector` (y el resto de piezas oscuras) al tema "Marino & Oro".
+6. ✅ Landing pública migrada al tema "Marino & Oro" (`VisualLanding`, `PublicNavbar`, `CotizadorRapido`, `RucValidatorWidget`). Queda pendiente el resto de piezas oscuras (`ServiceSelector`, `Contact`, `Footer`, `Catalog`).
 7. Unificar `CATALOGO_RAPIDO` y `ServiceSelector` a una sola fuente (`productos`/`MASTER_CATALOG`).
 8. Conectar `ProductVisual` al Paso 1 (catálogo rápido) y al Paso 2 (cantidad/blocks en vivo).
-9. Añadir Cloudflare delante del dominio (gratis, solo DNS).
+9. ✅ Cloudflare documentado paso a paso en `GUIA_DESPLIEGUE_Y_OPERACION.md` → PASO 8 (solo DNS, plan Free; incluye el detalle de no perder los registros de Resend).
 
 ### P2 — Valor operativo (cuando P1 esté listo)
 10. Escáner QR por cámara en Despacho.
-11. Recordatorio automático a rezagados >48 h.
+11. ✅ Recordatorio automático a rezagados >48 h (`services/recordatorios.ts` + cron del backend + migración `20260915`).
 12. Calentamiento del backend de Render (evitar cold-start) o plan de pago mínimo.
 13. Persistencia offline/localStorage auditada en todos los contextos críticos.
 
@@ -209,11 +209,33 @@ Las animaciones ya existen y son correctas (`framer-motion`, `rise`, `blink`, pr
 
 ## 11. Cambios realizados en esta sesión
 
+### Ronda 1 (informe + verificación)
 1. **`sri-chrome-extension/.../popup/popup.js`** — corregida llave `}` faltante en `loadClientConfig()` (desbloquea `tsc`).
 2. **`vitest.config.ts`** — `pool: 'forks'` + `maxWorkers: 1` (los tests pasan de 11 errores de worker a **144/144 OK**).
 3. **`components/ProductVisual.tsx`** — nuevo: ilustración SVG dinámica de talonario (cuaderno con pasta café, taco creciente, N blocks = N cuadernos) + genérico.
-4. **`components/orders/ServiceSelector.tsx`** — conectado `ProductVisual` a las tarjetas del catálogo.
-5. **`pages/Productos.tsx`** — conectado `ProductVisual` a la grilla y al modal (reemplaza "Sin imagen").
-6. **`services/catalogData.ts`** — añadidos Bingo, Rifas y Empastado (comercial) al catálogo maestro.
+4. **`services/catalogData.ts`** — añadidos Bingo, Rifas y Empastado (comercial) al catálogo maestro.
 
-**Verificación final:** `npm run build` → **EXIT 0** · `vitest` → **144/144** · archivos modificados sin nuevos errores de tipo.
+### Ronda 2 (P0/P1 — "DALE CON TODO")
+5. **`.env.example`** — eliminada `VITE_GEMINI_API_KEY` (deriva de seguridad; la clave ahora vive solo en el backend).
+6. **Cero errores de tipos (`tsc --noEmit` → EXIT 0).** Se corrigieron los 28 errores en:
+   - `Dashboard.tsx` — `Variants` de framer-motion tipados, icono `RefreshCwIcon`→`RefreshIcon`, comparación de rol.
+   - `Layout.tsx` / `AuthContext.tsx` — comparación de rol `'Administrador'` (no existe; el canon es `'Admin'`).
+   - `NotaDeVenta.tsx` — `telefono` a `string[]`, `fechaCreacion`→`fechaEntrada`, `detalles`→`detalle`, html2pdf `format` tipado, campos faltantes de `Trabajo`.
+   - `ReciboEpson.tsx` — campos faltantes de `Trabajo`/`Cliente`, `fechaRegistro`→`creadoEn`, `setModelo` con `resolverModelo`, html2pdf tipado.
+   - `SolicitudImpresion.tsx` — import de `ModeloImpresion`/`TrabajoEstado`/`Regimen`, `orden` numérico, estado enum, campos de `Cliente`/`Trabajo`.
+   - `Tracking.tsx` — `arte_aprobado`→`arteAprobado` (camelCase).
+   - `types.ts` — añadidos `secuenciaInicio?` / `secuenciaFin?` (rango de secuencia SRI, opcional).
+7. **`components/orders/ServiceSelector.tsx`** — migrado por completo al tema claro "Marino & Oro" (ya no usa Tailwind oscuro `brand-blue`/`slate`).
+8. **`pages/NuevoPedido.tsx`** — conectado `ProductVisual` a las tarjetas del catálogo rápido del Paso 1 (talonarios se ven como cuaderno).
+9. **`pages/Productos.tsx`** — conectado `ProductVisual` a la grilla y al modal (reemplaza "Sin imagen").
+
+**Verificación final (después de todo):**
+- `npm run build` → **EXIT 0** ✅
+- `vitest` → **144/144 tests** ✅
+- `npx tsc --noEmit` → **0 errores** ✅
+
+### Ronda 3 ("Subir la barra" — pulido premium)
+10. **`components/ProductVisual.tsx` v2** — talonario elevado: lomo cosido, veta de cuero, marco dorado, abanico de hojas con sombra y filo, y **N cuadernos según blocks**. Además, ilustraciones por categoría (tarjetas, sellos, lonas, etiquetas, packaging, merch, publicidad) para que **todo** el catálogo se vea intencional, no solo los talonarios.
+11. **`components/orders/QrScannerModal.tsx`** — escáner de código QR por cámara (API nativa `BarcodeDetector` + `getUserMedia`, sin dependencias) con marco de enfoque y guía de error honesta.
+12. **`pages/Retiros.tsx`** — botón 📷 en el buscador express del Despacho; al detectar el QR extrae el N° de orden (URL, `orden=X` o dígitos) y ejecuta la búsqueda/adelanto en un clic.
+13. **`components/ProductManagementModal.tsx`** — vista previa viva: sin foto muestra la ilustración dinámica del producto que se está editando (talonario → cuaderno).

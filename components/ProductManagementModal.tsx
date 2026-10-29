@@ -9,6 +9,7 @@ import {
 } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uploadFile } from '../services/supabase';
+import { ProductVisual } from './ProductVisual';
 
 const SIZES = ["1/8 Oficio", "1/4 Oficio", "1/2 Oficio", "Oficio"];
 const PRESENTATIONS = [
@@ -230,11 +231,13 @@ export const ProductManagementModal: React.FC<{
                                             }}
                                         />
                                     </div>
-                                    {baseProduct.imagenUrl && (
-                                        <div className="h-32 rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                                            <img src={baseProduct.imagenUrl} className="w-full h-full object-cover opacity-60" alt="Vista Previa" />
-                                        </div>
-                                    )}
+                                    <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#F7F3EC] flex items-center justify-center p-3 min-h-[128px]">
+                                        {baseProduct.imagenUrl ? (
+                                            <img src={baseProduct.imagenUrl} className="w-full h-32 object-cover rounded-xl" alt="Vista Previa" />
+                                        ) : (
+                                            <ProductVisual nombre={baseProduct.nombre} categoria={baseProduct.categoria} esSRI={baseProduct.esSRI} width={150} />
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

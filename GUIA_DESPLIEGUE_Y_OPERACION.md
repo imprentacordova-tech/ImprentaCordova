@@ -96,13 +96,40 @@ VITE_RENDER_API_KEY=la-misma-clave-que-API_KEY-en-Render
    * `GEMINI_API_KEY`: Para la IA (OCR de RUC, análisis de artes, proyecciones).
    * `FIRMA_P12_BASE64` (Opcional para pruebas): Tu archivo de firma digital `.p12` en base64.
    * `FIRMA_PASSWORD` (Opcional): Clave del certificado digital.
+   * `REZAGO_UMBRAL_HORAS` (Opcional, por defecto `48`): horas en Vitrina a partir de las
+     cuales un pedido cuenta como rezagado y se le manda el recordatorio.
+   * `REZAGO_INSISTENCIA_HORAS` (Opcional, por defecto `168` = 7 días): cuánto esperar antes
+     de volver a escribirle al mismo cliente. **No lo bajes de 72**: insistir todos los días
+     hace que marquen el correo como spam y eso arruina la entregabilidad de todo el dominio.
+   * `REZAGO_CRON_HABILITADO` (Opcional): `false` apaga el recordatorio automático sin tocar
+     código. Si no está, el automatismo queda encendido.
 5. Copia la URL que te entregue Render y colócala en tu frontend (`VITE_RENDER_SRI_API_URL`).
 
 > [!IMPORTANT]
 > **El backend se tiene que REDESPLEGAR.** Se le agregaron endpoints nuevos
 > (`/api/v1/padron/importar`, `/api/v1/emails/enviar`, `/api/v1/ai/generate`,
-> `/api/v1/clientes/*`, `/api/v1/trabajos/*`). Si desplegás solo el frontend, el correo,
-> la IA y la importación del padrón devuelven 503.
+> `/api/v1/clientes/*`, `/api/v1/trabajos/*`, `/api/v1/recordatorios/rezagados`). Si
+> desplegás solo el frontend, el correo, la IA, la importación del padrón y el
+> recordatorio de rezagados devuelven 503.
+
+### Recordatorio automático de rezagados
+
+Un pedido que lleva **48 h listo en Vitrina** genera solo un correo al cliente pidiendo el
+retiro; si no viene, se le vuelve a escribir **a los 7 días**, no antes.
+
+* Corre cada **6 h**, pero **solo escribe entre 08:00 y 19:00 de Ecuador**: un correo a las
+  3 de la mañana se lee como spam.
+* Requiere `RESEND_API_KEY` y que el cliente tenga correo cargado. Sin correo no hay
+  automatismo posible: esos casos se resuelven a mano con el botón **"Avisar Retiro"** de
+  `/retiros`, que abre WhatsApp.
+* La marca de "ya se le avisó" queda en `trabajos.recordatorio_enviado_at` (ver la migración
+  `20260915_recordatorio_rezagados.sql`). Se escribe **después** de que Resend acepta el
+  envío, para que un fallo no deje al cliente como avisado sin haber recibido nada.
+* Para dispararlo a mano (o probarlo) sin esperar al cron:
+  `POST https://TU_BACKEND.onrender.com/api/v1/recordatorios/rezagados/enviar` con el header
+  `x-api-key: TU_API_KEY`. El `GET` sobre la misma ruta sólo lista, no envía.
+* Si todavía no corriste la migración, el sistema **no se rompe**: el campo llega vacío y se
+  trata como "nunca avisado". El índice `idx_trabajos_vitrina_antiguos` sí conviene tenerlo.
 
 ---
 
@@ -146,10 +173,79 @@ Las migraciones viven en `ImprentaCordova/supabase/migrations/`. Se corren en Su
 | :--- | :--- |
 | `20260914_modelo_impresion.sql` | La columna `modelo_impresion` en `trabajos`: con qué variante se produce cada orden. |
 | `20260914_tramite_sri.sql` | La columna `tramite_sri`: cuál de las tres casillas (Aument. / Cambiar. / Mismo.) va marcada en la solicitud. Sin ella se imprime `MISMO`, que es el comportamiento anterior. |
+| `20260915_recordatorio_rezagados.sql` | La columna `recordatorio_enviado_at` en `trabajos` (cuándo se le avisó al cliente por última vez) y el índice parcial `idx_trabajos_vitrina_antiguos`. Sin ella el recordatorio automático se manda igual, pero **puede repetirse todos los días** al mismo cliente. |
 
 > **Buena noticia:** `addTrabajo()` tiene un bucle que descarta columnas inexistentes, así que
 > **el código se puede desplegar antes de correr la migración** sin romper nada. La columna
 > queda vacía hasta que la corras y el sistema usa el modelo por defecto.
+
+---
+
+## 🌐 PASO 8: Dominio propio con Cloudflare (gratis, solo DNS)
+
+Objetivo: que el sistema quede en `imprentacordova.com` en vez de `algo.vercel.app`, sin pagar
+nada más que el dominio. **Cloudflare no hace falta que sea tu hosting**: se usa solo como DNS,
+igual que el panel del registrador pero más rápido y con mejor control.
+
+> [!NOTE]
+> Todo lo de este paso es **opcional**. Mientras no lo hagas, el sistema funciona perfecto en
+> las URLs de Vercel y Render. Un dominio no mejora la imprenta; sólo hace que el enlace se
+> pueda dictar por teléfono.
+
+**1. Crear la cuenta y agregar el dominio**
+
+1. Entrá a [dash.cloudflare.com](https://dash.cloudflare.com) → **Sign up** (plan **Free**).
+2. **Add a site** → escribí el dominio → **Free**.
+3. Cloudflare te muestra **dos nameservers** (algo como `ada.ns.cloudflare.com`).
+4. En el panel donde compraste el dominio, cambiá los *nameservers* por esos dos. **Ojo: es
+   justo el paso que la gente olvida** — hasta que no propague (de 5 minutos a 24 h), Cloudflare
+   dice *"Pending"* y no resuelve nada.
+5. Cuando Cloudflare marque **Active**, seguí con los registros.
+
+**2. Apuntar el frontend (Vercel)**
+
+1. En Vercel → tu proyecto → **Settings → Domains** → **Add** → `imprentacordova.com` y
+   `www.imprentacordova.com`.
+2. Vercel te muestra los registros exactos. Los típicos son:
+   * `A` · nombre `@` · valor `76.76.21.21`
+   * `CNAME` · nombre `www` · valor `cname.vercel-dns.com`
+3. Cargalos en Cloudflare → **DNS → Records**. **Usá el valor que te muestre Vercel**, no el de
+   esta guía: cambian de vez en cuando.
+
+**3. Apuntar el backend (Render)**
+
+1. Render → `cordova-sri-backend` → **Settings → Custom Domain** → `api.imprentacordova.com`.
+2. En Cloudflare, agregá `CNAME` · nombre `api` · valor `cordova-sri-backend.onrender.com`.
+3. Actualizá `VITE_RENDER_SRI_API_URL` en Vercel al dominio nuevo y **redesplegá el frontend**.
+4. Actualizá `ALLOWED_ORIGINS` en Render con el dominio nuevo (`https://imprentacordova.com`) y
+   **redesplegá el backend**. Si no, el navegador bloquea las llamadas por CORS y parece que
+   "el correo no anda".
+
+**4. La nube naranja (proxy de Cloudflare): cómo dejarla**
+
+| Registro | Nube | Por qué |
+| :--- | :--- | :--- |
+| `@` y `www` (Vercel) | **Naranja (proxied)** | Suma CDN y WAF gratis. En Vercel, poné **SSL/TLS → Overview → Full (strict)**: con *Flexible* el navegador y Vercel hablan distinto y aparece un bucle de redirección imposible de depurar. |
+| `api` (Render) | **Gris (DNS only)** | Render ya hace su propio TLS y el proxy puede cortar los *webhooks*. Si querés proxear, también con **Full (strict)**. |
+
+> [!CAUTION]
+> **Si movés el DNS a Cloudflare, no te olvides de los registros de Resend.** El correo (y el
+> recordatorio de rezagados) sale desde tu dominio solo si existen los registros `MX`, `TXT`
+> (SPF y DKIM) y `CNAME` que Resend te dio cuando verificaste el dominio. Al cambiar de DNS
+> **no se copian solos**: se pierden y el correo deja de enviarse (o cae en spam). Copiá los
+> registros ANTES de cambiar los nameservers, y después verificá en Resend → **Domains** que
+> siga en *Verified*.
+
+**5. Verificación**
+
+```bash
+nslookup imprentacordova.com          # debe resolver a Cloudflare/Vercel
+curl -I https://imprentacordova.com   # 200 y certificado válido
+curl https://api.imprentacordova.com/ping   # {"status":"ok",...}
+```
+
+> **Costo real:** dominio (≈ USD 10–15 al año) + Cloudflare **Free** (0) + Vercel Hobby (0) +
+> Render Free (0, con cold start de ~50 s). No hace falta pagar ningún plan para esto.
 
 ---
 
@@ -192,6 +288,10 @@ npm test            # todos verdes
 npm run build       # exit 0 — regla inquebrantable del proyecto
 ```
 
-> Si `npm test` falla con **"Timeout waiting for worker to respond"**, no son los tests: son
-> workers de vitest huérfanos ocupando los *named pipes*. Comprobalo con
-> `npx vitest run --pool=threads` (usa hilos, no subprocesos). Se limpian reiniciando la máquina.
+> **Sobre `npm test`:** el entorno por defecto de las pruebas es `node`, no `jsdom`
+> (`vitest.config.ts`). Levantar jsdom en esta máquina cuesta ~30 s por worker, y con 10
+> archivos el arranque se pasaba del timeout de vitest y moría con *"Timeout waiting for worker
+> to respond"* aunque el código estuviera perfecto. Sólo los archivos que de verdad tocan el DOM
+> piden jsdom, con el docblock `@vitest-environment jsdom` en su primera línea. **Si agregás una
+> prueba de componentes, no te olvides de ese docblock**: sin él `document` no existe y el test
+> falla con un error que no tiene nada que ver con lo que estás probando.

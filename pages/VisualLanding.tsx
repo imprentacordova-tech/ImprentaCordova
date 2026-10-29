@@ -12,14 +12,6 @@ import {
     CheckCircle, Printer, Star
 } from '../components/Icons';
 
-const C = {
-    ink: '#0A1140',
-    royal: '#16309B',
-    royalHover: '#0F2280',
-    gold: '#FFC61A',
-    goldDark: '#D97706',
-};
-
 const WA = (msg: string) => generateWhatsAppLink('593993083943', msg);
 const IMG = (n: string) => `/images/landing/${n}`;
 
@@ -202,17 +194,17 @@ export const VisualLanding: React.FC = () => {
     };
 
     return (
-        <div className="bg-white text-slate-900 font-sans selection:bg-amber-400 selection:text-slate-950 overflow-x-hidden">
+        <div className="bg-paper text-body font-sans selection:bg-gold selection:text-ink overflow-x-hidden">
             <SEO
                 title="Imprenta Córdova · Impresión SRI Autorizada en Machala"
                 description="Establecimiento gráfico autorizado por el SRI N° 001-001 en Machala. Facturas, notas de venta, talonarios autocopiativos, sellos y tarjetas. Entrega en 24h."
             />
 
             {/* ── Marquee Ticker Superior ─────────────────────────────── */}
-            <div className="bg-slate-950 text-slate-200 overflow-hidden py-2.5 border-b border-slate-800">
+            <div className="bg-ink text-onink overflow-hidden py-2.5 border-b border-white/10">
                 <div className="flex whitespace-nowrap animate-marquee">
                     {[...TICKER, ...TICKER].map((t, idx) => (
-                        <span key={idx} className="flex-shrink-0 px-6 text-xs font-semibold tracking-wider uppercase text-slate-300">
+                        <span key={idx} className="flex-shrink-0 px-6 text-xs font-semibold tracking-wider uppercase text-onink">
                             {t}
                         </span>
                     ))}
@@ -222,9 +214,9 @@ export const VisualLanding: React.FC = () => {
             <PublicNavbar />
 
             {/* ── Hero Bento 3D Section con Framer Motion ─────────────── */}
-            <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/50 via-slate-50 to-white pt-10 sm:pt-16 pb-20 border-b border-slate-200">
+            <section className="relative overflow-hidden bg-gradient-to-b from-paper via-paper to-white pt-10 sm:pt-16 pb-20 border-b border-hairline">
                 {/* Auras de luz ambiental */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-blue-200/25 via-amber-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-royal/25 via-gold/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Central con Framer Motion */}
@@ -235,25 +227,25 @@ export const VisualLanding: React.FC = () => {
                         className="text-center max-w-4xl mx-auto"
                     >
                         {/* Badge Oficial */}
-                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white border border-blue-200/80 rounded-full shadow-sm text-xs font-bold text-slate-800 mb-6">
-                            <span className="font-mono text-brand-blue font-extrabold">SRI 001-001</span>
-                            <span className="w-1 h-3 bg-slate-300 rounded-full" />
+                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white border border-hairline-strong/80 rounded-full shadow-sm text-xs font-bold text-ink mb-6">
+                            <span className="font-mono text-royal font-extrabold">SRI 001-001</span>
+                            <span className="w-1 h-3 bg-hairline-strong rounded-full" />
                             <span>Establecimiento Gráfico Autorizado en Machala</span>
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-dot opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-success-dot" />
                             </span>
                         </div>
 
                         {/* Titular Impactante */}
-                        <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-950 leading-[1.05]">
+                        <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-ink leading-[1.05]">
                             Impresión seria para negocios que{' '}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue via-blue-700 to-amber-600">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-royal via-royal to-gold-deep">
                                 no improvisan.
                             </span>
                         </h1>
 
-                        <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                        <p className="mt-6 text-lg sm:text-xl text-body max-w-2xl mx-auto leading-relaxed">
                             Facturas, notas de venta, talonarios autocopiativos y sellos con validez legal. Diseño incluido, prueba digital por WhatsApp y entrega garantizada en 24 horas.
                         </p>
 
@@ -265,9 +257,9 @@ export const VisualLanding: React.FC = () => {
                                 href={WA('Hola Imprenta Córdova, quiero cotizar la impresión de mis documentos autorizados. Mi RUC es:')}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-brand-blue hover:bg-blue-900 text-white font-bold text-sm rounded-2xl shadow-xl shadow-brand-blue/30 transition-colors"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-royal hover:bg-royal-dark text-white font-bold text-sm rounded-2xl shadow-xl shadow-royal/30 transition-colors"
                             >
-                                <WhatsAppIcon className="w-5 h-5 text-emerald-400" />
+                                <WhatsAppIcon className="w-5 h-5 text-onink-success" />
                                 <span>Enviar mi RUC por WhatsApp</span>
                                 <ArrowRight className="w-4 h-4" />
                             </motion.a>
@@ -276,9 +268,9 @@ export const VisualLanding: React.FC = () => {
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
                                 href="#cotizador"
-                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm rounded-2xl border border-slate-300/80 shadow-sm transition-colors"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 bg-white hover:bg-paper text-ink font-bold text-sm rounded-2xl border border-hairline-strong/80 shadow-sm transition-colors"
                             >
-                                <Sparkles className="w-4 h-4 text-amber-500" />
+                                <Sparkles className="w-4 h-4 text-gold-deep" />
                                 <span>Calcular Presupuesto en Vivo</span>
                             </motion.a>
                         </div>
@@ -290,23 +282,23 @@ export const VisualLanding: React.FC = () => {
                         <motion.div
                             whileHover={{ y: -8, scale: 1.01 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden group cursor-pointer"
+                            className="bg-white rounded-3xl border border-hairline/90 shadow-xl overflow-hidden group cursor-pointer"
                         >
-                            <div className="h-56 relative overflow-hidden bg-slate-100">
+                            <div className="h-56 relative overflow-hidden bg-soft">
                                 <img
                                     src={IMG('business_cards.png')}
                                     alt="Tarjetas de presentación"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-                                <span className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md text-amber-400 font-mono text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border border-slate-700">
+                                <span className="absolute top-3 left-3 bg-ink/85 backdrop-blur-md text-gold font-mono text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border border-white/15">
                                     Couché 300g Soft Touch
                                 </span>
                             </div>
                             <div className="p-5">
-                                <h3 className="font-heading font-bold text-lg text-slate-900">
+                                <h3 className="font-heading font-bold text-lg text-ink">
                                     Tarjetas de Presentación
                                 </h3>
-                                <p className="text-xs text-slate-500 mt-1">
+                                <p className="text-xs text-muted mt-1">
                                     Laminado mate aterciopelado o brillo UV selectivo para causar una presencia impecable.
                                 </p>
                             </div>
@@ -316,14 +308,14 @@ export const VisualLanding: React.FC = () => {
                         <motion.div
                             whileHover={{ y: -10, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                            className="bg-gradient-to-b from-white to-blue-50/50 rounded-3xl border-2 border-brand-blue shadow-2xl overflow-hidden relative group cursor-pointer"
+                            className="bg-gradient-to-b from-white to-paper rounded-3xl border-2 border-royal shadow-2xl overflow-hidden relative group cursor-pointer"
                         >
-                            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1 bg-amber-400 text-slate-950 rounded-full font-black text-xs uppercase tracking-wider shadow-md">
+                            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1 bg-gold text-ink rounded-full font-black text-xs uppercase tracking-wider shadow-md">
                                 <Sparkles className="w-3.5 h-3.5" />
                                 <span>Más Pedido</span>
                             </div>
 
-                            <div className="h-72 relative overflow-hidden bg-blue-50">
+                            <div className="h-72 relative overflow-hidden bg-paper">
                                 <img
                                     src={IMG('talonarios.png')}
                                     alt="Talonarios autocopiativos"
@@ -333,15 +325,15 @@ export const VisualLanding: React.FC = () => {
 
                             <div className="p-6">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-mono text-xs uppercase font-bold text-brand-blue bg-blue-100/70 px-2.5 py-0.5 rounded-md">
+                                    <span className="font-mono text-xs uppercase font-bold text-royal bg-tint/70 px-2.5 py-0.5 rounded-md">
                                         SRI 001-001
                                     </span>
-                                    <span className="text-xs text-slate-500">Entrega en 24h</span>
+                                    <span className="text-xs text-muted">Entrega en 24h</span>
                                 </div>
-                                <h3 className="font-heading font-extrabold text-2xl text-slate-950">
+                                <h3 className="font-heading font-extrabold text-2xl text-ink">
                                     Talonarios Autocopiativos
                                 </h3>
-                                <p className="text-sm text-slate-600 mt-1.5">
+                                <p className="text-sm text-body mt-1.5">
                                     Facturas y notas de venta en papel químico de copia nítida (original + copias). Numeración exacta aprobada por el SRI.
                                 </p>
                             </div>
@@ -351,23 +343,23 @@ export const VisualLanding: React.FC = () => {
                         <motion.div
                             whileHover={{ y: -8, scale: 1.01 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden group cursor-pointer"
+                            className="bg-white rounded-3xl border border-hairline/90 shadow-xl overflow-hidden group cursor-pointer"
                         >
-                            <div className="h-56 relative overflow-hidden bg-slate-100">
+                            <div className="h-56 relative overflow-hidden bg-soft">
                                 <img
                                     src={IMG('gigantografia.png')}
                                     alt="Gigantografía HD"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-                                <span className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md text-emerald-400 font-mono text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border border-slate-700">
+                                <span className="absolute top-3 left-3 bg-ink/85 backdrop-blur-md text-onink-success font-mono text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border border-white/15">
                                     1440 DPI Exterior
                                 </span>
                             </div>
                             <div className="p-5">
-                                <h3 className="font-heading font-bold text-lg text-slate-900">
+                                <h3 className="font-heading font-bold text-lg text-ink">
                                     Gigantografía & Lonas HD
                                 </h3>
-                                <p className="text-xs text-slate-500 mt-1">
+                                <p className="text-xs text-muted mt-1">
                                     Lona pesada eco-solvente de 13oz con ojalillos perimetrales para rótulos y letreros duraderos.
                                 </p>
                             </div>
@@ -377,7 +369,7 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Cifras & Credenciales ───────────────────────────────── */}
-            <section className="bg-white border-b border-slate-200 py-10">
+            <section className="bg-white border-b border-hairline py-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
                         {FACTS.map((f, i) => (
@@ -387,15 +379,15 @@ export const VisualLanding: React.FC = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className="text-center sm:text-left border-l-2 border-brand-blue/30 pl-4"
+                                className="text-center sm:text-left border-l-2 border-royal/30 pl-4"
                             >
-                                <span className="font-heading font-black text-3xl sm:text-4xl text-brand-blue tracking-tight">
+                                <span className="font-heading font-black text-3xl sm:text-4xl text-royal tracking-tight">
                                     {f.value}
                                 </span>
-                                <h4 className="font-bold text-sm text-slate-900 mt-1">
+                                <h4 className="font-bold text-sm text-ink mt-1">
                                     {f.label}
                                 </h4>
-                                <p className="text-xs text-slate-500 mt-0.5">
+                                <p className="text-xs text-muted mt-0.5">
                                     {f.desc}
                                 </p>
                             </motion.div>
@@ -405,7 +397,7 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Cotizador en Vivo (NUEVO) ───────────────────────────── */}
-            <section id="cotizador" className="py-16 sm:py-24 bg-slate-50/70 border-b border-slate-200">
+            <section id="cotizador" className="py-16 sm:py-24 bg-paper/70 border-b border-hairline">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <CotizadorRapido />
                 </div>
@@ -415,16 +407,16 @@ export const VisualLanding: React.FC = () => {
             <section id="catalogo" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
-                        <span className="text-xs uppercase font-extrabold tracking-widest text-brand-blue">
+                        <span className="text-xs uppercase font-extrabold tracking-widest text-royal">
                             Catálogo Completo
                         </span>
-                        <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-2">
+                        <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-ink tracking-tight mt-2">
                             Todo lo que imprimimos en nuestro taller.
                         </h2>
                     </div>
 
                     {/* Chips de Categorías con Pill Deslizante Framer Motion */}
-                    <div className="flex gap-2 flex-wrap bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                    <div className="flex gap-2 flex-wrap bg-soft p-1.5 rounded-2xl border border-hairline">
                         {CATS.map(c => {
                             const isSelected = filter === c;
                             return (
@@ -432,13 +424,13 @@ export const VisualLanding: React.FC = () => {
                                     key={c}
                                     onClick={() => setFilter(c)}
                                     className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                                        isSelected ? 'text-white' : 'text-slate-600 hover:text-slate-950'
+                                        isSelected ? 'text-white' : 'text-body hover:text-ink'
                                     }`}
                                 >
                                     {isSelected && (
                                         <motion.div
                                             layoutId="catalogFilterPill"
-                                            className="absolute inset-0 bg-brand-blue rounded-xl shadow-md shadow-brand-blue/30"
+                                            className="absolute inset-0 bg-royal rounded-xl shadow-md shadow-royal/30"
                                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                         />
                                     )}
@@ -460,33 +452,33 @@ export const VisualLanding: React.FC = () => {
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 350, damping: 25 }}
                                 key={it.label}
-                                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col justify-between group"
+                                className="bg-white rounded-3xl border border-hairline overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col justify-between group"
                             >
                                 <div>
-                                    <div className="h-52 relative overflow-hidden bg-slate-100">
+                                    <div className="h-52 relative overflow-hidden bg-soft">
                                         <img
                                             src={IMG(it.img)}
                                             alt={it.label}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
-                                        <span className="absolute top-3 left-3 px-3 py-1 bg-white/95 backdrop-blur-md rounded-full font-bold text-xs text-brand-blue shadow-sm">
+                                        <span className="absolute top-3 left-3 px-3 py-1 bg-white/95 backdrop-blur-md rounded-full font-bold text-xs text-royal shadow-sm">
                                             {it.tag}
                                         </span>
                                     </div>
 
                                     <div className="p-6">
-                                        <h3 className="font-heading font-bold text-xl text-slate-950">
+                                        <h3 className="font-heading font-bold text-xl text-ink">
                                             {it.label}
                                         </h3>
-                                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                        <p className="text-xs text-muted mt-2 leading-relaxed">
                                             {it.desc}
                                         </p>
 
                                         {/* Specs rápidas */}
                                         <div className="mt-4 flex flex-col gap-1.5">
                                             {it.specs.map((sp, idx) => (
-                                                <div key={idx} className="flex items-center gap-2 text-[11px] text-slate-600">
-                                                    <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                                                <div key={idx} className="flex items-center gap-2 text-[11px] text-body">
+                                                    <Check className="w-3.5 h-3.5 text-success flex-shrink-0" />
                                                     <span>{sp}</span>
                                                 </div>
                                             ))}
@@ -495,16 +487,16 @@ export const VisualLanding: React.FC = () => {
                                 </div>
 
                                 <div className="p-6 pt-0 mt-2">
-                                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                                            <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                    <div className="pt-4 border-t border-hairline flex items-center justify-between">
+                                        <span className="text-xs font-semibold text-muted flex items-center gap-1">
+                                            <Clock className="w-3.5 h-3.5 text-gold-deep" />
                                             Entrega: {it.eta}
                                         </span>
                                         <a
                                             href={WA(`Hola Imprenta Córdova, quiero cotizar: ${it.label}.`)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:text-blue-800 transition-colors"
+                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-royal hover:text-royal-dark transition-colors"
                                         >
                                             <span>Cotizar</span>
                                             <ArrowRight className="w-3.5 h-3.5" />
@@ -518,32 +510,32 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Documentos SRI & Validador RUC Oficial ──────────────── */}
-            <section id="sri" className="bg-slate-950 text-white py-20 relative overflow-hidden">
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+            <section id="sri" className="bg-ink text-white py-20 relative overflow-hidden">
+                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-royal/10 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                         {/* Explicación de Garantías SRI */}
                         <div>
-                            <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+                            <span className="text-xs font-mono font-bold uppercase tracking-widest text-gold bg-gold/10 px-3 py-1 rounded-full border border-gold/20">
                                 Garantía Gráfica SRI N° 001-001
                             </span>
                             <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-4 leading-tight">
                                 Tu numeración autorizada, revisada antes de prensa.
                             </h2>
-                            <p className="mt-4 text-base text-slate-300 leading-relaxed">
+                            <p className="mt-4 text-base text-onink leading-relaxed">
                                 Validamos régimen, estado del contribuyente y secuencia autorizada en el padrón del SRI. Si algo no cuadra con el reglamento, te avisamos de inmediato antes de imprimir para evitar multas.
                             </p>
 
                             <div className="mt-8 space-y-4">
                                 {SRI_POINTS.map((p, idx) => (
                                     <div key={idx} className="flex gap-3.5 items-start">
-                                        <div className="w-6 h-6 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 flex-shrink-0 mt-0.5">
+                                        <div className="w-6 h-6 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center text-gold flex-shrink-0 mt-0.5">
                                             ✓
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-sm text-white">{p.title}</h4>
-                                            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{p.detail}</p>
+                                            <p className="text-xs text-faint mt-0.5 leading-relaxed">{p.detail}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -561,10 +553,10 @@ export const VisualLanding: React.FC = () => {
             {/* ── Muestrario Háptico de Acabados ─────────────────────── */}
             <section id="acabados" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="max-w-xl mb-12">
-                    <span className="text-xs uppercase font-extrabold tracking-widest text-brand-blue">
+                    <span className="text-xs uppercase font-extrabold tracking-widest text-royal">
                         Muestrario Háptico
                     </span>
-                    <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-2">
+                    <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-ink tracking-tight mt-2">
                         Papel, gramaje y tacto elegidos a mano.
                     </h2>
                 </div>
@@ -580,19 +572,19 @@ export const VisualLanding: React.FC = () => {
                                     onClick={() => setFinishId(f.id)}
                                     className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between border ${
                                         isSelected
-                                            ? 'bg-blue-50/80 border-brand-blue shadow-md'
-                                            : 'bg-white hover:bg-slate-50 border-slate-200'
+                                            ? 'bg-tint border-royal shadow-md'
+                                            : 'bg-white hover:bg-paper border-hairline'
                                     }`}
                                 >
                                     <div>
-                                        <span className="font-heading font-bold text-sm text-slate-900 block">
+                                        <span className="font-heading font-bold text-sm text-ink block">
                                             {f.name}
                                         </span>
-                                        <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
+                                        <span className="text-[11px] font-semibold text-muted block mt-0.5">
                                             {f.tag}
                                         </span>
                                     </div>
-                                    <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-brand-blue' : 'text-slate-400'}`} />
+                                    <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-royal' : 'text-faint'}`} />
                                 </button>
                             );
                         })}
@@ -607,20 +599,20 @@ export const VisualLanding: React.FC = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -15 }}
                                 transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl"
+                                className="bg-white rounded-3xl border border-hairline overflow-hidden shadow-xl"
                             >
                                 <div
                                     className="h-64 relative flex items-center justify-center p-6"
                                     style={{ background: fin.swatch }}
                                 >
-                                    <div className="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-white max-w-sm text-center shadow-2xl">
-                                        <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold block mb-1">
+                                    <div className="bg-ink/80 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-white max-w-sm text-center shadow-2xl">
+                                        <span className="text-[10px] font-mono uppercase tracking-widest text-gold font-bold block mb-1">
                                             Capas del Material
                                         </span>
                                         <div className="flex flex-col gap-1 text-xs font-semibold">
                                             {fin.layers.map((l, i) => (
                                                 <div key={i} className="flex items-center justify-center gap-1.5">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-gold" />
                                                     <span>{l}</span>
                                                 </div>
                                             ))}
@@ -629,27 +621,27 @@ export const VisualLanding: React.FC = () => {
                                 </div>
 
                                 <div className="p-8">
-                                    <span className="text-xs uppercase font-mono font-bold tracking-wider text-brand-blue">
+                                    <span className="text-xs uppercase font-mono font-bold tracking-wider text-royal">
                                         {fin.tag}
                                     </span>
-                                    <h3 className="font-heading font-extrabold text-2xl text-slate-950 mt-1">
+                                    <h3 className="font-heading font-extrabold text-2xl text-ink mt-1">
                                         {fin.name}
                                     </h3>
-                                    <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
+                                    <p className="text-sm text-body mt-2.5 leading-relaxed">
                                         {fin.desc}
                                     </p>
 
-                                    <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-4">
+                                    <div className="mt-6 pt-5 border-t border-hairline flex items-center justify-between flex-wrap gap-4">
                                         <a
                                             href={WA(`Hola Imprenta Córdova, deseo solicitar una muestra física en el taller de: ${fin.name}.`)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md transition-all"
+                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink hover:bg-royal text-white text-xs font-bold rounded-xl shadow-md transition-all"
                                         >
                                             <span>Pedir Muestra Física en Taller</span>
-                                            <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+                                            <ArrowRight className="w-3.5 h-3.5 text-gold" />
                                         </a>
-                                        <span className="text-xs text-slate-400">
+                                        <span className="text-xs text-faint">
                                             📍 Av. Las Palmeras y Calle 4ta
                                         </span>
                                     </div>
@@ -661,17 +653,17 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Rastreo de Pedidos Interactivo ──────────────────────── */}
-            <section id="rastreo" className="py-20 bg-slate-50 border-y border-slate-200">
+            <section id="rastreo" className="py-20 bg-paper border-y border-hairline">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                         <div className="lg:col-span-5">
-                            <span className="text-xs uppercase font-extrabold tracking-widest text-brand-blue">
+                            <span className="text-xs uppercase font-extrabold tracking-widest text-royal">
                                 Transparencia Total
                             </span>
-                            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-2">
+                            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-ink tracking-tight mt-2">
                                 Rastrea tu trabajo en tiempo real.
                             </h2>
-                            <p className="mt-3 text-sm text-slate-600 leading-relaxed">
+                            <p className="mt-3 text-sm text-body leading-relaxed">
                                 Ingresa el número de orden que te enviamos por WhatsApp (ej: ORD-4821) para verificar en qué máquina o fase de acabado se encuentra tu pedido.
                             </p>
 
@@ -680,11 +672,11 @@ export const VisualLanding: React.FC = () => {
                                     value={trackingInput}
                                     onChange={e => setTrackingInput(e.target.value)}
                                     placeholder="Ej: ORD-4821"
-                                    className="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl font-mono text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                    className="flex-1 px-4 py-3 bg-white border border-hairline-strong rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-royal"
                                 />
                                 <button
                                     type="submit"
-                                    className="px-6 py-3 bg-brand-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all"
+                                    className="px-6 py-3 bg-royal hover:bg-royal-dark text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all"
                                 >
                                     Buscar
                                 </button>
@@ -692,14 +684,14 @@ export const VisualLanding: React.FC = () => {
                         </div>
 
                         {/* Stepper de Demostración */}
-                        <div className="lg:col-span-7 bg-white p-7 rounded-3xl border border-slate-200 shadow-xl">
-                            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                        <div className="lg:col-span-7 bg-white p-7 rounded-3xl border border-hairline shadow-xl">
+                            <div className="flex items-center justify-between pb-4 border-b border-hairline mb-4">
                                 <div className="flex items-center gap-2">
-                                    <span className="font-mono font-bold text-sm text-slate-900">ORD-4821</span>
-                                    <span className="text-xs text-slate-400">· 5 Talonarios SRI</span>
+                                    <span className="font-mono font-bold text-sm text-ink">ORD-4821</span>
+                                    <span className="text-xs text-faint">· 5 Talonarios SRI</span>
                                 </div>
-                                <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-bold flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                <span className="px-2.5 py-1 rounded-full bg-gold-hover/10 border border-gold-hover/20 text-gold-ink text-xs font-bold flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-gold-hover animate-pulse" />
                                     En Prensa
                                 </span>
                             </div>
@@ -710,18 +702,18 @@ export const VisualLanding: React.FC = () => {
                                         <div className="flex items-center gap-3">
                                             <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                                 st.done
-                                                    ? 'bg-emerald-500 text-white'
+                                                    ? 'bg-success-dot text-white'
                                                     : st.current
-                                                    ? 'bg-amber-400 text-slate-950 ring-4 ring-amber-400/20'
-                                                    : 'bg-slate-100 text-slate-400 border border-slate-300'
+                                                    ? 'bg-gold text-ink ring-4 ring-gold/20'
+                                                    : 'bg-soft text-faint border border-hairline-strong'
                                             }`}>
                                                 {st.done ? '✓' : i + 1}
                                             </span>
-                                            <span className={st.done ? 'text-slate-800 font-semibold' : st.current ? 'text-slate-950 font-bold' : 'text-slate-400'}>
+                                            <span className={st.done ? 'text-ink font-semibold' : st.current ? 'text-ink font-bold' : 'text-faint'}>
                                                 {st.label}
                                             </span>
                                         </div>
-                                        <span className="font-mono text-slate-400 text-[11px]">{st.time}</span>
+                                        <span className="font-mono text-faint text-[11px]">{st.time}</span>
                                     </div>
                                 ))}
                             </div>
@@ -731,16 +723,16 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Gran CTA Final ─────────────────────────────────────── */}
-            <section className="bg-gradient-to-r from-brand-blue via-blue-900 to-slate-950 text-white py-20 relative overflow-hidden">
+            <section className="bg-gradient-to-r from-royal via-ink to-ink text-white py-20 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/20 border border-amber-400/30 rounded-full text-xs font-mono text-amber-300 font-bold uppercase tracking-wider mb-4">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold/20 border border-gold/30 rounded-full text-xs font-mono text-gold font-bold uppercase tracking-wider mb-4">
                         <Sparkles className="w-3.5 h-3.5" />
                         Puntualidad Absoluta
                     </span>
                     <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white tracking-tight max-w-3xl mx-auto">
                         Tu talonario o papelería puede estar listo mañana mismo.
                     </h2>
-                    <p className="mt-4 text-base text-blue-100 max-w-xl mx-auto">
+                    <p className="mt-4 text-base text-onink max-w-xl mx-auto">
                         Visítanos en Av. Las Palmeras y Calle 4ta (Machala) o envíanos tu RUC por WhatsApp para comenzar de inmediato con tu prueba digital.
                     </p>
 
@@ -751,7 +743,7 @@ export const VisualLanding: React.FC = () => {
                             href={WA('Hola Imprenta Córdova, quiero encargar un trabajo de impresión ahora.')}
                             target="_blank"
                             rel="noreferrer"
-                            className="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-xl shadow-emerald-500/30 transition-all flex items-center justify-center gap-2.5"
+                            className="w-full sm:w-auto px-8 py-4 bg-success-dot hover:bg-success text-white font-bold text-sm rounded-2xl shadow-xl shadow-success-dot/30 transition-all flex items-center justify-center gap-2.5"
                         >
                             <WhatsAppIcon className="w-5 h-5" />
                             <span>Escribir por WhatsApp</span>
@@ -768,61 +760,61 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Footer Institucional ────────────────────────────────── */}
-            <footer className="bg-white border-t border-slate-200 py-12">
+            <footer className="bg-white border-t border-hairline py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <div className="flex items-center gap-3">
                             <img src="/LOGO.png" alt="Imprenta Córdova" className="h-9 w-auto" />
-                            <span className="font-heading font-extrabold text-slate-950 text-base">
+                            <span className="font-heading font-extrabold text-ink text-base">
                                 Imprenta Córdova
                             </span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+                        <p className="text-xs text-muted mt-3 leading-relaxed">
                             Establecimiento gráfico autorizado por el Servicio de Rentas Internas N° 001-001. Machala, El Oro — Ecuador.
                         </p>
                     </div>
 
                     <div>
-                        <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+                        <h4 className="text-xs font-mono uppercase font-bold text-faint tracking-wider mb-3">
                             Productos
                         </h4>
-                        <div className="flex flex-col gap-2 text-xs font-semibold text-slate-600">
-                            <Link to="/vitrina" className="hover:text-brand-blue">Facturas Autorizadas SRI</Link>
-                            <Link to="/vitrina" className="hover:text-brand-blue">Notas de Venta RIMPE</Link>
-                            <Link to="/vitrina" className="hover:text-brand-blue">Tarjetas de Presentación</Link>
-                            <Link to="/vitrina" className="hover:text-brand-blue">Sellos Automáticos</Link>
-                            <Link to="/vitrina" className="hover:text-brand-blue">Gigantografías</Link>
+                        <div className="flex flex-col gap-2 text-xs font-semibold text-body">
+                            <Link to="/vitrina" className="hover:text-royal">Facturas Autorizadas SRI</Link>
+                            <Link to="/vitrina" className="hover:text-royal">Notas de Venta RIMPE</Link>
+                            <Link to="/vitrina" className="hover:text-royal">Tarjetas de Presentación</Link>
+                            <Link to="/vitrina" className="hover:text-royal">Sellos Automáticos</Link>
+                            <Link to="/vitrina" className="hover:text-royal">Gigantografías</Link>
                         </div>
                     </div>
 
                     <div>
-                        <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+                        <h4 className="text-xs font-mono uppercase font-bold text-faint tracking-wider mb-3">
                             Servicios
                         </h4>
-                        <div className="flex flex-col gap-2 text-xs font-semibold text-slate-600">
-                            <Link to="/tracking" className="hover:text-brand-blue">Rastrear Mi Pedido</Link>
-                            <a href="#sri" className="hover:text-brand-blue">Consulta de RUC en Padrón</a>
-                            <a href="#cotizador" className="hover:text-brand-blue">Cotizador en Vivo</a>
-                            <Link to="/login" className="hover:text-brand-blue">Acceso Sistema Operador</Link>
+                        <div className="flex flex-col gap-2 text-xs font-semibold text-body">
+                            <Link to="/tracking" className="hover:text-royal">Rastrear Mi Pedido</Link>
+                            <a href="#sri" className="hover:text-royal">Consulta de RUC en Padrón</a>
+                            <a href="#cotizador" className="hover:text-royal">Cotizador en Vivo</a>
+                            <Link to="/login" className="hover:text-royal">Acceso Sistema Operador</Link>
                         </div>
                     </div>
 
                     <div>
-                        <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+                        <h4 className="text-xs font-mono uppercase font-bold text-faint tracking-wider mb-3">
                             Ubicación & Contacto
                         </h4>
-                        <div className="flex flex-col gap-2 text-xs text-slate-600">
+                        <div className="flex flex-col gap-2 text-xs text-body">
                             <span>Av. Las Palmeras y Calle 4ta</span>
                             <span>Machala, El Oro</span>
-                            <a href="tel:+593993083943" className="font-bold text-slate-800 hover:text-brand-blue">
+                            <a href="tel:+593993083943" className="font-bold text-ink hover:text-royal">
                                 +593 99 308 3943
                             </a>
-                            <span className="text-slate-400 mt-1">Lun–Vie 8:00–18:00 · Sáb 8:00–14:00</span>
+                            <span className="text-faint mt-1">Lun–Vie 8:00–18:00 · Sáb 8:00–14:00</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-hairline flex items-center justify-between text-xs text-faint flex-wrap gap-2">
                     <span>© 2026 Imprenta Córdova. Todos los derechos reservados.</span>
                     <span className="font-mono">SRI Autorización 001-001</span>
                 </div>
@@ -830,20 +822,20 @@ export const VisualLanding: React.FC = () => {
 
             {/* ── Barra Móvil Fija de Conversión ("PEPA para el móvil") ─── */}
             <div className="md:hidden h-20" />
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 shadow-2xl flex items-center gap-2">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-white/95 backdrop-blur-xl border-t border-hairline/90 shadow-2xl flex items-center gap-2">
                 <a
                     href={WA('Hola Imprenta Córdova, quiero cotizar la impresión de mis documentos. Mi RUC es:')}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 bg-brand-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-brand-blue/30 active:scale-95 transition-transform"
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 bg-royal text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-royal/30 active:scale-95 transition-transform"
                 >
-                    <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
+                    <WhatsAppIcon className="w-4 h-4 text-onink-success" />
                     <span>Enviar RUC / Cotizar</span>
                 </a>
 
                 <a
                     href="tel:+593993083943"
-                    className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 active:scale-95 transition-transform flex-shrink-0"
+                    className="w-12 h-12 rounded-2xl bg-soft border border-hairline flex items-center justify-center text-ink active:scale-95 transition-transform flex-shrink-0"
                     aria-label="Llamar al taller"
                 >
                     <Phone className="w-5 h-5" />

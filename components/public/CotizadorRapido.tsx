@@ -166,33 +166,33 @@ export const CotizadorRapido: React.FC = () => {
     const whatsappUrl = generateWhatsAppLink('593993083943', whatsappMessage);
 
     return (
-        <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/40 rounded-3xl border border-blue-100 shadow-2xl p-6 md:p-10">
+        <div className="relative overflow-hidden bg-gradient-to-br from-white via-paper to-paper rounded-3xl border border-hairline shadow-2xl p-6 md:p-10">
             {/* Elemento de iluminación decorativa */}
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-gradient-to-br from-amber-200/20 via-blue-400/10 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-gradient-to-br from-gold/20 via-royal/10 to-transparent blur-3xl pointer-events-none" />
 
             {/* Cabecera del Cotizador */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200/70">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-hairline">
                 <div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-xs font-bold text-amber-700 uppercase tracking-widest mb-2">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" style={{ animationDuration: '6s' }} />
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold/10 border border-gold/30 rounded-full text-xs font-bold text-gold-ink uppercase tracking-widest mb-2">
+                        <Sparkles className="w-3.5 h-3.5 text-gold-deep animate-spin" style={{ animationDuration: '6s' }} />
                         Cotizador Rápido en Vivo
                     </div>
-                    <h3 className="font-heading text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                    <h3 className="font-heading text-2xl md:text-3xl font-bold text-ink tracking-tight">
                         Calcula tu inversión en <span className="text-brand-blue">3 clics</span>
                     </h3>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <p className="text-sm text-muted mt-1">
                         Selecciona el tipo de trabajo, la cantidad deseada y recíbelo con prueba digital incluida.
                     </p>
                 </div>
-                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-success/5 border border-success/25 rounded-2xl text-success text-xs font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-success-dot animate-ping" />
                     <span>Diseño & Diagramación Gratis</span>
                 </div>
             </div>
 
             {/* Paso 1: Selector de Producto en Carrusel / Chips */}
             <div className="mt-7">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-3">
                     1. Selecciona el Tipo de Trabajo:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
@@ -205,7 +205,7 @@ export const CotizadorRapido: React.FC = () => {
                                 className={`relative p-3 rounded-2xl text-left transition-all duration-300 flex flex-col justify-between min-h-[92px] ${
                                     isSelected
                                         ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30 scale-[1.02] ring-2 ring-brand-blue/40'
-                                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80 shadow-sm'
+                                        : 'bg-white hover:bg-soft text-body border border-hairline shadow-sm'
                                 }`}
                             >
                                 {isSelected && (
@@ -216,7 +216,7 @@ export const CotizadorRapido: React.FC = () => {
                                     />
                                 )}
                                 <span className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md w-max ${
-                                    isSelected ? 'bg-amber-400 text-slate-900' : 'bg-slate-100 text-slate-500'
+                                    isSelected ? 'bg-gold text-ink' : 'bg-soft text-muted'
                                 }`}>
                                     {p.badge}
                                 </span>
@@ -232,13 +232,13 @@ export const CotizadorRapido: React.FC = () => {
             {/* Paso 2 y 3: Cantidad y Acabado */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Cantidad */}
-                <div className="bg-white/80 p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div className="bg-white/80 p-5 rounded-2xl border border-hairline shadow-sm">
                     <div className="flex items-center justify-between mb-3">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-body flex items-center gap-1.5">
                             <Layers className="w-4 h-4 text-brand-blue" />
                             2. Cantidad requerida:
                         </label>
-                        <span className="text-xs font-mono font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
+                        <span className="text-xs font-mono font-bold text-brand-blue bg-paper px-2 py-0.5 rounded-lg border border-hairline">
                             {quantity} {product.unitLabel}
                         </span>
                     </div>
@@ -252,8 +252,8 @@ export const CotizadorRapido: React.FC = () => {
                                     onClick={() => setQuantity(q)}
                                     className={`py-3 px-2 rounded-xl text-center font-mono font-bold text-sm transition-all duration-200 ${
                                         isQtySelected
-                                            ? 'bg-slate-900 text-amber-400 shadow-md ring-2 ring-slate-900'
-                                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+                                            ? 'bg-ink text-gold shadow-md ring-2 ring-ink'
+                                            : 'bg-paper hover:bg-soft text-body border border-hairline'
                                     }`}
                                 >
                                     {q}
@@ -261,7 +261,7 @@ export const CotizadorRapido: React.FC = () => {
                             );
                         })}
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-2.5">
+                    <p className="text-[11px] text-faint mt-2.5">
                         {product.id === 'facturas-sri' && quantity >= 500
                             ? '⭐ Descuento especial por volumen aplicado a partir de 500 juegos.'
                             : 'Numeración secuencial exacta sin saltos.'}
@@ -269,9 +269,9 @@ export const CotizadorRapido: React.FC = () => {
                 </div>
 
                 {/* Acabado */}
-                <div className="bg-white/80 p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-3 flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                <div className="bg-white/80 p-5 rounded-2xl border border-hairline shadow-sm">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-body mb-3 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-gold-deep" />
                         3. Especificación o acabado:
                     </label>
 
@@ -284,15 +284,15 @@ export const CotizadorRapido: React.FC = () => {
                                     onClick={() => setFinishId(f.id)}
                                     className={`flex items-center justify-between p-3 rounded-xl text-left text-xs font-medium transition-all ${
                                         isFinishSelected
-                                            ? 'bg-blue-50 border-2 border-brand-blue text-brand-blue font-bold shadow-sm'
-                                            : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'
+                                            ? 'bg-paper border-2 border-brand-blue text-brand-blue font-bold shadow-sm'
+                                            : 'bg-paper hover:bg-soft border border-hairline text-body'
                                     }`}
                                 >
                                     <span>{f.name}</span>
                                     {isFinishSelected ? (
                                         <Check className="w-4 h-4 text-brand-blue" />
                                     ) : (
-                                        <span className="w-3.5 h-3.5 rounded-full border border-slate-300" />
+                                        <span className="w-3.5 h-3.5 rounded-full border border-hairline-strong" />
                                     )}
                                 </button>
                             );
@@ -304,39 +304,39 @@ export const CotizadorRapido: React.FC = () => {
             {/* Tarjeta de Resumen y Acción de WhatsApp */}
             <motion.div
                 layout
-                className="mt-8 bg-slate-900 text-white rounded-2xl p-6 md:p-7 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-6"
+                className="mt-8 bg-ink text-white rounded-2xl p-6 md:p-7 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-6"
             >
                 <div className="flex-1 w-full text-center lg:text-left">
                     <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
-                        <span className="text-xs uppercase font-mono tracking-widest text-amber-400 font-bold bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20">
+                        <span className="text-xs uppercase font-mono tracking-widest text-gold font-bold bg-gold/10 px-2.5 py-1 rounded-md border border-gold/20">
                             Presupuesto Aproximado
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-slate-300">
-                            <Clock className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="flex items-center gap-1 text-xs text-onink">
+                            <Clock className="w-3.5 h-3.5 text-royal" />
                             Entrega: <strong className="text-white">{product.eta}</strong>
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-slate-300">
-                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="flex items-center gap-1 text-xs text-onink">
+                            <ShieldCheck className="w-3.5 h-3.5 text-onink-success" />
                             Garantía de Impresión
                         </span>
                     </div>
 
                     <div className="mt-3 flex items-baseline justify-center lg:justify-start gap-2">
-                        <span className="text-sm font-semibold text-slate-400">Desde aprox.</span>
+                        <span className="text-sm font-semibold text-faint">Desde aprox.</span>
                         <AnimatePresence mode="wait">
                             <motion.span
                                 key={estimatedPrice}
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
-                                className="font-heading font-extrabold text-4xl md:text-5xl text-amber-400"
+                                className="font-heading font-extrabold text-4xl md:text-5xl text-gold"
                             >
                                 ${estimatedPrice.toFixed(2)}
                             </motion.span>
                         </AnimatePresence>
-                        <span className="text-xs text-slate-400">USD</span>
+                        <span className="text-xs text-faint">USD</span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1.5 max-w-lg">
+                    <p className="text-xs text-faint mt-1.5 max-w-lg">
                         Incluye diagramación, prueba digital para aprobación en tu teléfono y retiro en taller o entrega en Machala.
                     </p>
                 </div>
@@ -348,7 +348,7 @@ export const CotizadorRapido: React.FC = () => {
                         href={whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/30 transition-colors"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-success-dot hover:bg-success text-white font-bold text-sm rounded-xl shadow-lg shadow-success-dot/30 transition-colors"
                     >
                         <WhatsAppIcon className="w-5 h-5" />
                         <span>Confirmar y Pedir por WhatsApp</span>
