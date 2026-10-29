@@ -77,6 +77,60 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
           } else if (fnName === 'nextPage' && typeof nextPage === 'function') {
             nextPage();
+          } else if (fnName === 'buscarPorCodigo') {
+            // Todo en UNA pasada en el MAIN world: marcar FR=1 → habilitar → escribir
+            // 8634 → Buscar. Evita la carrera porque `habilitar()` limpia `numero`.
+            const form = document.forma || document.forms[0];
+            const cont = form || document;
+            const radios = Array.from(cont.querySelectorAll('input[type="radio"][name="FR"]'));
+            let radio = radios.find(r => r.value === '1');
+            if (!radio) radio = radios.find(r => r.value !== '0');
+
+            if (radio) {
+              radio.checked = true;
+              radio.dispatchEvent(new Event('click', { bubbles: true }));
+              try { if (typeof habilitar === 'function') habilitar(radio); } catch (e) { }
+              const num = cont.querySelector('input[name="numero"]') || document.querySelector('input[name="numero"]');
+              if (num) {
+                num.disabled = false;
+                num.value = '8634';
+                num.dispatchEvent(new Event('input', { bubbles: true }));
+                num.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            } else {
+              // Respaldo: solo hay "Por RUC". Se busca con el RUC de la imprenta.
+              const radioRuc = radios.find(r => r.value === '0') || radios[0];
+              if (radioRuc) {
+                radioRuc.checked = true;
+                radioRuc.dispatchEvent(new Event('click', { bubbles: true }));
+                try { if (typeof habilitar === 'function') habilitar(radioRuc); } catch (e) { }
+              }
+              const ruc = cont.querySelector('input[name="ruc"]') || document.querySelector('input[name="ruc"]');
+              if (ruc) {
+                ruc.disabled = false;
+                ruc.value = '0702065319001';
+                ruc.dispatchEvent(new Event('input', { bubbles: true }));
+                ruc.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }
+
+            setTimeout(() => {
+              try {
+                // Reafirmar el valor por si `habilitar` se ejecutó de nuevo y lo limpió.
+                const num2 = (form || document).querySelector('input[name="numero"]');
+                if (num2 && num2.value !== '8634') {
+                  num2.disabled = false;
+                  num2.value = '8634';
+                  num2.dispatchEvent(new Event('input', { bubbles: true }));
+                  num2.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                // Preferir el botón real "Buscar": <a href="javascript:javascript:nextPage();">
+                const buscar = document.querySelector('a[href*="nextPage"]');
+                if (buscar) { buscar.click(); return; }
+                if (typeof nextPage === 'function') { nextPage(); return; }
+                if (form) form.submit();
+              } catch (e) { console.error('Cordova Ext: error al buscar imprenta', e); }
+            }, 300);
           } else if (fnName === 'habilitar') {
             // El content script deja el value del radio elegido en data-cordova-radio.
             const val = document.body.getAttribute('data-cordova-radio');
