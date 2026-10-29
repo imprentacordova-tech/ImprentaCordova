@@ -44,7 +44,7 @@ export const MobileFloatingNav: React.FC<MobileFloatingNavProps> = ({ onOpenMenu
     const isGestionRoute = [
         '/cuentas', '/retiros', '/clientes', '/inventario', '/diseno',
         '/facturacion', '/finanzas', '/usuarios', '/proveedores',
-        '/configuracion', '/calculadora', '/registro', '/productos'
+        '/configuracion', '/calculadora', '/registro', '/productos', '/produccion'
     ].some(p => location.pathname.startsWith(p));
 
     const navItems = [

@@ -358,7 +358,15 @@ function injectSRILoginAssistant() {
   document.getElementById('cdv-btn-login-mode-imprenta').addEventListener('click', () => {
     chrome.storage.local.get(['cordova_imprenta_ruc', 'cordova_imprenta_pass'], (creds) => {
       const ruc = creds.cordova_imprenta_ruc || '0702065319001';
-      const pass = creds.cordova_imprenta_pass || 'GrafiCoR8634@';
+      const pass = creds.cordova_imprenta_pass || '';
+
+      if (!pass) {
+        showCordovaWarningCard(
+          'Clave SRI no configurada',
+          'Configurá la clave del SRI de la Imprenta en la pestaña "🏢 Imprenta Córdova" de la extensión (Antesala Auto-Login). Por seguridad no se guarda ninguna clave por defecto.'
+        );
+        return;
+      }
 
       chrome.storage.local.set({ cordova_imprenta_ruc: ruc, cordova_imprenta_pass: pass });
 
@@ -434,7 +442,7 @@ function parseSRIDateToISO(dateStr) {
 
   const months = {
     'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
-    'mayo': '05', 'juno': '06', 'junio': '06', 'julio': '07', 'agosto': '08',
+    'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
     'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
   };
 

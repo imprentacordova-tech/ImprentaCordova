@@ -239,3 +239,12 @@ Las animaciones ya existen y son correctas (`framer-motion`, `rise`, `blink`, pr
 11. **`components/orders/QrScannerModal.tsx`** — escáner de código QR por cámara (API nativa `BarcodeDetector` + `getUserMedia`, sin dependencias) con marco de enfoque y guía de error honesta.
 12. **`pages/Retiros.tsx`** — botón 📷 en el buscador express del Despacho; al detectar el QR extrae el N° de orden (URL, `orden=X` o dígitos) y ejecuta la búsqueda/adelanto en un clic.
 13. **`components/ProductManagementModal.tsx`** — vista previa viva: sin foto muestra la ilustración dinámica del producto que se está editando (talonario → cuaderno).
+
+### Ronda 4 (Extensión SRI + Menús internos)
+14. **Análisis de la extensión Chrome** (`sri-chrome-extension/`): se verificó que funciona de forma **nativa** — inyecta barra de auto-login, HUD con stepper de 5 pasos, auto-piloto que recorre el flujo de preimpresos del SRI (7 pasos) seleccionando "Imprenta Córdova (8634)", y un cajón final que registra la orden, la sincroniza a Supabase vía backend y abre web/impresión/WhatsApp. Todo pasa por el backend (service_role nunca en el paquete).
+15. **Seguridad de la extensión** — eliminada la **clave SRI hardcodeada** (`GrafiCoR8634@`) que venía como default en `content.js`; ahora si no hay clave configurada muestra una guía en vez de autocompletar.
+16. **Corrección menor** — mes `juno`→`junio` en `parseSRIDateToISO`.
+17. **`public/extension-cordova.zip`** — reconstruido desde la fuente (de 952 KB a 128 KB, sin fotos de referencia) para que "Descargar Extensión" entregue la versión actual.
+18. **Menús internos** (`Layout.tsx` + `MobileFloatingNav.tsx`):
+    - Añadidos **`/productos` (Catálogo de Productos)** y **`/produccion` (Flujo de Producción)** al sidebar — estaban huérfanos (rutas existían pero no se podía llegar desde el menú).
+    - Badge "Descargar Extensión" corregido `v2.1` → `v2.3`.

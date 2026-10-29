@@ -9,7 +9,8 @@ import {
     ActivityIcon, WalletIcon, CircleStackIcon, ShieldCheckIcon,
     MonitorIcon,
     GlobeIcon, ChevronDownIcon, ChevronRightIcon,
-    ReceiptIcon, HistoryIcon, PuzzlePieceIcon, FileTextIcon
+    ReceiptIcon, HistoryIcon, PuzzlePieceIcon, FileTextIcon,
+    Box, Layers
 } from './Icons';
 import { TrabajoEstado } from '../types';
 import { useData } from '../contexts/DataContext';
@@ -82,7 +83,9 @@ const buildNavGroups = (isAdmin: boolean) => [
         items: [
             { path: '/kds',        label: 'Monitor de Taller',     icon: MonitorIcon,     badge: null },
             { path: '/diseno',     label: 'Diseño Gráfico',        icon: PaletteIcon,     badge: null },
+            { path: '/produccion', label: 'Flujo de Producción',   icon: Layers,          badge: null },
             { path: '/inventario', label: 'Bodega de Insumos',     icon: CircleStackIcon, badge: 'stock' },
+            { path: '/productos',  label: 'Catálogo de Productos', icon: Box,             badge: null },
         ],
     },
     {
@@ -110,7 +113,7 @@ const buildNavGroups = (isAdmin: boolean) => [
             { path: '/usuarios',      label: 'Usuarios',           icon: ShieldCheckIcon,  badge: null },
             { path: '/registro',      label: 'Auditoría',          icon: HistoryIcon,      badge: null },
             { path: '/configuracion', label: 'Configuración',      icon: Cog8ToothIcon,    badge: null },
-            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: 'v2.1' },
+            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: 'v2.3' },
         ],
     }] : []),
 ];
@@ -129,6 +132,8 @@ const PAGE_TITLES: Record<string, string> = {
     '/calculadora':   'Calculadora de Precios',
     '/clientes':      'Directorio de Clientes',
     '/proveedores':   'Gestión de Proveedores',
+    '/productos':     'Catálogo de Productos',
+    '/produccion':    'Flujo de Producción',
     '/usuarios':      'Gestión de Usuarios',
     '/registro':      'Auditoría del Sistema',
     '/configuracion': 'Configuración General',
