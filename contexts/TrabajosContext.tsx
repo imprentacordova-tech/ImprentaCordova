@@ -213,11 +213,14 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     let insertData: any = null;
     let insertError: any = null;
-    let payload = { ...dbData };
+    let payload: Record<string, any> = { ...dbData };
     let attempts = 0;
+    const columnasFaltantes: string[] = [];
 
-    // Bucle auto-recuperable: si Supabase carece de alguna columna opcional en su esquema, la elimina y reintenta
-    while (attempts < 6) {
+    // Bucle auto-recuperable: si la base no tiene una columna opcional, la quita y reintenta.
+    // Cubre el caso de una migración pendiente (p. ej. `tramite_sri` / `modelo_impresion`)
+    // sin tumbar la orden: se guarda todo lo demás y se avisa qué columna faltó.
+    while (attempts < 12) {
       attempts++;
       const res = await supabase.from('trabajos').insert([payload]).select().single();
       if (!res.error) {
@@ -228,14 +231,15 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       insertError = res.error;
       const msg = res.error.message || '';
-      
+
       const match = msg.match(/Could not find the '([^']+)' column/i) ||
                     msg.match(/column "([^"]+)" of relation/i) ||
                     msg.match(/column '([^']+)' does not exist/i);
 
       if (match && match[1] && match[1] in payload) {
         const missingCol = match[1];
-        console.warn(`[TrabajosContext] Columna '${missingCol}' no existe en la tabla 'trabajos'. Omitiendo e insertando de nuevo...`);
+        columnasFaltantes.push(missingCol);
+        console.warn(`[TrabajosContext] Columna '${missingCol}' no existe en 'trabajos'. Se omite y se reintenta (migración pendiente).`);
         delete payload[missingCol];
       } else {
         break;
@@ -244,6 +248,14 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     if (insertError || !insertData) {
       console.error('[TrabajosContext] Error inserting trabajo:', insertError);
+      const msgErr = insertError?.message || '';
+      const esColumnaFaltante = /Could not find the '.+' column|column .+ does not exist/i.test(msgErr);
+      if (esColumnaFaltante) {
+        throw new Error(
+          `La base de datos no tiene la columna ${columnasFaltantes.join(', ') || 'requerida'} en 'trabajos'. ` +
+          `Corré la migración supabase/migrations/20261029_trabajos_columnas_sincronizadas.sql en Supabase (SQL Editor) y reintentá.`,
+        );
+      }
       throw insertError || new Error('No se pudo crear la orden en Supabase');
     }
 

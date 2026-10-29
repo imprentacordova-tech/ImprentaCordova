@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
-import { useData } from '../contexts/DataContext';
+import { useData, CATEGORY_EMOJIS } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
 import { Cliente, User, TrabajoEstado } from '../types';
@@ -16,6 +16,7 @@ import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 import { calcularPedido, round2 } from '../services/orderPricing';
 import { establecimientosAbiertos } from '../services/establecimientos';
 import { MODELOS, modeloPorDefecto, modelosDe, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
+import { perfilDe, especificacionesPorDefecto, calcularDelta } from '../services/detalleProducto';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
 import { ProductVisual, esProductoTalonario } from '../components/ProductVisual';
 
@@ -48,26 +49,27 @@ const animPaso = (dir: 'adelante' | 'atras') => ({
     transition: { duration: 0.28, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] },
 });
 
-const CATEGORIAS_CATALOGO = ['Todos', 'Comprobantes SRI', 'Papelería Comercial', 'Publicidad & Sellos'] as const;
-
-const CATALOGO_RAPIDO = [
-  { id: '1', nombre: 'Nota de Venta', cat: 'Comprobantes SRI', tag: 'SRI', precio: 13, esSRI: true },
-  { id: '2', nombre: 'Factura Autorizada', cat: 'Comprobantes SRI', tag: 'SRI', precio: 15, esSRI: true },
-  { id: '3', nombre: 'Liquidación de Compra', cat: 'Comprobantes SRI', tag: 'SRI', precio: 15, esSRI: true },
-  { id: '4', nombre: 'Guía de Remisión', cat: 'Comprobantes SRI', tag: 'SRI', precio: 16, esSRI: true },
-  { id: '5', nombre: '1.000 Tarjetas de Presentación', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 28, esSRI: false },
-  { id: '6', nombre: '1.000 Volantes Publicitarios', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 22, esSRI: false },
-  { id: '7', nombre: 'Sello Automático Trodat', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 16, esSRI: false },
-  { id: '8', nombre: 'Talonario de Recibos de Caja', cat: 'Papelería Comercial', tag: 'Comercial', precio: 12, esSRI: false },
-  { id: '9', nombre: 'Hojas Membretadas (Millar)', cat: 'Papelería Comercial', tag: 'Comercial', precio: 35, esSRI: false },
-  { id: '10', nombre: 'Gigantografía / Lona Banner', cat: 'Publicidad & Sellos', tag: 'Comercial', precio: 12, esSRI: false },
+/**
+ * Catálogo de respaldo: solo se usa mientras `productos` (Supabase) todavía no cargó.
+ * El catálogo real es la tabla `productos` (semilla = services/catalogData.ts).
+ */
+const CATALOGO_FALLBACK: any[] = [
+  { id: 'f1', nombre: 'NOTA DE VENTA (RIMPE NEGOCIO POPULAR)', categoria: 'Documentos SRI', precio: 13, esSRI: true, descripcion: 'Talonario 100 hojas, 1/4 de oficio, duplicado.' },
+  { id: 'f2', nombre: 'FACTURA (REGIMEN GENERAL)', categoria: 'Documentos SRI', precio: 15, esSRI: true, descripcion: 'Factura autorizada 100 hojas, 1/4 de oficio.' },
+  { id: 'f3', nombre: 'LIQUIDACION DE COMPRA (RIMPE)', categoria: 'Documentos SRI', precio: 15, esSRI: true, descripcion: 'Liquidación de compra de bienes o servicios.' },
+  { id: 'f4', nombre: 'GUIAS DE REMISION', categoria: 'Documentos SRI', precio: 12, esSRI: true, descripcion: 'Guías de remisión en talonario autorizado.' },
+  { id: 'f5', nombre: 'Talonario 2 Blocks (200 hojas)', categoria: 'Documentos SRI', precio: 20, esSRI: true, descripcion: 'Dos blocks encolados de 100 hojas.' },
+  { id: 'f6', nombre: 'Tarjetas de Presentación x1000', categoria: 'Tarjetas', precio: 28, esSRI: false, descripcion: 'Mil tarjetas full color couché 300g.' },
+  { id: 'f7', nombre: 'Volantes Publicitarios x1000', categoria: 'Publicidad', precio: 22, esSRI: false, descripcion: 'Mil volantes full color couché 150g.' },
+  { id: 'f8', nombre: 'Sello Automático', categoria: 'Oficina', precio: 35, esSRI: false, descripcion: 'Sello automático profesional.' },
+  { id: 'f9', nombre: 'Gigantografía / Lona Banner (m2)', categoria: 'Gran Formato', precio: 12, esSRI: false, descripcion: 'Impresión en lona banner por m2.' },
 ];
 
 const NuevoPedidoPage: React.FC = () => {
     const outletCtx = useOutletContext<{ currentUser?: User }>();
     const { user: authUser } = useAuth();
     const currentUser = outletCtx?.currentUser || authUser || ({ nombre: 'Pedro Cordova', rol: 'Administrador' } as unknown as User);
-    const { refreshData, addTrabajo, addCliente, clientes, trabajos } = useData();
+    const { refreshData, addTrabajo, addCliente, clientes, trabajos, productos } = useData();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -120,6 +122,32 @@ const NuevoPedidoPage: React.FC = () => {
 
     // ¿La orden contiene al menos un producto con requerimientos SRI?
     const hasSriItem = useMemo(() => items.some(i => i.esSRI || i.especificaciones?.sri), [items]);
+
+    // ── Catálogo del Paso 1 ──────────────────────────────────────────────
+    // Se alimenta del catálogo real (Supabase). Si todavía no cargó, usa el
+    // respaldo estático para que el mostrador nunca se quede sin productos.
+    const catalogoPaso1 = useMemo(
+        () => (productos && productos.length > 0 ? productos : CATALOGO_FALLBACK),
+        [productos],
+    );
+    const categoriasPaso1 = useMemo(() => {
+        const set = new Set(catalogoPaso1.map((p: any) => p.categoria).filter(Boolean));
+        return ['Todos', 'Comprobantes SRI', ...Array.from(set).filter((c: any) => c !== 'Documentos SRI' && c !== 'SRI').sort()];
+    }, [catalogoPaso1]);
+    const productosFiltradosPaso1 = useMemo(() => {
+        const q = busqueda.trim().toLowerCase();
+        return catalogoPaso1.filter((p: any) => {
+            const cat = p.categoria || 'General';
+            const matchCat = filtroCat === 'Todos'
+                ? true
+                : filtroCat === 'Comprobantes SRI'
+                    ? !!p.esSRI
+                    : cat === filtroCat;
+            const matchQ = !q || [p.nombre, cat, p.descripcion, ...((p as any).specs || [])]
+                .filter(Boolean).join(' ').toLowerCase().includes(q);
+            return matchCat && matchQ;
+        });
+    }, [catalogoPaso1, filtroCat, busqueda]);
 
     // Detección de última orden del cliente para Renovación Express
     const ultimoTrabajoCliente = useMemo(() => {
@@ -183,8 +211,9 @@ const NuevoPedidoPage: React.FC = () => {
         const docSize = payload.docSize || payload.tamano || '1/4 Oficio';
         const totalVal = parseFloat(payload.total) || 13;
         const abonoVal = parseFloat(payload.abono) || 0;
-        const estVal = payload.est || '001';
-        const ptoVal = payload.pto || '001';
+        const estVal = payload.est || payload.establecimiento || '001';
+        const ptoVal = payload.pto || payload.puntoEmision || '001';
+        const direccionVal = payload.direccion || payload.address || '';
         const caducidadVal = payload.caducidad || '';
         const modeVal = payload.mode || 'sri-sobre-preimpreso';
         const tramiteVal = payload.tramite || 'MISMO';
@@ -209,6 +238,7 @@ const NuevoPedidoPage: React.FC = () => {
                     cedula: cleanRuc || '0700000000001',
                     telefono: phone,
                     email: payload.email || undefined,
+                    direccion: direccionVal || undefined,
                     actividades: activity || undefined,
                     regimen: docType === '1' ? 'Rimpe Popular' : 'General'
                 });
@@ -358,23 +388,26 @@ const NuevoPedidoPage: React.FC = () => {
         // Las dependencias cubren todo lo que lee canAdvance().
     }, [step, cliente, tempClient, items.length, desglose.total, hasSriItem, sriEstablecimiento, sriPuntoEmision, sriActividad]);
 
-    const handleSelectQuickProduct = (p: typeof CATALOGO_RAPIDO[0]) => {
+    const handleSelectQuickProduct = (p: any) => {
+        const esSRI = !!p.esSRI;
+        const base = Number(p.precio) || 0;
+        // Cada producto trae su PERFIL de detalle (SRI, sello, láser, gran formato…):
+        // así un sello no hereda campos de talonario ni la clave del SRI.
+        const perfil = perfilDe({ esSRI, categoria: p.categoria, nombre: p.nombre });
+        const specs = especificacionesPorDefecto(perfil);
+        const unit = Math.max(1, base + calcularDelta(perfil, specs));
         const newItem = {
             nombre: p.nombre,
+            categoria: p.categoria,
             cantidad: 1,
-            precioBase: p.precio,
-            precioUnitario: p.precio,
-            precioFinal: p.precio,
-            esSRI: p.esSRI,
-            especificaciones: {
-                tamano: p.esSRI ? '1/4 Oficio' : 'Carta / A4',
-                copias: p.esSRI ? 'Original + 1 Copia (Duplicado 100h)' : 'Original (50 hojas)',
-                diseno: 'Sin Diseño (Arte provisto / Repetición)',
-                papel: p.esSRI ? 'Químico Autocopia' : 'Bond 75g',
-                esSRI: p.esSRI,
-            }
+            precioBase: base,
+            precioUnitario: unit,
+            precioFinal: unit,
+            esSRI,
+            especificaciones: specs,
         };
-        setItems([newItem]);
+        // Se agrega al pedido (no reemplaza), para permitir órdenes multi-ítem.
+        setItems(prev => [...prev, newItem]);
         setStep(2);
     };
 
@@ -407,7 +440,7 @@ const NuevoPedidoPage: React.FC = () => {
                             cedula: cleanCed || '9999999999',
                             telefono: tempClient.telefono ? [tempClient.telefono] : [],
                             regimen: tempClient.regimen || 'General',
-                            direccion: 'Local'
+                            direccion: tempClient.direccion || 'Local'
                         });
                 } else {
                     finalCliente = clientes.find(c => c.cedula === '9999999999')
@@ -1042,116 +1075,101 @@ const NuevoPedidoPage: React.FC = () => {
                                                 )}
                                             </div>
 
-                                            {/* Tabs de Filtro de Categoría */}
+                                            {/* Filtros de categoría — limpios y dinámicos */}
                                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                                {CATEGORIAS_CATALOGO.map((cat) => {
+                                                {categoriasPaso1.map((cat: string) => {
                                                     const activo = filtroCat === cat;
+                                                    const emoji = cat === 'Todos' ? '✨' : cat === 'Comprobantes SRI' ? '🏛️' : ((CATEGORY_EMOJIS as any)[cat] || '📦');
                                                     return (
                                                         <button
                                                             key={cat}
                                                             type="button"
                                                             onClick={() => setFiltroCat(cat)}
                                                             style={{
-                                                                padding: '6px 12px',
-                                                                borderRadius: 8,
+                                                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                padding: '6px 12px', borderRadius: 99,
                                                                 border: `1px solid ${activo ? C.royal : C.borderStrong}`,
                                                                 background: activo ? C.royal : C.surface,
                                                                 color: activo ? '#FFFFFF' : C.body,
-                                                                fontSize: 12,
-                                                                fontWeight: 700,
-                                                                cursor: 'pointer',
-                                                                transition: 'all 0.15s ease',
+                                                                fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+                                                                transition: 'all .15s ease', fontFamily: 'inherit',
                                                             }}
                                                         >
-                                                            {cat}
+                                                            <span>{emoji}</span>
+                                                            <span>{cat}</span>
                                                         </button>
                                                     );
                                                 })}
                                             </div>
 
-                                            {/* Tarjetas Minimalistas de Producto */}
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-                                                {CATALOGO_RAPIDO
-                                                    .filter(p => {
-                                                        const matchCat = filtroCat === 'Todos' || p.cat === filtroCat;
-                                                        const matchSearch = !busqueda || p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || p.tag.toLowerCase().includes(busqueda.toLowerCase());
-                                                        return matchCat && matchSearch;
-                                                    })
-                                                    .map((p) => (
-                                                        <button
-                                                            key={p.id}
-                                                            type="button"
-                                                            onClick={() => handleSelectQuickProduct(p)}
-                                                            style={{
-                                                                textAlign: 'left',
-                                                                padding: '16px 18px',
-                                                                borderRadius: 14,
-                                                                border: `1.5px solid ${p.esSRI ? C.goldBorder : C.border}`,
-                                                                borderLeft: p.esSRI ? `5px solid ${C.gold}` : `5px solid ${C.royal}`,
-                                                                background: p.esSRI ? '#FFFCF2' : C.surface,
-                                                                cursor: 'pointer',
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                justifyContent: 'space-between',
-                                                                minHeight: 120,
-                                                                transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                                                                boxShadow: '0 2px 4px rgba(10,17,64,0.02)',
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.borderColor = p.esSRI ? C.gold : C.royal;
-                                                                e.currentTarget.style.background = p.esSRI ? '#FFF9E6' : C.surfaceAlt;
-                                                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                e.currentTarget.style.boxShadow = '0 8px 20px -6px rgba(10,17,64,0.08)';
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.borderColor = p.esSRI ? C.goldBorder : C.border;
-                                                                e.currentTarget.style.borderLeft = p.esSRI ? `5px solid ${C.gold}` : `5px solid ${C.royal}`;
-                                                                e.currentTarget.style.background = p.esSRI ? '#FFFCF2' : C.surface;
-                                                                e.currentTarget.style.transform = 'translateY(0)';
-                                                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(10,17,64,0.02)';
-                                                            }}
-                                                        >
-                                                            {esProductoTalonario(p.nombre) && (
-                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: '#F7F3EC', padding: '8px 0', marginBottom: 12 }}>
-                                                                    <ProductVisual nombre={p.nombre} esSRI={p.esSRI} width={110} />
-                                                                </div>
-                                                            )}
-                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                                                                <span style={{
-                                                                    fontSize: 10,
-                                                                    fontWeight: 800,
-                                                                    padding: '3px 8px',
-                                                                    borderRadius: 6,
-                                                                    background: p.esSRI ? C.goldBg : C.chipBlue,
-                                                                    color: p.esSRI ? C.goldTextStrong : C.royal,
-                                                                    border: `1px solid ${p.esSRI ? C.goldBorder : '#D7DDF0'}`,
-                                                                    display: 'inline-flex',
-                                                                    alignItems: 'center',
-                                                                    gap: 4
-                                                                }}>
-                                                                    <span>{p.esSRI ? '🏛️' : '💼'}</span>
-                                                                    <span>{p.esSRI ? 'AUTORIZADO SRI / TAX' : 'COMERCIAL'}</span>
-                                                                </span>
-                                                                <div style={{ textAlign: 'right' }}>
-                                                                    <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 800, color: C.royal }}>
-                                                                        ${p.precio.toFixed(2)}
-                                                                    </span>
-                                                                    <span style={{ display: 'block', fontSize: 9.5, color: C.faint, fontWeight: 600 }}>
-                                                                        {p.esSRI ? 'Sin IVA' : '+15% IVA'}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: C.ink, marginTop: 10 }}>
-                                                                {p.nombre}
-                                                            </div>
-                                                            <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
-                                                                {p.esSRI ? 'Emite Solicitud SRI · Requiere RUC' : 'Uso interno · Recibo de Taller'}
-                                                            </div>
-                                                            <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, color: p.esSRI ? C.goldTextStrong : C.royal, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                Configurar detalles →
-                                                            </div>
-                                                        </button>
-                                                    ))}
+                                            {/* Grilla de productos del catálogo real */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
+                                                {productosFiltradosPaso1.map((p: any) => (
+                                                    <button
+                                                        key={p.id || p.nombre}
+                                                        type="button"
+                                                        onClick={() => handleSelectQuickProduct(p)}
+                                                        style={{
+                                                            textAlign: 'left',
+                                                            padding: 14,
+                                                            borderRadius: 14,
+                                                            border: `1.5px solid ${p.esSRI ? C.goldBorder : C.border}`,
+                                                            background: p.esSRI ? '#FFFCF2' : C.surface,
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            minHeight: 150,
+                                                            transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                                            boxShadow: '0 2px 4px rgba(10,17,64,0.02)',
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.borderColor = p.esSRI ? C.gold : C.royal;
+                                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                                            e.currentTarget.style.boxShadow = '0 10px 22px -8px rgba(10,17,64,0.14)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.borderColor = p.esSRI ? C.goldBorder : C.border;
+                                                            e.currentTarget.style.transform = 'translateY(0)';
+                                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(10,17,64,0.02)';
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: p.esSRI ? '#FFFCF2' : '#F7F3EC', padding: '8px 0', marginBottom: 10 }}>
+                                                            <ProductVisual nombre={p.nombre} categoria={p.categoria} esSRI={p.esSRI} width={104} />
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                                            <span style={{
+                                                                fontSize: 9,
+                                                                fontWeight: 800,
+                                                                padding: '2px 7px',
+                                                                borderRadius: 99,
+                                                                background: p.esSRI ? C.goldBg : C.chipBlue,
+                                                                color: p.esSRI ? C.goldTextStrong : C.royal,
+                                                                border: `1px solid ${p.esSRI ? C.goldBorder : C.borderStrong}`,
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '.04em',
+                                                            }}>
+                                                                {p.esSRI ? '🏛️ SRI' : '💼 Comercial'}
+                                                            </span>
+                                                            <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 800, color: C.royal }}>
+                                                                {formatCurrency(Number(p.precio) || 0)}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 8, lineHeight: 1.3 }}>
+                                                            {p.nombre}
+                                                        </div>
+                                                        <div style={{ fontSize: 10.5, color: C.muted, marginTop: 3, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                            {p.descripcion || (p.esSRI ? 'Requiere RUC · Sin IVA' : 'Trabajo comercial · +15% IVA')}
+                                                        </div>
+                                                        <div style={{ marginTop: 'auto', paddingTop: 8, fontSize: 11.5, fontWeight: 700, color: p.esSRI ? C.goldTextStrong : C.royal }}>
+                                                            Configurar detalles →
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                                {productosFiltradosPaso1.length === 0 && (
+                                                    <div style={{ gridColumn: '1 / -1', padding: 28, textAlign: 'center', color: C.muted, fontSize: 12.5, border: `1px dashed ${C.borderStrong}`, borderRadius: 14 }}>
+                                                        No hay productos que coincidan con “{busqueda}”. Probá con otra palabra o revisá el Catálogo.
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ) : (

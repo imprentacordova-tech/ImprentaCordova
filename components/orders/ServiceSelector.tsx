@@ -40,7 +40,9 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
     const categories = useMemo(() => {
         const cats = new Set(productos.map(p => p.categoria || 'General'));
         const list = Array.from(cats);
-        if (productos.some(p => p.esSRI) && !cats.has('SRI')) {
+        // El catálogo nuevo ya trae la categoría "Documentos SRI"; no duplicar
+        // con una pestaña pseudo "SRI" si esa categoría existe.
+        if (productos.some(p => p.esSRI) && !cats.has('SRI') && !cats.has('Documentos SRI')) {
             list.push('SRI');
         }
         return ['Todas', ...list.sort()];

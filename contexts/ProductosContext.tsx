@@ -75,18 +75,48 @@ export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const seedCatalog = async () => {
     try {
-      const dbCatalog = MASTER_CATALOG.map(p => ({
-        nombre: p.nombre,
-        descripcion: p.descripcion,
-        precio: p.precio,
-        categoria: p.categoria,
-        es_sri: p.esSRI ?? false,
-        imagen_url: p.imagenUrl ?? null,
-        unit: p.unit ?? null,
-        is_popular: p.isPopular ?? false,
-      }));
-      const { error } = await supabase.from('productos').upsert(dbCatalog, { onConflict: 'nombre' });
-      if (error) throw error;
+      // La tabla `productos` no tiene UNIQUE sobre `nombre`, así que un
+      // `upsert(onConflict: 'nombre')` fallaba en silencio. Hacemos el
+      // "upsert" a mano: insertamos los que faltan y actualizamos por `id`
+      // los que ya existen. Así el catálogo maestro siempre aterriza.
+      const { data: existentes, error: errExistentes } = await supabase
+        .from('productos')
+        .select('id, nombre');
+      if (errExistentes) throw errExistentes;
+
+      const idPorNombre = new Map<string, string>(
+        (existentes || []).map((p: any) => [p.nombre, p.id]),
+      );
+
+      const aInsertar: any[] = [];
+      const aActualizar: Array<{ id: string; cambios: any }> = [];
+
+      for (const p of MASTER_CATALOG) {
+        const payload = {
+          nombre: p.nombre,
+          descripcion: p.descripcion ?? null,
+          precio: p.precio ?? 0,
+          categoria: p.categoria,
+          es_sri: p.esSRI ?? false,
+          imagen_url: p.imagenUrl ?? null,
+          specs: p.specs ?? [],
+          unit: p.unit ?? null,
+          is_popular: p.isPopular ?? false,
+        };
+        const id = idPorNombre.get(p.nombre as string);
+        if (id) aActualizar.push({ id, cambios: payload });
+        else aInsertar.push(payload);
+      }
+
+      if (aInsertar.length > 0) {
+        const { error } = await supabase.from('productos').insert(aInsertar);
+        if (error) throw error;
+      }
+      for (const { id, cambios } of aActualizar) {
+        const { error } = await supabase.from('productos').update(cambios).eq('id', id);
+        if (error) throw error;
+      }
+
       setTimeout(() => fetchProductos(), 500);
     } catch (err) {
       console.error('[ProductosContext] Seed error:', err);

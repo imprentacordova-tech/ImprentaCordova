@@ -1,6 +1,9 @@
 import React, { useMemo, useRef } from 'react';
 import { C, S, MONO, DISPLAY } from '../panelTheme';
 import { RECARGO_URGENCIA } from '../../services/orderPricing';
+import { ProductVisual } from '../ProductVisual';
+import { DetalleCampos } from './DetalleCampos';
+import { perfilDe, calcularDelta, resumenPerfil } from '../../services/detalleProducto';
 
 /**
  * Paso 2 de Nueva Orden — "Especificaciones y Calculadora Dinámica"
@@ -44,6 +47,15 @@ export const OPCIONES_PAPEL = [
     { label: 'Couché 300g (Brillante/Mate)', delta: 2 },
     { label: 'Adhesivo / Vinil', delta: 3 },
 ];
+
+export const calcularHojas = (copiasStr?: string, esSri?: boolean): number => {
+    if (!copiasStr) return esSri ? 100 : 50;
+    if (/cuadruplicado|200\s*h/i.test(copiasStr)) return 200;
+    if (/triplicado|150\s*h/i.test(copiasStr)) return 150;
+    if (/duplicado|100\s*h/i.test(copiasStr)) return 100;
+    if (/original\s*\(50|50\s*h/i.test(copiasStr)) return 50;
+    return esSri ? 100 : 50;
+};
 
 const fechaDeOpcion = (id: OpcionEntrega): string => {
     const d = new Date();
@@ -147,22 +159,16 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
         setFechaEntrega(d.toISOString());
     };
 
-    const updateItemOption = (index: number, key: 'tamano' | 'copias' | 'diseno' | 'papel', val: string) => {
+    const updateItemOption = (index: number, key: string, val: string) => {
         if (!setItems) return;
         setItems(prev => prev.map((item, i) => {
             if (i !== index) return item;
-            const currentSpecs = item.especificaciones || {};
-            const newSpecs = { ...currentSpecs, [key]: val };
-
+            const perfil = perfilDe(item);
+            const newSpecs = { ...(item.especificaciones || {}), [key]: val };
             const base = item.precioBase ?? item.precioUnitario ?? 13;
-            const deltaTam = OPCIONES_TAMANO.find(o => o.label === (newSpecs.tamano || '1/4 Oficio'))?.delta || 0;
-            const deltaCop = item.esSRI ? (OPCIONES_COPIAS.find(o => o.label === (newSpecs.copias || 'Original + 1 Copia (Duplicado 100h)'))?.delta || 0) : 0;
-            const deltaDis = OPCIONES_DISENO.find(o => o.label === (newSpecs.diseno || 'Sin Diseño (Arte provisto / Repetición)'))?.delta || 0;
-            const deltaPap = OPCIONES_PAPEL.find(o => o.label === (newSpecs.papel || (item.esSRI ? 'Químico Autocopia' : 'Bond 75g')) )?.delta || 0;
-
-            const newUnitPrice = Math.max(1, base + deltaTam + deltaCop + deltaDis + deltaPap);
+            const delta = calcularDelta(perfil, newSpecs);
+            const newUnitPrice = Math.max(1, base + delta);
             const qty = item.cantidad || 1;
-
             return {
                 ...item,
                 precioBase: base,
@@ -268,15 +274,17 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                     <div style={{ ...S.colHead, color: C.faint }}>Configurador de Producto por Ítem</div>
                     
                     {items.map((item, idx) => {
-                        const tamanoActual = item.especificaciones?.tamano || (item.esSRI ? '1/4 Oficio' : 'Carta / A4');
-                        const copiasActual = item.especificaciones?.copias || (item.esSRI ? 'Original + 1 Copia (Duplicado 100h)' : 'Original (50 hojas)');
-                        const disenoActual = item.especificaciones?.diseno || 'Sin Diseño (Arte provisto / Repetición)';
-                        const papelActual = item.especificaciones?.papel || (item.esSRI ? 'Químico Autocopia' : 'Bond 75g');
-
-                        const deltaTam = OPCIONES_TAMANO.find(o => o.label === tamanoActual)?.delta || 0;
-                        const deltaCop = item.esSRI ? (OPCIONES_COPIAS.find(o => o.label === copiasActual)?.delta || 0) : 0;
-                        const deltaDis = OPCIONES_DISENO.find(o => o.label === disenoActual)?.delta || 0;
-                        const deltaPap = OPCIONES_PAPEL.find(o => o.label === papelActual)?.delta || 0;
+                        const perfil = perfilDe(item);
+                        const hojasCalculadas = calcularHojas(item.especificaciones?.copias, item.esSRI);
+                        const cantBloques = item.cantidad || 1;
+                        const ajustes = perfil.campos
+                            .filter(c => c.tipo === 'chips' && c.opciones)
+                            .map(c => {
+                                const val = item.especificaciones?.[c.key] ?? c.default;
+                                const op = c.opciones!.find(o => o.valor === val);
+                                return op?.delta ? { label: c.label.split(' ')[0], delta: op.delta } : null;
+                            })
+                            .filter(Boolean) as Array<{ label: string; delta: number }>;
 
                         return (
                             <div
@@ -311,7 +319,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
 
                                     {/* Stepper de Cantidad */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Talonarios / Cantidad:</span>
+                                        <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>{perfil.unidadCantidad} / Cantidad:</span>
                                         <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${C.borderStrong}`, borderRadius: 8, background: '#FFFFFF', overflow: 'hidden' }}>
                                             <button
                                                 type="button"
@@ -334,76 +342,114 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                     </div>
                                 </div>
 
-                                {/* 1. Selector de Tamaño de Corte */}
-                                <div>
-                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>1. Tamaño de Corte / Formato:</span>
-                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        {OPCIONES_TAMANO.map((tam) => (
-                                            <button
-                                                key={tam.label}
-                                                type="button"
-                                                onClick={() => updateItemOption(idx, 'tamano', tam.label)}
-                                                style={chip(tamanoActual === tam.label)}
-                                            >
-                                                <span>{tam.label}</span>
-                                                <span style={{ fontSize: 10, opacity: 0.8 }}>({tam.tag})</span>
-                                            </button>
-                                        ))}
+                                {/* Rejilla: Configuración Técnica (Izquierda) + Vista Previa Dinámica (Derecha) */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
+                                    gap: 16,
+                                    alignItems: 'start',
+                                }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                            <span style={{ ...S.fieldLabel, marginBottom: 0 }}>Detalles de {perfil.label}</span>
+                                            <span style={{ fontSize: 10, fontWeight: 700, color: C.faint, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                                                {perfil.unidadCantidad}
+                                            </span>
+                                        </div>
+                                        <DetalleCampos
+                                            perfil={perfil}
+                                            valores={item.especificaciones || {}}
+                                            onChange={(key, val) => updateItemOption(idx, key, val)}
+                                        />
                                     </div>
-                                </div>
 
-                                {/* 2. Selector de Copias Químicas (para SRI / Talonarios) */}
-                                {item.esSRI && (
-                                    <div>
-                                        <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>2. Número de Copias Químicas / Hojas por Talonario:</span>
-                                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                            {OPCIONES_COPIAS.map((cop) => (
-                                                <button
-                                                    key={cop.label}
-                                                    type="button"
-                                                    onClick={() => updateItemOption(idx, 'copias', cop.label)}
-                                                    style={chip(copiasActual === cop.label)}
-                                                >
-                                                    <span>{cop.label}</span>
-                                                    <span style={{ fontSize: 10, opacity: 0.8 }}>({cop.tag})</span>
-                                                </button>
+                                    {/* Panel Lateral: Ilustración Reactiva de Producto */}
+                                    <div style={{
+                                        background: '#FFFFFF',
+                                        border: `1.5px solid ${C.borderStrong}`,
+                                        borderRadius: 14,
+                                        padding: '16px 14px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        textAlign: 'center',
+                                        gap: 10,
+                                        boxShadow: '0 2px 10px rgba(10, 17, 64, 0.04)',
+                                    }}>
+                                        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.rowLine}`, paddingBottom: 8 }}>
+                                            <span style={{ fontSize: 10.5, fontWeight: 800, color: C.faint, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                                                Vista Previa en Vivo
+                                            </span>
+                                            <span style={{
+                                                fontSize: 10.5,
+                                                fontWeight: 800,
+                                                color: C.royal,
+                                                background: C.chipBlue,
+                                                padding: '2px 8px',
+                                                borderRadius: 6,
+                                            }}>
+                                                {cantBloques} {perfil.unidadCantidad}
+                                            </span>
+                                        </div>
+
+                                        <div style={{ padding: '8px 0', minHeight: 130, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <ProductVisual
+                                                nombre={item.nombre}
+                                                categoria={item.categoria}
+                                                esSRI={item.esSRI}
+                                                bloques={cantBloques}
+                                                hojas={hojasCalculadas}
+                                                width={135}
+                                            />
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                            {perfil.manejaHojas && (
+                                                <span style={{
+                                                    fontSize: 10.5,
+                                                    fontWeight: 700,
+                                                    padding: '3px 8px',
+                                                    borderRadius: 6,
+                                                    background: item.esSRI ? C.goldBg : C.chipBlue,
+                                                    color: item.esSRI ? C.goldTextStrong : C.royal,
+                                                    border: `1px solid ${item.esSRI ? C.goldBorder : C.border}`,
+                                                }}>
+                                                    📖 {hojasCalculadas} hojas c/u
+                                                </span>
+                                            )}
+                                            {resumenPerfil(perfil, item.especificaciones || {}).map((r, i) => (
+                                                <span key={i} style={{
+                                                    fontSize: 10.5,
+                                                    fontWeight: 600,
+                                                    padding: '3px 8px',
+                                                    borderRadius: 6,
+                                                    background: C.surface,
+                                                    color: C.ink,
+                                                    border: `1px solid ${C.border}`,
+                                                }}>
+                                                    {r.icono} {r.texto}
+                                                </span>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
 
-                                {/* 3. Diseño & Diagramación */}
-                                <div>
-                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>3. Servicio de Diseño & Preprensa:</span>
-                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        {OPCIONES_DISENO.map((dis) => (
-                                            <button
-                                                key={dis.label}
-                                                type="button"
-                                                onClick={() => updateItemOption(idx, 'diseno', dis.label)}
-                                                style={chip(disenoActual === dis.label)}
-                                            >
-                                                <span>{dis.label}</span>
-                                                <span style={{ fontSize: 10, opacity: 0.8 }}>({dis.tag})</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 4. Sustrato / Papel */}
-                                <div>
-                                    <span style={{ ...S.fieldLabel, fontSize: 11, marginBottom: 6 }}>4. Sustrato / Papel Base:</span>
-                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        {OPCIONES_PAPEL.map((pap) => (
-                                            <button
-                                                key={pap.label}
-                                                type="button"
-                                                onClick={() => updateItemOption(idx, 'papel', pap.label)}
-                                                style={chip(papelActual === pap.label)}
-                                            >
-                                                <span>{pap.label}</span>
-                                            </button>
-                                        ))}
+                                        {perfil.manejaHojas && (
+                                            <div style={{
+                                                fontSize: 11,
+                                                color: C.faint,
+                                                borderTop: `1px dashed ${C.rowLine}`,
+                                                paddingTop: 8,
+                                                width: '100%',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                            }}>
+                                                <span>Hojas totales taller:</span>
+                                                <strong style={{ color: C.ink, fontFamily: MONO, fontSize: 12 }}>
+                                                    {cantBloques * hojasCalculadas} hojas
+                                                </strong>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -422,10 +468,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                     <div style={{ fontSize: 12, color: C.muted }}>
                                         <span style={{ fontWeight: 700, color: C.ink }}>Cálculo dinámico: </span>
                                         Base ${item.precioBase || 13}
-                                        {deltaTam !== 0 && ` + Formato (${deltaTam > 0 ? '+' : ''}$${deltaTam})`}
-                                        {deltaCop !== 0 && ` + Copias (${deltaCop > 0 ? '+' : ''}$${deltaCop})`}
-                                        {deltaDis !== 0 && ` + Diseño (+$${deltaDis})`}
-                                        {deltaPap !== 0 && ` + Papel (+$${deltaPap})`}
+                                        {ajustes.map((a, i) => ` + ${a.label} (${a.delta > 0 ? '+' : ''}$${a.delta})`).join('')}
                                         {` = `}
                                         <span style={{ fontFamily: MONO, fontWeight: 700, color: C.royal }}>
                                             ${(item.precioUnitario || 13).toFixed(2)} c/u

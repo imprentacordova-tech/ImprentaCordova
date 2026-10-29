@@ -457,6 +457,69 @@ function parseSRIDateToISO(dateStr) {
   return null;
 }
 
+/**
+ * Lee el resumen que muestra el SRI al finalizar la solicitud. En la pantalla de
+ * confirmación aparecen, por ejemplo:
+ *   RUC: 0705787745001
+ *   Razón Social: CORDOVA RAMIREZ ROBERTO SANTIAGO
+ *   Código del Establecimiento: 001
+ *   Nombre Comercial del Establecimiento:
+ *   Dirección del establecimiento: COLON S/N Y SUCRE
+ *   Fecha de Solicitud: 29-10-2026
+ *
+ * Es la fuente más fiel de los datos del pedido: se lee al final y viaja a la web
+ * para registrar la orden con la dirección y el establecimiento correctos.
+ */
+function leerResumenSolicitud() {
+  const out = { ruc: '', razonSocial: '', codigoEstablecimiento: '', nombreComercial: '', direccion: '', fechaSolicitud: '' };
+  const norm = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+
+  try {
+    const celdas = Array.from(document.querySelectorAll('th, td'));
+    const leer = (etiqueta) => {
+      const objetivo = norm(etiqueta);
+      for (const celda of celdas) {
+        const txt = norm(celda.textContent);
+        if (txt === objetivo || txt === objetivo + ':') {
+          const sig = celda.nextElementSibling;
+          if (sig) {
+            const val = (sig.textContent || '').replace(/\s+/g, ' ').trim();
+            if (val) return val;
+          }
+        }
+      }
+      return '';
+    };
+
+    out.ruc = leer('RUC');
+    out.razonSocial = leer('Razón Social') || leer('Razon Social');
+    out.codigoEstablecimiento = leer('Código del Establecimiento') || leer('Codigo del Establecimiento');
+    out.nombreComercial = leer('Nombre Comercial del Establecimiento') || leer('Nombre Comercial');
+    out.direccion = leer('Dirección del establecimiento') || leer('Direccion del establecimiento');
+    out.fechaSolicitud = leer('Fecha de Solicitud');
+
+    // Respaldo: parsear el texto plano (por si la maqueta no usa th/td por par).
+    if (!out.ruc || !out.razonSocial) {
+      const texto = (document.body ? document.body.innerText : '').replace(/\r/g, '');
+      const sacar = (label) => {
+        const re = new RegExp(label + '\\s*:?\\s*\\n?\\s*([^\\n]+)', 'i');
+        const m = texto.match(re);
+        return m ? m[1].replace(/\s+/g, ' ').trim() : '';
+      };
+      if (!out.ruc) out.ruc = sacar('RUC');
+      if (!out.razonSocial) out.razonSocial = sacar('Razón Social') || sacar('Razon Social');
+      if (!out.codigoEstablecimiento) out.codigoEstablecimiento = sacar('Código del Establecimiento') || sacar('Codigo del Establecimiento');
+      if (!out.nombreComercial) out.nombreComercial = sacar('Nombre Comercial del Establecimiento');
+      if (!out.direccion) out.direccion = sacar('Dirección del establecimiento') || sacar('Direccion del establecimiento');
+      if (!out.fechaSolicitud) out.fechaSolicitud = sacar('Fecha de Solicitud');
+    }
+  } catch (e) {
+    console.warn('[Cordova Ext] No se pudo leer el resumen de la solicitud:', e);
+  }
+
+  return out;
+}
+
 // -------------------------------------------------------------
 // SINCRONIZACIÓN EN LA NUBE — vía backend (Render)
 // -------------------------------------------------------------
@@ -887,7 +950,11 @@ function showCordovaSuccessModal(finalData, blocks) {
             docSize: selectedSize,
             abono: String(finalAbono),
             total: String(currentTotal),
-            caducidad: finalData.cordovaCaducidad || ''
+            caducidad: finalData.cordovaCaducidad || '',
+            direccion: finalData.cordovaDireccion || '',
+            est: finalData.cordovaEstablecimiento || '001',
+            pto: finalData.cordovaPuntoEmision || '001',
+            fechaSolicitud: finalData.cordovaFechaSolicitud || ''
           });
 
           const webUrl = `https://www.imprentacordova.net/#/nuevo?${params.toString()}`;
@@ -1117,21 +1184,27 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       const radioFR = await waitForElement('input[type="radio"][name="FR"][value="1"]', 5000);
       const inputNumero = await waitForElement('input[type="text"][name="numero"]', 5000);
       
-      highlightSRIElement(radioFR);
+      // 1) Marcar radio value="1": Por No. de autorizacion del Establecimiento Grafico (campo nombre="numero")
       radioFR.checked = true;
+      radioFR.dispatchEvent(new Event('click', { bubbles: true }));
+      highlightSRIElement(radioFR);
+
+      // 2) Llamar habilitar() en el mundo principal para activar el campo nombre="numero"
       triggerMainWorldClick('', 'habilitar');
-      
+
+      // 3) Esperar 500ms para que habilitar() active el campo, luego escribir 8634 y buscar
       setTimeout(() => {
         inputNumero.disabled = false;
         inputNumero.value = '8634';
+        inputNumero.dispatchEvent(new Event('input', { bubbles: true }));
+        inputNumero.dispatchEvent(new Event('change', { bubbles: true }));
         highlightSRIElement(inputNumero);
 
-        showCordovaAlert('Buscando Imprenta', 'Direccionando a Imprenta Córdova (8634)...', false, () => {
-          const nextBtn = document.querySelector("a[href*='nextPage']");
-          if (nextBtn) highlightSRIElement(nextBtn);
-          triggerMainWorldClick("a[href*='nextPage']", "nextPage");
+        showCordovaAlert('Buscando Imprenta', 'Direccionando a Imprenta Córdova (Cód. 8634)...', false, () => {
+          // El boton Buscar usa href="javascript:javascript:nextPage()" - llamamos nextPage() directamente
+          triggerMainWorldClick('', 'nextPage');
         }, autoPilot);
-      }, 250);
+      }, 500);
     } catch(e) {
       console.error("[Cordova SRI] Error en Paso 5:", e);
     }
@@ -1187,6 +1260,25 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
     chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks'], async (finalData) => {
       chrome.storage.local.remove(['cordova_suggested', 'cordova_est_selected']);
 
+      // Leer el resumen REAL de la pantalla del SRI (RUC, razón social, dirección,
+      // establecimiento, fecha) y completar lo que falte desde storage.
+      const resumen = leerResumenSolicitud();
+      const clientRuc = resumen.ruc || finalData.cordovaClientRuc || '';
+      const clientName = (resumen.razonSocial || finalData.cordovaClientName || 'CLIENTE SRI').toUpperCase();
+      const direccion = resumen.direccion || finalData.cordovaDireccion || '';
+      const codigoEst = resumen.codigoEstablecimiento || finalData.cordovaEstablecimiento || '001';
+      const nombreComercial = resumen.nombreComercial || finalData.cordovaNombreComercial || '';
+      const fechaSolicitud = resumen.fechaSolicitud || finalData.cordovaFechaSolicitud || '';
+
+      chrome.storage.local.set({
+        cordovaClientRuc: clientRuc,
+        cordovaClientName: clientName,
+        cordovaDireccion: direccion,
+        cordovaEstablecimiento: codigoEst,
+        cordovaNombreComercial: nombreComercial,
+        cordovaFechaSolicitud: fechaSolicitud,
+      });
+
       const blocksVal = finalData.cordovaBlocks || 100;
       const prices = {
         "1/4 Oficio": { 25: 9.00, 50: 10.00, 100: 13.00, 200: 20.00, 300: 30.00, 400: 36.00, 500: 40.00, 1000: 65.00 },
@@ -1195,10 +1287,14 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       const totalVal = (prices["1/4 Oficio"] && prices["1/4 Oficio"][blocksVal]) ? prices["1/4 Oficio"][blocksVal] : ((blocksVal / 100) * 13.00);
 
       const immediateOrder = {
-        clientRuc: finalData.cordovaClientRuc || '',
-        clientName: (finalData.cordovaClientName || 'CLIENTE SRI').toUpperCase(),
+        clientRuc,
+        clientName,
         caducidad: finalData.cordovaCaducidad || '',
-        nombreComercial: finalData.cordovaNombreComercial || '',
+        nombreComercial,
+        direccion,
+        establecimiento: codigoEst,
+        puntoEmision: '001',
+        fechaSolicitud,
         docType: finalData.cordovaDocType || '1',
         blocks: blocksVal,
         docSize: '1/4 Oficio',
@@ -1214,7 +1310,15 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
 
       setTimeout(() => {
-        showCordovaSuccessModal(finalData, blocksVal);
+        showCordovaSuccessModal({
+          ...finalData,
+          cordovaClientRuc: clientRuc,
+          cordovaClientName: clientName,
+          cordovaDireccion: direccion,
+          cordovaEstablecimiento: codigoEst,
+          cordovaNombreComercial: nombreComercial,
+          cordovaFechaSolicitud: fechaSolicitud,
+        }, blocksVal);
       }, 800);
     });
   }

@@ -17,13 +17,21 @@ import { supabase } from '../services/supabase';
 export const CATEGORY_EMOJIS: Record<string, string> = {
     'Todas': '✨',
     'SRI': '🏛️',
+    'Documentos SRI': '🏛️',
     'Impresión': '🖨️',
     'Sellos': '📜',
     'Diseño': '🎨',
     'Publicidad': '📣',
     'Suministros': '📦',
     'Varias': '⚙️',
-    'General': '📋'
+    'General': '📋',
+    'Tarjetas': '💳',
+    'Etiquetas': '🏷️',
+    'Packaging': '📦',
+    'Gran Formato': '🖼️',
+    'Merch': '🎁',
+    'Oficina': '📎',
+    'Combos': '✨'
 };
 
 interface DataContextType {

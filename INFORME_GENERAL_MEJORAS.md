@@ -248,3 +248,27 @@ Las animaciones ya existen y son correctas (`framer-motion`, `rise`, `blink`, pr
 18. **Menús internos** (`Layout.tsx` + `MobileFloatingNav.tsx`):
     - Añadidos **`/productos` (Catálogo de Productos)** y **`/produccion` (Flujo de Producción)** al sidebar — estaban huérfanos (rutas existían pero no se podía llegar desde el menú).
     - Badge "Descargar Extensión" corregido `v2.1` → `v2.3`.
+
+### Ronda 5 (Revisión final "listo para usar")
+19. **`README.md`** — reemplazado el boilerplate de AI Studio por un README real del proyecto: stack, requisitos, variables de entorno (frontend y backend), scripts, estructura, despliegue y documentación.
+20. **`.env.example`** — añadida `VITE_RENDER_API_KEY` (clave anti-abuso pública que el frontend ya leía y faltaba documentar).
+21. **`public/og-image.png`** — creada la imagen Open Graph 1200×630 (faltaba: los enlaces compartidos no mostraban imagen). Script reproducible en `scripts/make_og.py`.
+22. **`tsconfig.json`** — excluidos `**/*.timestamp-*.mjs` (archivos temporales de Vite que hacían fallar `tsc` de forma intermitente al correr junto al build) y eliminado el timestamp huérfano de la raíz.
+
+**Verificación final:**
+- `npm run build` → **EXIT 0** ✅ (incluye `dist/og-image.png` y `dist/extension-cordova.zip`)
+- `vitest` → **171/171 tests** ✅
+- `npx tsc --noEmit` → **0 errores** ✅
+
+### Ronda 6 (Catálogo súper pro: documentos tributarios completos)
+23. **`services/catalogData.ts`** — catálogo maestro completo: **30+ documentos tributarios SRI** organizados por régimen (RIMPE Negocio Popular, RIMPE Emprendedor, Régimen General), formatos por blocks, servicios electrónicos y todos los trabajos comerciales (tarjetas, publicidad, etiquetas, packaging, gran formato, merch, oficina, bingo/rifas, empastado, combos). Cada ficha trae descripción, especificaciones y **precio de referencia**.
+24. **`contexts/ProductosContext.tsx`** — `seedCatalog` reescrito: la tabla `productos` no tiene UNIQUE en `nombre`, así que el `upsert(onConflict:'nombre')` fallaba en silencio. Ahora inserta los productos nuevos y actualiza los existentes por `id`, e incluye `specs`.
+25. **`contexts/DataContext.tsx`** — emojis por categoría para todo el catálogo nuevo.
+26. **`pages/Productos.tsx`** — rediseño súper pro/minimalista: buscador dominante (nombre/categoría/descripción/especificaciones), categorías con emoji y contador, fichas con ilustración dinámica + sello SRI + precio + edición, modal de detalle con especificaciones y botón "Restaurar maestro".
+27. **`pages/NuevoPedido.tsx`** — el Paso 1 ya no usa una lista de 10 ítems hardcodeada: consume el catálogo real (`productos`), con respaldo estático si aún no cargó. Filtros de categoría dinámicos y limpios, búsqueda por nombre/categoría/descripción/especificación, fichas con ilustración y "Configurar detalles →" que agrega el ítem y pasa al Paso 2 (permite órdenes multi-ítem).
+28. **`components/orders/ServiceSelector.tsx`** — se evita la pestaña duplicada "SRI" cuando el catálogo ya trae "Documentos SRI".
+
+**Verificación Ronda 6:**
+- `npm run build` → **EXIT 0** ✅
+- `vitest` → **171/171 tests** ✅
+- `npx tsc --noEmit` → **0 errores** ✅
