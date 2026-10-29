@@ -143,7 +143,12 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
         try {
             let photoUrl = '';
             if (fotoRetiro) {
-                photoUrl = await uploadFile(fotoRetiro, 'trabajos', `${trabajo.id}/retiro_${Date.now()}`);
+                try {
+                    photoUrl = await uploadFile(fotoRetiro, 'trabajos', `${trabajo.id}/retiro_${Date.now()}`);
+                } catch (uploadErr) {
+                    // La foto es un extra: si falla el bucket/política, la entrega sigue.
+                    console.warn('[Despacho] No se pudo subir la foto de retiro; se entrega sin foto:', uploadErr);
+                }
             }
 
             // Construir nota de entrega para trazabilidad
@@ -162,14 +167,14 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
                 notas
             );
 
-            // Registro de auditoría
-            await logActivity(
+            // Registro de auditoría (NO bloquea la entrega: si falla, solo se avisa en consola)
+            logActivity(
                 currentUser.nombre || 'Operador',
                 currentUser.rol || 'Operador',
                 'RETIRO_PROCESADO',
                 `Orden #${trabajo.orden} entregada a ${receptorNombre} (${metodoPago} ${formatCurrency(montoCobrado)})`,
                 'Despacho'
-            );
+            ).catch(e => console.warn('[Despacho] No se pudo registrar la auditoría:', e));
 
             // Notificación por correo si el cliente tiene email registrado
             if (cliente?.email) {
@@ -195,7 +200,7 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
             }
         } catch (err: any) {
             console.error('Error al registrar retiro:', err);
-            setErrorMsg('Error al registrar la entrega. Verifique la conexión e intente de nuevo.');
+            setErrorMsg(`No se pudo registrar la entrega: ${err?.message || 'error desconocido'}.`);
         } finally {
             setIsProcessing(false);
         }

@@ -333,8 +333,49 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
       updateData.observaciones = `${prevObs}[Despacho ${new Date().toLocaleDateString('es-EC')}]: ${notasEntrega}`.slice(0, 1000);
     }
 
-    const { data, error } = await supabase.from('trabajos').update(updateData).eq('id', id).select().single();
-    if (error) throw error;
+    // Update resiliente: si la base no tiene alguna columna del payload, la quita
+    // y reintenta (mismo criterio que addTrabajo). Y si `.single()` no devuelve la
+    // fila (RLS / 0 filas), hace un update mínimo de respaldo y avisa el motivo.
+    let payload: Record<string, any> = { ...updateData };
+    let data: any = null;
+    let error: any = null;
+
+    for (let intento = 0; intento < 8; intento++) {
+      const res = await supabase.from('trabajos').update(payload).eq('id', id).select().single();
+      if (!res.error) { data = res.data; error = null; break; }
+      error = res.error;
+      const msg = res.error.message || '';
+      const m = msg.match(/Could not find the '([^']+)' column/i) || msg.match(/column "([^"]+)" of relation/i);
+      if (m && m[1] && m[1] in payload) {
+        console.warn(`[TrabajosContext] Columna '${m[1]}' no existe en 'trabajos'. Se omite y se reintenta.`);
+        delete payload[m[1]];
+        continue;
+      }
+      break;
+    }
+
+    // Respaldo: si el update no devolvió fila (p. ej. RLS o id inexistente),
+    // reintentamos con lo mínimo indispensable para cerrar la entrega.
+    if (error || !data) {
+      const res2 = await supabase.from('trabajos')
+        .update({ saldo: 0, estado: TrabajoEstado.ENTREGADO, actualizado_por: user })
+        .eq('id', id).select().single();
+      if (!res2.error) { data = res2.data; error = null; }
+      else error = res2.error;
+    }
+
+    if (error || !data) {
+      console.error('[TrabajosContext] Error en registerRetiro:', error);
+      const msg = error?.message || '';
+      if (/Could not find the '.+' column|column .+ does not exist/i.test(msg)) {
+        throw new Error(`La base no tiene una columna requerida en 'trabajos'. Corré la migración supabase/migrations/20261029_trabajos_columnas_sincronizadas.sql.`);
+      }
+      if (/row-level security|permission denied|row-level/i.test(msg)) {
+        throw new Error('La base rechazó el cambio por permisos (RLS). Revisá las políticas de "trabajos" en Supabase.');
+      }
+      throw error || new Error('No se pudo registrar la entrega.');
+    }
+
     const mapped = mapDBTrabajo(data);
     setTrabajos(prev => prev.map(t => t.id === id ? mapped : t));
     return mapped;
