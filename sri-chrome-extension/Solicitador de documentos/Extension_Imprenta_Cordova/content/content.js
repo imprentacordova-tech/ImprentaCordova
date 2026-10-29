@@ -1181,30 +1181,73 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         return;
       }
 
-      const radioFR = await waitForElement('input[type="radio"][name="FR"][value="1"]', 5000);
-      const inputNumero = await waitForElement('input[type="text"][name="numero"]', 5000);
-      
-      // 1) Marcar radio value="1": Por No. de autorizacion del Establecimiento Grafico (campo nombre="numero")
-      radioFR.checked = true;
-      radioFR.dispatchEvent(new Event('click', { bubbles: true }));
-      highlightSRIElement(radioFR);
+      // 1) Encontrar el radio "Por Código" de forma robusta (NO asumir value="1").
+      //    La página puede rotularlo distinto; se busca por value, por etiqueta o
+      //    por "no es el de RUC".
+      const radiosFR = Array.from(document.querySelectorAll('input[type="radio"][name="FR"]'));
+      let radioCodigo = radiosFR.find(r => r.value === '1' || r.value === '2');
+      if (!radioCodigo) {
+        radioCodigo = radiosFR.find(r => {
+          const cont = r.closest('td, tr, label, div') || r.parentElement;
+          const txt = (cont ? cont.textContent : '').toLowerCase();
+          return txt.includes('código') || txt.includes('codigo') || txt.includes('autorizaci');
+        });
+      }
+      if (!radioCodigo) radioCodigo = radiosFR.find(r => r.value !== '0');
 
-      // 2) Llamar habilitar() en el mundo principal para activar el campo nombre="numero"
-      triggerMainWorldClick('', 'habilitar');
+      const inputRuc = document.querySelector('input[type="text"][name="ruc"]');
 
-      // 3) Esperar 500ms para que habilitar() active el campo, luego escribir 8634 y buscar
-      setTimeout(() => {
-        inputNumero.disabled = false;
-        inputNumero.value = '8634';
-        inputNumero.dispatchEvent(new Event('input', { bubbles: true }));
-        inputNumero.dispatchEvent(new Event('change', { bubbles: true }));
-        highlightSRIElement(inputNumero);
+      if (radioCodigo) {
+        // 2) Marcar "Por Código" y disparar click real (para que corra habilitar(this)).
+        radioCodigo.checked = true;
+        radioCodigo.dispatchEvent(new Event('click', { bubbles: true }));
+        highlightSRIElement(radioCodigo);
 
-        showCordovaAlert('Buscando Imprenta', 'Direccionando a Imprenta Córdova (Cód. 8634)...', false, () => {
-          // El boton Buscar usa href="javascript:javascript:nextPage()" - llamamos nextPage() directamente
+        // 3) Llamar habilitar() en el mundo principal con el value elegido.
+        document.body.setAttribute('data-cordova-radio', radioCodigo.value);
+        triggerMainWorldClick('', 'habilitar');
+        setTimeout(() => document.body.removeAttribute('data-cordova-radio'), 1500);
+
+        // 4) Esperar a que habilitar() active el campo nombre="numero", escribir 8634 y buscar.
+        setTimeout(() => {
+          const inputNumero = document.querySelector('input[type="text"][name="numero"]');
+          if (inputNumero) {
+            inputNumero.disabled = false;
+            inputNumero.value = '8634';
+            inputNumero.dispatchEvent(new Event('input', { bubbles: true }));
+            inputNumero.dispatchEvent(new Event('change', { bubbles: true }));
+            highlightSRIElement(inputNumero);
+          }
+          if (inputRuc) {
+            inputRuc.disabled = true;
+            inputRuc.value = '';
+          }
+
+          showCordovaAlert('Buscando Imprenta', 'Direccionando a Imprenta Córdova (Cód. 8634)...', false, () => {
+            // El boton Buscar usa href="javascript:javascript:nextPage()" - llamamos nextPage() directamente
+            triggerMainWorldClick('', 'nextPage');
+          }, autoPilot);
+        }, 500);
+      } else if (inputRuc) {
+        // Respaldo: si la pantalla SOLO ofrece "Por RUC", se busca con el RUC de la imprenta.
+        const radioRuc = radiosFR.find(r => r.value === '0') || radiosFR[0];
+        if (radioRuc) {
+          radioRuc.checked = true;
+          radioRuc.dispatchEvent(new Event('click', { bubbles: true }));
+          highlightSRIElement(radioRuc);
+        }
+        inputRuc.disabled = false;
+        inputRuc.value = '0702065319001';
+        inputRuc.dispatchEvent(new Event('input', { bubbles: true }));
+        inputRuc.dispatchEvent(new Event('change', { bubbles: true }));
+        highlightSRIElement(inputRuc);
+
+        showCordovaAlert('Buscando Imprenta', 'Direccionando a Imprenta Córdova (RUC 0702065319001)...', false, () => {
           triggerMainWorldClick('', 'nextPage');
         }, autoPilot);
-      }, 500);
+      } else {
+        throw new Error('No se encontró el selector Por Código / Por RUC');
+      }
     } catch(e) {
       console.error("[Cordova SRI] Error en Paso 5:", e);
     }

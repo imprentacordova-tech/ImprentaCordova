@@ -77,8 +77,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
           } else if (fnName === 'nextPage' && typeof nextPage === 'function') {
             nextPage();
-          } else if (fnName === 'habilitar' && typeof habilitar === 'function') {
-            habilitar(document.querySelector('input[type="radio"][name="FR"][value="1"]'));
+          } else if (fnName === 'habilitar') {
+            // El content script deja el value del radio elegido en data-cordova-radio.
+            const val = document.body.getAttribute('data-cordova-radio');
+            const radios = Array.from(document.querySelectorAll('input[type="radio"][name="FR"]'));
+            let radio = val !== null ? radios.find(r => r.value === val) : null;
+            if (!radio) radio = radios.find(r => r.value === '1' || r.value === '2');
+            if (!radio) radio = radios.find(r => r.value !== '0') || radios[0];
+            if (typeof habilitar === 'function' && radio) habilitar(radio);
           } else if (fnName === 'bypassAlertsAndNext') {
              if (typeof siguientePaso === 'function') siguientePaso();
              else if(document.forms.length > 0) document.forms[0].submit();
