@@ -96,6 +96,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return;
   }
 
+  if (request.action === "sriAceptadaResult") {
+    // La imprenta aceptó la solicitud: avisar a las pestañas web abiertas
+    // (imprentacordova.net) para pasar la orden a "En Diseño".
+    chrome.tabs.query(
+      { url: ['https://www.imprentacordova.net/*', 'https://imprentacordova.net/*'] },
+      (tabs) => {
+        (tabs || []).forEach(t => {
+          chrome.tabs.sendMessage(t.id, { action: 'sriAceptadaResult', data: request.data || {} })
+            .catch(() => { /* pestaña cerrada */ });
+        });
+      },
+    );
+    return;
+  }
+
   if (request.action === "callFunction" && sender.tab) {
     chrome.scripting.executeScript({
       target: { tabId: sender.tab.id },

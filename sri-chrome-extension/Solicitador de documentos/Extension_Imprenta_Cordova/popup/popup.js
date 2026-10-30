@@ -213,6 +213,16 @@ document.addEventListener('DOMContentLoaded', () => {
     info.innerHTML = `📅 Última caducidad: <b>${res.cordovaCaducidad}</b>${meses ? ` · ${meses} meses` : ''}${alerta ? ' <span style="color:#B45309;font-weight:700;">⚠️ obligaciones pendientes</span>' : ''}`;
   });
 
+  // Mostrar las solicitudes pendientes de aceptar (bandeja de la imprenta).
+  chrome.storage.local.get(['cordova_solicitudes_pendientes'], (res) => {
+    const el = document.getElementById('imprenta-pendientes-info');
+    if (!el) return;
+    const list = res.cordova_solicitudes_pendientes || [];
+    if (!list.length) { el.textContent = ''; return; }
+    const primeros = list.slice(0, 2).map(s => `${s.ruc} · ${s.razon || ''}`).join(' | ');
+    el.innerHTML = `📥 <b>${list.length}</b> pendiente(s) de aceptar: ${primeros}`;
+  });
+
   docChips.forEach(chip => {
     chip.addEventListener('click', () => {
       docChips.forEach(c => c.classList.remove('active'));

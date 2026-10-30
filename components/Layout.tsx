@@ -375,9 +375,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { trabajos } = useData();
+    const { trabajos, clientes, updateTrabajoStatus } = useData();
     const { user, logout: authLogout } = useAuth();
     useKeyboardShortcuts();
+
+    // La extensión avisa cuando la imprenta acepta una solicitud SRI: la orden
+    // pasa a "En Diseño" (el trámite ya arrancó).
+    useEffect(() => {
+        if (!user) return;
+        const onMsg = (e: MessageEvent) => {
+            if (!e.data || e.data.type !== 'CORDOVA_SRI_ACEPTADA') return;
+            const ruc = String(e.data.data?.ruc || '').replace(/\D/g, '');
+            if (!ruc) return;
+            const pend = (trabajos || []).find(t => {
+                if (!t.esSRI || t.estado !== TrabajoEstado.PENDIENTE) return false;
+                const cli = (clientes || []).find(c => c.id === t.clienteId);
+                return !!cli && (cli.ruc === ruc || cli.cedula === ruc);
+            });
+            if (pend) {
+                updateTrabajoStatus(pend.id, TrabajoEstado.EN_DISENO, user?.nombre || 'Sistema')
+                    .catch(err => console.warn('[Cordova] No se pudo pasar a Diseño:', err));
+            }
+        };
+        window.addEventListener('message', onMsg);
+        return () => window.removeEventListener('message', onMsg);
+    }, [trabajos, clientes, updateTrabajoStatus, user]);
 
     if (!user) return null;
 

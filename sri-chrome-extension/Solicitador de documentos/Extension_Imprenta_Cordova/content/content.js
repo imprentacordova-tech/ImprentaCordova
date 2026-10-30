@@ -1483,4 +1483,57 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       }
     });
   }
+
+  // ── IMPRENTA: bandeja de solicitudes recibidas ─────────────────────
+  if (url.includes('no-procesadas-listado.jspa')) {
+    try {
+      const filas = Array.from(document.querySelectorAll('table tr'));
+      const pendientes = [];
+      for (const fila of filas) {
+        const celdas = Array.from(fila.querySelectorAll('td')).map(td => (td.textContent || '').trim());
+        // Columnas: Solicitud | Fecha | RUC | Razón Social | Establecimiento | Dirección
+        if (celdas.length >= 5 && /^\d{13}$/.test(celdas[2] || '')) {
+          pendientes.push({
+            solicitud: celdas[0] || '',
+            fecha: celdas[1] || '',
+            ruc: celdas[2],
+            razon: celdas[3] || '',
+            establecimiento: celdas[4] || '',
+            direccion: celdas.slice(5).join(' ').trim(),
+          });
+        }
+      }
+      chrome.storage.local.set({ cordova_solicitudes_pendientes: pendientes.slice(0, 50) });
+      if (pendientes.length > 0) {
+        showCordovaToastHud(`📥 ${pendientes.length} solicitud(es) pendiente(s) de aceptar.`);
+      }
+    } catch (e) { console.warn('[Cordova] Bandeja imprenta:', e); }
+  }
+
+  // ── IMPRENTA: detalle de la solicitud (secuencias autorizadas) ─────
+  if (url.includes('no-procesada-informacion.jspa')) {
+    try {
+      const sec = leerSecuencias();
+      if (sec) {
+        chrome.storage.local.set({
+          cordovaSerie: sec.serie,
+          cordovaNumeracion: `${sec.serie} · ${sec.inicial} - ${sec.final}`,
+        });
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // ── IMPRENTA: aceptar solicitud → la orden pasa a "En Diseño" ───────
+  if (url.includes('no-procesada-confirmacion.jspa')) {
+    try {
+      const rucInput = (document.querySelector('input[name="numeroRuc"]')?.value || '');
+      const rucTexto = ((document.body.innerText || '').match(/RUC:\s*(\d{10,13})/) || [])[1] || '';
+      const ruc = (rucInput || rucTexto).replace(/\D/g, '');
+      chrome.runtime.sendMessage({
+        action: 'sriAceptadaResult',
+        data: { ruc, aceptada: true, timestamp: Date.now() },
+      });
+      showCordovaToastHud('✅ Solicitud aceptada. La orden pasa a Diseño.');
+    } catch (e) { console.warn('[Cordova] Aceptación imprenta:', e); }
+  }
 });

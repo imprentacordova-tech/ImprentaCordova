@@ -37,6 +37,9 @@
     if (msg && msg.action === 'sriSolicitudResult') {
       window.postMessage({ type: 'CORDOVA_SRI_RESULT', data: msg.data || {} }, '*');
     }
+    if (msg && msg.action === 'sriAceptadaResult') {
+      window.postMessage({ type: 'CORDOVA_SRI_ACEPTADA', data: msg.data || {} }, '*');
+    }
   });
 
   // 3) Avisar a la página que el puente está listo (para mostrar/ocultar el botón).
