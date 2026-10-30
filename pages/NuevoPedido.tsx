@@ -454,10 +454,24 @@ const NuevoPedidoPage: React.FC = () => {
             }
             if (d.establecimiento) setSriEstablecimiento(d.establecimiento);
             if (d.puntoEmision) setSriPuntoEmision(d.puntoEmision);
-            if (d.caducidad) setAutorizacionSriInput(d.caducidad);
+            if (d.caducidad) {
+                setAutorizacionSriInput(d.caducidad);
+                // Persistir la caducidad en el ítem SRI para que la orden la guarde.
+                setItems(prev => prev.map((it: any) => it.esSRI ? {
+                    ...it,
+                    especificaciones: {
+                        ...(it.especificaciones || {}),
+                        sri: { ...((it.especificaciones || {}).sri || {}), vencimiento: d.caducidad },
+                    },
+                } : it));
+            }
             if (d.numeracion) setNumeracionInicial(d.numeracion);
-            setSriLaunchMsg('✅ Solicitud SRI completada: RUC, nombre, dirección y establecimiento cargados.');
-            setTimeout(() => setSriLaunchMsg(null), 8000);
+            if (d.caducidadAlerta && d.caducidadMeses) {
+                setSriLaunchMsg(`✅ Solicitud SRI completada. ⚠️ Caducidad de ${d.caducidadMeses} meses (obligaciones pendientes).`);
+            } else {
+                setSriLaunchMsg('✅ Solicitud SRI completada: RUC, nombre, dirección y establecimiento cargados.');
+            }
+            setTimeout(() => setSriLaunchMsg(null), 10000);
         };
         window.addEventListener('message', onMessage);
         return () => window.removeEventListener('message', onMessage);

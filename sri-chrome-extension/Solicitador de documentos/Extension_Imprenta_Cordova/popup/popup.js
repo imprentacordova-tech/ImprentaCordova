@@ -203,6 +203,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (flowMetodo && res.flow_metodo) flowMetodo.value = res.flow_metodo;
   });
 
+  // Mostrar la última caducidad capturada (3 meses = obligaciones pendientes).
+  chrome.storage.local.get(['cordovaCaducidad', 'cordovaCaducidadMeses', 'cordovaCaducidadAlerta'], (res) => {
+    const info = document.getElementById('flow-caducidad-info');
+    if (!info) return;
+    if (!res.cordovaCaducidad) { info.textContent = ''; return; }
+    const meses = res.cordovaCaducidadMeses;
+    const alerta = res.cordovaCaducidadAlerta === true;
+    info.innerHTML = `📅 Última caducidad: <b>${res.cordovaCaducidad}</b>${meses ? ` · ${meses} meses` : ''}${alerta ? ' <span style="color:#B45309;font-weight:700;">⚠️ obligaciones pendientes</span>' : ''}`;
+  });
+
   docChips.forEach(chip => {
     chip.addEventListener('click', () => {
       docChips.forEach(c => c.classList.remove('active'));

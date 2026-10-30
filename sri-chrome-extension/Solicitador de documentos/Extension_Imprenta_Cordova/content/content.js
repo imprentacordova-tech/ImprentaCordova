@@ -496,6 +496,19 @@ function parseSRIDateToISO(dateStr) {
 }
 
 /**
+ * Analiza la "Fecha de Caducidad" que asigna el SRI.
+ * Normal: 12 meses. Si el contribuyente tiene obligaciones pendientes (primera
+ * vez), el SRI da solo 3 meses. Devuelve los meses y si corresponde alertar.
+ */
+function analizarCaducidad(texto) {
+  const iso = typeof parseSRIDateToISO === 'function' ? parseSRIDateToISO(texto) : null;
+  if (!iso) return { meses: null, alerta: false, iso: null };
+  const ms = new Date(iso).getTime() - Date.now();
+  const meses = Math.round(ms / (1000 * 60 * 60 * 24 * 30.44));
+  return { meses, alerta: meses !== null && meses <= 4, iso };
+}
+
+/**
  * Lee el resumen que muestra el SRI al finalizar la solicitud. En la pantalla de
  * confirmación aparecen, por ejemplo:
  *   RUC: 0705787745001
@@ -1180,12 +1193,18 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         }
       }
 
+      const cad = analizarCaducidad(caducidadText);
       chrome.storage.local.set({
         cordovaClientRuc: rucText,
         cordovaClientName: razonText,
         cordovaCaducidad: caducidadText,
-        cordovaNombreComercial: nombreComercial
+        cordovaNombreComercial: nombreComercial,
+        cordovaCaducidadMeses: cad.meses,
+        cordovaCaducidadAlerta: cad.alerta,
       });
+      if (cad.alerta && cad.meses !== null) {
+        showCordovaToastHud(`⚠️ Caducidad de ${cad.meses} meses (obligaciones pendientes).`);
+      }
 
       if (row && !config.cordova_est_selected && config.flow_select_est !== false) {
         highlightSRIElement(row);
@@ -1363,7 +1382,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
   // Paso 7: Finalización & Ingestión Automática a Supabase + Drawer Lateral
   if (url.includes('seleccionar-establecimiento-imprenta.jspa')) {
-    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab', 'cordovaNumeracion', 'cordovaSerie'], async (finalData) => {
+    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab', 'cordovaNumeracion', 'cordovaSerie', 'cordovaCaducidadMeses', 'cordovaCaducidadAlerta'], async (finalData) => {
       chrome.storage.local.remove(['cordova_suggested', 'cordova_est_selected']);
 
       if (config.flow_simulacion === true) {
@@ -1438,6 +1457,8 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
               nombreComercial,
               numeracion: finalData.cordovaNumeracion || '',
               serie: finalData.cordovaSerie || '',
+              caducidadMeses: finalData.cordovaCaducidadMeses || null,
+              caducidadAlerta: finalData.cordovaCaducidadAlerta === true,
             },
           });
         } catch (e) { console.warn('[Cordova] No se pudo avisar a la web:', e); }
