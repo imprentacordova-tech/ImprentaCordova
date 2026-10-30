@@ -119,6 +119,7 @@ const NuevoPedidoPage: React.FC = () => {
     const [isAddingCustomItem, setIsAddingCustomItem] = useState(false);
     const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
     const [filtroCat, setFiltroCat] = useState<string>('Todos');
+    const [sriLaunchMsg, setSriLaunchMsg] = useState<string | null>(null);
 
     // ¿La orden contiene al menos un producto con requerimientos SRI?
     const hasSriItem = useMemo(() => items.some(i => i.esSRI || i.especificaciones?.sri), [items]);
@@ -410,6 +411,56 @@ const NuevoPedidoPage: React.FC = () => {
         setItems(prev => [...prev, newItem]);
         setStep(2);
     };
+
+    // ── Flujo inverso: lanzar la solicitud SRI desde el Paso 2 ──────────
+    // La web le pide a la extensión que abra el SRI y haga la solicitud con el
+    // documento y la cantidad ya configurados. Al terminar, la extensión devuelve
+    // los datos y la orden se completa sola.
+    const handleLaunchSri = (item: any) => {
+        const nombre = (item?.nombre || '').toUpperCase();
+        const docType = nombre.includes('FACTURA') ? '0'
+            : (nombre.includes('GUÍA') || nombre.includes('GUIA')) ? '5'
+            : '1';
+        const blocks = Number(item?.especificaciones?.paginas) || 100;
+        const payload = {
+            ruc: cliente?.ruc || tempClient?.cedula || '',
+            name: cliente?.nombre || tempClient?.nombre || '',
+            direccion: (cliente as any)?.direccion || tempClient?.direccion || '',
+            docType,
+            blocks,
+            docSize: item?.especificaciones?.tamano || '1/4 Oficio',
+        };
+        try {
+            window.postMessage({ type: 'CORDOVA_SRI_LAUNCH', payload }, '*');
+            setSriLaunchMsg('⏳ Abriendo el SRI… cuando termine la solicitud, los datos se cargan solos.');
+            setTimeout(() => setSriLaunchMsg(null), 12000);
+        } catch (e) {
+            console.error('[NuevoPedido] No se pudo lanzar la solicitud SRI:', e);
+            setSriLaunchMsg('No se pudo abrir el SRI. Verificá que la extensión esté instalada y activa.');
+        }
+    };
+
+    useEffect(() => {
+        const onMessage = (e: MessageEvent) => {
+            if (!e.data || e.data.type !== 'CORDOVA_SRI_RESULT') return;
+            const d = e.data.data || {};
+            if (d.ruc || d.name) {
+                setTempClient((prev: any) => ({
+                    ...prev,
+                    nombre: (d.name || prev.nombre || '').toUpperCase(),
+                    cedula: d.ruc || prev.cedula,
+                    direccion: d.direccion || prev.direccion,
+                }));
+            }
+            if (d.establecimiento) setSriEstablecimiento(d.establecimiento);
+            if (d.puntoEmision) setSriPuntoEmision(d.puntoEmision);
+            if (d.caducidad) setAutorizacionSriInput(d.caducidad);
+            setSriLaunchMsg('✅ Solicitud SRI completada: RUC, nombre, dirección y establecimiento cargados.');
+            setTimeout(() => setSriLaunchMsg(null), 8000);
+        };
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
+    }, []);
 
     const handleCreateOrder = async () => {
         if (items.length === 0) { setError('Debe agregar al menos un ítem al pedido.'); return; }
@@ -1203,7 +1254,12 @@ const NuevoPedidoPage: React.FC = () => {
 
                             {/* PASO 2: Detalles de la Orden */}
                             {step === 2 && (
-                                <motion.div key="s2" {...animPaso(direccion)}>
+                                <motion.div key="s2" {...animPaso(direccion)} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {sriLaunchMsg && (
+                                        <div style={{ padding: '10px 14px', borderRadius: 10, background: C.goldBg, border: `1px solid ${C.goldBorder}`, color: C.goldTextStrong, fontSize: 12.5, fontWeight: 600 }}>
+                                            {sriLaunchMsg}
+                                        </div>
+                                    )}
                                     <OrderDetails
                                         items={items}
                                         setItems={setItems}
@@ -1220,6 +1276,7 @@ const NuevoPedidoPage: React.FC = () => {
                                         setAutorizacionSri={setAutorizacionSriInput}
                                         archivo={imageFile}
                                         setArchivo={setImageFile}
+                                        onLaunchSri={handleLaunchSri}
                                     />
                                 </motion.div>
                             )}

@@ -101,6 +101,8 @@ export interface OrderDetailsProps {
     setAutorizacionSri?: (val: string) => void;
     archivo?: File | null;
     setArchivo?: (file: File | null) => void;
+    /** Lanza la solicitud SRI para un ítem (flujo inverso: web → SRI → web). */
+    onLaunchSri?: (item: any) => void;
 }
 
 const chip = (activo: boolean): React.CSSProperties => ({
@@ -135,6 +137,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
     setAutorizacionSri,
     archivo,
     setArchivo,
+    onLaunchSri,
 }) => {
     const fileRef = useRef<HTMLInputElement>(null);
     const opcion = useMemo(() => opcionDeFecha(fechaEntrega), [fechaEntrega]);
@@ -315,6 +318,21 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                         }}>
                                             {item.esSRI ? 'SRI' : 'COMERCIAL'}
                                         </span>
+                                        {item.esSRI && onLaunchSri && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onLaunchSri(item)}
+                                                title="Abrir el SRI y hacer la solicitud con este documento y cantidad"
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                    padding: '5px 10px', borderRadius: 8,
+                                                    background: C.gold, color: C.ink, border: 'none',
+                                                    fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                                                }}
+                                            >
+                                                🚀 Hacer solicitud en SRI
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Stepper de Cantidad */}

@@ -57,6 +57,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return;
   }
+  if (request.action === "launchSriSolicitud") {
+    // La app web (Paso 2) pidió lanzar la solicitud SRI con el documento y la
+    // cantidad ya configurados. Guardamos el payload y abrimos el portal.
+    const p = request.payload || {};
+    const payload = {
+      ...p,
+      originTabId: sender.tab ? sender.tab.id : null,
+      createdAt: Date.now(),
+    };
+    chrome.storage.local.set({
+      cordova_launch_payload: payload,
+      cordova_origin_tab: payload.originTabId,
+      cordovaBlocks: payload.blocks || 100,
+      cordovaDocType: String(payload.docType || '1'),
+      cordova_suggested: true,
+      cordova_est_selected: false,
+      cordovaAutoPilot: true,
+      cordovaClientRuc: payload.ruc || '',
+      cordovaClientName: (payload.name || '').toUpperCase(),
+      cordovaDireccion: payload.direccion || '',
+    }, () => {
+      chrome.tabs.create({
+        url: 'https://srienlinea.sri.gob.ec/facturacion-internet/preimpresos/inicio-contribuyente.jspa',
+      });
+    });
+    return;
+  }
+
+  if (request.action === "sriSolicitudResult") {
+    // El content script del SRI terminó: devolvemos los datos a la pestaña web
+    // que originó la solicitud (el bridge los reenvía a la página).
+    const tabId = request.tabId;
+    if (tabId) {
+      chrome.tabs.sendMessage(tabId, { action: 'sriSolicitudResult', data: request.data || {} })
+        .catch(() => { /* la pestaña pudo cerrarse */ });
+    }
+    return;
+  }
+
   if (request.action === "callFunction" && sender.tab) {
     chrome.scripting.executeScript({
       target: { tabId: sender.tab.id },
@@ -78,59 +117,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           } else if (fnName === 'nextPage' && typeof nextPage === 'function') {
             nextPage();
           } else if (fnName === 'buscarPorCodigo') {
-            // Todo en UNA pasada en el MAIN world: marcar FR=1 → habilitar → escribir
-            // 8634 → Buscar. Evita la carrera porque `habilitar()` limpia `numero`.
+            // ATOMIC: marcar FR=1 → habilitar → escribir 8634 → enviar el formulario
+            // en el MISMO tick. Sin delays, para que otra extensión (Ghost, Declarador…)
+            // no alcance a volver a marcar "Por RUC" ni a limpiar el campo.
             const form = document.forma || document.forms[0];
             const cont = form || document;
             const radios = Array.from(cont.querySelectorAll('input[type="radio"][name="FR"]'));
-            let radio = radios.find(r => r.value === '1');
-            if (!radio) radio = radios.find(r => r.value !== '0');
+            const radioCodigo = radios.find(r => r.value === '1');
+            const radioRuc = radios.find(r => r.value === '0');
 
-            if (radio) {
-              radio.checked = true;
-              radio.dispatchEvent(new Event('click', { bubbles: true }));
-              try { if (typeof habilitar === 'function') habilitar(radio); } catch (e) { }
+            if (radioCodigo) {
+              radioCodigo.checked = true;
+              try { if (typeof habilitar === 'function') habilitar(radioCodigo); } catch (e) { }
               const num = cont.querySelector('input[name="numero"]') || document.querySelector('input[name="numero"]');
               if (num) {
                 num.disabled = false;
                 num.value = '8634';
-                num.dispatchEvent(new Event('input', { bubbles: true }));
-                num.dispatchEvent(new Event('change', { bubbles: true }));
+                try {
+                  num.dispatchEvent(new Event('input', { bubbles: true }));
+                  num.dispatchEvent(new Event('change', { bubbles: true }));
+                } catch (e) { }
               }
-            } else {
-              // Respaldo: solo hay "Por RUC". Se busca con el RUC de la imprenta.
-              const radioRuc = radios.find(r => r.value === '0') || radios[0];
-              if (radioRuc) {
-                radioRuc.checked = true;
-                radioRuc.dispatchEvent(new Event('click', { bubbles: true }));
-                try { if (typeof habilitar === 'function') habilitar(radioRuc); } catch (e) { }
-              }
+            } else if (radioRuc) {
+              radioRuc.checked = true;
+              try { if (typeof habilitar === 'function') habilitar(radioRuc); } catch (e) { }
               const ruc = cont.querySelector('input[name="ruc"]') || document.querySelector('input[name="ruc"]');
-              if (ruc) {
-                ruc.disabled = false;
-                ruc.value = '0702065319001';
-                ruc.dispatchEvent(new Event('input', { bubbles: true }));
-                ruc.dispatchEvent(new Event('change', { bubbles: true }));
-              }
+              if (ruc) { ruc.disabled = false; ruc.value = '0702065319001'; }
             }
 
-            setTimeout(() => {
-              try {
-                // Reafirmar el valor por si `habilitar` se ejecutó de nuevo y lo limpió.
-                const num2 = (form || document).querySelector('input[name="numero"]');
-                if (num2 && num2.value !== '8634') {
-                  num2.disabled = false;
-                  num2.value = '8634';
-                  num2.dispatchEvent(new Event('input', { bubbles: true }));
-                  num2.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                // Preferir el botón real "Buscar": <a href="javascript:javascript:nextPage();">
-                const buscar = document.querySelector('a[href*="nextPage"]');
-                if (buscar) { buscar.click(); return; }
-                if (typeof nextPage === 'function') { nextPage(); return; }
-                if (form) form.submit();
-              } catch (e) { console.error('Cordova Ext: error al buscar imprenta', e); }
-            }, 300);
+            // Enviar directo (equivale al botón Buscar). Se evita nextPage() porque
+            // otras extensiones / alertas / CSP pueden bloquearlo.
+            try {
+              if (form) {
+                if (form.accion) form.accion.value = 'siguiente';
+                form.submit();
+              } else if (typeof nextPage === 'function') {
+                nextPage();
+              }
+            } catch (e) {
+              console.error('Cordova Ext: error al enviar búsqueda', e);
+            }
           } else if (fnName === 'habilitar') {
             // El content script deja el value del radio elegido en data-cordova-radio.
             const val = document.body.getAttribute('data-cordova-radio');

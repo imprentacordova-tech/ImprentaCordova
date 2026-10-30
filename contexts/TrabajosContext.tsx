@@ -154,6 +154,36 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     return publicUrl;
   };
 
+  /**
+   * Normaliza fechas que vienen del SRI ("29/Octubre/2027", "29/10/2027") a ISO.
+   * Postgres rechaza texto libre en columnas TIMESTAMPTZ
+   * ("invalid input syntax for type timestamp with time zone"); si no se puede
+   * interpretar, devuelve null (mejor sin fecha que una orden que no se guarda).
+   */
+  const normalizarFechaISO = (valor: any): string | null => {
+    if (valor === null || valor === undefined) return null;
+    const s = String(valor).trim();
+    if (!s) return null;
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
+
+    let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}T00:00:00.000Z`;
+
+    const MESES: Record<string, string> = {
+      enero: '01', febrero: '02', marzo: '03', abril: '04', mayo: '05', junio: '06',
+      julio: '07', agosto: '08', septiembre: '09', setiembre: '09', octubre: '10',
+      noviembre: '11', diciembre: '12',
+    };
+    m = s.match(/^(\d{1,2})\s*[\/\-]\s*([A-Za-zÁÉÍÓÚáéíóúñ]+)\s*[\/\-]\s*(\d{4})$/);
+    if (m) {
+      const mes = MESES[m[2].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')];
+      if (mes) return `${m[3]}-${mes}-${m[1].padStart(2, '0')}T00:00:00.000Z`;
+    }
+
+    const t = Date.parse(s);
+    return Number.isNaN(t) ? null : new Date(t).toISOString();
+  };
+
   const addTrabajo = async (trabajoData: Record<string, any>, user: string, imageFile?: File | null): Promise<Trabajo> => {
     const dbData: Record<string, any> = {
       cliente_id: trabajoData.clienteId || trabajoData.cliente_id,
@@ -183,7 +213,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
       //   observaciones  -> las notas de taller que el operador escribe en el paso final.
       //   responsable    -> quién tomó el pedido (se perdía el dato de autoría).
       // Un valor `undefined` se omite al serializar, así que no ensucian el insert.
-      fecha_entrega: trabajoData.fechaEntrega,
+      fecha_entrega: normalizarFechaISO(trabajoData.fechaEntrega),
       detalle: trabajoData.detalle,
       observaciones: trabajoData.observaciones,
       responsable: trabajoData.responsable,
@@ -201,7 +231,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
       clave_acceso: trabajoData.claveAcceso,
       autorizacion_sri: trabajoData.autorizacion_sri,
       numeracion: trabajoData.numeracion,
-      fecha_vencimiento: trabajoData.fechaVencimiento,
+      fecha_vencimiento: normalizarFechaISO(trabajoData.fechaVencimiento),
       // Modelo de impresión: si no llega, la columna queda en NULL y `resolverModelo()` aplica
       // el default de la familia. Se omite cuando es undefined (este objeto filtra abajo).
       modelo_impresion: trabajoData.modeloImpresion,

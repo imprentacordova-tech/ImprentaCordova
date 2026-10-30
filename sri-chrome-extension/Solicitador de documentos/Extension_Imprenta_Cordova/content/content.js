@@ -219,6 +219,7 @@ function showStepSuggestionBanner() {
           <button class="cordova-pill-btn ${autoPilot ? 'highlight' : ''}" id="cdv-toggle-pilot">
             ${autoPilot ? '⏸ Pausar' : '▶ Reanudar'}
           </button>
+          ${url.includes('confirmar-cantidades.jspa') ? '<button class="cordova-pill-btn highlight" id="cdv-btn-buscar8634" title="Marcar Por Código, escribir 8634 y Buscar">🔎 Buscar 8634</button>' : ''}
           <button class="cordova-pill-btn ${blocks === 25 ? 'highlight' : ''}" data-val="25">25h</button>
           <button class="cordova-pill-btn ${blocks === 50 ? 'highlight' : ''}" data-val="50">50h</button>
           <button class="cordova-pill-btn ${blocks === 100 ? 'highlight' : ''}" data-val="100">1 Block (100h)</button>
@@ -233,6 +234,15 @@ function showStepSuggestionBanner() {
     `;
 
     document.body.appendChild(banner);
+
+    // Botón manual de rescate: marca Por Código, escribe 8634 y envía la búsqueda.
+    const btnBuscar8634 = banner.querySelector('#cdv-btn-buscar8634');
+    if (btnBuscar8634) {
+      btnBuscar8634.addEventListener('click', (e) => {
+        e.stopPropagation();
+        triggerMainWorldClick('', 'buscarPorCodigo');
+      });
+    }
 
     // Minimize / Restore Toggle
     const minBtn = banner.querySelector('#cdv-btn-toggle-min');
@@ -1247,7 +1257,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
   // Paso 7: Finalización & Ingestión Automática a Supabase + Drawer Lateral
   if (url.includes('seleccionar-establecimiento-imprenta.jspa')) {
-    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks'], async (finalData) => {
+    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab'], async (finalData) => {
       chrome.storage.local.remove(['cordova_suggested', 'cordova_est_selected']);
 
       // Leer el resumen REAL de la pantalla del SRI (RUC, razón social, dirección,
@@ -1294,6 +1304,31 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         saldo: totalVal,
         timestamp: Date.now()
       };
+
+      // Devolver los datos a la pestaña web que originó la solicitud (flujo
+      // "Hacer solicitud en SRI" desde el Paso 2). El bridge los reenvía a la app.
+      const originTab = finalData.cordova_origin_tab;
+      if (originTab) {
+        try {
+          chrome.runtime.sendMessage({
+            action: 'sriSolicitudResult',
+            tabId: originTab,
+            data: {
+              ruc: clientRuc,
+              name: clientName,
+              direccion,
+              establecimiento: codigoEst,
+              puntoEmision: '001',
+              caducidad: finalData.cordovaCaducidad || '',
+              fechaSolicitud,
+              docType: finalData.cordovaDocType || '1',
+              blocks: blocksVal,
+              docSize: '1/4 Oficio',
+              nombreComercial,
+            },
+          });
+        } catch (e) { console.warn('[Cordova] No se pudo avisar a la web:', e); }
+      }
 
       // Sincronización transparente con clave pública segura
       await autoSyncToSupabase(immediateOrder);
