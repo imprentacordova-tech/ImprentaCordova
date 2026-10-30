@@ -168,6 +168,41 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.local.set({ cordova_suggestion_disabled: !e.target.checked });
   });
 
+  // ── Flujo SRI: interruptores de cada paso (se pueden desactivar) ────
+  const FLOW_TOGGLES = [
+    ['flow-simulacion', 'flow_simulacion'],
+    ['flow-select-est', 'flow_select_est'],
+    ['flow-fill-qty', 'flow_fill_qty'],
+    ['flow-buscar', 'flow_buscar'],
+    ['flow-select-imprenta', 'flow_select_imprenta'],
+    ['flow-directo', 'flow_directo'],
+    ['flow-volver-web', 'flow_volver_web'],
+    ['flow-mostrar-drawer', 'flow_mostrar_drawer'],
+  ];
+  const flowMetodo = document.getElementById('flow-metodo');
+
+  FLOW_TOGGLES.forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      chrome.storage.local.set({ [key]: el.checked });
+    });
+  });
+  if (flowMetodo) {
+    flowMetodo.addEventListener('change', () => {
+      chrome.storage.local.set({ flow_metodo: flowMetodo.value });
+    });
+  }
+
+  // Cargar valores guardados (default: todo activado, método código).
+  chrome.storage.local.get(FLOW_TOGGLES.map(([, key]) => key).concat(['flow_metodo']), (res) => {
+    FLOW_TOGGLES.forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el && res[key] !== undefined) el.checked = !!res[key];
+    });
+    if (flowMetodo && res.flow_metodo) flowMetodo.value = res.flow_metodo;
+  });
+
   docChips.forEach(chip => {
     chip.addEventListener('click', () => {
       docChips.forEach(c => c.classList.remove('active'));
@@ -175,6 +210,19 @@ document.addEventListener('DOMContentLoaded', () => {
       chrome.storage.local.set({ cordovaDocType: chip.dataset.val });
     });
   });
+
+  // Selector completo de tipo de documento (10 tipos SRI del preimpreso).
+  const docSelect = document.getElementById('doc-select');
+  if (docSelect) {
+    docSelect.addEventListener('change', () => {
+      chrome.storage.local.set({ cordovaDocType: docSelect.value });
+    });
+    chrome.storage.local.get(['cordovaDocType'], (res) => {
+      if (res.cordovaDocType && docSelect.querySelector(`option[value="${res.cordovaDocType}"]`)) {
+        docSelect.value = String(res.cordovaDocType);
+      }
+    });
+  }
 
   if (btnStart) {
     btnStart.addEventListener('click', () => {
@@ -206,7 +254,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const preferredModel = res.cordova_preferred_print_model || 'sri-sobre-preimpreso';
         const pending = res.cordova_pending_order || {};
         const ruc = pending.clientRuc || res.current_session_ruc || '0702065319001';
-        const docNames = { "0": "Facturas", "1": "Notas de Venta", "5": "Guías de Remisión" };
+        const docNames = {
+          "0": "Facturas",
+          "1": "Notas de Venta",
+          "2": "Liquidación de Compra de Bienes Muebles Usados",
+          "3": "Notas de Crédito",
+          "4": "Notas de Débito",
+          "5": "Guías de Remisión",
+          "6": "Boletos o Entradas a Espectáculos",
+          "7": "Liquidación de Compra de Vehículos Usados",
+          "8": "Acta de Entrega - Recepción de Vehículos Usados",
+          "10": "Liquidación de Compra de Bienes o Servicios",
+        };
         const docTypeVal = pending.docType || res.cordovaDocType || "1";
         const docName = docNames[docTypeVal] || "Nota de Venta";
         const blocksVal = pending.blocks || res.cordovaBlocks || 100;

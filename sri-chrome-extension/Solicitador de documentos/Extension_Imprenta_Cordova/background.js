@@ -117,32 +117,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           } else if (fnName === 'nextPage' && typeof nextPage === 'function') {
             nextPage();
           } else if (fnName === 'buscarPorCodigo') {
-            // ATOMIC: marcar FR=1 → habilitar → escribir 8634 → enviar el formulario
-            // en el MISMO tick. Sin delays, para que otra extensión (Ghost, Declarador…)
-            // no alcance a volver a marcar "Por RUC" ni a limpiar el campo.
+            // ATOMIC: según el método (código/RUC), marcar el radio, habilitar,
+            // escribir el valor y enviar el formulario en el MISMO tick.
+            const metodo = document.body.getAttribute('data-cordova-metodo') || 'codigo';
             const form = document.forma || document.forms[0];
             const cont = form || document;
-            const radios = Array.from(cont.querySelectorAll('input[type="radio"][name="FR"]'));
-            const radioCodigo = radios.find(r => r.value === '1');
-            const radioRuc = radios.find(r => r.value === '0');
+            const radios = Array.from(cont.querySelectorAll('input[name="FR"]'));
+            const radio = metodo === 'ruc'
+              ? (radios.find(r => r.value === '0') || radios[0])
+              : (radios.find(r => r.value === '1') || radios.find(r => r.value !== '0'));
+            const nombreInput = metodo === 'ruc' ? 'ruc' : 'numero';
+            const valor = metodo === 'ruc' ? '0702065319001' : '8634';
 
-            if (radioCodigo) {
-              radioCodigo.checked = true;
-              try { if (typeof habilitar === 'function') habilitar(radioCodigo); } catch (e) { }
-              const num = cont.querySelector('input[name="numero"]') || document.querySelector('input[name="numero"]');
-              if (num) {
-                num.disabled = false;
-                num.value = '8634';
+            if (radio) {
+              radio.checked = true;
+              try { if (typeof habilitar === 'function') habilitar(radio); } catch (e) { }
+              const input = cont.querySelector(`input[name="${nombreInput}"]`) || document.querySelector(`input[name="${nombreInput}"]`);
+              if (input) {
+                input.disabled = false;
+                input.value = valor;
                 try {
-                  num.dispatchEvent(new Event('input', { bubbles: true }));
-                  num.dispatchEvent(new Event('change', { bubbles: true }));
+                  input.dispatchEvent(new Event('input', { bubbles: true }));
+                  input.dispatchEvent(new Event('change', { bubbles: true }));
                 } catch (e) { }
               }
-            } else if (radioRuc) {
-              radioRuc.checked = true;
-              try { if (typeof habilitar === 'function') habilitar(radioRuc); } catch (e) { }
-              const ruc = cont.querySelector('input[name="ruc"]') || document.querySelector('input[name="ruc"]');
-              if (ruc) { ruc.disabled = false; ruc.value = '0702065319001'; }
             }
 
             // Enviar directo (equivale al botón Buscar). Se evita nextPage() porque

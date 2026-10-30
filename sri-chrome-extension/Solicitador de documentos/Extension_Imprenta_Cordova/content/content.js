@@ -26,6 +26,33 @@ function waitForElement(selector, timeout = 10000) {
   });
 }
 
+/**
+ * Envía un POST al portal del SRI navegando a la respuesta, sin depender de la UI.
+ * El formulario oculto usa las cookies de la sesión (mismo origen), así que es
+ * inmune a que otra extensión cambie los radios o limpie los campos.
+ *
+ * Datos del recorrido real (export de Burp "Recorrido de solicitud de documentos sri"):
+ *   POST .../preimpresos/seleccionar-imprenta.jspa
+ *        accion=siguiente&FR=1&numero=8634          (búsqueda por código)
+ *   POST .../preimpresos/seleccionar-establecimiento-imprenta.jspa
+ *        accion=siguiente&imprenta=8155&lineasPagina=
+ */
+function postFormNavegando(action, campos) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = action;
+  form.style.display = 'none';
+  Object.entries(campos || {}).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = String(value);
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+}
+
 // Utility: Detect if current page is a login / authentication screen
 function isSRILoginScreen() {
   const url = window.location.href.toLowerCase();
@@ -120,7 +147,7 @@ function highlightSRIElement(el) {
 // -------------------------------------------------------------
 // STEP SUGGESTION FLOATING MINI-HUD (DOCKABLE / NON-INTRUSIVE)
 // -------------------------------------------------------------
-function showStepSuggestionBanner() {
+function showStepSuggestionBanner(simulacion) {
   // CRÍTICO: Si estamos en la pantalla de Login, NUNCA inyectar el HUD para no tapar el formulario
   if (isSRILoginScreen()) {
     const existing = document.querySelector('.cordova-suggestion-banner');
@@ -200,6 +227,7 @@ function showStepSuggestionBanner() {
           <img src="${logoUrl}" alt="Cordova" class="cordova-banner-logo">
           <span class="cordova-banner-title">Imprenta Córdova</span>
           <span class="cordova-banner-badge">${badgeText}</span>
+          ${simulacion ? '<span style="background:#FEF3C7;color:#92400E;font-size:8px;font-weight:800;padding:1px 6px;border-radius:99px;margin-left:4px;">🧪 SIMULACIÓN</span>' : ''}
         </div>
         <div class="cordova-banner-actions">
           <button class="cordova-banner-btn-min" id="cdv-btn-toggle-min" title="${isMinimized ? 'Expandir HUD' : 'Minimizar HUD'}">${isMinimized ? '▲' : '−'}</button>
@@ -263,7 +291,7 @@ function showStepSuggestionBanner() {
         e.stopPropagation();
         const newAutoState = !autoPilot;
         chrome.storage.local.set({ cordovaAutoPilot: newAutoState }, () => {
-          showStepSuggestionBanner();
+          showStepSuggestionBanner(simulacion);
         });
       });
     }
@@ -528,6 +556,30 @@ function leerResumenSolicitud() {
   }
 
   return out;
+}
+
+/**
+ * Lee la serie y el rango de secuencia de la página "Confirmación de la Solicitud".
+ * Ejemplo de la tabla:
+ *   Serie: 001-001 | NOTA DE VENTA | Secuencia solicitada Inicial: 1 | #Final: 50
+ * Devuelve { serie, tipo, inicial, final } o null.
+ */
+function leerSecuencias() {
+  try {
+    const tablas = Array.from(document.querySelectorAll('table'));
+    for (const tabla of tablas) {
+      const txt = tabla.textContent || '';
+      if (!/secuencia solicitada/i.test(txt)) continue;
+      const filas = Array.from(tabla.querySelectorAll('tr'));
+      for (const fila of filas) {
+        const celdas = Array.from(fila.querySelectorAll('td')).map(td => (td.textContent || '').trim());
+        if (celdas.length >= 4 && /^\d{3}-\d{3}$/.test(celdas[0])) {
+          return { serie: celdas[0], tipo: celdas[1], inicial: celdas[2], final: celdas[3] };
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+  return null;
 }
 
 // -------------------------------------------------------------
@@ -1047,12 +1099,23 @@ function showCordovaSuccessModal(finalData, blocks) {
 // -------------------------------------------------------------
 // MAIN WORKFLOW INITIALIZATION
 // -------------------------------------------------------------
-chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType', 'cordova_suggested', 'cordova_est_selected', 'current_session_ruc'], async (config) => {
+chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType', 'cordova_suggested', 'cordova_est_selected', 'current_session_ruc', 'flow_select_est', 'flow_fill_qty', 'flow_buscar', 'flow_metodo', 'flow_select_imprenta', 'flow_directo', 'flow_volver_web', 'flow_mostrar_drawer', 'flow_simulacion'], async (config) => {
   const url = window.location.href;
   const blocks = config.cordovaBlocks || 100;
   const autoPilot = config.cordovaAutoPilot !== undefined ? config.cordovaAutoPilot : true;
   const docType = config.cordovaDocType || "1";
-  const docNames = { "0": "Facturas", "1": "Notas de Venta", "5": "Guías de Remisión" };
+  const docNames = {
+    "0": "Facturas",
+    "1": "Notas de Venta",
+    "2": "Liquidación de Compra de Bienes Muebles Usados",
+    "3": "Notas de Crédito",
+    "4": "Notas de Débito",
+    "5": "Guías de Remisión",
+    "6": "Boletos o Entradas a Espectáculos",
+    "7": "Liquidación de Compra de Vehículos Usados",
+    "8": "Acta de Entrega - Recepción de Vehículos Usados",
+    "10": "Liquidación de Compra de Bienes o Servicios",
+  };
   const docName = docNames[docType] || "Documento";
 
   // Identidad
@@ -1086,7 +1149,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
   // Sugerencia HUD en Facturación solo si no es Login y no es Imprenta propia
   if (!isImprenta && !config.cordova_suggestion_disabled && url.includes('facturacion-internet')) {
-    showStepSuggestionBanner();
+    showStepSuggestionBanner(config.flow_simulacion === true);
   }
 
   if (!autoPilot) return;
@@ -1124,10 +1187,14 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         cordovaNombreComercial: nombreComercial
       });
 
-      if (row && !config.cordova_est_selected) {
-        chrome.storage.local.set({ cordova_est_selected: true });
+      if (row && !config.cordova_est_selected && config.flow_select_est !== false) {
         highlightSRIElement(row);
-        row.click();
+        if (config.flow_simulacion === true) {
+          showCordovaToastHud('🧪 Simulación: elegiría el establecimiento (no envío).');
+        } else {
+          chrome.storage.local.set({ cordova_est_selected: true });
+          row.click();
+        }
       }
     } catch(e) {
       console.error("[Cordova SRI] Error en inicio-contribuyente:", e);
@@ -1135,7 +1202,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
   }
 
   // Paso 3: Selección de Establecimiento Contribuyente Imprenta (Llenado de cantidades)
-  if (url.includes('seleccionar-establecimiento-contibuyente-imprenta.jspa')) {
+  if (url.includes('seleccionar-establecimiento-contibuyente-imprenta.jspa') && config.flow_fill_qty !== false) {
     try {
       await waitForElement('input[name^="documento0_"]', 6000);
       const docInput = document.querySelector(`input[name="documento0_${docType}"]`);
@@ -1156,31 +1223,49 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
       docInput.value = blocks;
       highlightSRIElement(docInput);
-      showCordovaAlert('Llenando Cantidades', `Insertando ${blocks} comprobantes...`, false, () => {
-        const nextBtn = document.querySelector("a[href*='siguientePaso']");
-        if (nextBtn) highlightSRIElement(nextBtn);
-        triggerMainWorldClick("a[href*='siguientePaso']", "siguientePaso");
-      }, autoPilot);
+      if (config.flow_simulacion === true) {
+        showCordovaToastHud(`🧪 Simulación: llenaría ${blocks} hojas (${docName}) y avanzaría.`);
+      } else {
+        showCordovaAlert('Llenando Cantidades', `Insertando ${blocks} comprobantes...`, false, () => {
+          const nextBtn = document.querySelector("a[href*='siguientePaso']");
+          if (nextBtn) highlightSRIElement(nextBtn);
+          triggerMainWorldClick("a[href*='siguientePaso']", "siguientePaso");
+        }, autoPilot);
+      }
     } catch(e) {
       console.error("[Cordova SRI] Error en Paso 3:", e);
     }
   }
 
   // Paso 4: Agregar Cantidades Imprenta
-  if (url.includes('agregar-cantidades-imprenta.jspa')) {
+  if (url.includes('agregar-cantidades-imprenta.jspa') && config.flow_fill_qty !== false) {
     try {
       const nextBtn = await waitForElement("a[href*='siguientePaso']", 6000);
       if (nextBtn) highlightSRIElement(nextBtn);
-      showCordovaAlert('Confirmando', 'Validando cuadro de comprobantes...', false, () => {
-        triggerMainWorldClick('', 'bypassAlertsAndNext');
-      }, autoPilot);
+
+      // Capturar la serie y la secuencia que muestra la "Confirmación de la Solicitud".
+      const sec = leerSecuencias();
+      if (sec) {
+        chrome.storage.local.set({
+          cordovaSerie: sec.serie,
+          cordovaNumeracion: `${sec.serie} · ${sec.inicial} - ${sec.final}`,
+        });
+      }
+
+      if (config.flow_simulacion === true) {
+        showCordovaToastHud('🧪 Simulación: confirmaría las cantidades (no envío).');
+      } else {
+        showCordovaAlert('Confirmando', 'Validando cuadro de comprobantes...', false, () => {
+          triggerMainWorldClick('', 'bypassAlertsAndNext');
+        }, autoPilot);
+      }
     } catch(e) {
       console.error("[Cordova SRI] Error en Paso 4:", e);
     }
   }
 
   // Paso 5: Confirmar Cantidades & Búsqueda Córdova (8634)
-  if (url.includes('confirmar-cantidades.jspa')) {
+  if (url.includes('confirmar-cantidades.jspa') && config.flow_buscar !== false) {
     try {
       if (document.body.textContent.includes('secuencias solicitadas son las siguientes')) {
         const nextBtn = await waitForElement("a[href*='siguientePaso']", 5000);
@@ -1191,27 +1276,38 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         return;
       }
 
-      // La pantalla de "confirmar-cantidades" tiene 4 radios (FR=0 RUC, FR=1 código,
-      // FR=2 palabra, FR=3 provincia) y un input `numero`. OJO: `habilitar()` LIMPIA
-      // `numero` cada vez que se llama, así que toda la operación va en UNA sola
-      // ejecución en el MAIN world (marcar FR=1 → habilitar → escribir 8634 → Buscar).
-      // Esperamos a que la página pinte el radio (puede tardar unos ms).
-      const radioCodigo = await waitForElement('input[type="radio"][name="FR"][value="1"]', 8000).catch(() => null);
-      if (!radioCodigo) {
-        throw new Error('No se encontró el radio "Por Código" (FR=1)');
+      // La pantalla muestra los radios (Por RUC / Por Código…). Según las opciones
+      // del popup: se elige el método (código/RUC) y si se envía directo o por UI.
+      const metodo = config.flow_metodo === 'ruc' ? 'ruc' : 'codigo';
+      const camposBusqueda = metodo === 'ruc'
+        ? { accion: 'siguiente', FR: '0', ruc: '0702065319001', lineasPagina: '' }
+        : { accion: 'siguiente', FR: '1', numero: '8634', lineasPagina: '' };
+
+      await waitForElement('input[type="radio"][name="FR"]', 8000).catch(() => null);
+
+      showCordovaAlert(
+        'Buscando Imprenta',
+        metodo === 'ruc' ? 'Buscando por RUC 0702065319001...' : 'Buscando por código 8634...',
+        false, null, autoPilot,
+      );
+
+      if (config.flow_simulacion === true) {
+        showCordovaToastHud(`🧪 Simulación: buscaría por ${metodo === 'ruc' ? 'RUC 0702065319001' : 'código 8634'} (no envío).`);
+      } else if (config.flow_directo !== false) {
+        postFormNavegando('/facturacion-internet/preimpresos/seleccionar-imprenta.jspa', camposBusqueda);
+      } else {
+        // Modo UI: marcar el radio correspondiente y usar el botón Buscar.
+        document.body.setAttribute('data-cordova-metodo', metodo);
+        triggerMainWorldClick('', 'buscarPorCodigo');
+        setTimeout(() => document.body.removeAttribute('data-cordova-metodo'), 1500);
       }
-      highlightSRIElement(radioCodigo);
-
-      triggerMainWorldClick('', 'buscarPorCodigo');
-
-      showCordovaAlert('Buscando Imprenta', 'Buscando Imprenta Córdova (Cód. 8634)...', false, null, autoPilot);
     } catch(e) {
       console.error("[Cordova SRI] Error en Paso 5:", e);
     }
   }
 
   // Paso 6: Seleccionar Imprenta Córdova en resultados
-  if (url.includes('seleccionar-imprenta.jspa')) {
+  if (url.includes('seleccionar-imprenta.jspa') && config.flow_select_imprenta !== false) {
     const trySelectImprenta = () => {
       const dataRows = Array.from(document.querySelectorAll('table:not(#anchoDoc) tbody tr'));
       const row = dataRows.find(tr => {
@@ -1228,6 +1324,10 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         const aLink = row.querySelector('a');
         
         showCordovaAlert('Imprenta Encontrada', 'Confirmando asignación...', false, () => {
+          if (config.flow_simulacion === true) {
+            showCordovaToastHud('🧪 Simulación: elegiría Imprenta Córdova (no envío).');
+            return;
+          }
           let match = onclickStr.match(/siguientePaso\(['"]?(\d+)['"]?\)/);
           if (!match && aLink) {
             const hrefStr = aLink.getAttribute('href') || '';
@@ -1236,8 +1336,14 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
           let param = match ? match[1] : null;
           if (param !== null) {
-            document.body.setAttribute('data-cordova-param', param);
-            triggerMainWorldClick('', 'siguientePaso');
+            // Enviar directo con el id de la imprenta (datos del recorrido real):
+            //   POST seleccionar-establecimiento-imprenta.jspa
+            //        accion=siguiente&imprenta=<id>&lineasPagina=
+            postFormNavegando('/facturacion-internet/preimpresos/seleccionar-establecimiento-imprenta.jspa', {
+              accion: 'siguiente',
+              imprenta: param,
+              lineasPagina: '',
+            });
           } else {
             row.click();
           }
@@ -1257,8 +1363,13 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
   // Paso 7: Finalización & Ingestión Automática a Supabase + Drawer Lateral
   if (url.includes('seleccionar-establecimiento-imprenta.jspa')) {
-    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab'], async (finalData) => {
+    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab', 'cordovaNumeracion', 'cordovaSerie'], async (finalData) => {
       chrome.storage.local.remove(['cordova_suggested', 'cordova_est_selected']);
+
+      if (config.flow_simulacion === true) {
+        showCordovaToastHud('🧪 Simulación: la solicitud no se envió (no se registra orden).');
+        return;
+      }
 
       // Leer el resumen REAL de la pantalla del SRI (RUC, razón social, dirección,
       // establecimiento, fecha) y completar lo que falte desde storage.
@@ -1308,7 +1419,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       // Devolver los datos a la pestaña web que originó la solicitud (flujo
       // "Hacer solicitud en SRI" desde el Paso 2). El bridge los reenvía a la app.
       const originTab = finalData.cordova_origin_tab;
-      if (originTab) {
+      if (originTab && config.flow_volver_web !== false) {
         try {
           chrome.runtime.sendMessage({
             action: 'sriSolicitudResult',
@@ -1325,6 +1436,8 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
               blocks: blocksVal,
               docSize: '1/4 Oficio',
               nombreComercial,
+              numeracion: finalData.cordovaNumeracion || '',
+              serie: finalData.cordovaSerie || '',
             },
           });
         } catch (e) { console.warn('[Cordova] No se pudo avisar a la web:', e); }
@@ -1334,17 +1447,19 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       await autoSyncToSupabase(immediateOrder);
       showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
 
-      setTimeout(() => {
-        showCordovaSuccessModal({
-          ...finalData,
-          cordovaClientRuc: clientRuc,
-          cordovaClientName: clientName,
-          cordovaDireccion: direccion,
-          cordovaEstablecimiento: codigoEst,
-          cordovaNombreComercial: nombreComercial,
-          cordovaFechaSolicitud: fechaSolicitud,
-        }, blocksVal);
-      }, 800);
+      if (config.flow_mostrar_drawer !== false) {
+        setTimeout(() => {
+          showCordovaSuccessModal({
+            ...finalData,
+            cordovaClientRuc: clientRuc,
+            cordovaClientName: clientName,
+            cordovaDireccion: direccion,
+            cordovaEstablecimiento: codigoEst,
+            cordovaNombreComercial: nombreComercial,
+            cordovaFechaSolicitud: fechaSolicitud,
+          }, blocksVal);
+        }, 800);
+      }
     });
   }
 });

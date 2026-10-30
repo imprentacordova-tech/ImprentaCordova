@@ -455,6 +455,7 @@ const NuevoPedidoPage: React.FC = () => {
             if (d.establecimiento) setSriEstablecimiento(d.establecimiento);
             if (d.puntoEmision) setSriPuntoEmision(d.puntoEmision);
             if (d.caducidad) setAutorizacionSriInput(d.caducidad);
+            if (d.numeracion) setNumeracionInicial(d.numeracion);
             setSriLaunchMsg('✅ Solicitud SRI completada: RUC, nombre, dirección y establecimiento cargados.');
             setTimeout(() => setSriLaunchMsg(null), 8000);
         };
