@@ -108,7 +108,7 @@ export const buildNavGroups = (isAdmin: boolean): NavGroupModel[] => [
             { path: '/usuarios',      label: 'Usuarios',           icon: ShieldCheckIcon,  badge: null },
             { path: '/registro',      label: 'Auditoría',          icon: HistoryIcon,      badge: null },
             { path: '/configuracion', label: 'Configuración',      icon: Cog8ToothIcon,    badge: null },
-            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: 'v2.3' },
+            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: 'v2.4' },
         ],
     }] : []),
 ];

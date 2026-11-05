@@ -121,6 +121,16 @@ const NuevoPedidoPage: React.FC = () => {
     const [filtroCat, setFiltroCat] = useState<string>('Todos');
     const [sriLaunchMsg, setSriLaunchMsg] = useState<string | null>(null);
 
+    // ── Estado del puente con la extensión de Chrome ───────────────────────
+    // `bridgeListo` dice si la extensión está instalada y escuchando. Antes no
+    // se consultaba: si no estaba instalada, el botón igual decía "Abriendo el
+    // SRI…" y no pasaba nada nunca.
+    const [bridgeListo, setBridgeListo] = useState(false);
+    // Lanzamiento en curso: su id sirve para descartar resultados de solicitudes
+    // viejas que lleguen tarde, y su temporizador para dejar de esperar.
+    const sriPedidoEnCurso = useRef<string | null>(null);
+    const sriTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     // ¿La orden contiene al menos un producto con requerimientos SRI?
     const hasSriItem = useMemo(() => items.some(i => i.esSRI || i.especificaciones?.sri), [items]);
 
@@ -416,13 +426,28 @@ const NuevoPedidoPage: React.FC = () => {
     // La web le pide a la extensión que abra el SRI y haga la solicitud con el
     // documento y la cantidad ya configurados. Al terminar, la extensión devuelve
     // los datos y la orden se completa sola.
+    // Cuánto esperamos a que termine la solicitud en el portal del SRI. Un
+    // trámite real lleva un par de minutos (login, 6 pantallas, la búsqueda de
+    // la imprenta), así que el corte tiene que ser generoso; lo que no puede
+    // pasar es esperar para siempre sin decir nada.
+    const ESPERA_SRI_MS = 4 * 60 * 1000;
+
     const handleLaunchSri = (item: any) => {
         const nombre = (item?.nombre || '').toUpperCase();
         const docType = nombre.includes('FACTURA') ? '0'
             : (nombre.includes('GUÍA') || nombre.includes('GUIA')) ? '5'
             : '1';
         const blocks = Number(item?.especificaciones?.paginas) || 100;
+        // Sin extensión no hay nada que lanzar: se dice ahora, no después de un
+        // "⏳ Abriendo el SRI…" que no iba a cumplirse.
+        if (!bridgeListo) {
+            setSriLaunchMsg('No detectamos la extensión de Chrome. Instalala desde el menú Sistema → Descargar Extensión, activala y recargá esta página.');
+            return;
+        }
+
+        const requestId = `sri-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         const payload = {
+            requestId,
             ruc: cliente?.ruc || tempClient?.cedula || '',
             name: cliente?.nombre || tempClient?.nombre || '',
             direccion: (cliente as any)?.direccion || tempClient?.direccion || '',
@@ -431,19 +456,57 @@ const NuevoPedidoPage: React.FC = () => {
             docSize: item?.especificaciones?.tamano || '1/4 Oficio',
         };
         try {
-            window.postMessage({ type: 'CORDOVA_SRI_LAUNCH', payload }, '*');
-            setSriLaunchMsg('⏳ Abriendo el SRI… cuando termine la solicitud, los datos se cargan solos.');
-            setTimeout(() => setSriLaunchMsg(null), 12000);
+            window.postMessage({ type: 'CORDOVA_SRI_LAUNCH', payload }, window.location.origin);
+            sriPedidoEnCurso.current = requestId;
+            setSriLaunchMsg('⏳ Abriendo el SRI… cuando termine la solicitud, los datos se cargan solos. Podés seguir trabajando acá.');
+
+            if (sriTimeout.current) clearTimeout(sriTimeout.current);
+            sriTimeout.current = setTimeout(() => {
+                // Se agotó la espera: puede que el trámite se haya cortado, que
+                // el contribuyente no pueda emitir ese documento o que la pestaña
+                // del SRI se haya cerrado. Lo importante es no dejar al operador
+                // mirando un reloj que no avanza.
+                if (sriPedidoEnCurso.current !== requestId) return;
+                sriPedidoEnCurso.current = null;
+                setSriLaunchMsg('⚠️ El SRI no devolvió la solicitud. Revisá la pestaña del portal: si quedó a medias, completala ahí y cargá los datos a mano, o volvé a intentarlo.');
+            }, ESPERA_SRI_MS);
         } catch (e) {
             console.error('[NuevoPedido] No se pudo lanzar la solicitud SRI:', e);
             setSriLaunchMsg('No se pudo abrir el SRI. Verificá que la extensión esté instalada y activa.');
         }
     };
 
+    // Detección de la extensión: se pregunta al montar y se escucha el anuncio.
+    // El puente contesta el ping, así que no importa quién llegue primero.
+    useEffect(() => {
+        const onReady = (e: MessageEvent) => {
+            if (e.source !== window || e.origin !== window.location.origin) return;
+            if (!e.data || e.data.type !== 'CORDOVA_BRIDGE_READY') return;
+            setBridgeListo(true);
+        };
+        window.addEventListener('message', onReady);
+        try {
+            window.postMessage({ type: 'CORDOVA_BRIDGE_PING' }, window.location.origin);
+        } catch { /* sin puente, queda en false */ }
+        return () => window.removeEventListener('message', onReady);
+    }, []);
+
+    // Al desmontar, no dejar vivo el temporizador de espera del SRI.
+    useEffect(() => () => { if (sriTimeout.current) clearTimeout(sriTimeout.current); }, []);
+
     useEffect(() => {
         const onMessage = (e: MessageEvent) => {
+            // Solo mensajes de esta misma página: con '*' cualquier iframe podía
+            // inyectar un resultado falso y completar la orden con datos ajenos.
+            if (e.source !== window || e.origin !== window.location.origin) return;
             if (!e.data || e.data.type !== 'CORDOVA_SRI_RESULT') return;
             const d = e.data.data || {};
+
+            // Descartar resultados que no son del lanzamiento que esperamos.
+            // `requestId` ausente = extensión vieja: se acepta por compatibilidad.
+            if (d.requestId && sriPedidoEnCurso.current && d.requestId !== sriPedidoEnCurso.current) return;
+            sriPedidoEnCurso.current = null;
+            if (sriTimeout.current) { clearTimeout(sriTimeout.current); sriTimeout.current = null; }
             if (d.ruc || d.name) {
                 setTempClient((prev: any) => ({
                     ...prev,

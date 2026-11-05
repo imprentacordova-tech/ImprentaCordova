@@ -39,6 +39,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     useEffect(() => {
         if (!user) return;
         const onMsg = (e: MessageEvent) => {
+            // Mismo origen y misma ventana: este mensaje cambia el estado de una
+            // orden, así que no se acepta de un iframe ajeno.
+            if (e.source !== window || e.origin !== window.location.origin) return;
             if (!e.data || e.data.type !== 'CORDOVA_SRI_ACEPTADA') return;
             const ruc = String(e.data.data?.ruc || '').replace(/\D/g, '');
             if (!ruc) return;

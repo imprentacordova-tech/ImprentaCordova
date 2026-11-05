@@ -117,10 +117,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       world: "MAIN",
       args: [request.funcName],
       func: (fnName) => {
+        // Los diálogos se anulan SOLO mientras dura esta llamada y se restauran
+        // en el finally. Antes quedaban anulados para toda la vida de la página:
+        // después de automatizar un paso, el portal seguía auto-aceptando todo
+        // lo que el operador tocara a mano.
+        const alertNativo = window.alert;
+        const confirmNativo = window.confirm;
         try {
           window.alert = function(){};
           window.confirm = function(){ return true; };
-          
+
           if (fnName === 'siguientePaso' && typeof siguientePaso === 'function') {
             const param = document.body.getAttribute('data-cordova-param');
             if (param) {
@@ -188,6 +194,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         } catch(e) {
           console.error("Cordova Ext: Main world error", e);
+        } finally {
+          // Un tick después: el submit/navegación en curso puede disparar su
+          // propio confirm() y ese todavía corresponde a la automatización.
+          setTimeout(() => {
+            window.alert = alertNativo;
+            window.confirm = confirmNativo;
+          }, 1500);
         }
       }
     });

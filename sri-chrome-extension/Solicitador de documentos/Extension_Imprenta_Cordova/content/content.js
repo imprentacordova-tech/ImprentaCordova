@@ -8,6 +8,57 @@ function triggerMainWorldClick(selector, fallbackFunc) {
   chrome.runtime.sendMessage({ action: "callFunction", funcName: fallbackFunc });
 }
 
+// ==========================================================================
+// VENTANA DE AUTOMATIZACIÓN
+// ==========================================================================
+// `content/overrides.js` solo cortocircuita confirm()/alert() del portal
+// mientras esta ventana está abierta. Fuera de ella, los diálogos del SRI son
+// los nativos y el operador los contesta él. Antes estaban anulados siempre,
+// así que cualquier confirmación del portal —incluso navegando a mano— se
+// aceptaba sola.
+//
+// El permiso caduca solo a los 30 s (ver TTL_MS en overrides.js); `renovar`
+// lo extiende mientras el paso siga trabajando.
+
+let _renovadorAutomatizacion = null;
+
+/** Abre la ventana: los diálogos del portal pasan a auto-aceptarse. */
+function activarAutomatizacion() {
+  try {
+    window.postMessage({ type: 'SRI_AUTOMATION_ON' }, '*');
+  } catch (e) { /* la página pudo navegar */ }
+
+  if (_renovadorAutomatizacion === null) {
+    // Renovar a la mitad del TTL para que un paso lento no la pierda.
+    _renovadorAutomatizacion = setInterval(() => {
+      try { window.postMessage({ type: 'SRI_AUTOMATION_ON' }, '*'); } catch (e) { }
+    }, 12000);
+  }
+}
+
+/** Cierra la ventana: el portal vuelve a preguntar como siempre. */
+function desactivarAutomatizacion() {
+  if (_renovadorAutomatizacion !== null) {
+    clearInterval(_renovadorAutomatizacion);
+    _renovadorAutomatizacion = null;
+  }
+  try {
+    window.postMessage({ type: 'SRI_AUTOMATION_OFF' }, '*');
+  } catch (e) { /* la página pudo navegar */ }
+}
+
+/** URLs del portal en las que el piloto automático actúa de verdad. */
+const PASOS_AUTOMATIZADOS = [
+  'inicio-contribuyente.jspa',
+  'seleccionar-establecimiento-contibuyente-imprenta.jspa',
+  'agregar-cantidades-imprenta.jspa',
+  'confirmar-cantidades.jspa',
+  'seleccionar-imprenta.jspa',
+  'seleccionar-establecimiento-imprenta.jspa',
+];
+
+const esPasoAutomatizado = (url) => PASOS_AUTOMATIZADOS.some(p => url.includes(p));
+
 // Utility: Wait for an element to exist
 function waitForElement(selector, timeout = 10000) {
   return new Promise((resolve, reject) => {
@@ -607,6 +658,65 @@ function leerSecuencias() {
 let currentSyncedTrabajoId = null;
 let currentSyncedClienteId = null;
 
+// ==========================================================================
+// GUARDA CONTRA ÓRDENES DUPLICADAS
+// ==========================================================================
+// El registro se dispara al llegar a `seleccionar-establecimiento-imprenta.jspa`
+// (la pantalla final). Pero esa pantalla se vuelve a cargar si el operador
+// recarga con F5, si vuelve con el botón Atrás o si el portal la re-emite: cada
+// vez se llamaba a `/api/v1/trabajos/crear` otra vez y quedaba una orden
+// duplicada en el sistema, que alguien tenía que descubrir y borrar a mano.
+//
+// Se guarda la huella de la última solicitud registrada. Si vuelve a aparecer
+// la misma dentro de la ventana, no se registra de nuevo.
+//
+// La huella incluye la serie/secuencia que asigna el SRI, que es única por
+// solicitud: dos pedidos distintos del mismo cliente por el mismo documento no
+// comparten huella. La ventana corta es la red de seguridad por si el SRI aún
+// no mostró la serie en esa pantalla.
+
+/** Minutos en los que una solicitud idéntica se considera la misma. */
+const VENTANA_DEDUPE_MS = 10 * 60 * 1000;
+
+const CLAVE_ULTIMA_SYNC = 'cordova_ultima_sync';
+
+function huellaSolicitud(orden) {
+  return [
+    orden.clientRuc || '',
+    orden.docType || '',
+    orden.blocks || '',
+    orden.fechaSolicitud || '',
+    orden.serie || '',
+  ].join('|');
+}
+
+/**
+ * ¿Ya se registró esta misma solicitud hace poco?
+ * @returns {Promise<{huella: string, trabajoId: string|null, ts: number}|null>}
+ */
+function registroPrevioDe(huella) {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.get([CLAVE_ULTIMA_SYNC], (r) => {
+        const prev = r && r[CLAVE_ULTIMA_SYNC];
+        if (!prev || prev.huella !== huella) return resolve(null);
+        if (Date.now() - (prev.ts || 0) > VENTANA_DEDUPE_MS) return resolve(null);
+        resolve(prev);
+      });
+    } catch (e) {
+      // Si el storage falla, se sigue de largo y se registra: perder una orden
+      // es peor que duplicarla (la duplicada se ve y se borra; la perdida no).
+      resolve(null);
+    }
+  });
+}
+
+function marcarComoRegistrada(huella, trabajoId) {
+  try {
+    chrome.storage.local.set({ [CLAVE_ULTIMA_SYNC]: { huella, trabajoId: trabajoId || null, ts: Date.now() } });
+  } catch (e) { /* sin storage, la próxima recarga podría duplicar: aceptable */ }
+}
+
 async function autoSyncToSupabase(orderData) {
   const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
   const docName = docNames[orderData.docType] || 'Nota de Venta';
@@ -1167,6 +1277,10 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
   if (!autoPilot) return;
 
+  // El piloto automático está encendido Y estamos parados en un paso del flujo:
+  // recién ahí se permiten los diálogos auto-aceptados (ver overrides.js).
+  if (esPasoAutomatizado(url)) activarAutomatizacion();
+
   // Paso 2: Selección de Establecimiento Contribuyente
   if (url.includes('inicio-contribuyente.jspa') && config.cordova_suggested) {
     try {
@@ -1227,6 +1341,8 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       const docInput = document.querySelector(`input[name="documento0_${docType}"]`);
       
       if (!docInput) {
+        // El flujo se detiene acá: devolvemos los diálogos del portal al operador.
+        desactivarAutomatizacion();
         chrome.storage.local.set({ cordovaAutoPilot: false });
         if (docType === "1") {
           showCordovaAlert(
@@ -1382,7 +1498,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
   // Paso 7: Finalización & Ingestión Automática a Supabase + Drawer Lateral
   if (url.includes('seleccionar-establecimiento-imprenta.jspa')) {
-    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab', 'cordovaNumeracion', 'cordovaSerie', 'cordovaCaducidadMeses', 'cordovaCaducidadAlerta'], async (finalData) => {
+    chrome.storage.local.get(['cordovaClientRuc', 'cordovaClientName', 'cordovaCaducidad', 'cordovaNombreComercial', 'cordovaDocType', 'cordovaBlocks', 'cordova_origin_tab', 'cordovaNumeracion', 'cordovaSerie', 'cordovaCaducidadMeses', 'cordovaCaducidadAlerta', 'cordova_launch_payload'], async (finalData) => {
       chrome.storage.local.remove(['cordova_suggested', 'cordova_est_selected']);
 
       if (config.flow_simulacion === true) {
@@ -1444,6 +1560,10 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
             action: 'sriSolicitudResult',
             tabId: originTab,
             data: {
+              // Identificador del lanzamiento que originó esta solicitud. La web
+              // descarta los resultados que no correspondan al pedido que está
+              // esperando (p. ej. el de una solicitud anterior que llegó tarde).
+              requestId: (finalData.cordova_launch_payload || {}).requestId || null,
               ruc: clientRuc,
               name: clientName,
               direccion,
@@ -1464,9 +1584,26 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         } catch (e) { console.warn('[Cordova] No se pudo avisar a la web:', e); }
       }
 
-      // Sincronización transparente con clave pública segura
-      await autoSyncToSupabase(immediateOrder);
-      showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
+      // El flujo del SRI terminó: los diálogos del portal vuelven al operador.
+      desactivarAutomatizacion();
+
+      // Sincronización transparente con clave pública segura, una sola vez por
+      // solicitud: recargar esta pantalla no vuelve a registrar la orden.
+      const huella = huellaSolicitud({ ...immediateOrder, serie: finalData.cordovaSerie || '' });
+      const yaRegistrada = await registroPrevioDe(huella);
+
+      if (yaRegistrada) {
+        showCordovaToastHud('ℹ️ Esta solicitud ya estaba registrada. No se duplicó la orden.');
+      } else {
+        const ok = await autoSyncToSupabase(immediateOrder);
+        if (ok) {
+          marcarComoRegistrada(huella, currentSyncedTrabajoId);
+          showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
+        } else {
+          // Antes esto se anunciaba como "Sincronizada" aunque hubiera fallado.
+          showCordovaToastHud('⚠️ No se pudo registrar la orden. Cargala a mano en la web.');
+        }
+      }
 
       if (config.flow_mostrar_drawer !== false) {
         setTimeout(() => {
