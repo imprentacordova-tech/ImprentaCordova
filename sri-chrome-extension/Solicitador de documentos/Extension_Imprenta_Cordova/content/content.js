@@ -572,55 +572,22 @@ function analizarCaducidad(texto) {
  * Es la fuente más fiel de los datos del pedido: se lee al final y viaja a la web
  * para registrar la orden con la dirección y el establecimiento correctos.
  */
-function leerResumenSolicitud() {
-  const out = { ruc: '', razonSocial: '', codigoEstablecimiento: '', nombreComercial: '', direccion: '', fechaSolicitud: '' };
-  const norm = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+const leerResumenSolicitud = () => CordovaParseo.leerResumenSolicitud(document);
 
-  try {
-    const celdas = Array.from(document.querySelectorAll('th, td'));
-    const leer = (etiqueta) => {
-      const objetivo = norm(etiqueta);
-      for (const celda of celdas) {
-        const txt = norm(celda.textContent);
-        if (txt === objetivo || txt === objetivo + ':') {
-          const sig = celda.nextElementSibling;
-          if (sig) {
-            const val = (sig.textContent || '').replace(/\s+/g, ' ').trim();
-            if (val) return val;
-          }
-        }
-      }
-      return '';
-    };
+// ==========================================================================
+// CONTRATO DE DATOS MÍNIMOS
+// ==========================================================================
+// El parseo lee el DOM del portal del SRI, que no controlamos. Cuando el SRI
+// cambia una maqueta, la lectura devuelve vacío — y antes la orden se
+// registraba igual: quedaba un trabajo fantasma, sin RUC y con el titular en
+// "CLIENTE SRI", que alguien descubría días después sin saber de quién era.
+//
+// Estos dos campos son los que identifican al cliente. Sin ellos no se
+// registra: se avisa en pantalla y el operador completa en el panel lateral,
+// que ahora sí puede crear la orden (ver updateSupabaseOrderRefinement).
 
-    out.ruc = leer('RUC');
-    out.razonSocial = leer('Razón Social') || leer('Razon Social');
-    out.codigoEstablecimiento = leer('Código del Establecimiento') || leer('Codigo del Establecimiento');
-    out.nombreComercial = leer('Nombre Comercial del Establecimiento') || leer('Nombre Comercial');
-    out.direccion = leer('Dirección del establecimiento') || leer('Direccion del establecimiento');
-    out.fechaSolicitud = leer('Fecha de Solicitud');
-
-    // Respaldo: parsear el texto plano (por si la maqueta no usa th/td por par).
-    if (!out.ruc || !out.razonSocial) {
-      const texto = (document.body ? document.body.innerText : '').replace(/\r/g, '');
-      const sacar = (label) => {
-        const re = new RegExp(label + '\\s*:?\\s*\\n?\\s*([^\\n]+)', 'i');
-        const m = texto.match(re);
-        return m ? m[1].replace(/\s+/g, ' ').trim() : '';
-      };
-      if (!out.ruc) out.ruc = sacar('RUC');
-      if (!out.razonSocial) out.razonSocial = sacar('Razón Social') || sacar('Razon Social');
-      if (!out.codigoEstablecimiento) out.codigoEstablecimiento = sacar('Código del Establecimiento') || sacar('Codigo del Establecimiento');
-      if (!out.nombreComercial) out.nombreComercial = sacar('Nombre Comercial del Establecimiento');
-      if (!out.direccion) out.direccion = sacar('Dirección del establecimiento') || sacar('Direccion del establecimiento');
-      if (!out.fechaSolicitud) out.fechaSolicitud = sacar('Fecha de Solicitud');
-    }
-  } catch (e) {
-    console.warn('[Cordova Ext] No se pudo leer el resumen de la solicitud:', e);
-  }
-
-  return out;
-}
+/** @returns {{ok: boolean, faltan: string[]}} */
+const validarCaptura = (orden) => CordovaParseo.validarCaptura(orden);
 
 /**
  * Lee la serie y el rango de secuencia de la página "Confirmación de la Solicitud".
@@ -628,23 +595,7 @@ function leerResumenSolicitud() {
  *   Serie: 001-001 | NOTA DE VENTA | Secuencia solicitada Inicial: 1 | #Final: 50
  * Devuelve { serie, tipo, inicial, final } o null.
  */
-function leerSecuencias() {
-  try {
-    const tablas = Array.from(document.querySelectorAll('table'));
-    for (const tabla of tablas) {
-      const txt = tabla.textContent || '';
-      if (!/secuencia solicitada/i.test(txt)) continue;
-      const filas = Array.from(tabla.querySelectorAll('tr'));
-      for (const fila of filas) {
-        const celdas = Array.from(fila.querySelectorAll('td')).map(td => (td.textContent || '').trim());
-        if (celdas.length >= 4 && /^\d{3}-\d{3}$/.test(celdas[0])) {
-          return { serie: celdas[0], tipo: celdas[1], inicial: celdas[2], final: celdas[3] };
-        }
-      }
-    }
-  } catch (e) { /* ignore */ }
-  return null;
-}
+const leerSecuencias = () => CordovaParseo.leerSecuencias(document);
 
 // -------------------------------------------------------------
 // SINCRONIZACIÓN EN LA NUBE — vía backend (Render)
@@ -737,6 +688,36 @@ function marcarComoRegistrada(huella, trabajoId) {
   } catch (e) { /* sin storage, la próxima recarga podría duplicar: aceptable */ }
 }
 
+/**
+ * ÚNICO camino para registrar una orden en el sistema.
+ *
+ * Junta las tres reglas que antes no existían o estaban sueltas:
+ *   1. No se registra una orden sin RUC ni razón social (contrato).
+ *   2. No se registra dos veces la misma solicitud (huella).
+ *   3. Si el backend falla, se dice; no se anuncia "sincronizada".
+ *
+ * @returns {Promise<{estado:'registrada'|'duplicada'|'incompleta'|'error', faltan?: string[]}>}
+ */
+async function registrarOrden(orden, { serie = '' } = {}) {
+  const validacion = validarCaptura(orden);
+  if (!validacion.ok) return { estado: 'incompleta', faltan: validacion.faltan };
+
+  const huella = huellaSolicitud({ ...orden, serie });
+  const previo = await registroPrevioDe(huella);
+  if (previo) {
+    // Se recupera el id del trabajo ya creado: si el operador después guarda
+    // desde el panel lateral, se ACTUALIZA ese trabajo en vez de crear otro.
+    if (previo.trabajoId) currentSyncedTrabajoId = previo.trabajoId;
+    return { estado: 'duplicada' };
+  }
+
+  const ok = await autoSyncToSupabase(orden);
+  if (!ok) return { estado: 'error' };
+
+  marcarComoRegistrada(huella, currentSyncedTrabajoId);
+  return { estado: 'registrada' };
+}
+
 async function autoSyncToSupabase(orderData) {
   const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
   const docName = docNames[orderData.docType] || 'Nota de Venta';
@@ -803,6 +784,27 @@ async function updateSupabaseOrderRefinement(orderData) {
   const totalVal = parseFloat(orderData.total) || 13.00;
   const abonoVal = parseFloat(orderData.abono) || 0.00;
   const saldoVal = Math.max(0, totalVal - abonoVal);
+
+  // Camino de rescate: si la captura automática no alcanzó el contrato de datos
+  // mínimos, no hay trabajo creado. Guardar desde el panel lateral —con los
+  // datos ya corregidos a mano— es la segunda oportunidad de registrarlo.
+  // Antes este caso no existía: la orden simplemente nunca llegaba al sistema.
+  if (!currentSyncedTrabajoId) {
+    const resultado = await registrarOrden(orderData);
+    if (resultado.estado === 'registrada') {
+      showCordovaToastHud(`⚡ Orden registrada • RUC: ${orderData.clientRuc}`);
+      return;
+    }
+    if (resultado.estado === 'incompleta') {
+      showCordovaToastHud(`⚠️ Falta ${resultado.faltan.join(' y ')}: la orden sigue sin registrarse.`);
+      return;
+    }
+    // 'duplicada' deja currentSyncedTrabajoId recuperado: sigue y actualiza.
+    if (resultado.estado === 'error') {
+      showCordovaToastHud('⚠️ No se pudo registrar la orden. Cargala a mano en la web.');
+      return;
+    }
+  }
 
   try {
     if (currentSyncedClienteId || orderData.clientRuc) {
@@ -1595,22 +1597,26 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       // El flujo del SRI terminó: los diálogos del portal vuelven al operador.
       desactivarAutomatizacion();
 
-      // Sincronización transparente con clave pública segura, una sola vez por
-      // solicitud: recargar esta pantalla no vuelve a registrar la orden.
-      const huella = huellaSolicitud({ ...immediateOrder, serie: finalData.cordovaSerie || '' });
-      const yaRegistrada = await registroPrevioDe(huella);
+      // Registro con contrato + una sola vez por solicitud: recargar esta
+      // pantalla no vuelve a crear la orden.
+      const resultado = await registrarOrden(immediateOrder, { serie: finalData.cordovaSerie || '' });
 
-      if (yaRegistrada) {
+      if (resultado.estado === 'registrada') {
+        showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
+      } else if (resultado.estado === 'duplicada') {
         showCordovaToastHud('ℹ️ Esta solicitud ya estaba registrada. No se duplicó la orden.');
+      } else if (resultado.estado === 'incompleta') {
+        // No se registra un fantasma. El panel lateral queda abierto con los
+        // campos editables y, al guardar desde ahí, se crea la orden.
+        showCordovaWarningCard(
+          'Faltan datos del cliente',
+          `No se pudo leer <b>${resultado.faltan.join('</b> ni <b>')}</b> de la pantalla del SRI, ` +
+          'así que la orden NO se registró para no dejar un trabajo sin dueño.<br><br>' +
+          'Completá los datos en el panel de la derecha y guardá: desde ahí se registra.',
+        );
       } else {
-        const ok = await autoSyncToSupabase(immediateOrder);
-        if (ok) {
-          marcarComoRegistrada(huella, currentSyncedTrabajoId);
-          showCordovaToastHud(`⚡ Orden Sincronizada en la Web • RUC: ${immediateOrder.clientRuc}`);
-        } else {
-          // Antes esto se anunciaba como "Sincronizada" aunque hubiera fallado.
-          showCordovaToastHud('⚠️ No se pudo registrar la orden. Cargala a mano en la web.');
-        }
+        // Antes esto se anunciaba como "Sincronizada" aunque hubiera fallado.
+        showCordovaToastHud('⚠️ No se pudo registrar la orden. Cargala a mano en la web.');
       }
 
       if (config.flow_mostrar_drawer !== false) {
@@ -1632,22 +1638,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
   // ── IMPRENTA: bandeja de solicitudes recibidas ─────────────────────
   if (url.includes('no-procesadas-listado.jspa')) {
     try {
-      const filas = Array.from(document.querySelectorAll('table tr'));
-      const pendientes = [];
-      for (const fila of filas) {
-        const celdas = Array.from(fila.querySelectorAll('td')).map(td => (td.textContent || '').trim());
-        // Columnas: Solicitud | Fecha | RUC | Razón Social | Establecimiento | Dirección
-        if (celdas.length >= 5 && /^\d{13}$/.test(celdas[2] || '')) {
-          pendientes.push({
-            solicitud: celdas[0] || '',
-            fecha: celdas[1] || '',
-            ruc: celdas[2],
-            razon: celdas[3] || '',
-            establecimiento: celdas[4] || '',
-            direccion: celdas.slice(5).join(' ').trim(),
-          });
-        }
-      }
+      const pendientes = CordovaParseo.filasBandeja(document);
       chrome.storage.local.set({ cordova_solicitudes_pendientes: pendientes.slice(0, 50) });
       if (pendientes.length > 0) {
         showCordovaToastHud(`📥 ${pendientes.length} solicitud(es) pendiente(s) de aceptar.`);

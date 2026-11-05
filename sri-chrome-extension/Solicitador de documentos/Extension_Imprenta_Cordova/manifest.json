@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SRI Solicitador Cordova",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Automatización Élite SRI & Gestión de Órdenes - Imprenta Córdova",
   "permissions": [
     "storage",
@@ -32,7 +32,7 @@
     },
     {
       "matches": ["*://srienlinea.sri.gob.ec/facturacion-internet/*"],
-      "js": ["cordovaApi.js", "precios.js", "content/content.js"],
+      "js": ["cordovaApi.js", "precios.js", "parseoSri.js", "content/content.js"],
       "css": ["content/inject.css"],
       "world": "ISOLATED",
       "run_at": "document_idle",
