@@ -107,29 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalPickupForm = document.getElementById('modal-pickup-form');
   let orderNumToPickup = null;
 
-  // Prices Database
-  const referencePrices = {
-    "1/4 Oficio": {
-      25: 9.00,
-      50: 10.00,
-      100: 13.00,
-      200: 20.00,
-      300: 30.00,
-      400: 36.00,
-      500: 40.00,
-      1000: 65.00
-    },
-    "1/2 Oficio": {
-      25: 12.00,
-      50: 14.00,
-      100: 18.00,
-      200: 32.00,
-      300: 48.00,
-      400: 60.00,
-      500: 65.00,
-      1000: 100.00
-    }
-  };
+  // Lista de precios compartida con el resto de la extensión (precios.js).
+  const referencePrices = CordovaPrecios.TABLA_REFERENCIA;
 
   // State
   let allOrders = [];

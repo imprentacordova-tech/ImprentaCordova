@@ -675,6 +675,26 @@ let currentSyncedClienteId = null;
 // comparten huella. La ventana corta es la red de seguridad por si el SRI aún
 // no mostró la serie en esa pantalla.
 
+// ==========================================================================
+// PRECIO DE LA ORDEN
+// ==========================================================================
+// La extensión NO cotiza. El precio bueno lo calcula la web (precio del
+// catálogo del documento según el régimen + los recargos del Paso 2: tamaño de
+// corte y copias químicas) y viaja en el lanzamiento.
+//
+// Antes acá había una tabla propia que cobraba todo como nota de venta de 1/4
+// de oficio: una factura de RIMPE Emprendedor ($14), una liquidación de compra
+// ($15 a $20) o un juego de boletos ($25) se registraban a $13, y un 1/2 oficio
+// se registraba al precio del 1/4. La diferencia se descubría en caja.
+//
+// La tabla de abajo quedó SOLO como piso para las solicitudes que se hacen
+// directo en el portal, sin pasar por la web: ahí no hay precio que heredar y
+// es preferible una referencia a dejar la orden en $0.
+
+// La tabla vive en precios.js, que el manifest carga antes que este script.
+const precioDeLaOrden = (lanzamiento, hojas, tamano) =>
+  CordovaPrecios.precioDeLaOrden(lanzamiento, hojas, tamano);
+
 /** Minutos en los que una solicitud idéntica se considera la misma. */
 const VENTANA_DEDUPE_MS = 10 * 60 * 1000;
 
@@ -829,18 +849,8 @@ function showCordovaSuccessModal(finalData, blocks) {
     const clientOrders = orders.filter(o => o.clientRuc === clientRuc);
     const lastOrder = clientOrders.length > 0 ? clientOrders[clientOrders.length - 1] : null;
 
-    const prices = {
-      "1/4 Oficio": { 25: 9.00, 50: 10.00, 100: 13.00, 200: 20.00, 300: 30.00, 400: 36.00, 500: 40.00, 1000: 65.00 },
-      "1/2 Oficio": { 25: 12.00, 50: 14.00, 100: 18.00, 200: 32.00, 300: 48.00, 400: 60.00, 500: 65.00, 1000: 100.00 }
-    };
-
-    const getPrice = (size, qty) => {
-      if (prices[size] && prices[size][qty] !== undefined) {
-        return prices[size][qty];
-      }
-      const base = size === "1/2 Oficio" ? 18.00 : 13.00;
-      return (qty / 100) * base;
-    };
+    // Misma lista de precios que el resto de la extensión (precios.js).
+    const getPrice = (size, qty) => CordovaPrecios.precioReferencia(size, qty);
 
     let selectedSize = (lastOrder && lastOrder.docSize) ? lastOrder.docSize : "1/4 Oficio";
     let selectedAbonoVal = "5";
@@ -1526,11 +1536,9 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       });
 
       const blocksVal = finalData.cordovaBlocks || 100;
-      const prices = {
-        "1/4 Oficio": { 25: 9.00, 50: 10.00, 100: 13.00, 200: 20.00, 300: 30.00, 400: 36.00, 500: 40.00, 1000: 65.00 },
-        "1/2 Oficio": { 25: 12.00, 50: 14.00, 100: 18.00, 200: 32.00, 300: 48.00, 400: 60.00, 500: 65.00, 1000: 100.00 }
-      };
-      const totalVal = (prices["1/4 Oficio"] && prices["1/4 Oficio"][blocksVal]) ? prices["1/4 Oficio"][blocksVal] : ((blocksVal / 100) * 13.00);
+      const lanzamiento = finalData.cordova_launch_payload || {};
+      const docSizeVal = lanzamiento.docSize || '1/4 Oficio';
+      const totalVal = precioDeLaOrden(lanzamiento, blocksVal, docSizeVal);
 
       const immediateOrder = {
         clientRuc,
@@ -1543,7 +1551,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         fechaSolicitud,
         docType: finalData.cordovaDocType || '1',
         blocks: blocksVal,
-        docSize: '1/4 Oficio',
+        docSize: docSizeVal,
         activity: 'Comercio / Servicios General',
         abono: 0,
         total: totalVal,
@@ -1573,7 +1581,7 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
               fechaSolicitud,
               docType: finalData.cordovaDocType || '1',
               blocks: blocksVal,
-              docSize: '1/4 Oficio',
+              docSize: docSizeVal,
               nombreComercial,
               numeracion: finalData.cordovaNumeracion || '',
               serie: finalData.cordovaSerie || '',
