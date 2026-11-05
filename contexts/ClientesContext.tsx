@@ -72,7 +72,12 @@ export const ClientesProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const fetchClientes = useCallback(async () => {
     try {
-      let { data, error } = await supabase.from('clientes').select('*').order('creado_en', { ascending: false });
+      const { data: primerIntento, error } = await supabase.from('clientes').select('*').order('creado_en', { ascending: false });
+      let data = primerIntento;
+      if (error && !error.message.includes('fiscal_data')) {
+        // Antes este error se descartaba sin rastro y la lista quedaba vacía "sin motivo".
+        console.error('[ClientesContext] Supabase rechazó la consulta:', error.message);
+      }
       if (error && error.message.includes('fiscal_data')) {
         const { data: fallback } = await supabase.from('clientes')
           .select('id, cedula, ruc, nombre, nombre_comercial, actividades, direccion, notas, telefono, email, creado_en, regimen, establecimiento_predeterminado, punto_emision_predeterminado, num_establecimientos_open')

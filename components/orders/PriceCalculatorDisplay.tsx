@@ -88,7 +88,7 @@ const PriceCalculatorDisplay: React.FC<PriceCalculatorDisplayProps> = ({ onSelec
                 total: subtotal + utility
             };
         } else {
-            let clickCost = costs.CLICK_DIGITAL_A3;
+            const clickCost = costs.CLICK_DIGITAL_A3;
             let sheetCost = 0;
             switch (digPaper) {
                 case 'BOND_75': sheetCost = costs.COSTO_RESMA_BOND / 500; break;

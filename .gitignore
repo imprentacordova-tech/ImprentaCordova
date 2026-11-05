@@ -29,3 +29,16 @@ dist-ssr
 .env
 *.env
 
+
+# Basura de sesiones de IA / volcados temporales
+scratch.txt
+scratch/
+*.scratch
+all_deployments.txt
+vercel_*.txt
+
+# Resultados de herramientas
+coverage
+dev-dist
+.eslintcache
+*.timestamp-*.mjs

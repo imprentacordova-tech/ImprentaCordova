@@ -115,7 +115,10 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
-      } catch (e) {}
+      } catch {
+        // El beep es cosmético: si el navegador bloquea el audio por falta de
+        // gesto previo del usuario, la notificación visual ya cumplió.
+      }
     };
 
     const channel = supabase
@@ -166,7 +169,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (!s) return null;
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
 
-    let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+    let m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
     if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}T00:00:00.000Z`;
 
     const MESES: Record<string, string> = {
@@ -174,7 +177,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
       julio: '07', agosto: '08', septiembre: '09', setiembre: '09', octubre: '10',
       noviembre: '11', diciembre: '12',
     };
-    m = s.match(/^(\d{1,2})\s*[\/\-]\s*([A-Za-zÁÉÍÓÚáéíóúñ]+)\s*[\/\-]\s*(\d{4})$/);
+    m = s.match(/^(\d{1,2})\s*[-/]\s*([A-Za-zÁÉÍÓÚáéíóúñ]+)\s*[-/]\s*(\d{4})$/);
     if (m) {
       const mes = MESES[m[2].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')];
       if (mes) return `${m[3]}-${mes}-${m[1].padStart(2, '0')}T00:00:00.000Z`;
@@ -243,7 +246,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     let insertData: any = null;
     let insertError: any = null;
-    let payload: Record<string, any> = { ...dbData };
+    const payload: Record<string, any> = { ...dbData };
     let attempts = 0;
     const columnasFaltantes: string[] = [];
 
@@ -366,7 +369,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Update resiliente: si la base no tiene alguna columna del payload, la quita
     // y reintenta (mismo criterio que addTrabajo). Y si `.single()` no devuelve la
     // fila (RLS / 0 filas), hace un update mínimo de respaldo y avisa el motivo.
-    let payload: Record<string, any> = { ...updateData };
+    const payload: Record<string, any> = { ...updateData };
     let data: any = null;
     let error: any = null;
 

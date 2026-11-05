@@ -72,12 +72,21 @@ npm run dev
 | `npm test` | Tests unitarios (vitest) |
 | `npm run test:watch` | Tests en modo watch |
 | `npm run test:coverage` | Cobertura de tests |
+| `npm run typecheck` | Chequeo de tipos (`tsc --noEmit`) — no corre dentro del build |
+| `npm run lint` | ESLint: hooks mal usados, variables sin definir, escapes raros |
+| `npm run lint:fix` | Arregla lo que ESLint puede arreglar solo |
+| `npm run verify` | Tipos + lint + tests + build, en ese orden (lo mismo que CI) |
 
-Además, el chequeo de tipos no corre dentro del build:
+Antes de empujar a `main`, un solo comando:
 
 ```bash
-npx tsc --noEmit
+npm run verify
 ```
+
+Sobre el lint: los **errores** bloquean, los **avisos** (tipos `any` heredados,
+`console.log`) no. `npm run lint:ci` —el que corre en CI— falla si la cantidad
+de avisos CRECE, así que la deuda vieja se puede dejar pero no agrandar. Cuando bajes
+avisos, bajá también el número de `lint:ci` en `package.json`.
 
 ---
 
@@ -158,10 +167,21 @@ Guía completa: [`GUIA_DESPLIEGUE_Y_OPERACION.md`](GUIA_DESPLIEGUE_Y_OPERACION.m
 ## Verificación rápida
 
 ```bash
-npm run build      # EXIT 0
-npx tsc --noEmit   # 0 errores
-npm test           # 171/171
+npm run verify
 ```
+
+Equivale a:
+
+```bash
+npm run typecheck   # 0 errores
+npm run lint        # 0 errores (avisos permitidos)
+npm test            # 232/232 en 17 archivos
+npm run build       # EXIT 0, sin chunks sobre 1 MB
+```
+
+Lo mismo corre solo en GitHub Actions con cada push y cada pull request a
+`main` (`.github/workflows/ci.yml`), incluido el guardián de secretos sobre
+el bundle ya compilado.
 
 ---
 

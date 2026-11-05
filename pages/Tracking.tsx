@@ -116,7 +116,7 @@ export const TrackingPage: React.FC = () => {
     useEffect(() => {
         const q = searchParams.get('q');
         if (q) { setSearchQuery(q); doSearch(q); }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [searchParams]);
 
     const handleAprobarArte = async (trabajoId: string) => {

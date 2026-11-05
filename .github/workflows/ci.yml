@@ -1,0 +1,64 @@
+# CI — Imprenta Córdova
+# =====================
+# Corre en cada push y en cada pull request a main. Es la red que evita que
+# vuelva a producción algo que no compila, no tipa o filtra un secreto
+# (el test __tests__/security.secrets.test.ts revisa también el bundle).
+#
+# Orden pensado para fallar rápido: tipos (segundos) -> lint -> tests -> build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  # Si se empuja dos veces seguidas, cancela la corrida vieja.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Tipos, lint, tests y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node 20 + caché de npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Chequeo de tipos
+        run: npm run typecheck
+
+      - name: Lint (los avisos no pueden crecer)
+        run: npm run lint:ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build
+
+      # El guardián de secretos vuelve a correr ahora que `dist/` existe:
+      # así revisa el bundle compilado, no solo el código fuente.
+      - name: Guardián de secretos sobre el bundle
+        run: npx vitest run __tests__/security.secrets.test.ts
+
+      - name: Subir el bundle como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+          if-no-files-found: ignore

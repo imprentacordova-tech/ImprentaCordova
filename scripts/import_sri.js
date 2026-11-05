@@ -30,7 +30,7 @@ async function importSRI() {
   });
 
   let isFirstLine = true;
-  let batch: any[] = [];
+  let batch = [];
   let totalProcessed = 0;
   let totalInserted = 0;
 
@@ -84,7 +84,7 @@ async function importSRI() {
   console.log(`Import completed! Total: ${totalInserted}`);
 }
 
-async function insertBatch(records: any[]) {
+async function insertBatch(records) {
   const { error } = await supabase
     .from('sri_padron_el_oro')
     .upsert(records, { onConflict: 'ruc' });

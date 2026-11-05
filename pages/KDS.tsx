@@ -130,7 +130,9 @@ const KDSPage: React.FC = () => {
         setChecklistState(next);
         try {
             localStorage.setItem(`kds_chk_${selected.id}`, JSON.stringify(next));
-        } catch {}
+        } catch {
+            // Modo privado o cuota llena: el checklist sigue vivo en memoria.
+        }
     };
 
     const filtered = useMemo(() => {

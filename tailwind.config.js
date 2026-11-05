@@ -50,7 +50,6 @@ export default {
         // ── Paleta anterior (se conserva por compatibilidad) ─────────────────
         'brand-blue':      '#16309B',
         'brand-blue-dark': '#0F2280',
-        'royal-dark':      '#0F2280',
         'brand-red':       '#E11D48',
         'brand-dark':      '#050810',
         'liquid-gold':     '#D4AF37',

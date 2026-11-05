@@ -174,7 +174,7 @@ const ConfiguracionPage: React.FC = () => {
 
     const toggleVisible = (ruc: string) => setVisiblePasswords(prev => {
         const n = new Set(prev);
-        n.has(ruc) ? n.delete(ruc) : n.add(ruc);
+        if (n.has(ruc)) n.delete(ruc); else n.add(ruc);
         return n;
     });
 
