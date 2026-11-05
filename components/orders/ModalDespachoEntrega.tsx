@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { Trabajo, Cliente, User } from '../../types';
 import { formatCurrency, formatDate, generateWhatsAppLink } from '../../utils';
@@ -9,6 +8,9 @@ import { logActivity } from '../../services/activityLogService';
 import { notifyOrderDeliveredEmail } from '../../services/emailNotificationService';
 import PhotoCapture from './PhotoCapture';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../panelTheme';
+
+// Igual que en NotaDeVenta: el confeti se descarga recién cuando se despacha.
+const Confetti = React.lazy(() => import('react-confetti'));
 
 export type MetodoPagoEntrega = 'Efectivo' | 'Deuna' | 'Transferencia' | 'Tarjeta' | 'Credito';
 
@@ -696,7 +698,7 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
                     {/* ============================================================== */}
                     {paso === 'exito' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'center', padding: '10px 0' }}>
-                            <Confetti width={width} height={height} recycle={false} numberOfPieces={280} />
+                            <React.Suspense fallback={null}><Confetti width={width} height={height} recycle={false} numberOfPieces={280} /></React.Suspense>
 
                             <div style={{
                                 width: 68,

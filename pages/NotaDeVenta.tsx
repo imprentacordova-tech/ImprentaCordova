@@ -9,10 +9,9 @@ import {
     CloseIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
-import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { supabase } from '../services/supabase';
-import html2pdf from 'html2pdf.js';
+import { cargarHtml2Pdf } from '../services/pdfEngine';
 import { mapDBTrabajo } from '../contexts/TrabajosContext';
 import { 
     MODELOS, 
@@ -24,6 +23,9 @@ import {
     type ModeloImpresion 
 } from '../services/printModels';
 import { CalibradorRegistro, useCalibracion } from '../components/print/CalibradorRegistro';
+
+// El confeti solo aparece al cerrar una venta: no tiene por qué viajar en el chunk de la página.
+const Confetti = React.lazy(() => import('react-confetti'));
 
 const NotaDeVentaPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
@@ -212,11 +214,6 @@ const NotaDeVentaPage: React.FC = () => {
         const element = document.getElementById('nota-venta-sheet');
         if (!element || !trabajo || !cliente) return;
 
-        if (typeof html2pdf === 'undefined') {
-            alert("El motor de PDF aún se está cargando. Por favor, espere un segundo e intente de nuevo.");
-            return;
-        }
-
         setIsGenerating(true);
         
         // Exact Medio Oficio size: 160 mm x 220 mm
@@ -241,6 +238,7 @@ const NotaDeVentaPage: React.FC = () => {
 
         try {
             await new Promise(resolve => setTimeout(resolve, 100));
+            const html2pdf = await cargarHtml2Pdf();
             await html2pdf().set(opt).from(element).save();
         } catch (error) {
             console.error("Error generando PDF", error);
@@ -330,7 +328,7 @@ const NotaDeVentaPage: React.FC = () => {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-dark/95 backdrop-blur-2xl"
                     >
-                        <Confetti width={width} height={height} recycle={false} numberOfPieces={450} colors={['#3B82F6', '#1E293B', '#10B981', '#F59E0B']} />
+                        <React.Suspense fallback={null}><Confetti width={width} height={height} recycle={false} numberOfPieces={450} colors={['#3B82F6', '#1E293B', '#10B981', '#F59E0B']} /></React.Suspense>
                         
                         <motion.div 
                             initial={{ scale: 0.8, y: 20 }}

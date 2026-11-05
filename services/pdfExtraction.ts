@@ -1,5 +1,3 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import { isPast } from 'date-fns';
 import { Regimen } from '../types';
 
 export interface SriExtractionResult {
@@ -19,13 +17,34 @@ export interface SriExtractionResult {
   isCertificate: boolean;
 }
 
-// Ajuste para el Worker. Usamos la versión de pdfjs-dist instalada (4.0.379)
-const pdfjsVersion = pdfjsLib.version || '4.0.379';
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
+/**
+ * pdf.js pesa ~900 kB y solo se usa cuando alguien sube el PDF del SRI, así que
+ * se carga bajo demanda. El worker se empaqueta con Vite (?url) en vez de bajarlo
+ * de unpkg: antes, sin internet o con el CDN caído, la lectura del PDF fallaba.
+ */
+let pdfjsPromesa: Promise<typeof import('pdfjs-dist')> | null = null;
+
+const cargarPdfjs = () => {
+  if (!pdfjsPromesa) {
+    pdfjsPromesa = (async () => {
+      const [lib, worker] = await Promise.all([
+        import('pdfjs-dist'),
+        import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+      ]);
+      lib.GlobalWorkerOptions.workerSrc = (worker as { default: string }).default;
+      return lib;
+    })().catch((err) => {
+      pdfjsPromesa = null;
+      throw err;
+    });
+  }
+  return pdfjsPromesa;
+};
 
 export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionResult> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
+    const pdfjsLib = await cargarPdfjs();
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     const pdf = await loadingTask.promise;
 
@@ -47,7 +66,7 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
 
     // --- 1. EXTRACCIÓN DE RUC ---
     let ruc = '';
-    const rucMatch = cleanText.match(/N[ÚU]MERO RUC\s*[:\|]?\s*(\d{13})/) || cleanText.match(/\b(\d{10}001)\b/);
+    const rucMatch = cleanText.match(/N[ÚU]MERO RUC\s*[:|]?\s*(\d{13})/) || cleanText.match(/\b(\d{10}001)\b/);
     ruc = rucMatch ? rucMatch[1] : '';
 
     // --- 2. EXTRACCIÓN DE NOMBRE (LOGICA REVERSA) ---
@@ -97,7 +116,7 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
     const direccionFinal = [ubicacionGeografica, referencia].filter(Boolean).join(' - ');
 
     // --- 4. CONTACTOS ---
-    const emailMatch = cleanText.match(/[\w\.-]+@[\w\.-]+\.\w{2,}/g);
+    const emailMatch = cleanText.match(/[\w.-]+@[\w.-]+\.\w{2,}/g);
     const validEmail = emailMatch ? emailMatch.find(e => !e.includes("sri.gob.ec")) : '';
 
     const phoneMatch = textOnly.match(/(?:CELULAR|TELEFONO|TELF)[^0-9]*(\d{9,10})/);

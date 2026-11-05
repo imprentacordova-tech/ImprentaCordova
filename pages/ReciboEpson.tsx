@@ -7,7 +7,7 @@ import {
     WhatsAppIcon, Loader2Icon, FileTextIcon,
     CordovaLogo, CloseIcon
 } from '../components/Icons';
-import html2pdf from 'html2pdf.js';
+import { cargarHtml2Pdf } from '../services/pdfEngine';
 import { 
     MODELOS, 
     GEO_COMERCIAL160, 
@@ -219,6 +219,7 @@ const ReciboEpson: React.FC = () => {
         try {
             const isContinuo = esModoContinuo;
             const pdfFormat: [number, number] = isContinuo ? [216, 165] : [160, 110];
+            const html2pdf = await cargarHtml2Pdf();
             await html2pdf().set({
                 margin: 0,
                 filename: `Recibo-Comercial-${String(trabajo.orden).padStart(6, '0')}.pdf`,
@@ -285,7 +286,9 @@ const ReciboEpson: React.FC = () => {
     try {
         const specMatch = detalleStr.match(/\|\s*(?:ESPECIFICACIONES|SPECS):\s*(.+)/i);
         if (specMatch && specMatch[1]) specs = JSON.parse(specMatch[1]);
-    } catch (e) {}
+    } catch {
+        // Observaciones escritas a mano: si el JSON no parsea, se imprime el texto crudo.
+    }
 
     const cleanDetail = detalleStr.split(/\|\s*(?:ESPECIFICACIONES|SPECS):/i)[0].trim();
 

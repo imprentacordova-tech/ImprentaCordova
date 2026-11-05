@@ -7,7 +7,7 @@ import {
     Loader2Icon, HomeIcon, AlertTriangleIcon, CloseIcon
 } from '../components/Icons';
 import { supabase } from '../services/supabase';
-import html2pdf from 'html2pdf.js';
+import { cargarHtml2Pdf } from '../services/pdfEngine';
 import { MODELOS, TRAMITES_SRI, marcadoTramite, resolverModelo, resolverTramite, type TramiteSri, type ModeloImpresion } from '../services/printModels';
 // El mapeo de la fila vive en UN solo lugar (contexts/TrabajosContext.tsx). Antes había una
 // copia local acá que se desincronizaba en silencio.
@@ -498,7 +498,7 @@ const SolicitudImpresionPage: React.FC = () => {
         email: 'imprentacordova@gmail.com',
     };
 
-    const handleDownloadPdf = () => {
+    const handleDownloadPdf = async () => {
         const element = document.getElementById('documento-maestro-sri');
         if (!element || !trabajo) return;
 
@@ -523,6 +523,7 @@ const SolicitudImpresionPage: React.FC = () => {
                 orientation: orientacion === 'horizontal' ? ('landscape' as const) : ('portrait' as const),
             }
         };
+        const html2pdf = await cargarHtml2Pdf();
         html2pdf().from(element).set(opt).save();
     };
 
