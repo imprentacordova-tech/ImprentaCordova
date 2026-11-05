@@ -16,7 +16,7 @@ import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 import { calcularPedido, round2 } from '../services/orderPricing';
 import { establecimientosAbiertos } from '../services/establecimientos';
 import { MODELOS, modeloPorDefecto, modelosDe, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
-import { perfilDe, especificacionesPorDefecto, calcularDelta } from '../services/detalleProducto';
+import { perfilDe, especificacionesPorDefecto, calcularDelta, hojasPorTalonario } from '../services/detalleProducto';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
 import { ProductVisual, esProductoTalonario } from '../components/ProductVisual';
 
@@ -437,7 +437,13 @@ const NuevoPedidoPage: React.FC = () => {
         const docType = nombre.includes('FACTURA') ? '0'
             : (nombre.includes('GUÍA') || nombre.includes('GUIA')) ? '5'
             : '1';
-        const blocks = Number(item?.especificaciones?.paginas) || 100;
+        // Los comprobantes que se le piden al SRI salen de la opción de copias
+        // elegida en el Paso 2. Antes se leía `especificaciones.paginas`, una
+        // clave que el perfil SRI NO genera (sus campos son tamano/copias/papel),
+        // así que la solicitud se mandaba SIEMPRE por 100: un triplicado de 150
+        // o un cuadruplicado de 200 se autorizaban por la cantidad equivocada y
+        // había que rehacer el trámite.
+        const blocks = hojasPorTalonario(item?.especificaciones);
         // Sin extensión no hay nada que lanzar: se dice ahora, no después de un
         // "⏳ Abriendo el SRI…" que no iba a cumplirse.
         if (!bridgeListo) {
@@ -454,6 +460,11 @@ const NuevoPedidoPage: React.FC = () => {
             docType,
             blocks,
             docSize: item?.especificaciones?.tamano || '1/4 Oficio',
+            // El precio ya está calculado acá (precio del catálogo + los deltas
+            // del Paso 2). Viaja con el lanzamiento para que la extensión NO
+            // vuelva a cotizar por su cuenta: tenía su propia tabla y registraba
+            // todo a precio de nota de venta de 1/4 oficio.
+            precioUnitario: Number(item?.precioFinal ?? item?.precioUnitario) || 0,
         };
         try {
             window.postMessage({ type: 'CORDOVA_SRI_LAUNCH', payload }, window.location.origin);

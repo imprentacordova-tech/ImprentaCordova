@@ -18,10 +18,13 @@ import { describe, it, expect } from 'vitest';
 import {
   PERFILES,
   PERFIL_GENERICO_ID,
+  COPIAS_SRI,
+  HOJAS_POR_COPIAS,
   perfilDe,
   calcularDelta,
   especificacionesPorDefecto,
   resumenPerfil,
+  hojasPorTalonario,
 } from '../../services/detalleProducto';
 
 describe('perfilDe — a qué formulario va cada producto', () => {
@@ -138,6 +141,50 @@ describe('especificacionesPorDefecto', () => {
       campos: [{ key: 'a', label: 'A', tipo: 'chips' as const, opciones: [{ valor: 'uno', label: 'Uno' }, { valor: 'dos', label: 'Dos' }] }],
     };
     expect(especificacionesPorDefecto(perfil).a).toBe('uno');
+  });
+});
+
+describe('hojasPorTalonario — los comprobantes que se le piden al SRI', () => {
+  // Esto es lo que va en la solicitud de autorización, que es un acto legal:
+  // pedir 100 cuando el cliente encargó un cuadruplicado de 200 obliga a
+  // rehacer el trámite completo.
+
+  it('cada opción de copias sabe cuántas hojas trae', () => {
+    // Si alguien agrega una opción a COPIAS_SRI y se olvida del mapa, el SRI
+    // recibiría la cantidad por defecto sin que nadie lo note.
+    for (const opcion of COPIAS_SRI) {
+      expect(HOJAS_POR_COPIAS[opcion.valor], opcion.valor).toBeGreaterThan(0);
+    }
+  });
+
+  it('traduce la opción elegida en el Paso 2', () => {
+    expect(hojasPorTalonario({ copias: 'Original (50 hojas)' })).toBe(50);
+    expect(hojasPorTalonario({ copias: 'Original + 1 Copia (Duplicado 100h)' })).toBe(100);
+    expect(hojasPorTalonario({ copias: 'Original + 2 Copias (Triplicado 150h)' })).toBe(150);
+    expect(hojasPorTalonario({ copias: 'Original + 3 Copias (Cuadruplicado 200h)' })).toBe(200);
+  });
+
+  it('acepta `paginas`, que es como lo precarga la extensión al volver del SRI', () => {
+    expect(hojasPorTalonario({ paginas: 150 })).toBe(150);
+    expect(hojasPorTalonario({ paginas: '200' })).toBe(200);
+  });
+
+  it('`copias` manda sobre `paginas` cuando están los dos', () => {
+    expect(hojasPorTalonario({ copias: 'Original (50 hojas)', paginas: 999 })).toBe(50);
+  });
+
+  it('sin datos usables cae en 100, que es el duplicado habitual', () => {
+    expect(hojasPorTalonario({})).toBe(100);
+    expect(hojasPorTalonario(null)).toBe(100);
+    expect(hojasPorTalonario({ copias: 'Una opción que ya no existe' })).toBe(100);
+    expect(hojasPorTalonario({ paginas: 0 })).toBe(100);
+    expect(hojasPorTalonario({ paginas: 'abc' })).toBe(100);
+  });
+
+  it('las especificaciones por defecto del perfil SRI dan 100 hojas', () => {
+    // El default del perfil es el duplicado: el ítem recién agregado ya tiene
+    // una cantidad coherente que mandarle al portal.
+    expect(hojasPorTalonario(especificacionesPorDefecto(PERFILES.sri))).toBe(100);
   });
 });
 

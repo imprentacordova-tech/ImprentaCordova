@@ -40,12 +40,53 @@ export interface PerfilDetalle {
     campos: CampoDetalle[];
 }
 
-const COPIAS_SRI: OpcionCampo[] = [
+export const COPIAS_SRI: OpcionCampo[] = [
     { valor: 'Original (50 hojas)', label: 'Original (50 hojas)', delta: -1.5 },
     { valor: 'Original + 1 Copia (Duplicado 100h)', label: 'Original + 1 Copia (Duplicado 100h)', delta: 0 },
     { valor: 'Original + 2 Copias (Triplicado 150h)', label: 'Original + 2 Copias (Triplicado 150h)', delta: 3.5 },
     { valor: 'Original + 3 Copias (Cuadruplicado 200h)', label: 'Original + 3 Copias (Cuadruplicado 200h)', delta: 7 },
 ];
+
+/**
+ * Cuántos comprobantes (hojas) trae cada opción de copias.
+ * =========================================================
+ *
+ * Es el número que se le pide al SRI en la solicitud de autorización, así que
+ * tiene que salir de acá y no de leer el texto de la etiqueta. La autorización
+ * es un acto legal: pedir 100 cuando el cliente encargó un cuadruplicado de 200
+ * significa rehacer el trámite.
+ *
+ * Si agregás una opción a COPIAS_SRI, agregala también acá: hay una prueba que
+ * falla si alguna opción queda sin su cantidad de hojas.
+ */
+export const HOJAS_POR_COPIAS: Record<string, number> = {
+    'Original (50 hojas)': 50,
+    'Original + 1 Copia (Duplicado 100h)': 100,
+    'Original + 2 Copias (Triplicado 150h)': 150,
+    'Original + 3 Copias (Cuadruplicado 200h)': 200,
+};
+
+/** Hojas por defecto cuando no se puede determinar (el duplicado es lo habitual). */
+export const HOJAS_SRI_POR_DEFECTO = 100;
+
+/**
+ * Comprobantes que lleva un ítem SRI, para pedírselos al portal.
+ *
+ * Acepta las dos formas en que viaja el dato: `copias` (el chip que elige el
+ * operador en el Paso 2) y `paginas` (lo que precarga la extensión cuando la
+ * solicitud se hizo primero en el SRI y vuelve a la web).
+ */
+export const hojasPorTalonario = (especificaciones: Record<string, unknown> | null | undefined): number => {
+    const specs = especificaciones || {};
+
+    const porCopias = HOJAS_POR_COPIAS[String(specs.copias ?? '')];
+    if (porCopias) return porCopias;
+
+    const porPaginas = Number(specs.paginas);
+    if (Number.isFinite(porPaginas) && porPaginas > 0) return porPaginas;
+
+    return HOJAS_SRI_POR_DEFECTO;
+};
 
 export const PERFILES: Record<string, PerfilDetalle> = {
     // ── Talonario autorizado por el SRI ──────────────────────────────
