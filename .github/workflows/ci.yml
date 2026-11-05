@@ -26,14 +26,20 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Node 20 + caché de npm
-        uses: actions/setup-node@v4
+      - name: Node 24 + caché de npm
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
+      # Node 24 a propósito, no 20: con npm 10 (el que trae Node 20) "npm ci"
+      # aborta por el árbol anidado de vitest 4 (pide vite >=6 y el proyecto fija
+      # vite 5, así que npm cuelga un vite 8 dentro de vitest y el lock no
+      # registra su esbuild 0.28). npm 11 lo tolera; es el mismo npm con el que
+      # se verifica en local. El arreglo de fondo es subir vite 5 -> 7/8 para que
+      # vitest comparta uno solo.
       - name: Instalar dependencias
         run: npm ci
 
@@ -56,7 +62,7 @@ jobs:
 
       - name: Subir el bundle como artefacto
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
