@@ -31,7 +31,7 @@ Se verificó en esta sesión:
 | **Supabase** | PostgreSQL + Storage + Realtime | ✅ Configurado (`VITE_SUPABASE_URL` / `ANON_KEY`) | 500 MB DB, 1 GB storage, 50 000 MAU | Mantener. Es la mejor opción gratuita para este stack. |
 | **Git (GitHub)** | Control de versiones | ✅ Repo activo en `main` | Ilimitado (privado) | Mantener. |
 | **Vercel** | Hosting frontend (PWA) | ✅ Auto-deploy desde `main` | Hobby gratuito | Mantener. Los muchos previews (`all_deployments.txt`) sugieren limpiar deployments viejos para no confundir. |
-| **Render** | Backend SRI + firma + email | ✅ `cordova-sri-api.onrender.com` | Gratuito (el servicio **duerme a los ~15 min sin tráfico**) | **Ojo con el cold-start**: la primera solicitud SRI del día puede tardar 30–60 s. Añadir un ping de calentamiento (cron/uptime robot) o subir al plan de $7/mes. |
+| **Render** | Backend SRI + firma + email | ✅ `cordova-sri-api.onrender.com` | Gratuito (el servicio **duerme a los ~15 min sin tráfico**) | ✅ Resuelto: `.github/workflows/keep-warm.yml` pinguea `/ping` cada 10 min (2026-11-07). Si el tráfico real crece, subir al plan de $7/mes sigue siendo la opción de fondo. |
 | **Resend** | Correo transaccional | ✅ Vía backend (`RESEND_API_KEY` solo en Render) | 100 correos/día, 3000/mes | Mantener. Clave **nunca** en el frontend (ya está bien resuelto). |
 | **Cloudflare** | DNS / CDN / SSL / WAF | ❌ **No está en el código** | Gratuito | **Recomendado añadir** delante del dominio `imprentacordova.net`: CDN + SSL + protección DDoS + caché estática, sin costo. No requiere tocar código: solo apuntar el DNS. |
 | **Google Gemini** | IA / OCR de RUC / análisis de arte | ✅ Vía backend (`/api/v1/ai/generate`) | Gratuito (cuota) | Mantener. Ya **no** se empaqueta el SDK ni la clave en el navegador. |
@@ -200,10 +200,10 @@ Las animaciones ya existen y son correctas (`framer-motion`, `rise`, `blink`, pr
 9. ✅ Cloudflare documentado paso a paso en `GUIA_DESPLIEGUE_Y_OPERACION.md` → PASO 8 (solo DNS, plan Free; incluye el detalle de no perder los registros de Resend).
 
 ### P2 — Valor operativo (cuando P1 esté listo)
-10. Escáner QR por cámara en Despacho.
+10. ✅ Escáner QR por cámara en Despacho (`components/orders/QrScannerModal.tsx`, Ronda 3).
 11. ✅ Recordatorio automático a rezagados >48 h (`services/recordatorios.ts` + cron del backend + migración `20260915`).
-12. Calentamiento del backend de Render (evitar cold-start) o plan de pago mínimo.
-13. Persistencia offline/localStorage auditada en todos los contextos críticos.
+12. ✅ Calentamiento del backend de Render: `.github/workflows/keep-warm.yml` pinguea `/ping` cada 10 min (2026-11-07).
+13. Persistencia offline/localStorage: **no existe** en `TrabajosContext`, `ClientesContext` ni `InventarioContext` (solo `AuthContext` usa `localStorage`, para la sesión). No es una auditoría pendiente — es una feature a construir desde cero (cache + hidratación + merge al reconectar), decidido no abordar en esta sesión por su alcance.
 
 ---
 

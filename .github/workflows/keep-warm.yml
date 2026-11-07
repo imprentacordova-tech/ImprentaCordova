@@ -1,0 +1,22 @@
+# Keep-warm — Backend SRI (Render)
+# =================================
+# El backend vive en el plan gratuito de Render, que duerme el servicio tras
+# ~15 min sin tráfico: la primera solicitud SRI del día puede tardar 30-60s
+# en responder (cold-start). Este workflow pinguea /ping cada 10 minutos
+# para que el servicio no llegue a dormirse. No requiere checkout del repo.
+name: Keep-warm backend SRI
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping /ping
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Pinguear el backend
+        run: curl -fsS --max-time 90 https://cordova-sri-api.onrender.com/ping
