@@ -4,7 +4,7 @@ import { useData } from '../../contexts/DataContext';
 import { TrabajoEstado } from '../../types';
 import { C, DISPLAY, MONO, S } from '../panelTheme';
 import { formatCurrency } from '../../utils';
-import { DollarIcon, CheckCircleIcon, BoxIcon } from '../Icons';
+import { DollarIcon, CheckCircleIcon } from '../Icons';
 
 interface ModalArqueoCajaProps {
   isOpen: boolean;

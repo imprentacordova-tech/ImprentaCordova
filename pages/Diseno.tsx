@@ -7,10 +7,10 @@ import { analyzeDesignWithSupervisor, extractSampleTextOCR, SampleOcrResult } fr
 import { logActivity } from '../services/activityLogService';
 import { generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
-import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+import { C, S, MONO, PANEL_KEYFRAMES } from '../components/panelTheme';
 import {
     SparklesIcon, WhatsAppIcon, ClipboardIcon, CheckCircleIcon,
-    ExternalLinkIcon, ArrowRightIcon, EyeIcon, BoltIcon
+    ExternalLinkIcon
 } from '../components/Icons';
 
 const ANALISIS_COLOR: Record<string, { bg: string; color: string; border: string }> = {

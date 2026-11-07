@@ -3,9 +3,9 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, Regimen } from '../types';
 import { formatCurrency, numeroALetras } from '../utils';
-import { 
-    PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, Loader2Icon, 
-    HomeIcon, AlertTriangleIcon, CheckCircleIcon, SparklesIcon, TrophyIcon, ArrowRightIcon,
+import {
+    PrinterIcon, ArrowDownTrayIcon, Loader2Icon,
+    HomeIcon, AlertTriangleIcon, TrophyIcon, ArrowRightIcon,
     CloseIcon
 } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,14 +13,11 @@ import { useWindowSize } from 'react-use';
 import { supabase } from '../services/supabase';
 import { cargarHtml2Pdf } from '../services/pdfEngine';
 import { mapDBTrabajo } from '../contexts/TrabajosContext';
-import { 
-    MODELOS, 
-    GEO_NOTAVENTA160, 
-    modeloDesdeQuery, 
-    resolverModelo, 
-    esSoloLlenado, 
-    vaSobrePreimpreso, 
-    type ModeloImpresion 
+import {
+    MODELOS,
+    GEO_NOTAVENTA160,
+    modeloDesdeQuery,
+    type ModeloImpresion
 } from '../services/printModels';
 import { CalibradorRegistro, useCalibracion } from '../components/print/CalibradorRegistro';
 
@@ -31,7 +28,7 @@ const NotaDeVentaPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { trabajos, clientes, config: cloudConfig, loading: dataLoading, refreshData } = useData();
+    const { trabajos, clientes, loading: dataLoading, refreshData } = useData();
 
     // Mode resolution
     const modeParam = searchParams.get('mode');

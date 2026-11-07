@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo, TrabajoEstado, Regimen } from '../types';
-import { 
-    PrinterIcon, ArrowDownTrayIcon, ArrowLeftIcon, 
+import {
+    PrinterIcon, ArrowDownTrayIcon,
     Loader2Icon, HomeIcon, AlertTriangleIcon, CloseIcon
 } from '../components/Icons';
 import { supabase } from '../services/supabase';
@@ -14,10 +14,7 @@ import { MODELOS, TRAMITES_SRI, marcadoTramite, resolverModelo, resolverTramite,
 import { mapDBTrabajo } from '../contexts/TrabajosContext';
 import {
     CALIBRACION_CERO,
-    PASO_MM,
     cargarCalibracion,
-    describirCalibracion,
-    esCalibracionCero,
     guardarCalibracion,
     moverCalibracion,
     transformCalibracion,
@@ -302,19 +299,11 @@ const numero = (valor: unknown, respaldo = 0): number => {
   return Number.isFinite(n) ? n : respaldo;
 };
 
-/** Botón de las flechas de calibración de registro. */
-const BTN_REGISTRO: React.CSSProperties = {
-    width: 34, height: 30, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    background: '#FFFFFF', border: '1px solid #D7DDF0', borderRadius: 8,
-    fontSize: 14, fontWeight: 700, color: '#16309B', cursor: 'pointer', fontFamily: 'inherit',
-};
-
 const SolicitudImpresionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();
     const navigate = useNavigate();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const format = queryParams.get('format') || 'a5';
     const { trabajos, clientes, config: cloudConfig, loading: dataLoading } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
 

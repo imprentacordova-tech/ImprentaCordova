@@ -116,7 +116,7 @@ export const ClientesProvider: React.FC<{ children: ReactNode }> = ({ children }
     const dbReadyData = mapClienteToDB(clienteData);
     let { data, error } = await supabase.from('clientes').insert([dbReadyData]).select().single();
     if (error && error.message.includes('fiscal_data')) {
-      const { fiscal_data, ...safeData } = dbReadyData;
+      const { fiscal_data: _fiscal_data, ...safeData } = dbReadyData;
       const retry = await supabase.from('clientes').insert([safeData]).select().single();
       data = retry.data;
       error = retry.error;

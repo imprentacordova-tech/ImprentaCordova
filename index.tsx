@@ -8,8 +8,6 @@ import { HelmetProvider } from 'react-helmet-async';
 import { DataProvider } from './contexts/DataContext';
 import { AuthProvider } from './contexts/AuthContext';
 
-console.log("Iniciando Sistema Atelier - Imprenta Cordova...");
-
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   console.error("FATAL: No se encontro el elemento #root");
@@ -17,11 +15,6 @@ if (!rootElement) {
 }
 
 const root = createRoot(rootElement);
-
-const emergencyLoader = document.getElementById('emergency-loader');
-if (emergencyLoader) {
-    console.log("Removiendo cargador de emergencia...");
-}
 
 root.render(
   <React.StrictMode>
@@ -36,5 +29,3 @@ root.render(
     </HelmetProvider>
   </React.StrictMode>
 );
-
-console.log("Aplicacion montada con exito.");

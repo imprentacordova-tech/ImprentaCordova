@@ -3,7 +3,7 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Trabajo, TrabajoEstado, User } from '../types';
+import { TrabajoEstado, User } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { C, S, MONO, DISPLAY, estadoCfg, dot, estadoPill } from '../components/panelTheme';
 import { ModalArqueoCaja } from '../components/dashboard/ModalArqueoCaja';
@@ -11,24 +11,16 @@ import { calcularSla, tiempoEnEtapa } from '../services/tallerBoard';
 import {
     SparklesIcon,
     WalletIcon,
-    DashboardIcon,
     CalculatorIcon,
-    RocketLaunchIcon,
     MonitorIcon,
     WhatsAppIcon,
     ArrowRightIcon,
-    CheckCircleIcon,
-    AlertTriangleIcon,
-    ChevronRightIcon,
     ReceiptIcon,
     FileTextIcon,
     DollarIcon,
-    UsersIcon,
-    PlusIcon,
     SearchIcon,
     PrinterIcon,
     BoxIcon,
-    SlidersIcon,
 } from '../components/Icons';
 
 /**
@@ -69,7 +61,7 @@ const DashboardPage: React.FC = () => {
     const outletContext = useOutletContext<{ currentUser?: User }>() || {};
     const currentUser = outletContext.currentUser || auth.user;
     const isAdmin = auth.isAdmin || currentUser?.rol === 'Admin' || (currentUser?.rol as string) === 'root';
-    const { trabajos, clientes, loading, realtimeEstado, ultimaSync } = useData();
+    const { trabajos, clientes, loading } = useData();
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState<FilterTab>('todas');

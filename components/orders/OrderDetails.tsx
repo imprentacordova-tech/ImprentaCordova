@@ -486,7 +486,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                     <div style={{ fontSize: 12, color: C.muted }}>
                                         <span style={{ fontWeight: 700, color: C.ink }}>Cálculo dinámico: </span>
                                         Base ${item.precioBase || 13}
-                                        {ajustes.map((a, i) => ` + ${a.label} (${a.delta > 0 ? '+' : ''}$${a.delta})`).join('')}
+                                        {ajustes.map((a) => ` + ${a.label} (${a.delta > 0 ? '+' : ''}$${a.delta})`).join('')}
                                         {` = `}
                                         <span style={{ fontFamily: MONO, fontWeight: 700, color: C.royal }}>
                                             ${(item.precioUnitario || 13).toFixed(2)} c/u

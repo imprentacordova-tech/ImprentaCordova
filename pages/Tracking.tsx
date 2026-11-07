@@ -8,16 +8,10 @@ import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
 import {
     WhatsAppIcon, Sparkles, Check, ArrowRight, Clock, Search,
-    ShieldCheck, CheckCircle, AlertTriangle, Phone, MapPin,
-    Package, RefreshCw, FileText
+    CheckCircle, AlertTriangle, Phone,
+    Package, RefreshCw
 } from '../components/Icons';
 
-const C = {
-    ink: '#0A1140',
-    royal: '#16309B',
-    royalHover: '#0F2280',
-    gold: '#FFC61A',
-};
 const WA_NUM = '593993083943';
 
 const ESTADO_CONFIG: Record<TrabajoEstado, { label: string; badge: string; aura: string; desc: string }> = {
@@ -350,7 +344,6 @@ export const TrackingPage: React.FC = () => {
                                         {STAGES.map((s, idx) => {
                                             const isDone = idx < stageIndex;
                                             const isCurrent = idx === stageIndex;
-                                            const isPending = idx > stageIndex;
 
                                             return (
                                                 <div key={s.estado} className="flex items-start gap-4 sm:gap-6 relative">

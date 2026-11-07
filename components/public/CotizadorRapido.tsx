@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateWhatsAppLink } from '../../utils';
-import { WhatsAppIcon, Sparkles, Check, Calculator, Clock, Layers, ShieldCheck, ArrowRight } from '../Icons';
+import { WhatsAppIcon, Sparkles, Check, Clock, Layers, ShieldCheck, ArrowRight } from '../Icons';
 
 interface ProductOption {
     id: string;

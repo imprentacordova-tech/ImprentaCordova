@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, Regimen } from '../types';
-import { 
-    PrinterIcon, ArrowLeftIcon, ArrowDownTrayIcon, 
-    WhatsAppIcon, Loader2Icon, FileTextIcon,
+import {
+    PrinterIcon, ArrowLeftIcon, ArrowDownTrayIcon,
+    WhatsAppIcon, Loader2Icon,
     CordovaLogo, CloseIcon
 } from '../components/Icons';
 import { cargarHtml2Pdf } from '../services/pdfEngine';
@@ -1308,8 +1308,7 @@ const ReceiptBlockContinuo: React.FC<ReceiptBlockProps> = ({
     ordenStr, 
     fecha, 
     fechaEntregaStr,
-    qrSrc, 
-    isConsumidorFinal, 
+    qrSrc,
     titularFinal,
     rucFinal,
     sumaEnLetras,

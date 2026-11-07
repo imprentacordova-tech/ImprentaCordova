@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useWindowSize } from 'react-use';
 import { Trabajo, Cliente, User } from '../../types';
-import { formatCurrency, formatDate, generateWhatsAppLink } from '../../utils';
+import { formatCurrency, generateWhatsAppLink } from '../../utils';
 import { useData } from '../../contexts/DataContext';
 import { logActivity } from '../../services/activityLogService';
 import { notifyOrderDeliveredEmail } from '../../services/emailNotificationService';
@@ -69,7 +69,7 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [copiadoBanco, setCopiadoBanco] = useState<boolean>(false);
-    const [deliveredJob, setDeliveredJob] = useState<Trabajo | null>(null);
+    const [, setDeliveredJob] = useState<Trabajo | null>(null);
 
     // Sincronizar cuando cambia el trabajo
     useEffect(() => {

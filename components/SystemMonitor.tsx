@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ActivityIcon, CpuIcon, ZapIcon, ToolIcon, GlobeIcon, BarChartIcon } from './Icons';
+import { ActivityIcon, CpuIcon, ZapIcon, GlobeIcon, BarChartIcon } from './Icons';
 
 export const SystemMonitor: React.FC = () => {
     const [stats, setStats] = useState({

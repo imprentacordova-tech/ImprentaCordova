@@ -43,7 +43,7 @@ const Breakdown: React.FC<{ rows: { k: string; v: string; hint?: string }[]; cos
 const OffsetCalculator: React.FC<{
     costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[];
     onSave: (p: any) => void; onOrder: (p: any) => void;
-}> = ({ costs, proveedores, inventario, onSave, onOrder }) => {
+}> = ({ costs, proveedores, onSave, onOrder }) => {
     const [paperId, setPaperId] = useState('QUIMICO');
     const [, setSelectedSizePreset] = useState('1/4_OFICIO');
     const [finalW, setFinalW] = useState(10.5);
@@ -57,12 +57,6 @@ const OffsetCalculator: React.FC<{
     const [requiresSRI, setRequiresSRI] = useState(true);
 
     const getProviderName = (key: string) => proveedores.find(p => p.id === costs.proveedoresPredeterminados?.[key])?.nombre;
-    const isProviderLowStock = (key: string) => {
-        const id = costs.proveedoresPredeterminados?.[key];
-        if (!id) return false;
-        return inventario.some(i => i.proveedorId === id && i.cantidad <= i.minimo);
-    };
-
     const handlePresetChange = (val: string) => {
         setSelectedSizePreset(val);
         const currentPaper = SOURCE_PAPERS.find(p => p.id === paperId);
@@ -231,7 +225,7 @@ const OffsetCalculator: React.FC<{
 const DigitalCalculator: React.FC<{
     costs: CostConfig; proveedores: Proveedor[]; inventario: InventoryItem[];
     onSave: (p: any) => void; onOrder: (p: any) => void;
-}> = ({ costs, proveedores, inventario, onSave, onOrder }) => {
+}> = ({ costs, proveedores, onSave, onOrder }) => {
     const [format, setFormat] = useState<'A4' | 'A3' | 'SRA3'>('A3');
     const [paperType, setPaperType] = useState('COUCHE_150');
     const [colorMode, setColorMode] = useState<'COLOR' | 'BW'>('COLOR');

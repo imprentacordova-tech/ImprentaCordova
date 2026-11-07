@@ -94,7 +94,6 @@ export const logTransaction = async (
             }]);
 
         if (error) throw error;
-        console.log(`[FinancialLedger] ${tipo} registrado: $${monto} - ${detalle}`);
         return true;
     } catch (error) {
         console.error('[FinancialLedger] Error logging transaction:', error);

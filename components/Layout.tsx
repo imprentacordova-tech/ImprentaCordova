@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MenuIcon, Cog8ToothIcon, WalletIcon, ChevronRightIcon, LogoutIcon } from './Icons';
@@ -12,7 +12,6 @@ import { ModalArqueoCaja } from './dashboard/ModalArqueoCaja';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { C } from './panelTheme';
 import { buildNavGroups, PAGE_TITLES } from './layout/navModel';
-import { RoleBadge } from './layout/NavPieces';
 import { SidebarContent } from './layout/SidebarContent';
 
 /**
@@ -98,8 +97,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [arqueoModalOpen, setArqueoModalOpen] = useState(false);
-    const [nuevaHover, setNuevaHover] = useState(false);
-    const [logoutHover, setLogoutHover] = useState(false);
 
     // ⚠️ NO mover hooks debajo de esta línea. Si `user` pasa a null (logout) con hooks
     // por debajo, React ve menos hooks que en el render anterior, lanza

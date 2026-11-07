@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   CALIBRACION_CERO,
   PASO_MM,
@@ -83,13 +82,11 @@ const BTN_STYLE: React.CSSProperties = {
  * Clase `no-print` garantiza que NUNCA aparezca en papel ni en PDFs generados.
  */
 export const CalibradorRegistro: React.FC<CalibradorRegistroProps> = ({
-  modelo,
   nombreModelo,
   calibracion,
   onMover,
   onRestablecer,
   maxWidth = '160mm',
-  soloEnPreimpreso = false,
 }) => {
   const [colapsado, setColapsado] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);

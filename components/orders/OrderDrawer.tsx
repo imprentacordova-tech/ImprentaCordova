@@ -235,9 +235,6 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ trabajo, cliente, usuario, ro
         window.open(generateWhatsAppLink(telefono, msg), '_blank');
     };
 
-    const imprimirNota = () =>
-        navigate(trabajo.esSRI ? `/solicitud-impresion/${trabajo.id}` : `/orden-produccion/${trabajo.id}`);
-
     /* ---------- estilos locales derivados de los tokens ---------- */
 
     const tabBtn = (activo: boolean): React.CSSProperties => ({

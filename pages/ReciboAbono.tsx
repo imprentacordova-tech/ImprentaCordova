@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente } from '../types';
 import { formatCurrency, generateWhatsAppLink } from '../utils';
-import { MapPinIcon, PhoneIcon, PrinterIcon, CordovaLogo, ClockIcon, ReceiptIcon, WhatsAppIcon, QrCodeIcon, CloseIcon, ArrowLeftIcon } from '../components/Icons';
+import { PrinterIcon, CordovaLogo, WhatsAppIcon, CloseIcon, ArrowLeftIcon } from '../components/Icons';
 
 const ReciboAbonoPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();

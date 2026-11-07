@@ -52,7 +52,7 @@ describe('errorReportingService', () => {
 
   it('should store stack traces from Error objects', () => {
     const err = new Error('test error');
-    const report = reportError('service', 'critical', 'Service failed', err);
+    reportError('service', 'critical', 'Service failed', err);
     const stored = getStoredReports();
     expect(stored[0].stack).toBeDefined();
     expect(stored[0].stack).toContain('test error');
@@ -60,14 +60,14 @@ describe('errorReportingService', () => {
 
   describe('convenience reporter', () => {
     it('should create reports with correct source', () => {
-      const report = errorReporter.sri.error('SRI failed');
+      errorReporter.sri.error('SRI failed');
       const stored = getStoredReports();
       expect(stored[0].source).toBe('sri');
       expect(stored[0].message).toBe('SRI failed');
     });
 
     it('should create critical auth reports', () => {
-      const report = errorReporter.auth.critical('Auth system down');
+      errorReporter.auth.critical('Auth system down');
       const stored = getStoredReports();
       expect(stored[0].source).toBe('auth');
       expect(stored[0].severity).toBe('critical');

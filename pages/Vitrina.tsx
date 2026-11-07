@@ -3,16 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
 import {
-    WhatsAppIcon, Sparkles, Check, ArrowRight, Clock, Search,
-    Filter, Layers, ShieldCheck, Phone, ChevronRight
+    WhatsAppIcon, Sparkles, ArrowRight, Clock, Search,
 } from '../components/Icons';
-
-const C = {
-    ink: '#0A1140',
-    royal: '#16309B',
-    royalHover: '#0F2280',
-    gold: '#FFC61A',
-};
 
 const WA = (msg: string) => `https://wa.me/593993083943?text=${encodeURIComponent(msg)}`;
 const IMG = (n: string) => `/images/landing/${n}`;

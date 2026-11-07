@@ -2,9 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     SearchIcon, 
-    XIcon, 
-    CommandIcon, 
-    ArrowRightIcon, 
+    XIcon,
+    ArrowRightIcon,
     UserIcon, 
     FileTextIcon,
     PlusIcon,

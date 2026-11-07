@@ -3,7 +3,6 @@ import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import { purgeOldEntries } from './services/activityLogService';
-import { logActivity } from './services/activityLogService';
 import { Loader2Icon } from './components/Icons';
 
 // ── Lazy-loaded Public Pages ─────────────────────────────────────────────
@@ -68,7 +67,7 @@ const ProtectedRoute: React.FC = () => {
 
 // ── Main App ─────────────────────────────────────────────────────────────
 const App: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     purgeOldEntries();

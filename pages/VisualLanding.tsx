@@ -7,9 +7,8 @@ import PublicNavbar from '../components/PublicNavbar';
 import { RucValidatorWidget } from '../components/public/RucValidatorWidget';
 import { CotizadorRapido } from '../components/public/CotizadorRapido';
 import {
-    WhatsAppIcon, Sparkles, Check, ArrowRight, ShieldCheck, Clock,
-    Package, Truck, Phone, Search, FileText, ChevronRight, Layers,
-    CheckCircle, Printer, Star
+    WhatsAppIcon, Sparkles, Check, ArrowRight, Clock,
+    Phone,
 } from '../components/Icons';
 
 const WA = (msg: string) => generateWhatsAppLink('593993083943', msg);

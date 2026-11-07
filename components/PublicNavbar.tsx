@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WhatsAppIcon, Sparkles, Phone, Menu, X, ArrowRight } from './Icons';
+import { WhatsAppIcon, Menu, X, ArrowRight } from './Icons';
 
 const LINKS = [
     { name: 'Inicio', to: '/' },

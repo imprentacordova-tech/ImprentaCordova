@@ -239,7 +239,7 @@ export const TalonarioArt: React.FC<TalonarioArtProps> = ({
 };
 
 /* ── Ilustraciones por categoría (marco común claro) ──────────────── */
-const Marco: React.FC<{ children: React.ReactNode; width: number; alto?: number }> = ({ children, width, alto = 3 }) => (
+const Marco: React.FC<{ children: React.ReactNode; width: number; alto?: number }> = ({ children, width }) => (
     <svg viewBox="0 0 120 90" width={width} height={Math.round(width * (90 / 120))} style={{ display: 'block', maxWidth: '100%' }}>
         {children}
     </svg>

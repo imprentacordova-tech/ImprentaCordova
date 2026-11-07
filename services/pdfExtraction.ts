@@ -62,8 +62,6 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
     const cleanText = fullText.toUpperCase().replace(/\s+/g, ' ').replace(/\|\s*\|/g, '|');
     const textOnly = cleanText.replace(/\|/g, ' ').replace(/\s+/g, ' ');
 
-    console.log("SRI ENGINE - TEXT ONLY PREVIEW:", textOnly.substring(0, 1000));
-
     // --- 1. EXTRACCIÓN DE RUC ---
     let ruc = '';
     const rucMatch = cleanText.match(/N[ÚU]MERO RUC\s*[:|]?\s*(\d{13})/) || cleanText.match(/\b(\d{10}001)\b/);
@@ -137,8 +135,6 @@ export const extractDataFromSriPdf = async (file: File): Promise<SriExtractionRe
     if (isPopular) regimen = Regimen.NEGOCIO_POPULAR;
     else if (isEmprendedor) regimen = Regimen.EMPRENDEDOR;
     else regimen = Regimen.GENERAL;
-
-    console.log("SRI ENGINE - REGIMEN DETECTED:", regimen, " | Based on keywords found:", { isPopular, isEmprendedor });
 
     const listaObligaciones: string[] = [];
     if (textOnly.includes("DECLARACION DE IVA")) listaObligaciones.push("IVA");

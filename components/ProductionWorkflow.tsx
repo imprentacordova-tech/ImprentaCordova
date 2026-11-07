@@ -2,8 +2,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-    PaletteIcon, CpuIcon, PrinterIcon, ShieldCheckIcon, 
-    TruckIcon, LayersIcon, CheckBadgeIcon, ZapIcon 
+    PaletteIcon, CpuIcon, PrinterIcon, ShieldCheckIcon,
+    ZapIcon
 } from './Icons';
 
 const steps = [

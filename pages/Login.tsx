@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { SEO } from '../components/SEO';
 import {
-  UsersIcon, LockIcon, EyeIcon, EyeSlashIcon, ArrowLeftIcon,
+  UsersIcon, LockIcon, EyeIcon, EyeSlashIcon,
   Loader2Icon, ExclamationTriangleIcon, ShieldCheckIcon,
 } from '../components/Icons';
-import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+import { C, S, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 
 /**
  * Ingreso al panel interno — Sistema "Marino & Oro" (tema claro).

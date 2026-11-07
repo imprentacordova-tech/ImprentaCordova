@@ -9,13 +9,13 @@ import { logActivity } from '../services/activityLogService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BottomSheet } from '../components/BottomSheet';
 import { SEO } from '../components/SEO';
-import { C, S, MONO, DISPLAY, ESTADO, estadoCfg, dot, estadoPill, PANEL_KEYFRAMES } from '../components/panelTheme';
+import { C, S, MONO, DISPLAY, estadoCfg, dot, estadoPill, PANEL_KEYFRAMES } from '../components/panelTheme';
 /**
  * La lógica del tablero (urgencia, tiempo en etapa, frescura y orden de columnas) vive en
  * `services/tallerBoard.ts`: son funciones puras y ahí sí se pueden testear.
  * Todas reciben `ahora` como parámetro, así el reloj de React mantiene los tiempos vivos.
  */
-import { compararParaTaller, esUrgente, hace, tiempoEnEtapa, calcularSla, CHECKLIST_POR_FASE, type ChecklistItem } from '../services/tallerBoard';
+import { compararParaTaller, esUrgente, hace, tiempoEnEtapa, calcularSla, CHECKLIST_POR_FASE } from '../services/tallerBoard';
 
 const COLS = KANBAN_COLUMNS.filter(s => s !== TrabajoEstado.ENTREGADO);
 const FLOW: TrabajoEstado[] = [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO, TrabajoEstado.PROCESO, TrabajoEstado.VITRINA, TrabajoEstado.ENTREGADO];

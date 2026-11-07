@@ -3,15 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Cliente, Trabajo } from '../types';
-import { 
-    PrinterIcon, ArrowLeftIcon, CordovaLogo, 
-    Loader2Icon, BoxIcon, ClockIcon, 
-    LayersIcon, ShieldCheckIcon, MapPinIcon, PhoneIcon,
-    WhatsAppIcon, ReceiptIcon, CheckBadgeIcon,
-    UsersIcon, CalendarDaysIcon, SparklesIcon,
+import {
+    PrinterIcon, ArrowLeftIcon, CordovaLogo,
+    Loader2Icon,
+    MapPinIcon,
+    UsersIcon,
     CloseIcon
 } from '../components/Icons';
-import { formatDate, formatCurrency } from '../utils';
+import { formatCurrency } from '../utils';
 
 const OrdenProduccionPage: React.FC = () => {
     const { trabajoId } = useParams<{ trabajoId: string }>();

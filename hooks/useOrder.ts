@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Cliente, Producto, Trabajo, TrabajoTipo, TrabajoEstado, SriCredential, Regimen } from '../types';
+import { Cliente, Producto, TrabajoTipo, TrabajoEstado, Regimen } from '../types';
 import { useTrabajos } from '../contexts/TrabajosContext';
 import { useConfig } from '../contexts/ConfigContext';
 import { useProductos } from '../contexts/ProductosContext';

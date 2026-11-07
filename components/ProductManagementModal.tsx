@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Producto } from '../types';
 import { 
-    BoxIcon, CloseIcon, PhotoIcon, 
+    BoxIcon, PhotoIcon,
     TableIcon, DocumentTextIcon, 
     LayersIcon, CloudArrowUpIcon,
     RulerIcon, ActivityIcon, ShieldCheckIcon,
@@ -62,9 +62,9 @@ export const ProductManagementModal: React.FC<{
     });
     const [selectedSizes, setSelectedSizes] = useState<string[]>(["1/4 Oficio"]);
     const [selectedPresentations, setSelectedPresentations] = useState<string[]>(["BLOCK"]);
-    const [selectedCopies, setSelectedCopies] = useState<number[]>([2]);
+    const [selectedCopies] = useState<number[]>([2]);
     const [selectedQtys, setSelectedQtys] = useState<string[]>(["50 h"]);
-    const [extraCopyPrice, setExtraCopyPrice] = useState(2.50); 
+    const [extraCopyPrice] = useState(2.50);
     const [generatedPreview, setGeneratedPreview] = useState<Producto[]>([]);
 
     useEffect(() => {

@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCalibracion } from '../../components/print/CalibradorRegistro';
-import { claveCalibracion, cargarCalibracion } from '../../services/registroImpresion';
+import { cargarCalibracion } from '../../services/registroImpresion';
 
 describe('useCalibracion hook', () => {
   beforeEach(() => {

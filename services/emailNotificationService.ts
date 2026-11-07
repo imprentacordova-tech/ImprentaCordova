@@ -35,7 +35,6 @@ export async function sendResendEmail(to: string, subject: string, htmlContent: 
       { to, subject, html: htmlContent },
       { etiqueta: 'Correo' }
     );
-    console.log(`⚡ [Correo OK] Enviado a ${to}`);
     return true;
   } catch (err) {
     if (err instanceof BackendError && err.status === 503) {

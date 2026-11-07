@@ -15,10 +15,10 @@ import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 import { calcularPedido, round2 } from '../services/orderPricing';
 import { establecimientosAbiertos } from '../services/establecimientos';
-import { MODELOS, modeloPorDefecto, modelosDe, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
+import { MODELOS, modeloPorDefecto, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
 import { perfilDe, especificacionesPorDefecto, calcularDelta, hojasPorTalonario } from '../services/detalleProducto';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
-import { ProductVisual, esProductoTalonario } from '../components/ProductVisual';
+import { ProductVisual } from '../components/ProductVisual';
 
 /**
  * Nueva Orden Unificada — Sistema "Marino & Oro"

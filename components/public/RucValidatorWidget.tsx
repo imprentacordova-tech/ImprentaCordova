@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sriLookupService, SriRucData } from '../../services/sriLookupService';
 import { generateWhatsAppLink } from '../../utils';
-import { WhatsAppIcon, ShieldCheck, Search, CheckCircle, AlertTriangle, Sparkles, Building2, FileCheck2 } from '../Icons';
+import { WhatsAppIcon, ShieldCheck, Search, AlertTriangle, Sparkles } from '../Icons';
 
 function reglasDeRegimen(regimenStr?: string) {
     const raw = (regimenStr || '').toUpperCase();

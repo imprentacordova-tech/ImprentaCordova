@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    ArrowRightIcon, BoxIcon, 
-    LayersIcon, FileTextIcon,
-    SparklesIcon, MonitorIcon, CpuIcon,
-    CloseIcon, ShieldCheckIcon, BoltIcon,
-    ChevronRightIcon, CheckCircleIcon
+import {
+    BoxIcon, CheckCircleIcon
 } from '../Icons';
 import { formatCurrency } from '../../utils';
 
@@ -54,13 +49,13 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
     const [tamano, setTamano] = useState('1/4 Oficio');
     const [tipoPapel, setTipoPapel] = useState('Bond 75g');
     const [copias, setCopias] = useState('Original Solo');
-    const [hojasPorTalonario, setHojasPorTalonario] = useState(50);
+    const [hojasPorTalonario] = useState(50);
     const [numerado, setNumerado] = useState(false);
     const [desde, setDesde] = useState('0001');
     const [hasta, setHasta] = useState('0050');
     const [perforado, setPerforado] = useState(false);
-    const [sriAutorizacion, setSriAutorizacion] = useState('');
-    const [sriVence, setSriVence] = useState(() => {
+    const [sriAutorizacion] = useState('');
+    const [sriVence] = useState(() => {
         const d = new Date();
         d.setFullYear(d.getFullYear() + 1);
         return d.toISOString().split('T')[0];

@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    CheckCircleIcon, SparklesIcon, PrinterIcon, 
-    ArrowRightIcon, ArrowLeftIcon, CreditCardIcon, UserIcon,
+import {
+    CheckCircleIcon, PrinterIcon,
     BoltIcon, Loader2Icon, SearchIcon, ChevronRightIcon
 } from '../Icons';
 import { Producto, Trabajo, TrabajoEstado } from '../../types';
@@ -70,8 +69,8 @@ const CommercialProductCard: React.FC<{ p: Producto; isExpress: boolean; onSelec
     );
 };
 
-export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCancel }) => {
-    const { productos, clientes } = useData();
+export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete }) => {
+    const { productos } = useData();
 
     const [step, setStep] = useState<1 | 2>(1); 
     const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
@@ -80,15 +79,15 @@ export const CommercialFlow: React.FC<CommercialFlowProps> = ({ onComplete, onCa
 
     // Configuración comercial
     const [cantidad, setCantidad] = useState<number>(100);
-    const [tamano, setTamano] = useState<string>('Estandar');
-    const [acabado, setAcabado] = useState<string>('Ninguno');
-    const [precioCustom, setPrecioCustom] = useState<number>(0);
+    const [tamano] = useState<string>('Estandar');
+    const [acabado] = useState<string>('Ninguno');
+    const [precioCustom] = useState<number>(0);
 
     // Cliente
     const [clienteNombre, setClienteNombre] = useState<string>('');
     const [clienteTelefono, setClienteTelefono] = useState<string>('');
-    const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
-    const [abono, setAbono] = useState<number>(0);
+    const [selectedClientId] = useState<string | undefined>(undefined);
+    const [abono] = useState<number>(0);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 

@@ -87,7 +87,7 @@ export function reportError(
       ? console.error
       : severity === 'warning'
       ? console.warn
-      : console.log;
+      : console.log; // eslint-disable-line no-console -- eco de dev intencional, gateado por import.meta.env.DEV
     consoleFn(`[${source.toUpperCase()}] ${message}`, error || '', context || '');
   }
 

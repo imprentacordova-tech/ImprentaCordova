@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Cliente, Regimen } from '../../types';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,14 +9,13 @@ import {
     establecimientosAbiertos,
     normalizarEstablecimientos,
 } from '../../services/establecimientos';
-import { sriLookupService, SriRucData } from '../../services/sriLookupService';
+import { sriLookupService } from '../../services/sriLookupService';
 import { logActivity } from '../../services/activityLogService';
-import { formatCurrency, validarIdentificacionEC } from '../../utils';
+import { formatCurrency } from '../../utils';
 import {
-    SearchIcon, UserPlusIcon, ShieldCheckIcon, CloseIcon, Loader2Icon,
-    CheckCircleIcon, SparklesIcon, AddIcon, ArrowRightIcon, PhoneIcon,
-    UploadIcon, DocumentTextIcon, LayersIcon, ExclamationTriangleIcon,
-    BoltIcon, IdentificationIcon, PlusIcon
+    SearchIcon, Loader2Icon,
+    CheckCircleIcon, ArrowRightIcon,
+    UploadIcon, PlusIcon
 } from '../Icons';
 
 const InputField: React.FC<{
@@ -68,9 +66,9 @@ export const CreateClientModal: React.FC<{
 }> = ({ isOpen, onClose, onClientCreated, initialName = '', initialCedulaRuc = '', isLocked = false }) => {
     const [mode, setMode] = useState<ClientMode>('SRI');
     const [isSaving, setIsSaving] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [, setSaveSuccess] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
-    const [highlightFields, setHighlightFields] = useState<string[]>([]);
+    const [, setHighlightFields] = useState<string[]>([]);
     const [rucError, setRucError] = useState<string | null>(null);
     const { addCliente, clientes: clientesRegistrados, trabajos, getClientDebt } = useData();
     const { user } = useAuth();
@@ -114,7 +112,6 @@ export const CreateClientModal: React.FC<{
     const [telefonos, setTelefonos] = useState<string[]>([]);
     const [currentTelefono, setCurrentTelefono] = useState('');
     const [actividades, setActividades] = useState<string[]>([]);
-    const [currentActividad, setCurrentActividad] = useState('');
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -288,14 +285,6 @@ export const CreateClientModal: React.FC<{
             setActividades(cleaned.filter((item: string, index: number, self: string[]) => self.indexOf(item) === index));
         }
         setTimeout(() => setHighlightFields([]), 3000);
-    };
-
-    const addTelefono = (text: string) => {
-        const val = text.replace(/\D/g, '');
-        if (val.length >= 7 && !telefonos.includes(val)) {
-            setTelefonos([...telefonos, val]);
-            setCurrentTelefono('');
-        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -520,8 +509,8 @@ export interface ClientSelectorProps {
     hideQuickButtons?: boolean;
 }
 
-export const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect, onCancel, hideQuickButtons }) => {
-    const { clientes, loading } = useData();
+export const ClientSelector: React.FC<ClientSelectorProps> = ({ onSelect }) => {
+    const { clientes } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 

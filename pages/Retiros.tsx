@@ -572,7 +572,7 @@ const RetirosPage: React.FC = () => {
                     trabajo={selected}
                     cliente={selectedCliente}
                     currentUser={currentUser}
-                    onEntregaExitosa={(entregado) => {
+                    onEntregaExitosa={() => {
                         // Se actualiza en el DataContext automáticamente
                         setSelected(null);
                     }}

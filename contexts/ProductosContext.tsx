@@ -39,7 +39,6 @@ export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children 
       if (data) {
         setProductos(data.map(mapProduct));
         if (data.length === 0) {
-          console.log('[ProductosContext] Catalogo vacio, sincronizando semilla...');
           seedCatalog();
         }
       }

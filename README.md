@@ -175,7 +175,7 @@ Equivale a:
 ```bash
 npm run typecheck   # 0 errores
 npm run lint        # 0 errores (avisos permitidos)
-npm test            # 232/232 en 17 archivos
+npm test            # 261/261 en 18 archivos
 npm run build       # EXIT 0, sin chunks sobre 1 MB
 ```
 

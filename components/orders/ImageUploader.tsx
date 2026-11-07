@@ -1,8 +1,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { 
-    CloudArrowUpIcon, XMarkIcon, PhotoIcon, 
-    SparklesIcon, CheckCircleIcon 
+    CloudArrowUpIcon, XMarkIcon,
+    SparklesIcon, CheckCircleIcon
 } from '../Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 

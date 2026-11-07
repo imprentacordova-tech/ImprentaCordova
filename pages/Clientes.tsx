@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, validarIdentificacionEC } from '../utils';
 import { generateMarketingPromotion } from '../services/geminiService';
 import { sriLookupService } from '../services/sriLookupService';
 import { SEO } from '../components/SEO';
-import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
+import { C, S, MONO, PANEL_KEYFRAMES } from '../components/panelTheme';
 
 // ── Modal de promoción con IA ──────────────────────────────────────────────
 const MarketingIAModal: React.FC<{ cliente: Cliente; trabajos: Trabajo[]; onClose: () => void }> = ({ cliente, trabajos, onClose }) => {
