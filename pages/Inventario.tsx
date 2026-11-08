@@ -83,7 +83,7 @@ const InventarioPage: React.FC = () => {
             header: true, skipEmptyLines: true,
             complete: async (results) => {
                 try {
-                    for (const row of results.data as any[]) {
+                    for (const row of results.data as Record<string, string>[]) {
                         const itemStr = row['ITEM'] || row['item'] || row['Descripción'];
                         if (!itemStr) continue;
                         await addInventoryItem({
@@ -92,7 +92,7 @@ const InventarioPage: React.FC = () => {
                             minimo: parseFloat(row['MINIMO'] || row['minimo'] || row['Límite']) || 1,
                             costoUnitario: parseFloat(row['COSTO'] || row['costo'] || row['Inversión']) || 0,
                             unidad: row['UNIDAD'] || row['unidad'] || 'Unidades',
-                        } as any);
+                        });
                     }
                     logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', 'Importó inventario en bloque', 'Insumos');
                 } catch (err) { console.error('Error importando CSV', err); }
@@ -107,7 +107,7 @@ const InventarioPage: React.FC = () => {
             await updateInventoryItem(item.id, item);
             logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', `Actualizó: ${item.item}`, 'Insumos');
         } else {
-            await addInventoryItem(item as any);
+            await addInventoryItem(item);
             logActivity(currentUser.nombre, currentUser.rol, 'INVENTARIO_MODIFICADO', `Registró: ${item.item}`, 'Insumos');
         }
         if (item.cantidad !== undefined && item.minimo !== undefined && item.cantidad <= item.minimo) {

@@ -4,7 +4,7 @@ import { formatCurrency, generateWhatsAppLink } from '../utils';
 import { useData, CATEGORY_EMOJIS } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
-import { Cliente, User, TrabajoEstado } from '../types';
+import { Cliente, User, TrabajoEstado, Regimen } from '../types';
 import ClientSelector from '../components/orders/ClientSelector';
 import ServiceSelector from '../components/orders/ServiceSelector';
 import ProductConfigurator from '../components/orders/ProductConfigurator';
@@ -584,7 +584,7 @@ const NuevoPedidoPage: React.FC = () => {
                         });
                 } else {
                     finalCliente = clientes.find(c => c.cedula === '9999999999')
-                        || await addCliente({ nombre: 'CONSUMIDOR FINAL', cedula: '9999999999', regimen: 'General', direccion: 'Local' });
+                        || await addCliente({ nombre: 'CONSUMIDOR FINAL', cedula: '9999999999', regimen: Regimen.GENERAL, direccion: 'Local' });
                 }
             }
             if (!finalCliente) throw new Error('No se pudo establecer un cliente para el pedido.');

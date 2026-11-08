@@ -7,19 +7,34 @@ interface ProductosContextType {
   productos: Producto[];
   loading: boolean;
   fetchProductos: () => Promise<void>;
-  addProducto: (p: any) => Promise<any>;
-  updateProducto: (id: string, p: any) => Promise<void>;
+  addProducto: (p: Partial<Producto>) => Promise<Producto>;
+  updateProducto: (id: string, p: Partial<Producto>) => Promise<void>;
   deleteProducto: (id: string) => Promise<void>;
   seedCatalog: () => Promise<void>;
 }
 
 const ProductosContext = createContext<ProductosContextType | undefined>(undefined);
 
+interface ProductoRow {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  precio?: number;
+  categoria?: string;
+  es_sri?: boolean;
+  imagen_url?: string;
+  specs?: string[];
+  unit?: string;
+  is_popular?: boolean;
+}
+
+type ProductoPayload = Omit<ProductoRow, 'id'>;
+
 export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const mapProduct = (p: any): Producto => ({
+  const mapProduct = (p: ProductoRow): Producto => ({
     id: p.id,
     nombre: p.nombre,
     descripcion: p.descripcion,
@@ -53,14 +68,15 @@ export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children 
     fetchProductos();
   }, [fetchProductos]);
 
-  const addProducto = async (p: any) => {
+  const addProducto = async (p: Partial<Producto>) => {
     const { data, error } = await supabase.from('productos').insert([p]).select().single();
     if (error) throw error;
-    setProductos(prev => [mapProduct(data), ...prev]);
-    return data;
+    const mapped = mapProduct(data);
+    setProductos(prev => [mapped, ...prev]);
+    return mapped;
   };
 
-  const updateProducto = async (id: string, p: any) => {
+  const updateProducto = async (id: string, p: Partial<Producto>) => {
     const { error } = await supabase.from('productos').update(p).eq('id', id);
     if (error) throw error;
     setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));
@@ -84,11 +100,11 @@ export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children 
       if (errExistentes) throw errExistentes;
 
       const idPorNombre = new Map<string, string>(
-        (existentes || []).map((p: any) => [p.nombre, p.id]),
+        (existentes || []).map((p) => [p.nombre, p.id]),
       );
 
-      const aInsertar: any[] = [];
-      const aActualizar: Array<{ id: string; cambios: any }> = [];
+      const aInsertar: ProductoPayload[] = [];
+      const aActualizar: Array<{ id: string; cambios: ProductoPayload }> = [];
 
       for (const p of MASTER_CATALOG) {
         const payload = {

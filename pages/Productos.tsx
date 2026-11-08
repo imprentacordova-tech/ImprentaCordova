@@ -56,7 +56,7 @@ const ProductosPage: React.FC = () => {
                 await updateProducto(product.id, product);
                 logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_MODIFICADO', `Modificó: ${product.nombre}`, 'Catálogo');
             } else {
-                const { id: _id, ...clean } = product as any;
+                const { id: _id, ...clean } = product;
                 await createProducto(clean);
                 logActivity(currentUser.nombre, currentUser.rol, 'PRODUCTO_CREADO', `Creó: ${product.nombre}`, 'Catálogo');
             }

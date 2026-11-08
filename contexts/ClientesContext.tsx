@@ -2,7 +2,27 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { Cliente, Regimen } from '../types';
 import { supabase } from '../services/supabase';
 
-const mapDBCliente = (c: any): Cliente => {
+interface ClienteRow {
+  id: string;
+  cedula?: string;
+  ruc?: string;
+  nombre: string;
+  nombre_comercial?: string;
+  actividades?: string;
+  direccion?: string;
+  notas?: string;
+  telefono?: string[];
+  email?: string;
+  creado_en: string;
+  regimen?: string;
+  regime?: string;
+  establecimiento_predeterminado?: string;
+  punto_emision_predeterminado?: string;
+  num_establecimientos_open?: number;
+  fiscal_data?: Cliente['fiscal_data'];
+}
+
+const mapDBCliente = (c: ClienteRow): Cliente => {
   const dbRegimen = c.regimen || c.regime || '';
   const raw = dbRegimen.toString().toUpperCase();
   let normalizedRegimen = Regimen.GENERAL;
@@ -33,8 +53,8 @@ const mapDBCliente = (c: any): Cliente => {
   };
 };
 
-const mapClienteToDB = (c: any) => {
-  const base: Record<string, any> = {
+const mapClienteToDB = (c: Partial<Cliente>) => {
+  const base: Record<string, unknown> = {
     cedula: c.cedula,
     ruc: c.ruc,
     nombre: c.nombre,
@@ -59,8 +79,8 @@ interface ClientesContextType {
   clientes: Cliente[];
   loading: boolean;
   fetchClientes: () => Promise<void>;
-  addCliente: (data: any) => Promise<Cliente>;
-  updateCliente: (id: string, data: any) => Promise<void>;
+  addCliente: (data: Partial<Cliente>) => Promise<Cliente>;
+  updateCliente: (id: string, data: Partial<Cliente>) => Promise<void>;
   deleteCliente: (id: string) => Promise<void>;
 }
 
@@ -99,10 +119,10 @@ export const ClientesProvider: React.FC<{ children: ReactNode }> = ({ children }
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload;
         if (eventType === 'INSERT') {
-          const mapped = mapDBCliente(newRecord);
+          const mapped = mapDBCliente(newRecord as ClienteRow);
           setClientes(prev => prev.some(c => c.id === mapped.id) ? prev : [mapped, ...prev]);
         } else if (eventType === 'UPDATE') {
-          const mapped = mapDBCliente(newRecord);
+          const mapped = mapDBCliente(newRecord as ClienteRow);
           setClientes(prev => prev.map(c => c.id === mapped.id ? mapped : c));
         } else if (eventType === 'DELETE') {
           setClientes(prev => prev.filter(c => c.id !== oldRecord.id));
@@ -112,7 +132,7 @@ export const ClientesProvider: React.FC<{ children: ReactNode }> = ({ children }
     return () => { supabase.removeChannel(channel); };
   }, [fetchClientes]);
 
-  const addCliente = async (clienteData: any): Promise<Cliente> => {
+  const addCliente = async (clienteData: Partial<Cliente>): Promise<Cliente> => {
     const dbReadyData = mapClienteToDB(clienteData);
     let { data, error } = await supabase.from('clientes').insert([dbReadyData]).select().single();
     if (error && error.message.includes('fiscal_data')) {
@@ -127,7 +147,7 @@ export const ClientesProvider: React.FC<{ children: ReactNode }> = ({ children }
     return mapped;
   };
 
-  const updateCliente = async (id: string, data: any) => {
+  const updateCliente = async (id: string, data: Partial<Cliente>) => {
     const dbReadyData = mapClienteToDB(data);
     const { error } = await supabase.from('clientes').update(dbReadyData).eq('id', id);
     if (error) throw error;

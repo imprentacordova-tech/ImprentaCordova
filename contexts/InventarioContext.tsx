@@ -6,8 +6,8 @@ interface InventarioContextType {
   inventario: InventoryItem[];
   loading: boolean;
   fetchInventario: () => Promise<void>;
-  addItem: (item: any) => Promise<void>;
-  updateItem: (id: string, item: any) => Promise<void>;
+  addItem: (item: Partial<InventoryItem>) => Promise<void>;
+  updateItem: (id: string, item: Partial<InventoryItem>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
 }
 
@@ -47,13 +47,13 @@ export const InventarioProvider: React.FC<{ children: ReactNode }> = ({ children
     return () => { supabase.removeChannel(channel); };
   }, [fetchInventario]);
 
-  const addItem = async (item: any) => {
+  const addItem = async (item: Partial<InventoryItem>) => {
     const { error } = await supabase.from('inventario').insert([item]);
     if (error) throw error;
     await fetchInventario();
   };
 
-  const updateItem = async (id: string, item: any) => {
+  const updateItem = async (id: string, item: Partial<InventoryItem>) => {
     const { error } = await supabase.from('inventario').update(item).eq('id', id);
     if (error) throw error;
     await fetchInventario();

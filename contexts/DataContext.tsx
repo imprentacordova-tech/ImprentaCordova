@@ -6,7 +6,7 @@
  * New components should prefer domain-specific hooks: useTrabajos, useClientes, etc.
  */
 import React, { createContext, useContext, ReactNode } from 'react';
-import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, TrabajoEstado } from '../types';
+import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProveedor, SriCredential, TrabajoEstado, Regimen } from '../types';
 import { TrabajosProvider, useTrabajos, RealtimeEstado } from './TrabajosContext';
 import { ClientesProvider, useClientes } from './ClientesContext';
 import { InventarioProvider, useInventario } from './InventarioContext';
@@ -48,19 +48,19 @@ interface DataContextType {
     syncing: boolean;
     error: string | null;
     refreshData: () => Promise<void>;
-    addCliente: (c: any) => Promise<Cliente>;
-    updateCliente: (id: string, c: any) => Promise<void>;
+    addCliente: (c: Partial<Cliente>) => Promise<Cliente>;
+    updateCliente: (id: string, c: Partial<Cliente>) => Promise<void>;
     deleteCliente: (id: string) => Promise<void>;
     addTrabajo: (t: any, user: string, imageFile?: File | null) => Promise<Trabajo>;
     updateTrabajoStatus: (id: string, status: TrabajoEstado, user: string) => Promise<void>;
-    addProducto: (p: any) => Promise<any>;
-    createProducto: (p: any) => Promise<any>;
-    updateProducto: (id: string, p: any) => Promise<void>;
+    addProducto: (p: Partial<Producto>) => Promise<Producto>;
+    createProducto: (p: Partial<Producto>) => Promise<Producto>;
+    updateProducto: (id: string, p: Partial<Producto>) => Promise<void>;
     deleteProducto: (id: string) => Promise<void>;
     bulkCreateProductos: (products: Partial<Producto>[]) => Promise<void>;
     seedCatalog: () => Promise<void>;
-    addInventoryItem: (item: any) => Promise<void>;
-    updateInventoryItem: (id: string, item: any) => Promise<void>;
+    addInventoryItem: (item: Partial<InventoryItem>) => Promise<void>;
+    updateInventoryItem: (id: string, item: Partial<InventoryItem>) => Promise<void>;
     deleteInventoryItem: (id: string) => Promise<void>;
     upsertSriCredential: (cred: SriCredential) => Promise<void>;
     bulkAddSriCredentials: (creds: SriCredential[]) => Promise<void>;
@@ -141,7 +141,7 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
     const createPublicOrder = async (clientData: { nombre: string, telefono: string }, items: any[]) => {
         let cliente = clientes.find(c => c.telefono?.includes(clientData.telefono));
         if (!cliente) {
-            cliente = await addCliente({ ...clientData, cedula: '9999999999', regimen: 'General' });
+            cliente = await addCliente({ ...clientData, telefono: [clientData.telefono], cedula: '9999999999', regimen: Regimen.GENERAL });
         }
         const totalItems = items.reduce((acc, item) => acc + (item.total || 0), 0);
         return await addTrabajo({
