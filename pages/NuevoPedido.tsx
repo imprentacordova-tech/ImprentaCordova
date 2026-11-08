@@ -15,7 +15,7 @@ import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, PANEL_KEYFRAMES } from '../components/panelTheme';
 import { calcularPedido, round2 } from '../services/orderPricing';
 import { establecimientosAbiertos } from '../services/establecimientos';
-import { MODELOS, modeloPorDefecto, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
+import { MODELOS, modeloPorDefecto, resolverModelo, resolverTramite, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
 import { perfilDe, especificacionesPorDefecto, calcularDelta, hojasPorTalonario } from '../services/detalleProducto';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
 import { ProductVisual } from '../components/ProductVisual';
@@ -204,8 +204,8 @@ const NuevoPedidoPage: React.FC = () => {
         if (t.puntoEmision) setSriPuntoEmision(t.puntoEmision);
         if (t.actividadSeleccionada) setSriActividad(t.actividadSeleccionada);
         if (t.autorizacion_sri) setAutorizacionSriInput(t.autorizacion_sri);
-        if (t.tramiteSri) setTramiteSri(t.tramiteSri as any);
-        if (t.modeloImpresion) setModeloImpresionSri(t.modeloImpresion as any);
+        if (t.tramiteSri) setTramiteSri(resolverTramite(t.tramiteSri));
+        if (t.modeloImpresion) setModeloImpresionSri(resolverModelo(t.modeloImpresion, null, !!t.esSRI));
         setAbono(t.total ? Math.round(t.total * 0.5) : 0);
         setDireccion('adelante');
         setStep(4);
@@ -234,9 +234,9 @@ const NuevoPedidoPage: React.FC = () => {
         setSriPuntoEmision(ptoVal);
         if (caducidadVal) setAutorizacionSriInput(caducidadVal);
         if (modeVal && (modeVal.startsWith('sri') || modeVal.startsWith('comercial') || modeVal.startsWith('nota'))) {
-            setModeloImpresionSri(modeVal as any);
+            setModeloImpresionSri(modeVal as ModeloImpresion);
         }
-        if (tramiteVal) setTramiteSri(tramiteVal as any);
+        if (tramiteVal) setTramiteSri(resolverTramite(tramiteVal));
 
         if (ruc || name) {
             const cleanRuc = ruc.replace(/\D/g, '');
