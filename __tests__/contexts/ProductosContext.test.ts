@@ -1,13 +1,14 @@
 /**
  * `mapProductoToDB` — contrato entre el tipo `Producto` (camelCase) y la
- * tabla `productos` (snake_case, solo 9 columnas, ver SCHEMA_COMPLETO.sql).
+ * tabla `productos` (snake_case, ver SCHEMA_COMPLETO.sql +
+ * supabase/migrations/20261108_productos_gestion_avanzada.sql).
  *
  * Antes `addProducto`/`updateProducto` mandaban el objeto `Producto` tal cual
  * a Supabase: con columnas que coinciden por nombre (nombre, descripcion,
  * precio, categoria, unit) no pasaba nada, pero `esSRI`/`imagenUrl`/
  * `isPopular` no existen como tales en la base (son `es_sri`/`imagen_url`/
  * `is_popular`), y los campos de gestión avanzada del catálogo
- * (visiblePublico, requiereDiseno, codigoInterno, tags, etc.) no tienen
+ * (visiblePublico, requiereDiseno, codigoInterno, tags, etc.) no tenían
  * columna alguna. Supabase respondía "column not found" y el guardado
  * fallaba en silencio — el catch de `pages/Productos.tsx` solo loguea.
  */
@@ -28,31 +29,38 @@ describe('mapProductoToDB', () => {
     expect(resultado.is_popular).toBe(true);
   });
 
-  it('descarta los campos de gestión avanzada que no tienen columna en la base', () => {
+  it('traduce los campos de gestión avanzada a sus columnas (migración 20261108)', () => {
     const resultado = mapProductoToDB({
       nombre: 'Volantes',
-      visiblePublico: true,
-      requiereDiseno: false,
+      visiblePublico: false,
+      requiereDiseno: true,
       manejaInventario: true,
       codigoInterno: 'VOL-001',
       tags: ['promo'],
-      esActivo: true,
+      esActivo: false,
       configuracionHabilitada: { dimensiones: true },
     });
 
-    expect(resultado).not.toHaveProperty('visiblePublico');
-    expect(resultado).not.toHaveProperty('requiereDiseno');
-    expect(resultado).not.toHaveProperty('manejaInventario');
-    expect(resultado).not.toHaveProperty('codigoInterno');
-    expect(resultado).not.toHaveProperty('tags');
-    expect(resultado).not.toHaveProperty('esActivo');
-    expect(resultado).not.toHaveProperty('configuracionHabilitada');
+    expect(resultado.visible_publico).toBe(false);
+    expect(resultado.requiere_diseno).toBe(true);
+    expect(resultado.maneja_inventario).toBe(true);
+    expect(resultado.codigo_interno).toBe('VOL-001');
+    expect(resultado.tags).toEqual(['promo']);
+    expect(resultado.es_activo).toBe(false);
+    expect(resultado.configuracion_habilitada).toEqual({ dimensiones: true });
   });
 
-  it('no inventa columnas que no existen (solo las 9 reales)', () => {
-    const resultado = mapProductoToDB({ nombre: 'Sellos', precio: 5 });
-    const columnasReales = ['nombre', 'descripcion', 'precio', 'categoria', 'es_sri', 'imagen_url', 'specs', 'unit', 'is_popular'];
+  it('no inventa columnas para los campos muertos de PriceCalculatorDisplay (borrado)', () => {
+    const resultado = mapProductoToDB({
+      nombre: 'Sellos',
+      precio: 5,
+      configCalculadora: { foo: 'bar' },
+      configuracionBase: { baz: 'qux' },
+    });
 
-    expect(Object.keys(resultado).sort()).toEqual(columnasReales.sort());
+    expect(resultado).not.toHaveProperty('configCalculadora');
+    expect(resultado).not.toHaveProperty('configuracionBase');
+    expect(resultado).not.toHaveProperty('config_calculadora');
+    expect(resultado).not.toHaveProperty('configuracion_base');
   });
 });
