@@ -24,6 +24,8 @@ function isBusinessHoursNow(): boolean {
 const PublicNavbar: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [abierto, setAbierto] = useState(false);
+    /** Compacta el header pasado cierto scroll: libera espacio en pantallas con mucho contenido. */
+    const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -36,17 +38,28 @@ const PublicNavbar: React.FC = () => {
         setOpen(false);
     }, [location.pathname]);
 
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 24);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     return (
-        <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-hairline transition-all">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-                
+        <header className={`sticky top-0 z-50 backdrop-blur-xl border-b border-hairline transition-all duration-300 ${
+            scrolled ? 'bg-white/95 shadow-sm' : 'bg-white/85'
+        }`}>
+            <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 transition-all duration-300 ${
+                scrolled ? 'h-16' : 'h-20'
+            }`}>
+
                 {/* Brand Logo */}
                 <Link to="/" className="flex items-center gap-3.5 group">
                     <div className="relative">
                         <img
                             src="/LOGO.png"
                             alt="Imprenta Córdova"
-                            className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                            className={`w-auto object-contain transition-all duration-300 group-hover:scale-105 ${scrolled ? 'h-8' : 'h-10'}`}
                         />
                     </div>
                     <div className="flex flex-col">

@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
@@ -28,6 +28,40 @@ const FACTS = [
     { value: '800+', label: 'Empresas Atendidas', desc: 'Pymes y profesionales' },
     { value: '99 %', label: 'Entregas a Tiempo', desc: 'Compromiso de puntualidad' },
 ];
+
+/** Separador de miles con espacio, igual al texto original ("2 400+"). */
+const formatConEspacios = (n: number) => n.toLocaleString('en-US').replace(/,/g, ' ');
+
+/**
+ * Cuenta de 0 al valor real cuando la cifra entra en viewport, una sola vez.
+ * El valor viene como texto ("2 400+", "99 %") para no duplicar el dato en
+ * dos formatos: se extrae el número líder y se conserva el resto tal cual.
+ */
+const AnimatedStat: React.FC<{ value: string }> = ({ value }) => {
+    const match = value.match(/^([\d\s]+)(.*)$/);
+    const target = match ? parseInt(match[1].replace(/\s/g, ''), 10) : NaN;
+    const ref = useRef<HTMLSpanElement>(null);
+    const enView = useInView(ref, { once: true, margin: '-40px' });
+    const [display, setDisplay] = useState(0);
+
+    useEffect(() => {
+        if (!enView || Number.isNaN(target)) return;
+        const duracionMs = 1200;
+        const inicio = performance.now();
+        let raf: number;
+        const tick = (ahora: number) => {
+            const progreso = Math.min((ahora - inicio) / duracionMs, 1);
+            const suavizado = 1 - Math.pow(1 - progreso, 3);
+            setDisplay(Math.round(target * suavizado));
+            if (progreso < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [enView, target]);
+
+    if (!match || Number.isNaN(target)) return <span>{value}</span>;
+    return <span ref={ref}>{formatConEspacios(display)}{match[2]}</span>;
+};
 
 type Item = {
     cat: string;
@@ -381,7 +415,7 @@ export const VisualLanding: React.FC = () => {
                                 className="text-center sm:text-left border-l-2 border-royal/30 pl-4"
                             >
                                 <span className="font-heading font-black text-3xl sm:text-4xl text-royal tracking-tight">
-                                    {f.value}
+                                    <AnimatedStat value={f.value} />
                                 </span>
                                 <h4 className="font-bold text-sm text-ink mt-1">
                                     {f.label}
@@ -443,13 +477,14 @@ export const VisualLanding: React.FC = () => {
                 {/* Grid de Productos con AnimatePresence */}
                 <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <AnimatePresence>
-                        {items.map(it => (
+                        {items.map((it, idx) => (
                             <motion.div
                                 layout
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                whileHover={{ y: -6 }}
+                                transition={{ type: "spring", stiffness: 350, damping: 25, delay: (idx % 6) * 0.05 }}
                                 key={it.label}
                                 className="bg-white rounded-3xl border border-hairline overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col justify-between group"
                             >
