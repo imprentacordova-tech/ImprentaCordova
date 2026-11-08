@@ -225,7 +225,7 @@ const ProveedoresPage: React.FC = () => {
             </div>
 
             <ProveedorFormModal open={isFormOpen} onClose={() => setIsFormOpen(false)} toEdit={toEdit}
-                onSave={async data => { if (data.id) await updateProveedor(data.id, data); else await addProveedor(data as any); setIsFormOpen(false); }} />
+                onSave={async data => { if (data.id) await updateProveedor(data.id, data); else await addProveedor(data); setIsFormOpen(false); }} />
 
             {viewing && (
                 <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>

@@ -78,11 +78,11 @@ interface DataContextType {
     realtimeEstado: RealtimeEstado;
     ultimaSync: number | null;
     syncFromLocalStorage: () => Promise<void>;
-    addProveedor: (p: any) => Promise<void>;
-    updateProveedor: (id: string, p: any) => Promise<void>;
+    addProveedor: (p: Partial<Proveedor>) => Promise<void>;
+    updateProveedor: (id: string, p: Partial<Proveedor>) => Promise<void>;
     deleteProveedor: (id: string) => Promise<void>;
-    createTareaProveedor: (t: any) => Promise<void>;
-    updateTareaProveedor: (id: string, t: any) => Promise<void>;
+    createTareaProveedor: (t: Partial<TareaProveedor>) => Promise<void>;
+    updateTareaProveedor: (id: string, t: Partial<TareaProveedor>) => Promise<void>;
     deleteTareaProveedor: (id: string) => Promise<void>;
 }
 
@@ -157,7 +157,7 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
     };
 
     const value: DataContextType = {
-        clientes, trabajos, productos, users: users as any, inventario, proveedores: proveedores as any, tareas: tareas as any, sriCredentials, config,
+        clientes, trabajos, productos, users, inventario, proveedores, tareas, sriCredentials, config,
         loading, syncing: false, error: null,
         refreshData, addCliente, updateCliente, deleteCliente, addTrabajo, updateTrabajoStatus,
         addProducto, createProducto, updateProducto, deleteProducto, bulkCreateProductos,

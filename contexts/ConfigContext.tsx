@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { SriCredential, Proveedor, TareaProveedor } from '../types';
+import { SriCredential, Proveedor, TareaProveedor, User } from '../types';
 import { supabase } from '../services/supabase';
 
 interface ConfigContextType {
@@ -11,14 +11,14 @@ interface ConfigContextType {
   upsertSriCredential: (cred: SriCredential) => Promise<void>;
   deleteSriCredential: (ruc: string) => Promise<void>;
   proveedores: Proveedor[];
-  addProveedor: (p: any) => Promise<void>;
-  updateProveedor: (id: string, p: any) => Promise<void>;
+  addProveedor: (p: Partial<Proveedor>) => Promise<void>;
+  updateProveedor: (id: string, p: Partial<Proveedor>) => Promise<void>;
   deleteProveedor: (id: string) => Promise<void>;
   tareas: TareaProveedor[];
-  createTarea: (t: any) => Promise<void>;
-  updateTarea: (id: string, t: any) => Promise<void>;
+  createTarea: (t: Partial<TareaProveedor>) => Promise<void>;
+  updateTarea: (id: string, t: Partial<TareaProveedor>) => Promise<void>;
   deleteTarea: (id: string) => Promise<void>;
-  users: any[];
+  users: User[];
 }
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
@@ -29,7 +29,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [sriCredentials, setSriCredentials] = useState<SriCredential[]>([]);
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [tareas, setTareas] = useState<TareaProveedor[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -42,8 +42,8 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       ]);
       if (configRes.data) setConfig(configRes.data.data);
       if (sriRes.data) setSriCredentials(sriRes.data);
-      if (provRes.data) setProveedores(provRes.data as any);
-      if (tareasRes.data) setTareas(tareasRes.data as any);
+      if (provRes.data) setProveedores(provRes.data as Proveedor[]);
+      if (tareasRes.data) setTareas(tareasRes.data as TareaProveedor[]);
       if (usersRes.data) setUsers(usersRes.data);
     } catch (err) {
       console.error('[ConfigContext] Error fetching:', err);
@@ -95,17 +95,17 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       supabase.from('proveedores').select('*').order('nombre'),
       supabase.from('tareas_proveedor').select('*'),
     ]);
-    if (provRes.data) setProveedores(provRes.data as any);
-    if (tareasRes.data) setTareas(tareasRes.data as any);
+    if (provRes.data) setProveedores(provRes.data as Proveedor[]);
+    if (tareasRes.data) setTareas(tareasRes.data as TareaProveedor[]);
   };
 
-  const addProveedor = async (p: any) => {
+  const addProveedor = async (p: Partial<Proveedor>) => {
     const { error } = await supabase.from('proveedores').insert([p]);
     if (error) throw error;
     await refreshAll();
   };
 
-  const updateProveedor = async (id: string, p: any) => {
+  const updateProveedor = async (id: string, p: Partial<Proveedor>) => {
     const { error } = await supabase.from('proveedores').update(p).eq('id', id);
     if (error) throw error;
     await refreshAll();
@@ -117,7 +117,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     await refreshAll();
   };
 
-  const createTarea = async (t: any) => {
+  const createTarea = async (t: Partial<TareaProveedor>) => {
     const dbData = {
       proveedor_id: t.proveedorId,
       titulo: t.titulo,
@@ -131,7 +131,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     await refreshAll();
   };
 
-  const updateTarea = async (id: string, t: any) => {
+  const updateTarea = async (id: string, t: Partial<TareaProveedor>) => {
     const dbData = {
       titulo: t.titulo,
       tipo: t.tipo,
