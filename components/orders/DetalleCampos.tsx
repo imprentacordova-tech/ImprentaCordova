@@ -18,7 +18,7 @@ const chip = (activo: boolean): React.CSSProperties => ({
         : { background: C.surface, color: C.body, border: `1px solid ${C.borderStrong}` }),
 });
 
-const Campo: React.FC<{ campo: CampoDetalle; valor: any; onChange: (v: string) => void }> = ({ campo, valor, onChange }) => {
+const Campo: React.FC<{ campo: CampoDetalle; valor: string | undefined; onChange: (v: string) => void }> = ({ campo, valor, onChange }) => {
     const actual = valor ?? campo.default;
     return (
         <div>
@@ -58,7 +58,7 @@ const Campo: React.FC<{ campo: CampoDetalle; valor: any; onChange: (v: string) =
 
 interface DetalleCamposProps {
     perfil: PerfilDetalle;
-    valores: Record<string, any>;
+    valores: Record<string, string>;
     onChange: (key: string, val: string) => void;
 }
 

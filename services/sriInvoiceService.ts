@@ -259,9 +259,9 @@ export const sriInvoiceService = {
       }
 
       return { success: true, factura: rowToFactura(dbFactura) };
-    } catch (err: any) {
+    } catch (err) {
       console.error('[sriInvoiceService] Fatal error:', err);
-      return { success: false, error: err.message || 'Error al procesar la factura electronica' };
+      return { success: false, error: err instanceof Error ? err.message : 'Error al procesar la factura electronica' };
     }
   },
 

@@ -58,7 +58,7 @@ const pedirIA = async ({ contents, config, timeoutMs = 30000 }: PeticionIA): Pro
 /**
  * Identifica un producto de imprenta a partir de una foto.
  */
-export const matchProductFromImage = async (base64Image: string): Promise<any | null> => {
+export const matchProductFromImage = async (base64Image: string): Promise<Record<string, unknown> | null> => {
     const dataPart = base64Image.split(',')[1];
     const mimeType = base64Image.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
 
@@ -99,7 +99,7 @@ export const matchProductFromImage = async (base64Image: string): Promise<any | 
  * Extrae datos detallados de un Certificado de RUC del SRI.
  * ACTUALIZACIÓN MAESTRA: Extracción precisa de establecimientos y teléfonos.
  */
-export const extractClientFromImage = async (base64Image: string): Promise<any | null> => {
+export const extractClientFromImage = async (base64Image: string): Promise<Record<string, unknown> | null> => {
     const mimeMatch = base64Image.match(/^data:(.*);base64,/);
     const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
     const dataPart = base64Image.split(',')[1];
@@ -179,7 +179,7 @@ export const extractClientFromImage = async (base64Image: string): Promise<any |
 /**
  * Maestro Feature: Analiza si una imagen sirve para impresión profesional.
  */
-export const analyzeImageQualityForPrint = async (base64Image: string): Promise<any | null> => {
+export const analyzeImageQualityForPrint = async (base64Image: string): Promise<Record<string, unknown> | null> => {
     const dataPart = base64Image.split(',')[1];
     const mimeType = base64Image.match(/^data:(.*);base64,/)?.[1] || 'image/jpeg';
 

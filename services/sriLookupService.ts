@@ -77,7 +77,7 @@ export const sriLookupService = {
         return [];
       }
       
-      return (data || []).map((item: any) => ({
+      return (data || []).map((item) => ({
         ...item,
         direccion: item.direccion || [item.parroquia, item.canton, item.provincia || 'EL ORO'].filter(Boolean).join(', ')
       })) as SriRucData[];

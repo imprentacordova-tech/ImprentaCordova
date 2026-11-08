@@ -301,7 +301,7 @@ export const perfilDe = (item: { esSRI?: boolean; categoria?: string; nombre?: s
 };
 
 /** Suma los deltas de las opciones elegidas (chips) del perfil. */
-export const calcularDelta = (perfil: PerfilDetalle, valores: Record<string, any>): number => {
+export const calcularDelta = (perfil: PerfilDetalle, valores: Record<string, string>): number => {
     let delta = 0;
     for (const campo of perfil.campos) {
         if (campo.tipo !== 'chips' || !campo.opciones) continue;
@@ -313,14 +313,14 @@ export const calcularDelta = (perfil: PerfilDetalle, valores: Record<string, any
 };
 
 /** Especificaciones por defecto de un perfil. */
-export const especificacionesPorDefecto = (perfil: PerfilDetalle): Record<string, any> => {
-    const out: Record<string, any> = { perfil: perfil.id };
+export const especificacionesPorDefecto = (perfil: PerfilDetalle): Record<string, string> => {
+    const out: Record<string, string> = { perfil: perfil.id };
     for (const campo of perfil.campos) out[campo.key] = campo.default ?? (campo.tipo === 'chips' ? campo.opciones?.[0]?.valor : '');
     return out;
 };
 
 /** Resumen legible de los valores elegidos (para chips de vista previa). */
-export const resumenPerfil = (perfil: PerfilDetalle, valores: Record<string, any>): Array<{ icono: string; texto: string }> => {
+export const resumenPerfil = (perfil: PerfilDetalle, valores: Record<string, string>): Array<{ icono: string; texto: string }> => {
     const out: Array<{ icono: string; texto: string }> = [];
     for (const campo of perfil.campos) {
         if (campo.tipo === 'chips' && campo.opciones) {

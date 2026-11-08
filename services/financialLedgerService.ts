@@ -24,6 +24,16 @@ export interface FinancialEntry {
 const PENDING_LEDGER_KEY = 'cordova_pending_ledger';
 const MAX_RETRIES = 3;
 
+interface PendingLedgerEntry {
+    tipo: TransactionType;
+    monto: number;
+    detalle: string;
+    usuario: string;
+    referenciaId?: string;
+    retries: number;
+    timestamp?: number;
+}
+
 function generateHash(data: string, previousHash: string): string {
     let hash = 0;
     const combined = previousHash + data;
@@ -103,9 +113,9 @@ export const logTransaction = async (
     }
 };
 
-function addToPendingQueue(entry: any) {
+function addToPendingQueue(entry: PendingLedgerEntry) {
     try {
-        const queue = JSON.parse(localStorage.getItem(PENDING_LEDGER_KEY) || '[]');
+        const queue: PendingLedgerEntry[] = JSON.parse(localStorage.getItem(PENDING_LEDGER_KEY) || '[]');
         queue.push({ ...entry, timestamp: Date.now() });
         localStorage.setItem(PENDING_LEDGER_KEY, JSON.stringify(queue));
     } catch {
@@ -115,10 +125,10 @@ function addToPendingQueue(entry: any) {
 
 async function retryPendingTransactions() {
     try {
-        const queue = JSON.parse(localStorage.getItem(PENDING_LEDGER_KEY) || '[]');
+        const queue: PendingLedgerEntry[] = JSON.parse(localStorage.getItem(PENDING_LEDGER_KEY) || '[]');
         if (queue.length === 0) return;
 
-        const remaining: any[] = [];
+        const remaining: PendingLedgerEntry[] = [];
         for (const entry of queue) {
             if (entry.retries >= MAX_RETRIES) {
                 console.warn(`[FinancialLedger] Dropping entry after ${MAX_RETRIES} retries:`, entry.detalle);
