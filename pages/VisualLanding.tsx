@@ -504,6 +504,32 @@ export const VisualLanding: React.FC = () => {
                                 </div>
                             </motion.div>
                         ))}
+                        <motion.div
+                            layout
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            key="ver-catalogo-completo"
+                            className="rounded-3xl border-2 border-dashed border-royal/30 bg-royal/5 flex flex-col items-center justify-center text-center p-8 min-h-[22rem]"
+                        >
+                            <span className="text-xs uppercase font-extrabold tracking-widest text-royal">
+                                Catálogo completo
+                            </span>
+                            <h3 className="font-heading font-bold text-xl text-ink mt-3">
+                                ¿Buscás otro formato?
+                            </h3>
+                            <p className="text-xs text-muted mt-2 leading-relaxed max-w-[16rem]">
+                                Vé el catálogo completo con precios, mínimos y filtros por tiempo de entrega.
+                            </p>
+                            <Link
+                                to="/vitrina"
+                                className="inline-flex items-center gap-1.5 text-sm font-bold text-white bg-royal hover:bg-royal-dark transition-colors px-5 py-2.5 rounded-xl mt-5"
+                            >
+                                <span>Ver catálogo completo</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                        </motion.div>
                     </AnimatePresence>
                 </motion.div>
             </section>
@@ -722,7 +748,12 @@ export const VisualLanding: React.FC = () => {
             </section>
 
             {/* ── Gran CTA Final ─────────────────────────────────────── */}
-            <section className="bg-gradient-to-r from-royal via-ink to-ink text-white py-20 relative overflow-hidden">
+            {/* Corte diagonal en el borde superior: sin esto, el salto del fondo claro
+                de #rastreo a este degradado oscuro se sentía como un corte seco. */}
+            <section
+                className="bg-gradient-to-r from-royal via-ink to-ink text-white pt-28 pb-20 sm:pt-32 sm:pb-24 -mt-10 relative overflow-hidden"
+                style={{ clipPath: 'polygon(0 40px, 100% 0, 100% 100%, 0 100%)' }}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold/20 border border-gold/30 rounded-full text-xs font-mono text-gold font-bold uppercase tracking-wider mb-4">
                         <Sparkles className="w-3.5 h-3.5" />

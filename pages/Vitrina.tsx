@@ -312,14 +312,14 @@ export const Vitrina: React.FC = () => {
                         ) : (
                             <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 <AnimatePresence>
-                                    {matches.map(it => (
+                                    {matches.map((it, idx) => (
                                         <motion.div
                                             layout
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
+                                            initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             whileHover={{ y: -6 }}
-                                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                            transition={{ type: "spring", stiffness: 350, damping: 25, delay: (idx % 6) * 0.05 }}
                                             key={it.label + it.tag}
                                             className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all overflow-hidden flex flex-col justify-between group"
                                         >
