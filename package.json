@@ -17,7 +17,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
-    "lint:ci": "eslint . --max-warnings 184"
+    "lint:ci": "eslint . --max-warnings 172"
   },
   "dependencies": {
     "@google/genai": "^0.2.0",

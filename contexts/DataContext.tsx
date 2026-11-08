@@ -51,7 +51,7 @@ interface DataContextType {
     addCliente: (c: Partial<Cliente>) => Promise<Cliente>;
     updateCliente: (id: string, c: Partial<Cliente>) => Promise<void>;
     deleteCliente: (id: string) => Promise<void>;
-    addTrabajo: (t: any, user: string, imageFile?: File | null) => Promise<Trabajo>;
+    addTrabajo: (t: Record<string, unknown>, user: string, imageFile?: File | null) => Promise<Trabajo>;
     updateTrabajoStatus: (id: string, status: TrabajoEstado, user: string) => Promise<void>;
     addProducto: (p: Partial<Producto>) => Promise<Producto>;
     createProducto: (p: Partial<Producto>) => Promise<Producto>;
@@ -72,7 +72,7 @@ interface DataContextType {
     registerRetiro: (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string) => Promise<Trabajo>;
     registrarAbono: (id: string, monto: number, user: string) => Promise<Trabajo>;
     aprobarArte: (id: string) => Promise<Trabajo>;
-    createPublicOrder: (clientData: { nombre: string, telefono: string }, items: any[]) => Promise<Trabajo>;
+    createPublicOrder: (clientData: { nombre: string, telefono: string }, items: Array<{ nombre?: string; total?: number }>) => Promise<Trabajo>;
     getClientDebt: (clienteId: string) => number;
     /** Salud del canal en vivo (Supabase Realtime) y momento del último dato recibido. */
     realtimeEstado: RealtimeEstado;
@@ -138,7 +138,7 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
         console.warn('[DataContext] syncFromLocalStorage is deprecated. Use Supabase directly.');
     };
 
-    const createPublicOrder = async (clientData: { nombre: string, telefono: string }, items: any[]) => {
+    const createPublicOrder = async (clientData: { nombre: string, telefono: string }, items: Array<{ nombre?: string; total?: number }>) => {
         let cliente = clientes.find(c => c.telefono?.includes(clientData.telefono));
         if (!cliente) {
             cliente = await addCliente({ ...clientData, telefono: [clientData.telefono], cedula: '9999999999', regimen: Regimen.GENERAL });

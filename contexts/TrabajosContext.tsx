@@ -63,7 +63,7 @@ interface TrabajosContextType {
   realtimeEstado: RealtimeEstado;
   /** Timestamp del último dato recibido (fetch inicial o evento en vivo). */
   ultimaSync: number | null;
-  addTrabajo: (data: Record<string, any>, user: string, imageFile?: File | null) => Promise<Trabajo>;
+  addTrabajo: (data: Record<string, unknown>, user: string, imageFile?: File | null) => Promise<Trabajo>;
   updateTrabajoStatus: (id: string, status: TrabajoEstado, user: string) => Promise<void>;
   updateTrabajoPhoto: (id: string, url: string) => Promise<void>;
   updateTrabajoEvidencia: (id: string, url: string) => Promise<void>;
@@ -101,7 +101,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const playNewOrderChime = () => {
       try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
         const osc = ctx.createOscillator();
@@ -163,7 +163,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
    * ("invalid input syntax for type timestamp with time zone"); si no se puede
    * interpretar, devuelve null (mejor sin fecha que una orden que no se guarda).
    */
-  const normalizarFechaISO = (valor: any): string | null => {
+  const normalizarFechaISO = (valor: unknown): string | null => {
     if (valor === null || valor === undefined) return null;
     const s = String(valor).trim();
     if (!s) return null;
@@ -187,8 +187,8 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     return Number.isNaN(t) ? null : new Date(t).toISOString();
   };
 
-  const addTrabajo = async (trabajoData: Record<string, any>, user: string, imageFile?: File | null): Promise<Trabajo> => {
-    const dbData: Record<string, any> = {
+  const addTrabajo = async (trabajoData: Record<string, unknown>, user: string, imageFile?: File | null): Promise<Trabajo> => {
+    const dbData: Record<string, unknown> = {
       cliente_id: trabajoData.clienteId || trabajoData.cliente_id,
       titular: trabajoData.titular,
       tipo: trabajoData.tipo || trabajoData.servicio,
@@ -223,7 +223,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
       fecha_entrada: trabajoData.fechaEntrada || new Date().toISOString(),
     };
 
-    const sriFields: Record<string, any> = {
+    const sriFields: Record<string, unknown> = {
       es_sri: trabajoData.esSRI,
       establecimiento: trabajoData.establecimiento,
       punto_emision: trabajoData.puntoEmision,
@@ -246,7 +246,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     let insertData: any = null;
     let insertError: any = null;
-    const payload: Record<string, any> = { ...dbData };
+    const payload: Record<string, unknown> = { ...dbData };
     let attempts = 0;
     const columnasFaltantes: string[] = [];
 
@@ -354,7 +354,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const registerRetiro = async (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string): Promise<Trabajo> => {
     const actual = trabajos.find(t => t.id === id);
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       saldo: 0,
       estado: TrabajoEstado.ENTREGADO,
       actualizado_por: user,
@@ -369,7 +369,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Update resiliente: si la base no tiene alguna columna del payload, la quita
     // y reintenta (mismo criterio que addTrabajo). Y si `.single()` no devuelve la
     // fila (RLS / 0 filas), hace un update mínimo de respaldo y avisa el motivo.
-    const payload: Record<string, any> = { ...updateData };
+    const payload: Record<string, unknown> = { ...updateData };
     let data: any = null;
     let error: any = null;
 
