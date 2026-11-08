@@ -10,7 +10,7 @@ import { Cliente, Trabajo, Producto, User, InventoryItem, Proveedor, TareaProvee
 import { TrabajosProvider, useTrabajos, RealtimeEstado } from './TrabajosContext';
 import { ClientesProvider, useClientes } from './ClientesContext';
 import { InventarioProvider, useInventario } from './InventarioContext';
-import { ProductosProvider, useProductos } from './ProductosContext';
+import { ProductosProvider, useProductos, mapProductoToDB } from './ProductosContext';
 import { ConfigProvider, useConfig } from './ConfigContext';
 import { supabase } from '../services/supabase';
 
@@ -115,13 +115,7 @@ const DataContextFacade: React.FC<{ children: ReactNode }> = ({ children }) => {
     const deleteInventoryItem = deleteInvItem;
 
     const bulkCreateProductos = async (products: Partial<Producto>[]) => {
-        const dbProducts = products.map(p => ({
-            nombre: p.nombre,
-            descripcion: p.descripcion,
-            precio: p.precio,
-            categoria: p.categoria,
-            es_sri: (p as any).esSRI ?? false,
-        }));
+        const dbProducts = products.map(mapProductoToDB);
         const { error } = await supabase.from('productos').insert(dbProducts);
         if (error) throw error;
         await fetchProductos();

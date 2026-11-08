@@ -30,6 +30,27 @@ interface ProductoRow {
 
 type ProductoPayload = Omit<ProductoRow, 'id'>;
 
+/**
+ * La tabla `productos` solo tiene estas 9 columnas (ver SCHEMA_COMPLETO.sql).
+ * Los campos nuevos de gestión avanzada del catálogo (visiblePublico,
+ * requiereDiseno, manejaInventario, esActivo, codigoInterno, tags,
+ * configuracionHabilitada, etc.) viven en el tipo `Producto` pero no tienen
+ * columna: sin este mapeo, `addProducto`/`updateProducto` mandaban esas
+ * claves camelCase tal cual a Supabase, que respondía "column not found"
+ * y el guardado fallaba en silencio (el catch de Productos.tsx solo loguea).
+ */
+export const mapProductoToDB = (p: Partial<Producto>): ProductoPayload => ({
+  nombre: p.nombre,
+  descripcion: p.descripcion,
+  precio: p.precio,
+  categoria: p.categoria,
+  es_sri: p.esSRI,
+  imagen_url: p.imagenUrl,
+  specs: p.specs,
+  unit: p.unit,
+  is_popular: p.isPopular,
+});
+
 export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +90,7 @@ export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [fetchProductos]);
 
   const addProducto = async (p: Partial<Producto>) => {
-    const { data, error } = await supabase.from('productos').insert([p]).select().single();
+    const { data, error } = await supabase.from('productos').insert([mapProductoToDB(p)]).select().single();
     if (error) throw error;
     const mapped = mapProduct(data);
     setProductos(prev => [mapped, ...prev]);
@@ -77,7 +98,7 @@ export const ProductosProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const updateProducto = async (id: string, p: Partial<Producto>) => {
-    const { error } = await supabase.from('productos').update(p).eq('id', id);
+    const { error } = await supabase.from('productos').update(mapProductoToDB(p)).eq('id', id);
     if (error) throw error;
     setProductos(prev => prev.map(prod => prod.id === id ? { ...prod, ...p } : prod));
   };
