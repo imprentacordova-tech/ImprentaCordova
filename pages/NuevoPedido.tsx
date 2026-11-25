@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
-import { formatCurrency, generateWhatsAppLink, mensajeDeError } from '../utils';
+import { formatCurrency, generateWhatsAppLink, mensajeDeError, urlRastreo } from '../utils';
 import { useData, CATEGORY_EMOJIS } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
@@ -287,7 +287,8 @@ const NuevoPedidoPage: React.FC = () => {
         setSriActividad(activity);
         setSriEstablecimiento(estVal);
         setSriPuntoEmision(ptoVal);
-        if (caducidadVal) setAutorizacionSriInput(caducidadVal);
+        // La caducidad va en `especificaciones.sri.vencimiento` (→ fechaVencimiento), NO en el
+        // N° de autorización: antes se copiaba acá y la orden mostraba "Autorización 29/10/2027".
         if (modeVal && (modeVal.startsWith('sri') || modeVal.startsWith('comercial') || modeVal.startsWith('nota'))) {
             setModeloImpresionSri(modeVal as ModeloImpresion);
         }
@@ -588,7 +589,6 @@ const NuevoPedidoPage: React.FC = () => {
             if (d.establecimiento) setSriEstablecimiento(d.establecimiento);
             if (d.puntoEmision) setSriPuntoEmision(d.puntoEmision);
             if (d.caducidad) {
-                setAutorizacionSriInput(d.caducidad);
                 // Persistir la caducidad en el ítem SRI para que la orden la guarde.
                 setItems(prev => prev.map(it => it.esSRI ? {
                     ...it,
@@ -731,7 +731,7 @@ const NuevoPedidoPage: React.FC = () => {
         if (!createdOrderSummary) return;
         const phone = (createdOrderSummary.clienteTelefono || '').replace(/\D/g, '');
         const idDisplay = createdOrderSummary.orden || createdOrderSummary.id?.substring(0, 8) || 'ORD';
-        const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${idDisplay}`;
+        const trackingUrl = urlRastreo(idDisplay);
         
         let msg = '';
         if (createdOrderSummary.esSRI) {

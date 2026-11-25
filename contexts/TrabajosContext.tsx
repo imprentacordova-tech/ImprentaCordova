@@ -354,10 +354,20 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const registerRetiro = async (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string): Promise<Trabajo> => {
     const actual = trabajos.find(t => t.id === id);
-    const updateData: Record<string, unknown> = {
+    /*
+     * Lo cobrado al retirar se suma al abono (igual que registrarAbono). Antes solo se
+     * ponía saldo en 0: el cobro de la entrega no quedaba en ningún lado, Finanzas (que
+     * suma `abono`) no lo contaba y la orden quedaba con total ≠ abono + saldo.
+     */
+    const cobroAplicado = actual ? Math.min(Math.max(pagoFinal || 0, 0), actual.saldo || 0) : 0;
+    const cierre: Record<string, unknown> = {
       saldo: 0,
       estado: TrabajoEstado.ENTREGADO,
       actualizado_por: user,
+    };
+    if (actual) cierre.abono = Math.round(((actual.abono || 0) + cobroAplicado) * 100) / 100;
+    const updateData: Record<string, unknown> = {
+      ...cierre,
       fecha_entrega: new Date().toISOString(),
     };
     if (fotoRetiroUrl) updateData.foto_retiro_url = fotoRetiroUrl;
@@ -391,7 +401,7 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
     // reintentamos con lo mínimo indispensable para cerrar la entrega.
     if (error || !data) {
       const res2 = await supabase.from('trabajos')
-        .update({ saldo: 0, estado: TrabajoEstado.ENTREGADO, actualizado_por: user })
+        .update(cierre)
         .eq('id', id).select().single();
       if (!res2.error) { data = res2.data; error = null; }
       else error = res2.error;

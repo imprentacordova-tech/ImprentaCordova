@@ -412,7 +412,7 @@ export const Vitrina: React.FC = () => {
                             <span>Coordinar Muestras</span>
                         </a>
                         <a
-                            href="/tracking"
+                            href="#/tracking"
                             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all"
                         >
                             <span>Rastrear Pedido</span>
@@ -430,7 +430,7 @@ export const Vitrina: React.FC = () => {
                     </div>
                     <div className="flex gap-4 font-semibold">
                         <a href="/" className="hover:text-brand-blue">Inicio</a>
-                        <a href="/tracking" className="hover:text-brand-blue">Rastrear Pedido</a>
+                        <a href="#/tracking" className="hover:text-brand-blue">Rastrear Pedido</a>
                         <a href="tel:+593993083943" className="hover:text-brand-blue">+593 99 308 3943</a>
                     </div>
                 </div>

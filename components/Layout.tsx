@@ -13,6 +13,7 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { C } from './panelTheme';
 import { buildNavGroups, PAGE_TITLES } from './layout/navModel';
 import { SidebarContent } from './layout/SidebarContent';
+import { despertarBackend } from '../services/backendApi';
 
 /**
  * Layout interno — Sistema "Marino & Oro" (tema claro).
@@ -32,6 +33,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const { trabajos, clientes, updateTrabajoStatus } = useData();
     const { user, logout: authLogout } = useAuth();
     useKeyboardShortcuts();
+
+    // Mantiene despierto el backend SRI (Render gratuito) mientras el panel esté abierto
+    // y visible: la primera factura del día no espera 30-60 s de arranque en frío.
+    useEffect(() => {
+        if (!user) return;
+        const tick = () => { if (document.visibilityState === 'visible') despertarBackend(); };
+        tick();
+        const id = setInterval(tick, 10 * 60 * 1000);
+        document.addEventListener('visibilitychange', tick);
+        return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
+    }, [user]);
 
     // La extensión avisa cuando la imprenta acepta una solicitud SRI: la orden
     // pasa a "En Diseño" (el trámite ya arrancó).

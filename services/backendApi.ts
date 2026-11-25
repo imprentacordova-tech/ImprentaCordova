@@ -96,3 +96,19 @@ export async function backendFetch<T = unknown>(
 export const backendConfigurado = (): boolean => Boolean(BACKEND_API_KEY);
 
 export const BACKEND_BASE_URL = BACKEND_URL;
+
+/**
+ * Despierta el backend de Render (plan gratuito: se duerme tras ~15 min sin tráfico
+ * y la primera solicitud tarda 30-60 s). Se llama desde el panel mientras está abierto,
+ * así la primera factura o consulta SRI del día no espera el arranque en frío.
+ *
+ * `no-cors`: no necesitamos leer la respuesta, solo que la solicitud llegue; así no
+ * depende de la configuración CORS del backend ni ensucia la consola.
+ */
+let ultimoDespertar = 0;
+export function despertarBackend(intervaloMinimoMs = 9 * 60 * 1000): void {
+  const ahora = Date.now();
+  if (ahora - ultimoDespertar < intervaloMinimoMs) return;
+  ultimoDespertar = ahora;
+  fetch(`${BACKEND_URL}/ping`, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+}

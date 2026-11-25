@@ -7,6 +7,7 @@ import {
     Loader2Icon, HomeIcon, AlertTriangleIcon, CloseIcon
 } from '../components/Icons';
 import { supabase } from '../services/supabase';
+import { urlRastreo, generateWhatsAppLink } from '../utils';
 import { cargarHtml2Pdf } from '../services/pdfEngine';
 import { MODELOS, TRAMITES_SRI, marcadoTramite, resolverModelo, resolverTramite, type TramiteSri, type ModeloImpresion } from '../services/printModels';
 // El mapeo de la fila vive en UN solo lugar (contexts/TrabajosContext.tsx). Antes había una
@@ -519,7 +520,7 @@ const SolicitudImpresionPage: React.FC = () => {
     const handleShareWhatsApp = () => {
         if (!cliente || !trabajo) return;
         const phone = (cliente.telefono?.[0] || '').replace(/\D/g, '');
-        const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${trabajo.orden || trabajo.id}`;
+        const trackingUrl = urlRastreo(trabajo.orden || trabajo.id);
         const msg = `*IMPRENTA CÓRDOVA · SOLICITUD DE IMPRESIÓN SRI*\n\n` +
             `Estimado/a *${cliente.nombre}*,\n` +
             `Hemos registrado su Solicitud de Autorización de Impresión del SRI:\n` +
@@ -530,7 +531,8 @@ const SolicitudImpresionPage: React.FC = () => {
             `📍 Colón e/. Sucre y Av. Rocafuerte · Machala, El Oro`;
 
         if (phone) {
-            window.open(`https://wa.me/593${phone.startsWith('0') ? phone.slice(1) : phone}?text=${encodeURIComponent(msg)}`, '_blank');
+            // generateWhatsAppLink no duplica el 593 cuando el número ya lo trae.
+            window.open(generateWhatsAppLink(phone, msg), '_blank');
         } else {
             navigator.clipboard.writeText(msg);
             setCopiedWhatsApp(true);
@@ -785,7 +787,7 @@ const SolicitudImpresionPage: React.FC = () => {
                     </div>
                     <div className="col-span-2 flex flex-col items-center justify-center">
                         <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`https://www.imprentacordova.net/tracking?orden=${trabajo.orden || trabajo.id}`)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(urlRastreo(trabajo.orden || trabajo.id))}`} 
                             alt="QR Tracking" 
                             className="w-10 h-10 border border-slate-300 rounded p-[1px] bg-white shadow-xs"
                         />
@@ -1618,7 +1620,7 @@ const SolicitudImpresionPage: React.FC = () => {
      * desglose nítido de comprobantes y bloque de liquidación financiera premium.
      */
     const renderArteModernoMedioOficio = () => {
-        const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${trabajo.orden || trabajo.id}`;
+        const trackingUrl = urlRastreo(trabajo.orden || trabajo.id);
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(trackingUrl)}`;
         const tramiteActual = resolverTramite(trabajo?.tramiteSri);
         const tramiteObj = TRAMITES_SRI.find(t => t.id === tramiteActual) || TRAMITES_SRI[2];

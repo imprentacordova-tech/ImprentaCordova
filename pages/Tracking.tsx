@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trabajo, TrabajoEstado } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { supabase } from '../services/supabase';
+import { mapDBTrabajo } from '../contexts/TrabajosContext';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
 import {
@@ -80,21 +81,34 @@ export const TrackingPage: React.FC = () => {
 
             if (isUUID) {
                 const { data } = await supabase.from('trabajos').select('*').eq('id', clean);
-                if (data?.length) { setFoundJobs(data as any); setSelectedJobId(data[0].id); setSearching(false); return; }
+                if (data?.length) { setFoundJobs(data.map(mapDBTrabajo)); setSelectedJobId(data[0].id); setSearching(false); return; }
             }
             if (isOrderNum || /ord/i.test(clean)) {
                 const n = parseInt(numeric.replace(/\D/g, ''), 10);
                 if (n) {
                     const { data } = await supabase.from('trabajos').select('*').eq('orden', n);
-                    if (data?.length) { setFoundJobs(data as any); setSelectedJobId(data[0].id); setSearching(false); return; }
+                    if (data?.length) { setFoundJobs(data.map(mapDBTrabajo)); setSelectedJobId(data[0].id); setSearching(false); return; }
                 }
             }
+            /*
+             * Solo cédula/RUC EXACTOS. Antes también buscaba `nombre ILIKE %texto%`: escribir
+             * "a" listaba las órdenes (titular y montos) de todos los clientes, y una coma o
+             * un paréntesis rompía el filtro `.or()`.
+             */
+            if (isOrderNum) {
+                setError(`No encontramos la orden N° ${numeric.replace(/\D/g, '')}. Revisá el número en tu mensaje de WhatsApp.`);
+                return;
+            }
+            if (!/^\d{10,13}$/.test(numeric)) {
+                setError('Ingresá tu número de orden o tu cédula/RUC completo (10 o 13 dígitos).');
+                return;
+            }
             const { data: clients } = await supabase.from('clientes').select('id')
-                .or(`nombre.ilike.%${clean}%,cedula.eq.${numeric},ruc.eq.${numeric}`);
+                .or(`cedula.eq.${numeric},ruc.eq.${numeric}`);
             if (clients?.length) {
                 const ids = clients.map(c => c.id);
                 const { data: jobs } = await supabase.from('trabajos').select('*').in('cliente_id', ids).order('orden', { ascending: false });
-                if (jobs?.length) { setFoundJobs(jobs as any); setSelectedJobId(jobs[0].id); }
+                if (jobs?.length) { setFoundJobs(jobs.map(mapDBTrabajo)); setSelectedJobId(jobs[0].id); }
                 else setError('No encontramos órdenes activas asociadas a esa identificación.');
             } else {
                 setError('No encontramos ninguna orden con ese número o RUC. Revisa tu mensaje de WhatsApp.');
@@ -108,7 +122,8 @@ export const TrackingPage: React.FC = () => {
     };
 
     useEffect(() => {
-        const q = searchParams.get('q');
+        // `orden` = links viejos de WhatsApp/QR.
+        const q = searchParams.get('q') || searchParams.get('orden');
         if (q) { setSearchQuery(q); doSearch(q); }
          
     }, [searchParams]);

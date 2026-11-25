@@ -8,6 +8,9 @@ import {
     CordovaLogo, CloseIcon
 } from '../components/Icons';
 import { cargarHtml2Pdf } from '../services/pdfEngine';
+import { supabase } from '../services/supabase';
+import { mapDBTrabajo } from '../contexts/TrabajosContext';
+import { mapDBCliente } from '../contexts/ClientesContext';
 import { 
     MODELOS, 
     GEO_COMERCIAL160, 
@@ -117,10 +120,14 @@ const ReciboEpson: React.FC = () => {
     // Trabajo y cliente cargados desde BD o por URL (fallback directo)
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
+    /** Buscando la orden directo en la base (no estaba en la lista cargada). */
+    const [buscandoEnBase, setBuscandoEnBase] = useState(false);
 
     useEffect(() => {
-        // 1. Caso directo por parámetros URL (Chrome extension o pre-guardado)
-        if (trabajoId === 'directo' || (!dataLoading && trabajoId && !trabajos.some(t => t.id === trabajoId))) {
+        // 1. Caso directo por parámetros URL (extensión de Chrome: /recibo-epson/directo?...).
+        //    Antes también entraba acá cualquier id que no estuviera en la lista cargada,
+        //    y se imprimía un recibo INVENTADO (#000001, CONSUMIDOR FINAL, $0.00) sin aviso.
+        if (trabajoId === 'directo') {
             const rawTotal = parseFloat(queryParams.get('total') || '0') || 0;
             const rawAbono = parseFloat(queryParams.get('abono') || '0') || 0;
             const rawSaldo = parseFloat(queryParams.get('saldo') || '0') || Math.max(0, rawTotal - rawAbono);
@@ -171,14 +178,34 @@ const ReciboEpson: React.FC = () => {
 
         // 2. Carga estándar desde DataContext
         if (!trabajoId || dataLoading) return;
+        let cancelado = false;
+        const buscarCliente = async (clienteId: string) => {
+            const { data } = await supabase.from('clientes').select('*').eq('id', clienteId).maybeSingle();
+            if (!cancelado && data) setCliente(mapDBCliente(data));
+        };
+        const aplicar = (t: Trabajo) => {
+            setTrabajo(t);
+            const cli = clientes.find(c => c.id === t.clienteId);
+            if (cli) setCliente(cli);
+            else if (t.clienteId) buscarCliente(t.clienteId).catch(() => {});
+            if (t.modeloImpresion && !queryParams.get('mode')) {
+                setModelo(resolverModelo(t.modeloImpresion, null, false));
+            }
+        };
+
         const current = trabajos.find(t => t.id === trabajoId);
         if (current) {
-            setTrabajo(current);
-            setCliente(clientes.find(c => c.id === current.clienteId) || null);
-            if (current.modeloImpresion && !queryParams.get('mode')) {
-                setModelo(resolverModelo(current.modeloImpresion, null, false));
-            }
+            aplicar(current);
+        } else {
+            // No está en la lista cargada (la consulta general trae hasta 1000 órdenes, o
+            // falló la carga): se busca por id antes de dar la orden por inexistente.
+            setBuscandoEnBase(true);
+            supabase.from('trabajos').select('*').eq('id', trabajoId).maybeSingle()
+                .then(({ data }) => { if (!cancelado && data) aplicar(mapDBTrabajo(data)); })
+                .then(() => { if (!cancelado) setBuscandoEnBase(false); },
+                      () => { if (!cancelado) setBuscandoEnBase(false); });
         }
+        return () => { cancelado = true; };
     }, [trabajoId, trabajos, clientes, dataLoading, queryParams]);
 
     const config = {
@@ -257,6 +284,14 @@ const ReciboEpson: React.FC = () => {
             <div className="h-screen bg-slate-900 flex flex-col items-center justify-center gap-3 text-white">
                 <Loader2Icon className="w-8 h-8 animate-spin text-amber-400" />
                 <span className="text-xs font-mono uppercase tracking-widest text-slate-400">Cargando comprobante comercial...</span>
+            </div>
+        );
+    }
+
+    if ((!trabajo || !cliente) && (dataLoading || buscandoEnBase)) {
+        return (
+            <div className="h-screen bg-slate-900 flex flex-col items-center justify-center gap-4 text-white">
+                <div className="text-sm font-bold opacity-80">Cargando la orden…</div>
             </div>
         );
     }

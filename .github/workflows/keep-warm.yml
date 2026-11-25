@@ -19,4 +19,15 @@ jobs:
 
     steps:
       - name: Pinguear el backend
-        run: curl -fsS --max-time 90 https://cordova-sri-api.onrender.com/ping
+        # Render puede contestar 404 por un instante mientras despierta la instancia:
+        # se reintenta en vez de marcar la corrida en rojo. El panel también lo despierta
+        # (services/backendApi.ts → despertarBackend), porque GitHub no garantiza la
+        # frecuencia del cron (en la práctica corre cada varias horas).
+        run: |
+          for i in 1 2 3 4; do
+            code=$(curl -s -o /tmp/ping.txt -w '%{http_code}' --max-time 90 https://cordova-sri-api.onrender.com/ping || echo 000)
+            echo "intento $i: HTTP $code"; cat /tmp/ping.txt; echo
+            [ "$code" = "200" ] && exit 0
+            sleep $((i * 20))
+          done
+          exit 1

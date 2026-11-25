@@ -22,7 +22,7 @@ interface ClienteRow {
   fiscal_data?: Cliente['fiscal_data'];
 }
 
-const mapDBCliente = (c: ClienteRow): Cliente => {
+export const mapDBCliente = (c: ClienteRow): Cliente => {
   const dbRegimen = c.regimen || c.regime || '';
   const raw = dbRegimen.toString().toUpperCase();
   let normalizedRegimen = Regimen.GENERAL;

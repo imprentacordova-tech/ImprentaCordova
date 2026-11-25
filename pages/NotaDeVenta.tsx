@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Trabajo, Cliente, TrabajoEstado, Regimen } from '../types';
-import { formatCurrency, numeroALetras } from '../utils';
+import { formatCurrency, numeroALetras, urlRastreo, generateWhatsAppLink } from '../utils';
 import {
     PrinterIcon, ArrowDownTrayIcon, Loader2Icon,
     HomeIcon, AlertTriangleIcon, TrophyIcon, ArrowRightIcon,
@@ -249,7 +249,7 @@ const NotaDeVentaPage: React.FC = () => {
     const handleShareWhatsApp = () => {
         if (!trabajo || !cliente) return;
         const phone = cliente.telefono?.[0] ? cliente.telefono[0].replace(/\D/g, '') : '';
-        const trackingUrl = `https://www.imprentacordova.net/tracking?orden=${trabajo.orden}`;
+        const trackingUrl = urlRastreo(trabajo.orden);
         const mensaje = encodeURIComponent(
             `*IMPRENTA CÓRDOVA — NOTA DE VENTA FISCAL*\n\n` +
             `Estimado(a) *${cliente.nombre}*:\n` +
@@ -262,7 +262,8 @@ const NotaDeVentaPage: React.FC = () => {
             `🔍 *Consulte o verifique su orden aquí:*\n${trackingUrl}\n\n` +
             `¡Gracias por confiar en Imprenta Córdova!`
         );
-        window.open(`https://wa.me/${phone ? `593${phone.replace(/^0/, '')}` : ''}?text=${mensaje}`, '_blank');
+        // generateWhatsAppLink no duplica el 593 cuando el número ya lo trae (antes salía 593593...).
+        window.open(phone ? generateWhatsAppLink(phone, decodeURIComponent(mensaje)) : `https://wa.me/?text=${mensaje}`, '_blank');
     };
 
     if (dataLoading || (isRetrying && !trabajo)) return (
@@ -311,7 +312,7 @@ const NotaDeVentaPage: React.FC = () => {
     const clienteDir = isConsumidorFinal ? 'CIUDAD' : (cliente.direccion || 'Pasaje, El Oro').toUpperCase();
 
     const unitPrice = trabajo.cantidad > 0 ? (trabajo.total / trabajo.cantidad) : trabajo.total;
-    const trackingQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`https://www.imprentacordova.net/tracking?orden=${trabajo.orden}`)}`;
+    const trackingQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(urlRastreo(trabajo.orden))}`;
 
     return (
         <div className="bg-slate-900 min-h-screen py-6 flex flex-col items-center justify-start overflow-y-auto font-sans">

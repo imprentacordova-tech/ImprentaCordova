@@ -105,3 +105,13 @@ export const mensajeDeError = (err: unknown): string => {
   }
   return '';
 };
+
+/**
+ * Link público de rastreo que se manda por WhatsApp y va en los QR impresos.
+ * La app usa HashRouter y `Tracking.tsx` lee `?q=`: el link viejo
+ * (`/tracking?orden=N`, sin `#/`) daba 404 en el dominio. Los que ya se enviaron
+ * los resuelve `vercel.json` (sirve index.html) + el normalizador de rutas de `index.html`.
+ */
+export const URL_PUBLICA = 'https://www.imprentacordova.net';
+export const urlRastreo = (ref: string | number): string =>
+  `${URL_PUBLICA}/#/tracking?q=${encodeURIComponent(String(ref))}`;
