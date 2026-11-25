@@ -8,9 +8,10 @@ import { useData, CATEGORY_EMOJIS } from '../../contexts/DataContext';
 import { ProductVisual, esProductoTalonario } from '../ProductVisual';
 import { C, S, DISPLAY } from '../panelTheme';
 import { formatCurrency } from '../../utils';
+import type { ServicioElegido } from './itemPedido';
 
 interface ServiceSelectorProps {
-    onSelect: (servicio: any) => void;
+    onSelect: (servicio: ServicioElegido) => void;
     selectedId?: string;
     regimen?: string;
     forcedCategory?: string;
@@ -128,7 +129,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'thin' }}>
                         {categories.map(cat => {
                             const isSelected = activeCategory === cat;
-                            const emoji = (CATEGORY_EMOJIS as any)[cat] || '📦';
+                            const emoji = CATEGORY_EMOJIS[cat] || '📦';
                             return (
                                 <button
                                     key={cat}
@@ -206,7 +207,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onSelect, selectedId,
 
                                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                                     <div style={{ width: 32, height: 32, borderRadius: 8, background: p.esSRI ? C.goldBg : C.chipBlue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
-                                        {p.esSRI ? '🏛️' : ((CATEGORY_EMOJIS as any)[p.categoria] || '📦')}
+                                        {p.esSRI ? '🏛️' : (CATEGORY_EMOJIS[p.categoria] || '📦')}
                                     </div>
                                     {p.esSRI ? (
                                         <span style={{ fontSize: 8, fontWeight: 800, padding: '2px 7px', borderRadius: 99, background: C.goldBg, color: C.goldTextStrong, border: `1px solid ${C.goldBorder}`, textTransform: 'uppercase', letterSpacing: '.04em' }}>

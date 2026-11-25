@@ -91,3 +91,17 @@ export const generateWhatsAppLink = (phone: string, message: string): string => 
     
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 };
+
+/**
+ * Texto de un error capturado en un `catch`. Los errores de Supabase (PostgrestError)
+ * son objetos planos con `message`, no instancias de `Error`, así que no alcanza con
+ * `instanceof`: se lee `message` de cualquier objeto que lo traiga.
+ */
+export const mensajeDeError = (err: unknown): string => {
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object' && 'message' in err) {
+    const msg = (err as { message?: unknown }).message;
+    if (typeof msg === 'string') return msg;
+  }
+  return '';
+};

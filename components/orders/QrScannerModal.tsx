@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { C } from '../panelTheme';
 
+/** `BarcodeDetector` todavía no está en los tipos del DOM de TypeScript: lo mínimo que se usa. */
+interface BarcodeDetectorLike {
+    detect(fuente: HTMLVideoElement): Promise<Array<{ rawValue: string }>>;
+}
+type BarcodeDetectorCtor = new (opciones: { formats: string[] }) => BarcodeDetectorLike;
+
 interface QrScannerModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -30,7 +36,7 @@ const QrScannerModal: React.FC<QrScannerModalProps> = ({ isOpen, onClose, onDete
         setError(null);
         setEscaneando(false);
 
-        const BarcodeDetectorCls = (window as any).BarcodeDetector;
+        const BarcodeDetectorCls = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
         if (!BarcodeDetectorCls) {
             setError('Tu navegador no soporta el escáner por cámara (usá Chrome o Edge). Ingresá el N° de orden manualmente.');
             return;

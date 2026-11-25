@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useWindowSize } from 'react-use';
 import { Trabajo, Cliente, User } from '../../types';
-import { formatCurrency, generateWhatsAppLink } from '../../utils';
+import { formatCurrency, generateWhatsAppLink, mensajeDeError } from '../../utils';
 import { useData } from '../../contexts/DataContext';
 import { logActivity } from '../../services/activityLogService';
 import { notifyOrderDeliveredEmail } from '../../services/emailNotificationService';
@@ -200,9 +200,9 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
             if (onEntregaExitosa) {
                 onEntregaExitosa(updated);
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error al registrar retiro:', err);
-            setErrorMsg(`No se pudo registrar la entrega: ${err?.message || 'error desconocido'}.`);
+            setErrorMsg(`No se pudo registrar la entrega: ${mensajeDeError(err) || 'error desconocido'}.`);
         } finally {
             setIsProcessing(false);
         }

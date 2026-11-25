@@ -12,15 +12,16 @@ import { atajosAbono, type DesglosePedido } from '../../services/orderPricing';
 import { C, S, MONO, DISPLAY } from '../panelTheme';
 import { ProductVisual } from '../ProductVisual';
 import { calcularHojas } from './OrderDetails';
+import { camposTexto, type ItemPedido } from './itemPedido';
 
-export interface OrderItem {
-    nombre: string;
-    cantidad: number;
-    precioFinal: number;
-    descripcion?: string;
-    categoria?: string;
-    esSRI?: boolean;
-    especificaciones?: any;
+/** Alias histórico: los ítems del resumen son los mismos de Nueva Orden. */
+export type OrderItem = ItemPedido;
+
+/** Lo que el resumen necesita de la clave del SRI (ver `useOrder` y NuevoPedido). */
+export interface SriDataResumen {
+    claveAcceso?: string;
+    estadoClave?: 'LISTA' | 'PENDIENTE' | 'ERROR';
+    [clave: string]: unknown;
 }
 
 interface OrderSummaryProps {
@@ -49,8 +50,8 @@ interface OrderSummaryProps {
     onFinalize?: () => void;
     onDeploy?: () => void;
     isLoading: boolean;
-    sriData: any;
-    setSriData: (data: any) => void;
+    sriData: SriDataResumen | null;
+    setSriData: (data: SriDataResumen) => void;
     imprimirClave: boolean;
     setImprimirClave: (val: boolean) => void;
 }
@@ -110,18 +111,18 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             id: idx.toString(),
             nombre: it.nombre,
             cantidad: it.cantidad,
-            precio: it.precioFinal,
+            precio: it.precioFinal || 0,
             categoria: it.categoria,
-            esSRI: it.esSRI || it.especificaciones?.sri,
-            specs: it.especificaciones,
+            esSRI: !!(it.esSRI || it.especificaciones?.sri),
+            specs: camposTexto(it.especificaciones),
         }))
         : cartItems.map(([id, it]) => ({
             id,
             nombre: it.producto.nombre,
             cantidad: it.cantidad,
             precio: it.producto.precio + (it.surcharge || 0),
-            categoria: (it.producto as any).categoria,
-            esSRI: (it.producto as any).esSRI,
+            categoria: it.producto.categoria,
+            esSRI: it.producto.esSRI,
             specs: undefined,
         }));
 
@@ -417,15 +418,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                             <span style={S.colHead}>Tiempo Estimado de Entrega</span>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                                 {[
-                                    { id: '24h', label: 'Express (24 Horas)', sub: 'Entrega prioritaria', icon: SparklesIcon },
-                                    { id: '48h', label: 'Estándar (48 Horas)', sub: 'Producción regular', icon: ClockIcon }
+                                    { id: '24h' as const, label: 'Express (24 Horas)', sub: 'Entrega prioritaria', icon: SparklesIcon },
+                                    { id: '48h' as const, label: 'Estándar (48 Horas)', sub: 'Producción regular', icon: ClockIcon }
                                 ].map(opt => {
                                     const activo = tiempoEntrega === opt.id;
                                     return (
                                         <button 
                                             key={opt.id}
                                             type="button"
-                                            onClick={() => setTiempoEntrega?.(opt.id as any)}
+                                            onClick={() => setTiempoEntrega?.(opt.id)}
                                             style={{
                                                 padding: '14px 16px',
                                                 borderRadius: 12,

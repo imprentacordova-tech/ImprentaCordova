@@ -3,10 +3,11 @@ import {
     BoxIcon, CheckCircleIcon
 } from '../Icons';
 import { formatCurrency } from '../../utils';
+import type { ItemPedido, ServicioElegido } from './itemPedido';
 
 interface ProductConfiguratorProps {
-    product: any;
-    onComplete: (config: any) => void;
+    product: ServicioElegido;
+    onComplete: (config: ItemPedido) => void;
     onCancel: () => void;
     regimen?: string;
 }
@@ -104,7 +105,10 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({ product, onCo
                 acabado, tintas,
                 sri: product.esSRI ? { autorizacion: sriAutorizacion, vencimiento: sriVence } : null
             },
-            precioFinal: totalCalculated
+            precioFinal: totalCalculated,
+            // Sin esto el Paso 2 recalculaba la línea con el unitario por defecto ($13)
+            // apenas se tocaba la cantidad o una opción.
+            precioUnitario: Math.round((totalCalculated / Math.max(1, cantidad)) * 100) / 100,
         });
     };
 

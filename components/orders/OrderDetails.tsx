@@ -4,6 +4,7 @@ import { RECARGO_URGENCIA } from '../../services/orderPricing';
 import { ProductVisual } from '../ProductVisual';
 import { DetalleCampos } from './DetalleCampos';
 import { perfilDe, calcularDelta, resumenPerfil } from '../../services/detalleProducto';
+import { camposTexto, type ItemPedido } from './itemPedido';
 
 /**
  * Paso 2 de Nueva Orden — "Especificaciones y Calculadora Dinámica"
@@ -86,8 +87,8 @@ const opcionDeFecha = (iso: string): OpcionEntrega => {
 };
 
 export interface OrderDetailsProps {
-    items?: any[];
-    setItems?: React.Dispatch<React.SetStateAction<any[]>>;
+    items?: ItemPedido[];
+    setItems?: React.Dispatch<React.SetStateAction<ItemPedido[]>>;
     notas: string;
     setNotas: (val: string) => void;
     prioridad: 'Normal' | 'Urgente';
@@ -102,7 +103,7 @@ export interface OrderDetailsProps {
     archivo?: File | null;
     setArchivo?: (file: File | null) => void;
     /** Lanza la solicitud SRI para un ítem (flujo inverso: web → SRI → web). */
-    onLaunchSri?: (item: any) => void;
+    onLaunchSri?: (item: ItemPedido) => void;
 }
 
 const chip = (activo: boolean): React.CSSProperties => ({
@@ -169,7 +170,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
             const perfil = perfilDe(item);
             const newSpecs = { ...(item.especificaciones || {}), [key]: val };
             const base = item.precioBase ?? item.precioUnitario ?? 13;
-            const delta = calcularDelta(perfil, newSpecs);
+            const delta = calcularDelta(perfil, camposTexto(newSpecs));
             const newUnitPrice = Math.max(1, base + delta);
             const qty = item.cantidad || 1;
             return {
@@ -278,12 +279,12 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                     
                     {items.map((item, idx) => {
                         const perfil = perfilDe(item);
-                        const hojasCalculadas = calcularHojas(item.especificaciones?.copias, item.esSRI);
+                        const hojasCalculadas = calcularHojas(camposTexto(item.especificaciones).copias, item.esSRI);
                         const cantBloques = item.cantidad || 1;
                         const ajustes = perfil.campos
                             .filter(c => c.tipo === 'chips' && c.opciones)
                             .map(c => {
-                                const val = item.especificaciones?.[c.key] ?? c.default;
+                                const val = camposTexto(item.especificaciones)[c.key] ?? c.default;
                                 const op = c.opciones!.find(o => o.valor === val);
                                 return op?.delta ? { label: c.label.split(' ')[0], delta: op.delta } : null;
                             })
@@ -376,7 +377,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                         </div>
                                         <DetalleCampos
                                             perfil={perfil}
-                                            valores={item.especificaciones || {}}
+                                            valores={camposTexto(item.especificaciones)}
                                             onChange={(key, val) => updateItemOption(idx, key, val)}
                                         />
                                     </div>
@@ -436,7 +437,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({
                                                     📖 {hojasCalculadas} hojas c/u
                                                 </span>
                                             )}
-                                            {resumenPerfil(perfil, item.especificaciones || {}).map((r, i) => (
+                                            {resumenPerfil(perfil, camposTexto(item.especificaciones)).map((r, i) => (
                                                 <span key={i} style={{
                                                     fontSize: 10.5,
                                                     fontWeight: 600,

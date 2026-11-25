@@ -11,17 +11,39 @@ import {
 } from '../../services/establecimientos';
 import { sriLookupService } from '../../services/sriLookupService';
 import { logActivity } from '../../services/activityLogService';
-import { formatCurrency } from '../../utils';
+import { formatCurrency, mensajeDeError } from '../../utils';
 import {
     SearchIcon, Loader2Icon,
     CheckCircleIcon, ArrowRightIcon,
     UploadIcon, PlusIcon
 } from '../Icons';
 
+/**
+ * Lo que puede traer cualquiera de las tres fuentes de alta (padrón SRI, PDF del
+ * certificado, foto leída con IA). Todo es opcional: cada fuente llena lo que tiene.
+ */
+interface DatosExtraidos {
+    nombre?: string;
+    nombreComercial?: string;
+    ruc?: string;
+    email?: string;
+    direccion?: string;
+    regimen?: string;
+    telefono?: string;
+    actividades?: string;
+    numEstablecimientos?: number;
+    establecimientoPrincipal?: string;
+    puntoEmisionPrincipal?: string;
+    /** Crudo: lo normaliza `normalizarEstablecimientos`. */
+    establecimientos?: unknown;
+    tipoPersona?: string;
+    obligadoContabilidad?: boolean;
+}
+
 const InputField: React.FC<{
     label: string;
     name: string;
-    value: any;
+    value: string | number;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     isHighlighted?: boolean;
     error?: string;
@@ -83,7 +105,7 @@ export const CreateClientModal: React.FC<{
         numEstablecimientosOpen: 1,
         establecimientoPredeterminado: '001',
         puntoEmisionPredeterminado: '001',
-        fiscal_data: {} as any
+        fiscal_data: {} as NonNullable<Cliente['fiscal_data']>
     });
 
     /**
@@ -172,7 +194,8 @@ export const CreateClientModal: React.FC<{
              * nunca se llenaba.
              */
             if (file.type.startsWith('image/')) {
-                const data = await extractClientFromImage(await fileToBase64(file));
+                // El responseSchema de Gemini fija los tipos de cada campo.
+                const data = await extractClientFromImage(await fileToBase64(file)) as DatosExtraidos | null;
                 if (!data) {
                     setRucError('No se pudo leer la imagen del RUC. Probá con el PDF del SRI o completá la ficha a mano.');
                     return;
@@ -217,7 +240,7 @@ export const CreateClientModal: React.FC<{
         }
     };
 
-    const applyExtractedData = (data: any) => {
+    const applyExtractedData = (data: DatosExtraidos) => {
         const fields = ['nombre', 'cedulaRuc', 'direccion', 'regimen', 'telefono'];
         setHighlightFields(fields);
 
@@ -266,7 +289,7 @@ export const CreateClientModal: React.FC<{
                 estado_contribuyente: 'ACTIVO',
                 tipo_contribuyente: data.tipoPersona || 'PERSONA NATURAL',
                 obligado_contabilidad: data.obligadoContabilidad || false,
-                actividades: data.actividades ? data.actividades.split('|').map((a: string) => ({ descripcion: a.trim() })) : [],
+                actividades: data.actividades ? data.actividades.split('|').map((a: string) => ({ codigo: '', descripcion: a.trim() })) : [],
                 establecimientos,
                 ultima_sincronizacion: new Date().toISOString()
             }
@@ -318,7 +341,7 @@ export const CreateClientModal: React.FC<{
              * un código equivocado, acá está el dato con el que se dio de alta la ficha.
              */
             const registrados = establecimientosAbiertos(
-                (newClienteData.fiscal_data as any)?.establecimientos,
+                newClienteData.fiscal_data?.establecimientos,
             );
             logActivity(
                 user?.nombre || 'Sistema',
@@ -331,10 +354,10 @@ export const CreateClientModal: React.FC<{
             ).catch(() => {});
 
             setTimeout(() => onClientCreated(newCliente), 400);
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error al registrar cliente:", err);
             setIsSaving(false);
-            setRucError(err.message || 'Error en la conexión con la base de datos');
+            setRucError(mensajeDeError(err) || 'Error en la conexión con la base de datos');
         }
     };
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
-import { formatCurrency, generateWhatsAppLink } from '../utils';
+import { formatCurrency, generateWhatsAppLink, mensajeDeError } from '../utils';
 import { useData, CATEGORY_EMOJIS } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { logActivity } from '../services/activityLogService';
-import { Cliente, User, TrabajoEstado, Regimen } from '../types';
+import { Cliente, User, TrabajoEstado, Regimen, Producto } from '../types';
+import { bloqueSri, type ItemPedido, type ServicioElegido } from '../components/orders/itemPedido';
 import ClientSelector from '../components/orders/ClientSelector';
 import ServiceSelector from '../components/orders/ServiceSelector';
 import ProductConfigurator from '../components/orders/ProductConfigurator';
@@ -53,7 +54,53 @@ const animPaso = (dir: 'adelante' | 'atras') => ({
  * Catálogo de respaldo: solo se usa mientras `productos` (Supabase) todavía no cargó.
  * El catálogo real es la tabla `productos` (semilla = services/catalogData.ts).
  */
-const CATALOGO_FALLBACK: any[] = [
+/** Cliente que todavía no existe en la base: se crea al guardar la orden. */
+interface ClienteTemporal {
+    nombre: string;
+    telefono: string;
+    cedula?: string;
+    regimen?: Regimen;
+    email?: string;
+    direccion?: string;
+    actividades?: string;
+}
+
+/**
+ * Datos de una solicitud SRI que llegan por la URL o por la extensión de Chrome. Se
+ * guardan como texto: la URL ya lo es y el mensaje de la extensión se normaliza con
+ * `aPayloadSri`, así un `docType: 0` numérico no se confunde con "sin dato".
+ */
+type PayloadSri = Record<string, string | undefined>;
+
+const aPayloadSri = (raw: unknown): PayloadSri | null => {
+    if (!raw || typeof raw !== 'object') return null;
+    return Object.fromEntries(
+        Object.entries(raw as Record<string, unknown>)
+            .map(([k, v]) => [k, v == null ? undefined : String(v)]),
+    );
+};
+
+/** Lo que se muestra en el Paso 5 y se manda por WhatsApp después de guardar. */
+interface ResumenOrdenCreada {
+    id: string;
+    orden: number | string;
+    clienteNombre: string;
+    clienteRuc: string;
+    clienteTelefono: string;
+    total: number;
+    abono: number;
+    saldo: number;
+    esSRI: boolean;
+    items: ItemPedido[];
+    fechaEntrega: string;
+    prioridad: 'Normal' | 'Urgente';
+    tramiteSri: TramiteSri;
+    sriEstablecimiento: string;
+    sriPuntoEmision: string;
+    sriActividad: string;
+}
+
+const CATALOGO_FALLBACK: Producto[] = [
   { id: 'f1', nombre: 'NOTA DE VENTA (RIMPE NEGOCIO POPULAR)', categoria: 'Documentos SRI', precio: 13, esSRI: true, descripcion: 'Talonario 100 hojas, 1/4 de oficio, duplicado.' },
   { id: 'f2', nombre: 'FACTURA (REGIMEN GENERAL)', categoria: 'Documentos SRI', precio: 15, esSRI: true, descripcion: 'Factura autorizada 100 hojas, 1/4 de oficio.' },
   { id: 'f3', nombre: 'LIQUIDACION DE COMPRA (RIMPE)', categoria: 'Documentos SRI', precio: 15, esSRI: true, descripcion: 'Liquidación de compra de bienes o servicios.' },
@@ -78,16 +125,16 @@ const NuevoPedidoPage: React.FC = () => {
     const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante');
     const [loading, setLoading] = useState(false);
     const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [tempClient, setTempClient] = useState<any>({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
-    const [servicio, setServicio] = useState<any>(null);
+    const [tempClient, setTempClient] = useState<ClienteTemporal>({ nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL });
+    const [servicio, setServicio] = useState<ServicioElegido | null>(null);
     const [abono, setAbono] = useState(0);
     const [prioridad, setPrioridad] = useState<'Normal' | 'Urgente'>('Normal');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [createdTrabajoId, setCreatedTrabajoId] = useState<string | null>(null);
-    const [createdOrderSummary, setCreatedOrderSummary] = useState<any>(null);
+    const [createdOrderSummary, setCreatedOrderSummary] = useState<ResumenOrdenCreada | null>(null);
     const [whatsAppCopied, setWhatsAppCopied] = useState(false);
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<ItemPedido[]>([]);
     const [busqueda, setBusqueda] = useState('');
 
     // Detalles del pedido
@@ -117,7 +164,10 @@ const NuevoPedidoPage: React.FC = () => {
     const [modeloImpresionSri, setModeloImpresionSri] = useState<ModeloImpresion>(() => modeloPorDefecto(true));
     const [imprimirClave, setImprimirClave] = useState(false);
     const [isAddingCustomItem, setIsAddingCustomItem] = useState(false);
-    const [sriAutoFillBanner, setSriAutoFillBanner] = useState<any>(null);
+    /** Solicitud SRI recibida de la extensión, esperando que el operador la aplique. */
+    const [sriAutoFillBanner, setSriAutoFillBanner] = useState<PayloadSri | null>(null);
+    /** Aviso de que la orden ya se precargó con datos del SRI (no es un payload). */
+    const [sriPrecargado, setSriPrecargado] = useState<{ title: string; desc: string } | null>(null);
     const [filtroCat, setFiltroCat] = useState<string>('Todos');
     const [sriLaunchMsg, setSriLaunchMsg] = useState<string | null>(null);
 
@@ -142,19 +192,19 @@ const NuevoPedidoPage: React.FC = () => {
         [productos],
     );
     const categoriasPaso1 = useMemo(() => {
-        const set = new Set(catalogoPaso1.map((p: any) => p.categoria).filter(Boolean));
-        return ['Todos', 'Comprobantes SRI', ...Array.from(set).filter((c: any) => c !== 'Documentos SRI' && c !== 'SRI').sort()];
+        const set = new Set(catalogoPaso1.map(p => p.categoria).filter(Boolean));
+        return ['Todos', 'Comprobantes SRI', ...Array.from(set).filter(c => c !== 'Documentos SRI' && c !== 'SRI').sort()];
     }, [catalogoPaso1]);
     const productosFiltradosPaso1 = useMemo(() => {
         const q = busqueda.trim().toLowerCase();
-        return catalogoPaso1.filter((p: any) => {
+        return catalogoPaso1.filter(p => {
             const cat = p.categoria || 'General';
             const matchCat = filtroCat === 'Todos'
                 ? true
                 : filtroCat === 'Comprobantes SRI'
                     ? !!p.esSRI
                     : cat === filtroCat;
-            const matchQ = !q || [p.nombre, cat, p.descripcion, ...((p as any).specs || [])]
+            const matchQ = !q || [p.nombre, cat, p.descripcion, ...(p.specs || [])]
                 .filter(Boolean).join(' ').toLowerCase().includes(q);
             return matchCat && matchQ;
         });
@@ -180,13 +230,18 @@ const NuevoPedidoPage: React.FC = () => {
     const aplicarRenovacionExpress = () => {
         if (!renovacionSugerida) return;
         const t = renovacionSugerida.trabajo;
-        const reorderItem = {
+        const totalAnterior = t.total || 13;
+        const reorderItem: ItemPedido = {
             id: `item-${Date.now()}`,
             nombre: t.subtipo || t.tipo,
-            precioBase: t.total || 13,
+            precioBase: totalAnterior,
+            // El desglose suma `precioFinal`: sin él la renovación caía en el Paso 4 con
+            // total $0, el abono se recortaba a 0 y no se podía guardar.
+            precioUnitario: totalAnterior,
+            precioFinal: totalAnterior,
             esSRI: !!t.esSRI,
             cantidad: t.cantidad || 100,
-            subtotal: t.total || 13,
+            subtotal: totalAnterior,
             especificaciones: {
                 tamano: t.tamano || '1/4 Oficio',
                 acabados: t.detalle || '',
@@ -211,7 +266,7 @@ const NuevoPedidoPage: React.FC = () => {
         setStep(4);
     };
 
-    const applySriPayload = (payload: any) => {
+    const applySriPayload = (payload: PayloadSri | null) => {
         if (!payload) return;
         const ruc = payload.ruc || payload.clientRuc || '';
         const name = payload.name || payload.clientName || '';
@@ -220,8 +275,8 @@ const NuevoPedidoPage: React.FC = () => {
         const docType = payload.docType || '1';
         const blocks = parseInt(payload.blocks || payload.comprobantes || payload.qty || '100', 10) || 100;
         const docSize = payload.docSize || payload.tamano || '1/4 Oficio';
-        const totalVal = parseFloat(payload.total) || 13;
-        const abonoVal = parseFloat(payload.abono) || 0;
+        const totalVal = parseFloat(payload.total ?? '') || 13;
+        const abonoVal = parseFloat(payload.abono ?? '') || 0;
         const estVal = payload.est || payload.establecimiento || '001';
         const ptoVal = payload.pto || payload.puntoEmision || '001';
         const direccionVal = payload.direccion || payload.address || '';
@@ -251,7 +306,8 @@ const NuevoPedidoPage: React.FC = () => {
                     email: payload.email || undefined,
                     direccion: direccionVal || undefined,
                     actividades: activity || undefined,
-                    regimen: docType === '1' ? 'Rimpe Popular' : 'General'
+                    // Antes se guardaba 'Rimpe Popular', que no es un valor del enum.
+                    regimen: docType === '1' ? Regimen.NEGOCIO_POPULAR : Regimen.GENERAL
                 });
             }
         }
@@ -259,7 +315,7 @@ const NuevoPedidoPage: React.FC = () => {
         const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
         const docName = docNames[docType] || payload.doc || 'Nota de Venta';
 
-        const sriItem = {
+        const sriItem: ItemPedido = {
             id: `item-sri-${Date.now()}`,
             nombre: docName,
             cantidad: 1,
@@ -282,7 +338,10 @@ const NuevoPedidoPage: React.FC = () => {
         setItems([sriItem]);
         setServicio({ nombre: docName, precio: totalVal, esSRI: true });
         setAbono(abonoVal);
-        setSriAutoFillBanner({
+        // Antes esto se guardaba en `sriAutoFillBanner`, que es el payload PENDIENTE: el banner
+        // mostraba "RUC undefined" y su botón re-aplicaba un payload vacío, que pisaba el ítem
+        // con una Nota de Venta de $13 y dejaba el abono en 0.
+        setSriPrecargado({
             title: `📥 Datos precargados desde el SRI: ${name || ruc}`,
             desc: `${docName} (${blocks} comp.) · Est: ${estVal}-${ptoVal} · Total: $${totalVal.toFixed(2)} · Revise y confirme para registrar.`
         });
@@ -307,7 +366,7 @@ const NuevoPedidoPage: React.FC = () => {
                 return;
             }
             if (e.data && e.data.type === 'CORDOVA_SRI_ORDER_EVENT') {
-                setSriAutoFillBanner(e.data.payload);
+                setSriAutoFillBanner(aPayloadSri(e.data.payload));
             }
         };
         window.addEventListener('message', handleMessage);
@@ -399,7 +458,7 @@ const NuevoPedidoPage: React.FC = () => {
         // Las dependencias cubren todo lo que lee canAdvance().
     }, [step, cliente, tempClient, items.length, desglose.total, hasSriItem, sriEstablecimiento, sriPuntoEmision, sriActividad]);
 
-    const handleSelectQuickProduct = (p: any) => {
+    const handleSelectQuickProduct = (p: Producto) => {
         const esSRI = !!p.esSRI;
         const base = Number(p.precio) || 0;
         // Cada producto trae su PERFIL de detalle (SRI, sello, láser, gran formato…):
@@ -407,7 +466,7 @@ const NuevoPedidoPage: React.FC = () => {
         const perfil = perfilDe({ esSRI, categoria: p.categoria, nombre: p.nombre });
         const specs = especificacionesPorDefecto(perfil);
         const unit = Math.max(1, base + calcularDelta(perfil, specs));
-        const newItem = {
+        const newItem: ItemPedido = {
             nombre: p.nombre,
             categoria: p.categoria,
             cantidad: 1,
@@ -432,7 +491,7 @@ const NuevoPedidoPage: React.FC = () => {
     // pasar es esperar para siempre sin decir nada.
     const ESPERA_SRI_MS = 4 * 60 * 1000;
 
-    const handleLaunchSri = (item: any) => {
+    const handleLaunchSri = (item: ItemPedido) => {
         const nombre = (item?.nombre || '').toUpperCase();
         const docType = nombre.includes('FACTURA') ? '0'
             : (nombre.includes('GUÍA') || nombre.includes('GUIA')) ? '5'
@@ -456,7 +515,7 @@ const NuevoPedidoPage: React.FC = () => {
             requestId,
             ruc: cliente?.ruc || tempClient?.cedula || '',
             name: cliente?.nombre || tempClient?.nombre || '',
-            direccion: (cliente as any)?.direccion || tempClient?.direccion || '',
+            direccion: cliente?.direccion || tempClient?.direccion || '',
             docType,
             blocks,
             docSize: item?.especificaciones?.tamano || '1/4 Oficio',
@@ -519,7 +578,7 @@ const NuevoPedidoPage: React.FC = () => {
             sriPedidoEnCurso.current = null;
             if (sriTimeout.current) { clearTimeout(sriTimeout.current); sriTimeout.current = null; }
             if (d.ruc || d.name) {
-                setTempClient((prev: any) => ({
+                setTempClient(prev => ({
                     ...prev,
                     nombre: (d.name || prev.nombre || '').toUpperCase(),
                     cedula: d.ruc || prev.cedula,
@@ -531,11 +590,11 @@ const NuevoPedidoPage: React.FC = () => {
             if (d.caducidad) {
                 setAutorizacionSriInput(d.caducidad);
                 // Persistir la caducidad en el ítem SRI para que la orden la guarde.
-                setItems(prev => prev.map((it: any) => it.esSRI ? {
+                setItems(prev => prev.map(it => it.esSRI ? {
                     ...it,
                     especificaciones: {
                         ...(it.especificaciones || {}),
-                        sri: { ...((it.especificaciones || {}).sri || {}), vencimiento: d.caducidad },
+                        sri: { ...(bloqueSri(it.especificaciones) || {}), vencimiento: d.caducidad },
                     },
                 } : it));
             }
@@ -579,7 +638,7 @@ const NuevoPedidoPage: React.FC = () => {
                             nombre: (tempClient.nombre || 'CONSUMIDOR FINAL').toUpperCase(),
                             cedula: cleanCed || '9999999999',
                             telefono: tempClient.telefono ? [tempClient.telefono] : [],
-                            regimen: tempClient.regimen || 'General',
+                            regimen: tempClient.regimen || Regimen.GENERAL,
                             direccion: tempClient.direccion || 'Local'
                         });
                 } else {
@@ -616,8 +675,8 @@ const NuevoPedidoPage: React.FC = () => {
                 fechaEntrega,
                 observaciones: notasTaller || undefined,
                 numeracion: numeracionInicial || item.especificaciones?.numerado,
-                autorizacion_sri: autorizacionSriInput || item.especificaciones?.sri?.autorizacion,
-                fechaVencimiento: item.especificaciones?.sri?.vencimiento,
+                autorizacion_sri: autorizacionSriInput || bloqueSri(item.especificaciones)?.autorizacion,
+                fechaVencimiento: bloqueSri(item.especificaciones)?.vencimiento,
                 // El modelo se persiste con la orden (no viaja en la URL) para que la
                 // extensión de Chrome y el documento de impresión hablen de la misma variante.
                 // OJO: el default de SRI es hoy `sri-pc` porque es la única implementada; cuando
@@ -627,7 +686,7 @@ const NuevoPedidoPage: React.FC = () => {
                 modeloImpresion: item.esSRI ? modeloImpresionSri : modeloPorDefecto(false),
                 // Marcado del trámite que va impreso en la solicitud del SRI.
                 tramiteSri: item.esSRI ? tramiteSri : undefined,
-            } as any, userName, imageFile)));
+            }, userName, imageFile)));
 
             logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido unificado (${items.length} ítems) para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
             refreshData().catch(() => {});
@@ -660,9 +719,9 @@ const NuevoPedidoPage: React.FC = () => {
                     // Si el navegador bloquea la ventana emergente, el operador tiene los botones grandes en el paso 5
                 }
             }, 800);
-        } catch (err: any) {
+        } catch (err) {
             console.error('[NuevoPedido] Error al crear orden:', err);
-            setError(err.message || 'Error al procesar la orden.');
+            setError(mensajeDeError(err) || 'Error al procesar la orden.');
         } finally {
             setLoading(false);
         }
@@ -690,7 +749,7 @@ const NuevoPedidoPage: React.FC = () => {
             msg = `*IMPRENTA CÓRDOVA · RECIBO DE ORDEN DE TRABAJO*\n\n` +
                 `Estimado/a *${createdOrderSummary.clienteNombre}*,\n` +
                 `Su orden de trabajo comercial ha sido ingresada a producción:\n` +
-                `📦 *Trabajo:* ${createdOrderSummary.items?.map((it: any) => `${it.cantidad || 1}x ${it.nombre}`).join(', ') || 'Trabajo General'}\n` +
+                `📦 *Trabajo:* ${createdOrderSummary.items?.map(it => `${it.cantidad || 1}x ${it.nombre}`).join(', ') || 'Trabajo General'}\n` +
                 `🔢 *Orden N°:* ${idDisplay}\n` +
                 `💵 *Total:* ${formatCurrency(createdOrderSummary.total)} | *Abono:* ${formatCurrency(createdOrderSummary.abono)} | *Saldo:* ${formatCurrency(createdOrderSummary.saldo)}\n` +
                 `📅 *Entrega estimada:* ${new Date(createdOrderSummary.fechaEntrega).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })}\n\n` +
@@ -835,6 +894,16 @@ const NuevoPedidoPage: React.FC = () => {
                                 Descartar
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {sriPrecargado && (
+                    <div style={{ padding: '10px 14px', borderRadius: 10, background: C.goldBg, border: `1px solid ${C.goldBorder}`, color: C.goldTextStrong, fontSize: 12.5, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                        <div>
+                            <div style={{ fontWeight: 700 }}>{sriPrecargado.title}</div>
+                            <div style={{ marginTop: 2 }}>{sriPrecargado.desc}</div>
+                        </div>
+                        <button type="button" onClick={() => setSriPrecargado(null)} aria-label="Cerrar aviso" style={{ background: 'none', border: 'none', color: C.goldTextStrong, fontSize: 16, cursor: 'pointer', lineHeight: 1 }}>×</button>
                     </div>
                 )}
 
@@ -1219,7 +1288,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                                 {categoriasPaso1.map((cat: string) => {
                                                     const activo = filtroCat === cat;
-                                                    const emoji = cat === 'Todos' ? '✨' : cat === 'Comprobantes SRI' ? '🏛️' : ((CATEGORY_EMOJIS as any)[cat] || '📦');
+                                                    const emoji = cat === 'Todos' ? '✨' : cat === 'Comprobantes SRI' ? '🏛️' : (CATEGORY_EMOJIS[cat] || '📦');
                                                     return (
                                                         <button
                                                             key={cat}
@@ -1244,7 +1313,7 @@ const NuevoPedidoPage: React.FC = () => {
 
                                             {/* Grilla de productos del catálogo real */}
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
-                                                {productosFiltradosPaso1.map((p: any) => (
+                                                {productosFiltradosPaso1.map(p => (
                                                     <button
                                                         key={p.id || p.nombre}
                                                         type="button"
@@ -1910,7 +1979,7 @@ const NuevoPedidoPage: React.FC = () => {
                                             {/* Ítems del Pedido */}
                                             <div style={{ marginTop: 2, display: 'flex', flexDirection: 'column', gap: 6 }}>
                                                 <span style={{ fontSize: 10.5, fontWeight: 700, color: C.faint, textTransform: 'uppercase' }}>Ítems a Producir:</span>
-                                                {(createdOrderSummary?.items || items).map((it: any, idx: number) => (
+                                                {(createdOrderSummary?.items || items).map((it, idx) => (
                                                     <div key={idx} style={{ padding: '6px 10px', background: C.surfaceAlt, borderRadius: 8, fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${C.border}` }}>
                                                         <span style={{ fontWeight: 600, color: C.ink }}>
                                                             {it.esSRI ? '🏛️ ' : '💼 '}{it.cantidad || 1}x {it.nombre}
@@ -2170,7 +2239,7 @@ const NuevoPedidoPage: React.FC = () => {
                                                 setStep(1);
                                                 setItems([]);
                                                 setCliente(null);
-                                                setTempClient({ nombre: '', telefono: '', cedula: '', regimen: 'General' });
+                                                setTempClient({ nombre: '', telefono: '', cedula: '', regimen: Regimen.GENERAL });
                                                 setAbono(0);
                                                 setCreatedTrabajoId(null);
                                                 setCreatedOrderSummary(null);
