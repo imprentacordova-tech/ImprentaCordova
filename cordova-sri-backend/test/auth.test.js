@@ -19,7 +19,8 @@ test('rechaza firma alterada', () => {
     const [cuerpo, firma] = token.split('.');
     const otro = Buffer.from(JSON.stringify({ ...PAYLOAD, rol: 'Admin', sub: 'usr-2', exp: 9999999999 })).toString('base64url');
     assert.equal(verificarSesion(`${otro}.${firma}`, SECRETO), null);
-    assert.equal(verificarSesion(`${cuerpo}.${firma.slice(0, -1)}A`, SECRETO), null);
+    const ultima = firma.slice(-1) === 'A' ? 'B' : 'A';
+    assert.equal(verificarSesion(`${cuerpo}.${firma.slice(0, -1)}${ultima}`, SECRETO), null);
 });
 
 test('rechaza token vencido', () => {
