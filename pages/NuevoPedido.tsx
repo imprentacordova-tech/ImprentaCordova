@@ -98,6 +98,8 @@ interface ResumenOrdenCreada {
     sriEstablecimiento: string;
     sriPuntoEmision: string;
     sriActividad: string;
+    /** Una orden por ítem: cada una tiene su propio documento (recibo o solicitud SRI). */
+    creadas: Array<{ id: string; orden: number | string; nombre: string; esSRI: boolean; total: number }>;
 }
 
 const CATALOGO_FALLBACK: Producto[] = [
@@ -702,14 +704,23 @@ const NuevoPedidoPage: React.FC = () => {
             logActivity(userName, userRol, 'CREAR_ORDEN', `Pedido unificado (${items.length} ítems) para ${finalCliente.nombre}`, 'Ventas').catch(() => {});
             refreshData().catch(() => {});
             
-            const orderMeta = {
-                id: results[0].id,
-                orden: results[0].orden || results[0].id,
+            const creadas = results.map((r, i) => ({
+                id: r.id,
+                orden: r.orden || r.id,
+                nombre: items[i]?.nombre || 'Trabajo',
+                esSRI: !!items[i]?.esSRI,
+                total: desgloseItems[i].total,
+            }));
+            // En un pedido mixto el documento SRI es el del ítem SRI, no el del primero.
+            const principal = (hasSriItem && creadas.find(c => c.esSRI)) || creadas[0];
+            const orderMeta: ResumenOrdenCreada = {
+                id: principal.id,
+                orden: principal.orden,
                 clienteNombre: finalCliente.nombre,
                 clienteRuc: finalCliente.ruc || finalCliente.cedula || '9999999999',
                 clienteTelefono: finalCliente.telefono?.[0] || tempClient?.telefono || '',
                 total: desglose.total,
-                abono,
+                abono: desglose.abono,
                 saldo: desglose.saldo,
                 esSRI: hasSriItem,
                 items: [...items],
@@ -719,13 +730,14 @@ const NuevoPedidoPage: React.FC = () => {
                 sriEstablecimiento,
                 sriPuntoEmision,
                 sriActividad,
+                creadas,
             };
             setCreatedOrderSummary(orderMeta);
-            setCreatedTrabajoId(results[0].id);
+            setCreatedTrabajoId(principal.id);
             setStep(5);
             setTimeout(() => {
                 try {
-                    window.open(hasSriItem ? `/#/solicitud-impresion/${results[0].id}?format=a5` : `/#/recibo-epson/${results[0].id}`, '_blank');
+                    window.open(hasSriItem ? `/#/solicitud-impresion/${principal.id}?format=a5` : `/#/recibo-epson/${principal.id}`, '_blank');
                 } catch {
                     // Si el navegador bloquea la ventana emergente, el operador tiene los botones grandes en el paso 5
                 }
@@ -2073,6 +2085,28 @@ const NuevoPedidoPage: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Pedido con varios ítems: cada uno quedó como una orden con su propio documento. */}
+                                    {(createdOrderSummary?.creadas.length || 0) > 1 && (
+                                        <div style={{ ...S.card, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            <h3 style={{ ...S.h2, fontSize: 15, margin: 0 }}>Documentos por ítem ({createdOrderSummary!.creadas.length} órdenes)</h3>
+                                            <span style={{ fontSize: 11.5, color: C.muted }}>Cada ítem es una orden aparte con su total, abono y saldo: imprimí el documento de cada una.</span>
+                                            {createdOrderSummary!.creadas.map(c => (
+                                                <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', padding: '10px 12px', borderRadius: 10, border: `1px solid ${C.border}` }}>
+                                                    <div style={{ fontSize: 13 }}>
+                                                        <b style={{ fontFamily: MONO }}>#{c.orden}</b> · {c.nombre} · <b>{formatCurrency(c.total)}</b>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                                        <button type="button" style={S.outlineBtn}
+                                                            onClick={() => window.open(c.esSRI ? `/#/solicitud-impresion/${c.id}?format=a5` : `/#/recibo-epson/${c.id}`, '_blank')}>
+                                                            {c.esSRI ? '🏛️ Solicitud SRI' : '🧾 Recibo'}
+                                                        </button>
+                                                        <button type="button" style={S.outlineBtn} onClick={() => window.open(`/#/orden-produccion/${c.id}`, '_blank')}>📋 Orden de taller</button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     {/* Centro de Acciones Inmediatas (Impresión & WhatsApp) */}
                                     <div style={{ ...S.card, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
