@@ -66,7 +66,9 @@
       return;
     }
 
-    if (data.type === 'SRI_CLICK') {
+    // Los clics automáticos solo valen mientras la automatización está activa (TTL):
+    // fuera de ella, ningún script de la página puede pedirle clics a la extensión.
+    if (data.type === 'SRI_CLICK' && automatizacionActiva()) {
       ejecutarClick(data.xpath);
     }
   });

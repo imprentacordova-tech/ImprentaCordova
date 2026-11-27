@@ -19,6 +19,7 @@ async function actualizarBadgeRetiros() {
 }
 
 chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.remove('cordova_imprenta_pass');
   // Inicializar cantidad predeterminada
   chrome.storage.local.get(['cordovaBlocks'], (result) => {
     if (!result.cordovaBlocks) {
@@ -39,6 +40,8 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 chrome.runtime.onStartup.addListener(() => {
+  // v3: la clave del SRI ya no se guarda en disco; se borra la que dejó la v2.
+  chrome.storage.local.remove('cordova_imprenta_pass');
   actualizarBadgeRetiros();
 });
 

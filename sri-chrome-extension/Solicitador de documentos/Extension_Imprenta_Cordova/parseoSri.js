@@ -244,5 +244,31 @@
     };
   }
 
-  global.CordovaParseo = { leerResumenSolicitud, leerSecuencias, filasBandeja, validarCaptura, debeRegistrarOrden, armarTrabajoPayload, nombreDocumento };
+  /**
+   * ¿La pantalla confirma que el SRI ACEPTÓ la solicitud? Antes se avisaba "aceptada"
+   * apenas cargaba la página de confirmación (que es la pregunta, no el resultado) y
+   * la orden pasaba a Diseño sin que el trámite existiera. Ahora solo con un mensaje
+   * de éxito explícito y sin señales de error. Ante la duda: false (el operador la
+   * pasa a mano).
+   */
+  function detectarAceptacion(texto) {
+    const t = String(texto || '').toLowerCase();
+    if (!t) return false;
+    if (/error|no se pudo|no pudo|rechaz|fall[óo]|inv[áa]lid/.test(t)) return false;
+    if (/[¿?]\s*est[áa] seguro/.test(t)) return false;
+    return /(aceptad[ao]|procesad[ao]|registrad[ao])\s+(correctamente|exitosamente|con [ée]xito)/.test(t)
+      || /se ha (aceptado|procesado)/.test(t);
+  }
+
+  /** Escapa texto para insertarlo en HTML (datos leídos del portal del SRI). */
+  function esc(texto) {
+    return String(texto === null || texto === undefined ? '' : texto)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  global.CordovaParseo = { leerResumenSolicitud, leerSecuencias, filasBandeja, validarCaptura, debeRegistrarOrden, armarTrabajoPayload, nombreDocumento, detectarAceptacion, esc };
 })(typeof self !== 'undefined' ? self : this);

@@ -127,7 +127,7 @@ function showCordovaToastHud(message) {
   const logoUrl = chrome.runtime.getURL('icons/icon128.png');
   toast.innerHTML = `
     <img src="${logoUrl}" alt="Cordova">
-    <span>${message}</span>
+    <span>${CordovaParseo.esc(message)}</span>
   `;
   document.body.appendChild(toast);
 
@@ -445,7 +445,9 @@ function injectSRILoginAssistant() {
 
   // Modo Imprenta
   document.getElementById('cdv-btn-login-mode-imprenta').addEventListener('click', () => {
-    chrome.storage.local.get(['cordova_imprenta_ruc', 'cordova_imprenta_pass'], (creds) => {
+    // La clave vive en storage.session (memoria; se borra al cerrar Chrome), no en disco.
+    chrome.storage.local.get(['cordova_imprenta_ruc'], (local) => chrome.storage.session.get(['cordova_imprenta_pass'], (sess) => {
+      const creds = { ...local, ...sess };
       const ruc = creds.cordova_imprenta_ruc || '0702065319001';
       const pass = creds.cordova_imprenta_pass || '';
 
@@ -457,7 +459,7 @@ function injectSRILoginAssistant() {
         return;
       }
 
-      chrome.storage.local.set({ cordova_imprenta_ruc: ruc, cordova_imprenta_pass: pass });
+      chrome.storage.local.set({ cordova_imprenta_ruc: ruc });
 
       const nativeRucInput = document.querySelector('#userPri, input[name="j_username"], input[name="usuario"], input[name="ruc"], #usuario');
       const nativePassInput = document.querySelector('#password, input[name="password"], input[type="password"], #pass');
@@ -481,7 +483,7 @@ function injectSRILoginAssistant() {
           setTimeout(() => submitBtn.click(), 150);
         }
       });
-    });
+    }));
   });
 }
 
@@ -890,36 +892,36 @@ function showCordovaSuccessModal(finalData, blocks) {
           <!-- CLIENT NAME -->
           <div style="margin-bottom: 8px;">
             <div class="drawer-field-lbl">Cliente / Razón Social:</div>
-            <input type="text" id="cdv-drawer-name" value="${finalData.cordovaClientName || 'Desconocido'}" class="drawer-input-inline-name">
+            <input type="text" id="cdv-drawer-name" value="${CordovaParseo.esc(finalData.cordovaClientName || 'Desconocido')}" class="drawer-input-inline-name">
           </div>
 
           <!-- RUC & CADUCIDAD -->
           <div style="display: flex; gap: 10px; margin-bottom: 8px; font-size: 11px;">
             <div style="flex: 1;">
               <span class="drawer-field-lbl">RUC: </span>
-              <span style="font-family: monospace; font-weight: 800; color: #0f172a;">${finalData.cordovaClientRuc || ''}</span>
+              <span style="font-family: monospace; font-weight: 800; color: #0f172a;">${CordovaParseo.esc(finalData.cordovaClientRuc || '')}</span>
             </div>
             <div style="flex: 1;">
               <span class="drawer-field-lbl">Caducidad: </span>
-              <span style="font-weight: 700; color: #0f172a;">${finalData.cordovaCaducidad || '12 Meses'}</span>
+              <span style="font-weight: 700; color: #0f172a;">${CordovaParseo.esc(finalData.cordovaCaducidad || '12 Meses')}</span>
             </div>
           </div>
 
           <!-- ACTIVIDAD ECONÓMICA -->
           <div style="margin-bottom: 8px;">
             <div class="drawer-field-lbl">Actividad Económica:</div>
-            <input type="text" id="cdv-drawer-activity" value="${selectedActivity}" placeholder="Ej. Comercio, Servicios..." class="drawer-input">
+            <input type="text" id="cdv-drawer-activity" value="${CordovaParseo.esc(selectedActivity)}" placeholder="Ej. Comercio, Servicios..." class="drawer-input">
           </div>
 
           <!-- TELÉFONO & CORREO -->
           <div style="display: flex; gap: 8px; margin-bottom: 8px;">
             <div style="flex: 1;">
               <div class="drawer-field-lbl">Teléfono:</div>
-              <input type="text" id="cdv-drawer-phone" value="${selectedPhoneVal}" placeholder="0993083943" class="drawer-input">
+              <input type="text" id="cdv-drawer-phone" value="${CordovaParseo.esc(selectedPhoneVal)}" placeholder="0993083943" class="drawer-input">
             </div>
             <div style="flex: 1;">
               <div class="drawer-field-lbl">Correo:</div>
-              <input type="email" id="cdv-drawer-email" value="${selectedEmailVal}" placeholder="cliente@correo.com" class="drawer-input">
+              <input type="email" id="cdv-drawer-email" value="${CordovaParseo.esc(selectedEmailVal)}" placeholder="cliente@correo.com" class="drawer-input">
             </div>
           </div>
 
@@ -942,7 +944,7 @@ function showCordovaSuccessModal(finalData, blocks) {
                 <button class="drawer-segment-btn ${selectedAbonoVal === '15' ? 'active' : ''}" data-val="15">$15</button>
                 <button class="drawer-segment-btn ${selectedAbonoVal === 'custom' ? 'active' : ''}" data-val="custom">Otro</button>
               </div>
-              <input type="number" id="cdv-drawer-abono-manual" value="${customAbonoVal}" placeholder="$" style="width: 55px; display: ${selectedAbonoVal === 'custom' ? 'inline-block' : 'none'}; padding: 4px 6px; font-size: 11px; border-radius: 6px; border: 1.5px solid #2563eb; text-align: center;" min="1" step="0.01">
+              <input type="number" id="cdv-drawer-abono-manual" value="${CordovaParseo.esc(customAbonoVal)}" placeholder="$" style="width: 55px; display: ${selectedAbonoVal === 'custom' ? 'inline-block' : 'none'}; padding: 4px 6px; font-size: 11px; border-radius: 6px; border: 1.5px solid #2563eb; text-align: center;" min="1" step="0.01">
             </div>
           <!-- MODELO DE SOLICITUD SRI (LAS 3 VERSIONES) -->
           <div style="margin-top: 10px; margin-bottom: 8px;">
@@ -1658,11 +1660,28 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       const rucInput = (document.querySelector('input[name="numeroRuc"]')?.value || '');
       const rucTexto = ((document.body.innerText || '').match(/RUC:\s*(\d{10,13})/) || [])[1] || '';
       const ruc = (rucInput || rucTexto).replace(/\D/g, '');
-      chrome.runtime.sendMessage({
-        action: 'sriAceptadaResult',
-        data: { ruc, aceptada: true, timestamp: Date.now() },
-      });
-      showCordovaToastHud('✅ Solicitud aceptada. La orden pasa a Diseño.');
+      // Solo con la confirmación EXPLÍCITA del SRI (antes se avisaba al cargar la
+      // página, que es la pregunta, y la orden pasaba a Diseño sin trámite).
+      // Se mira ahora y durante 20 s por si el mensaje aparece después.
+      let avisado = false;
+      const revisar = () => {
+        if (avisado || !CordovaParseo.detectarAceptacion(document.body.innerText || '')) return false;
+        avisado = true;
+        chrome.runtime.sendMessage({
+          action: 'sriAceptadaResult',
+          data: { ruc, aceptada: true, timestamp: Date.now() },
+        });
+        showCordovaToastHud('✅ El SRI confirmó la aceptación. La orden pasa a Diseño.');
+        return true;
+      };
+      if (!revisar()) {
+        const obs = new MutationObserver(() => { if (revisar()) obs.disconnect(); });
+        obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+        setTimeout(() => {
+          obs.disconnect();
+          if (!avisado) showCordovaToastHud('ℹ️ No vimos la confirmación del SRI: si la aceptó, pasá la orden a Diseño a mano.');
+        }, 20000);
+      }
     } catch (e) { console.warn('[Cordova] Aceptación imprenta:', e); }
   }
 });

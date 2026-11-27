@@ -9,6 +9,8 @@ import { DOCUMENTOS_SRI } from '../../services/solicitudesWebService';
 type Flujo = {
   debeRegistrarOrden: (lanzamiento: unknown) => boolean;
   armarTrabajoPayload: (orden: Record<string, unknown>, clienteId: string | null) => Record<string, unknown>;
+  detectarAceptacion: (texto: string) => boolean;
+  esc: (texto: unknown) => string;
 };
 
 let P: Flujo;
@@ -73,5 +75,30 @@ describe('armarTrabajoPayload — datos completos al registrar desde la extensi�
     const p = P.armarTrabajoPayload({ ...orden, establecimiento: '', puntoEmision: undefined }, null);
     expect(p.establecimiento).toBe('001');
     expect(p.punto_emision).toBe('001');
+  });
+});
+
+describe('detectarAceptacion — solo con confirmación explícita del SRI', () => {
+  it('reconoce mensajes de éxito', () => {
+    expect(P.detectarAceptacion('La solicitud ha sido aceptada correctamente.')).toBe(true);
+    expect(P.detectarAceptacion('Solicitud procesada exitosamente')).toBe(true);
+    expect(P.detectarAceptacion('Se ha aceptado la solicitud de impresión')).toBe(true);
+  });
+  it('la página de confirmación recién cargada (pregunta) NO cuenta', () => {
+    expect(P.detectarAceptacion('¿Está seguro de aceptar la solicitud? RUC: 0705787745001 Aceptar Cancelar')).toBe(false);
+  });
+  it('un error nunca cuenta aunque mencione "aceptada"', () => {
+    expect(P.detectarAceptacion('Error: la solicitud no pudo ser aceptada correctamente')).toBe(false);
+    expect(P.detectarAceptacion('')).toBe(false);
+  });
+});
+
+describe('esc — datos leídos del SRI nunca se inyectan como HTML', () => {
+  it('escapa los caracteres de HTML', () => {
+    expect(P.esc(`<img src=x onerror=alert(1)> & "q" 's'`)).toBe('&lt;img src=x onerror=alert(1)&gt; &amp; &quot;q&quot; &#39;s&#39;');
+  });
+  it('tolera null y números', () => {
+    expect(P.esc(null)).toBe('');
+    expect(P.esc(13)).toBe('13');
   });
 });

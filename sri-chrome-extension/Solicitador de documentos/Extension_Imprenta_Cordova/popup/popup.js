@@ -565,11 +565,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputImprentaPass = document.getElementById('imprenta-pass');
   const switchAutoLogin = document.getElementById('auto-login-switch');
 
-  chrome.storage.local.get(['cordova_imprenta_ruc', 'cordova_imprenta_pass', 'cordova_auto_login'], (res) => {
+  // La clave del SRI se guarda solo en memoria (storage.session): se borra al cerrar Chrome.
+  chrome.storage.local.get(['cordova_imprenta_ruc', 'cordova_auto_login'], (res) => {
     if (inputImprentaRuc && res.cordova_imprenta_ruc) inputImprentaRuc.value = res.cordova_imprenta_ruc;
-    if (inputImprentaPass && res.cordova_imprenta_pass) inputImprentaPass.value = res.cordova_imprenta_pass;
     if (switchAutoLogin && res.cordova_auto_login !== undefined) switchAutoLogin.checked = res.cordova_auto_login;
   });
+  chrome.storage.session.get(['cordova_imprenta_pass'], (res) => {
+    if (inputImprentaPass && res.cordova_imprenta_pass) inputImprentaPass.value = res.cordova_imprenta_pass;
+  });
+  if (inputImprentaPass) inputImprentaPass.title = 'Se guarda solo mientras Chrome esté abierto.';
 
   if (inputImprentaRuc) {
     inputImprentaRuc.addEventListener('change', (e) => {
@@ -579,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (inputImprentaPass) {
     inputImprentaPass.addEventListener('change', (e) => {
-      chrome.storage.local.set({ cordova_imprenta_pass: e.target.value });
+      chrome.storage.session.set({ cordova_imprenta_pass: e.target.value });
     });
   }
 
