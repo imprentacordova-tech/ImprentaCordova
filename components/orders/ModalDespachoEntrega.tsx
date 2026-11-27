@@ -23,13 +23,20 @@ export interface ModalDespachoEntregaProps {
     onEntregaExitosa?: (trabajoActualizado: Trabajo) => void;
 }
 
-const DATOS_BANCARIOS = {
-    banco: 'Banco Pichincha',
-    tipo: 'Cuenta Corriente',
-    numero: '2100234567',
-    titular: 'Imprenta Córdova Cía. Ltda.',
-    ruc: '0102030405001',
-    correo: 'pagos@imprentacordova.net',
+/**
+ * Datos bancarios del negocio: salen de Configuración (`app_config.data.banco*`).
+ * Antes estaban fijos en el código con datos de relleno (Pichincha 2100234567,
+ * RUC 0102030405001) y se copiaban para mandárselos al cliente: podía transferir a una
+ * cuenta que no es del negocio. Sin datos cargados no se muestra nada.
+ */
+interface DatosBancarios { banco: string; tipo: string; numero: string; titular: string; ruc: string; correo: string; }
+const datosBancariosDe = (cfg: Record<string, unknown> | null | undefined): DatosBancarios | null => {
+    const txt = (k: string) => (typeof cfg?.[k] === 'string' ? (cfg[k] as string).trim() : '');
+    const datos = {
+        banco: txt('bancoNombre'), tipo: txt('bancoTipoCuenta') || 'Cuenta', numero: txt('bancoNumeroCuenta'),
+        titular: txt('bancoTitular'), ruc: txt('bancoRucTitular'), correo: txt('bancoCorreo'),
+    };
+    return datos.banco && datos.numero && datos.titular ? datos : null;
 };
 
 export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
@@ -40,7 +47,8 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
     currentUser,
     onEntregaExitosa,
 }) => {
-    const { registerRetiro, uploadFile } = useData();
+    const { registerRetiro, uploadFile, config } = useData();
+    const DATOS_BANCARIOS = datosBancariosDe(config);
     const { width, height } = useWindowSize();
 
     // Pasos: 'cobro' (formulario de liquidación) o 'exito' (comprobante post-entrega)
@@ -124,7 +132,15 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
 
     // Copiar datos bancarios al portapapeles
     const handleCopiarDatosBancarios = () => {
-        const texto = `*Datos para Transferencia - Imprenta Córdova*\n• Banco: ${DATOS_BANCARIOS.banco} (${DATOS_BANCARIOS.tipo})\n• Cta: ${DATOS_BANCARIOS.numero}\n• Titular: ${DATOS_BANCARIOS.titular}\n• RUC: ${DATOS_BANCARIOS.ruc}\n• Correo: ${DATOS_BANCARIOS.correo}`;
+        if (!DATOS_BANCARIOS) return;
+        const texto = [
+            '*Datos para Transferencia - Imprenta Córdova*',
+            `• Banco: ${DATOS_BANCARIOS.banco} (${DATOS_BANCARIOS.tipo})`,
+            `• Cta: ${DATOS_BANCARIOS.numero}`,
+            `• Titular: ${DATOS_BANCARIOS.titular}`,
+            DATOS_BANCARIOS.ruc ? `• RUC/CI: ${DATOS_BANCARIOS.ruc}` : '',
+            DATOS_BANCARIOS.correo ? `• Correo: ${DATOS_BANCARIOS.correo}` : '',
+        ].filter(Boolean).join('\n');
         navigator.clipboard?.writeText(texto).then(() => {
             setCopiadoBanco(true);
             setTimeout(() => setCopiadoBanco(false), 2500);
@@ -519,16 +535,18 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
                                                 <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: '#0369A1', letterSpacing: '.08em' }}>
                                                     Datos Bancarios del Negocio
                                                 </span>
-                                                <button
+                                                {DATOS_BANCARIOS && <button
                                                     type="button"
                                                     onClick={handleCopiarDatosBancarios}
                                                     style={{ padding: '4px 10px', borderRadius: 6, background: copiadoBanco ? '#16A34A' : '#0284C7', color: '#fff', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
                                                 >
                                                     {copiadoBanco ? '✓ ¡Copiado!' : '📋 Copiar Datos Bancarios'}
-                                                </button>
+                                                </button>}
                                             </div>
                                             <p style={{ margin: '0 0 10px', fontSize: 11.5, color: '#0C4A6E', lineHeight: 1.4 }}>
-                                                <strong>{DATOS_BANCARIOS.banco}</strong> · Cta. Corriente #{DATOS_BANCARIOS.numero} · RUC: {DATOS_BANCARIOS.ruc}
+                                                {DATOS_BANCARIOS
+                                                    ? <><strong>{DATOS_BANCARIOS.banco}</strong> · {DATOS_BANCARIOS.tipo} #{DATOS_BANCARIOS.numero} · {DATOS_BANCARIOS.titular}</>
+                                                    : <>Faltan los datos bancarios del negocio: cargalos en <strong>Configuración → Datos bancarios</strong>.</>}
                                             </p>
                                             <div>
                                                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.ink, marginBottom: 4 }}>

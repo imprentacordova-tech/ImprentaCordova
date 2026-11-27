@@ -378,13 +378,24 @@ const NuevoPedidoPage: React.FC = () => {
      * Motor de precios unificado (orderPricing.ts):
      * Cada ítem indica si grava IVA o no. Los de SRI no gravan IVA.
      */
-    const desglose = useMemo(
-        () => calcularPedido(
+    /*
+     * Cada ítem se guarda como una orden aparte con SU total redondeado (handleCreateOrder),
+     * así que el total del pedido es la suma de esos totales. Antes se redondeaba una sola
+     * vez sobre todo el pedido: 2 ítems de $1.04 daban $2.39 en pantalla pero $1.20 + $1.20
+     * en la base, y "pago total" dejaba $0.01 de saldo fantasma.
+     */
+    const desglose = useMemo(() => {
+        const urgente = prioridad === 'Urgente';
+        const d = calcularPedido(
             items.map(it => ({ precioLinea: it.precioFinal || 0, grava: !it.esSRI })),
-            { urgente: prioridad === 'Urgente', abono },
-        ),
-        [items, prioridad, abono],
-    );
+            { urgente, abono },
+        );
+        const total = round2(items.reduce((acc, it) => acc + calcularPedido(
+            [{ precioLinea: it.precioFinal || 0, grava: !it.esSRI }], { urgente },
+        ).total, 0));
+        const abonoAplicado = round2(Math.min(Math.max(abono, 0), total));
+        return { ...d, total, iva: round2(total - d.base), abono: abonoAplicado, saldo: round2(total - abonoAplicado) };
+    }, [items, prioridad, abono]);
 
     useEffect(() => {
         if (abono > desglose.total) setAbono(desglose.total);

@@ -249,6 +249,20 @@ const ConfiguracionPage: React.FC = () => {
                                     </div>
                                     <Field label="Teléfono de contacto" value={localConfig.imprentaTelefono} onChange={v => set('imprentaTelefono', v)} />
                                 </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                    <h2 style={{ ...S.h2, fontSize: 16 }}>Datos bancarios</h2>
+                                    <p style={{ margin: 0, fontSize: 12, color: C.muted }}>Se copian al cliente cuando paga por transferencia al retirar.</p>
+                                    <Field label="Banco" value={localConfig.bancoNombre} onChange={v => set('bancoNombre', v)} />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                        <Field label="Tipo de cuenta" value={localConfig.bancoTipoCuenta} onChange={v => set('bancoTipoCuenta', v)} />
+                                        <Field label="N° de cuenta" value={localConfig.bancoNumeroCuenta} onChange={v => set('bancoNumeroCuenta', v)} />
+                                    </div>
+                                    <Field label="Titular" value={localConfig.bancoTitular} onChange={v => set('bancoTitular', v)} />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                        <Field label="RUC / CI del titular" value={localConfig.bancoRucTitular} onChange={v => set('bancoRucTitular', v)} maxLength={13} />
+                                        <Field label="Correo para comprobantes" value={localConfig.bancoCorreo} onChange={v => set('bancoCorreo', v)} />
+                                    </div>
+                                </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16, borderTop: `1px solid ${C.divider}` }}>
                                 <button type="submit" style={S.primaryBtn}>Guardar cambios</button>

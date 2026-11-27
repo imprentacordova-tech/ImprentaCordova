@@ -42,20 +42,38 @@ const RetirosPage: React.FC = () => {
         setExpressError(null);
         setFoundNonVitrina(null);
 
-        const pin = (pinOverride ?? expressPin).trim().toLowerCase().replace(/^#|^ord-/, '');
+        let pin = (pinOverride ?? expressPin).trim().toLowerCase();
+        // El QR del recibo trae el link de rastreo (…/#/tracking?q=<id u orden>).
+        const desdeQr = pin.match(/[?&](?:q|orden)=([^&#\s]+)/);
+        if (desdeQr) pin = decodeURIComponent(desdeQr[1]);
+        pin = pin.replace(/^#|^ord-/, '');
+        // "000123" (como sale impreso) = orden 123. Solo para el número: las cédulas empiezan con 0.
+        const pinOrden = pin.replace(/^0+(?=\d)/, '');
         if (!pin) return;
 
+        /*
+         * Coincidencia EXACTA (número de orden, id completo, cédula/RUC; teléfono solo con
+         * 7+ dígitos). Antes valía `endsWith` / `includes`: "12" abría la #112 o cualquier
+         * orden cuyo UUID contuviera "12", y se podía cobrar y entregar la equivocada.
+         */
+        const coincide = (t: Trabajo, conTelefono: boolean) => {
+            if (String(t.orden) === pinOrden || t.id.toLowerCase() === pin) return true;
+            const cli = clientes.find(c => c.id === t.clienteId);
+            if (!cli) return false;
+            if (cli.ruc === pin || cli.cedula === pin) return true;
+            return conTelefono && pin.length >= 7 && (cli.telefono || []).some(tel => tel.replace(/\D/g, '').endsWith(pin));
+        };
+
         // 1. Buscar primero en vitrina
-        const matchVitrina = (trabajos ?? [])
+        const enVitrina = (trabajos ?? [])
             .filter(t => t.estado === TrabajoEstado.VITRINA)
-            .find(t => {
-                const ordStr = String(t.orden);
-                const cli = clientes.find(c => c.id === t.clienteId);
-                return ordStr === pin ||
-                       ordStr.endsWith(pin) ||
-                       t.id.toLowerCase().includes(pin) ||
-                       (cli && (cli.ruc === pin || cli.cedula === pin || cli.telefono.some(tel => tel.endsWith(pin))));
-            });
+            .filter(t => coincide(t, true));
+        const porNumero = enVitrina.find(t => String(t.orden) === pinOrden || t.id.toLowerCase() === pin);
+        if (!porNumero && enVitrina.length > 1) {
+            setExpressError(`Ese cliente tiene ${enVitrina.length} órdenes en vitrina (#${enVitrina.map(t => t.orden).join(', #')}). Ingresá el número de orden.`);
+            return;
+        }
+        const matchVitrina = porNumero || enVitrina[0];
 
         if (matchVitrina) {
             setSelected(matchVitrina);
@@ -64,12 +82,7 @@ const RetirosPage: React.FC = () => {
         }
 
         // 2. ¿Existe en otro estado del flujo (Proceso, Diseño, Pendiente)?
-        const otroEstado = (trabajos ?? []).find(t => {
-            const ordStr = String(t.orden);
-            const cli = clientes.find(c => c.id === t.clienteId);
-            return ordStr === pin || ordStr.endsWith(pin) || t.id.toLowerCase().includes(pin) ||
-                   (cli && (cli.ruc === pin || cli.cedula === pin));
-        });
+        const otroEstado = (trabajos ?? []).find(t => coincide(t, false));
 
         if (otroEstado) {
             if (otroEstado.estado === TrabajoEstado.ENTREGADO) {
