@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useInView, MotionConfig, useScroll, useSpring, useTransform, type Variants } from 'framer-motion';
 import { generateWhatsAppLink } from '../utils';
 import { SEO } from '../components/SEO';
 import PublicNavbar from '../components/PublicNavbar';
@@ -62,6 +62,51 @@ const AnimatedStat: React.FC<{ value: string }> = ({ value }) => {
     if (!match || Number.isNaN(target)) return <span>{value}</span>;
     return <span ref={ref}>{formatConEspacios(display)}{match[2]}</span>;
 };
+
+/**
+ * Con HashRouter, un `href="#sri"` cambia la RUTA a `/sri` (página vacía) en vez de
+ * bajar a la sección. Se intercepta el clic y se hace scroll suave.
+ */
+const irASeccion = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+/** Contenedor que escalona la entrada de sus hijos `motion` con `variants={itemUp}`. */
+const stagger = (delayChildren = 0, staggerChildren = 0.08): Variants => ({
+    hidden: {},
+    show: { transition: { delayChildren, staggerChildren } },
+});
+const itemUp: Variants = {
+    hidden: { opacity: 0, y: 28, filter: 'blur(6px)' },
+    show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.7, ease: EASE_OUT } },
+};
+
+/** Aparición al entrar en pantalla (una sola vez). */
+const Reveal: React.FC<{ children: React.ReactNode; className?: string; delay?: number }> = ({ children, className, delay = 0 }) => (
+    <motion.div
+        className={className}
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.75, ease: EASE_OUT, delay }}
+    >
+        {children}
+    </motion.div>
+);
+
+/** Titular que entra palabra por palabra. */
+const TitularAnimado: React.FC<{ texto: string; className?: string }> = ({ texto, className }) => (
+    <motion.span className={className} variants={stagger(0, 0.06)} initial="hidden" animate="show" aria-label={texto}>
+        {texto.split(' ').map((w, i) => (
+            <motion.span key={i} aria-hidden className="inline-block" variants={itemUp}>
+                {w}&nbsp;
+            </motion.span>
+        ))}
+    </motion.span>
+);
 
 type Item = {
     cat: string;
@@ -218,6 +263,18 @@ export const VisualLanding: React.FC = () => {
     const navigate = useNavigate();
 
     const items = useMemo(() => ITEMS.filter(i => filter === 'Todo' || i.cat === filter), [filter]);
+
+    // Barra dorada de progreso de lectura y parallax suave del hero.
+    const { scrollYProgress, scrollY } = useScroll();
+    const progreso = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
+    const auraY = useTransform(scrollY, [0, 600], [0, 180]);
+    const auraOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
+    // El parallax va en el contenedor: las tarjetas ya animan `y` (entrada y hover).
+    const bentoY = useTransform(scrollY, [0, 700], [0, -60]);
+
+    // Demo de rastreo: los pasos se van completando al entrar en pantalla.
+    const rastreoRef = useRef<HTMLDivElement>(null);
+    const rastreoEnVista = useInView(rastreoRef, { once: true, margin: '-120px' });
     const fin = FINISHES.find(f => f.id === finishId) || FINISHES[0];
 
     const buscarOrden = (e: React.FormEvent) => {
@@ -227,7 +284,13 @@ export const VisualLanding: React.FC = () => {
     };
 
     return (
+        <MotionConfig reducedMotion="user">
         <div className="bg-paper text-body font-sans selection:bg-gold selection:text-ink overflow-x-hidden">
+            <motion.div
+                aria-hidden
+                className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-gold via-gold-deep to-royal origin-left z-[60]"
+                style={{ scaleX: progreso }}
+            />
             <SEO
                 title="Imprenta Córdova · Impresión SRI Autorizada en Machala"
                 description="Establecimiento gráfico autorizado por el SRI N° 001-001 en Machala. Facturas, notas de venta, talonarios autocopiativos, sellos y tarjetas. Entrega en 24h."
@@ -249,18 +312,33 @@ export const VisualLanding: React.FC = () => {
             {/* ── Hero Bento 3D Section con Framer Motion ─────────────── */}
             <section className="relative overflow-hidden bg-gradient-to-b from-paper via-paper to-white pt-10 sm:pt-16 pb-20 border-b border-hairline">
                 {/* Auras de luz ambiental */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-royal/25 via-gold/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+                <motion.div
+                    style={{ y: auraY, opacity: auraOpacity }}
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-royal/25 via-gold/20 to-transparent rounded-full blur-3xl pointer-events-none"
+                />
+                <motion.div
+                    aria-hidden
+                    className="absolute -left-24 top-40 w-72 h-72 rounded-full bg-gold/15 blur-3xl pointer-events-none"
+                    animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+                    transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                    aria-hidden
+                    className="absolute -right-24 top-10 w-80 h-80 rounded-full bg-royal/15 blur-3xl pointer-events-none"
+                    animate={{ x: [0, -50, 0], y: [0, 40, 0] }}
+                    transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+                />
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Central con Framer Motion */}
                     <motion.div
-                        initial={{ opacity: 0, y: 24 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ type: "spring", stiffness: 280, damping: 24 }}
+                        variants={stagger(0.05, 0.12)}
+                        initial="hidden"
+                        animate="show"
                         className="text-center max-w-4xl mx-auto"
                     >
                         {/* Badge Oficial */}
-                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white border border-hairline-strong/80 rounded-full shadow-sm text-xs font-bold text-ink mb-6">
+                        <motion.div variants={itemUp} className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white border border-hairline-strong/80 rounded-full shadow-sm text-xs font-bold text-ink mb-6">
                             <span className="font-mono text-royal font-extrabold">SRI 001-001</span>
                             <span className="w-1 h-3 bg-hairline-strong rounded-full" />
                             <span>Establecimiento Gráfico Autorizado en Machala</span>
@@ -268,22 +346,31 @@ export const VisualLanding: React.FC = () => {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-dot opacity-75" />
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-success-dot" />
                             </span>
-                        </div>
+                        </motion.div>
 
                         {/* Titular Impactante */}
                         <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-ink leading-[1.05]">
-                            Impresión seria para negocios que{' '}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-royal via-royal to-gold-deep">
+                            <TitularAnimado texto="Impresión seria para negocios que" />
+                            <motion.span
+                                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-royal via-gold-deep to-royal bg-[length:200%_auto]"
+                                initial={{ opacity: 0, y: 28, backgroundPosition: '0% 50%' }}
+                                animate={{ opacity: 1, y: 0, backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                                transition={{
+                                    opacity: { delay: 0.45, duration: 0.6 },
+                                    y: { delay: 0.45, duration: 0.7, ease: EASE_OUT },
+                                    backgroundPosition: { delay: 1.2, duration: 6, repeat: Infinity, ease: 'linear' },
+                                }}
+                            >
                                 no improvisan.
-                            </span>
+                            </motion.span>
                         </h1>
 
-                        <p className="mt-6 text-lg sm:text-xl text-body max-w-2xl mx-auto leading-relaxed">
+                        <motion.p variants={itemUp} className="mt-6 text-lg sm:text-xl text-body max-w-2xl mx-auto leading-relaxed">
                             Facturas, notas de venta, talonarios autocopiativos y sellos con validez legal. Diseño incluido, prueba digital por WhatsApp y entrega garantizada en 24 horas.
-                        </p>
+                        </motion.p>
 
                         {/* Botones de Acción */}
-                        <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+                        <motion.div variants={itemUp} className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5">
                             <motion.a
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
@@ -301,18 +388,26 @@ export const VisualLanding: React.FC = () => {
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
                                 href="#cotizador"
+                                onClick={irASeccion('cotizador')}
                                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 bg-white hover:bg-paper text-ink font-bold text-sm rounded-2xl border border-hairline-strong/80 shadow-sm transition-colors"
                             >
                                 <Sparkles className="w-4 h-4 text-gold-deep" />
                                 <span>Calcular Presupuesto en Vivo</span>
                             </motion.a>
-                        </div>
+                        </motion.div>
                     </motion.div>
 
                     {/* Bento Showcase 3D con Micro-Interacciones */}
-                    <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                    <motion.div
+                        className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6 items-end"
+                        style={{ y: bentoY }}
+                        variants={stagger(0.55, 0.15)}
+                        initial="hidden"
+                        animate="show"
+                    >
                         {/* Tarjeta Izquierda: Tarjetas Ejecutivas */}
                         <motion.div
+                            variants={itemUp}
                             whileHover={{ y: -8, scale: 1.01 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
                             className="bg-white rounded-3xl border border-hairline/90 shadow-xl overflow-hidden group cursor-pointer"
@@ -339,6 +434,7 @@ export const VisualLanding: React.FC = () => {
 
                         {/* Tarjeta Central Elevada: Talonarios SRI (Hero Card) */}
                         <motion.div
+                            variants={itemUp}
                             whileHover={{ y: -10, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
                             className="bg-gradient-to-b from-white to-paper rounded-3xl border-2 border-royal shadow-2xl overflow-hidden relative group cursor-pointer"
@@ -374,6 +470,7 @@ export const VisualLanding: React.FC = () => {
 
                         {/* Tarjeta Derecha: Gigantografía HD */}
                         <motion.div
+                            variants={itemUp}
                             whileHover={{ y: -8, scale: 1.01 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
                             className="bg-white rounded-3xl border border-hairline/90 shadow-xl overflow-hidden group cursor-pointer"
@@ -397,7 +494,7 @@ export const VisualLanding: React.FC = () => {
                                 </p>
                             </div>
                         </motion.div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
@@ -432,7 +529,7 @@ export const VisualLanding: React.FC = () => {
             {/* ── Cotizador en Vivo (NUEVO) ───────────────────────────── */}
             <section id="cotizador" className="py-16 sm:py-24 bg-paper/70 border-b border-hairline">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <CotizadorRapido />
+                    <Reveal><CotizadorRapido /></Reveal>
                 </div>
             </section>
 
@@ -576,7 +673,7 @@ export const VisualLanding: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                         {/* Explicación de Garantías SRI */}
-                        <div>
+                        <Reveal>
                             <span className="text-xs font-mono font-bold uppercase tracking-widest text-gold bg-gold/10 px-3 py-1 rounded-full border border-gold/20">
                                 Garantía Gráfica SRI N° 001-001
                             </span>
@@ -587,9 +684,15 @@ export const VisualLanding: React.FC = () => {
                                 Validamos régimen, estado del contribuyente y secuencia autorizada en el padrón del SRI. Si algo no cuadra con el reglamento, te avisamos de inmediato antes de imprimir para evitar multas.
                             </p>
 
-                            <div className="mt-8 space-y-4">
+                            <motion.div
+                                className="mt-8 space-y-4"
+                                variants={stagger(0.2, 0.12)}
+                                initial="hidden"
+                                whileInView="show"
+                                viewport={{ once: true, margin: '-60px' }}
+                            >
                                 {SRI_POINTS.map((p, idx) => (
-                                    <div key={idx} className="flex gap-3.5 items-start">
+                                    <motion.div key={idx} variants={itemUp} className="flex gap-3.5 items-start">
                                         <div className="w-6 h-6 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center text-gold flex-shrink-0 mt-0.5">
                                             ✓
                                         </div>
@@ -597,29 +700,29 @@ export const VisualLanding: React.FC = () => {
                                             <h4 className="font-bold text-sm text-white">{p.title}</h4>
                                             <p className="text-xs text-faint mt-0.5 leading-relaxed">{p.detail}</p>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
-                            </div>
-                        </div>
+                            </motion.div>
+                        </Reveal>
 
                         {/* Widget de Validación con Framer Motion */}
-                        <div>
+                        <Reveal delay={0.15}>
                             <RucValidatorWidget />
-                        </div>
+                        </Reveal>
                     </div>
                 </div>
             </section>
 
             {/* ── Muestrario Háptico de Acabados ─────────────────────── */}
             <section id="acabados" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="max-w-xl mb-12">
+                <Reveal className="max-w-xl mb-12">
                     <span className="text-xs uppercase font-extrabold tracking-widest text-royal">
                         Muestrario Háptico
                     </span>
                     <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-ink tracking-tight mt-2">
                         Papel, gramaje y tacto elegidos a mano.
                     </h2>
-                </div>
+                </Reveal>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Botones de Selección */}
@@ -627,15 +730,24 @@ export const VisualLanding: React.FC = () => {
                         {FINISHES.map(f => {
                             const isSelected = finishId === f.id;
                             return (
-                                <button
+                                <motion.button
                                     key={f.id}
                                     onClick={() => setFinishId(f.id)}
-                                    className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between border ${
+                                    whileHover={{ x: 4 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className={`relative w-full p-4 rounded-2xl text-left transition-colors flex items-center justify-between border ${
                                         isSelected
                                             ? 'bg-tint border-royal shadow-md'
                                             : 'bg-white hover:bg-paper border-hairline'
                                     }`}
                                 >
+                                    {isSelected && (
+                                        <motion.span
+                                            layoutId="acabadoActivo"
+                                            className="absolute left-0 top-3 bottom-3 w-1 rounded-full bg-gold"
+                                            transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                                        />
+                                    )}
                                     <div>
                                         <span className="font-heading font-bold text-sm text-ink block">
                                             {f.name}
@@ -645,7 +757,7 @@ export const VisualLanding: React.FC = () => {
                                         </span>
                                     </div>
                                     <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-royal' : 'text-faint'}`} />
-                                </button>
+                                </motion.button>
                             );
                         })}
                     </div>
@@ -671,10 +783,16 @@ export const VisualLanding: React.FC = () => {
                                         </span>
                                         <div className="flex flex-col gap-1 text-xs font-semibold">
                                             {fin.layers.map((l, i) => (
-                                                <div key={i} className="flex items-center justify-center gap-1.5">
+                                                <motion.div
+                                                    key={i}
+                                                    className="flex items-center justify-center gap-1.5"
+                                                    initial={{ opacity: 0, x: -12 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.15 + i * 0.1, duration: 0.4, ease: EASE_OUT }}
+                                                >
                                                     <span className="w-1.5 h-1.5 rounded-full bg-gold" />
                                                     <span>{l}</span>
-                                                </div>
+                                                </motion.div>
                                             ))}
                                         </div>
                                     </div>
@@ -716,7 +834,7 @@ export const VisualLanding: React.FC = () => {
             <section id="rastreo" className="py-20 bg-paper border-y border-hairline">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                        <div className="lg:col-span-5">
+                        <Reveal className="lg:col-span-5">
                             <span className="text-xs uppercase font-extrabold tracking-widest text-royal">
                                 Transparencia Total
                             </span>
@@ -741,10 +859,17 @@ export const VisualLanding: React.FC = () => {
                                     Buscar
                                 </button>
                             </form>
-                        </div>
+                        </Reveal>
 
                         {/* Stepper de Demostración */}
-                        <div className="lg:col-span-7 bg-white p-7 rounded-3xl border border-hairline shadow-xl">
+                        <motion.div
+                            ref={rastreoRef}
+                            className="lg:col-span-7 bg-white p-7 rounded-3xl border border-hairline shadow-xl"
+                            initial={{ opacity: 0, y: 40, rotateX: 8 }}
+                            animate={rastreoEnVista ? { opacity: 1, y: 0, rotateX: 0 } : undefined}
+                            transition={{ duration: 0.8, ease: EASE_OUT }}
+                            style={{ transformPerspective: 1000 }}
+                        >
                             <div className="flex items-center justify-between pb-4 border-b border-hairline mb-4">
                                 <div className="flex items-center gap-2">
                                     <span className="font-mono font-bold text-sm text-ink">ORD-4821</span>
@@ -756,11 +881,27 @@ export const VisualLanding: React.FC = () => {
                                 </span>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-3 relative">
+                                {/* Línea de avance que se llena hasta el paso actual */}
+                                <div className="absolute left-[9px] top-4 bottom-4 w-0.5 bg-hairline" aria-hidden />
+                                <motion.div
+                                    aria-hidden
+                                    className="absolute left-[9px] top-4 w-0.5 bg-success-dot origin-top"
+                                    style={{ height: `${(TRACK_STEPS.findIndex(s => s.current) / (TRACK_STEPS.length - 1)) * 100}%` }}
+                                    initial={{ scaleY: 0 }}
+                                    animate={rastreoEnVista ? { scaleY: 1 } : undefined}
+                                    transition={{ delay: 0.4, duration: 1.4, ease: 'easeInOut' }}
+                                />
                                 {TRACK_STEPS.map((st, i) => (
-                                    <div key={i} className="flex items-center justify-between text-xs py-1.5">
+                                    <motion.div
+                                        key={i}
+                                        className="relative flex items-center justify-between text-xs py-1.5"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={rastreoEnVista ? { opacity: 1, x: 0 } : undefined}
+                                        transition={{ delay: 0.3 + i * 0.22, duration: 0.45, ease: EASE_OUT }}
+                                    >
                                         <div className="flex items-center gap-3">
-                                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                            <span className={`relative z-10 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                                 st.done
                                                     ? 'bg-success-dot text-white'
                                                     : st.current
@@ -774,10 +915,10 @@ export const VisualLanding: React.FC = () => {
                                             </span>
                                         </div>
                                         <span className="font-mono text-faint text-[11px]">{st.time}</span>
-                                    </div>
+                                    </motion.div>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
@@ -789,7 +930,19 @@ export const VisualLanding: React.FC = () => {
                 className="bg-gradient-to-r from-royal via-ink to-ink text-white pt-28 pb-20 sm:pt-32 sm:pb-24 -mt-10 relative overflow-hidden"
                 style={{ clipPath: 'polygon(0 40px, 100% 0, 100% 100%, 0 100%)' }}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                <motion.div
+                    aria-hidden
+                    className="absolute -top-20 left-1/4 w-96 h-96 rounded-full bg-gold/20 blur-3xl pointer-events-none"
+                    animate={{ x: [0, 80, 0], scale: [1, 1.15, 1] }}
+                    transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                    aria-hidden
+                    className="absolute bottom-0 right-10 w-80 h-80 rounded-full bg-royal/40 blur-3xl pointer-events-none"
+                    animate={{ x: [0, -60, 0], y: [0, -30, 0] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <Reveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold/20 border border-gold/30 rounded-full text-xs font-mono text-gold font-bold uppercase tracking-wider mb-4">
                         <Sparkles className="w-3.5 h-3.5" />
                         Puntualidad Absoluta
@@ -821,7 +974,7 @@ export const VisualLanding: React.FC = () => {
                             <span>Llamar al Taller: +593 99 308 3943</span>
                         </a>
                     </div>
-                </div>
+                </Reveal>
             </section>
 
             {/* ── Footer Institucional ────────────────────────────────── */}
@@ -858,8 +1011,8 @@ export const VisualLanding: React.FC = () => {
                         </h4>
                         <div className="flex flex-col gap-2 text-xs font-semibold text-body">
                             <Link to="/tracking" className="hover:text-royal">Rastrear Mi Pedido</Link>
-                            <a href="#sri" className="hover:text-royal">Consulta de RUC en Padrón</a>
-                            <a href="#cotizador" className="hover:text-royal">Cotizador en Vivo</a>
+                            <a href="#sri" onClick={irASeccion('sri')} className="hover:text-royal">Consulta de RUC en Padrón</a>
+                            <a href="#cotizador" onClick={irASeccion('cotizador')} className="hover:text-royal">Cotizador en Vivo</a>
                             <Link to="/login" className="hover:text-royal">Acceso Sistema Operador</Link>
                         </div>
                     </div>
@@ -907,6 +1060,7 @@ export const VisualLanding: React.FC = () => {
                 </a>
             </div>
         </div>
+        </MotionConfig>
     );
 };
 
