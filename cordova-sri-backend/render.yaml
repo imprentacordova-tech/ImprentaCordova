@@ -9,3 +9,12 @@ services:
         value: "1"
       - key: NODE_ENV
         value: production
+      # Sesiones de operadores (≥ 32 caracteres aleatorios). Se carga a mano en Render.
+      - key: SESSION_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://www.imprentacordova.net,https://imprentacordova.net
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

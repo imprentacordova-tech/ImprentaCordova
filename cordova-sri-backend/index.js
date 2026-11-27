@@ -9,6 +9,8 @@ const app = express();
 
 // ── CORS: Restrict to known origins + local development ─────────────────
 const defaultOrigins = [
+  'https://www.imprentacordova.net',
+  'https://imprentacordova.net',
   'https://imprentacordova.com',
   'https://www.imprentacordova.com',
   // Dominios del SRI: la extensión de Chrome hace fetch desde el content script,
@@ -62,45 +64,12 @@ app.use(express.json({ limit: '1mb' }));
 const PORT = process.env.PORT || 3000;
 const SRI_AMBIENTE = process.env.SRI_AMBIENTE || '1';
 
-// ── API Key Authentication Middleware ─────────────────────────────────────
-const API_KEY = process.env.API_KEY;
-const authenticateApiKey = (req, res, next) => {
-    if (!API_KEY) {
-        // If no API_KEY is configured, skip auth (development mode)
-        return next();
-    }
-    const providedKey = req.headers['x-api-key'] || req.query.api_key;
-    if (providedKey === API_KEY) {
-        return next();
-    }
-    return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
-};
-
-/**
- * Strict variant — FAILS CLOSED.
- *
- * Used by every endpoint that reaches a privileged resource (service_role writes,
- * outbound email, paid AI). If API_KEY is not configured these endpoints refuse to
- * serve instead of silently running open to the internet.
- *
- * NOTE: this does NOT make API_KEY a secret — the browser sends it, so it is public
- * by definition. It is an abuse gate (paired with rate limiting + CORS), not a
- * credential. Real secrets (SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, GEMINI_API_KEY)
- * must never leave this server.
- */
-const requireApiKey = (req, res, next) => {
-    if (!API_KEY) {
-        console.error('[Auth] BLOCKED: API_KEY is not configured on the server. Privileged endpoint refused.');
-        return res.status(503).json({
-            error: 'Server authentication is not configured. Set API_KEY before using this endpoint.'
-        });
-    }
-    const providedKey = req.headers['x-api-key'] || req.query.api_key;
-    if (providedKey === API_KEY) {
-        return next();
-    }
-    return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
-};
+// ── Autenticación: sesión firmada por operador ─────────────────────────────
+// Antes había una API_KEY que viajaba en el bundle público (cualquiera podía mandar
+// correos o listar órdenes). Ahora cada operador inicia sesión en
+// /api/v1/auth/login y manda `Authorization: Bearer <token>`.
+const { crearRequireSession, requireAdmin } = require('./sessionMiddleware');
+const requireSession = crearRequireSession(() => process.env.SESSION_SECRET);
 
 /** Shared Supabase REST helper (service_role — server-side only). */
 const supabaseAdminHeaders = () => {
@@ -214,7 +183,7 @@ app.post('/api/v1/auth/login', async (req, res) => {
 /**
  * Endpoint de Emision y Firma de Facturas Electronicas
  */
-app.post('/api/v1/facturas/emitir', authenticateApiKey, async (req, res) => {
+app.post('/api/v1/facturas/emitir', requireSession, async (req, res) => {
     try {
         const { claveAcceso, numeroFactura, cliente, totales, detalles } = req.body;
 
@@ -266,7 +235,7 @@ app.post('/api/v1/facturas/emitir', authenticateApiKey, async (req, res) => {
 /**
  * Consultar Estado de Autorizacion por Clave de Acceso (49 digitos)
  */
-app.get('/api/v1/facturas/:clave/estado', authenticateApiKey, (req, res) => {
+app.get('/api/v1/facturas/:clave/estado', requireSession, (req, res) => {
     const { clave } = req.params;
 
     if (!validateClaveAcceso(clave)) {
@@ -284,7 +253,7 @@ app.get('/api/v1/facturas/:clave/estado', authenticateApiKey, (req, res) => {
 /**
  * Sincronizar Orden Generada en Extension directamente con imprentacordova.com (Supabase)
  */
-app.post('/api/v1/ordenes/sincronizar', authenticateApiKey, async (req, res) => {
+app.post('/api/v1/ordenes/sincronizar', requireSession, async (req, res) => {
     try {
         const { orderNum, clientName, clientRuc, clientPhone, clientEmail, docType, paperSize, paperType, est, pto, qty, total, abono, saldo, detalles, actividad } = req.body;
 
@@ -381,7 +350,7 @@ app.post('/api/v1/ordenes/sincronizar', authenticateApiKey, async (req, res) => 
 /**
  * Enviar Notificación de Orden por Correo Electrónico (Resend API)
  */
-app.post('/api/v1/notificar-email', requireApiKey, async (req, res) => {
+app.post('/api/v1/notificar-email', requireSession, async (req, res) => {
     try {
         const { clientEmail, clientName, clientRuc, docType, blocks, docSize, total, abono, saldo } = req.body;
         const resendKey = process.env.RESEND_API_KEY;
@@ -452,7 +421,7 @@ app.post('/api/v1/notificar-email', requireApiKey, async (req, res) => {
 const PADRON_TABLE = 'sri_padron_el_oro';
 const PADRON_MAX_LOTE = 1000;
 
-app.post('/api/v1/padron/importar', requireApiKey, async (req, res) => {
+app.post('/api/v1/padron/importar', requireSession, requireAdmin, async (req, res) => {
     try {
         const SUPABASE_URL = process.env.SUPABASE_URL;
         const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -506,7 +475,7 @@ app.post('/api/v1/padron/importar', requireApiKey, async (req, res) => {
  * Envío de correo genérico (HTML ya construido en el cliente).
  * La RESEND_API_KEY vive SOLO en este servidor.
  */
-app.post('/api/v1/emails/enviar', requireApiKey, async (req, res) => {
+app.post('/api/v1/emails/enviar', requireSession, async (req, res) => {
     try {
         const { to, subject, html } = req.body;
         const resendKey = process.env.RESEND_API_KEY;
@@ -520,6 +489,12 @@ app.post('/api/v1/emails/enviar', requireApiKey, async (req, res) => {
         }
         if (!subject || !html) {
             return res.status(400).json({ error: 'Faltan "subject" o "html".' });
+        }
+        // Solo a correos de clientes registrados: el servidor no es un relay de correo abierto.
+        const destinatario = to.trim().toLowerCase().replace(/[%_\\]/g, (c) => `\\${c}`);
+        const cli = await supabaseRest('get', `clientes?email=ilike.${encodeURIComponent(destinatario)}&select=id&limit=1`);
+        if (!Array.isArray(cli.data) || cli.data.length === 0) {
+            return res.status(400).json({ error: 'El destinatario no es un cliente registrado.' });
         }
 
         const emailResponse = await axios.post('https://api.resend.com/emails', {
@@ -551,7 +526,7 @@ const GEMINI_MODELOS_PERMITIDOS = (process.env.GEMINI_MODELOS_PERMITIDOS
     || 'gemini-3-flash-preview,gemini-2.5-flash,gemini-2.0-flash')
     .split(',').map(s => s.trim()).filter(Boolean);
 
-app.post('/api/v1/ai/generate', requireApiKey, async (req, res) => {
+app.post('/api/v1/ai/generate', requireSession, async (req, res) => {
     try {
         const geminiKey = process.env.GEMINI_API_KEY;
         if (!geminiKey) {
@@ -669,7 +644,7 @@ const responderErrorDatos = (res, error, contexto) => {
 };
 
 /** Alta/actualización de cliente desde la extensión (por RUC). */
-app.post('/api/v1/clientes/upsert', requireApiKey, async (req, res) => {
+app.post('/api/v1/clientes/upsert', requireSession, async (req, res) => {
     try {
         const payload = soloColumnas(req.body, [
             'ruc', 'cedula', 'nombre', 'telefono', 'email', 'actividades'
@@ -687,7 +662,7 @@ app.post('/api/v1/clientes/upsert', requireApiKey, async (req, res) => {
 });
 
 /** Actualización parcial de un cliente por id o por RUC. */
-app.post('/api/v1/clientes/actualizar', requireApiKey, async (req, res) => {
+app.post('/api/v1/clientes/actualizar', requireSession, async (req, res) => {
     try {
         const { id, ruc, cambios } = req.body || {};
         if (!id && !ruc) {
@@ -708,7 +683,7 @@ app.post('/api/v1/clientes/actualizar', requireApiKey, async (req, res) => {
 });
 
 /** Alta de trabajo desde la extensión. */
-app.post('/api/v1/trabajos/crear', requireApiKey, async (req, res) => {
+app.post('/api/v1/trabajos/crear', requireSession, async (req, res) => {
     try {
         const payload = soloColumnas(req.body, [
             'cliente_id', 'titular', 'tipo', 'subtipo', 'cantidad', 'total', 'abono', 'saldo',
@@ -728,7 +703,7 @@ app.post('/api/v1/trabajos/crear', requireApiKey, async (req, res) => {
 });
 
 /** Actualización parcial de un trabajo por id. */
-app.post('/api/v1/trabajos/actualizar', requireApiKey, async (req, res) => {
+app.post('/api/v1/trabajos/actualizar', requireSession, async (req, res) => {
     try {
         const { id, cambios } = req.body || {};
         if (!id) {
@@ -751,7 +726,7 @@ app.post('/api/v1/trabajos/actualizar', requireApiKey, async (req, res) => {
 });
 
 /** Listado de trabajos para el panel de la extensión. */
-app.get('/api/v1/trabajos/listar', requireApiKey, async (req, res) => {
+app.get('/api/v1/trabajos/listar', requireSession, async (req, res) => {
     try {
         const limite = Math.min(parseInt(req.query.limite, 10) || 300, 1000);
         const r = await supabaseRest('GET', `trabajos?select=*&order=fecha_entrada.desc&limit=${limite}`);
@@ -762,13 +737,16 @@ app.get('/api/v1/trabajos/listar', requireApiKey, async (req, res) => {
 });
 
 /** Conteo de trabajos listos en Vitrina para el badge de la extensión (100% GRATIS - CERO TOKENS) */
-app.get('/api/v1/trabajos/vitrina-count', requireApiKey, async (req, res) => {
+app.get('/api/v1/trabajos/vitrina-count', async (req, res) => {
     try {
         const r = await supabaseRest('GET', 'trabajos?estado=in.(Vitrina,Terminado)&select=id');
         const count = Array.isArray(r.data) ? r.data.length : 0;
-        res.json({ success: true, count, timestamp: new Date().toISOString() });
+        // Público (lo usa el ícono de la extensión): devuelve solo el número.
+        res.json({ success: true, count });
     } catch (error) {
-        responderErrorDatos(res, error, 'Trabajos Vitrina Count');
+        // Endpoint público: sin detalles internos en la respuesta.
+        console.error('[Vitrina Count]', error.message);
+        res.status(503).json({ success: false, error: 'No disponible.' });
     }
 });
 
@@ -926,7 +904,7 @@ const enviarRecordatorio = async (fila, resendKey, from) => {
 };
 
 /** Lista de rezagados para la pantalla (no envía nada). */
-app.get('/api/v1/recordatorios/rezagados', requireApiKey, async (req, res) => {
+app.get('/api/v1/recordatorios/rezagados', requireSession, async (req, res) => {
     try {
         const filas = await calcularRezagados();
         res.json({
@@ -944,7 +922,7 @@ app.get('/api/v1/recordatorios/rezagados', requireApiKey, async (req, res) => {
 });
 
 /** Dispara los recordatorios ahora (botón "recordar a todos" o prueba manual). */
-app.post('/api/v1/recordatorios/rezagados/enviar', requireApiKey, async (req, res) => {
+app.post('/api/v1/recordatorios/rezagados/enviar', requireSession, async (req, res) => {
     try {
         const resendKey = process.env.RESEND_API_KEY;
         if (!resendKey) {
@@ -1044,5 +1022,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`SRI Backend v2.0 running on port ${PORT} | CORS: ${ALLOWED_ORIGINS.length} origins | Auth: ${API_KEY ? 'ENABLED' : 'DISABLED'}`);
+    console.log(`SRI Backend v2.0 running on port ${PORT} | CORS: ${ALLOWED_ORIGINS.length} origins | Sesiones: ${process.env.SESSION_SECRET ? 'OK' : 'SIN SESSION_SECRET'}`);
 });
