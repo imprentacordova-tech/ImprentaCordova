@@ -48,6 +48,7 @@ export type ActivityAction =
   | 'FINALIZADO_DIRECTO'
   | 'SRI_SCAN_FAILURE'
   | 'ALERTA_STOCK'
+  | 'SOLICITUD_WEB'
   | (string & {});
 
 /**

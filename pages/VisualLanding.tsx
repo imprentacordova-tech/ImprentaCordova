@@ -384,6 +384,16 @@ export const VisualLanding: React.FC = () => {
                                 <ArrowRight className="w-4 h-4" />
                             </motion.a>
 
+                            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+                                <Link
+                                    to="/solicitar"
+                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 bg-gold hover:bg-gold-hover text-ink font-bold text-sm rounded-2xl shadow-xl shadow-gold/30 transition-colors"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    <span>Pedir en línea</span>
+                                </Link>
+                            </motion.div>
+
                             <motion.a
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
@@ -1010,6 +1020,7 @@ export const VisualLanding: React.FC = () => {
                             Servicios
                         </h4>
                         <div className="flex flex-col gap-2 text-xs font-semibold text-body">
+                            <Link to="/solicitar" className="hover:text-royal">Pedir Comprobantes en Línea</Link>
                             <Link to="/tracking" className="hover:text-royal">Rastrear Mi Pedido</Link>
                             <a href="#sri" onClick={irASeccion('sri')} className="hover:text-royal">Consulta de RUC en Padrón</a>
                             <a href="#cotizador" onClick={irASeccion('cotizador')} className="hover:text-royal">Cotizador en Vivo</a>

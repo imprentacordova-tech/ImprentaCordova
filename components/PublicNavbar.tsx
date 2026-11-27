@@ -6,6 +6,7 @@ import { WhatsAppIcon, Menu, X, ArrowRight } from './Icons';
 const LINKS = [
     { name: 'Inicio', to: '/' },
     { name: 'Catálogo & Precios', to: '/vitrina' },
+    { name: 'Pedir en Línea', to: '/solicitar' },
     { name: 'Rastrear Pedido', to: '/tracking' },
 ];
 

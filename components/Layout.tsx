@@ -14,6 +14,7 @@ import { C } from './panelTheme';
 import { buildNavGroups, PAGE_TITLES } from './layout/navModel';
 import { SidebarContent } from './layout/SidebarContent';
 import { despertarBackend } from '../services/backendApi';
+import { solicitudesWebService } from '../services/solicitudesWebService';
 
 /**
  * Layout interno — Sistema "Marino & Oro" (tema claro).
@@ -70,6 +71,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         return () => window.removeEventListener('message', onMsg);
     }, [trabajos, clientes, updateTrabajoStatus, user]);
 
+    // Solicitudes web sin atender: contador del menú, consultado cada 2 minutos.
+    const [solicitudesNuevas, setSolicitudesNuevas] = useState(0);
+    useEffect(() => {
+        if (!user) return;
+        let vivo = true;
+        const tick = () => {
+            if (document.visibilityState !== 'visible') return;
+            solicitudesWebService.contarNuevas().then(n => { if (vivo) setSolicitudesNuevas(n); }).catch(() => {});
+        };
+        tick();
+        const id = setInterval(tick, 2 * 60 * 1000);
+        return () => { vivo = false; clearInterval(id); };
+    }, [user, location.pathname]);
+
     const isAdmin = !!user && (user.rol === 'Admin' || (user.rol as string) === 'root');
     const navGroups = useMemo(() => buildNavGroups(isAdmin), [isAdmin]);
 
@@ -80,8 +95,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             ordenes: activos.length,
             cobrar: activos.filter(t => t.saldo > 0).length,
             stock:  0,
+            solicitudes: solicitudesNuevas,
         };
-    }, [trabajos]);
+    }, [trabajos, solicitudesNuevas]);
 
     const pageTitle = useMemo(() => PAGE_TITLES[location.pathname] || 'Sistema', [location.pathname]);
 

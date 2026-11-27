@@ -19,6 +19,8 @@ import { establecimientosAbiertos } from '../services/establecimientos';
 import { MODELOS, modeloPorDefecto, resolverModelo, resolverTramite, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
 import { perfilDe, especificacionesPorDefecto, calcularDelta, hojasPorTalonario } from '../services/detalleProducto';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
+import { solicitudesWebService } from '../services/solicitudesWebService';
+import { MASTER_CATALOG } from '../services/catalogData';
 import { ProductVisual } from '../components/ProductVisual';
 
 /**
@@ -170,6 +172,8 @@ const NuevoPedidoPage: React.FC = () => {
     const [sriAutoFillBanner, setSriAutoFillBanner] = useState<PayloadSri | null>(null);
     /** Aviso de que la orden ya se precargó con datos del SRI (no es un payload). */
     const [sriPrecargado, setSriPrecargado] = useState<{ title: string; desc: string } | null>(null);
+    /** Solicitud web (/solicitar) que originó esta orden: al crearla se marca CONVERTIDA. */
+    const [solicitudWebId, setSolicitudWebId] = useState<string | null>(null);
     const [filtroCat, setFiltroCat] = useState<string>('Todos');
     const [sriLaunchMsg, setSriLaunchMsg] = useState<string | null>(null);
 
@@ -277,7 +281,13 @@ const NuevoPedidoPage: React.FC = () => {
         const docType = payload.docType || '1';
         const blocks = parseInt(payload.blocks || payload.comprobantes || payload.qty || '100', 10) || 100;
         const docSize = payload.docSize || payload.tamano || '1/4 Oficio';
-        const totalVal = parseFloat(payload.total ?? '') || 13;
+        // Sin total explícito (p. ej. una solicitud web) se toma el precio del talonario del
+        // catálogo con esa cantidad de hojas, en vez de un $13 fijo para cualquier cantidad.
+        // El efecto corre al montar, quizá antes de que cargue `productos`: si el talonario no
+        // está en el catálogo visible se usa la semilla (MASTER_CATALOG), que es su origen.
+        const porHojas = (p: { esSRI?: boolean; nombre?: string }) => !!p.esSRI && !!p.nombre?.includes(`(${blocks} hojas)`);
+        const precioCatalogo = catalogoPaso1.find(porHojas)?.precio ?? MASTER_CATALOG.find(porHojas)?.precio;
+        const totalVal = parseFloat(payload.total ?? '') || precioCatalogo || 13;
         const abonoVal = parseFloat(payload.abono ?? '') || 0;
         const estVal = payload.est || payload.establecimiento || '001';
         const ptoVal = payload.pto || payload.puntoEmision || '001';
@@ -344,8 +354,11 @@ const NuevoPedidoPage: React.FC = () => {
         // Antes esto se guardaba en `sriAutoFillBanner`, que es el payload PENDIENTE: el banner
         // mostraba "RUC undefined" y su botón re-aplicaba un payload vacío, que pisaba el ítem
         // con una Nota de Venta de $13 y dejaba el abono en 0.
+        if (payload.solicitud) setSolicitudWebId(payload.solicitud);
         setSriPrecargado({
-            title: `📥 Datos precargados desde el SRI: ${name || ruc}`,
+            title: payload.solicitud
+                ? `🌐 Solicitud web de ${name || ruc}`
+                : `📥 Datos precargados desde el SRI: ${name || ruc}`,
             desc: `${docName} (${blocks} comp.) · Est: ${estVal}-${ptoVal} · Total: $${totalVal.toFixed(2)} · Revise y confirme para registrar.`
         });
         setDireccion('adelante');
@@ -676,7 +689,7 @@ const NuevoPedidoPage: React.FC = () => {
                 responsable: userName,
                 // 'Interno' = pedido tomado en el mostrador. Antes decía 'Local', que
                 // no existe en el tipo `'Web' | 'Interno'` y ensuciaba la columna.
-                origen: 'Interno',
+                origen: solicitudWebId ? 'Web' : 'Interno',
                 esSRI: !!item.esSRI,
                 establecimiento: item.esSRI ? sriEstablecimiento : undefined,
                 puntoEmision: item.esSRI ? sriPuntoEmision : undefined,
@@ -734,6 +747,11 @@ const NuevoPedidoPage: React.FC = () => {
             };
             setCreatedOrderSummary(orderMeta);
             setCreatedTrabajoId(principal.id);
+            if (solicitudWebId) {
+                solicitudesWebService.vincularOrden(solicitudWebId, principal.id, userName)
+                    .catch(err => console.warn('[NuevoPedido] No se pudo vincular la solicitud web:', err));
+                setSolicitudWebId(null);
+            }
             setStep(5);
             setTimeout(() => {
                 try {

@@ -12,6 +12,7 @@ const TrackingPage = React.lazy(() => import('./pages/Tracking'));
 const VitrinaPage = React.lazy(() => import('./pages/Vitrina'));
 const PanelInternoPage = React.lazy(() => import('./pages/PanelInterno'));
 const RecuperarAccesoPage = React.lazy(() => import('./pages/RecuperarAcceso'));
+const SolicitarOnlinePage = React.lazy(() => import('./pages/SolicitarOnline'));
 
 // ── Lazy-loaded Printable Documents ──────────────────────────────────────
 const OrdenProduccionPage = React.lazy(() => import('./pages/OrdenProduccion'));
@@ -40,6 +41,7 @@ const TrabajosPage = React.lazy(() => import('./pages/Trabajos'));
 const RegistroActividadPage = React.lazy(() => import('./pages/RegistroActividad'));
 const CuentasPage = React.lazy(() => import('./pages/Cuentas'));
 const FacturacionElectronicaPage = React.lazy(() => import('./pages/FacturacionElectronica'));
+const SolicitudesWebPage = React.lazy(() => import('./pages/SolicitudesWeb'));
 
 // ── Loading Fallback ─────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -85,6 +87,7 @@ const App: React.FC = () => {
             user ? <Navigate to="/dashboard" replace /> : <LoginPage />
           } />
           <Route path="/tracking" element={<TrackingPage />} />
+          <Route path="/solicitar" element={<SolicitarOnlinePage />} />
 
           {/* Panel Interno — importado de Claude Design (Panel-Interno.dc.html) */}
           <Route path="/panel-interno" element={<PanelInternoPage />} />
@@ -108,6 +111,7 @@ const App: React.FC = () => {
             <Route path="/produccion" element={<ProduccionPage />} />
             <Route path="/kds" element={<KDSPage />} />
             <Route path="/retiros" element={<RetirosPage />} />
+            <Route path="/solicitudes" element={<SolicitudesWebPage />} />
             <Route path="/clientes" element={<ClientesPage />} />
             <Route path="/trabajos" element={<TrabajosPage />} />
             <Route path="/trabajos/:trabajoId" element={<TrabajoDetallePage />} />

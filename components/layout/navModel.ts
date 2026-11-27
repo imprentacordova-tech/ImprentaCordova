@@ -19,7 +19,7 @@ import {
     MonitorIcon,
     GlobeIcon,
     ReceiptIcon, HistoryIcon, PuzzlePieceIcon,
-    Box, Layers
+    Box, Layers, GlobeAltIcon
 } from '../Icons';
 
 /** Una fila del menú. `badge` es la CLAVE del contador, no el número. */
@@ -69,6 +69,7 @@ export const buildNavGroups = (isAdmin: boolean): NavGroupModel[] => [
             { path: '/dashboard',  label: 'Panel Principal',       icon: DashboardIcon,   badge: null },
             { path: '/trabajos',   label: 'Órdenes',               icon: ActivityIcon,    badge: 'ordenes' },
             { path: '/nuevo',      label: 'Nueva Orden',           icon: SparklesIcon,    badge: null },
+            { path: '/solicitudes', label: 'Solicitudes Web',      icon: GlobeAltIcon,    badge: 'solicitudes' },
             { path: '/retiros',    label: 'Despacho',              icon: RocketLaunchIcon, badge: null },
         ],
     },
@@ -118,6 +119,7 @@ export const PAGE_TITLES: Record<string, string> = {
     '/trabajos':      'Órdenes de Producción',
     '/nuevo':         'Nueva Orden',
     '/retiros':       'Despacho y Entregas',
+    '/solicitudes':   'Solicitudes Web',
     '/kds':           'Monitor de Taller',
     '/diseno':        'Diseño Gráfico',
     '/inventario':    'Bodega de Insumos',

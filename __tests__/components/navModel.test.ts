@@ -17,7 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { buildNavGroups, PAGE_TITLES, ATAJOS, RUTA_CTA } from '../../components/layout/navModel';
 
 /** Contadores que calcula `Layout` y pasa como `badges`. */
-const BADGES_DISPONIBLES = ['ordenes', 'cobrar', 'stock'];
+const BADGES_DISPONIBLES = ['ordenes', 'cobrar', 'stock', 'solicitudes'];
 
 const items = (isAdmin: boolean) => buildNavGroups(isAdmin).flatMap((g) => g.items);
 /** La descarga de la extensión es un `<a download>`, no una ruta de la app. */
