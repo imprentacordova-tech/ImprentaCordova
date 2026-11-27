@@ -7,6 +7,8 @@ import { Trabajo, Cliente, TrabajoEstado, User } from '../types';
 import { formatCurrency, formatDate } from '../utils';
 import { SEO } from '../components/SEO';
 import { C, S, MONO, DISPLAY, estadoCfg, dot, estadoPill, PANEL_KEYFRAMES, PageLoaderLite } from '../components/panelTheme';
+import { ModalDespachoEntrega } from '../components/orders/ModalDespachoEntrega';
+import { mensajeDeError } from '../utils';
 
 const ESTADOS: TrabajoEstado[] = [TrabajoEstado.PENDIENTE, TrabajoEstado.EN_DISENO, TrabajoEstado.PROCESO, TrabajoEstado.VITRINA, TrabajoEstado.ENTREGADO];
 
@@ -19,6 +21,8 @@ const TrabajoDetallePage: React.FC = () => {
     const { trabajos, clientes, loading, updateTrabajoStatus } = useData();
     const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
     const [cliente, setCliente] = useState<Cliente | null>(null);
+    const [despachoAbierto, setDespachoAbierto] = useState(false);
+    const [errorEstado, setErrorEstado] = useState<string | null>(null);
 
     useEffect(() => {
         if (!trabajoId || loading) return;
@@ -31,12 +35,23 @@ const TrabajoDetallePage: React.FC = () => {
 
     const handleStatusChange = async (newStatus: TrabajoEstado) => {
         if (!trabajo) return;
-        await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
-        await logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Estado → ${newStatus}`, 'TrabajoDetalle');
+        /*
+         * Entregar pasa por el despacho (cobro del saldo, receptor, foto), igual que en
+         * Retiros. Antes se cambiaba el estado directo: la orden salía de "por cobrar" sin
+         * que nadie cobrara y la caja la contaba como cobrada.
+         */
+        if (newStatus === TrabajoEstado.ENTREGADO) { setDespachoAbierto(true); return; }
+        setErrorEstado(null);
+        try {
+            await updateTrabajoStatus(trabajo.id, newStatus, currentUser.nombre);
+            logActivity(currentUser.nombre, currentUser.rol || 'Operador', 'CAMBIO_ESTADO', `Estado → ${newStatus}`, 'TrabajoDetalle').catch(() => {});
+        } catch (err) {
+            setErrorEstado(`No se pudo cambiar el estado: ${mensajeDeError(err) || 'error de conexión'}.`);
+        }
     };
 
     if (loading) return <PageLoaderLite />;
-    if (!trabajo || !cliente) return <div style={{ ...S.page }}><p style={{ textAlign: 'center', color: C.muted, padding: 40 }}>Trabajo no encontrado.</p></div>;
+    if (!trabajo) return <div style={{ ...S.page }}><p style={{ textAlign: 'center', color: C.muted, padding: 40 }}>Trabajo no encontrado.</p></div>;
 
     const cfg = estadoCfg(trabajo.estado);
 
@@ -127,15 +142,16 @@ const TrabajoDetallePage: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         <div style={{ ...S.card, padding: '20px 22px' }}>
                             <div style={{ ...S.fieldLabel, marginBottom: 12 }}>Cliente</div>
-                            <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 600, color: C.ink }}>{cliente.nombre}</div>
-                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 8, fontFamily: MONO }}>{cliente.ruc || cliente.cedula}</div>
-                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{cliente.direccion || 'Pasaje, El Oro'}</div>
-                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{cliente.regimen}</div>
+                            <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 600, color: C.ink }}>{cliente?.nombre || trabajo.titular || 'Cliente no registrado'}</div>
+                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 8, fontFamily: MONO }}>{cliente?.ruc || cliente?.cedula || '—'}</div>
+                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{cliente?.direccion || 'Pasaje, El Oro'}</div>
+                            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{cliente?.regimen || ''}</div>
                             <button style={{ ...S.softBtn, width: '100%', marginTop: 14, justifyContent: 'center' }} onClick={() => navigate('/clientes')}>Abrir directorio</button>
                         </div>
 
                         <div style={{ ...S.card, padding: '20px 22px' }}>
                             <div style={{ ...S.fieldLabel, marginBottom: 12 }}>Cambiar estado</div>
+                            {errorEstado && <div role="alert" style={{ marginBottom: 10, padding: '8px 10px', borderRadius: 8, background: '#FEE2E2', color: '#991B1B', fontSize: 12 }}>{errorEstado}</div>}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {ESTADOS.map(status => {
                                     const on = trabajo.estado === status;
@@ -156,6 +172,16 @@ const TrabajoDetallePage: React.FC = () => {
                     </div>
                 </div>
             </div>
+            {despachoAbierto && (
+                <ModalDespachoEntrega
+                    isOpen={despachoAbierto}
+                    onClose={() => setDespachoAbierto(false)}
+                    trabajo={trabajo}
+                    cliente={cliente}
+                    currentUser={currentUser}
+                    onEntregaExitosa={(t) => setTrabajo(t)}
+                />
+            )}
         </div>
     );
 };
