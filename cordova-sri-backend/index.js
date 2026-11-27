@@ -688,7 +688,8 @@ app.post('/api/v1/trabajos/crear', requireSession, async (req, res) => {
         const payload = soloColumnas(req.body, [
             'cliente_id', 'titular', 'tipo', 'subtipo', 'cantidad', 'total', 'abono', 'saldo',
             'prioridad', 'estado', 'fecha_entrada', 'origen', 'establecimiento', 'punto_emision',
-            'tamano', 'actividad_seleccionada', 'fecha_vencimiento', 'cedula_ruc', 'telefono'
+            'tamano', 'actividad_seleccionada', 'fecha_vencimiento', 'cedula_ruc', 'telefono',
+            'numeracion', 'observaciones'
         ]);
 
         if (!payload.titular) {

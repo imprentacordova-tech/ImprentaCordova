@@ -32,7 +32,7 @@
     },
     {
       "matches": ["*://srienlinea.sri.gob.ec/facturacion-internet/*"],
-      "js": ["cordovaApi.js", "precios.js", "parseoSri.js", "content/content.js"],
+      "js": ["cordovaApi.js", "precios.js", "docTypes.js", "parseoSri.js", "content/content.js"],
       "css": ["content/inject.css"],
       "world": "ISOLATED",
       "run_at": "document_idle",

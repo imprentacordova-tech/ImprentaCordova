@@ -719,13 +719,6 @@ async function registrarOrden(orden, { serie = '' } = {}) {
 }
 
 async function autoSyncToSupabase(orderData) {
-  const docNames = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
-  const docName = docNames[orderData.docType] || 'Nota de Venta';
-
-  const totalVal = parseFloat(orderData.total) || 13.00;
-  const abonoVal = parseFloat(orderData.abono) || 0.00;
-  const saldoVal = Math.max(0, totalVal - abonoVal);
-
   try {
     // 1. Crear / Actualizar Cliente
     let clienteId = null;
@@ -747,24 +740,9 @@ async function autoSyncToSupabase(orderData) {
       }
     }
 
-    // 2. Crear Trabajo vinculado
+    // 2. Crear Trabajo vinculado (establecimiento, numeración y serie reales: parseoSri.js)
     const trabajoPayload = {
-      cliente_id: clienteId,
-      titular: (orderData.clientName || 'CLIENTE SRI').toUpperCase(),
-      tipo: docName,
-      subtipo: `${orderData.blocks || 100} Hojas (${orderData.docSize || '1/4 Oficio'})`,
-      cantidad: 1,
-      total: totalVal,
-      abono: abonoVal,
-      saldo: saldoVal,
-      prioridad: 'Normal',
-      estado: 'Pendiente',
-      fecha_entrada: new Date().toISOString(),
-      origen: 'SRI Extension',
-      establecimiento: '001',
-      punto_emision: '001',
-      tamano: orderData.docSize || '1/4 Oficio',
-      actividad_seleccionada: (orderData.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase(),
+      ...CordovaParseo.armarTrabajoPayload(orderData, clienteId),
       fecha_vencimiento: parseSRIDateToISO(orderData.caducidad)
     };
 
@@ -879,7 +857,7 @@ function showCordovaSuccessModal(finalData, blocks) {
     const overlay = document.createElement('div');
     overlay.className = 'cordova-completion-drawer-overlay';
     const logoUrl = chrome.runtime.getURL('icons/icon128.png');
-    const docName = finalData.cordovaDocType === '0' ? 'Factura' : finalData.cordovaDocType === '5' ? 'Guía de Remisión' : 'Nota de Venta';
+    const docName = CordovaParseo.nombreDocumento(finalData.cordovaDocType);
 
     overlay.innerHTML = `
       <div class="cordova-completion-card">
@@ -1551,6 +1529,8 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
         establecimiento: codigoEst,
         puntoEmision: '001',
         fechaSolicitud,
+        numeracion: finalData.cordovaNumeracion || '',
+        serie: finalData.cordovaSerie || '',
         docType: finalData.cordovaDocType || '1',
         blocks: blocksVal,
         docSize: docSizeVal,

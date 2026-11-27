@@ -19,7 +19,7 @@ import { establecimientosAbiertos } from '../services/establecimientos';
 import { MODELOS, modeloPorDefecto, resolverModelo, resolverTramite, TRAMITES_SRI, TRAMITE_POR_DEFECTO, type ModeloImpresion, type TramiteSri } from '../services/printModels';
 import { perfilDe, especificacionesPorDefecto, calcularDelta, hojasPorTalonario } from '../services/detalleProducto';
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
-import { solicitudesWebService } from '../services/solicitudesWebService';
+import { solicitudesWebService, DOCUMENTOS_SRI } from '../services/solicitudesWebService';
 import { MASTER_CATALOG } from '../services/catalogData';
 import { guardarBorrador, leerBorrador } from '../services/sesion';
 import { ProductVisual } from '../components/ProductVisual';
@@ -326,8 +326,8 @@ const NuevoPedidoPage: React.FC = () => {
             }
         }
 
-        const docNames: Record<string, string> = { '0': 'Factura', '1': 'Nota de Venta', '5': 'Guía de Remisión' };
-        const docName = docNames[docType] || payload.doc || 'Nota de Venta';
+        // Vocabulario compartido con la extensión (docTypes.js) y el formulario web.
+        const docName = (docType && DOCUMENTOS_SRI.find(d => d.docType === docType)?.nombre) || payload.doc || 'Nota de Venta';
 
         const sriItem: ItemPedido = {
             id: `item-sri-${Date.now()}`,

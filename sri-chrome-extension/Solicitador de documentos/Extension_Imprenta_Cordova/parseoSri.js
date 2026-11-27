@@ -195,5 +195,54 @@
     return false;
   }
 
-  global.CordovaParseo = { leerResumenSolicitud, leerSecuencias, filasBandeja, validarCaptura, debeRegistrarOrden };
+  const tresDigitos = (v) => {
+    const d = String(v || '').replace(/\D/g, '');
+    return d ? d.padStart(3, '0').slice(-3) : '001';
+  };
+
+  /** Nombre del documento según el código del SRI, con el vocabulario compartido (docTypes.js). */
+  function nombreDocumento(codigo) {
+    const lista = global.CORDOVA_DOC_TYPES || [];
+    const d = codigo ? lista.find((x) => x.codigo === String(codigo)) : null;
+    return d ? d.nombre : 'Nota de Venta';
+  }
+
+  /**
+   * Payload para `POST /api/v1/trabajos/crear` con TODO lo que se leyó del portal.
+   * Antes el establecimiento iba fijo en '001' y se perdían numeración, serie y dirección.
+   * `fecha_vencimiento` la completa content.js (necesita su parser de fechas del SRI).
+   */
+  function armarTrabajoPayload(orden, clienteId) {
+    const o = orden || {};
+    const total = parseFloat(o.total) || 13;
+    const abono = parseFloat(o.abono) || 0;
+    const actividad = String(o.activity || 'COMERCIO / SERVICIOS GENERAL').toUpperCase();
+    const notas = [
+      o.serie ? `Serie SRI ${o.serie}` : '',
+      o.direccion ? `Dirección: ${o.direccion}` : '',
+      o.fechaSolicitud ? `Solicitud SRI del ${o.fechaSolicitud}` : '',
+    ].filter(Boolean).join(' · ');
+    return {
+      cliente_id: clienteId || null,
+      titular: String(o.clientName || 'CLIENTE SRI').toUpperCase(),
+      tipo: nombreDocumento(o.docType),
+      subtipo: `${o.blocks || 100} Hojas (${o.docSize || '1/4 Oficio'})`,
+      cantidad: 1,
+      total,
+      abono,
+      saldo: Math.max(0, total - abono),
+      prioridad: 'Normal',
+      estado: 'Pendiente',
+      fecha_entrada: new Date().toISOString(),
+      origen: 'SRI Extension',
+      establecimiento: tresDigitos(o.establecimiento),
+      punto_emision: tresDigitos(o.puntoEmision),
+      tamano: o.docSize || '1/4 Oficio',
+      actividad_seleccionada: actividad,
+      numeracion: o.numeracion ? String(o.numeracion) : null,
+      observaciones: notas || null,
+    };
+  }
+
+  global.CordovaParseo = { leerResumenSolicitud, leerSecuencias, filasBandeja, validarCaptura, debeRegistrarOrden, armarTrabajoPayload, nombreDocumento };
 })(typeof self !== 'undefined' ? self : this);
