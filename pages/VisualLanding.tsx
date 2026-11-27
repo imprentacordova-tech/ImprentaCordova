@@ -8,18 +8,20 @@ import { RucValidatorWidget } from '../components/public/RucValidatorWidget';
 import { CotizadorRapido } from '../components/public/CotizadorRapido';
 import {
     WhatsAppIcon, Sparkles, Check, ArrowRight, Clock,
-    Phone,
+    Phone, Star, Truck, MapPin, BoltIcon, PaletteIcon,
 } from '../components/Icons';
 
 const WA = (msg: string) => generateWhatsAppLink('593993083943', msg);
 const IMG = (n: string) => `/images/landing/${n}`;
 
-const TICKER = [
-    '⭐ SRI Establecimiento Gráfico N° 001-001',
-    '⚡ Entrega Estándar en 24 Horas',
-    '🎨 Diseño & Diagramación Incluidos',
-    '🚚 Envíos a todo El Oro (Pasaje, Santa Rosa, Huaquillas)',
-    '📍 Taller en Machala: Av. Las Palmeras y Calle 4ta',
+// Íconos SVG (no emoji): se ven igual en todos los teléfonos y el lector de
+// pantalla no los lee en voz alta (aria-hidden).
+const TICKER: { Icono: React.FC<{ className?: string }>; texto: string }[] = [
+    { Icono: Star, texto: 'SRI Establecimiento Gráfico N° 001-001' },
+    { Icono: BoltIcon, texto: 'Entrega Estándar en 24 Horas' },
+    { Icono: PaletteIcon, texto: 'Diseño & Diagramación Incluidos' },
+    { Icono: Truck, texto: 'Envíos a todo El Oro (Pasaje, Santa Rosa, Huaquillas)' },
+    { Icono: MapPin, texto: 'Taller en Machala: Av. Las Palmeras y Calle 4ta' },
 ];
 
 const FACTS = [
@@ -122,7 +124,7 @@ type Item = {
 const ITEMS: Item[] = [
     {
         cat: 'SRI',
-        img: 'talonarios.png',
+        img: 'talonarios.webp',
         tag: 'SRI Autorizado',
         label: 'Facturas Impresas Autocopiativas',
         desc: 'Para Régimen General y RIMPE Emprendedor. Numeración secuencial exacta en papel químico autocopiativo sin papel carbón.',
@@ -132,7 +134,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'SRI',
-        img: 'talonarios.png',
+        img: 'talonarios.webp',
         tag: 'RIMPE Popular',
         label: 'Notas de Venta Simplificadas',
         desc: 'Formato reglamentario aprobado para contribuyentes RIMPE Negocio Popular sin desglose de IVA.',
@@ -142,7 +144,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'SRI',
-        img: 'printer_gold.png',
+        img: 'printer_gold.webp',
         tag: 'Autocopiativo',
         label: 'Guías de Remisión & Retenciones',
         desc: 'Comprobantes para traslado de mercaderías y retenciones autorizadas bajo estricta normativa del SRI.',
@@ -151,7 +153,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Comercial',
-        img: 'business_cards.png',
+        img: 'business_cards.webp',
         tag: 'Offset Pro',
         label: 'Tarjetas de Presentación Ejecutivas',
         desc: 'Cartulina couché 300g con laminado Soft Touch aterciopelado o brillo UV selectivo para causar una primera impresión imborrable.',
@@ -160,7 +162,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Comercial',
-        img: 'branding.png',
+        img: 'branding.webp',
         tag: 'Identidad Corporativa',
         label: 'Carpetas & Hojas Membretadas',
         desc: 'Papelería corporativa institucional: carpetas con bolsillo troquelado, sobres membretados y hojas bond 90g con impresión nítida.',
@@ -169,7 +171,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Gran formato',
-        img: 'gigantografia.png',
+        img: 'gigantografia.webp',
         tag: '1440 DPI',
         label: 'Gigantografía & Lonas Exteriores',
         desc: 'Impresión eco-solvente resistente a la intemperie y rayos UV para letreros, vallas, rótulos comerciales y banners tipo araña.',
@@ -178,7 +180,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Sellos',
-        img: 'printer_gold.png',
+        img: 'printer_gold.webp',
         tag: 'Mismo Día',
         label: 'Sellos Automáticos Láser',
         desc: 'Aparatos Trodat y Shiny con caucho polímero grabado en láser de alta definición para médicos, abogados, contadores y comercios.',
@@ -299,9 +301,10 @@ export const VisualLanding: React.FC = () => {
             {/* ── Marquee Ticker Superior ─────────────────────────────── */}
             <div className="bg-ink text-onink overflow-hidden py-2.5 border-b border-white/10">
                 <div className="flex whitespace-nowrap animate-marquee">
-                    {[...TICKER, ...TICKER].map((t, idx) => (
-                        <span key={idx} className="flex-shrink-0 px-6 text-xs font-semibold tracking-wider uppercase text-onink">
-                            {t}
+                    {[...TICKER, ...TICKER].map(({ Icono, texto }, idx) => (
+                        <span key={idx} aria-hidden={idx >= TICKER.length || undefined} className="flex-shrink-0 px-6 inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-onink">
+                            <Icono className="w-3.5 h-3.5 text-gold" aria-hidden />
+                            {texto}
                         </span>
                     ))}
                 </div>
@@ -339,7 +342,7 @@ export const VisualLanding: React.FC = () => {
                     >
                         {/* Badge Oficial */}
                         <motion.div variants={itemUp} className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white border border-hairline-strong/80 rounded-full shadow-sm text-xs font-bold text-ink mb-6">
-                            <span className="font-mono text-royal font-extrabold">SRI 001-001</span>
+                            <span className="font-mono text-royal font-extrabold whitespace-nowrap">SRI 001-001</span>
                             <span className="w-1 h-3 bg-hairline-strong rounded-full" />
                             <span>Establecimiento Gráfico Autorizado en Machala</span>
                             <span className="relative flex h-2 w-2">
@@ -424,7 +427,8 @@ export const VisualLanding: React.FC = () => {
                         >
                             <div className="h-56 relative overflow-hidden bg-soft">
                                 <img
-                                    src={IMG('business_cards.png')}
+                                    src={IMG('business_cards.webp')}
+                                    width={1024} height={1024} decoding="async" loading="lazy"
                                     alt="Tarjetas de presentación"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
@@ -456,7 +460,8 @@ export const VisualLanding: React.FC = () => {
 
                             <div className="h-72 relative overflow-hidden bg-paper">
                                 <img
-                                    src={IMG('talonarios.png')}
+                                    src={IMG('talonarios.webp')}
+                                    width={1024} height={1024} decoding="async" loading="eager" fetchPriority="high"
                                     alt="Talonarios autocopiativos"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
@@ -487,7 +492,8 @@ export const VisualLanding: React.FC = () => {
                         >
                             <div className="h-56 relative overflow-hidden bg-soft">
                                 <img
-                                    src={IMG('gigantografia.png')}
+                                    src={IMG('gigantografia.webp')}
+                                    width={1024} height={1024} decoding="async" loading="lazy"
                                     alt="Gigantografía HD"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
@@ -563,7 +569,7 @@ export const VisualLanding: React.FC = () => {
                                 <button
                                     key={c}
                                     onClick={() => setFilter(c)}
-                                    className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                                    className={`relative min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                                         isSelected ? 'text-white' : 'text-body hover:text-ink'
                                     }`}
                                 >
@@ -599,6 +605,7 @@ export const VisualLanding: React.FC = () => {
                                     <div className="h-52 relative overflow-hidden bg-soft">
                                         <img
                                             src={IMG(it.img)}
+                                    width={1024} height={1024} decoding="async" loading="lazy"
                                             alt={it.label}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
@@ -637,7 +644,7 @@ export const VisualLanding: React.FC = () => {
                                             href={WA(`Hola Imprenta Córdova, quiero cotizar: ${it.label}.`)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-royal hover:text-royal-dark transition-colors"
+                                            className="inline-flex items-center gap-1.5 min-h-[44px] -my-3 px-2 -mx-2 text-xs font-bold text-royal hover:text-royal-dark transition-colors"
                                         >
                                             <span>Cotizar</span>
                                             <ArrowRight className="w-3.5 h-3.5" />
@@ -824,13 +831,13 @@ export const VisualLanding: React.FC = () => {
                                             href={WA(`Hola Imprenta Córdova, deseo solicitar una muestra física en el taller de: ${fin.name}.`)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink hover:bg-royal text-white text-xs font-bold rounded-xl shadow-md transition-all"
+                                            className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 bg-ink hover:bg-royal text-white text-xs font-bold rounded-xl shadow-md transition-all"
                                         >
                                             <span>Pedir Muestra Física en Taller</span>
                                             <ArrowRight className="w-3.5 h-3.5 text-gold" />
                                         </a>
-                                        <span className="text-xs text-faint">
-                                            📍 Av. Las Palmeras y Calle 4ta
+                                        <span className="inline-flex items-center gap-1.5 text-xs text-faint">
+                                            <MapPin className="w-3.5 h-3.5" aria-hidden /> Av. Las Palmeras y Calle 4ta
                                         </span>
                                     </div>
                                 </div>
@@ -992,7 +999,7 @@ export const VisualLanding: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <div className="flex items-center gap-3">
-                            <img src="/LOGO.png" alt="Imprenta Córdova" className="h-9 w-auto" />
+                            <img src="/LOGO.png" alt="Imprenta Córdova" width={225} height={225} loading="lazy" className="h-9 w-auto" />
                             <span className="font-heading font-extrabold text-ink text-base">
                                 Imprenta Córdova
                             </span>
@@ -1006,7 +1013,7 @@ export const VisualLanding: React.FC = () => {
                         <h4 className="text-xs font-mono uppercase font-bold text-faint tracking-wider mb-3">
                             Productos
                         </h4>
-                        <div className="flex flex-col gap-2 text-xs font-semibold text-body">
+                        <div className="flex flex-col text-xs font-semibold text-body [&>a]:min-h-[44px] [&>a]:flex [&>a]:items-center md:[&>a]:min-h-0 md:gap-2">
                             <Link to="/vitrina" className="hover:text-royal">Facturas Autorizadas SRI</Link>
                             <Link to="/vitrina" className="hover:text-royal">Notas de Venta RIMPE</Link>
                             <Link to="/vitrina" className="hover:text-royal">Tarjetas de Presentación</Link>
@@ -1019,7 +1026,7 @@ export const VisualLanding: React.FC = () => {
                         <h4 className="text-xs font-mono uppercase font-bold text-faint tracking-wider mb-3">
                             Servicios
                         </h4>
-                        <div className="flex flex-col gap-2 text-xs font-semibold text-body">
+                        <div className="flex flex-col text-xs font-semibold text-body [&>a]:min-h-[44px] [&>a]:flex [&>a]:items-center md:[&>a]:min-h-0 md:gap-2">
                             <Link to="/solicitar" className="hover:text-royal">Pedir Comprobantes en Línea</Link>
                             <Link to="/tracking" className="hover:text-royal">Rastrear Mi Pedido</Link>
                             <a href="#sri" onClick={irASeccion('sri')} className="hover:text-royal">Consulta de RUC en Padrón</a>
@@ -1032,7 +1039,7 @@ export const VisualLanding: React.FC = () => {
                         <h4 className="text-xs font-mono uppercase font-bold text-faint tracking-wider mb-3">
                             Ubicación & Contacto
                         </h4>
-                        <div className="flex flex-col gap-2 text-xs text-body">
+                        <div className="flex flex-col gap-2 text-xs text-body [&>a]:min-h-[44px] [&>a]:flex [&>a]:items-center md:[&>a]:min-h-0">
                             <span>Av. Las Palmeras y Calle 4ta</span>
                             <span>Machala, El Oro</span>
                             <a href="tel:+593993083943" className="font-bold text-ink hover:text-royal">

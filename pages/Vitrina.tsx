@@ -23,7 +23,7 @@ type Item = {
 const ITEMS: Item[] = [
     {
         cat: 'SRI',
-        img: 'talonarios.png',
+        img: 'talonarios.webp',
         tag: 'SRI 001-001',
         label: 'Facturas Impresas Autocopiativas',
         desc: 'Para Régimen General y RIMPE Emprendedor con numeración secuencial autorizada por el SRI en papel químico de copia nítida.',
@@ -33,7 +33,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'SRI',
-        img: 'talonarios.png',
+        img: 'talonarios.webp',
         tag: 'RIMPE Popular',
         label: 'Notas de Venta Simplificadas',
         desc: 'Formato simplificado aprobado para negocios populares bajo el régimen RIMPE sin desglose de tarifa IVA.',
@@ -43,7 +43,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'SRI',
-        img: 'printer_gold.png',
+        img: 'printer_gold.webp',
         tag: 'Autocopiativo',
         label: 'Guías de Remisión',
         desc: 'Comprobantes para el traslado legal de mercadería interprovincial con original y copias autocopiativas de alta legibilidad.',
@@ -52,7 +52,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'SRI',
-        img: 'printer_gold.png',
+        img: 'printer_gold.webp',
         tag: 'Autocopiativo',
         label: 'Comprobantes de Retención',
         desc: 'Documentos oficiales para retenciones en la fuente y de IVA bajo estricta normativa técnica del SRI.',
@@ -61,7 +61,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Comercial',
-        img: 'business_cards.png',
+        img: 'business_cards.webp',
         tag: 'Offset Pro',
         label: 'Tarjetas de Presentación Ejecutivas',
         desc: 'Couché 300g con esquinas rectas o redondeadas. Laminado Soft Touch aterciopelado o brillo UV selectivo para máxima presencia.',
@@ -70,7 +70,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Comercial',
-        img: 'branding.png',
+        img: 'branding.webp',
         tag: 'Papelería Pro',
         label: 'Carpetas & Hojas Membretadas',
         desc: 'Identidad corporativa de alto nivel: carpetas institucionales con bolsillo porta-tarjetas y hojas A4 de fibra bond 90g.',
@@ -79,7 +79,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Comercial',
-        img: 'branding.png',
+        img: 'branding.webp',
         tag: 'Troquel Láser',
         label: 'Etiquetas & Adhesivos en Pliego',
         desc: 'Vinil adhesivo o papel adhesivo brillante con medio corte troquelado a la medida exacta de tu envase o producto.',
@@ -88,7 +88,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Sellos',
-        img: 'printer_gold.png',
+        img: 'printer_gold.webp',
         tag: 'Mismo Día',
         label: 'Sellos Automáticos Láser',
         desc: 'Mecanismo Trodat / Shiny retráctil con almohadilla de tinta recargable y grabado micro-definido por láser de alta precisión.',
@@ -98,7 +98,7 @@ const ITEMS: Item[] = [
     },
     {
         cat: 'Gran formato',
-        img: 'gigantografia.png',
+        img: 'gigantografia.webp',
         tag: '1440 DPI HD',
         label: 'Gigantografía & Lonas para Exterior',
         desc: 'Lona front 13oz pesada con tintas eco-solventes resistentes a lluvia y sol para letreros comerciales y banners enrollables.',
@@ -328,6 +328,7 @@ export const Vitrina: React.FC = () => {
                                                 <div className="h-48 relative overflow-hidden bg-slate-100">
                                                     <img
                                                         src={IMG(it.img)}
+                                                        width={1024} height={1024} decoding="async" loading="lazy"
                                                         alt={it.label}
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
@@ -425,7 +426,7 @@ export const Vitrina: React.FC = () => {
             <footer className="bg-white border-t border-slate-200 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
                     <div className="flex items-center gap-3">
-                        <img src="/LOGO.png" alt="Imprenta Córdova" className="h-7 w-auto" />
+                        <img src="/LOGO.png" alt="Imprenta Córdova" width={225} height={225} loading="lazy" className="h-7 w-auto" />
                         <span>© 2026 Imprenta Córdova · SRI Autorizado 001-001 · Machala</span>
                     </div>
                     <div className="flex gap-4 font-semibold">

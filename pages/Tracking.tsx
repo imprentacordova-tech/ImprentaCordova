@@ -477,7 +477,7 @@ export const TrackingPage: React.FC = () => {
             <footer className="bg-white border-t border-slate-200 py-8">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
                     <div className="flex items-center gap-3">
-                        <img src="/LOGO.png" alt="Imprenta Córdova" className="h-7 w-auto" />
+                        <img src="/LOGO.png" alt="Imprenta Córdova" width={225} height={225} loading="lazy" className="h-7 w-auto" />
                         <span>© 2026 Imprenta Córdova · SRI 001-001 · Machala</span>
                     </div>
                     <div className="flex gap-4 font-semibold">

@@ -58,23 +58,23 @@ const PublicNavbar: React.FC = () => {
                 <Link to="/" className="flex items-center gap-3.5 group">
                     <div className="relative">
                         <img
-                            src="/LOGO.png"
+                            src="/LOGO.png" width={225} height={225} loading="eager"
                             alt="Imprenta Córdova"
                             className={`w-auto object-contain transition-all duration-300 group-hover:scale-105 ${scrolled ? 'h-8' : 'h-10'}`}
                         />
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-heading font-extrabold text-lg sm:text-xl text-ink tracking-tight leading-none">
+                        <span className="font-heading font-extrabold text-lg sm:text-xl text-ink tracking-tight leading-none whitespace-nowrap">
                             Imprenta <span className="text-brand-blue">Córdova</span>
                         </span>
-                        <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-gold-deep mt-1">
+                        <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-gold-deep mt-1 whitespace-nowrap">
                             SRI Autorizado · Machala
                         </span>
                     </div>
                 </Link>
 
                 {/* Desktop Navigation Links */}
-                <nav className="hidden md:flex items-center gap-1.5 bg-soft p-1.5 rounded-full border border-hairline">
+                <nav className="hidden lg:flex items-center gap-1.5 bg-soft p-1.5 rounded-full border border-hairline">
                     {LINKS.map(l => {
                         const isActive = location.pathname === l.to;
                         return (
@@ -82,7 +82,7 @@ const PublicNavbar: React.FC = () => {
                                 key={l.to}
                                 to={l.to}
                                 end={l.to === '/'}
-                                className={`relative px-4 py-2 rounded-full text-xs font-bold transition-colors ${
+                                className={`relative px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
                                     isActive ? 'text-white' : 'text-body hover:text-ink'
                                 }`}
                             >
@@ -100,9 +100,9 @@ const PublicNavbar: React.FC = () => {
                 </nav>
 
                 {/* Right Quick Actions */}
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden lg:flex items-center gap-3">
                     {/* Live Taller Status */}
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
+                    <div className={`hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold whitespace-nowrap ${
                         abierto
                             ? 'bg-success/5 border-success/25 text-success'
                             : 'bg-soft border-hairline text-body'
@@ -125,7 +125,7 @@ const PublicNavbar: React.FC = () => {
                         href="https://wa.me/593993083943?text=Hola%20Imprenta%20C%C3%B3rdova%2C%20quisiera%20cotizar%20un%20trabajo%20de%20impresi%C3%B3n."
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-blue to-royal-dark hover:from-royal hover:to-ink text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-md shadow-brand-blue/20 transition-all"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 whitespace-nowrap bg-gradient-to-r from-brand-blue to-royal-dark hover:from-royal hover:to-ink text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-md shadow-brand-blue/20 transition-all"
                     >
                         <WhatsAppIcon className="w-4 h-4 text-onink-success" />
                         <span>Cotizar Ahora</span>
@@ -133,7 +133,7 @@ const PublicNavbar: React.FC = () => {
                 </div>
 
                 {/* Mobile Menu Button */}
-                <div className="flex md:hidden items-center gap-2">
+                <div className="flex lg:hidden items-center gap-2">
                     <button
                         onClick={() => setOpen(!open)}
                         className="w-11 h-11 flex items-center justify-center rounded-2xl bg-soft border border-hairline text-ink active:scale-95 transition-all"
@@ -152,7 +152,7 @@ const PublicNavbar: React.FC = () => {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                        className="md:hidden border-t border-hairline bg-white/95 backdrop-blur-2xl px-5 py-5 space-y-2 shadow-2xl"
+                        className="lg:hidden border-t border-hairline bg-white/95 backdrop-blur-2xl px-5 py-5 space-y-2 shadow-2xl"
                     >
                         <div className="flex items-center justify-between pb-3 mb-2 border-b border-hairline">
                             <span className="text-xs font-bold uppercase tracking-wider text-muted">
