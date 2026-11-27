@@ -164,6 +164,53 @@ app.get('/ping', (req, res) => {
     });
 });
 
+// ── Login de operadores ─────────────────────────────────────────────────────
+// La tabla `users` NO es legible con la clave pública: el login se valida acá, con
+// service role, y se devuelve una sesión firmada (auth.js) que el panel y la
+// extensión mandan como `Authorization: Bearer <token>`.
+const { firmarSesion, verificarSesion } = require('./auth');
+const { evaluarLogin, LimitadorIntentos } = require('./loginRules');
+const limitadorLogin = new LimitadorIntentos(5, 10 * 60 * 1000);
+
+app.post('/api/v1/auth/login', async (req, res) => {
+    const secreto = process.env.SESSION_SECRET;
+    if (!secreto || secreto.length < 32 || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return res.status(503).json({ error: 'El inicio de sesión no está configurado en el servidor.' });
+    }
+    const nombre = String(req.body?.nombre || '').trim();
+    const password = String(req.body?.password || '');
+    if (!nombre || nombre.length > 80) return res.status(400).json({ error: 'Escribí tu usuario.' });
+
+    const clave = `${req.ip}|${nombre.toLowerCase()}`;
+    if (limitadorLogin.bloqueado(clave)) {
+        return res.status(429).json({ error: 'Demasiados intentos. Esperá 10 minutos.' });
+    }
+    try {
+        // ilike sin comodines = igualdad sin distinguir mayúsculas; se escapan % y _.
+        const patron = nombre.replace(/[%_\\]/g, (c) => `\\${c}`);
+        const r = await supabaseRest('get', `users?nombre=ilike.${encodeURIComponent(patron)}&select=id,nombre,rol,estado,password,require_password&limit=2`);
+        const filas = Array.isArray(r.data) ? r.data : [];
+        const resultado = evaluarLogin(filas.length === 1 ? filas[0] : null, password);
+        if (!resultado.ok) {
+            limitadorLogin.fallo(clave);
+            const mensaje = resultado.motivo === 'INACTIVO' ? 'Tu usuario está desactivado.'
+                : resultado.motivo === 'ADMIN_SIN_CLAVE' ? 'Este usuario necesita una contraseña. Pedile al administrador que la cargue.'
+                : 'Usuario o contraseña incorrectos.';
+            return res.status(401).json({ error: mensaje });
+        }
+        limitadorLogin.exito(clave);
+        const token = firmarSesion({ sub: resultado.user.id, nombre: resultado.user.nombre, rol: resultado.user.rol }, secreto);
+        supabaseRest('post', 'activity_log', {
+            user_name: resultado.user.nombre, rol: resultado.user.rol, action: 'LOGIN',
+            details: 'Inicio de sesión validado por el servidor', module: 'Auth',
+        }).catch(() => {});
+        return res.json({ token, user: resultado.user });
+    } catch (err) {
+        console.error('[Auth] Error en login:', err.message);
+        return res.status(err.statusCode || 500).json({ error: 'No se pudo validar el usuario. Intentá de nuevo.' });
+    }
+});
+
 /**
  * Endpoint de Emision y Firma de Facturas Electronicas
  */
