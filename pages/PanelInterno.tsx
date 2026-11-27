@@ -73,7 +73,7 @@ const GROUPS: { id: string; title: string; items: { key: ViewKey; label: string;
     { key: 'usuarios', label: 'Usuarios', icon: 'shield' },
     { key: 'registro', label: 'Auditoría', icon: 'history' },
     { key: 'configuracion', label: 'Configuración', icon: 'settings' },
-    { key: 'extension', label: 'Descargar Extensión', icon: 'puzzle', badge: 'v2.1' },
+    { key: 'extension', label: 'Descargar Extensión', icon: 'puzzle', badge: 'v3' },
   ] },
 ];
 

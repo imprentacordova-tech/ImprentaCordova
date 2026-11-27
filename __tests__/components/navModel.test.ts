@@ -15,6 +15,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { buildNavGroups, PAGE_TITLES, ATAJOS, RUTA_CTA } from '../../components/layout/navModel';
+import manifestExtension from '../../sri-chrome-extension/Solicitador de documentos/Extension_Imprenta_Cordova/manifest.json';
 
 /** Contadores que calcula `Layout` y pasa como `badges`. */
 const BADGES_DISPONIBLES = ['ordenes', 'cobrar', 'stock', 'solicitudes'];
@@ -112,5 +113,12 @@ describe('PAGE_TITLES', () => {
     for (const [ruta, titulo] of Object.entries(PAGE_TITLES)) {
       expect(titulo.trim().length, ruta).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('descarga de la extensión', () => {
+  it('la insignia muestra la versión real del manifest (antes quedaba "v2.4" fija)', () => {
+    const descarga = items(true).find((i) => esDescarga(i.path));
+    expect(descarga?.badge).toBe(`v${manifestExtension.version}`);
   });
 });

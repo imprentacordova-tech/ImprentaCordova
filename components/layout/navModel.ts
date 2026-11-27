@@ -21,6 +21,7 @@ import {
     ReceiptIcon, HistoryIcon, PuzzlePieceIcon,
     Box, Layers, GlobeAltIcon
 } from '../Icons';
+import manifestExtension from '../../sri-chrome-extension/Solicitador de documentos/Extension_Imprenta_Cordova/manifest.json';
 
 /** Una fila del menú. `badge` es la CLAVE del contador, no el número. */
 export interface NavItemModel {
@@ -109,7 +110,7 @@ export const buildNavGroups = (isAdmin: boolean): NavGroupModel[] => [
             { path: '/usuarios',      label: 'Usuarios',           icon: ShieldCheckIcon,  badge: null },
             { path: '/registro',      label: 'Auditoría',          icon: HistoryIcon,      badge: null },
             { path: '/configuracion', label: 'Configuración',      icon: Cog8ToothIcon,    badge: null },
-            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: 'v2.4' },
+            { path: '/extension-cordova.zip', label: 'Descargar Extensión', icon: PuzzlePieceIcon, badge: `v${manifestExtension.version}` },
         ],
     }] : []),
 ];
