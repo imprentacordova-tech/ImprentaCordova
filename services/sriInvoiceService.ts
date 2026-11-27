@@ -1,4 +1,10 @@
 import { supabase } from './supabase';
+import { sesion } from './sesion';
+
+const conSesion = (h: Record<string, string> = {}): Record<string, string> => {
+  const t = sesion.token();
+  return t ? { ...h, Authorization: `Bearer ${t}` } : h;
+};
 import { FacturaElectronica, EstadoFacturaSri, FacturaDetalleItem } from '../types';
 
 const RENDER_SRI_API_URL = import.meta.env.VITE_RENDER_SRI_API_URL || 'https://cordova-sri-api.onrender.com';
@@ -172,7 +178,7 @@ export const sriInvoiceService = {
       try {
         const response = await fetch(`${RENDER_SRI_API_URL}/api/v1/facturas/emitir`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: conSesion({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             claveAcceso,
             numeroFactura,
@@ -253,7 +259,7 @@ export const sriInvoiceService = {
 
   async consultarEstadoSri(claveAcceso: string): Promise<{ estado: EstadoFacturaSri; mensajes: string[] }> {
     try {
-      const response = await fetch(`${RENDER_SRI_API_URL}/api/v1/facturas/${claveAcceso}/estado`);
+      const response = await fetch(`${RENDER_SRI_API_URL}/api/v1/facturas/${claveAcceso}/estado`, { headers: conSesion() });
       if (response.ok) {
         const data = await response.json();
         return { estado: data.estado || 'AUTORIZADO', mensajes: data.mensajes || [] };

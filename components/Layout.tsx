@@ -85,6 +85,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         return () => { vivo = false; clearInterval(id); };
     }, [user, location.pathname]);
 
+    // El backend respondió 401 con un token: la sesión venció. Se cierra y se vuelve a
+    // esta misma pantalla después del login (Nueva Orden guarda su borrador antes).
+    useEffect(() => {
+        const alVencer = () => {
+            const volver = location.pathname + location.search;
+            authLogout().finally(() => navigate(`/login?volver=${encodeURIComponent(volver)}`, { replace: true }));
+        };
+        window.addEventListener('cordova:sesion-vencida', alVencer);
+        return () => window.removeEventListener('cordova:sesion-vencida', alVencer);
+    }, [authLogout, navigate, location.pathname, location.search]);
+
     const isAdmin = !!user && (user.rol === 'Admin' || (user.rol as string) === 'root');
     const navGroups = useMemo(() => buildNavGroups(isAdmin), [isAdmin]);
 

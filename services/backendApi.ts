@@ -14,15 +14,17 @@
  * Cualquier variable con prefijo `VITE_` termina incrustada en el bundle público
  * que sirve Vercel. Si dudás: si es un secreto, no lleva prefijo VITE_.
  *
- * `VITE_RENDER_API_KEY` SÍ es pública por diseño: viaja en el navegador, así que
- * funciona como barrera anti-abuso (junto a CORS y rate limiting), no como credencial.
+ * Autenticación: cada operador inicia sesión en `/api/v1/auth/login` y el backend
+ * devuelve un token firmado (services/sesion.ts) que va en `Authorization: Bearer`.
+ * Antes se mandaba una `VITE_RENDER_API_KEY` incrustada en el bundle: era pública,
+ * así que no protegía el correo ni el listado de órdenes.
  */
+import { sesion } from './sesion';
 
 const BACKEND_URL = (
   import.meta.env.VITE_RENDER_SRI_API_URL || 'https://cordova-sri-api.onrender.com'
 ).replace(/\/+$/, '');
 
-const BACKEND_API_KEY = import.meta.env.VITE_RENDER_API_KEY || '';
 
 /** Error de backend con el status HTTP disponible para quien lo consuma. */
 export class BackendError extends Error {
@@ -57,12 +59,13 @@ export async function backendFetch<T = unknown>(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+  const token = sesion.token();
   try {
     const res = await fetch(`${BACKEND_URL}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(BACKEND_API_KEY ? { 'x-api-key': BACKEND_API_KEY } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(body),
       signal: controller.signal,
@@ -71,6 +74,11 @@ export async function backendFetch<T = unknown>(
     const payload = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      // Solo si había sesión: con el login de respaldo (sin token) un 401 no es "venció".
+      if (res.status === 401 && token) {
+        sesion.limpiar();
+        window.dispatchEvent(new Event('cordova:sesion-vencida'));
+      }
       const mensaje = payload?.error || `Error ${res.status} del servidor`;
       console.warn(`⚠️ [${etiqueta}] ${mensaje}`);
       throw new BackendError(mensaje, res.status, payload?.detalle);
@@ -92,8 +100,27 @@ export async function backendFetch<T = unknown>(
   }
 }
 
-/** Indica si el backend está configurado para operaciones privilegiadas. */
-export const backendConfigurado = (): boolean => Boolean(BACKEND_API_KEY);
+/** Indica si hay sesión para operaciones privilegiadas (correo, IA, padrón). */
+export const backendConfigurado = (): boolean => Boolean(sesion.token());
+
+export interface UsuarioSesion { id: string; nombre: string; rol: string }
+
+/**
+ * Login contra el backend. Errores: status 0 = sin conexión (Render dormido o sin red);
+ * 401/403/429 = el mensaje del servidor; 503 = login no configurado en el servidor.
+ */
+export async function loginBackend(nombre: string, password: string): Promise<{ token: string; user: UsuarioSesion }> {
+  try {
+    return await backendFetch<{ token: string; user: UsuarioSesion }>(
+      '/api/v1/auth/login', { nombre, password }, { timeoutMs: 45000, etiqueta: 'Login' },
+    );
+  } catch (err) {
+    if (err instanceof BackendError && (err.status === 0 || err.status === 408)) {
+      throw new BackendError('El servidor está despertando, reintentá en 30 s.', err.status);
+    }
+    throw err;
+  }
+}
 
 export const BACKEND_BASE_URL = BACKEND_URL;
 

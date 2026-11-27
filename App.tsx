@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, Outlet, useSearchParams } from 'react-router-dom';
+import { rutaDeVuelta } from './services/sesion';
 import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import { purgeOldEntries } from './services/activityLogService';
@@ -67,10 +68,15 @@ const ProtectedRoute: React.FC = () => {
   );
 };
 
+// ── Login: si ya hay sesión, vuelve a donde estaba (p. ej. tras una sesión vencida) ──
+const LoginGate: React.FC = () => {
+  const { user } = useAuth();
+  const [params] = useSearchParams();
+  return user ? <Navigate to={rutaDeVuelta(params.get('volver'))} replace /> : <LoginPage />;
+};
+
 // ── Main App ─────────────────────────────────────────────────────────────
 const App: React.FC = () => {
-  const { user } = useAuth();
-
   useEffect(() => {
     purgeOldEntries();
   }, []);
@@ -83,9 +89,7 @@ const App: React.FC = () => {
           <Route path="/" element={<VisualLanding />} />
           <Route path="/vitrina" element={<VitrinaPage />} />
           <Route path="/recuperar-acceso" element={<RecuperarAccesoPage />} />
-          <Route path="/login" element={
-            user ? <Navigate to="/dashboard" replace /> : <LoginPage />
-          } />
+          <Route path="/login" element={<LoginGate />} />
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/solicitar" element={<SolicitarOnlinePage />} />
 

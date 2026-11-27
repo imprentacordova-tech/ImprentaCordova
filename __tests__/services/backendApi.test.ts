@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Pruebas del cliente del backend SRI (Render).
  * =============================================
@@ -11,7 +12,8 @@
  * silencioso que termine en pantalla blanca.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { backendFetch, BackendError, backendConfigurado, BACKEND_BASE_URL } from '../../services/backendApi';
+import { backendFetch, BackendError, backendConfigurado, BACKEND_BASE_URL, loginBackend } from '../../services/backendApi';
+import { sesion } from '../../services/sesion';
 
 /** Respuesta mínima con la forma que usa `backendFetch`. */
 const respuesta = (status: number, cuerpo: unknown, { json = true } = {}) =>
@@ -136,29 +138,81 @@ describe('backendFetch — red y timeout', () => {
   });
 });
 
-describe('cabecera x-api-key', () => {
-  it('sin VITE_RENDER_API_KEY no manda la cabecera y backendConfigurado() es false', async () => {
-    // En el entorno de pruebas la variable no está definida: es el mismo caso
-    // que un deploy al que se le olvidó configurarla.
+describe('sesión del operador', () => {
+  // Antes se mandaba una `x-api-key` pública incrustada en el bundle: no protegía nada.
+  // Ahora cada operador manda su token firmado por el backend.
+  const tokenVigente = () => {
+    const cuerpo = btoa(JSON.stringify({ sub: 'u1', nombre: 'Pedro', rol: 'Admin', exp: Math.floor(Date.now() / 1000) + 3600 }));
+    return `${cuerpo}.firma`;
+  };
+
+  afterEach(() => sesion.limpiar());
+
+  it('sin sesión no manda Authorization ni x-api-key, y backendConfigurado() es false', async () => {
     fetchMock.mockResolvedValue(respuesta(200, {}));
     await backendFetch('/ping', {});
 
-    expect(fetchMock.mock.calls[0][1].headers['x-api-key']).toBeUndefined();
+    const headers = fetchMock.mock.calls[0][1].headers;
+    expect(headers.Authorization).toBeUndefined();
+    expect(headers['x-api-key']).toBeUndefined();
     expect(backendConfigurado()).toBe(false);
   });
 
-  it('con VITE_RENDER_API_KEY sí la manda y backendConfigurado() es true', async () => {
-    vi.stubEnv('VITE_RENDER_API_KEY', 'clave-publica-antiabuso');
-    vi.resetModules(); // el módulo lee la variable al importarse
-
-    const mod = await import('../../services/backendApi');
+  it('con sesión manda Authorization: Bearer <token>', async () => {
+    const token = tokenVigente();
+    sesion.guardar(token);
     fetchMock.mockResolvedValue(respuesta(200, {}));
-    await mod.backendFetch('/ping', {});
+    await backendFetch('/ping', {});
 
-    expect(fetchMock.mock.calls[0][1].headers['x-api-key']).toBe('clave-publica-antiabuso');
-    expect(mod.backendConfigurado()).toBe(true);
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe(`Bearer ${token}`);
+    expect(backendConfigurado()).toBe(true);
+  });
 
-    vi.unstubAllEnvs();
-    vi.resetModules();
+  it('un 401 con sesión avisa "cordova:sesion-vencida"', async () => {
+    sesion.guardar(tokenVigente());
+    const escucha = vi.fn();
+    window.addEventListener('cordova:sesion-vencida', escucha);
+    fetchMock.mockResolvedValue(respuesta(401, { error: 'Tu sesión venció.' }));
+
+    const e = await errorDe(backendFetch('/api/v1/trabajos/listar', {}));
+    window.removeEventListener('cordova:sesion-vencida', escucha);
+
+    expect(e.status).toBe(401);
+    expect(escucha).toHaveBeenCalledTimes(1);
+  });
+
+  it('un 401 SIN sesión (login de respaldo) no dispara el cierre de sesión', async () => {
+    const escucha = vi.fn();
+    window.addEventListener('cordova:sesion-vencida', escucha);
+    fetchMock.mockResolvedValue(respuesta(401, { error: 'Iniciá sesión.' }));
+
+    await errorDe(backendFetch('/api/v1/trabajos/listar', {}));
+    window.removeEventListener('cordova:sesion-vencida', escucha);
+
+    expect(escucha).not.toHaveBeenCalled();
+  });
+});
+
+describe('loginBackend', () => {
+  it('devuelve token y usuario', async () => {
+    fetchMock.mockResolvedValue(respuesta(200, { token: 'a.b', user: { id: 'u1', nombre: 'Pedro', rol: 'Admin' } }));
+    const r = await loginBackend('pedro', 'clave');
+    expect(r.token).toBe('a.b');
+    expect(r.user.nombre).toBe('Pedro');
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ nombre: 'pedro', password: 'clave' });
+  });
+
+  it('servidor dormido (sin conexión) → mensaje de que está despertando', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+    const e = await errorDe(loginBackend('pedro', 'clave'));
+    expect(e.status).toBe(0);
+    expect(e.message).toBe('El servidor está despertando, reintentá en 30 s.');
+  });
+
+  it('clave incorrecta → el mensaje del servidor, status 401', async () => {
+    fetchMock.mockResolvedValue(respuesta(401, { error: 'Usuario o contraseña incorrectos.' }));
+    const e = await errorDe(loginBackend('pedro', 'mal'));
+    expect(e.status).toBe(401);
+    expect(e.message).toBe('Usuario o contraseña incorrectos.');
   });
 });

@@ -21,6 +21,7 @@ import { perfilDe, especificacionesPorDefecto, calcularDelta, hojasPorTalonario 
 import { sugerirSiguienteNumeracion } from '../services/tallerBoard';
 import { solicitudesWebService } from '../services/solicitudesWebService';
 import { MASTER_CATALOG } from '../services/catalogData';
+import { guardarBorrador, leerBorrador } from '../services/sesion';
 import { ProductVisual } from '../components/ProductVisual';
 
 /**
@@ -364,6 +365,32 @@ const NuevoPedidoPage: React.FC = () => {
         setDireccion('adelante');
         setStep(4);
     };
+
+    // Si la sesión vence a mitad del pedido, se guarda lo cargado y se restaura al volver.
+    interface BorradorPedido { items: ItemPedido[]; clienteId?: string; tempClient: ClienteTemporal; step: number }
+    const estadoBorrador = useRef<BorradorPedido>({ items: [], tempClient, step: 1 });
+    estadoBorrador.current = { items, clienteId: cliente?.id, tempClient, step };
+    useEffect(() => {
+        const alVencer = () => {
+            const b = estadoBorrador.current;
+            if (b.items.length > 0 || b.clienteId || b.tempClient.nombre) guardarBorrador(b);
+        };
+        window.addEventListener('cordova:sesion-vencida', alVencer);
+        return () => window.removeEventListener('cordova:sesion-vencida', alVencer);
+    }, []);
+    useEffect(() => {
+        const b = leerBorrador<BorradorPedido>();
+        if (!b) return;
+        if (Array.isArray(b.items)) setItems(b.items);
+        if (b.tempClient) setTempClient(b.tempClient);
+        if (b.clienteId) {
+            const c = clientes.find(x => x.id === b.clienteId);
+            if (c) setCliente(c);
+        }
+        if (b.step) setStep(b.step);
+    // Solo al montar: el borrador se consume una vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         document.body.style.overflow = 'auto';
