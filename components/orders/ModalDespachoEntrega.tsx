@@ -163,7 +163,8 @@ export const ModalDespachoEntrega: React.FC<ModalDespachoEntregaProps> = ({
 
             const updated = await registerRetiro(
                 trabajo.id,
-                montoCobrado,
+                // A crédito no entra plata: el saldo queda pendiente en la cuenta del cliente.
+                metodoPago === 'Credito' ? 0 : montoCobrado,
                 currentUser.nombre || 'Operador',
                 photoUrl,
                 notas

@@ -2,7 +2,8 @@ import { supabase } from './supabase';
 import { FacturaElectronica, EstadoFacturaSri, FacturaDetalleItem } from '../types';
 
 const RENDER_SRI_API_URL = import.meta.env.VITE_RENDER_SRI_API_URL || 'https://cordova-sri-api.onrender.com';
-const DEFAULT_IVA_RATE = 0.12;
+// IVA vigente en Ecuador desde abril de 2024.
+const DEFAULT_IVA_RATE = 0.15;
 
 export const calcularModulo11 = (cadena48: string): number => {
   let suma = 0;
@@ -157,9 +158,16 @@ export const sriInvoiceService = {
       const nowIso = new Date().toISOString();
 
       // 4. Try Render backend
-      let estadoInicial: EstadoFacturaSri = 'AUTORIZADO';
-      let autorizacionNum = `SRI-AUTH-${Date.now()}`;
-      let mensajesSri: string[] = ['PROCESAMIENTO AUTORIZADO CORRECTAMENTE POR SRI ECUADOR'];
+      /*
+       * Una factura SOLO queda AUTORIZADO si el SRI la autorizó de verdad. Antes arrancaba
+       * en AUTORIZADO con un número inventado ("SRI-AUTH-<fecha>") y así quedaba si el backend
+       * no respondía. Además el backend actual NO envía nada al SRI (devuelve AUTORIZADO en
+       * modo simulación): por eso solo se acepta su respuesta cuando declara
+       * `enviadoAlSri: true`, que es lo que tiene que devolver la integración real.
+       */
+      let estadoInicial: EstadoFacturaSri = 'PENDIENTE';
+      let autorizacionNum: string | null = null;
+      let mensajesSri: string[] = ['NO ENVIADA AL SRI: el envío electrónico todavía no está habilitado. Este registro no es un comprobante autorizado.'];
 
       try {
         const response = await fetch(`${RENDER_SRI_API_URL}/api/v1/facturas/emitir`, {
@@ -181,9 +189,11 @@ export const sriInvoiceService = {
         });
         if (response.ok) {
           const apiData = await response.json();
-          if (apiData.estado) estadoInicial = apiData.estado;
-          if (apiData.numeroAutorizacion) autorizacionNum = apiData.numeroAutorizacion;
-          if (apiData.mensajes) mensajesSri = apiData.mensajes;
+          if (apiData.enviadoAlSri === true) {
+            if (apiData.estado) estadoInicial = apiData.estado;
+            if (apiData.numeroAutorizacion) autorizacionNum = apiData.numeroAutorizacion;
+            if (apiData.mensajes) mensajesSri = apiData.mensajes;
+          }
         }
       } catch (backendErr) {
         console.warn('[sriInvoiceService] Backend not reachable, sandbox mode:', backendErr);
@@ -212,7 +222,7 @@ export const sriInvoiceService = {
         estado: estadoInicial,
         ambiente: payload.ambiente || 'PRUEBAS',
         mensajes_sri: mensajesSri,
-        fecha_autorizacion: nowIso,
+        fecha_autorizacion: estadoInicial === 'AUTORIZADO' ? nowIso : null,
         numero_autorizacion: autorizacionNum,
         ride_pdf_url: null,
         email_enviado: false,
@@ -226,36 +236,12 @@ export const sriInvoiceService = {
         .single();
 
       if (dbErr) {
+        // Antes devolvía "éxito" con una factura armada en memoria que no quedaba guardada.
         console.error('[sriInvoiceService] Supabase insert error:', dbErr);
-        const fallbackFactura: FacturaElectronica = {
-          id: `fact-${Date.now()}`,
-          trabajoId: payload.trabajoId,
-          clienteId: payload.clienteId,
-          claveAcceso,
-          numeroFactura,
-          establecimiento,
-          puntoEmision,
-          secuencial: secuencialStr,
-          fechaEmision: nowIso,
-          clienteNombre: payload.clienteNombre,
-          clienteIdentificacion: payload.clienteIdentificacion,
-          clienteTipoId: payload.clienteTipoId,
-          clienteEmail: payload.clienteEmail,
-          clienteDireccion: payload.clienteDireccion,
-          subtotalSinImpuestos,
-          subtotal12,
-          subtotal0,
-          iva12,
-          total,
-          estado: estadoInicial,
-          ambiente: payload.ambiente || 'PRUEBAS',
-          mensajesSri,
-          fechaAutorizacion: nowIso,
-          numeroAutorizacion: autorizacionNum,
-          emailEnviado: false,
-          detalles: payload.detalles
+        return {
+          success: false,
+          error: `No se pudo guardar la factura (${dbErr.message || 'error de base de datos'}). Si dice que la tabla no existe, falta correr supabase/PRODUCCION_tablas_faltantes.sql.`,
         };
-        return { success: true, factura: fallbackFactura };
       }
 
       return { success: true, factura: rowToFactura(dbFactura) };

@@ -355,17 +355,19 @@ export const TrabajosProvider: React.FC<{ children: ReactNode }> = ({ children }
   const registerRetiro = async (id: string, pagoFinal: number, user: string, fotoRetiroUrl?: string, notasEntrega?: string): Promise<Trabajo> => {
     const actual = trabajos.find(t => t.id === id);
     /*
-     * Lo cobrado al retirar se suma al abono (igual que registrarAbono). Antes solo se
-     * ponía saldo en 0: el cobro de la entrega no quedaba en ningún lado, Finanzas (que
-     * suma `abono`) no lo contaba y la orden quedaba con total ≠ abono + saldo.
+     * Modelo de caja (Dashboard, Arqueo, Retiros): `abono` = lo pagado al ingresar la orden,
+     * y lo cobrado al retirar = total − abono − saldo. Por eso el abono NO se toca acá.
+     *
+     * El saldo baja solo por lo efectivamente cobrado. Antes se ponía siempre en 0, así que
+     * una entrega "A Crédito" (cobro 0) o un pago parcial borraba la deuda del cliente.
      */
     const cobroAplicado = actual ? Math.min(Math.max(pagoFinal || 0, 0), actual.saldo || 0) : 0;
+    const saldoRestante = actual ? Math.round(Math.max((actual.saldo || 0) - cobroAplicado, 0) * 100) / 100 : 0;
     const cierre: Record<string, unknown> = {
-      saldo: 0,
+      saldo: saldoRestante,
       estado: TrabajoEstado.ENTREGADO,
       actualizado_por: user,
     };
-    if (actual) cierre.abono = Math.round(((actual.abono || 0) + cobroAplicado) * 100) / 100;
     const updateData: Record<string, unknown> = {
       ...cierre,
       fecha_entrega: new Date().toISOString(),

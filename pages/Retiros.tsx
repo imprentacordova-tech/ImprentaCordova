@@ -155,7 +155,8 @@ const RetirosPage: React.FC = () => {
         const totalPorCobrar = vitrinaList.reduce((acc, t) => acc + (t.saldo || 0), 0);
         const rezagados = vitrinaList.filter(t => esRezagadoDeRetiro(t, Date.now())).length;
         const totalCobradoRetirosHoy = entregadosHoy.reduce((acc, t) => {
-            const liquidado = (t.total || 0) - (t.abono || 0);
+            // Cobrado al retirar = lo que faltaba menos lo que quedó a crédito.
+            const liquidado = (t.total || 0) - (t.abono || 0) - (t.saldo || 0);
             return acc + (liquidado > 0 ? liquidado : 0);
         }, 0);
 

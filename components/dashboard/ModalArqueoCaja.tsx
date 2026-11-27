@@ -46,7 +46,8 @@ export const ModalArqueoCaja: React.FC<ModalArqueoCajaProps> = ({
     });
 
     const totalLiquidadoRetiros = entregadosHoy.reduce((acc, t) => {
-      const liquidado = (t.total || 0) - (t.abono || 0);
+      // Cobrado al retirar = lo que faltaba menos lo que quedó a crédito.
+      const liquidado = (t.total || 0) - (t.abono || 0) - (t.saldo || 0);
       return acc + (liquidado > 0 ? liquidado : 0);
     }, 0);
 

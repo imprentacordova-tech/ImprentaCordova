@@ -65,7 +65,11 @@ export const FacturacionElectronicaPage: React.FC = () => {
         setSelectedTrabajo(t);
         const c = clientes.find(x => x.id === t.clienteId || x.nombre.toLowerCase() === t.titular.toLowerCase());
         setClienteId(c ? c.id : '');
-        setItems([{ codigo: `ORD-${t.orden}`, descripcion: `${t.tipo}${t.subtipo ? ' - ' + t.subtipo : ''} (Orden #${t.orden})`, cantidad: t.cantidad || 1, precioUnitario: Number((t.total / (t.cantidad || 1)).toFixed(2)), descuento: 0, precioTotal: t.total, iva: 15 }]);
+        // `t.total` YA incluye el IVA de los trabajos comerciales (services/orderPricing.ts) y
+        // los comprobantes SRI no llevan IVA. Antes se volvía a gravar el total: $115 → $132.25.
+        const cant = t.cantidad || 1;
+        const base = t.esSRI ? t.total : Math.round((t.total / 1.15) * 100) / 100;
+        setItems([{ codigo: `ORD-${t.orden}`, descripcion: `${t.tipo}${t.subtipo ? ' - ' + t.subtipo : ''} (Orden #${t.orden})`, cantidad: cant, precioUnitario: Math.round((base / cant) * 100) / 100, descuento: 0, precioTotal: base, iva: t.esSRI ? 0 : 15 }]);
         setIsEmitirModalOpen(true);
     };
 
@@ -96,7 +100,12 @@ export const FacturacionElectronicaPage: React.FC = () => {
         });
         setEmitting(false);
         if (result.success && result.factura) {
-            setEmissionFeedback({ type: 'success', message: `Factura ${result.factura.numeroFactura} generada. Clave de acceso registrada.` });
+            setEmissionFeedback({
+                type: 'success',
+                message: result.factura.estado === 'AUTORIZADO'
+                    ? `Factura ${result.factura.numeroFactura} autorizada por el SRI.`
+                    : `Factura ${result.factura.numeroFactura} registrada como PENDIENTE: NO fue enviada al SRI.`,
+            });
             await loadFacturas();
             setTimeout(() => { setIsEmitirModalOpen(false); setEmissionFeedback(null); setSelectedTrabajo(null); }, 2000);
         } else {
@@ -119,6 +128,12 @@ export const FacturacionElectronicaPage: React.FC = () => {
                         <button style={S.outlineBtn} onClick={loadFacturas}>Actualizar</button>
                         <button style={S.primaryBtn} onClick={() => { setSelectedTrabajo(null); setIsEmitirModalOpen(true); }}>Nueva factura directa</button>
                     </div>
+                </div>
+
+                {/* El backend todavía no envía comprobantes al SRI (ver services/sriInvoiceService.ts). */}
+                <div role="alert" style={{ padding: '12px 16px', borderRadius: 12, background: '#FEF3C7', border: '1px solid #F59E0B', color: '#78350F', fontSize: 13, lineHeight: 1.5 }}>
+                    <b>⚠️ El envío al SRI todavía no está habilitado.</b> Las facturas que se registren acá quedan como <b>PENDIENTE</b> y
+                    <b> no son comprobantes autorizados</b>. Mientras tanto, emití las facturas electrónicas en el facturador del SRI.
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 14 }}>

@@ -108,7 +108,8 @@ const DashboardPage: React.FC = () => {
 
         // Cobranza por liquidaciones de saldo cobradas al momento de retirar hoy
         const cobradoPorRetirosHoy = entregadosHoy.reduce((acc, t) => {
-            const liquidado = (t.total || 0) - (t.abono || 0);
+            // Cobrado al retirar = lo que faltaba menos lo que quedó a crédito.
+            const liquidado = (t.total || 0) - (t.abono || 0) - (t.saldo || 0);
             return acc + (liquidado > 0 ? liquidado : 0);
         }, 0);
 
@@ -125,7 +126,8 @@ const DashboardPage: React.FC = () => {
         const cajaActualHoy = abonosHoy + cobradoPorRetirosHoy;
 
         // Dinero en la calle (cuentas por cobrar)
-        const conSaldo = activos.filter(t => t.saldo > 0);
+        // Incluye lo entregado a crédito: también es plata que falta cobrar.
+        const conSaldo = (trabajos ?? []).filter(t => (t.saldo || 0) > 0);
         const totalPorCobrar = conSaldo.reduce((acc, t) => acc + t.saldo, 0);
 
         // Taller & SLA
@@ -195,7 +197,8 @@ const DashboardPage: React.FC = () => {
                 return sla.status === 'vencido' || sla.status === 'alerta' || t.prioridad === 'Urgente';
             });
         } else if (activeTab === 'con_saldo') {
-            list = list.filter(t => t.saldo > 0);
+            // Igual que el KPI "por cobrar": incluye lo entregado a crédito.
+            list = (trabajos ?? []).filter(t => (t.saldo || 0) > 0);
         } else if (activeTab === 'sri') {
             list = list.filter(t => !!t.esSRI);
         } else if (activeTab === 'prensa') {
@@ -220,7 +223,7 @@ const DashboardPage: React.FC = () => {
 
         // Ordenar: primero los más recientes
         return list.sort((a, b) => new Date(b.fechaEntrada).getTime() - new Date(a.fechaEntrada).getTime()).slice(0, 10);
-    }, [activos, activeTab, searchQuery, clientesMap, ahoraMs]);
+    }, [activos, trabajos, activeTab, searchQuery, clientesMap, ahoraMs]);
 
     // Top 3 deudores prioritarios para cobro rápido
     const topDeudores = useMemo(() => {
