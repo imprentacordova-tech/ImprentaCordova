@@ -42,7 +42,24 @@ chrome.runtime.onStartup.addListener(() => {
   actualizarBadgeRetiros();
 });
 
+// La sesión del operador vive en storage.session (se borra al cerrar Chrome) y la
+// leen también los content scripts del SRI (cordovaApi.js).
+try {
+  chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' });
+} catch (e) { /* Chrome < 102 */ }
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "setSession") {
+    // Solo se acepta desde el puente que corre en imprentacordova.net.
+    const url = (sender && sender.url) || '';
+    if (!/^https:\/\/(www\.)?imprentacordova\.net\//.test(url)) return;
+    if (request.token) {
+      chrome.storage.session.set({ cordova_session: { token: request.token, nombre: request.nombre || '' } });
+    } else {
+      chrome.storage.session.remove('cordova_session');
+    }
+    return;
+  }
   if (request.action === "refreshVitrinaBadge") {
     actualizarBadgeRetiros();
     return;

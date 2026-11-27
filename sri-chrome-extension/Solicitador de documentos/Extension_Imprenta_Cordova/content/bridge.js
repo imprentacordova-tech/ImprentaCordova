@@ -32,6 +32,22 @@
     }
   });
 
+  // 1b) La web comparte la sesión del operador (login del panel). La extensión ya no
+  //     usa claves propias: manda este token al backend como `Authorization: Bearer`.
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || event.origin !== window.location.origin) return;
+    const data = event.data;
+    if (!data || data.type !== 'CORDOVA_SESSION') return;
+    try {
+      chrome.runtime.sendMessage(
+        { action: 'setSession', token: typeof data.token === 'string' ? data.token : null, nombre: data.nombre || '' },
+        () => { void chrome.runtime.lastError; },
+      );
+    } catch (e) {
+      console.warn('[Cordova Bridge] No se pudo compartir la sesión:', e);
+    }
+  });
+
   // 2) El background devuelve el resultado de la solicitud completada.
   chrome.runtime.onMessage.addListener((msg) => {
     // El destino es la propia página, así que se acota el targetOrigin en vez

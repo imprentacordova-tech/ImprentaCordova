@@ -1,4 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // v3: estado de la sesión del operador (la comparte el panel web) y versión real.
+  (function mostrarSesion() {
+    const caja = document.getElementById('session-status');
+    const ver = document.getElementById('ext-version');
+    if (ver) ver.textContent = 'v' + chrome.runtime.getManifest().version;
+    if (!caja) return;
+    chrome.storage.session.get(['cordova_session'], (r) => {
+      const s = r && r.cordova_session;
+      if (s && s.token) {
+        caja.textContent = 'Conectado como ' + (s.nombre || 'operador');
+        caja.style.background = '#f0fdf4';
+        caja.style.color = '#166534';
+        caja.style.borderColor = '#bbf7d0';
+      }
+    });
+  })();
+
   const blocksInput = document.getElementById('blocks');
   const autoPilotSwitch = document.getElementById('auto-pilot');
   const autoSuggestSwitch = document.getElementById('auto-suggest');

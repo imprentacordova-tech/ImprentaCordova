@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { User } from '../types';
 import { supabase } from '../services/supabase';
 import { loginBackend, BackendError, despertarBackend } from '../services/backendApi';
-import { sesion, debeUsarRespaldo, respaldoHabilitado } from '../services/sesion';
+import { sesion, debeUsarRespaldo, respaldoHabilitado, compartirSesionConExtension, escucharPuenteExtension } from '../services/sesion';
 
 interface AuthContextType {
   user: User | null;
@@ -73,6 +73,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => subscription.unsubscribe();
   }, []);
 
+  // Si la extensión se carga con el panel ya abierto, se le pasa la sesión vigente.
+  useEffect(() => escucharPuenteExtension(() => user?.nombre), [user?.nombre]);
+
   const login = useCallback(async (nombre: string, password: string): Promise<{ success: boolean; error?: string }> => {
     // 1) Login validado por el servidor (único camino con contraseña real y sesión firmada).
     despertarBackend(0);
@@ -89,7 +92,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(u);
       localStorage.setItem(SESSION_KEY, serializeSession(u));
       // La extensión toma la sesión por el puente (bridge.js) para no usar claves propias.
-      window.postMessage({ type: 'CORDOVA_SESSION', token: r.token, nombre: u.nombre }, window.location.origin);
+      compartirSesionConExtension(r.token, u.nombre);
       return { success: true };
     } catch (err) {
       const status = err instanceof BackendError ? err.status : 0;
@@ -185,7 +188,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
     localStorage.removeItem(SESSION_KEY);
     sesion.limpiar();
-    window.postMessage({ type: 'CORDOVA_SESSION', token: null }, window.location.origin);
+    compartirSesionConExtension(null);
   }, []);
 
   return (

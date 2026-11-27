@@ -74,3 +74,24 @@ export const rutaDeVuelta = (volver: string | null | undefined): string => {
     }
     return volver;
 };
+
+/** Le pasa la sesión a la extensión de Chrome (bridge.js). `token: null` = cerrar sesión. */
+export const compartirSesionConExtension = (token: string | null, nombre?: string): void => {
+    window.postMessage({ type: 'CORDOVA_SESSION', token, nombre }, window.location.origin);
+};
+
+/**
+ * El puente de la extensión se anuncia al cargar (CORDOVA_BRIDGE_READY): se le reenvía
+ * la sesión vigente, así la extensión la tiene aunque el operador ya estuviera logueado.
+ * @returns función para dejar de escuchar.
+ */
+export const escucharPuenteExtension = (nombreActual: () => string | undefined): (() => void) => {
+    const alMensaje = (e: MessageEvent) => {
+        if (e.source !== window || e.origin !== window.location.origin) return;
+        if (e.data?.type !== 'CORDOVA_BRIDGE_READY') return;
+        const t = sesion.token();
+        if (t) compartirSesionConExtension(t, nombreActual());
+    };
+    window.addEventListener('message', alMensaje);
+    return () => window.removeEventListener('message', alMensaje);
+};

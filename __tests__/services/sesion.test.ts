@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
-import { sesion, guardarBorrador, leerBorrador, debeUsarRespaldo, rutaDeVuelta } from '../../services/sesion';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { sesion, guardarBorrador, leerBorrador, debeUsarRespaldo, rutaDeVuelta, compartirSesionConExtension, escucharPuenteExtension } from '../../services/sesion';
 
 const token = (expSeg: number) => `${btoa(JSON.stringify({ sub: 'u1', nombre: 'Pedro', rol: 'Admin', exp: expSeg }))}.firma`;
 const ahoraSeg = () => Math.floor(Date.now() / 1000);
@@ -59,5 +59,34 @@ describe('rutaDeVuelta', () => {
     expect(rutaDeVuelta('/\\malo.com')).toBe('/dashboard');
     expect(rutaDeVuelta(null)).toBe('/dashboard');
     expect(rutaDeVuelta('/login')).toBe('/dashboard');
+  });
+});
+
+describe('puente con la extensión', () => {
+  it('compartirSesionConExtension postea CORDOVA_SESSION solo a la propia página', () => {
+    const espia = vi.spyOn(window, 'postMessage');
+    compartirSesionConExtension('a.b', 'Pedro');
+    expect(espia).toHaveBeenCalledWith({ type: 'CORDOVA_SESSION', token: 'a.b', nombre: 'Pedro' }, window.location.origin);
+    espia.mockRestore();
+  });
+
+  it('al anunciarse el puente (CORDOVA_BRIDGE_READY) se le reenvía la sesión vigente', () => {
+    sesion.guardar(token(ahoraSeg() + 3600));
+    const espia = vi.spyOn(window, 'postMessage');
+    const quitar = escucharPuenteExtension(() => 'Pedro');
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'CORDOVA_BRIDGE_READY' }, source: window, origin: window.location.origin }));
+    quitar();
+    expect(espia).toHaveBeenCalledWith(expect.objectContaining({ type: 'CORDOVA_SESSION', nombre: 'Pedro' }), window.location.origin);
+    espia.mockRestore();
+  });
+
+  it('ignora anuncios que no vienen de la propia ventana', () => {
+    sesion.guardar(token(ahoraSeg() + 3600));
+    const espia = vi.spyOn(window, 'postMessage');
+    const quitar = escucharPuenteExtension(() => 'Pedro');
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'CORDOVA_BRIDGE_READY' }, origin: 'https://otro.com' }));
+    quitar();
+    expect(espia).not.toHaveBeenCalled();
+    espia.mockRestore();
   });
 });
