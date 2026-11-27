@@ -1564,7 +1564,8 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
       // Devolver los datos a la pestaña web que originó la solicitud (flujo
       // "Hacer solicitud en SRI" desde el Paso 2). El bridge los reenvía a la app.
       const originTab = finalData.cordova_origin_tab;
-      if (originTab && config.flow_volver_web !== false) {
+      const enviadoALaWeb = !!(originTab && config.flow_volver_web !== false);
+      if (enviadoALaWeb) {
         try {
           chrome.runtime.sendMessage({
             action: 'sriSolicitudResult',
@@ -1596,6 +1597,18 @@ chrome.storage.local.get(['cordovaBlocks', 'cordovaAutoPilot', 'cordovaDocType',
 
       // El flujo del SRI terminó: los diálogos del portal vuelven al operador.
       desactivarAutomatizacion();
+
+      // El lanzamiento ya se usó: una solicitud posterior hecha directo en el portal
+      // no debe heredar su precio ni su pestaña de destino.
+      chrome.storage.local.remove(['cordova_launch_payload', 'cordova_origin_tab']);
+
+      // Lanzada desde Nueva Orden: la orden la crea el panel con estos datos. Si la
+      // extensión también la creaba, quedaban dos órdenes por solicitud.
+      // Solo si los datos realmente viajaron a la web; si no, la orden se registra acá.
+      if (enviadoALaWeb && !CordovaParseo.debeRegistrarOrden(lanzamiento)) {
+        showCordovaToastHud('✅ Datos enviados a Nueva Orden. Confirmá la orden en el panel.');
+        return;
+      }
 
       // Registro con contrato + una sola vez por solicitud: recargar esta
       // pantalla no vuelve a crear la orden.

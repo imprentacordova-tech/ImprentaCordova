@@ -567,6 +567,8 @@ const NuevoPedidoPage: React.FC = () => {
         const requestId = `sri-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         const payload = {
             requestId,
+            // La extensión NO crea la orden cuando el lanzamiento viene de acá (sin duplicados).
+            origen: 'nueva-orden',
             ruc: cliente?.ruc || tempClient?.cedula || '',
             name: cliente?.nombre || tempClient?.nombre || '',
             direccion: cliente?.direccion || tempClient?.direccion || '',

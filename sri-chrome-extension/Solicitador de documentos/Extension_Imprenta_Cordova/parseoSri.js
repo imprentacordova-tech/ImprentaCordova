@@ -179,5 +179,21 @@
     return { ok: faltan.length === 0, faltan };
   }
 
-  global.CordovaParseo = { leerResumenSolicitud, leerSecuencias, filasBandeja, validarCaptura };
+  /** Un lanzamiento desde la web vale 2 h; después se trata como solicitud suelta. */
+  const VIGENCIA_LANZAMIENTO_MS = 2 * 60 * 60 * 1000;
+
+  /**
+   * ¿La extensión debe crear el trabajo? NO cuando la solicitud la lanzó Nueva Orden:
+   * ahí el panel crea la orden con los datos devueltos y, si la extensión también la
+   * creaba, quedaban dos órdenes por cada solicitud.
+   * @returns {boolean}
+   */
+  function debeRegistrarOrden(lanzamiento) {
+    if (!lanzamiento || lanzamiento.origen !== 'nueva-orden') return true;
+    const creado = Number(lanzamiento.createdAt) || 0;
+    if (creado && Date.now() - creado > VIGENCIA_LANZAMIENTO_MS) return true;
+    return false;
+  }
+
+  global.CordovaParseo = { leerResumenSolicitud, leerSecuencias, filasBandeja, validarCaptura, debeRegistrarOrden };
 })(typeof self !== 'undefined' ? self : this);
