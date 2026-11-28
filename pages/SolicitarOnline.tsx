@@ -9,6 +9,7 @@ import { MASTER_CATALOG } from '../services/catalogData';
 import {
     solicitudesWebService, validarSolicitud, soloDigitos,
     DOCUMENTOS_SRI, CANTIDADES, COPIAS, TAMANOS, TRAMITES, ENTREGAS,
+    mensajeWhatsAppSolicitud,
     type SolicitudWebInput, type TramiteSolicitud,
 } from '../services/solicitudesWebService';
 import { WhatsAppIcon, Check, ArrowRight, ShieldCheck, Sparkles, Loader2Icon, Search, FileText, Clock } from '../components/Icons';
@@ -59,6 +60,7 @@ export const SolicitarOnline: React.FC = () => {
     const [error, setError] = useState('');
     const [enviando, setEnviando] = useState(false);
     const [codigo, setCodigo] = useState<string | null>(null);
+    const [falloGuardado, setFalloGuardado] = useState(false);
     // Anti-spam: campo trampa invisible y tiempo mínimo en la página.
     const [trampa, setTrampa] = useState('');
     const montadoEn = useRef(Date.now());
@@ -131,7 +133,8 @@ export const SolicitarOnline: React.FC = () => {
         } catch (err) {
             // El detalle técnico (tabla faltante, red) queda en consola; el cliente ve una salida.
             console.error('[Solicitar] Error al enviar:', mensajeDeError(err));
-            setError('No pudimos enviar tu solicitud en este momento. Escribinos por WhatsApp y la tomamos por ahí.');
+            setError('No pudimos guardar tu solicitud en este momento. Enviala por WhatsApp con el botón de abajo: va con todos tus datos.');
+            setFalloGuardado(true);
         } finally {
             setEnviando(false);
         }
@@ -448,6 +451,17 @@ export const SolicitarOnline: React.FC = () => {
                                                     </motion.p>
                                                 )}
                                             </AnimatePresence>
+                                            {falloGuardado && (
+                                                <a
+                                                    href={generateWhatsAppLink(WA_TALLER, mensajeWhatsAppSolicitud(f))}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="mt-3 inline-flex items-center justify-center gap-2.5 w-full min-h-[44px] px-6 py-3.5 bg-success-dot hover:bg-success text-white font-bold text-sm rounded-2xl shadow-lg transition-colors"
+                                                >
+                                                    <WhatsAppIcon className="w-5 h-5" />
+                                                    Enviar mi solicitud por WhatsApp
+                                                </a>
+                                            )}
                                         </div>
 
                                         <div className="px-6 sm:px-8 py-5 bg-paper border-t border-hairline flex items-center justify-between gap-3">

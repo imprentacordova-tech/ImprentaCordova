@@ -138,6 +138,28 @@ export const urlNuevaOrdenDesde = (s: SolicitudWeb): string => {
     return `/nuevo?${p.toString()}`;
 };
 
+/**
+ * Texto para WhatsApp con TODA la solicitud: respaldo cuando no se puede guardar
+ * (sin conexión, tabla aún no creada). El pedido no se pierde.
+ */
+export const mensajeWhatsAppSolicitud = (s: SolicitudWebInput): string => {
+    const tramite = TRAMITES.find(t => t.id === s.tramite)?.label;
+    return [
+        'Hola Imprenta Córdova, quiero pedir mis comprobantes:',
+        `• RUC: ${soloDigitos(s.ruc)}`,
+        `• Razón social: ${s.razonSocial.trim()}`,
+        s.nombreComercial ? `• Nombre comercial: ${s.nombreComercial.trim()}` : '',
+        `• Documento: ${s.documento} · ${s.cantidad} hojas`,
+        [s.copias, s.tamano].filter(Boolean).length ? `• ${[s.copias, s.tamano].filter(Boolean).join(' · ')}` : '',
+        `• Establecimiento: ${tresDigitos(s.establecimiento)}-${tresDigitos(s.puntoEmision)}`,
+        tramite ? `• Trámite: ${tramite}` : '',
+        s.direccion ? `• Dirección: ${s.direccion.trim()}` : '',
+        s.entrega ? `• Entrega: ${s.entrega}` : '',
+        s.notas ? `• Indicaciones: ${s.notas.trim()}` : '',
+        `• Celular: ${normalizarTelefono(s.telefono)}`,
+    ].filter(Boolean).join('\n');
+};
+
 const filaAInsert = (s: SolicitudWebInput, codigo: string) => ({
     codigo,
     estado: 'NUEVA',

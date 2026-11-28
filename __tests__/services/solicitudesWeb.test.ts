@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 vi.mock('../../services/supabase', () => ({ supabase: {} }));
 
 import {
-    validarSolicitud, normalizarTelefono, generarCodigo, urlNuevaOrdenDesde, docTypeDe, CANTIDADES,
+    validarSolicitud, normalizarTelefono, generarCodigo, urlNuevaOrdenDesde, docTypeDe, CANTIDADES, mensajeWhatsAppSolicitud,
     type SolicitudWebInput, type SolicitudWeb,
 } from '../../services/solicitudesWebService';
 import { MASTER_CATALOG } from '../../services/catalogData';
@@ -91,4 +91,21 @@ describe('vocabulario compartido', () => {
             expect(MASTER_CATALOG.some(p => p.esSRI && p.nombre?.includes(`(${c} hojas)`))).toBe(true);
         }
     });
+});
+
+describe('mensajeWhatsAppSolicitud (respaldo si no se puede guardar)', () => {
+  it('incluye todos los datos para que el pedido no se pierda', () => {
+    const m = mensajeWhatsAppSolicitud({
+      ...base, direccion: 'Colón y Sucre', copias: 'Original + 1 copia', tamano: '1/4 Oficio',
+      establecimiento: '002', puntoEmision: '001', tramite: 'CAMBIO', notas: 'logo a color',
+    });
+    for (const parte of ['0702065319001', 'Comercial Ejemplo', 'Factura', '100', 'Original + 1 copia', '1/4 Oficio', '002-001', 'Reimpresión con cambios', 'Colón y Sucre', 'logo a color', '0991234567']) {
+      expect(m).toContain(parte);
+    }
+  });
+  it('omite los campos vacíos', () => {
+    const m = mensajeWhatsAppSolicitud(base);
+    expect(m).not.toContain('undefined');
+    expect(m).not.toContain('Indicaciones');
+  });
 });
