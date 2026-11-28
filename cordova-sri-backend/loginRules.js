@@ -15,7 +15,7 @@ const iguales = (a, b) => {
  */
 function evaluarLogin(u, passwordIngresada) {
     if (!u) return { ok: false, motivo: 'NO_EXISTE' };
-    if (u.estado && u.estado !== 'Activo') return { ok: false, motivo: 'INACTIVO' };
+    if (u.estado !== 'Activo') return { ok: false, motivo: 'INACTIVO' };
     const esAdmin = String(u.rol || '').toLowerCase() === 'admin' || String(u.rol || '').toLowerCase() === 'root';
     if (!u.require_password) {
         // Un Admin sin contraseña es la puerta abierta de hoy: no se le emite sesión.

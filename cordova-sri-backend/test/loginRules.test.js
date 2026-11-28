@@ -54,3 +54,8 @@ test('limitador: un login correcto reinicia el contador', () => {
     lim.exito('k');
     assert.equal(lim.bloqueado('k', 1), false);
 });
+
+test('estado null o ausente no cuenta como Activo', () => {
+    assert.deepEqual(evaluarLogin(usuario({ estado: null }), 'clave123'), { ok: false, motivo: 'INACTIVO' });
+    assert.deepEqual(evaluarLogin(usuario({ estado: undefined }), 'clave123'), { ok: false, motivo: 'INACTIVO' });
+});

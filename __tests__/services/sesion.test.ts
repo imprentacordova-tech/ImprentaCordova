@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { sesion, guardarBorrador, leerBorrador, debeUsarRespaldo, rutaDeVuelta, compartirSesionConExtension, escucharPuenteExtension } from '../../services/sesion';
+import { sesion, guardarBorrador, leerBorrador, debeUsarRespaldo, rutaDeVuelta, compartirSesionConExtension, escucharPuenteExtension, sesionServidorPerdida } from '../../services/sesion';
 
 const token = (expSeg: number) => `${btoa(JSON.stringify({ sub: 'u1', nombre: 'Pedro', rol: 'Admin', exp: expSeg }))}.firma`;
 const ahoraSeg = () => Math.floor(Date.now() / 1000);
@@ -41,11 +41,14 @@ describe('debeUsarRespaldo (login de nombres fijos)', () => {
   it('nunca si el servidor rechazó las credenciales', () => {
     for (const st of [401, 403, 429]) expect(debeUsarRespaldo(st, true)).toBe(false);
   });
-  it('si el servidor no responde o no tiene login configurado, solo con el respaldo habilitado', () => {
-    for (const st of [0, 408, 500, 503]) {
+  it('backend viejo (404), roto (500) o sin login configurado (503): solo con el respaldo habilitado', () => {
+    for (const st of [404, 500, 503]) {
       expect(debeUsarRespaldo(st, true)).toBe(true);
       expect(debeUsarRespaldo(st, false)).toBe(false);
     }
+  });
+  it('servidor dormido o arrancando (0, 408, 502, 504): NUNCA respaldo — se pide reintentar', () => {
+    for (const st of [0, 408, 502, 504]) expect(debeUsarRespaldo(st, true)).toBe(false);
   });
 });
 
@@ -88,5 +91,33 @@ describe('puente con la extensión', () => {
     quitar();
     expect(espia).not.toHaveBeenCalled();
     espia.mockRestore();
+  });
+});
+
+describe('sesión del servidor vencida', () => {
+  it('token() avisa "cordova:sesion-vencida" al descartar un token vencido', () => {
+    const escucha = vi.fn();
+    window.addEventListener('cordova:sesion-vencida', escucha);
+    sesion.guardar(token(ahoraSeg() - 10));
+    expect(sesion.token()).toBeNull();
+    expect(sesion.token()).toBeNull();
+    window.removeEventListener('cordova:sesion-vencida', escucha);
+    expect(escucha).toHaveBeenCalledTimes(1);
+  });
+
+  it('sin token guardado no avisa nada (login de respaldo)', () => {
+    const escucha = vi.fn();
+    window.addEventListener('cordova:sesion-vencida', escucha);
+    expect(sesion.token()).toBeNull();
+    window.removeEventListener('cordova:sesion-vencida', escucha);
+    expect(escucha).not.toHaveBeenCalled();
+  });
+
+  it('sesionServidorPerdida: había login del servidor y ya no hay token', () => {
+    expect(sesionServidorPerdida()).toBe(false);
+    sesion.guardar(token(ahoraSeg() + 3600));
+    expect(sesionServidorPerdida()).toBe(false);
+    sesion.guardar(token(ahoraSeg() - 10));
+    expect(sesionServidorPerdida()).toBe(true);
   });
 });

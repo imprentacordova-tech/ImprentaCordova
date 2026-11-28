@@ -7,26 +7,13 @@ require('dotenv').config();
 
 const app = express();
 
-// ── CORS: Restrict to known origins + local development ─────────────────
-const defaultOrigins = [
-  'https://www.imprentacordova.net',
-  'https://imprentacordova.net',
-  'https://imprentacordova.com',
-  'https://www.imprentacordova.com',
-  // Dominios del SRI: la extensión de Chrome hace fetch desde el content script,
-  // así que la petición llega con el Origin de la propia página del SRI.
-  'https://srienlinea.sri.gob.ec',
-  'https://sri.gob.ec',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:4173',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000',
-];
+// ── CORS: orígenes conocidos (ver origenes.js) ───────────────────────────
+const { origenesPermitidos } = require('./origenes');
+const ALLOWED_ORIGINS = origenesPermitidos(process.env.ALLOWED_ORIGINS);
 
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
-  : defaultOrigins;
+// Render pone un proxy delante: sin esto `req.ip` es la IP del proxy y los límites
+// (login, rate limit general) quedan compartidos por todos los clientes.
+app.set('trust proxy', 1);
 
 // Orígenes de la extensión de Chrome (`chrome-extension://<id>`).
 // Si ALLOWED_EXTENSION_ORIGINS está definido se exige coincidencia exacta;
@@ -52,7 +39,7 @@ app.use(cors({
         }
     },
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Cordova-Ext'],
     maxAge: 86400
 }));
 
@@ -94,7 +81,7 @@ const rateLimiter = (req, res, next) => {
     }
     rateLimit[ip].count++;
     if (rateLimit[ip].count > RATE_MAX) {
-        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+        return res.status(429).json({ error: 'Demasiadas solicitudes. Esperá un minuto e intentá de nuevo.' });
     }
     next();
 };

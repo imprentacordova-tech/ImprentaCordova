@@ -7,6 +7,8 @@
  */
 
 const CLAVE_TOKEN = 'cordova_token';
+/** Marca que el operador entró con login del servidor (no por el respaldo de nombres). */
+const CLAVE_SERVIDOR = 'cordova_sesion_servidor';
 const CLAVE_BORRADOR = 'cordova_borrador_nueva_orden';
 
 const leerExp = (token: string): number | null => {
@@ -23,19 +25,27 @@ const leerExp = (token: string): number | null => {
 export const sesion = {
     guardar(token: string): void {
         localStorage.setItem(CLAVE_TOKEN, token);
+        localStorage.setItem(CLAVE_SERVIDOR, '1');
     },
-    /** Token vigente o null (si venció, se borra). */
+    /**
+     * Token vigente o null. Si venció, se borra y se avisa `cordova:sesion-vencida`
+     * (una sola vez): sin esto, a las 12 h el panel seguía abierto sin token y todo
+     * fallaba con "Iniciá sesión" sin llevar al login.
+     */
     token(): string | null {
         const t = localStorage.getItem(CLAVE_TOKEN);
         if (!t) return null;
         if (sesion.vencida(t)) {
             localStorage.removeItem(CLAVE_TOKEN);
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('cordova:sesion-vencida'));
             return null;
         }
         return t;
     },
+    /** Cierre de sesión: borra el token y la marca de login del servidor. */
     limpiar(): void {
         localStorage.removeItem(CLAVE_TOKEN);
+        localStorage.removeItem(CLAVE_SERVIDOR);
     },
     /** Lee `exp` sin verificar la firma (eso lo hace el servidor). Basura = vencido. */
     vencida(token: string, ahora = Date.now()): boolean {
@@ -63,7 +73,14 @@ export const leerBorrador = <T = unknown>(): T | null => {
  * credenciales (401/403/429), nunca: si no, el respaldo saltearía la contraseña.
  */
 export const debeUsarRespaldo = (status: number, respaldoHabilitado: boolean): boolean =>
-    respaldoHabilitado && ![401, 403, 429].includes(status);
+    // Solo backend viejo (404), roto (500) o sin login configurado (503). Con el servidor
+    // dormido o arrancando (0/408/502/504) se pide reintentar: si no, el operador entraba
+    // sin token y pasaba todo el turno sin correo, IA ni extensión.
+    respaldoHabilitado && [404, 500, 503].includes(status);
+
+/** ¿El operador había entrado con login del servidor y el token ya no está (venció)? */
+export const sesionServidorPerdida = (): boolean =>
+    localStorage.getItem(CLAVE_SERVIDOR) === '1' && !sesion.token();
 
 export const respaldoHabilitado = (): boolean => import.meta.env.VITE_LOGIN_LEGACY !== 'false';
 

@@ -51,6 +51,8 @@
         method,
         headers: {
           'Content-Type': 'application/json',
+          // Identifica a la v3: sin este header el backend responde 426 ("actualizá la extensión").
+          'X-Cordova-Ext': String(chrome.runtime.getManifest().version || '3'),
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         ...(body ? { body: JSON.stringify(body) } : {}),

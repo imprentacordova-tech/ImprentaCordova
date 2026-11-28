@@ -193,6 +193,7 @@ Base: `EXT = sri-chrome-extension/Solicitador de documentos/Extension_Imprenta_C
 ### Task D1: Preparar producción (dueño)
 - [ ] Correr `supabase/PRODUCCION_tablas_faltantes.sql` y `supabase/PRODUCCION_solicitudes_web.sql`.
 - [ ] Render: `SESSION_SECRET` (≥ 32 bytes aleatorios), `ALLOWED_ORIGINS=https://www.imprentacordova.net,https://imprentacordova.net`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `GEMINI_API_KEY`.
+- [ ] **Antes de cargar `SESSION_SECRET`**, revisar la tabla `users` en Supabase: cada operador que hoy entra por nombre fijo (PEDRO, DANTE, ALEIDA, ROBERTO, DANIEL…) tiene que tener su fila con `estado='Activo'`, `rol` correcto y, si es Admin, `require_password=true` y `password` cargada. Si no, al activar el login del servidor queda afuera (el respaldo no se usa tras un 401).
 - [ ] Cargar contraseña a cada Admin en `users` (Gestión de Usuarios).
 - [ ] Verificar con GET: `curl -s https://cordova-sri-api.onrender.com/ping`.
 

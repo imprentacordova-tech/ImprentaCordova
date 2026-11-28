@@ -12,7 +12,11 @@ const crearRequireSession = (getSecreto) => (req, res, next) => {
     }
     const auth = String(req.headers.authorization || '');
     const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-    if (!token && req.headers['x-api-key']) {
+    // Extensión vieja: la v2 mandaba x-api-key o nada (su clave estaba vacía). La v3
+    // siempre manda `X-Cordova-Ext`, así que una llamada desde el SRI sin ese header es v2.
+    const desdeSri = /^https:\/\/([a-z0-9-]+\.)*sri\.gob\.ec$/i.test(String(req.headers.origin || ''));
+    const extensionVieja = req.headers['x-api-key'] || (desdeSri && !req.headers['x-cordova-ext']);
+    if (!token && extensionVieja) {
         return res.status(426).json({ error: 'Actualizá la extensión de Córdova (v3) e iniciá sesión en el panel.' });
     }
     if (!token) return res.status(401).json({ error: 'Iniciá sesión para continuar.' });

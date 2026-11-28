@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { User } from '../types';
 import { supabase } from '../services/supabase';
 import { loginBackend, BackendError, despertarBackend } from '../services/backendApi';
-import { sesion, debeUsarRespaldo, respaldoHabilitado, compartirSesionConExtension, escucharPuenteExtension } from '../services/sesion';
+import { sesion, debeUsarRespaldo, respaldoHabilitado, compartirSesionConExtension, escucharPuenteExtension, sesionServidorPerdida } from '../services/sesion';
 
 interface AuthContextType {
   user: User | null;
@@ -47,6 +47,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const init = async () => {
       try {
         const localUser = deserializeSession(localStorage.getItem(SESSION_KEY));
+        // Entró con el servidor y el token venció (p. ej. al día siguiente): al login.
+        if (localUser && sesionServidorPerdida()) {
+          localStorage.removeItem(SESSION_KEY);
+          sesion.limpiar();
+          setUser(null);
+          return;
+        }
         if (localUser) {
           setUser(localUser);
         }

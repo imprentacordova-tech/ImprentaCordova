@@ -62,3 +62,13 @@ test('requireAdmin deja pasar Admin y frena Operador', () => {
     assert.equal(ok, false);
     assert.equal(res.statusCode, 403);
 });
+
+test('extensión v2 (sin Bearer, desde el SRI y sin X-Cordova-Ext) → 426', () => {
+    const { res } = correr(crearRequireSession(() => SECRETO), { origin: 'https://srienlinea.sri.gob.ec' });
+    assert.equal(res.statusCode, 426);
+});
+
+test('extensión v3 sin sesión (manda X-Cordova-Ext) → 401 pidiendo iniciar sesión', () => {
+    const { res } = correr(crearRequireSession(() => SECRETO), { origin: 'https://srienlinea.sri.gob.ec', 'x-cordova-ext': '3' });
+    assert.equal(res.statusCode, 401);
+});

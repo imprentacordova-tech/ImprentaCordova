@@ -115,7 +115,7 @@ export async function loginBackend(nombre: string, password: string): Promise<{ 
       '/api/v1/auth/login', { nombre, password }, { timeoutMs: 45000, etiqueta: 'Login' },
     );
   } catch (err) {
-    if (err instanceof BackendError && (err.status === 0 || err.status === 408)) {
+    if (err instanceof BackendError && [0, 408, 502, 504].includes(err.status)) {
       throw new BackendError('El servidor está despertando, reintentá en 30 s.', err.status);
     }
     throw err;

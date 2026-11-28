@@ -209,6 +209,15 @@ describe('loginBackend', () => {
     expect(e.message).toBe('El servidor está despertando, reintentá en 30 s.');
   });
 
+  it('Render arrancando (502/504) → también "despertando"', async () => {
+    for (const st of [502, 504]) {
+      fetchMock.mockResolvedValue(respuesta(st, {}));
+      const e = await errorDe(loginBackend('pedro', 'clave'));
+      expect(e.status).toBe(st);
+      expect(e.message).toBe('El servidor está despertando, reintentá en 30 s.');
+    }
+  });
+
   it('clave incorrecta → el mensaje del servidor, status 401', async () => {
     fetchMock.mockResolvedValue(respuesta(401, { error: 'Usuario o contraseña incorrectos.' }));
     const e = await errorDe(loginBackend('pedro', 'mal'));

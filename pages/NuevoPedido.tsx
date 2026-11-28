@@ -369,6 +369,7 @@ const NuevoPedidoPage: React.FC = () => {
     // Si la sesión vence a mitad del pedido, se guarda lo cargado y se restaura al volver.
     interface BorradorPedido { items: ItemPedido[]; clienteId?: string; tempClient: ClienteTemporal; step: number }
     const estadoBorrador = useRef<BorradorPedido>({ items: [], tempClient, step: 1 });
+    const clientePendiente = useRef<string | undefined>(undefined);
     estadoBorrador.current = { items, clienteId: cliente?.id, tempClient, step };
     useEffect(() => {
         const alVencer = () => {
@@ -383,14 +384,16 @@ const NuevoPedidoPage: React.FC = () => {
         if (!b) return;
         if (Array.isArray(b.items)) setItems(b.items);
         if (b.tempClient) setTempClient(b.tempClient);
-        if (b.clienteId) {
-            const c = clientes.find(x => x.id === b.clienteId);
-            if (c) setCliente(c);
-        }
+        if (b.clienteId) clientePendiente.current = b.clienteId;
         if (b.step) setStep(b.step);
     // Solo al montar: el borrador se consume una vez.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+    // El cliente del borrador se aplica cuando la lista de clientes termina de cargar.
+    useEffect(() => {
+        if (!clientePendiente.current) return;
+        const c = clientes.find(x => x.id === clientePendiente.current);
+        if (c) { setCliente(c); clientePendiente.current = undefined; }
+    }, [clientes]);
 
     useEffect(() => {
         document.body.style.overflow = 'auto';
